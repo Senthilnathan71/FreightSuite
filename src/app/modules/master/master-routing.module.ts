@@ -54,7 +54,7 @@ import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedul
 import { SectorComponent } from './sector/sector-list/sector-list.component';
 import { UserListComponent } from './user/user-list/user-list.component';
 import { UserEntryComponent } from './user/user-entry/user-entry.component';
-import { ChargeTaxComponent } from './charge-tax/charge-tax/charge-tax.component';
+
 import { AuthorityListComponent } from './authority/authority-list/authority-list.component';
 import { AuthorityEntryComponent } from './authority/authority-entry/authority-entry.component';
 import { YearListComponent } from './year/year-list/year-list.component';
@@ -79,6 +79,7 @@ import { MawbStockListComponent } from './Mawb-stock/mawb-stock-list/mawb-stock-
 import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component';
 import { NetworkEntryComponent } from './network/network-entry/network-entry.component';
 import { TaxGroupComponent } from './tax-group/tax-group/tax-group.component';
+import { TaxMasterComponent } from './tax-master/tax-master.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -883,13 +884,13 @@ export const MasterRoutes: Routes = [
     ],
   },
   {
-    path: 'charge-tax',
-    component: ChargeTaxComponent,
+    path: 'tax-master',
+    component: TaxMasterComponent,
     data: {
-      title: 'charge-tax',
+      title: 'TaxMaster',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'charge-tax' },
+        { title: 'tax-master' },
       ],
     },
   },

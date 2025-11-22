@@ -68,6 +68,21 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['HSSACCode', 'HSSACName'],
     displayLabels: ['HSSAC Code', 'HSSAC Name'],  
     labelFields: ['HSSACCode']
+  },
+  CURRENCY : {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
+  },
+  COA_LEDGER: {
+    displayFields: ['LedgerCode', 'LedgerName', 'SubGroupName'],
+    displayLabels: ['Code', 'Name', 'SubGroup'],
+    labelFields: ['LedgerName']
+  },
+  INVOICE: {
+    displayFields: ['VoucherNumber', 'PartyName'],
+    displayLabels: ['Invoice No', 'Customer'],    
+    labelFields: ['VoucherNumber']
   }
 } satisfies Record<string, {
   displayFields: string[];

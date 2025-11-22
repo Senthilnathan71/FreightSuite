@@ -3631,8 +3631,8 @@ getCoaWithSubledger(CompanyMasterSid: number) {
     );
   }
   
-getSubledgerMasterByType(subledgerType: string) {
-    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}`).pipe(
+getSubledgerMasterByType(subledgerType: string , CompanyMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}?CompanyMasterSid=${CompanyMasterSid}`).pipe(
         map((resp: any) => {
             return resp;
         })
@@ -3944,8 +3944,8 @@ createReportMaster(payload: any) {
   }
 
   //Tax-Group
-  getAllTaxGroup(CompanyMasterSid: number, BranchMasterSid: number) {
-    return this.http.post<{ data: any[] }>('tax-group', { CompanyMasterSid, BranchMasterSid }).pipe(
+  getAllTaxGroup() {
+    return this.http.get<{ data: any[] }>('tax-group', {  }).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -3998,6 +3998,84 @@ createReportMaster(payload: any) {
     )
   }
 
+
+// Get All Networks
+getAllNetworks(CompanyMasterSid: number) {
+  return this.http.post<{ data: any }>('network-master', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Create Network
+createNetwork(payload: any) {
+  return this.http.post('network-master/create', payload).pipe(
+    map((res: any) => {
+      return res;
+    })
+  );
+}
+
+// Get Network By ID
+getNetworkById(id: number) {
+  return this.http.get<{ data: any }>(`network-master/fetch/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Update Network By ID
+updateNetworkById(id: number, payload: any) {
+  return this.http.patch<{ data: any }>(`network-master/update/${id}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+// Delete Network By ID
+deleteNetworkById(id: number) {
+  return this.http.delete<{ data: any }>(`network-master/delete/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Search Network List
+searchNetworkList(params: any) {
+  return this.http.post("network-master/search-list", params).pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
+
+// Get Network by Type
+getNetworkByType(type: string, CompanyMasterSid: number) {
+  return this.http.post(`network-master/network-type?type=${type}`, { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Get Audit Logs for Network
+getAuditLogsNetwork(tableName: string, recordId?: string) {
+  let url = `network-master/audit-logs?tableName=${tableName}`;
+  if (recordId) url += `&recordId=${recordId}`;
+
+  return this.http.get<{ data: any }>(url).pipe(
+    map((resp) => resp.data)
+  );
+}
 }
 
 

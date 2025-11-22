@@ -257,6 +257,7 @@ import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/cor
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { DocumentService, BillOfLadingData, UploadProgress } from '../document.service';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-document-upload',
@@ -270,7 +271,7 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   isUploading = false;
   uploadError: string | null = null;
   extractedData: BillOfLadingData | null = null;
-  
+  showDocumentUploadModal = true;
   // Output event to send data to parent component
   @Output() documentProcessed = new EventEmitter<BillOfLadingData>();
   @Output() documentCleared = new EventEmitter<void>();
@@ -279,7 +280,8 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+     public activeModal: NgbActiveModal
   ) {
     this.billOfLadingForm = this.createForm();
   }
@@ -581,4 +583,11 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   getRoundedConfidence(confidence: number): number {
     return Math.round(confidence * 100);
   }
+
+closeModal(): void {
+    // Reset all component state when closing modal
+    this.activeModal.dismiss('cancel');
+  }
+
+
 }

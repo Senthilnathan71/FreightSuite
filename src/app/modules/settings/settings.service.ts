@@ -85,6 +85,14 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
+  getMenusByModuleIds(moduleIds: number[]) {
+  return this.http.post<{data: any[]}>(`menu/fetchByModules`, { moduleIds }).pipe(
+    map((res: any) => {
+      return res.data;
+    })
+  );
+}
+
   getMenuPermissions(MenuMasterSid){
     
     return this.http.get<{data:any[]}>(`menu/fetch/menu-permissions/${MenuMasterSid}`).pipe(

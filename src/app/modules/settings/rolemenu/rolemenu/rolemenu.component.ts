@@ -199,22 +199,70 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	protected processSearchResults(response: any): void {
 		this.tableLoading = false;
 		this.spinner.hide();
-		if (response.status) {
-			this.allItems = response.data.items.map(item => ({
-				...item,
-				MenuName: item.menuMaster?.MenuName,
-				UserRoleName: item.roleMaster?.UserRoleName,
-				status: item.status === 'A' ? 'Active' : 'Suspended'
-			}));
-			this.totalLengthOfCollection = response.data.totalCount || 0;
-			this.applySorting();
-			this.updateHeaderActionState();
-		} else {
-			this.appSettingService.showError('Error searching rolemenu.');
-			this.allItems = [];
-			this.totalLengthOfCollection = 0;
+
+		try {
+			if (response.status && response.data) {
+				// ✅ Correctly extract from nested response structure
+				const { data: items, totalCount } = response.data;
+				console.log('RoleMenu Search Response:', items);
+
+				this.allItems = items.map((item: any) => {
+					// ✅ Handle missing or invalid menus gracefully
+					const menus = Array.isArray(item.menus) ? item.menus : [];
+
+					// ✅ Extract unique module names
+					const modules = [
+						...new Set(menus.map((m: any) => m.ModuleName).filter(Boolean)),
+					];
+
+					// ✅ Extract menu names
+					const menuNames = menus.map((m: any) => m.MenuName).filter(Boolean);
+
+					// ✅ Prepare short comma-separated display values
+					const shortModules =
+						modules.length > 10
+							? `${modules.slice(0, 10).join(', ')}, ...`
+							: modules.join(', ') || '-';
+
+					const shortMenus =
+						menuNames.length > 10
+							? `${menuNames.slice(0, 10).join(', ')}, ...`
+							: menuNames.join(', ') || '-';
+
+					// ✅ Return flattened and display-ready record
+					return {
+						...item,
+						UserRoleName: item.RoleName || '-', // role name for table display
+						ModuleDisplay: shortModules, // ✅ matches your table key
+						MenuDisplay: shortMenus, // ✅ matches your table key
+						fullModuleTooltip: modules.join(', '), // ✅ tooltip data
+						fullMenuTooltip: menuNames.join(', '), // ✅ tooltip data
+						status: item.status === 'A' ? 'Active' : 'Suspended',
+					};
+				});
+
+				this.totalLengthOfCollection = totalCount || 0;
+
+				console.log('Processed RoleMenu Table Data:', this.allItems);
+
+				// ✅ Maintain table sort & header states
+				this.applySorting();
+				this.updateHeaderActionState();
+			} else {
+				this.appSettingService.showError('Error fetching Role Menu list.');
+				this.allItems = [];
+				this.totalLengthOfCollection = 0;
+			}
+		} catch (error) {
+			this.tableLoading = false;
+			this.spinner.hide();
+			this.appSettingService.showError('Failed to process Role Menu data.');
+			console.error('processSearchResults Error:', error);
 		}
 	}
+
+
+
 
 	protected override handleSearchError(error: any): void {
 		this.tableLoading = false;
@@ -299,8 +347,8 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 
 
 	viewRolemen(item: any, content: any): void {
-		// this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
-		this.openModal(content, item)
+		this.router.navigate(['/settings/rolemenu/entry', item.RoleMenuHeaderSid]);
+		// this.openModal(content, item)
 		console.log(this.viewRolemen, "Edit")
 	}
 
@@ -309,29 +357,34 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	private initializeTableConfig(): void {
 		this.tableConfig.columns = [
 			{
-				key: 'MenuName',
-				label: 'Menu Name ',
+				key: 'UserRoleName',
+				label: 'Role Name ',
 				sortable: true,
 				filterable: true,
 				visible: true,
-				dataType: 'string'
+				dataType: 'string',
+
 			},
 			{
-				key: 'Module',
+				key: 'ModuleDisplay',
 				label: 'Module',
 				sortable: true,
 				filterable: true,
 				visible: true,
-				dataType: 'string'
+				dataType: 'string',
+				tooltipKey: 'fullModuleTooltip', // ✅ Tooltip field
+
 			},
-			{
-				key: 'UserRoleName',
-				label: 'Menu Name ',
-				sortable: true,
-				filterable: true,
-				visible: true,
-				dataType: 'string'
-			},
+			// {
+			// 	key: 'MenuDisplay',
+			// 	label: 'Menu Name ',
+			// 	sortable: true,
+			// 	filterable: true,
+			// 	visible: true,
+			// 	dataType: 'string',
+			// 	tooltipKey: 'fullMenuTooltip', // ✅ Tooltip field
+
+			// },
 			{
 				key: 'status',
 				label: 'Status',

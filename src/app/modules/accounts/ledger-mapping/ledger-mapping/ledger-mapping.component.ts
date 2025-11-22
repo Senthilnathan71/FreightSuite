@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbPagination, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
@@ -36,8 +36,10 @@ export class LedgerMappingComponent implements OnInit {
   // Data arrays
   partyData: any[] = [];
   chargeData: any[] = [];
+  taxData: any[] = [];
   filteredPartyData: any[] = [];
   filteredChargeData: any[] = [];
+  filteredTaxData: any[] = [];
   
   // COA Options for different types
   syDrCOAOptions: any[] = [];
@@ -45,6 +47,8 @@ export class LedgerMappingComponent implements OnInit {
   accrualCOAOptions: any[] = [];
   costCOAOptions: any[] = [];
   revenueCOAOptions: any[] = [];
+  inputTaxCOAOptions: any[] = [];
+  outputTaxCOAOptions: any[] = [];
   
   departmentOptions: any[] = [];
   statusOptions = [
@@ -102,7 +106,9 @@ export class LedgerMappingComponent implements OnInit {
       syCr: this.masterService.getCOAByLedgerType('Sy Cr', CompanyMasterSid),
       accrual: this.masterService.getCOAByLedgerType('Accrual', CompanyMasterSid),
       cost: this.masterService.getCOAByLedgerType('Cost', CompanyMasterSid),
-      revenue: this.masterService.getCOAByLedgerType('Revenue', CompanyMasterSid)
+      revenue: this.masterService.getCOAByLedgerType('Revenue', CompanyMasterSid),
+      inputTax: this.masterService.getCOAByLedgerType('Input Tax', CompanyMasterSid),
+      outputTax: this.masterService.getCOAByLedgerType('Output Tax', CompanyMasterSid)
     }).subscribe({
       next: (results) => {
         this.syDrCOAOptions = results.syDr || [];
@@ -110,6 +116,8 @@ export class LedgerMappingComponent implements OnInit {
         this.accrualCOAOptions = results.accrual || [];
         this.costCOAOptions = results.cost || [];
         this.revenueCOAOptions = results.revenue || [];
+        this.inputTaxCOAOptions = results.inputTax || [];
+        this.outputTaxCOAOptions = results.outputTax || [];
       },
       error: (err) => {
         console.error('Error loading COA options:', err);
@@ -127,13 +135,20 @@ export class LedgerMappingComponent implements OnInit {
         case 'accrual': return this.accrualCOAOptions;
         default: return [];
       }
-    } else { // Charge tab
+    } else if (this.selectedTab === 'Charge') {
       switch (coaType) {
         case 'debtor': return this.costCOAOptions;
         case 'creditor': return this.revenueCOAOptions;
         default: return [];
       }
+    } else if (this.selectedTab === 'Tax') {
+      switch (coaType) {
+        case 'input': return this.inputTaxCOAOptions;
+        case 'output': return this.outputTaxCOAOptions;
+        default: return [];
+      }
     }
+    return [];
   }
 
   // Get COA name for display
@@ -160,9 +175,20 @@ export class LedgerMappingComponent implements OnInit {
     this.isLoading = true;
     this.spinner.show();
 
-    const observable = this.selectedTab === 'Party' 
-      ? this.masterService.getSubledgerMasterByType('Customer')
-      : this.masterService.getSubledgerMasterByType('Charge');
+    let observable;
+    switch (this.selectedTab) {
+      case 'Party':
+        observable = this.masterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid);
+        break;
+      case 'Charge':
+        observable = this.masterService.getSubledgerMasterByType('Charge', this.currentCompany?.CompanyMasterSid);
+        break;
+      case 'Tax':
+        observable = this.masterService.getSubledgerMasterByType('Tax', this.currentCompany?.CompanyMasterSid);
+        break;
+      default:
+        observable = this.masterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid);
+    }
 
     observable.subscribe({
       next: (response: any) => {
@@ -181,17 +207,24 @@ export class LedgerMappingComponent implements OnInit {
             canEditAccrualCOA: !item.AccrualCOAMasterSid,
             canEditDebtorCOA: !item.DrCOAMasterSid,
             canEditCreditorCOA: !item.CrCOAMasterSid,
+            canEditInputTaxCOA: !item.CrCOAMasterSid,
+            canEditOutputTaxCOA: !item.DrCOAMasterSid,
             hasChanges: false,
             departmentName: item.departmentMaster?.departmentName || '',
-            Status: item.Status
+            Status: item.Status,
+            TaxType: item.TaxType || '',
+            TaxCode: item.TaxCode || '',
           }));
 
           if (this.selectedTab === 'Party') {
             this.partyData = processedData;
             this.filteredPartyData = [...this.partyData];
-          } else {
+          } else if (this.selectedTab === 'Charge') {
             this.chargeData = processedData;
             this.filteredChargeData = [...this.chargeData];
+          } else if (this.selectedTab === 'Tax') {
+            this.taxData = processedData;
+            this.filteredTaxData = [...this.taxData];
           }
           
           this.totalLengthOfCollection = processedData.length;
@@ -237,7 +270,19 @@ export class LedgerMappingComponent implements OnInit {
 
   // Filter data based on search criteria
   applyFilter(): void {
-    const data = this.selectedTab === 'Party' ? this.partyData : this.chargeData;
+    let data: any[] = [];
+    
+    switch (this.selectedTab) {
+      case 'Party':
+        data = this.partyData;
+        break;
+      case 'Charge':
+        data = this.chargeData;
+        break;
+      case 'Tax':
+        data = this.taxData;
+        break;
+    }
     
     let filtered = data;
     
@@ -245,11 +290,15 @@ export class LedgerMappingComponent implements OnInit {
       const searchTerm = this.filterValue.toLowerCase();
       filtered = filtered.filter(item =>
         item.SubledgerName?.toLowerCase().includes(searchTerm) ||
+         (this.selectedTab === 'Tax' && item.TaxCode?.toLowerCase().includes(searchTerm)) ||
+        (this.selectedTab === 'Tax' && item.TaxType?.toLowerCase().includes(searchTerm)) ||
         this.getSortValue(item, 'AccrualCOA')?.toString().toLowerCase().includes(searchTerm) ||
         this.getSortValue(item, 'DebtorCOA')?.toString().toLowerCase().includes(searchTerm) ||
         this.getSortValue(item, 'CreditorCOA')?.toString().toLowerCase().includes(searchTerm) ||
         this.getSortValue(item, 'RevenueCOA')?.toString().toLowerCase().includes(searchTerm) ||
         this.getSortValue(item, 'CostCOA')?.toString().toLowerCase().includes(searchTerm) ||
+        this.getSortValue(item, 'InputTaxCOA')?.toString().toLowerCase().includes(searchTerm) ||
+        this.getSortValue(item, 'OutputTaxCOA')?.toString().toLowerCase().includes(searchTerm) ||
         item.departmentName?.toLowerCase().includes(searchTerm) ||
         item.Status?.toLowerCase().includes(searchTerm)
       );
@@ -271,10 +320,16 @@ export class LedgerMappingComponent implements OnInit {
       return 0;
     });
     
-    if (this.selectedTab === 'Party') {
-      this.filteredPartyData = filtered;
-    } else {
-      this.filteredChargeData = filtered;
+    switch (this.selectedTab) {
+      case 'Party':
+        this.filteredPartyData = filtered;
+        break;
+      case 'Charge':
+        this.filteredChargeData = filtered;
+        break;
+      case 'Tax':
+        this.filteredTaxData = filtered;
+        break;
     }
     
     this.totalLengthOfCollection = filtered.length;
@@ -297,6 +352,10 @@ export class LedgerMappingComponent implements OnInit {
         return this.getCOAName(item.CrCOAMasterSid, 'creditor');
       case 'CostCOA':
         return this.getCOAName(item.DrCOAMasterSid, 'debtor');
+      case 'InputTaxCOA':
+        return this.getCOAName(item.CrCOAMasterSid,'input');
+      case 'OutputTaxCOA':
+        return this.getCOAName(item.DrCOAMasterSid,'output');
       case 'SubledgerName':
         return item.SubledgerName;
       case 'departmentName':
@@ -321,6 +380,13 @@ export class LedgerMappingComponent implements OnInit {
 
   // COA Selection handlers
   onCOAChange(item: any, coaSid: number, coaType: string): void {
+    if (this.selectedTab ==='Tax'){
+      if (coaType === 'input') {
+        item.CrCOAMasterSid = coaSid;
+      } else if (coaType === 'output') {
+        item.DrCOAMasterSid = coaSid;
+      }
+    }else{
     if (coaType === 'debtor') {
       item.DrCOAMasterSid = coaSid;
     } else if (coaType === 'creditor') {
@@ -328,6 +394,7 @@ export class LedgerMappingComponent implements OnInit {
     } else if (coaType === 'accrual') {
       item.AccrualCOAMasterSid = coaSid;
     } 
+  }
     
     item.hasChanges = true;
   }
@@ -339,9 +406,19 @@ export class LedgerMappingComponent implements OnInit {
 
   // Save methods
   saveChanges(): void {
-    const itemsToUpdate = this.selectedTab === 'Party' 
-      ? this.partyData.filter(item => item.hasChanges)
-      : this.chargeData.filter(item => item.hasChanges);
+    let itemsToUpdate: any[] = [];
+    
+    switch (this.selectedTab) {
+      case 'Party':
+        itemsToUpdate = this.partyData.filter(item => item.hasChanges);
+        break;
+      case 'Charge':
+        itemsToUpdate = this.chargeData.filter(item => item.hasChanges);
+        break;
+      case 'Tax':
+        itemsToUpdate = this.taxData.filter(item => item.hasChanges);
+        break;
+    }
 
     if (itemsToUpdate.length === 0) {
       this.appSettingService.showInfo('No changes to save');
@@ -394,6 +471,8 @@ export class LedgerMappingComponent implements OnInit {
     this.filteredPartyData = [];
     this.chargeData = [];
     this.filteredChargeData = [];
+    this.taxData = [];
+    this.filteredTaxData = [];
     this.totalLengthOfCollection = 0;
   }
 
@@ -414,7 +493,19 @@ export class LedgerMappingComponent implements OnInit {
 
   // Utility methods
   getCurrentData(): any[] {
-    const data = this.selectedTab === 'Party' ? this.filteredPartyData : this.filteredChargeData;
+    let data: any[] = [];
+    
+    switch (this.selectedTab) {
+      case 'Party':
+        data = this.filteredPartyData;
+        break;
+      case 'Charge':
+        data = this.filteredChargeData;
+        break;
+      case 'Tax':
+        data = this.filteredTaxData;
+        break;
+    }
     const startIndex = (this.page - 1) * this.pageSize;
     return data.slice(startIndex, startIndex + this.pageSize);
   }
@@ -445,45 +536,75 @@ export class LedgerMappingComponent implements OnInit {
 
   // Report generation
   generateReport(): void {
-    const data = this.selectedTab === 'Party' ? this.filteredPartyData : this.filteredChargeData;
+    let data: any[] = [];
+    let reportName: string = '';
+    let headers: any[] = [];
     
-    if (data.length === 0) {
-      this.appSettingService.showInfo('No data available to generate report');
-      return;
-    }
-
-    const reportName = this.selectedTab === 'Party' ? 'Party-Subledger-Mapping' : 'Charge-Subledger-Mapping';
-    
-    const headers = this.selectedTab === 'Party' 
-      ? [
+    switch (this.selectedTab) {
+      case 'Party':
+        data = this.filteredPartyData;
+        reportName = 'Party-Subledger-Mapping';
+        headers = [
           { key: 'SubledgerName', label: 'Party Name' },
           { key: 'AccrualCOA', label: 'Accrual COA' },
           { key: 'DebtorCOA', label: 'Debtor COA' },
           { key: 'CreditorCOA', label: 'Creditor COA' },
           { key: 'Status', label: 'Status' },
-        ]
-      : [
+        ];
+        break;
+      case 'Charge':
+        data = this.filteredChargeData;
+        reportName = 'Charge-Subledger-Mapping';
+        headers = [
           { key: 'SubledgerName', label: 'Charge Name' },
           { key: 'Department', label: 'Department' },
           { key: 'RevenueCOA', label: 'Revenue COA (Creditor)' },
           { key: 'CostCOA', label: 'Cost COA (Debtor)' },
           { key: 'Status', label: 'Status' }
         ];
+        break;
+      case 'Tax':
+        data = this.filteredTaxData;
+        reportName = 'Tax-Subledger-Mapping';
+        headers = [
+          { key: 'TaxName', label: 'Tax Name' },
+          { key: 'TaxType', label: 'Tax Type' },
+          { key: 'TaxCode', label: 'Tax Code' },
+          { key: 'InputTaxCOA', label: 'Input Tax COA' },
+          { key: 'OutputTaxCOA', label: 'Output Tax COA' },
+          { key: 'Status', label: 'Status' }
+        ];
+        break;
+    }
+    
+    if (data.length === 0) {
+      this.appSettingService.showInfo('No data available to generate report');
+      return;
+    }
 
-    const formattedData = data.map(item => ({
-      'SubledgerName': item.SubledgerName,
-      'AccrualCOA': this.getCOAName(item.AccrualCOAMasterSid, 'accrual'),
-      'DebtorCOA': this.selectedTab === 'Party' 
-        ? this.getCOAName(item.DrCOAMasterSid, 'debtor')
-        : this.getCOAName(item.DrCOAMasterSid, 'debtor'),
-      'CreditorCOA': this.selectedTab === 'Party'
-        ? this.getCOAName(item.CrCOAMasterSid, 'creditor')
-        : this.getCOAName(item.CrCOAMasterSid, 'creditor'),
-      'Department': item.departmentName || '',
-      'RevenueCOA': this.getCOAName(item.CrCOAMasterSid, 'creditor'),
-      'CostCOA': this.getCOAName(item.DrCOAMasterSid, 'debtor'),
-      'Status': item.Status === 'A' ? 'Active' : 'Suspended'
-    }));
+    const formattedData = data.map(item => {
+      const baseData = {
+        'SubledgerName': item.SubledgerName,
+        'TaxName': item.SubledgerName,
+        'TaxType': item.TaxType || '',
+        'TaxCode': item.TaxCode || '',
+        'InputTaxCOA': item.TaxType === 'Input' ? this.getCOAName(item.CrCOAMasterSid, 'input') : '',
+        'OutputTaxCOA': item.TaxType === 'Output' ? this.getCOAName(item.DrCOAMasterSid, 'output') : '',
+        'AccrualCOA': this.getCOAName(item.AccrualCOAMasterSid, 'accrual'),
+        'DebtorCOA': this.selectedTab === 'Party' 
+          ? this.getCOAName(item.DrCOAMasterSid, 'debtor')
+          : this.getCOAName(item.DrCOAMasterSid, 'debtor'),
+        'CreditorCOA': this.selectedTab === 'Party'
+          ? this.getCOAName(item.CrCOAMasterSid, 'creditor')
+          : this.getCOAName(item.CrCOAMasterSid, 'creditor'),
+        'Department': item.departmentName || '',
+        'RevenueCOA': this.getCOAName(item.CrCOAMasterSid, 'creditor'),
+        'CostCOA': this.getCOAName(item.DrCOAMasterSid, 'debtor'),
+        'Status': item.Status === 'A' ? 'Active' : 'Suspended'
+      };
+      
+      return baseData;
+    });
 
     this.excelReportService.exportAsExcel({
       data: formattedData,
@@ -493,9 +614,22 @@ export class LedgerMappingComponent implements OnInit {
     });
   }
 
+
   // Check if there are any changes
   hasChanges(): boolean {
-    const data = this.selectedTab === 'Party' ? this.partyData : this.chargeData;
+     let data: any[] = [];
+    
+    switch (this.selectedTab) {
+      case 'Party':
+        data = this.partyData;
+        break;
+      case 'Charge':
+        data = this.chargeData;
+        break;
+      case 'Tax':
+        data = this.taxData;
+        break;
+    }
     return data.some(item => item.hasChanges);
   }
 

@@ -23,11 +23,9 @@
           <i class="fas fa-history me-1"></i>Logs
         </button>
 
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-            *ngIf="isEditMode"
-            [disabled]="!quotationData" 
-            (click)="reportAndEmailModel(reportModel)">
-            <i class="fas fa-print me-1"></i> Print
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode" [disabled]="!quotationData"
+          (click)="reportAndEmailModel(reportModel)">
+          <i class="fas fa-print me-1"></i> Print
         </button>
 
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
@@ -176,36 +174,24 @@
               </div>
             </aside> -->
             <aside class="col-md-4 mt-md-1 mt-0">
-                <div class="custom-form-group">
-                  <div class="d-flex align-items-center gap-3">
-                    
+              <div class="custom-form-group">
+                <div class="d-flex align-items-center gap-3">
+
                   <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      id="Customer"
-                     
-                      [value]="true"
-                      formControlName="LeadOrCustomer"
-                    />
+                    <input class="form-check-input" type="radio" id="Customer" [value]="true"
+                      formControlName="LeadOrCustomer" />
                     <label class="form-check-label" for="customerRadio">Customer</label>
                   </div>
-                       <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      id="lead"
-                    
-                      [value]="false"
-                      formControlName="LeadOrCustomer"
-                    />
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" id="lead" [value]="false"
+                      formControlName="LeadOrCustomer" />
                     <label class="form-check-label" for="leadRadio">Lead</label>
                   </div>
 
-                  </div>
-               
                 </div>
-              </aside>
+
+              </div>
+            </aside>
 
             <aside class="col-md-4" *ngIf="!isEditMode && quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
@@ -220,8 +206,8 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid"
-                  placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
                   bindValue="CustomerBranchSid" (itemSelected)="onSelectionChange($event)">
                 </dofi-searchable-dropdown>
@@ -301,22 +287,20 @@
                 <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
               </div>
             </aside>
-              <aside class="col-md-4">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="contactPerson" placeholder=""
-                                                    class="custom-input-field sm" formControlName="ContactPerson">
-                                                <label for="text-input" class="input-label">Contact Person <span
-                                                        class="text-danger"></span></label>
-                                            </div>
-                                        </aside>
-                                          <aside class="col-md-4">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="phone" placeholder=""
-                                                    class="custom-input-field sm" formControlName="ContactNumber">
-                                                <label for="text-input" class="input-label">Phone <span
-                                                        class="text-danger"></span></label>
-                                            </div>
-                                        </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="contactPerson" placeholder="" class="custom-input-field sm"
+                  formControlName="ContactPerson">
+                <label for="text-input" class="input-label">Contact Person <span class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="phone" placeholder="" class="custom-input-field sm"
+                  formControlName="ContactNumber">
+                <label for="text-input" class="input-label">Phone <span class="text-danger"></span></label>
+              </div>
+            </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -337,8 +321,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="rateAgreed"
-                    formControlName="AgreedRate">
+                  <input class="form-check-input" type="checkbox" value="" id="rateAgreed" formControlName="AgreedRate">
                   <label class="form-check-label" for="flexCheckChecked">
                     Rate Agreed
                   </label>
@@ -433,12 +416,12 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
-                          <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid" placeholder=""
-                            [displayFields]="departmentLookupConfig.displayFields"
+                          <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid"
+                            placeholder="" [displayFields]="departmentLookupConfig.displayFields"
                             [displayLabels]="departmentLookupConfig.displayLabels"
                             [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
                             (itemSelected)="onDeptChange($event,routeIndex)">
-                        </dofi-searchable-dropdown>
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                           @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
                           <div class="error-message">
@@ -456,12 +439,10 @@
                             bindValue="PortMasterSid">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="ports"
-                            formControlName="PORSid" placeholder=""
+                          <dofi-searchable-dropdown [items]="ports" formControlName="PORSid" placeholder=""
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">POR<span class="text-danger"></span></label>
                         </div>
@@ -473,12 +454,11 @@
                             bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
-                            formControlName="POLSid" placeholder=""
-                            [displayFields]="portLookupConfig.displayFields"
+                          <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]" formControlName="POLSid"
+                            placeholder="" [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                            bindValue="PortMasterSid" (itemSelected)="onRouteChange(routeIndex)">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                            (itemSelected)="onRouteChange(routeIndex)">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">POL <span class="text-danger">*</span></label>
                           @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
@@ -498,12 +478,11 @@
                             (change)="onRouteChange(routeIndex)">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
-                            formControlName="PODSid" placeholder=""
-                            [displayFields]="portLookupConfig.displayFields"
+                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]" formControlName="PODSid"
+                            placeholder="" [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                            bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                            (change)="onPODChange($event,routeIndex)">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">POD <span class="text-danger">*</span></label>
                           @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
@@ -522,12 +501,10 @@
                             bindValue="PortMasterSid">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="ports"
-                            formControlName="FPODSid" placeholder=""
+                          <dofi-searchable-dropdown [items]="ports" formControlName="FPODSid" placeholder=""
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">FPOD</label>
                         </div>
@@ -629,7 +606,7 @@
                       </aside> -->
                       <aside class="col-md-2 d-md-block d-none"
                         *ngIf="route.value.segmentType === 'LCL'|| route.value.segmentType === 'AIR'"></aside>
-                      <aside class="col-md-2 d-md-block d-none"  *ngIf="route.value.segmentType === 'LCL'"></aside>
+                      <aside class="col-md-2 d-md-block d-none" *ngIf="route.value.segmentType === 'LCL'"></aside>
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select mt-md-1"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
@@ -656,7 +633,9 @@
                             class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                             (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
                             (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                          <label for="text-input" class="input-label " style="display: block; text-align: center; width: 100%;">Gross Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label "
+                            style="display: block; text-align: center; width: 100%;">Gross Weight <span
+                              class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                           <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
                                 Gr weight > Net weight
@@ -668,7 +647,9 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label " style="display: block; text-align: center; width: 100%;">Net Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label "
+                            style="display: block; text-align: center; width: 100%;">Net Weight <span
+                              class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
                         </div>
                       </aside>
@@ -678,7 +659,8 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label" style="display: block; text-align: center; width: 100%;">CBM <span class="text-danger">{{
+                          <label for="text-input" class="input-label"
+                            style="display: block; text-align: center; width: 100%;">CBM <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                           @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
                           <div class="error-message">
@@ -928,7 +910,8 @@
                         <div class="col-12">
                           <div class="d-flex justify-content-between align-items-center px-1">
                             <div> </div>
-                            <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)" [disabled]="quotationApproved">
+                            <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)"
+                              [disabled]="quotationApproved">
                               <i class="fas fa-plus me-1"></i> Add Carrier
                             </button>
                           </div>
@@ -975,12 +958,14 @@
                                         <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!carrier.get('CarrierMasterSid')?.value">
-                                            <dofi-searchable-dropdown [items]="carriers" formControlName="CarrierMasterSid" placeholder=""
-                            [displayFields]="customerLookupConfig.displayFields"
-                            [displayLabels]="customerLookupConfig.displayLabels"
-                            [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
-                            (itemSelected)="handleCarrierChange($event,routeIndex,carrierIndex)">
-                        </dofi-searchable-dropdown>
+                                            <dofi-searchable-dropdown [items]="carriers"
+                                              formControlName="CarrierMasterSid" placeholder=""
+                                              [displayFields]="customerLookupConfig.displayFields"
+                                              [displayLabels]="customerLookupConfig.displayLabels"
+                                              [labelFields]="customerLookupConfig.labelFields"
+                                              bindValue="CustomerMasterSid"
+                                              (itemSelected)="handleCarrierChange($event,routeIndex,carrierIndex)">
+                                            </dofi-searchable-dropdown>
                                             <label for="" class="input-label">Carrier<span
                                                 class="text-danger"></span></label>
                                           </div>
@@ -988,7 +973,7 @@
                                         <aside class="col-md-2 ">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="TransitTime"
-                                             class="custom-input-field sm text-end" [onlyNumbers] placeholder="">
+                                              class="custom-input-field sm text-end" [onlyNumbers] placeholder="">
                                             <label for="text-input" class="input-label">Transit Time <span
                                                 class="text-danger"></span></label>
                                             @if(carrier.get("TransitTime")?.touched &&
@@ -1030,7 +1015,7 @@
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="authorizerRemarks"
-                                              class="custom-input-field sm" >
+                                              class="custom-input-field sm">
                                             <label for="text-input" class="input-label">Authorizer Remarks <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks')
                                                 ? '*' : '' }}</span></label>
@@ -1047,7 +1032,7 @@
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="ApprovedBy"
-                                               class="custom-input-field sm">
+                                              class="custom-input-field sm">
                                             <label for="text-input" class="input-label">Authorized By <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy')
                                                 ? '*' : '' }}</span></label>
@@ -1070,7 +1055,10 @@
                                       <aside class="col-md-12 d-flex justify-content-end">
                                         <div class="d-flex align-items-center px-0 py-1">
                                           <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
-
+                                          <a (click)="toggleLock()">
+                                            <i [class]="isLocked ? 'fas fa-lock' : 'fas fa-unlock'"
+                                              class="feather-sm me-1"></i>
+                                          </a>
                                           <button class="btn btn-info btn-sm me-1" type="button"
                                             (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
                                             [disabled]="disableAllModification ||  quotationApproved">
@@ -1087,7 +1075,8 @@
                                   </div>
                                 </div>
                               </div>
-                              <div class="table-responsive table-borderless" formArrayName="quoteCharges" style="overflow-y:hidden;">
+                              <div class="table-responsive table-borderless" formArrayName="quoteCharges"
+                                style="overflow-y:hidden;">
                                 <div>
                                   <table class="table table-hover align-middle no-wrap  table-sm mb-0">
                                     <thead>
@@ -1105,11 +1094,10 @@
                                             <span class="text-danger">*</span></label>
                                         </td>
                                         <td class="bg-transparent text-light text-center dofi-min-w-80" rowspan="2">
-                                        <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
-                                      </td>
+                                          <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
+                                        </td>
                                         <td class="bg-transparent text-light text-center  dofi-min-w-50" rowspan="2">
-                                          <label class="form-label mb-0">Qty <span
-                                              class="text-danger">*</span></label>
+                                          <label class="form-label mb-0">Qty <span class="text-danger">*</span></label>
                                         </td>
                                         <td class="bg-transparent text-light text-center"
                                           [attr.colspan]="f['AgreedRate']?.value ? 6 : 4"
@@ -1128,7 +1116,8 @@
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
                                         </td> -->
-                                        <td class="bg-transparent text-light text-center dofi-min-w-100"  style="border-left: 1px solid #f3f1f1;">
+                                        <td class="bg-transparent text-light text-center dofi-min-w-100"
+                                          style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Currency <span
                                               class="text-danger">*</span></label>
                                         </td>
@@ -1159,7 +1148,8 @@
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
                                         </td> -->
-                                        <td class="bg-transparent text-light text-center dofi-min-w-80"  style="border-left: 1px solid #f3f1f1;">
+                                        <td class="bg-transparent text-light text-center dofi-min-w-80"
+                                          style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Currency <span
                                               class="text-danger">*</span></label>
                                         </td>
@@ -1227,14 +1217,16 @@
                                             [displayFields]="unitLookupConfig.displayFields"
                                             [displayLabels]="unitLookupConfig.displayLabels"
                                             [labelFields]="unitLookupConfig.labelFields" bindLabel="UOMCode"
-                                            bindValue="UOMMasterSid" (itemSelected)="copyToCostUnit(routeIndex , carrierIndex , chargeIndex ,$event)">
+                                            bindValue="UOMMasterSid"
+                                            (itemSelected)="copyToCostUnit(routeIndex , carrierIndex , chargeIndex ,$event)">
                                           </dofi-searchable-dropdown>
                                         </td>
                                         <td>
-                                          <input type="text" id="text-input" formControlName="Qty" placeholder="" [onlyNumbers]="3"
-                                            class="custom-input-field sm text-end" 
-                                            (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)" style="margin-top: 2px;" >
-                                          
+                                          <input type="text" id="text-input" formControlName="Qty" placeholder=""
+                                            [onlyNumbers]="3" class="custom-input-field sm text-end"
+                                            (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
+                                            style="margin-top: 2px;">
+
                                         </td>
                                         <!-- <td>
                                           <dofi-searchable-dropdown [items]="chargeUnitMaster"
@@ -1266,7 +1258,8 @@
                                             <input type="text" id="text-input" formControlName="RevenueRate"
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
                                               [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
-                                              (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)" style="margin-top: 2px;" >
+                                              (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
+                                              style="margin-top: 2px;">
                                             @if(charge.get("RevenueRate")?.touched &&
                                             charge.get("RevenueRate")?.invalid){
                                             <div class="error-message">
@@ -1284,7 +1277,8 @@
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                            [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                            style="margin-top: 2px;">
 
                                         </td>
                                         }
@@ -1292,7 +1286,7 @@
                                           <input type="text" id="text-input" formControlName="RevenueAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         @if(f['AgreedRate']?.value){
@@ -1300,7 +1294,7 @@
                                           <input type="text" id="text-input" formControlName="RevenueLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         }
@@ -1311,7 +1305,8 @@
                                               [displayFields]="customerLookupConfig.displayFields"
                                               [displayLabels]="customerLookupConfig.displayLabels"
                                               [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                                              bindValue="CustomerBranchSid" (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'party',$event)">
+                                              bindValue="CustomerBranchSid"
+                                              (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'party',$event)">
                                             </dofi-searchable-dropdown>
                                           </div>
                                           <!-- <div class="custom-form-group custom-form-group-select">
@@ -1357,7 +1352,7 @@
                                               DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="digitsAfterDecimal"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
-                                              class="custom-input-field sm  text-end" style="margin-top: 2px;" >
+                                              class="custom-input-field sm  text-end" style="margin-top: 2px;">
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
                                             <div class="error-message">
                                               @if(charge.get("CostRate")?.hasError('required')){
@@ -1373,7 +1368,7 @@
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
                                             DecimalPrecision [DecimalPrecisionBefore]="4"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         }
@@ -1381,7 +1376,7 @@
                                           <input type="text" id="text-input" formControlName="CostAmount" placeholder=""
                                             class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         @if(f['AgreedRate']?.value){
@@ -1389,7 +1384,7 @@
                                           <input type="text" id="text-input" formControlName="CostLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         }
@@ -1400,7 +1395,8 @@
                                               [displayFields]="customerLookupConfig.displayFields"
                                               [displayLabels]="customerLookupConfig.displayLabels"
                                               [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                                              bindValue="CustomerBranchSid" (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'vendor',$event)">
+                                              bindValue="CustomerBranchSid"
+                                              (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'vendor',$event)">
                                             </dofi-searchable-dropdown>
                                           </div>
                                       </tr>
@@ -2107,6 +2103,10 @@
                               <div class="card-header bg-white d-flex align-items-center px-0 py-1">
                                 <h6 class="card-title text-info ms-1">Charge Details</h6>
                                 <div class="ms-auto">
+                                  
+                                <a (click)="toggleLock()">
+                                  <i [class]="isLocked ? 'fas fa-lock' : 'fas fa-unlock'" class="feather-sm"></i>
+                                </a>
                                   <button class="btn btn-light-secondary btn-sm me-1" type="button"
                                     (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
                                     [disabled]="disableAllModification">
@@ -2509,13 +2509,13 @@
           </div>
 
           <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
-                @if(isStandardRate){
-                  <div class="col-12 d-flex justify-content-center">
-                    <div class="alert alert-warning py-1 text-center " style="width: fit-content;" role="alert">
-                      <strong>Warning!</strong> <br>These are standard rates.
-                    </div>
-                  </div>
-                }
+            @if(isStandardRate){
+            <div class="col-12 d-flex justify-content-center">
+              <div class="alert alert-warning py-1 text-center " style="width: fit-content;" role="alert">
+                <strong>Warning!</strong> <br>These are standard rates.
+              </div>
+            </div>
+            }
             <table class="table table-hover align-middle table-bordered table-sm mb-1 text-center">
               <thead>
                 <tr class="bg-info text-white">
@@ -2670,179 +2670,179 @@
     <h5 class="modal-title text-white mb-0">Quotation</h5>
     <div class="d-flex gap-2 align-items-center">
 
-    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
-                <i class="fas fa-download me-1"></i> Download PDF
-            </button>
-      <button type="button" class="btn btn-sm btn-success rounded-5 py-0" appPreventMultiClick  (click)="sendEmail()">
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0" appPreventMultiClick (click)="sendEmail()">
         <i class="fas fa-envelope me-1"></i>Send Email
       </button>
-     
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
 
     </div>
   </div>
   <div class="modal-body">
-     <div id="printContent">
-          <div class="print-a4">
-       <section>
-      <div>
-       <div class="row ">
-                <div class="company-header">
-                    <div class="company-logo">
-                      <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
-                          alt="Company Logo"
-                          class="img-fluid">
-                          <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    </div>
+    <div id="printContent">
+      <div class="print-a4">
+        <section>
+          <div>
+            <div class="row ">
+              <div class="company-header">
+                <div class="company-logo">
+                  <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                    class="img-fluid">
+                  <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                </div>
 
-                    <div class="company-info " >
-                      <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                      <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                      <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                      <p class="mb-1">
-                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                      </p>
-                      <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                      <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                    </div>
-                  </div>
+                <div class="company-info ">
+                  <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                  <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                  <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                  <p class="mb-1">
+                    {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                  </p>
+                  <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                  <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                </div>
+              </div>
 
             </div>
 
-                   <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-        <div class="text-center  fw-bold pb-2">QUOTATION</div>
-        <div class="row mx-auto">
-          <div class="col-md-6">
-            <section class="d-flex flex-column">
-             <p class="mb-1 col-3 fw-bold">To :</p>
-              <aside class="d-flex">
-                <p class="mb-0 col-12 h6 ">{{this.selectedItem.CustomerName}}</p>
-              </aside>
-              <aside class="d-flex">
-                <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
-              </aside>
-            </section>
-          </div>
-          <div class="col-md-6">
-            <section class="d-flex flex-column gap-1">
-              <aside class="d-flex gap-3 justify-content-end">
-                <p class="mb-0 col-3 fw-bold">Quotation No</p>
-                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
-              </aside>
-              <aside class="d-flex gap-3 justify-content-end">
-                <p class="mb-0 col-3 fw-bold">Quotation Date</p>
-                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
-              </aside>
-              <aside class="d-flex gap-3 justify-content-end">
-                <p class="mb-0 col-3 fw-bold">Reference</p>
-                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || ''}}</p>
-              </aside>
-            </section>
-          </div>
-        </div>
-
-        @for(route of selectedItem.quoteRoute; track route){
-        <aside class="table-responsive">
-          <table class="table tablebordered table-sm">
-
-
-            <tr>
-              <td colspan="8" >
-                <aside class="d-flex gap-3 justify-content-between">
-                  <div>
-                    <p class="mb-0  text-black">{{getDepartmentName(route.DepartmentMasterSid)}} </p>
-                  </div>
-                  <div>
-                    <p class="mb-0  text-black col">{{getFormattedPort(route.POLSid)}} -
-                      {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' +
-                      getFormattedPort(route.FDPSid) : ''}}.</p>
-                  </div>
-                </aside>
-              </td>
-            </tr>
-            @for(carrier of route.quoteCarrier; track carrier){
-            <tbody>
-              <tr>
-                <td colspan="8" class="p-0" >
-                  <aside class="d-flex flex-wrap">
-                    <p class="mb-0 col-3  p-2"><span class="fw-bold">Carrier :</span>
-                      {{route.quoteCarrier[0]?.CarrierName}}
-                    </p>
-                    <p class="mb-0 col-3  p-2"><span class="fw-bold">Cargo Type :</span>
-                      {{route.quoteCargo[0]?.CargoType}}</p>
-                    <p class="mb-0 col-3  p-2"><span class="fw-bold">Valid From : </span>
-                      {{route.effDate | formatDate }}</p>
-                    <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
-                    </p>
+            <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+            <div class="text-center  fw-bold pb-2">QUOTATION</div>
+            <div class="row mx-auto">
+              <div class="col-md-6">
+                <section class="d-flex flex-column">
+                  <p class="mb-1 col-3 fw-bold">To :</p>
+                  <aside class="d-flex">
+                    <p class="mb-0 col-12 h6 ">{{this.selectedItem.CustomerName}}</p>
                   </aside>
-                </td>
-              </tr>
+                  <aside class="d-flex">
+                    <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
+                  </aside>
+                </section>
+              </div>
+              <div class="col-md-6">
+                <section class="d-flex flex-column gap-1">
+                  <aside class="d-flex gap-3 justify-content-end">
+                    <p class="mb-0 col-3 fw-bold">Quotation No</p>
+                    <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
+                  </aside>
+                  <aside class="d-flex gap-3 justify-content-end">
+                    <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+                    <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
+                  </aside>
+                  <aside class="d-flex gap-3 justify-content-end">
+                    <p class="mb-0 col-3 fw-bold">Reference</p>
+                    <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || ''}}</p>
+                  </aside>
+                </section>
+              </div>
+            </div>
 
-              <tr >
-                <td >Charge</td>
-                <td>Unit</td>
-                <td >Qty</td>
-                <td >Curr</td>
-                @if(selectedItem.AgreedRate === "Y"){
-                  <td >Ex Rate</td>
+            @for(route of selectedItem.quoteRoute; track route){
+            <aside class="table-responsive">
+              <table class="table tablebordered table-sm">
+
+
+                <tr>
+                  <td colspan="8">
+                    <aside class="d-flex gap-3 justify-content-between">
+                      <div>
+                        <p class="mb-0  text-black">{{getDepartmentName(route.DepartmentMasterSid)}} </p>
+                      </div>
+                      <div>
+                        <p class="mb-0  text-black col">{{getFormattedPort(route.POLSid)}} -
+                          {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' +
+                          getFormattedPort(route.FDPSid) : ''}}.</p>
+                      </div>
+                    </aside>
+                  </td>
+                </tr>
+                @for(carrier of route.quoteCarrier; track carrier){
+                <tbody>
+                  <tr>
+                    <td colspan="8" class="p-0">
+                      <aside class="d-flex flex-wrap">
+                        <p class="mb-0 col-3  p-2"><span class="fw-bold">Carrier :</span>
+                          {{route.quoteCarrier[0]?.CarrierName}}
+                        </p>
+                        <p class="mb-0 col-3  p-2"><span class="fw-bold">Cargo Type :</span>
+                          {{route.quoteCargo[0]?.CargoType}}</p>
+                        <p class="mb-0 col-3  p-2"><span class="fw-bold">Valid From : </span>
+                          {{route.effDate | formatDate }}</p>
+                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate
+                          }}
+                        </p>
+                      </aside>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>Charge</td>
+                    <td>Unit</td>
+                    <td>Qty</td>
+                    <td>Curr</td>
+                    @if(selectedItem.AgreedRate === "Y"){
+                    <td>Ex Rate</td>
+                    }
+                    <td>Rate</td>
+                    <td>Amt</td>
+                    @if(selectedItem.AgreedRate === "Y"){
+                    <td>Local Amount</td>
+                    }
+                  </tr>
+                  @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
+                  <tr>
+                    <td>{{charge.ChargeDisplayName}}</td>
+                    <td>{{ getChargeUOMCodeById(charge.RevenueChargeUomSid)}}</td>
+                    <td>{{charge.Qty}}</td>
+                    <td>{{getCurrencyCodeById(charge.RevenueCurrencyMasterSid)}}</td>
+                    @if(selectedItem.AgreedRate === "Y"){
+                    <td>{{charge.RevenueExchangeRate}}</td>
+                    }
+                    <td>{{charge.RevenueRate}}</td>
+                    <td>{{charge.RevenueAmount}}</td>
+                    @if(selectedItem.AgreedRate === "Y"){
+                    <td>{{charge.RevenueLocalAmount}}</td>
+                    }
+
+                  </tr>
+                  }
+
+
+                </tbody>
                 }
-                <td >Rate</td>
-                <td >Amt</td>
-                @if(selectedItem.AgreedRate === "Y"){
-                <td >Local Amount</td>
+              </table>
+            </aside>
+            }
+
+            <div class="mt-3">
+              <h6 class="fw-bold">Terms and Conditions:</h6>
+              <ul>
+                @for(term of TandCList; track term){
+                <li>{{ term.TandC }}</li>
                 }
-              </tr>
-              @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
-              <tr >
-                <td >{{charge.ChargeDisplayName}}</td>
-                <td >{{ getChargeUOMCodeById(charge.RevenueChargeUomSid)}}</td>
-                <td >{{charge.Qty}}</td>
-                <td >{{getCurrencyCodeById(charge.RevenueCurrencyMasterSid)}}</td>
-                @if(selectedItem.AgreedRate === "Y"){
-                   <td >{{charge.RevenueExchangeRate}}</td>
-                }
-                <td >{{charge.RevenueRate}}</td>
-                <td >{{charge.RevenueAmount}}</td>
-                @if(selectedItem.AgreedRate === "Y"){
-                <td >{{charge.RevenueLocalAmount}}</td>
-                }
-
-              </tr>
-              }
-
-
-            </tbody>
-          }
-          </table>
-          </aside>
-        }
-
-          <div class="mt-3">
-            <h6 class="fw-bold">Terms and Conditions:</h6>
-            <ul>
-              @for(term of TandCList; track term){
-              <li>{{ term.TandC }}</li>
-              }
-            </ul>
+              </ul>
+            </div>
           </div>
+
+
+          <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+              <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+              <span>
+                This document is computer-generated and does not require a signature.
+              </span>
+              <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+          </footer>
+        </section>
       </div>
 
-     
-            <footer class="text-center mb-0 px-2">
-                <div class="d-flex justify-content-between">
-                    <div class=""><span >Printed By :</span> {{userData.userName}} </div>
-                    <span>
-                        This document is computer-generated and does not require a signature.
-                    </span>
-                    <div><span >Printed On :</span> {{ currentDate | formatDate }}</div>
-                </div>
-            </footer>
-    </section>
     </div>
 
-     </div>
 
-   
   </div>
 </ng-template>
 

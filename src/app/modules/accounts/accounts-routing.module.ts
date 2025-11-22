@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CurrencyExchangeListComponent } from './currency-exchange/currency-exchange-list/currency-exchange-list.component';
 import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exchange-entry/currency-exchange-entry.component';
-import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list.component';
-import { TaxGroupComponent } from './tax-group/tax-group.component';
 import { ApprovalComponent } from './approval/approval/approval.component';
 import { ModalComponent } from './modal/modal/modal.component';
 import { ChartAccountListComponent } from './chart-account/chart-account-list/chart-account-list.component';
@@ -18,8 +16,11 @@ import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.compon
 import { PrintsComponent } from './print-structure/prints/prints.component';
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
+import { PaymentViewComponent } from './payment/payment-view/payment-view.component';
 import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
+import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
+import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -62,28 +63,8 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-      {
-        path: "tax-group/list",
-        component: TaxGroupListComponent,
-        data: {
-          title: "Tax Group",
-          urls: [
-            { title: "Accounts", url: "/accounts" },
-            { title: "Tax Group" },
-          ],
-        },
-      },
-      {
-        path: "tax-group/entry",
-        component: TaxGroupComponent,
-        data: {
-          title: "Add Tax Group",
-          urls: [
-            { title: "Accounts", url: "/accounts" },
-            { title: "Tax Group" },
-          ],
-        },
-      },
+      
+     
       {
         path: "approval",
         component: ApprovalComponent,
@@ -257,10 +238,10 @@ export const AccountRoutes: Routes = [
         path: "payment/list",
         component: PaymentListComponent,
         data: {
-          title: "Payment",
+          title: "Payment Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
-            { title: "Payment" },
+            { title: "Payment Voucher" },
           ],
         },
       },
@@ -269,10 +250,35 @@ export const AccountRoutes: Routes = [
         path: "payment/entry",
         component: PaymentEntryComponent,
         data: {
-          title: "Payment",
+          title: "Add Payment Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
-            { title: "Payment" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "Add Payment" },
+          ],
+        },
+      },
+      {
+        path: "payment/entry/:id",
+        component: PaymentEntryComponent,
+        data: {
+          title: "Edit Payment Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "Edit Payment" },
+          ],
+        },
+      },
+      {
+        path: "payment/view/:id",
+        component: PaymentViewComponent,
+        data: {
+          title: "View Payment Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "View Payment" },
           ],
         },
       },
@@ -297,6 +303,30 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Journal-Voucher" },
+          ],
+        },
+      },
+
+         {
+        path: "voucher-matching/entry",
+        component:VoucherMatchingEntryComponent,
+        data: {
+          title: "Voucher-Matching",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher-Matching" },
+          ],
+        },
+      },
+
+      {
+        path: "trial-balance/report",
+        component: TrialBalanceReportComponent,
+        data: {
+          title: "Trial Balance",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Trial Balance" },
           ],
         },
       },

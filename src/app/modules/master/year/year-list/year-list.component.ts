@@ -286,8 +286,8 @@ export class YearListComponent extends BaseListComponent implements OnInit {
   }
 
 
-  viewYear(YearMasterSid: any): void {
-    this.router.navigate(['/master/year/entry/', YearMasterSid]);
+  viewYear(item: any): void {
+    this.router.navigate(['master/year/entry', item.YearMasterSid]);
   }
 
 

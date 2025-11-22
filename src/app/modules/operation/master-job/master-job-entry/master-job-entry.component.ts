@@ -48,6 +48,11 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
 import { ReportService } from 'src/app/shared/services/report.service';
+import { PreAlertComponent } from '../reports/pre-alert/pre-alert.component';
+import { ReleaseLetterComponent } from '../reports/release-letter/release-letter.component';
+import { ReleaseOrderComponent } from '../reports/release-order/release-order.component';
+import { PackingListComponent } from '../reports/packing-list/packing-list.component';
+import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -129,6 +134,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  profitSummary : any;
+  customerWiseSummary : any;
   
   // Lookup data
   departments: any[] = [];
@@ -147,7 +154,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   cfsList: any[] = [];
   yardList: any[] = [];
   decimalAfterPrecision = 3;
-  
+  chargeList:any[]=[];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
@@ -359,6 +366,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     selectedPOD ? this.handlePODChange(selectedPOD) : null;
     
     this.masterJobForm.patchValue({
+      MasterJobVoyageSid: data .MasterJobVoyageSid,
       DepartmentMasterSid : data.DepartmentMasterSid,
       POL : selectedPOL.PortMasterSid,
       POD : selectedPOD.PortMasterSid,
@@ -397,7 +405,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
   uploadPDF() {
     this.modalService.open(MasterDocumentUploadComponent,{
-      size: 'lg',
+      size: 'xl',
       backdrop: 'static',
       centered: true,
     });
@@ -521,6 +529,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       Status: ['Active', Validators.required],
       
       // Voyage fields
+      MasterJobVoyageSid:[null],
       VoyageMasterSid: [null],
       VesselName: [''],
       VoyageNo: [''],
@@ -659,10 +668,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
       .pipe(catchError(err => of([]))),
+      charges: this.operationService.getAllCharges(companySid)
+      .pipe(catchError(err => of([]))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     seaDepartments, roadDepartments, transportDepartments, otherDepartments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers
+    containerTypes, currencies, packageTypes, customers,charges
   }) => {
      this.departments = [
       ...(seaDepartments || []),
@@ -680,7 +691,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.forwarderList = forwarders.data;
     this.cfsList = cfsList.data ;
     this.yardList = yards.data ; 
-     
+    this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
 
     this.containerTypeList = containerTypes.data ;
     const rawCurrencies: any[] = Array.isArray(currencies)
@@ -778,6 +789,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     Status: data.Status === 'A' ? 'Active' : 'Suspended',
     
     // Voyage data
+    MasterJobVoyageSid: data.MasterJobVoyageSid || null,
     VoyageMasterSid: data.VoyageMasterSid || null,
     VesselName: data.VesselName || '',
     VoyageNo: data.VoyageNo || '',
@@ -854,22 +866,39 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     }
 
     // Patch voyage fields if voyage data exists
-    if (data.voyages && data.voyages.length > 0) {
-      const voyage = data.voyages[0];
-      this.masterJobForm.patchValue({
-        VoyageMasterSid: voyage.VoyageMasterSid,
-        VesselName: voyage.VesselName,
-        VoyageNo: voyage.VoyageNo,
-        ETA: voyage.ETA ? new Date(voyage.ETA) : null,
-        ETD: voyage.ETD ? new Date(voyage.ETD) : null,
-        ATA: voyage.ATA ? new Date(voyage.ATA) : null,
-        ATD: voyage.ATD ? new Date(voyage.ATD) : null,
-        DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
-        CarrierMasterSid: voyage.CarrierMasterSid,
-        CarrierName: voyage.CarrierName,
-      });
+     if (data.voyages && data.voyages.length > 0) {
+    // Filter out voyages with null VoyageMasterSid and get the most recent one
+    const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
+   
+    let voyage;
+    if (validVoyages.length > 0) {
+      // Use the voyage with the highest MasterJobVoyageSid (most recent)
+      voyage = validVoyages.reduce((latest, current) =>
+        current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
+      );
+    } else {
+      // If no voyages with VoyageMasterSid, use the first one
+      voyage = data.voyages[0];
     }
-
+ 
+    console.log('Selected voyage for patching:', voyage);
+ 
+    this.masterJobForm.patchValue({
+      MasterJobVoyageSid: voyage.MasterJobVoyageSid,
+      VoyageMasterSid: voyage.VoyageMasterSid,
+      VesselName: voyage.VesselName || '',
+      VoyageNo: voyage.VoyageNo || '',
+      ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+      ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+      ATA: voyage.ATA ? new Date(voyage.ATA) : null,
+      ATD: voyage.ATD ? new Date(voyage.ATD) : null,
+      DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
+      CarrierMasterSid: voyage.CarrierSid,
+      CarrierName: voyage.CarrierName || '',
+    });
+  }
+ 
+ 
 
   // ✅ Fixed: Populate carrier dropdown for edit mode
   if (data.CarrierName && data.CarrierMasterSid) {
@@ -906,6 +935,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       status : rate.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
+    // this.calculateChargeWiseProfit();
+    // this.calculateCustomerWiseAmount();
+    console.log("CUSTOMER WISE SUMMARY",this.customerWiseSummary);
 
 
   // Patch container activities
@@ -1287,6 +1319,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   
   // Set voyage details
   this.masterJobForm.patchValue({
+    MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
     VoyageMasterSid: voyage.VoyageMasterHeaderSid || null,
     VoyageNo: voyage.VoyageNo,
     VesselName: voyage.VesselName || this.masterJobForm.get('VesselName')?.value
@@ -1363,6 +1396,20 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
     };
 
     const formValue = this.masterJobForm.value;
+    const voyageData = {
+      MasterJobVoyageSid:formValue.MasterJobVoyageSid,
+  VoyageMasterSid: formValue.VoyageMasterSid,
+  VesselName: formValue.VesselName,
+  VoyageNo: formValue.VoyageNo,
+  ETD: this.formatDate(formValue.ETD),
+  ETA: this.formatDate(formValue.ETA),
+  ATA: this.formatDate(formValue.ATA),
+  ATD: this.formatDate(formValue.ATD),
+  DestinationATA: this.formatDate(formValue.DestinationATA),
+  CarrierSid: formValue.CarrierMasterSid,
+  CarrierName: formValue.CarrierName,
+};
+ 
 
     // Create the others object from form values
     const othersData = {
@@ -1396,6 +1443,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         
         // Add the others data as a separate object
         others: othersData,
+        voyages:[voyageData],
         
         // Ensure other string fields don't exceed limits
         DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
@@ -2224,40 +2272,62 @@ get totalVolume(): number {
 }
 
 
-    reportPreAlertModel(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
+  // reportPreAlertModel(content: TemplateRef<any>) {
+  //     this.modalService.open(content, {
+  //       size: 'xl',
+  //       scrollable: true,
+  //     })
+  //     modalRef.componentInstance.masterJobData=this.masterJobData; 
+  //     modalRef.componentInstance.containerTypeList=this.containerTypeList;
+  //     modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
+  //     modalRef.componentInstance.packageTypeList=this.packageTypeList;
+  //     modalRef.componentInstance.agentList=this.agentList;
+  // }
 
-     reportcargomanifest(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
-     reportreleaseLetter(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
+  //   reportcargomanifest() {
+  //    const modalRef=this.modalService.open(CargoManifestComponent, {
+  //       size: 'xl',
+  //       scrollable: true,
+  //     });
+  //     modalRef.componentInstance.masterJobData=this.masterJobData; 
+  //     modalRef.componentInstance.containerTypeList=this.containerTypeList;
+  //     modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
+  //     modalRef.componentInstance.packageTypeList=this.packageTypeList;
+  //     modalRef.componentInstance.agentList=this.agentList;
+
+  //   }
+
+
+  //    reportreleaseLetter() {
+  //     const modalRef = this.modalService.open(ReleaseLetterComponent, {
+  //       size: 'xl',
+  //       scrollable: true,
+  //     });
+  //     modalRef.componentInstance.masterJobData= this.masterJobData;
+  //     modalRef.componentInstance.cfsList=this.cfsList || [];
+  //     modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+  //     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+  //   }
 
     
-     reportreleaseOrder(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
+  //    reportreleaseOrder() {
+  //    const modalRef = this.modalService.open(ReleaseOrderComponent, {
+  //       size: 'xl',
+  //       scrollable: true,
+  //     });
+  //     modalRef.componentInstance.masterJobData=this.masterJobData;
+  //     modalRef.componentInstance.cfsList=this.cfsList || [];
+  //     modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+  //     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+  //     modalRef.componentInstance.containerTypeList=this.containerTypeList;
+  //   }
 
-     reportjobCard(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
+  //    reportjobCard(content: TemplateRef<any>) {
+  //     this.modalService.open(content, {
+  //       size: 'xl',
+  //       scrollable: true,
+  //     });
+  //   }
 
   /**
    * Open report modal using the generic report system
@@ -2275,4 +2345,8 @@ get totalVolume(): number {
 
     this.reportService.openReportModal(reportType, masterJobSid);
   }
+}
+interface CustomerProfit {
+  CustomerName : string,
+  Amount : number
 }

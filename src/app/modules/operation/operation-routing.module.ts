@@ -16,9 +16,6 @@ import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booki
 import { ShipmentInstructionComponent } from './shipment-instruction/shipment-instruction/shipment-instruction.component';
 import { HouseJobEntryComponent } from './house-job/house-job-entry/house-job-entry.component';
 import { OperationReportComponent } from './operation-report/operation-report/operation-report.component';
-import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
-import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.component';
-import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
 import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/cargo-receipt-entry.component';
 import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
 import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-entry/vendor-invoice-entry.component';
@@ -30,6 +27,10 @@ import { ServiceJobEntryComponent } from './service-job/service-job-entry/servic
 import { ReportMasterComponent } from './report-master/report-master.component';
 import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-list.component';
 import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
+import { CreditNoteEntryComponent } from './credit-note/credit-note-entry/credit-note-entry.component';
+import { CreditNoteListComponent } from './credit-note/credit-note-list/credit-note-list.component';
+import { VendorCreditNoteListComponent } from './vendor-credit-note/vendor-credit-note-list/vendor-credit-note-list.component';
+import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-credit-note-entry/vendor-credit-note-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -166,35 +167,59 @@ export const OperationRoutes: Routes = [
         },
       },
       {
-        path:'receipt/entry',
-        component: ReceiptEntryComponent,
-        data: {
-          title: 'Receipt Entry',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt Entry' }],
-        }
-      },
-      {
-        path:"receipt/list",
-        component: ReceiptListComponent,
-        data: {
-          title: 'Receipt List',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt List' }],
-        }
-      },
-      {
-        path:'receipt/view',
-        component: ReceiptViewComponent,
-        data: {
-          title: 'Receipt View',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt View' }],
-        }
-      },
-      {
         path: 'invoice/new',
         component: InvoiceNewComponent,
         data: {
           title: 'Generate Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Generate Invoice' }],
+        },
+      },
+      {
+        path: 'credit-note/list',
+        component: CreditNoteListComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'credit-note/entry',
+        component: CreditNoteEntryComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'credit-note/entry/:id',
+        component: CreditNoteEntryComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/list',
+        component: VendorCreditNoteListComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/entry',
+        component: VendorCreditNoteEntryComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/entry/:id',
+        component: VendorCreditNoteEntryComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
         },
       },
         {

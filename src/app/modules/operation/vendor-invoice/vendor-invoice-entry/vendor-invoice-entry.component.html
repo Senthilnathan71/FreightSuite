@@ -7,17 +7,35 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h4 class="page-title mb-0">{{ isViewMode ? 'View Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
-          'Create Vendor Invoice') }}</h4>
+        <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
+          'Create Vendor Invoice') }}</h5>
       </div>
+      
       <div class="col-md-8 pb-1">
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button *ngIf="isViewMode" type="button" class="btn btn-primary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onPrint()">
-            <i class="fas fa-print me-1"></i> Print
-          </button>
- 
+             <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170" (click)="openSearchCostsModal()">
+              <i class="fas fa-search me-2"></i>Search Pending Costs
+            </button>
+             
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+        (click)="openVendorInvoiceUploadModal()" 
+        [disabled]="isViewMode">
+  <i class="fas fa-upload me-1"></i> Upload
+</button>
+ <button  type="button" 
+            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            (click)="onFinalSave()" 
+            [disabled]="vendorInvoiceForm.invalid || isSaving">
+      <i class="fas fa-check-circle me-1"></i> Final
+    </button>
+
+    <button *ngIf="isViewMode && isPosted" type="button" 
+            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            disabled>
+      <i class="fas fa-check-circle me-1"></i> Posted
+    </button>
+    
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
@@ -33,12 +51,6 @@
           </button>
         </div>
       </div>
-      <div>
-        <button type="button" class="btn btn-primary btn-sm" (click)="openSearchCostsModal()"
-              [disabled]="!vendorInvoiceForm.get('PartyMasterSid')?.value">
-              <i class="fas fa-search me-2"></i>Search Pending Costs
-            </button>
-      </div>
     </div>
   </div>
 
@@ -50,7 +62,7 @@
           <div class="row">
 
             <!-- Vendor Invoice No -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
@@ -61,7 +73,7 @@
             </aside>
 
             <!-- Invoice Date -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker
@@ -89,7 +101,7 @@
 
 
             <!-- Posted On (readonly) -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="PostedOn" formControlName="PostedOn" placeholder="" class="custom-input-field sm"
                   readonly />
@@ -99,7 +111,7 @@
 
 
             <!-- Narration -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
                   class="custom-input-field sm" />
@@ -107,7 +119,7 @@
               </div>
             </aside>
 
-           <aside class="col-md-3">
+           <aside class="col-md-2">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorInvoiceForm.get('PartyName')?.value">
     <dofi-searchable-dropdown 
@@ -141,7 +153,7 @@
 
             <!-- Vendor Address (readonly) -->
             <!-- Vendor Branch Selection -->
-<aside class="col-md-3">
+<aside class="col-md-2">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorInvoiceForm.get('CustomerBranchSid')?.value">
     <ng-select 
@@ -171,7 +183,7 @@
 
             <!-- GST No (readonly) -->
 
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="GSTNo" formControlName="GSTNo" placeholder="" class="custom-input-field sm"
                   readonly />
@@ -180,7 +192,7 @@
             </aside>
            
 <!-- GST Type -->
-<aside class="col-md-3">
+<aside class="col-md-2">
   <div class="custom-form-group">
     <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
     <label class="input-label">GST Type</label>
@@ -188,7 +200,7 @@
 </aside>
 
            <!-- Add this temporarily for debugging -->
-<aside class="col-md-3">
+<aside class="col-md-2">
   <div class="custom-form-group">
     <input type="text" formControlName="PlaceOfSupply" placeholder="" 
       class="custom-input-field sm" readonly />
@@ -197,7 +209,7 @@
   
 </aside>
 <!-- Invoice Type with auto-determination -->
-<aside class="col-md-3">
+<aside class="col-md-2">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
     <ng-select [items]="gstTypes" bindLabel="name" bindValue="id" 
@@ -208,7 +220,7 @@
 </aside>
 
             <!-- Currency -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!vendorInvoiceForm.get('CurrencyCode')?.value">
                 <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
@@ -226,7 +238,7 @@
             </aside>
 
             <!-- Exchange Rate -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="number" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
                   class="custom-input-field sm" (blur)="onExchangeRateChange()" step="0.01"
@@ -239,7 +251,7 @@
 
 
             <!-- Bill Amount (readonly calculated) -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="number" id="BillAmount" [value]="calculateTotalLocalAmount()" placeholder=""
                   class="custom-input-field sm" readonly />
@@ -249,7 +261,7 @@
 
 
             <!-- Bill Date -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker
@@ -276,7 +288,7 @@
             </ng-template>
 
             <!-- Bill No -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
                   [class.is-invalid]="isFieldInvalid('BillNo')" />
@@ -287,7 +299,7 @@
             </aside>
 
             <!-- MBL No -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm" />
                 <label for="MBLNo" class="input-label">MBL No.</label>
@@ -295,7 +307,7 @@
             </aside>
 
             <!-- HBL No -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm" />
                 <label for="HBLNo" class="input-label">HBL No.</label>
@@ -305,7 +317,7 @@
         
 
             <!-- Remarks -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
                   formControlName="Remarks"></textarea>
@@ -314,7 +326,7 @@
             </aside>
 
             <!-- Status -->
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!vendorInvoiceForm.get('Status')?.value">
                 <ng-select [items]="statusList" bindLabel="name" bindValue="value" formControlName="Status"
@@ -334,22 +346,22 @@
             </button>
           </div> -->
          
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
               <h5 class="mb-0"> Vendor Invoice Line Items</h5>
-              <button class="btn btn-primary btn-sm" (click)="addDetailRow()" type="button">
+              <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
                 <i class="fas fa-plus me-1"></i>Add Charge
               </button>
             </div>
 
           <!-- Detail Grid -->
         <!-- Details Grid -->
-<div class="row bg-white rounded shadow-sm mx-auto mt-1">
-  <div class="col-12 py-1 px-0">
+<div class="row bg-white rounded shadow-sm mx-auto">
+  <div class="col-12 px-0">
     <div class="table-responsive table-borderless">
       <table class="table table-hover table-sm mb-0 text-center">
         <thead class="table-header-booking">
           <tr class="align-middle bg-info">
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px; border-top-left-radius: 10px;"></th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
@@ -376,7 +388,7 @@
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
-             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Department</th>
+             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
           </tr>
           <tr class="align-middle bg-info">
             <!-- India GST Sub-headers -->
@@ -446,7 +458,7 @@
 
               <!-- Dr/Cr -->
               <td>
-                <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]"
+                <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
                   bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
               </td>
 
@@ -611,11 +623,44 @@
 
 <!-- Totals Section -->
 <div class="row mt-1">
-  <div class="col-md-9"></div>
-  <div class="col-md-3">
-    <div class="card mb-0">
-      <div class="card-body p-1">
-        <table class="table table-sm table-borderless mb-0 w-100 align-middle" style="table-layout: fixed;">
+  <div class="col-md-4"></div>
+  <div class="col-md-8">
+ 
+        <div class="row">
+        <aside class="col-md-4">
+          <div class="d-flex align-items-center gap-2">
+                <div>
+            <strong>Currency Amount : </strong>
+          </div>
+          <div>
+            {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+          </div>
+          </div>
+      
+        </aside>
+         <aside class="col-md-4">
+          <div class="d-flex align-items-center gap-2">
+                <div>
+            <strong>Tax Amount : </strong>
+          </div>
+          <div>
+            {{ getTotalTaxAmount() | number:'1.2-2' }}
+          </div>
+          </div>
+      
+        </aside>
+         <aside class="col-md-4">
+          <div class="d-flex align-items-center gap-2">
+                <div>
+            <strong>Total Amount :</strong>
+          </div>
+          <div>
+            <strong>{{ getGrandTotal() | number:'1.2-2' }}</strong>
+          </div>
+          </div>
+      
+        </aside>
+        <!-- <table class="table table-sm table-borderless mb-0 w-100 align-middle" style="table-layout: fixed;">
           <tbody>
             <tr>
               <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
@@ -645,16 +690,16 @@
               </td>
             </tr>
           </tbody>
-        </table>
+        </table> -->
       </div>
-    </div>
+     
   </div>
 </div>
 
           <!-- TDS Section -->
           <div class="row bg-white rounded shadow-sm mx-auto mt-1" formGroupName="voucherTDS">
-            <h5 class="mb-0 px-0 py-2">
-              <i class="fas fa-file-invoice me-2"></i>TDS (Tax Deducted at Source)
+            <h5 class="mb-0 px-0">
+             TDS (Tax Deducted at Source)
             </h5>
             <div class="col-12 py-1 px-0">
               <div class="table-responsive table-borderless">
@@ -708,7 +753,7 @@
                   </tbody>
                 </table>
               </div>
-              <div class="alert alert-info py-2 mb-2">
+              <div class="alert alert-info py-2 mb-1 text-center">
                 <small>
                   <i class="fas fa-info-circle me-2"></i>
                   TDS is auto-calculated based on vendor TDS mapping configuration.
@@ -723,13 +768,13 @@
   </div>
 </div>
 
-<!-- Fix the search modal section -->
 <ng-template #searchCostsModal let-modal>
-  <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title">Search Pending Costs</h5>
+  <div class="modal-header modalHeaderpart">
+    <h5 class="modal-title">Search and Select Pending Costs</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeSearchCostsModal()"></button>
   </div>
   <div class="modal-body">
+    <!-- Search Criteria -->
     <div class="row g-3 mb-3">
       <div class="col-md-4">
         <label class="form-label">Search By</label>
@@ -741,78 +786,172 @@
           <option value="Container No">Container No</option>
         </select>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <label class="form-label">Search Value</label>
         <input type="text" class="form-control form-control-sm" [(ngModel)]="searchValue"
           placeholder="Enter search value" />
       </div>
-      <div class="col-md-2">
-        <label class="form-label">&nbsp;</label>
-        <button type="button" class="btn btn-primary btn-sm w-100" 
+      <div class="col-md-4">
+        
+        <button type="button" class="btn btn-info btn-sm" 
                 (click)="searchPendingCostsAction()"
-                [disabled]="searchResultsLoading">
-          <i class="fas fa-search me-2"></i>
+                [disabled]="searchResultsLoading" style="margin-top: 28px;">
+          <i class="fas fa-search me-1"></i>
           {{ searchResultsLoading ? 'Searching...' : 'Search' }}
         </button>
       </div>
     </div>
 
+    <!-- Vendor Selection -->
+    <div *ngIf="searchVendors.length > 0" class="card mb-3">
+      <div class="card-header bg-light">
+        <h6 class="mb-0">Select Vendor for Costs</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Vendor</label>
+            <ng-select [items]="searchVendors" 
+                      bindLabel="VendorName" 
+                      [(ngModel)]="selectedVendorForCosts"
+                      (change)="onVendorSelectForCosts($event)"
+                      placeholder="Select vendor for all costs"
+                      appendTo="body">
+              <ng-template ng-option-tmp let-item="item">
+                <div>
+                  <strong>{{ item.VendorName }}</strong>
+                  <br>
+                  <small class="text-muted">{{ item.VendorAddress }}</small>
+                </div>
+              </ng-template>
+            </ng-select>
+           
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Form Auto-population Info -->
+   <div *ngIf="selectedVendorForCosts" class="card mb-3">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0">Vendor Information (Auto-populated in Main Form)</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Vendor Name</label>
+            <div class="form-control form-control-sm bg-light">
+              {{ vendorInvoiceForm.get('PartyName')?.value || 'Not populated' }}
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Vendor Address</label>
+            <div class="form-control form-control-sm bg-light">
+              {{ vendorInvoiceForm.get('PartyAddress')?.value || 'Not populated' }}
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">GST No</label>
+            <div class="form-control form-control-sm bg-light">
+              {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Place of Supply</label>
+            <div class="form-control form-control-sm bg-light">
+              {{ vendorInvoiceForm.get('PlaceOfSupply')?.value || 'Not available' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Search Results -->
+    <div *ngIf="allPendingCosts.length > 0 && !searchResultsLoading" class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+          All Pending Costs ({{ allPendingCosts.length }} found)
+          <small class="text-muted ms-2">Select costs to add to vendor invoice</small>
+        </h6>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" 
+                 (change)="toggleSelectAll($event)" 
+                 [checked]="isAllSelected()" />
+          <label class="form-check-label small fw-bold">Select All</label>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-sm table-bordered table-hover mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 40px;" class="sticky-top">Select</th>
+                
+                <th class="sticky-top">Vendor</th>
+                <th class="sticky-top">Charge Code</th>
+                <th class="sticky-top">Description</th>
+                <th class="sticky-top">Job No</th>
+                <th class="sticky-top">MBL No</th>
+                <th class="sticky-top">HBL No</th>
+                <th class="sticky-top text-end">Quantity</th>
+                <th class="sticky-top text-end">Rate</th>
+                <th class="sticky-top text-end">Amount</th>
+                <th class="sticky-top">Currency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cost of allPendingCosts; let i = index" 
+                  [class.table-warning]="cost.selected">
+                <td class="text-center">
+                  <input type="checkbox" [(ngModel)]="cost.selected" />
+                </td>
+               
+                <td>
+                  <div>
+                    <strong>{{ cost.VendorName }}</strong>
+                    <br>
+                    <small class="text-muted">{{ cost.VendorAddress }}</small>
+                  </div>
+                </td>
+                <td>{{ cost.ChargeCode || '-' }}</td>
+                <td>{{ cost.ChargeDescription }}</td>
+                <td>{{ cost.JobNo || cost.MasterJobNumber || '-' }}</td>
+                <td>{{ cost.MBLNo || '-' }}</td>
+                <td>{{ cost.HBLNo || '-' }}</td>
+                <td class="text-end">{{ cost.NumberOfUnit | number:'1.2-2' }}</td>
+                <td class="text-end">{{ cost.Rate | number:'1.2-2' }}</td>
+                <td class="text-end">{{ cost.CostAmount | number:'1.2-2' }}</td>
+                <td>{{ cost.CurrencyCode || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div *ngIf="!searchResultsLoading && searchPerformed && allPendingCosts.length === 0" 
+         class="alert alert-info text-center">
+      <i class="fas fa-info-circle me-2"></i>No pending costs found for the selected criteria.
+    </div>
+
+    <!-- Loading Indicator -->
     <div *ngIf="searchResultsLoading" class="text-center py-4">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <div class="mt-2">Searching pending costs...</div>
-    </div>
-
-    <div *ngIf="!searchResultsLoading && pendingCosts.length > 0" class="table-responsive">
-      <table class="table table-sm table-bordered table-hover">
-        <thead class="table-light">
-          <tr>
-            <th style="width: 40px;">
-              <input type="checkbox" 
-                     (change)="toggleSelectAll($event)" 
-                     [checked]="isAllSelected()" />
-            </th>
-            <th>Charge Code</th>
-            <th>Description</th>
-            <th>Job No</th>
-            <th>MBL No</th>
-            <th>HBL No</th>
-            <th class="text-end">Quantity</th>
-            <th class="text-end">Rate</th>
-            <th class="text-end">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cost of pendingCosts; let i = index">
-            <td class="text-center">
-              <input type="checkbox" [(ngModel)]="cost.selected" />
-            </td>
-            <td>{{ cost.ChargeCode || '-' }}</td>
-            <td>{{ cost.ChargeDescription }}</td>
-            <td>{{ cost.JobNo || '-' }}</td>
-            <td>{{ cost.MBLNo || '-' }}</td>
-            <td>{{ cost.HBLNo || '-' }}</td>
-            <td class="text-end">{{ cost.NumberOfUnit | number:'1.2-2' }}</td>
-            <td class="text-end">{{ cost.Rate | number:'1.2-2' }}</td>
-            <td class="text-end">{{ cost.CostAmount | number:'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="!searchResultsLoading && searchPerformed && pendingCosts.length === 0" 
-         class="alert alert-info text-center">
-      <i class="fas fa-info-circle me-2"></i>No pending costs found for the selected criteria.
+      <p class="mt-2 text-muted">Searching pending costs...</p>
     </div>
   </div>
-  <div class="modal-footer">
+  
+  <div class="modal-footer py-1">
     <button type="button" class="btn btn-secondary" (click)="closeSearchCostsModal()">Close</button>
-    <button type="button" class="btn btn-primary" 
+    <button type="button" class="btn btn-info" 
             (click)="addSelectedCosts()"
             [disabled]="getSelectedCosts().length === 0">
-      <i class="fas fa-plus me-2"></i>
-      Add Selected ({{ getSelectedCosts().length }})
+      <i class="fas fa-plus me-1"></i>
+      Add Selected Costs ({{ getSelectedCosts().length }})
     </button>
   </div>
 </ng-template>

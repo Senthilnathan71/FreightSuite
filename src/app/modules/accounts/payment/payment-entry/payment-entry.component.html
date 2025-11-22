@@ -1,523 +1,672 @@
-<div>
-    <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
-                    <div class="d-flex align-items-center gap-2">
-                    <div class="brand-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <h5 class="page-title mb-0 text-info">Payment</h5>
-                 
-                </div>
-            </div>
-            <div class="col-md-8 pb-1">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
+<!-- Payment Entry Component -->
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">{{ loading ? 'Loading...' : 'Saving...' }}</p>
+</ngx-spinner>
 
-                </div>
-            </div>
+<div *ngIf="paymentForm" [formGroup]="paymentForm">
+  <div class="col-12">
+    <!-- Header Section -->
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">
+            {{ isEditMode ? 'Edit Payment' : 'New Payment' }}
+          </h5>
         </div>
+      </div>
+      <div class="col-md-8 pb-1">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submit()" [disabled]="paymentForm.invalid || isSaving">
+            <i class="fas fa-save me-1"></i>
+            {{ isSaving ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Details Form -->
+  <div class="col-md-12">
+    <div class="card h-100 mb-0">
+      <div class="card-body py-0 px-2">
+        <div class="row compact-form">
+          <!-- Search Type -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <select formControlName="searchType" class="custom-input-field sm">
+                <option value="VendorName">Vendor Name</option>
+                <option value="Invoice">Invoice</option>
+                <option value="HouseNo">House No</option>
+                <option value="MasterNo">Master No</option>
+              </select>
+              <label for="searchType" class="input-label">Search Type</label>
+            </div>
+          </aside>
+
+          <!-- Get Outstanding Button -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <button type="button" class="btn btn-sm btn-info w-100" (click)="searchOutstanding()"
+                      [disabled]="!paymentForm.get('vendor')?.value">
+                <i class="fas fa-search me-1"></i>
+                Get Outstanding
+              </button>
+            </div>
+          </aside>
+
+          <!-- Payment Number (Read-only for edit) -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" formControlName="paymentNumber" placeholder="" class="custom-input-field sm" readonly>
+              <label for="paymentNo" class="input-label">Payment No.</label>
+            </div>
+          </aside>
+
+          <!-- Payment Date -->
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="paymentDate"
+                       ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" />
+                <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">Payment Date <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- Payment Mode -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <select formControlName="paymentMode" class="custom-input-field sm">
+                <option value="Cash">Cash</option>
+                <option value="Bank">Bank</option>
+              </select>
+              <label for="paymentMode" class="input-label">Payment Mode <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- Bank -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <ng-select formControlName="bank"
+                         [items]="bankList"
+                         bindLabel="SubledgerName"
+                         bindValue="SubledgerMasterSid"
+                         placeholder="Select Bank"
+                         class="custom-ng-select">
+              </ng-select>
+              <label for="bank" class="input-label">Bank <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- Currency -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <ng-select formControlName="currency"
+                         [items]="currencyList"
+                         bindLabel="CurrencyCode"
+                         bindValue="CurrencyMasterSid"
+                         placeholder="Select Currency"
+                         class="custom-ng-select">
+              </ng-select>
+              <label for="currency" class="input-label">Currency <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- Exchange Rate -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="number" formControlName="exchangeRate" placeholder="" class="custom-input-field sm" step="0.0001">
+              <label for="exRate" class="input-label">Ex Rate <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- Vendor -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <ng-select formControlName="vendor"
+                         [items]="vendorList"
+                         bindLabel="SubledgerName"
+                         bindValue="SubledgerMasterSid"
+                         placeholder="Select Vendor"
+                         class="custom-ng-select">
+              </ng-select>
+              <label for="vendor" class="input-label">Vendor</label>
+            </div>
+          </aside>
+
+          <!-- Paid To -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" formControlName="paidTo" placeholder="" class="custom-input-field sm">
+              <label for="paidTo" class="input-label">Paid To <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+          <!-- GST Number -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" formControlName="gstNumber" placeholder="" class="custom-input-field sm">
+              <label for="gstNo" class="input-label">GST No.</label>
+            </div>
+          </aside>
+
+          <!-- Instrument Mode -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <select formControlName="instrumentMode" class="custom-input-field sm">
+                <option value="">Select</option>
+                <option value="Cheque">Cheque</option>
+                <option value="DD">DD</option>
+                <option value="NEFT">NEFT</option>
+                <option value="RTGS">RTGS</option>
+                <option value="IMPS">IMPS</option>
+                <option value="Others">Others</option>
+              </select>
+              <label for="instMode" class="input-label">Inst. Mode</label>
+            </div>
+          </aside>
+
+          <!-- Instrument Number -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" formControlName="instrumentNumber" placeholder="" class="custom-input-field sm">
+              <label for="instNo" class="input-label">Inst No.</label>
+            </div>
+          </aside>
+
+          <!-- Instrument Date -->
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="instrumentDate"
+                       ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" />
+                <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">Inst. Date</label>
+            </div>
+          </aside>
+
+          <!-- Clearance Date -->
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="clearanceDate"
+                       ngbDatepicker #d3="ngbDatepicker" (click)="d3.toggle()" />
+                <button class="btn bi bi-calendar3" (click)="d3.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">Clearance Date</label>
+            </div>
+          </aside>
+
+          <!-- Address -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <textarea formControlName="address" placeholder="" class="custom-input-field sm" rows="1"></textarea>
+              <label for="address" class="input-label">Address</label>
+            </div>
+          </aside>
+
+          <!-- Narration -->
+          <aside class="col-md-3">
+            <div class="custom-form-group mt-0">
+              <textarea formControlName="narration" placeholder="" class="custom-input-field sm" rows="1"></textarea>
+              <label for="narration" class="input-label">Narration</label>
+            </div>
+          </aside>
+
+          <!-- Remarks -->
+          <aside class="col-md-3">
+            <div class="custom-form-group mt-0">
+              <textarea formControlName="remarks" placeholder="" class="custom-input-field sm" rows="1"></textarea>
+              <label for="remarks" class="input-label">Remarks</label>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Section -->
+  <div class="mx-auto mt-1 px-0">
+    <div class="nav-pills-container">
+      <div class="nav-pills d-flex align-items-center w-100">
+        <div class="pills-left d-flex flex-nowrap" style="flex:1;">
+          <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.id"
+               (click)="selectTab(tab.id)">
+            <div class="pill-icon">
+              <i [class]="tab.icon"></i>
+            </div>
+            <span class="pill-label">{{ tab.name }}</span>
+            <div class="pill-indicator" *ngIf="selectedTab === tab.id"></div>
+          </div>
+        </div>
+
+        <!-- Tab-specific Add Buttons -->
+        <div [hidden]="selectedTab !== 'detail'">
+          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addDetailRow()">
+            <i class="fas fa-plus"></i> Add Detail
+          </button>
+        </div>
+        <div [hidden]="selectedTab !== 'tds'">
+          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addTDSRow()">
+            <i class="fas fa-plus"></i> Add TDS
+          </button>
+        </div>
+        <div [hidden]="selectedTab !== 'voucher'">
+          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="searchOutstanding()">
+            <i class="fas fa-search"></i> Search Outstanding
+          </button>
+        </div>
+        <div [hidden]="selectedTab !== 'interbranch'">
+          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addInterBranchRow()">
+            <i class="fas fa-plus"></i> Add Interbranch
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body py-0 px-2">
-                <div class="row compact-form">
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="" placeholder="" class="custom-input-field sm" >
-                            <label for="serachType" class="input-label">Search Type <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="getOs" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="getOs" class="input-label">Get OS <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="paymentNo" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="paymentNo" class="input-label">Payment No. <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker"  (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Payment Date <span class="text-danger"></span>
-                            </label>
+    <!-- Tab Content -->
+    <div class="content-workspace">
+      <!-- Detail Tab -->
+      <div class="workspace-content" [hidden]="selectedTab !== 'detail'">
+        <ng-container *ngTemplateOutlet="detailTab"></ng-container>
+      </div>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="multiLocation" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="multiLocation" class="input-label">Multi Location<span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="bank" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="bank" class="input-label">Bank <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="gstNo" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="gstNo" class="input-label">GST No. <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="currency" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="currency" class="input-label">Currency <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="instMode" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="instMode" class="input-label">Inst. Mode <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="instNo" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="instNo" class="input-label">Inst No. <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="vendor" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="vendor" class="input-label">Vendor <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="paidTo" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="paidTo" class="input-label">Paid To <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="exRate" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="exRate" class="input-label">Ex Rate <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d2="ngbDatepicker"  (click)="d2.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Inst. Date <span class="text-danger"></span>
-                            </label>
+      <!-- TDS Tab -->
+      <div class="workspace-content" [hidden]="selectedTab !== 'tds'">
+        <ng-container *ngTemplateOutlet="tdsTab"></ng-container>
+      </div>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d3="ngbDatepicker"  (click)="d3.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d3.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Clearance Date<span class="text-danger"></span>
-                            </label>
+      <!-- Voucher Tab -->
+      <div class="workspace-content" [hidden]="selectedTab !== 'voucher'">
+        <ng-container *ngTemplateOutlet="voucherTab"></ng-container>
+      </div>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <textarea type="text" id="address" placeholder="" class="custom-input-field sm"
-                                 rows="1"></textarea>
-                            <label for="address" class="input-label">Address<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group mt-0">
-                            <textarea type="text" id="narration" placeholder="" class="custom-input-field sm"
-                                 rows="1"></textarea>
-                            <label for="narration" class="input-label">Narration <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group mt-0">
-                            <textarea type="text" id="remarks" placeholder="" class="custom-input-field sm"
-                                 rows="1"></textarea>
-                            <label for="remarks" class="input-label">Remarks <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
+      <!-- Inter-branch Tab -->
+      <div class="workspace-content" [hidden]="selectedTab !== 'interbranch'">
+        <ng-container *ngTemplateOutlet="interbranchTab"></ng-container>
+      </div>
     </div>
-    <div class="mx-auto mt-1 px-0">
-        <div class="nav-pills-container">
-            <div class="nav-pills d-flex align-items-center w-100">
-                <div class="pills-left d-flex flex-nowrap" style="flex:1;">
-                    <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
-                        (click)="selectTab(tab.name)">
-                        <div class="pill-icon">
-                            <i [class]="tab.icon"></i>
-                        </div>
-                        <span class="pill-label">{{ tab.name }}</span>
-                        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
-                    </div>
-                </div>
-                <div [hidden]="selectedTab !== 'Detail'">
-                    <button type="button" class="btn btn-sm btn-info mx-auto">
-                        <i class="fas fa-plus"></i> Add Detail
-                    </button>
-                </div>
-                <div [hidden]="selectedTab !== 'TDS'">
-                    <button type="button" class="btn btn-sm btn-info mx-auto">
-                        <i class="fas fa-plus"></i> Add TDS
-                    </button>
-                </div>
-                <div [hidden]="selectedTab !== 'Voucher'">
-                    <button type="button" class="btn btn-sm btn-info mx-auto">
-                        <i class="fas fa-plus"></i> Add Voucher
-                    </button>
-                </div>
-                <div [hidden]="selectedTab !== 'Interbranch'">
-                    <button type="button" class="btn btn-sm btn-info mx-auto">
-                        <i class="fas fa-plus"></i> Add Interbranch
-                    </button>
-                </div>
+  </div>
+
+  <!-- Totals Section -->
+  <div class="col-md-12 mt-2">
+    <div class="card">
+      <div class="card-body py-2">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="d-flex justify-content-between">
+              <strong>Total Dr:</strong>
+              <span class="text-success">₹ {{ totalDr | number:'1.2-2' }}</span>
             </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex justify-content-between">
+              <strong>Total Cr:</strong>
+              <span class="text-danger">₹ {{ totalCr | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex justify-content-between">
+              <strong>Total TDS:</strong>
+              <span class="text-warning">₹ {{ totalTDS | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex justify-content-between">
+              <strong>Difference:</strong>
+              <span [class.text-danger]="Math.abs(totalDr - totalCr) > 0.01"
+                    [class.text-success]="Math.abs(totalDr - totalCr) <= 0.01">
+                ₹ {{ Math.abs(totalDr - totalCr) | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="content-workspace">
-            <div class="workspace-content" [hidden]="selectedTab !== 'Detail'">
-                <ng-container *ngTemplateOutlet="detail"></ng-container>
-            </div>
-            <div class="workspace-content" [hidden]="selectedTab !== 'TDS'">
-                <ng-container *ngTemplateOutlet="TDS"></ng-container>
-            </div>
-            <div class="workspace-content" [hidden]="selectedTab !== 'Voucher'">
-                <ng-container *ngTemplateOutlet="voucher"></ng-container>
-            </div>
-            <div class="workspace-content" [hidden]="selectedTab !== 'Interbranch'">
-                <ng-container *ngTemplateOutlet="Interbranch"></ng-container>
-            </div>
-        </div>
+      </div>
     </div>
-
-    <ng-template #detail>
-        <div>
-          
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="2%"></th>
-                            <th class="bg-transparent text-light">Ledger Name</th>
-                            <th class="bg-transparent text-light">Branch</th>
-                            <th class="bg-transparent text-light">Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex. Rate</th>
-                            <th class="bg-transparent text-light">Curr. Amt</th>
-                            <th class="bg-transparent text-light">Taxable Amt</th>
-                            <th class="bg-transparent text-light">Tax %</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">Narration</th>
-                            <th class="bg-transparent text-light">Cost Center</th>
-                            <th class="bg-transparent text-light">Profit Center</th>
-                            <th class="bg-transparent text-light">Charge</th>
-                            <th class="bg-transparent text-light">SAC/HSN</th>
-                            <th class="bg-transparent text-light">Master</th>
-                            <th class="bg-transparent text-light">House</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete">
-                                    <i class="fas fa-trash text-center fs-2"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </ng-template>
-    <ng-template #TDS>
-        <div>
-         
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="2%"></th>
-                            <th class="bg-transparent text-light">TDS Set</th>
-                            <th class="bg-transparent text-light">TDS Company Type</th>
-                            <th class="bg-transparent text-light">IT Section Code</th>
-                            <th class="bg-transparent text-light">Certificate No.</th>
-                            <th class="bg-transparent text-light">Percentage</th>
-                            <th class="bg-transparent text-light">Taxable Amt</th>
-                            <th class="bg-transparent text-light">TDS Amt</th>
-                            <th class="bg-transparent text-light">Reason</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete">
-                                    <i class="fas fa-trash text-center fs-2"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </ng-template>
-    <ng-template #voucher>
-        <div>
-           
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="2%"></th>
-                            <th class="bg-transparent text-light">Voucher No</th>
-                            <th class="bg-transparent text-light">Voucher Type</th>
-                            <th class="bg-transparent text-light dofi-min-w-130">Voucher Date</th>
-                            <th class="bg-transparent text-light">Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex. Rate</th>
-                            <th class="bg-transparent text-light">Curr. Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">OS Curr. Amt</th>
-                            <th class="bg-transparent text-light">OS Local Amt</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex. Rate</th>
-                            <th class="bg-transparent text-light">Curr Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">TDS Amt</th>
-                            <th class="bg-transparent text-light">Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete">
-                                    <i class="fas fa-trash text-center fs-2"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker"  (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 py-0" (click)="d1.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </ng-template>
-    <ng-template #Interbranch>
-        <div >
-         
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="2%"></th>
-                            <th class="bg-transparent text-light">Branch</th>
-                            <th class="bg-transparent text-light">Curr. Amount</th>
-                            <th class="bg-transparent text-light">Inter Branch JV</th>
-                            <th class="bg-transparent text-light">Voucher Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete">
-                                    <i class="fas fa-trash text-center fs-2"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-                            <td>
-                                <input  class="custom-input-field sm" placeholder=" " />
-                            </td>
-
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </ng-template>
+  </div>
 </div>
+
+<!-- Detail Tab Template -->
+<ng-template #detailTab>
+  <div>
+    <div class="table-responsive table-borderless">
+      <table class="table table-hover align-middle no-wrap table-sm mb-0">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" width="2%"></th>
+            <th class="bg-transparent text-light">Ledger Name <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">Branch <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">Curr.</th>
+            <th class="bg-transparent text-light">Ex. Rate</th>
+            <th class="bg-transparent text-light">Curr. Amt</th>
+            <th class="bg-transparent text-light">Taxable Amt</th>
+            <th class="bg-transparent text-light">Tax %</th>
+            <th class="bg-transparent text-light">Tax Amt</th>
+            <th class="bg-transparent text-light">Local Amt</th>
+            <th class="bg-transparent text-light">Narration</th>
+            <th class="bg-transparent text-light">Cost Center</th>
+            <th class="bg-transparent text-light">Charge</th>
+            <th class="bg-transparent text-light">SAC/HSN</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="details">
+          <tr *ngFor="let detail of detailsArray.controls; let i = index" [formGroupName]="i">
+            <td>
+              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeDetailRow(i)">
+                <i class="fas fa-trash text-center fs-2"></i>
+              </button>
+            </td>
+            <td>
+              <ng-select formControlName="ledger"
+                         [items]="ledgerList"
+                         bindLabel="SubledgerName"
+                         placeholder="Select Ledger"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <ng-select formControlName="branch"
+                         [items]="branchList"
+                         bindLabel="BranchName"
+                         placeholder="Select Branch"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <select formControlName="drCr" class="custom-input-field sm">
+                <option value="D">Debit</option>
+                <option value="C">Credit</option>
+              </select>
+            </td>
+            <td>
+              <input formControlName="currency" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="exchangeRate" type="number" class="custom-input-field sm" step="0.0001" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="currencyAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="taxableAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="taxPercentage" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="taxAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="localAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="narration" class="custom-input-field sm" placeholder=" " />
+            </td>
+            <td>
+              <ng-select formControlName="costCenter"
+                         [items]="costCenterList"
+                         bindLabel="CostCenterName"
+                         placeholder="Cost Center"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <ng-select formControlName="charge"
+                         [items]="chargeList"
+                         bindLabel="ChargeName"
+                         placeholder="Charge"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <input formControlName="sacHsnCode" class="custom-input-field sm" placeholder=" " />
+            </td>
+          </tr>
+          <tr *ngIf="detailsArray.length === 0">
+            <td colspan="15" class="text-center text-muted py-3">
+              No detail entries. Click "Add Detail" to add entries.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<!-- TDS Tab Template -->
+<ng-template #tdsTab>
+  <div>
+    <div class="table-responsive table-borderless">
+      <table class="table table-hover align-middle no-wrap table-sm mb-0">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" width="2%"></th>
+            <th class="bg-transparent text-light">TDS Set <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">TDS Company Type</th>
+            <th class="bg-transparent text-light">IT Section Code</th>
+            <th class="bg-transparent text-light">Certificate No.</th>
+            <th class="bg-transparent text-light">Percentage</th>
+            <th class="bg-transparent text-light">Taxable Amt <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">TDS Amt</th>
+            <th class="bg-transparent text-light">Reason</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="tdsDetails">
+          <tr *ngFor="let tds of tdsArray.controls; let i = index" [formGroupName]="i">
+            <td>
+              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeTDSRow(i)">
+                <i class="fas fa-trash text-center fs-2"></i>
+              </button>
+            </td>
+            <td>
+              <ng-select formControlName="tdsSet"
+                         [items]="tdsSetList"
+                         bindLabel="ITSectionCode"
+                         placeholder="Select TDS Set"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <input formControlName="tdsCompanyType" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="itSectionCode" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="certificateNumber" class="custom-input-field sm" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="tdsPercentage" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="taxableAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="tdsAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="reason" class="custom-input-field sm" placeholder=" " />
+            </td>
+          </tr>
+          <tr *ngIf="tdsArray.length === 0">
+            <td colspan="9" class="text-center text-muted py-3">
+              No TDS entries. Click "Add TDS" to add TDS deductions.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Voucher Matching Tab Template -->
+<ng-template #voucherTab>
+  <div>
+    <!-- Outstanding Invoices Search Results -->
+    <div class="alert alert-info mb-2" *ngIf="outstandingInvoices.length === 0">
+      <i class="fas fa-info-circle me-2"></i>
+      Click "Search Outstanding" to find vendor invoices for matching.
+    </div>
+
+    <div *ngIf="outstandingInvoices.length > 0" class="mb-3">
+      <h6 class="text-primary">Outstanding Invoices (Select to Match)</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th width="5%"></th>
+              <th>Invoice No</th>
+              <th>Invoice Date</th>
+              <th>Vendor</th>
+              <th class="text-end">Original Amount</th>
+              <th class="text-end">Matched</th>
+              <th class="text-end">Outstanding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let invoice of outstandingInvoices" [class.table-active]="invoice.selected">
+              <td>
+                <input type="checkbox" [(ngModel)]="invoice.selected" [ngModelOptions]="{standalone: true}"
+                       (change)="toggleInvoiceSelection(invoice)" />
+              </td>
+              <td>{{ invoice.VoucherNumber }}</td>
+              <td>{{ invoice.VoucherDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ invoice.VendorName }}</td>
+              <td class="text-end">{{ invoice.OriginalAmount | number:'1.2-2' }}</td>
+              <td class="text-end">{{ invoice.MatchedAmount | number:'1.2-2' }}</td>
+              <td class="text-end">{{ invoice.OutstandingAmount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Matched Invoices Table -->
+    <div class="table-responsive table-borderless">
+      <table class="table table-hover align-middle no-wrap table-sm mb-0">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" width="2%"></th>
+            <th class="bg-transparent text-light">Voucher No</th>
+            <th class="bg-transparent text-light">Voucher Date</th>
+            <th class="bg-transparent text-light">Original Amt</th>
+            <th class="bg-transparent text-light">OS Amt</th>
+            <th class="bg-transparent text-light">Matching Amt</th>
+            <th class="bg-transparent text-light">TDS Amt</th>
+            <th class="bg-transparent text-light">Balance</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="voucherMatchings">
+          <tr *ngFor="let matching of voucherMatchingsArray.controls; let i = index" [formGroupName]="i">
+            <td>
+              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeMatchingRow(i)">
+                <i class="fas fa-trash text-center fs-2"></i>
+              </button>
+            </td>
+            <td>
+              <input formControlName="voucherNumber" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="voucherDate" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="originalAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="outstandingAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="matchingAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="tdsAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="balance" type="number" class="custom-input-field sm" readonly placeholder=" " />
+            </td>
+          </tr>
+          <tr *ngIf="voucherMatchingsArray.length === 0">
+            <td colspan="8" class="text-center text-muted py-3">
+              No invoices matched. Search and select outstanding invoices to match.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Inter-branch Tab Template -->
+<ng-template #interbranchTab>
+  <div>
+    <div class="table-responsive table-borderless">
+      <table class="table table-hover align-middle no-wrap table-sm mb-0">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" width="2%"></th>
+            <th class="bg-transparent text-light">Branch <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">Currency Amount <span class="text-danger">*</span></th>
+            <th class="bg-transparent text-light">Narration</th>
+            <th class="bg-transparent text-light">Inter Branch JV</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="interBranch">
+          <tr *ngFor="let ib of interBranchArray.controls; let i = index" [formGroupName]="i">
+            <td>
+              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeInterBranchRow(i)">
+                <i class="fas fa-trash text-center fs-2"></i>
+              </button>
+            </td>
+            <td>
+              <ng-select formControlName="branch"
+                         [items]="branchList"
+                         bindLabel="BranchName"
+                         placeholder="Select Branch"
+                         class="custom-ng-select-sm">
+              </ng-select>
+            </td>
+            <td>
+              <input formControlName="currencyAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="narration" class="custom-input-field sm" placeholder=" " />
+            </td>
+            <td>
+              <input formControlName="jvNumber" class="custom-input-field sm" readonly placeholder="Auto-generated" />
+            </td>
+          </tr>
+          <tr *ngIf="interBranchArray.length === 0">
+            <td colspan="5" class="text-center text-muted py-3">
+              No inter-branch entries. Click "Add Interbranch" for multi-location payments.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>

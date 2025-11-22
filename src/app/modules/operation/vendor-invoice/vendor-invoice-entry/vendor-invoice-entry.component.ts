@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import { NgbModal, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -23,6 +23,7 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -39,7 +40,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgxSpinnerModule,
     NumberFormatPipe,
     CustomDatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],
@@ -71,6 +73,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   houseJobList: any[] = [];
   stateList: any[] = [];
   houseJobListByMasterJob: { [key: number]: any[] } = {};
+  selectedVendorForCosts: any = null; 
+  allPendingCosts: any[] = []; 
+  searchVendors: any[] = []; 
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
   
@@ -160,7 +165,12 @@ gstTypes = [
 
   // TDS Configuration
   tdsConfig: any = null;
-
+currentUserState: string;
+  currentFinancialYear : number;
+  currentCountry : number;
+  currentCurrency: number;
+  currentUserCurrency : string;
+  currentUserCountry : string;
   // Country/Tax mode
   bookingModeCountry: string = 'india';
 
@@ -199,24 +209,36 @@ gstTypes = [
     }
 
     try {
-      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      console.log('=== INITIAL COMPANY DATA ===');
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
+    this.currentCurrency=Number(this.currentCompany?.CurrencyMasterSid)
+    this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
+    this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
+
+    console.log('=== INITIAL COMPANY DATA ===');
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    console.log('Company State:', this.getCompanyState());
+    console.log('Company State:', this.currentUserState);
+    console.log('Company Currency:', this.currentUserCurrency);
+    console.log('Current Country:', this.currentCountry);
+    console.log('Current Currency:', this.currentCurrency);
+    console.log('Current Financial Year:', this.currentFinancialYear);
 
-      // Set country mode from company settings
-      if (this.currentCompany?.CountryName) {
-        this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
-      }
-      // if (this.currentBranch?.stateName) {
-      //   this.bookingModeCountry = this.currentBranch.stateName.toLowerCase();
-      // }
-    } catch (e) {
-      this.currentCompany = null;
-      this.currentBranch = null;
+    // Set country mode from company settings
+    if (this.currentCompany?.CountryName) {
+      this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
+      console.log('DEBUG - Booking mode country:', this.bookingModeCountry);
     }
+  } catch (e) {
+    console.error('Error loading company data:', e);
+    this.currentCompany = null;
+    this.currentBranch = null;
+  }
+
 
     this.initForm();
     this.loadLookups();
@@ -279,6 +301,7 @@ gstTypes = [
       BillAmt: [0, [Validators.required, Validators.min(0)]],
       MBLNo: [''],
       HBLNo: [''],
+      PostStatus:['U'],
       InvoiceType: ['B2B'],
       GSTType: [''],
       Narration: [''],
@@ -295,10 +318,11 @@ gstTypes = [
         TDSSet: [{ value: '', disabled: true }],
         TDSCompany: [{ value: '', disabled: true }],
         ITSectionType: [{ value: '', disabled: true }],
-        ITSectionCode: [{ value: '', disabled: true }],
+        ITSectionCode: [{ value: 'null', disabled: true }],
         CertificateNo: [{ value: '', disabled: true }],
         Percentage: [{ value: 0, disabled: true }],
         TaxableAmt: [{ value: 0, disabled: true }],
+        TDSSetRateSid: [{ value: 0, disabled: true }],
         TDSAmt: [{ value: 0, disabled: true }],
         Reason: [''],
         TDSSectionCode:[''],
@@ -319,12 +343,13 @@ gstTypes = [
 
   createDetailGroup(data?: any): FormGroup {
   return this.fb.group({
+    CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
     ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
     ChargeDescription: [data?.ChargeDescription || ''],
     HSSACMasterSid: [data?.HSSACMasterSid || null],
     ChargeUOMSid: [data?.ChargeUOMSid || null],
     NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
-    DrCr: [data?.DrCr || 'Dr', Validators.required],
+    DrCr: [data?.DrCr || 'D', Validators.required],
     CurrencyCode: [data?.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value || null],
     Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
     ExchangeRate: [data?.ExchangeRate || this.vendorInvoiceForm.get('ExchangeRate')?.value || 1],
@@ -920,48 +945,48 @@ getCompanyState(): string {
   console.log('User Data:', this.userData);
 
   // Method 1: Check if currentCompany has stateMaster directly
-  if (this.currentCompany.stateMaster) {
-    const state = this.currentCompany.stateMaster.stateName || this.currentCompany.stateMaster.StateName;
-    if (state) {
-      console.log('Company State from currentCompany.stateMaster:', state);
-      return state;
-    }
-  }
+  // if (this.currentCompany.stateMaster) {
+  //   const state = this.currentCompany.stateMaster.stateName || this.currentCompany.stateMaster.StateName;
+  //   if (state) {
+  //     console.log('Company State from currentCompany.stateMaster:', state);
+  //     return state;
+  //   }
+  // }
 
   // Method 2: Check if currentCompany has StateMasterSid and look up in stateList
-  if (this.currentCompany.StateMasterSid && this.stateList.length > 0) {
-    const state = this.stateList.find(s => 
-      s.StateMasterSid === this.currentCompany.StateMasterSid || 
-      s.stateMasterSid === this.currentCompany.StateMasterSid
-    );
-    if (state) {
-      const stateName = state.stateName || state.StateName;
-      console.log('Company State from currentCompany.StateMasterSid lookup:', stateName);
-      return stateName;
-    }
-  }
+  // if (this.currentCompany.StateMasterSid && this.stateList.length > 0) {
+  //   const state = this.stateList.find(s => 
+  //     s.StateMasterSid === this.currentCompany.StateMasterSid || 
+  //     s.stateMasterSid === this.currentCompany.StateMasterSid
+  //   );
+  //   if (state) {
+  //     const stateName = state.stateName || state.StateName;
+  //     console.log('Company State from currentCompany.StateMasterSid lookup:', stateName);
+  //     return stateName;
+  //   }
+  // }
 
   // Method 3: Check currentBranch state information
-  if (this.currentBranch && this.currentBranch.stateMaster) {
-    const state = this.currentBranch.stateMaster.stateName || this.currentBranch.stateMaster.StateName;
-    if (state) {
-      console.log('Company State from currentBranch.stateMaster:', state);
-      return state;
-    }
-  }
+  // if (this.currentBranch && this.currentBranch.stateMaster) {
+  //   const state = this.currentBranch.stateMaster.stateName || this.currentBranch.stateMaster.StateName;
+  //   if (state) {
+  //     console.log('Company State from currentBranch.stateMaster:', state);
+  //     return state;
+  //   }
+  // }
 
-  // Method 4: Check currentBranch StateMasterSid
-  if (this.currentBranch && this.currentBranch.StateMasterSid && this.stateList.length > 0) {
-    const state = this.stateList.find(s => 
-      s.StateMasterSid === this.currentBranch.StateMasterSid || 
-      s.stateMasterSid === this.currentBranch.StateMasterSid
-    );
-    if (state) {
-      const stateName = state.stateName || state.StateName;
-      console.log('Company State from currentBranch.StateMasterSid lookup:', stateName);
-      return stateName;
-    }
-  }
+  // // Method 4: Check currentBranch StateMasterSid
+  // if (this.currentBranch && this.currentBranch.StateMasterSid && this.stateList.length > 0) {
+  //   const state = this.stateList.find(s => 
+  //     s.StateMasterSid === this.currentBranch.StateMasterSid || 
+  //     s.stateMasterSid === this.currentBranch.StateMasterSid
+  //   );
+  //   if (state) {
+  //     const stateName = state.stateName || state.StateName;
+  //     console.log('Company State from currentBranch.StateMasterSid lookup:', stateName);
+  //     return stateName;
+  //   }
+  // }
 
   // Method 5: Navigate through userData structure to get branch state
   if (this.userData && this.userData.userCompanyMaster) {
@@ -1037,9 +1062,11 @@ getStateNameBySid(stateMasterSid: number): string {
   
   return state?.stateName || state?.StateName || '';
 }
-getVendorBranchByVendor(CustomerMasterSid: number) {
+// Enhanced getVendorBranchByVendor method with callback
+getVendorBranchByVendor(CustomerMasterSid: number, callback?: (branches: any[]) => void) {
   if (!CustomerMasterSid) {
     this.vendorBranchList = [];
+    if (callback) callback([]);
     return;
   }
   
@@ -1048,56 +1075,35 @@ getVendorBranchByVendor(CustomerMasterSid: number) {
       if (resp?.status && resp.data) {
         this.vendorBranchList = Array.isArray(resp.data) ? resp.data : resp.data;
         
+        if (callback) {
+          callback(this.vendorBranchList);
+        }
+        
         // Auto-select the branch if there's a pending selection
         if (this.pendingBranchToSelect) {
           const branchId = this.pendingBranchToSelect;
           this.pendingBranchToSelect = null;
-          const foundBranch = this.vendorBranchList.find((b: any) => 
-            Number(b.CustomerBranchSid) === Number(branchId)
-          );
-          if (foundBranch) {
-            // Set address from the found branch
-            const address = foundBranch.Address || foundBranch.CustomerAddress1 || '';
-            this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
-            
-            // Also set Place of Supply if needed
-            let placeOfSupply = '';
-            const stateMasterSid = foundBranch.StateMasterSid;
-            
-            if (stateMasterSid && this.stateList.length > 0) {
-              const state = this.stateList.find(s => 
-                s.StateMasterSid === stateMasterSid || 
-                s.stateMasterSid === stateMasterSid
-              );
-              if (state) {
-                placeOfSupply = state.stateName || state.StateName || '';
-              }
-            }
-            
-            if (!placeOfSupply) {
-              placeOfSupply = foundBranch.City || foundBranch.city || '';
-            }
-
-            this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
-            
-            // Auto-determine GST Type
-            this.determineGSTType(placeOfSupply);
-          }
+          this.triggerVendorBranchChange(branchId);
         }
       } else if (Array.isArray(resp)) {
         this.vendorBranchList = resp;
+        if (callback) callback(this.vendorBranchList);
       } else if (resp?.data) {
         this.vendorBranchList = resp.data;
+        if (callback) callback(this.vendorBranchList);
       } else {
         this.vendorBranchList = [];
+        if (callback) callback([]);
       }
     },
     error: (err) => {
       console.error('Error fetching vendor branches', err);
       this.vendorBranchList = [];
+      if (callback) callback([]);
     }
   });
 }
+
 
 private getCustomerCountryCode(vendor: any): string {
   if (vendor.CountryMasterSid && typeof vendor.CountryMasterSid === 'object') {
@@ -1145,6 +1151,7 @@ private getCustomerCountryCode(vendor: any): string {
             TDSCompany: this.currentCompany?.CompanyName || '',
             ITSectionType: this.tdsConfig.companyType || '',
             ITSectionCode: this.tdsConfig.itSectionCode || '',
+            TDSSetRateSid: this.tdsConfig.tdsSetRateSid || 0,
             CertificateNo: this.tdsConfig.certificateNo || '',
             Percentage: this.tdsConfig.tdsRate || 0
           });
@@ -1159,6 +1166,7 @@ private getCustomerCountryCode(vendor: any): string {
             TDSCompany: '',
             ITSectionType: '',
             ITSectionCode: '',
+            TDSSetRateSid: 0,
             CertificateNo: '',
             Percentage: 0,
             TDSAmt: 0
@@ -1174,24 +1182,26 @@ private getCustomerCountryCode(vendor: any): string {
 
   // Search Pending Costs
   openSearchCostsModal() {
-    if (!this.searchCostsModalRef) {
-      this.appSettingService.showError('Search modal template not found');
-      return;
-    }
-
-    this.searchType = 'Master Job';
-    this.searchValue = '';
-    this.pendingCosts = [];
-    this.selectedCosts.clear();
-
-    this.searchCostsModalInstance = this.modalService.open(this.searchCostsModalRef, {
-      size: 'xl',
-      backdrop: 'static',
-      keyboard: false
-    });
+  if (!this.searchCostsModalRef) {
+    this.appSettingService.showError('Search modal template not found');
+    return;
   }
 
-  searchPendingCostsAction() {
+  this.searchType = 'Master Job';
+  this.searchValue = '';
+  this.allPendingCosts = [];
+  this.searchVendors = [];
+  this.selectedVendorForCosts = null;
+
+  this.searchCostsModalInstance = this.modalService.open(this.searchCostsModalRef, {
+    size: 'lg',
+    backdrop: 'static',
+    keyboard: false,
+    centered:true,
+  });
+}
+
+ searchPendingCostsAction() {
   if (!this.searchValue.trim()) {
     this.appSettingService.showWarning('Please enter a search value');
     return;
@@ -1202,30 +1212,32 @@ private getCustomerCountryCode(vendor: any): string {
   const payload = {
     searchType: this.searchType,
     searchValue: this.searchValue.trim(),
-    // vendorSid: this.vendorInvoiceForm.get('PartyMasterSid')?.value,
     companyMasterSid: this.currentCompany?.CompanyMasterSid,
     branchMasterSid: this.currentBranch?.BranchMasterSid
   };
-
-  console.log('Frontend - Sending payload:', payload);
 
   this.operationService.searchPendingCosts(payload).subscribe({
     next: (response) => {
       this.searchResultsLoading = false;
       this.searchPerformed = true;
       
-      console.log('Frontend - Received response:', response);
-      
       if (response.status && response.data) {
-        this.pendingCosts = response.data.items || response.data;
-        if (this.pendingCosts.length === 0) {
-          this.appSettingService.showInfo('No pending costs found');
+        this.allPendingCosts = response.data.items || response.data;
+        
+        if (this.allPendingCosts.length > 0) {
+          // Extract unique vendors for selection
+          this.extractVendorsFromCosts(this.allPendingCosts);
+          
+          this.appSettingService.showSuccess(`Found ${this.allPendingCosts.length} pending costs`);
         } else {
-          this.appSettingService.showSuccess(`Found ${this.pendingCosts.length} pending costs`);
+          this.appSettingService.showInfo('No pending costs found');
+          this.allPendingCosts = [];
+          this.searchVendors = [];
         }
       } else {
         this.appSettingService.showError(response.message || 'No pending costs found');
-        this.pendingCosts = [];
+        this.allPendingCosts = [];
+        this.searchVendors = [];
       }
     },
     error: (error) => {
@@ -1236,7 +1248,69 @@ private getCustomerCountryCode(vendor: any): string {
     }
   });
 }
+// Extract unique vendors from costs
+private extractVendorsFromCosts(costs: any[]) {
+  const vendorMap = new Map();
+  
+  costs.forEach(cost => {
+    if (cost.VendorSid && cost.VendorName) {
+      if (!vendorMap.has(cost.VendorSid)) {
+        vendorMap.set(cost.VendorSid, {
+          VendorSid: cost.VendorSid,
+          VendorName: cost.VendorName,
+          VendorAddress: cost.VendorAddress || '',
+          CustomerName: cost.CustomerName || cost.VendorName,
+          Address: cost.Address || cost.VendorAddress || ''
+        });
+      }
+    }
+  });
+  
+  this.searchVendors = Array.from(vendorMap.values());
+  console.log('Available vendors:', this.searchVendors);
+}
+onVendorSelectForCosts(selectedVendor: any) {
+  this.selectedVendorForCosts = selectedVendor;
+  
+  if (selectedVendor) {
+    // Auto-populate vendor information in main form
+    this.autoPopulateVendorFromSelection(selectedVendor);
+  }
+}
 
+
+
+private autoPopulateVendorFromSelection(vendor: any) {
+  if (!vendor) return;
+
+  // Set vendor information in main form
+  this.vendorInvoiceForm.patchValue({
+    PartyName: vendor.VendorName || vendor.CustomerName,
+    PartyMasterSid: vendor.VendorSid
+  });
+
+  // Load vendor branches
+  this.getVendorBranchByVendor(vendor.VendorSid, (branches) => {
+    if (branches.length > 0) {
+      const matchingBranch = branches.find(branch => 
+        branch.Address?.includes(vendor.VendorAddress) || 
+        branch.CustomerAddress1?.includes(vendor.VendorAddress)
+      );
+      
+      const branchToSelect = matchingBranch || branches[0];
+      
+      if (branchToSelect) {
+        this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(branchToSelect.CustomerBranchSid);
+        this.triggerVendorBranchChange(branchToSelect.CustomerBranchSid);
+      }
+    }
+  });
+
+  // Set vendor address
+  this.vendorInvoiceForm.patchValue({
+    PartyAddress: vendor.VendorAddress || vendor.Address || ''
+  });
+}
 
   toggleCostSelection(costSid: number) {
     if (this.selectedCosts.has(costSid)) {
@@ -1245,16 +1319,83 @@ private getCustomerCountryCode(vendor: any): string {
       this.selectedCosts.add(costSid);
     }
   }
+  private triggerVendorBranchChange(customerBranchSid: number) {
+  const foundBranch = this.vendorBranchList.find(b => 
+    Number(b.CustomerBranchSid) === Number(customerBranchSid)
+  );
+  
+  if (foundBranch) {
+    // Set address from branch
+    const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
+    this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
+
+    // Get Place of Supply from state lookup
+    let placeOfSupply = '';
+    const stateMasterSid = foundBranch.StateMasterSid;
+    
+    if (stateMasterSid && this.stateList.length > 0) {
+      const state = this.stateList.find(s => 
+        s.StateMasterSid === stateMasterSid || 
+        s.stateMasterSid === stateMasterSid
+      );
+      if (state) {
+        placeOfSupply = state.stateName || state.StateName || '';
+      }
+    }
+    
+    // If no state found, try to get city or use empty
+    if (!placeOfSupply) {
+      placeOfSupply = foundBranch.City || foundBranch.city || '';
+    }
+
+    console.log('Setting Place of Supply:', placeOfSupply);
+    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+
+    // Set GST No based on country
+    const vendorMasterSid = foundBranch.CustomerMasterSid;
+    if (vendorMasterSid) {
+      const vendor = this.vendorList.find(v => v.CustomerMasterSid === vendorMasterSid);
+      if (vendor) {
+        const countryCode = this.getCustomerCountryCode(vendor);
+        if (countryCode === 'IN') {
+          this.vendorInvoiceForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+        } else {
+          this.vendorInvoiceForm.get('GSTNo')?.setValue(vendor.PanType || '');
+        }
+      }
+    }
+
+    // Auto-determine GST Type based on Place of Supply
+    this.determineGSTType(placeOfSupply);
+  }
+}
 addSelectedCosts() {
-  const selectedCostItems = this.pendingCosts.filter(cost => cost.selected);
+   const selectedCostItems = this.allPendingCosts.filter(cost => cost.selected);
   
   if (selectedCostItems.length === 0) {
     this.appSettingService.showWarning('Please select at least one cost');
     return;
   }
 
+  // Check if all selected costs belong to the same vendor
+  const uniqueVendors = new Set(selectedCostItems.map(cost => cost.VendorSid));
+  if (uniqueVendors.size > 1) {
+    this.appSettingService.showWarning('Selected costs belong to different vendors. Please select costs from one vendor only.');
+    return;
+  }
+
+  // Use the vendor from first selected cost if no vendor explicitly selected
+  const firstCostVendor = selectedCostItems[0];
+  if (!this.selectedVendorForCosts && firstCostVendor) {
+    const vendor = this.searchVendors.find(v => v.VendorSid === firstCostVendor.VendorSid);
+    if (vendor) {
+      this.onVendorSelectForCosts(vendor);
+    }
+  }
+
   selectedCostItems.forEach(cost => {
     const detailRow = this.createDetailGroup({
+      CostRevenueChargesSid: cost.CostRevenueChargesSid,
       ChargeMasterSid: cost.ChargeMasterSid,
       ChargeDescription: cost.ChargeDescription,
       NumberOfUnit: cost.NumberOfUnit || 1,
@@ -1278,25 +1419,29 @@ addSelectedCosts() {
   this.appSettingService.showSuccess(`${selectedCostItems.length} cost(s) added successfully`);
 }
 
- toggleSelectAll(event: any): void {
+ // Select/Deselect all costs
+toggleSelectAll(event: any): void {
   const checked = event.target.checked;
-  this.pendingCosts.forEach(cost => cost.selected = checked);
+  this.allPendingCosts.forEach(cost => cost.selected = checked);
 }
 
-// Fix the isAllSelected method
+// Check if all costs are selected
 isAllSelected(): boolean {
-  return this.pendingCosts.length > 0 && this.pendingCosts.every(c => c.selected);
+  return this.allPendingCosts.length > 0 && 
+         this.allPendingCosts.every(c => c.selected);
 }
 
-// Fix the getSelectedCosts method
+// Get selected costs
 getSelectedCosts(): any[] {
-  return this.pendingCosts.filter(cost => cost.selected);
+  return this.allPendingCosts.filter(cost => cost.selected);
 }
 
   closeSearchCostsModal() {
-    this.searchCostsModalInstance?.close();
-    this.selectedCosts.clear();
-  }
+  this.searchCostsModalInstance?.close();
+  this.selectedVendorForCosts = null;
+  this.searchVendors = [];
+  this.allPendingCosts = [];
+}
 
   // Load lookups
   loadLookups() {
@@ -1425,11 +1570,27 @@ getMasterJobNumber(jobSid: number): string {
     });
   }
 
-  setFormReadonly() {
-    if (this.isViewMode) {
-      this.vendorInvoiceForm.disable();
-    }
+ setFormReadonly() {
+  if (this.isViewMode || this.isPosted) {
+    this.vendorInvoiceForm.disable();
+    
+    // Also disable details array if posted
+    // if (this.isPosted) {
+    //   this.details.disable();
+    // }
+  } else {
+    this.vendorInvoiceForm.enable();
+    this.details.enable();
+    
+    // Keep readonly fields as is
+    this.vendorInvoiceForm.get('VoucherNumber')?.disable();
+    this.vendorInvoiceForm.get('PostedOn')?.disable();
+    this.vendorInvoiceForm.get('PartyAddress')?.disable();
+    this.vendorInvoiceForm.get('GSTNo')?.disable();
+    this.vendorInvoiceForm.get('PlaceOfSupply')?.disable();
   }
+}
+
 
   formatDateForDisplay(date: string | Date | null): string {
   if (!date) return '';
@@ -1468,6 +1629,7 @@ getMasterJobNumber(jobSid: number): string {
       BillAmt: data.Amount || 0,
       MBLNo: data.MasterNumber,
       HBLNo: data.HouseNumber,
+      PostStatus: data.PostStatus,
       InvoiceType: data.InvoiceType || 'B2B',
       GSTType: data.GSTType,
       Narration: data.Narration || '',
@@ -1554,6 +1716,7 @@ getMasterJobNumber(jobSid: number): string {
       const tds = data.VoucherTDS[0];
       this.tdsGroup.patchValue({
         ITSectionCode: tds.ITSectionCode,
+        TDSSetRateSid: tds.TDSSetRateSid,
         Percentage: tds.TDSRate,
         TaxableAmt: tds.TaxableAmount,
         TDSAmt: tds.TDSAmount,
@@ -1624,122 +1787,244 @@ getMasterJobNumber(jobSid: number): string {
       });
     }
   }
-
-  preparePayload(): any {
-    const formValue = this.vendorInvoiceForm.getRawValue();
-
-    const payload: any = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      PartyMasterSid: formValue.PartyMasterSid,
-      PartyName: formValue.PartyName,
-      PartyAddress: formValue.PartyAddress,
-      CustomerBranchSid: formValue.CustomerBranchSid,
-      GSTNo: formValue.GSTNo,
-      PlaceOfSupply: formValue.PlaceOfSupply,
-      CurrencyCode: formValue.CurrencyCode,
-      CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === formValue.CurrencyCode)?.CurrencyMasterSid,
-      ExchangeRate: formValue.ExchangeRate,
-      BillNo: formValue.BillNo,
-      BillDate: this.parseNgbDateToISO(formValue.BillDate),
-      BillAmt: formValue.BillAmt,
-      MBLNo: formValue.MBLNo,
-      HBLNo: formValue.HBLNo,
-      InvoiceType: formValue.InvoiceType,
-      GSTType: formValue.GSTType,
-      Narration: formValue.Narration,
-      MasterJobSid: formValue.MasterJobSid,
-      HouseJobSid: formValue.HouseJobSid,
-      VoucherDate: this.parseNgbDateToISO(formValue.VoucherDate),
-      PostDate: formValue.PostedOn ? this.parseNgbDateToISO(formValue.PostedOn) : null,
-      status: formValue.Status,
-      CreatedBy: this.currUserEmail || 'System',
-      UpdatedBy: this.currUserEmail || 'System'
-    };
-
-    // Add details
-    payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
-      Sno: index + 1,
-      ChargeMasterSid: detail.ChargeMasterSid,
-      ChargeDescription: detail.ChargeDescription,
-      HSSACMasterSid: detail.HSSACMasterSid,
-      ChargeUOMSid: detail.ChargeUOMSid,
-      NumberOfUnit: detail.NumberOfUnit,
-      Rate: detail.Rate,
-      Amount: detail.Amount,
-      TaxableAmount: detail.TaxableAmount,
-      TaxPercentage1: detail.CGSTPercentage || detail.VATPercentage || 0,
-      TaxAmount1: detail.CGST || detail.VAT || 0,
-      TaxPercentage2: detail.SGSTPercentage || 0,
-      TaxAmount2: detail.SGST || 0,
-      LocalAmount: detail.LocalAmount,
-      CurrencyCode: detail.CurrencyCode,
-      CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === detail.CurrencyCode)?.CurrencyMasterSid,
-      ExchangeRate: detail.ExchangeRate,
-      DrCr: detail.DrCr,
-      LedgerMasterSid: detail.LedgerMasterSid,
-      MasterJobSid: detail.MasterJobSid,
-      HouseJobSid: detail.HouseJobSid,
-      DepartmentMasterSid: detail.DepartmentMasterSid,
-      Remarks: detail.Remarks
-    }));
-
-    // Add TDS if available
-    if (this.tdsConfig) {
-      payload.VoucherTDS = {
-        TDSSetRateSid: this.tdsConfig.tdsSetRateSid,
-        ITSectionCode: formValue.voucherTDS.ITSectionCode,
-        TDSRate: formValue.voucherTDS.Percentage,
-        TaxableAmount: formValue.voucherTDS.TaxableAmt,
-        TDSAmount: formValue.voucherTDS.TDSAmt,
-        Reason: formValue.voucherTDS.Reason
-      };
-    }
-     payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
-
-    // Add others (include Remarks from root form)
-    payload.VoucherOthers = {
-      ...formValue.voucherOthers,
-      Remarks: formValue.Remarks || ''
-    };
-
-    return payload;
-  }
-  prepareVoucherTDSPayload(details: any[]): any[] {
-  const taxRecords: any[] = [];
   
-  details.forEach((detail: any) => {
-    if (detail.TaxAmount1 > 0 || detail.TaxAmount2 > 0 || detail.TaxAmountIGST > 0) {
-      if (detail.TaxAmountIGST > 0) {
-        taxRecords.push({
-          TaxType: 'IGST',
-          TaxPercentage: detail.TaxPercentageIGST,
-          TaxAmount: detail.TaxAmountIGST,
-          HSSACMasterSid: detail.HSSACMasterSid
-        });
+
+ preparePayload(): any {
+  const formValue = this.vendorInvoiceForm.getRawValue();
+
+  const payload: any = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    PartyMasterSid: formValue.PartyMasterSid,
+    PartyName: formValue.PartyName,
+    PartyAddress: formValue.PartyAddress,
+    CustomerBranchSid: formValue.CustomerBranchSid,
+    GSTNo: formValue.GSTNo,
+    PlaceOfSupply: formValue.PlaceOfSupply,
+    CurrencyCode: formValue.CurrencyCode,
+    CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === formValue.CurrencyCode)?.CurrencyMasterSid,
+    ExchangeRate: formValue.ExchangeRate,
+    BillNo: formValue.BillNo,
+    BillDate: this.fromNgbDate(formValue.BillDate),
+    BillAmt: formValue.BillAmt,
+    MBLNo: formValue.MBLNo,
+    HBLNo: formValue.HBLNo,
+    PostStatus: formValue.PostStatus,
+    InvoiceType: formValue.InvoiceType,
+    GSTType: formValue.GSTType,
+    Narration: formValue.Narration,
+    MasterJobSid: formValue.MasterJobSid,
+    HouseJobSid: formValue.HouseJobSid,
+    VoucherDate: this.fromNgbDate(formValue.VoucherDate),
+    PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
+    status: formValue.Status,
+    CreatedBy: this.currUserEmail || 'System',
+    UpdatedBy: this.currUserEmail || 'System'
+  };
+
+  // Add details with CostRevenueChargesSid
+  payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
+    Sno: index + 1,
+    CostRevenueChargesSid: detail.CostRevenueChargesSid, // Include original cost ID
+    ChargeMasterSid: detail.ChargeMasterSid,
+    ChargeDescription: detail.ChargeDescription,
+    HSSACMasterSid: detail.HSSACMasterSid,
+    ChargeUOMSid: detail.ChargeUOMSid,
+    NumberOfUnit: detail.NumberOfUnit,
+    Rate: detail.Rate,
+    Amount: detail.Amount,
+    TaxableAmount: detail.TaxableAmount,
+    TaxPercentage1: detail.TaxPercentage1 || 0,
+    TaxAmount1: detail.TaxAmount1 || 0,
+    TaxPercentage2: detail.TaxPercentage2 || 0,
+    TaxAmount2: detail.TaxAmount2 || 0,
+    TaxPercentageIGST: detail.TaxPercentageIGST || 0,
+    TaxAmountIGST: detail.TaxAmountIGST || 0,
+    LocalAmount: detail.LocalAmount,
+    CurrencyCode: detail.CurrencyCode,
+    CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === detail.CurrencyCode)?.CurrencyMasterSid,
+    ExchangeRate: detail.ExchangeRate,
+    DrCr: detail.DrCr,
+    LedgerMasterSid: detail.LedgerMasterSid,
+    MasterJobSid: detail.MasterJobSid,
+    HouseJobSid: detail.HouseJobSid,
+    DepartmentMasterSid: detail.DepartmentMasterSid,
+    Remarks: detail.Remarks
+  }));
+
+  // Add TDS
+  // payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
+
+  // Add others
+  payload.VoucherOthers = {
+    ...formValue.voucherOthers,
+    Remarks: formValue.Remarks || ''
+  };
+
+  return payload;
+}
+//   prepareVoucherTDSPayload(details: any[]): any[] {
+//   const taxRecords: any[] = [];
+  
+//   details.forEach((detail: any) => {
+//     if (detail.TaxAmount1 > 0 || detail.TaxAmount2 > 0 || detail.TaxAmountIGST > 0) {
+//       if (detail.TaxAmountIGST > 0) {
+//         taxRecords.push({
+//           TaxType: 'IGST',
+//           TaxPercentage: detail.TaxPercentageIGST,
+//           TaxAmount: detail.TaxAmountIGST,
+//           HSSACMasterSid: detail.HSSACMasterSid,
+//           TDSSetRateSid: detail.TDSSetRateSid,
+//           ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//         });
+//       } else {
+//         if (detail.TaxAmount1 > 0) {
+//           taxRecords.push({
+//             TaxType: 'CGST',
+//             TaxPercentage: detail.TaxPercentage1,
+//             TaxAmount: detail.TaxAmount1,
+//             TDSSetRateSid: detail.TDSSetRateSid,
+//             HSSACMasterSid: detail.HSSACMasterSid,
+//             ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//           });
+//         }
+//         if (detail.TaxAmount2 > 0) {
+//           taxRecords.push({
+//             TaxType: 'SGST',
+//             TaxPercentage: detail.TaxPercentage2,
+//             TaxAmount: detail.TaxAmount2,
+//             TDSSetRateSid: detail.TDSSetRateSid,
+//             HSSACMasterSid: detail.HSSACMasterSid,
+//             ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//           });
+//         }
+//       }
+//     }
+//   });
+  
+//   return taxRecords;
+// }
+
+onFinalSave() {
+  if (this.vendorInvoiceForm.invalid) {
+    this.vendorInvoiceForm.markAllAsTouched();
+    this.appSettingService.showWarning('Please fill required vendor invoice fields.');
+    return;
+  }
+
+  if (this.details.length === 0) {
+    this.appSettingService.showWarning('Please add at least one charge line.');
+    return;
+  }
+
+  this.recalculateAllRows();
+  this.saveVendorInvoice(true); // true indicates final save
+}
+
+private saveVendorInvoice(isFinal: boolean) {
+  const payload = this.preparePayload();
+
+  this.spinner.show();
+  
+  const saveObservable = this.headerId 
+    ? this.operationService.updateVendorInvoiceById(this.headerId, payload)
+    : this.operationService.createVendorInvoice(payload);
+
+  saveObservable.subscribe({
+    next: async (resp: any) => {
+      if (resp?.status) {
+        const voucherHeaderSid = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || this.headerId;
+        
+        if (isFinal && voucherHeaderSid) {
+          // If final save, post the voucher
+          await this.postVoucher(voucherHeaderSid);
+        } else {
+          this.spinner.hide();
+          const message = isFinal ? 'Vendor invoice saved and posted successfully!' : 'Vendor invoice saved as draft successfully!';
+          this.appSettingService.showSuccess(message);
+          
+          if (!this.headerId && voucherHeaderSid) {
+            this.headerId = voucherHeaderSid;
+            this.router.navigate(['operation/vendor-invoice/entry', voucherHeaderSid]);
+          }
+        }
       } else {
-        if (detail.TaxAmount1 > 0) {
-          taxRecords.push({
-            TaxType: 'CGST',
-            TaxPercentage: detail.TaxPercentage1,
-            TaxAmount: detail.TaxAmount1,
-            HSSACMasterSid: detail.HSSACMasterSid
-          });
-        }
-        if (detail.TaxAmount2 > 0) {
-          taxRecords.push({
-            TaxType: 'SGST',
-            TaxPercentage: detail.TaxPercentage2,
-            TaxAmount: detail.TaxAmount2,
-            HSSACMasterSid: detail.HSSACMasterSid
-          });
-        }
+        this.spinner.hide();
+        this.appSettingService.showError('Error saving vendor invoice.');
       }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Save vendor invoice error', err);
+      this.appSettingService.showError('Failed to save vendor invoice.');
     }
   });
-  
-  return taxRecords;
 }
+
+
+
+private async postVoucher(voucherHeaderSid: number) {
+  try {
+    const currentCompany = this.currentCompany;
+    const currentBranch = this.currentBranch;
+    const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+    const currentCountry =Number(this.currentCompany?.CountryMasterSid);
+    const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+    const currentCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    const currentUserEmail =  this.userData?.userEmail;
+    
+ 
+    
+    if (!currentCompany || !currentBranch || !currentFinancialYear || !currentCountry || !currentCurrency) {
+      throw new Error('Company, branch, or financial year or country information is missing');
+     
+    }
+
+    const postPayload = {
+      VoucherHeaderSid: voucherHeaderSid,
+      CompanyMasterSid: currentCompany.CompanyMasterSid,
+      BranchMasterSid: currentBranch.BranchMasterSid,
+      YearMasterSid: currentFinancialYear,
+      LocalCurrencyMasterSid: currentCurrency  ,
+      LocalCurrencyCode: currentCompany.CurrencyCode , 
+      PostedBy: currentUserEmail ,
+      TaxDetails: {
+        CountryMasterSid: currentCountry,
+        countryName: currentCountryName,
+        TaxCategory: 'Inter', 
+        EffectiveFrom: new Date().toISOString(),
+        TaxType: 'Output' 
+      }
+    };
+
+    const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
+    
+    this.spinner.hide();
+    if (result.status) {
+      this.appSettingService.showSuccess('Invoice posted successfully!');
+      this.vendorInvoiceData.PostStatus = 'P'; // Update local state
+      
+      // Navigate to list or stay on page but disable edits
+      this.router.navigate(['operation/invoice/list']);
+    } else {
+      this.appSettingService.showError(result.message || 'Failed to post invoice.');
+    }
+  } catch (error) {
+    this.spinner.hide();
+    console.error('Post voucher error:', error);
+    this.appSettingService.showError('Failed to post invoice. Please try again.');
+  }
+}
+// Check if voucher is posted (for UI controls)
+get isPosted(): boolean {
+  return this.vendorInvoiceData?.PostStatus === 'P';
+}
+
+// Check if voucher is draft
+get isDraft(): boolean {
+  return !this.vendorInvoiceData?.PostStatus || this.vendorInvoiceData?.PostStatus === 'U';
+}
+
 
   onReset() {
     if (this.isEditMode) {
@@ -1879,10 +2164,14 @@ getMasterJobNumber(jobSid: number): string {
     return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() };
   }
 
-  parseNgbDateToISO(ngbDate: NgbDateStructLike | null): string | null {
-    if (!ngbDate) return null;
-    const d = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day);
-    return d.toISOString();
+  // parseNgbDateToISO(ngbDate: NgbDateStructLike | null): string | null {
+  //   if (!ngbDate) return null;
+  //   const d = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day);
+  //   return d.toISOString();
+  // }
+  private fromNgbDate(s: NgbDateStructLike | null): Date | null {
+    if (!s || !s.year) return null;
+    return new Date(s.year, (s.month || 1) - 1, s.day || 1);
   }
 
   markFormGroupTouched(formGroup: FormGroup | FormArray) {
@@ -1897,6 +2186,121 @@ getMasterJobNumber(jobSid: number): string {
   removeDetailRow(index: number) {
   if (this.details.length > index) this.details.removeAt(index);
   this.recalculateAllRows();
+}
+// Replace the existing upload button click handler or add a new method
+openVendorInvoiceUploadModal(): void {
+  try {
+    const modalRef = this.modalService.open(DocumentVendorInvoiceEntryComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
+      windowClass: 'vendor-invoice-upload-modal'
+    });
+
+    // Handle the processed data from the document upload component
+    modalRef.componentInstance.documentProcessed.subscribe((processedData: any) => {
+      console.log('Received processed data:', processedData);
+      this.onVendorInvoiceProcessed(processedData);
+      modalRef.close();
+    });
+
+    // Handle modal close
+    modalRef.componentInstance.documentCleared.subscribe(() => {
+      modalRef.close();
+    });
+
+    // Handle modal dismissal
+    modalRef.result.catch((reason) => {
+      console.log('Modal dismissed:', reason);
+    });
+
+  } catch (error) {
+    console.error('Error opening vendor invoice upload modal:', error);
+    this.appSettingService.showError('Failed to open upload modal');
+  }
+}
+// Add this method to handle processed vendor invoice data from document upload
+onVendorInvoiceProcessed(processedData: any): void {
+  console.log('Vendor invoice data received from document upload:', processedData);
+  
+  // Populate the main form with the processed data
+  this.populateFormFromDocument(processedData);
+  
+  // Show success message
+  // this.toastr.success('Vendor invoice data populated from document');
+}
+
+// Add this method to populate form from document data
+private populateFormFromDocument(data: any): void {
+  if (!data) return;
+
+  // Populate header fields
+  this.vendorInvoiceForm.patchValue({
+    PartyName: data.partyName || '',
+    PartyAddress: data.partyAddress || '',
+    GSTNo: data.gstNo || '',
+    PlaceOfSupply: data.placeOfSupply || '',
+    CurrencyCode: data.currencyCode || '',
+    ExchangeRate: data.exchangeRate || 1,
+    BillNo: data.documentNumber || '',
+    BillDate: data.documentDate ? new Date(data.documentDate) : null,
+    BillAmt: data.amount || 0,
+    MBLNo: data.masterNumber || '',
+    HBLNo: data.houseNumber || '',
+    MasterJobSid: data.masterJobSid || null,
+    HouseJobSid: data.houseJobSid || null,
+    Narration: data.narration || '',
+    GSTType: data.gstType || ''
+  });
+
+  // Clear existing details and populate with new ones
+  this.details.clear();
+  
+  if (data.voucherDetails && data.voucherDetails.length > 0) {
+    data.voucherDetails.forEach((detail: any, index: number) => {
+      const detailGroup = this.createDetailGroup({
+        ChargeMasterSid: this.findChargeIdByDescription(detail.chargeDescription),
+        ChargeDescription: detail.chargeDescription,
+        HSSACMasterSid: this.findHssacIdByCode(detail.sacCode),
+        NumberOfUnit: detail.numberOfUnit || 1,
+        Rate: detail.rate || 0,
+        Amount: detail.amount || 0,
+        TaxableAmount: detail.taxableAmount || 0,
+        TaxPercentage1: detail.cgstRate || 0,
+        TaxAmount1: detail.cgstAmount || 0,
+        TaxPercentage2: detail.sgstRate || 0,
+        TaxAmount2: detail.sgstAmount || 0,
+        TaxPercentageIGST: detail.igstRate || 0,
+        TaxAmountIGST: detail.igstAmount || 0,
+        LocalAmount: detail.localAmount || 0,
+        PartyAmount: detail.partyAmount || 0,
+        MasterJobSid: detail.masterJobSid,
+        HouseJobSid: detail.houseJobSid,
+        DepartmentMasterSid: detail.departmentMasterSid
+      });
+      
+      this.details.push(detailGroup);
+    });
+  }
+
+  // Recalculate all rows after population
+  this.recalculateAllRows();
+}
+
+// Helper methods to find IDs from descriptions/codes
+private findChargeIdByDescription(description: string): number | null {
+  if (!description) return null;
+  const charge = this.chargeList.find(c => 
+    c.ChargeDescription?.toLowerCase().includes(description.toLowerCase()) ||
+    c.chargeName?.toLowerCase().includes(description.toLowerCase())
+  );
+  return charge?.ChargeMasterSid || null;
+}
+
+private findHssacIdByCode(code: string): number | null {
+  if (!code) return null;
+  const hssac = this.hssacList.find(h => h.HSSACCode === code);
+  return hssac?.HSSACMasterSid || null;
 }
 
 }

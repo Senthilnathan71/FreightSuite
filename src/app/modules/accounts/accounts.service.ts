@@ -55,6 +55,14 @@ export class AccountsService {
     );
   }
 
+  getExchangeRate(payload) {
+    return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
+  }
+
   deleteCurrencyExchangeById(id: number) {
     return this.http.delete<{ data: any }>(`currency-exchange/delete/${id}`).pipe(
       map((resp) => {
@@ -194,6 +202,164 @@ export class AccountsService {
     )
   }
 
+  getAllDebtorWithCOAMapped(payload: any) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-debtors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
 
+  getAllCreditorWithCOAMapped(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-creditors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllMappedChargeDebtors(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-charge-debtors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllLedgersByItsType(payload){
+    return this.http.post<{ data: any }>('coa/cashOrBank', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCoaWithLedgerCategory(payload){
+    return this.http.post<{ data: any }>('coa/ledger-category', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getLedgerByCOAMasterSid(payload){
+    return this.http.post<{ data: any }>('subledgermaster/coa/mapped', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCostCenters(){
+    return this.http.get<{ data: any[] }>('cost-center').pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllProfitCenters(){
+    return this.http.get<{ data: any[] }>('profit-center').pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCharges(CompanyMasterSid: number) {
+    return this.http.post('charge', { CompanyMasterSid }).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getMasterJobByDepartment(payload:any){
+    return this.http.post('master-job/filter-by-department',payload).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getHouseJobByMasterJob(payload:any){
+    return this.http.post('house-job/fetchByMaster',payload).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createReceipt(payload: any){
+    return this.http.post('accounts/receipt',payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getReceiptById(payload){
+    return this.http.post<{ data: any }>(`accounts/receipt/fetch`,payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateReceiptById(voucherHeaderSid: number, payload: any){
+    return this.http.patch<{ data: any }>(`accounts/receipt/update/${voucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  // Trial Balance - Master Data
+  getGroupsByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/groups-by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getSubGroupsByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/subgroups-by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getBranchesByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('branch-master/by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getFinancialYears(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('year-master/by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  softDeleteVoucherDetail(voucherDetailSid: number) {
+    return this.http.delete<{ data: any }>(`voucher/delete-detail/${voucherDetailSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
   
 }
