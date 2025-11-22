@@ -304,6 +304,7 @@ export class ReportService {
     );
 
   }
+  
 
   /**
    * Open report modal with specified report type and entity ID
