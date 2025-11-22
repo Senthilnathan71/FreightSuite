@@ -675,8 +675,8 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  getAllProducts(CompanyMasterSid:number) {
-    return this.http.post<{ data: any[] }>('product', {  CompanyMasterSid}).pipe(
+  getAllProducts() {
+    return this.http.get<{ data: any[] }>('product').pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -843,6 +843,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     return this.http.get('ff-pre-customer-meeting/salespersonForLead/'+PreCustomerMasterSid).pipe(
       map((resp: any) => {
         let response = resp;
+        return response;
+      })
+    );
+  }
+   getAllCompanyConfigsByCompanyId(companyId: number) {
+    return this.http.get<{ data: any }>(`company-config/company/${companyId}`).pipe(
+      map((resp) => {
+        let response = resp.data;
         return response;
       })
     );

@@ -66,14 +66,14 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         tooltip: 'Edit Journal Voucher',
         condition: (row: any) => row.PostStatus === 'U' // Only unposted can be edited
       },
-      {
-        icon: 'fas fa-check-circle',
-        label: 'Post',
-        action: 'post',
-        tooltip: 'Post Voucher',
-        class: 'text-success',
-        condition: (row: any) => row.PostStatus === 'U' // Only unposted can be posted
-      },
+      // {
+      //   icon: 'fas fa-check-circle',
+      //   label: 'Post',
+      //   action: 'post',
+      //   tooltip: 'Post Voucher',
+      //   class: 'text-success',
+      //   condition: (row: any) => row.PostStatus === 'U' // Only unposted can be posted
+      // },
       {
         icon: 'fas fa-trash',
         label: 'Delete',

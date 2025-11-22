@@ -478,7 +478,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   initForm() {
     this.biclauseForm = this.fb.group({
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
-      Keyword: ['', [Validators.required, Validators.maxLength(5)]],
+      Keyword: ['', [Validators.required, Validators.maxLength(20)]],
       Sortorder: [''],
       DefaultClause: [false],
       status: [{ value: 'A', disabled: false }, Validators.required]
