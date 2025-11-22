@@ -319,22 +319,27 @@ export class TdsSetEntryComponent implements OnInit {
         detailStatus: ['Active']
     });
 
-    // ADD THIS AFTER form is created!
-   this.tdsDetailForm.get('TDSAmount').valueChanges.subscribe(value => {
-  if (value !== null && value !== '') {
-    this.tdsDetailForm.get('TDSRate').disable({ emitEvent: false });
-  } else {
-    this.tdsDetailForm.get('TDSRate').enable({ emitEvent: false });
-  }
-});
-this.tdsDetailForm.get('TDSRate').valueChanges.subscribe(value => {
-  if (value !== null && value !== '') {
-    this.tdsDetailForm.get('TDSAmount').disable({ emitEvent: false });
-  } else {
-    this.tdsDetailForm.get('TDSAmount').enable({ emitEvent: false });
-  }
-});
+    this.tdsDetailForm.get('TDSRate')?.valueChanges.subscribe(rate => {
+    const amountCtrl = this.tdsDetailForm.get('TDSAmount');
 
+    if (rate) {
+      amountCtrl?.disable({ emitEvent: false });
+      amountCtrl?.reset();
+    } else {
+      amountCtrl?.enable({ emitEvent: false });
+    }
+  });
+
+  this.tdsDetailForm.get('TDSAmount')?.valueChanges.subscribe(amount => {
+    const rateCtrl = this.tdsDetailForm.get('TDSRate');
+
+    if (amount) {
+      rateCtrl?.disable({ emitEvent: false });
+      rateCtrl?.reset();
+    } else {
+      rateCtrl?.enable({ emitEvent: false });
+    }
+  });
 }
 
 
@@ -357,6 +362,12 @@ this.tdsDetailForm.get('TDSRate').valueChanges.subscribe(value => {
         } else {
             this.minDetailEffectiveFrom = this.toNgbDateStruct(this.todayDate);
             this.detailModalEdit = false;
+            const nextSno = (this.filteredDetailsList?.length || 0) + 1;
+
+        this.tdsDetailForm.patchValue({
+            Sno: nextSno,
+            detailStatus: 'Active'
+        });
         }
         this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
     }

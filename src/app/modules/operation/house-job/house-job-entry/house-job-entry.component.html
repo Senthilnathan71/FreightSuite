@@ -1721,6 +1721,20 @@
 
             </div>
           </div>
+          <aside class="col-md-3">
+            <div class="custom-form-group" [formGroup]="houseJobForm">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="InternalNote" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Internal Note<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group" [formGroup]="houseJobForm">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="GeneralNote" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">General Note<span class="text-danger"></span></label>
+            </div>
+          </aside>
           @if(selectedDepartmentType === "SEA") {
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">

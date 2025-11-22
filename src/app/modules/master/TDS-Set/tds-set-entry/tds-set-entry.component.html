@@ -530,21 +530,8 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="Sno" [onlyNumbers]="2">
-                                    <label for="text-input" class="input-label">Sno <span
-                                            class="text-danger"></span></label>
-                                    @if(tdsDetailForm.get('Sno')?.invalid &&
-                                    (tdsDetailForm.get('Sno')?.touched || tdsDetailForm.get('Sno')?.dirty)) {
-                                    <div class="error-message">
-                                        @if(tdsDetailForm.get('Sno')?.hasError('required')){
-                                        <small>Required</small>
-                                        } @else if(tdsDetailForm.get('Sno')?.hasError('onlyNumbers')){
-                                        <small>Only numbers are allowed</small>
-                                        } @else if(tdsDetailForm.get('Sno')?.hasError('maxlength')){
-                                        <small>Max 2 digit are allowed</small>
-                                        }
-                                    </div>
-                                    }
+                                        formControlName="Sno" [onlyNumbers]="2" readonly>
+                                    <label for="text-input" class="input-label">Sno </label>
                                 </div>
                             </aside>
                             <aside class="col-md-4">

@@ -7,7 +7,7 @@
           <div class="brand-icon">
             <i class="fas fa-building"></i>
           </div>
-          <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Company</h5>
+          <h5 class="page-title mb-0 text-info">Company</h5>
           @if(isEditMode){
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
@@ -998,7 +998,7 @@
                           <div class="custom-form-group">
                             <input type="text" id="branchTaxRegistrationNo" placeholder="" class="custom-input-field sm"
                               formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
-                            <label for="branchTaxRegistrationNo" class="input-label">GST/VAT no</label>
+                            <label for="branchTaxRegistrationNo" class="input-label">GST/VAT No.</label>
                             @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
                             branchForm.get('branchTaxRegistrationNo')?.invalid){
                             <div class="error-message">

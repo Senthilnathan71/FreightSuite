@@ -30,8 +30,8 @@ export const DROPDOWN_CONFIGS = {
     labelFields :['departmentName']
   },
   COUNTRY: {
-    displayFields: ['countryCode', 'countryName'],
-    displayLabels: ['Code', 'Name'],
+    displayFields: ['countryName' ,'countryCode'],
+    displayLabels: ['Name', 'Code'],
     labelFields: ['countryName']
   },
   STATE: {
