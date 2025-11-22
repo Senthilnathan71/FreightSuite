@@ -14,6 +14,8 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { AccountsService } from '../../accounts.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -37,16 +39,16 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   styleUrl: './reverse-voucher-entry.component.scss'
 })
 export class ReverseVoucherEntryComponent {
-    vendorCreditNoteForm!: FormGroup;
+    reverseVoucherForm!: FormGroup;
     headerId: number | null = null;
     currentCompany: any;
     currentBranch: any;
-    vendorCreditNoteData: any;
+    reverseVoucherData: any;
   
     currUserEmail: string | null = null;
     isViewMode: boolean = false;
     get isEditMode() { return !!this.headerId && !this.isViewMode; }
-    vendorInvoiceList: any[] = [];
+    voucherList: any[] = [];
     vendorList: any[] = [];
     vendorBranchList: any[] = [];
     currencyList: any[] = [];
@@ -57,6 +59,9 @@ export class ReverseVoucherEntryComponent {
     masterJobList: any[] = [];
     houseJobList: any[] = [];
     stateList: any[] = [];
+    coaList: any[] = [];
+    costCenterList: any[] = [];
+    profitCenterList: any[] = [];
     houseJobListByMasterJob: { [key: number]: any[] } = {};
     selectedVendorForCosts: any = null; 
     allPendingCosts: any[] = []; 
@@ -95,15 +100,7 @@ export class ReverseVoucherEntryComponent {
     selectedOutstandingInvoice: any = null;
     showOutstandingInfo: boolean = false;
     invoiceLookupConfig = DROPDOWN_CONFIGS.INVOICE;
-    // UI state
-    selectedTab = 'VendorCreditNote';
-    selectTab(tab: string): void {
-      this.selectedTab = tab;
-    }
-    tabs = [
-      { name: 'VendorCreditNote', icon: 'fas fa-file-invoice' },
-      { name: 'Others', icon: 'fas fa-ellipsis-h' }
-    ];
+   
   
     reason =[
       {id: 'Service Cancelled', name: 'Service Cancelled'},  
@@ -180,13 +177,13 @@ export class ReverseVoucherEntryComponent {
     }
   
     get f(): { [key: string]: AbstractControl } {
-      return this.vendorCreditNoteForm.controls;
+      return this.reverseVoucherForm.controls;
     }
     get details(): FormArray {
-      return this.vendorCreditNoteForm.get('voucherDetails') as FormArray;
+      return this.reverseVoucherForm.get('voucherDetails') as FormArray;
     }
     // get tdsGroup(): FormGroup {
-    //   return this.vendorCreditNoteForm.get('voucherTDS') as FormGroup;
+    //   return this.reverseVoucherForm.get('voucherTDS') as FormGroup;
     // }
   
     constructor(
@@ -195,7 +192,9 @@ export class ReverseVoucherEntryComponent {
       private fb: FormBuilder,
       private modalService: NgbModal,
       private operationService: OperationService,
+      private accountService: AccountsService,
       private appSettingService: AppSettingsService,
+      private masterService: MasterService,
       private spinner: NgxSpinnerService,
       private companySettings: CompanySettingsManagerService
     ) {}
@@ -258,11 +257,11 @@ export class ReverseVoucherEntryComponent {
         const id = params.get('id');
         if (id) {
           this.headerId = Number(id);
-          this.loadVendorCreditNoteById(this.headerId);
+          this.loadReverseVoucherById(this.headerId);
         } else {
           const currencySettings = this.companySettings.getCurrencySettings();
           console.log(currencySettings,'currencySettings')
-          this.vendorCreditNoteForm.patchValue({
+          this.reverseVoucherForm.patchValue({
             CurrencyCode: currencySettings.code,
             ExchangeRate: 1
           });
@@ -270,17 +269,17 @@ export class ReverseVoucherEntryComponent {
       });
   
       // Recalculate when currency/exchange rate changes
-      this.vendorCreditNoteForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
+      this.reverseVoucherForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
         this.recalculateAllRows();
       });
   
-      this.vendorCreditNoteForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
+      this.reverseVoucherForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
         this.recalculateAllRows();
       });
     }
   
     initForm() {
-      this.vendorCreditNoteForm = this.fb.group({
+      this.reverseVoucherForm = this.fb.group({
         // Header
         VoucherNumber: [{ value: '', disabled: true }],
         ReversalVoucher:[null],
@@ -340,10 +339,10 @@ export class ReverseVoucherEntryComponent {
       });
     }
   
-    getVendorInvoiceData(data?:any) {
-      const id = data || this.vendorCreditNoteForm.get('ReversalVoucher')?.value;
+    getVoucherData(data?:any) {
+      const id = data || this.reverseVoucherForm.get('ReversalVoucher')?.value;
       if (!id) {
-        this.appSettingService.showWarning('Please select an vendor invoice first.');
+        this.appSettingService.showWarning('Please select an voucher first.');
         return;
       }
   
@@ -353,104 +352,48 @@ export class ReverseVoucherEntryComponent {
       if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
         vendorInvoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
         reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+        const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.reverseVoucherForm.get('Narration')?.setValue(autoNarration);
       } else {
-        const foundVendorInvoice = this.vendorInvoiceList.find(inv => 
+        const foundVendorInvoice = this.voucherList.find(inv => 
           inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
         );
         vendorInvoiceNumber = foundVendorInvoice?.VoucherNumber || foundVendorInvoice?.voucherNumber || '';
+        const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.reverseVoucherForm.get('Narration')?.setValue(autoNarration);
       }
       this.spinner.show();
-      this.operationService.getVendorInvoicesById(id).subscribe({
+      this.operationService.getVoucherById(id).subscribe({
         next: (resp: any) => {
           if (resp?.status && resp.data) {
-            this.vendorCreditNoteForm.patchValue({
+            this.reverseVoucherForm.patchValue({
               ReversalVoucher: reversalVoucherId
             });
-            this.patchVendorInvoiceData(resp.data);
-            this.searchOutstandingForVendorInvoice(vendorInvoiceNumber, resp.data);
-            this.appSettingService.showSuccess('Vendor Invoice data loaded successfully.');
+            this.patchVoucherData(resp.data);
+            this.appSettingService.showSuccess('Reverse Voucher data loaded successfully.');
           } else {
             this.spinner.hide();
-            this.appSettingService.showError('Error loading vendor invoice data.');
+            this.appSettingService.showError('Error loading reverse voucher data.');
           }
         },
         error: (err) => {
           this.spinner.hide();
-          console.error('Error fetching vendor invoice:', err);
-          this.appSettingService.showError('Failed to load vendor invoice data.');
+          console.error('Error fetching reverse voucher:', err);
+          this.appSettingService.showError('Failed to load reverse voucher data.');
         }
       });
     }
+
   
-    private searchOutstandingForVendorInvoice(invoiceNumber: string, invoiceData: any) {
-    if (!invoiceNumber || !this.currentCompany?.CompanyMasterSid) {
-      this.spinner.hide();
-      console.log('DEBUG - Cannot search outstanding: missing invoice number or company');
-      return;
-    }
-  
-    const searchDto = {
-      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      InvoiceNumber: invoiceNumber,
-      IncludeFullyPaid: false
-    };
-  
-    console.log('DEBUG - Searching outstanding for invoice:', searchDto);
-  
-    this.operationService.searchOutstandingInvoices(searchDto).subscribe({
-      next: (response: any) => {
-        this.spinner.hide();
-        console.log('DEBUG - Outstanding invoices response:', response);
-        
-        // Extract the array from the response
-        const outstandingInvoices = response.data || response || [];
-        
-        // Find the specific invoice in outstanding results
-        const matchingOutstanding = outstandingInvoices.find((inv: any) => 
-          inv.VoucherNumber === invoiceNumber
-        );
-        
-        if (matchingOutstanding) {
-          const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
-          
-          console.log('DEBUG - Outstanding amount found:', {
-            invoiceNumber: invoiceNumber,
-            outstandingAmount: outstandingAmount,
-            originalAmount: matchingOutstanding.OriginalAmount,
-            matchedAmount: matchingOutstanding.MatchedAmount,
-            currency: matchingOutstanding.CurrencyCode
-          });
-          
-          // Store the outstanding information
-          this.invoiceOutstandingAmount = outstandingAmount;
-          this.selectedOutstandingInvoice = matchingOutstanding;
-          this.showOutstandingInfo = true;
-          
-          
-        } else {
-          this.invoiceOutstandingAmount = 0;
-          this.showOutstandingInfo = false;
-          console.log('DEBUG - No outstanding amount found for invoice:', invoiceNumber);
-          this.appSettingService.showInfo('No outstanding amount found for this invoice.');
-        }
-      },
-      error: (error) => {
-        this.spinner.hide();
-        console.error('Error searching outstanding invoices:', error);
-        this.invoiceOutstandingAmount = 0;
-        this.showOutstandingInfo = false;
-        this.appSettingService.showWarning('Could not fetch outstanding amount, but invoice data was loaded.');
-      }
-    });
-  }
-  
-    private patchVendorInvoiceData(data: any) {
+    private patchVoucherData(data: any) {
       const header = data;
-      const vendorCreditNote = header.VoucherHeaderSid || header.voucherHeaderSid || null;
+      const voucher = header.VoucherHeaderSid || header.voucherHeaderSid || null;
+      const currentNarration = this.reverseVoucherForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.reverseVoucherForm.get('ReversalVoucher')?.value);
       this.originalInvoiceRates = new Map();
-      this.vendorCreditNoteForm.patchValue({
-        ReversalVoucher: vendorCreditNote,
-        Narration: header.Narration || '',
+      this.reverseVoucherForm.patchValue({
+        ReversalVoucher: voucher,
+        Narration: autoNarration || header.Narration || currentNarration || '',
         PartyMasterSid: header.PartyMasterSid || null,
         PartyName: header.PartyName || '',
         PartyAddress: header.PartyAddress || '',
@@ -470,22 +413,22 @@ export class ReverseVoucherEntryComponent {
       });
       const customerMasterSid = header.CustomerMasterSid;
       if (customerMasterSid) {
-        this.vendorCreditNoteForm.get('CustomerMasterSid')?.setValue(customerMasterSid);
+        this.reverseVoucherForm.get('CustomerMasterSid')?.setValue(customerMasterSid);
         const customer = this.vendorList.find(c => c.CustomerMasterSid === customerMasterSid);
         if (customer) {
-          this.vendorCreditNoteForm.get('PartName')?.setValue(customer.CustomerName || '');
+          this.reverseVoucherForm.get('PartName')?.setValue(customer.CustomerName || '');
           if (customer.SubledgerMasterSid) {
-            this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
+            this.reverseVoucherForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
           }
         }
         this.getVendorBranchByVendor(Number(customerMasterSid));
         const branchSid = header.CustomerBranchSid;
         if (branchSid) {
           setTimeout(() => {
-            this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
+            this.reverseVoucherForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
             const foundBranch = this.vendorBranchList.find(b => Number(b.CustomerBranchSid) === Number(branchSid));
             if (foundBranch) {
-              this.vendorCreditNoteForm.get('PartyAddress')?.setValue(foundBranch.Address || foundBranch.CustomerAddress1 || '');
+              this.reverseVoucherForm.get('PartyAddress')?.setValue(foundBranch.Address || foundBranch.CustomerAddress1 || '');
             }
           }, 500);
         }
@@ -583,7 +526,11 @@ export class ReverseVoucherEntryComponent {
         LocalAmount: localAmount,
         PartyAmount: partyAmount,
         MasterJobSid: detail.MasterJobSid,
-        HouseJobSid: detail.HouseJobSid
+        HouseJobSid: detail.HouseJobSid,
+        ProfitCenterMasterSid: detail.ProfitCenterMasterSid,
+        CostCenterMasterSid: detail.CostCenterMasterSid,
+        COAMasterSid: detail.COAMasterSid,
+        LedgerMasterSid: detail.LedgerMasterSid,
       }));
     });
   
@@ -592,7 +539,7 @@ export class ReverseVoucherEntryComponent {
         || (Array.isArray(data.voucherOthers) ? data.voucherOthers[0] : undefined);
     
       if (voucherOthersSource) {
-        const vg = this.vendorCreditNoteForm.get('voucherOthers') as FormGroup;
+        const vg = this.reverseVoucherForm.get('voucherOthers') as FormGroup;
         vg.patchValue({
           ContainerNumber: voucherOthersSource.ContainerNumber || '',
           VoucherNote: voucherOthersSource.VoucherNote || '',
@@ -615,9 +562,9 @@ export class ReverseVoucherEntryComponent {
     }
   
     onFinalSave() {
-    if (this.vendorCreditNoteForm.invalid) {
-      this.vendorCreditNoteForm.markAllAsTouched();
-      this.appSettingService.showWarning('Please fill required vendor creditNote fields.');
+    if (this.reverseVoucherForm.invalid) {
+      this.reverseVoucherForm.markAllAsTouched();
+      this.appSettingService.showWarning('Please fill required reverse voucher fields.');
       return;
     }
   
@@ -627,17 +574,17 @@ export class ReverseVoucherEntryComponent {
     }
   
     this.recalculateAllRows();
-    this.saveVendorCreditNote(true); // true indicates final save
+    this.saveReverseVoucher(true); // true indicates final save
   }
   
-  private saveVendorCreditNote(isFinal: boolean) {
+  private saveReverseVoucher(isFinal: boolean) {
     const payload = this.preparePayload();
   
     this.spinner.show();
     
     const saveObservable = this.headerId 
-      ? this.operationService.updateVendorCreditNoteById(this.headerId, payload)
-      : this.operationService.createVendorCreditNote(payload);
+      ? this.operationService.updateReverseVoucherById(this.headerId, payload)
+      : this.operationService.createReverseVoucher(payload);
   
     saveObservable.subscribe({
       next: async (resp: any) => {
@@ -649,23 +596,23 @@ export class ReverseVoucherEntryComponent {
             await this.postVoucher(voucherHeaderSid);
           } else {
             this.spinner.hide();
-            const message = isFinal ? 'Vendor creditNote saved and posted successfully!' : 'Vendor creditNote saved as draft successfully!';
+            const message = isFinal ? 'Reverse Voucher saved and posted successfully!' : 'Reverse Voucher saved as draft successfully!';
             this.appSettingService.showSuccess(message);
             
             if (!this.headerId && voucherHeaderSid) {
               this.headerId = voucherHeaderSid;
-              this.router.navigate(['operation/vendor-credit-note/entry', voucherHeaderSid]);
+              this.router.navigate(['operation/reverse-voucher/entry', voucherHeaderSid]);
             }
           }
         } else {
           this.spinner.hide();
-          this.appSettingService.showError('Error saving vendor creditNote.');
+          this.appSettingService.showError('Error saving Reverse Voucher.');
         }
       },
       error: (err) => {
         this.spinner.hide();
-        console.error('Save vendor creditNote error', err);
-        this.appSettingService.showError('Failed to save vendor creditNote.');
+        console.error('Save Reverse Voucher error', err);
+        this.appSettingService.showError('Failed to save Reverse Voucher.');
       }
     });
   }
@@ -704,22 +651,22 @@ export class ReverseVoucherEntryComponent {
         }
       };
   
-      const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
+      const result = await firstValueFrom(this.operationService.postVoucherSid(postPayload));
       
       this.spinner.hide();
       if (result.status) {
-        this.appSettingService.showSuccess('Vendor Credit Note posted successfully!');
-        this.vendorCreditNoteData.PostStatus = 'P'; // Update local state
+        this.appSettingService.showSuccess('Reverse Voucher posted successfully!');
+        this.reverseVoucherData.PostStatus = 'P'; // Update local state
         
         // Navigate to list or stay on page but disable edits
-        this.router.navigate(['operation/vendor-credit-note/list']);
+        this.router.navigate(['accounts/reverse-voucher/list']);
       } else {
-        this.appSettingService.showError(result.message || 'Failed to post Vendor Credit Note.');
+        this.appSettingService.showError(result.message || 'Failed to post Reverse Voucher.');
       }
     } catch (error) {
       this.spinner.hide();
       console.error('Post voucher error:', error);
-      this.appSettingService.showError('Failed to post Vendor Credit Note. Please try again.');
+      this.appSettingService.showError('Failed to post Reverse Voucher. Please try again.');
     }
   }
   
@@ -748,7 +695,7 @@ export class ReverseVoucherEntryComponent {
   
     createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
-      VoucherDetailSid:[null],
+      VoucherDetailSid:[data?.VoucherDetailSid || null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
@@ -756,10 +703,9 @@ export class ReverseVoucherEntryComponent {
       ChargeUOMSid: [{value:data?.ChargeUOMSid || null, disabled: true}],
       NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
       DrCr: [{value: data?.DrCr || 'D', disabled: true}],
-      CurrencyCode: [{value: data?.CurrencyCode || this.vendorCreditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
-      Rate: [data?.Rate != null ? Number(data.Rate) : 0, 
-            [Validators.required, Validators.min(0), this.rateValidator.bind(this)]],
-      ExchangeRate: [{value:data?.ExchangeRate || this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1, disabled: true}],
+      CurrencyCode: [{value: data?.CurrencyCode || this.reverseVoucherForm.get('CurrencyCode')?.value || null, disabled: true}],
+      Rate: [data?.Rate != null ? Number(data.Rate) : 0],
+      ExchangeRate: [{value:data?.ExchangeRate || this.reverseVoucherForm.get('ExchangeRate')?.value || 1, disabled: true}],
       Amount: [{value:data?.Amount || 0 , disabled: true}],
       TaxableAmount: [{value: data?.TaxableAmount || 0, disabled: true}],
       TaxPercentage1: [{value:data?.TaxPercentage1 || 0, disabled: true}],
@@ -768,13 +714,15 @@ export class ReverseVoucherEntryComponent {
       TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
       TaxPercentageIGST: [{value: data?.TaxPercentageIGST || 0, disabled: true}],
       TaxAmountIGST: [{value:data?.TaxAmountIGST || 0, disabled: true}],
-      LocalAmount: [data?.LocalAmount || 0],
-      PartyAmount: [data?.PartyAmount || 0],
-      MasterJobSid: [data?.MasterJobSid || null],
-      HouseJobSid: [data?.HouseJobSid || null],
+      LocalAmount: [{value:data?.LocalAmount || 0, disabled: true}],
+      PartyAmount: [{value:data?.PartyAmount || 0, disabled: true}],
+      MasterJobSid: [{value:data?.MasterJobSid || null, disabled: true}],
+      HouseJobSid: [{value: data?.HouseJobSid || null, disabled: true}],
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
-      LedgerMasterSid: [data?.LedgerMasterSid || null],
-      COAMasterSid: [data?.COAMasterSid || null]
+      LedgerMasterSid: [{value: data?.LedgerMasterSid || null, disabled: true}],
+      COAMasterSid: [{value:data?.COAMasterSid || null, disabled: true}],
+      ProfitCenterMasterSid: [{value:data?.ProfitCenterMasterSid || null, disabled: true}],
+      CostCenterMasterSid: [{value:data?.CostCenterMasterSid || null, disabled: true}],
     });
   }
   
@@ -833,52 +781,52 @@ export class ReverseVoucherEntryComponent {
     );
     return department?.DepartmentName || department?.departmentName || '-';
   }
-  onDetailChange(index: number, field?: string) {
-    if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyCode'].includes(field || '')) {
-      this.recalcRow(index);
-    } else if (field === 'ChargeMasterSid') {
-      const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
-      const selectedCharge = this.chargeList?.find((c: any) => c.ChargeMasterSid === chargeSid);
+  // onDetailChange(index: number, field?: string) {
+  //   if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyCode'].includes(field || '')) {
+  //     this.recalcRow(index);
+  //   } else if (field === 'ChargeMasterSid') {
+  //     const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
+  //     const selectedCharge = this.chargeList?.find((c: any) => c.ChargeMasterSid === chargeSid);
       
-      if (selectedCharge) {
-        const description = selectedCharge.ChargeDescription || selectedCharge.chargeName || selectedCharge.ChargeName || '';
-        let hssacId = selectedCharge.HSSACMasterSid ?? selectedCharge.HSSACMasterSid ?? null;
+  //     if (selectedCharge) {
+  //       const description = selectedCharge.ChargeDescription || selectedCharge.chargeName || selectedCharge.ChargeName || '';
+  //       let hssacId = selectedCharge.HSSACMasterSid ?? selectedCharge.HSSACMasterSid ?? null;
         
-        // Auto-set HSN/SAC code from ChargeTaxMaster
-        if (!hssacId && Array.isArray(selectedCharge.ChargeTaxMaster) && selectedCharge.ChargeTaxMaster.length > 0) {
-          const firstTax = selectedCharge.ChargeTaxMaster[0];
-          const hsnCode = firstTax?.HSNCode;
+  //       // Auto-set HSN/SAC code from ChargeTaxMaster
+  //       if (!hssacId && Array.isArray(selectedCharge.ChargeTaxMaster) && selectedCharge.ChargeTaxMaster.length > 0) {
+  //         const firstTax = selectedCharge.ChargeTaxMaster[0];
+  //         const hsnCode = firstTax?.HSNCode;
           
-          // Find matching HSSAC from hssacList using HSNCode
-          if (hsnCode) {
-            const matchingHssac = this.hssacList.find(h => 
-              h.HSSACCode === hsnCode || h.HSNCode === hsnCode
-            );
-            if (matchingHssac) {
-              hssacId = matchingHssac.HSSACMasterSid;
-            }
-          }
-        }
+  //         // Find matching HSSAC from hssacList using HSNCode
+  //         if (hsnCode) {
+  //           const matchingHssac = this.hssacList.find(h => 
+  //             h.HSSACCode === hsnCode || h.HSNCode === hsnCode
+  //           );
+  //           if (matchingHssac) {
+  //             hssacId = matchingHssac.HSSACMasterSid;
+  //           }
+  //         }
+  //       }
         
-        const chargeUomId = selectedCharge.ChargeUOMSid ?? selectedCharge.UOM ?? selectedCharge.UOMMasterSid ?? null;
+  //       const chargeUomId = selectedCharge.ChargeUOMSid ?? selectedCharge.UOM ?? selectedCharge.UOMMasterSid ?? null;
   
-        // Auto-set LedgerMasterSid and COAMasterSid
-        const ledgerMasterSid = selectedCharge.SubledgerMasterSid || null;
-        const coaMasterSid = selectedCharge.DrCOAMappedId || null;
+  //       // Auto-set LedgerMasterSid and COAMasterSid
+  //       const ledgerMasterSid = selectedCharge.SubledgerMasterSid || null;
+  //       const coaMasterSid = selectedCharge.DrCOAMappedId || null;
   
-        this.details.at(index).patchValue({
-          ChargeDescription: description,
-          HSSACMasterSid: hssacId || null,
-          ChargeUOMSid: chargeUomId || null,
-          Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0,
-          LedgerMasterSid: ledgerMasterSid,
-          COAMasterSid: coaMasterSid
-        });
+  //       this.details.at(index).patchValue({
+  //         ChargeDescription: description,
+  //         HSSACMasterSid: hssacId || null,
+  //         ChargeUOMSid: chargeUomId || null,
+  //         Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0,
+  //         LedgerMasterSid: ledgerMasterSid,
+  //         COAMasterSid: coaMasterSid
+  //       });
   
-        this.recalcRow(index);
-      }
-    }
-  }
+  //       this.recalcRow(index);
+  //     }
+  //   }
+  // }
   
   recalcRow(index: number) {
     const row = this.details.at(index);
@@ -886,7 +834,7 @@ export class ReverseVoucherEntryComponent {
     
     const unit = Number(row.get('NumberOfUnit')?.value || 0);
     const rate = Number(row.get('Rate')?.value || 0);
-    const exRate = Number(row.get('ExchangeRate')?.value || this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1);
+    const exRate = Number(row.get('ExchangeRate')?.value || this.reverseVoucherForm.get('ExchangeRate')?.value || 1);
   
     // Calculate basic amounts
     const amount = unit * rate;
@@ -894,8 +842,8 @@ export class ReverseVoucherEntryComponent {
     const localAmount = amount * exRate;
   
     // Get GST Type and determine tax applicability
-    const gstType = this.vendorCreditNoteForm.get('GSTType')?.value;
-    const placeOfSupply = this.vendorCreditNoteForm.get('PlaceOfSupply')?.value;
+    const gstType = this.reverseVoucherForm.get('GSTType')?.value;
+    const placeOfSupply = this.reverseVoucherForm.get('PlaceOfSupply')?.value;
     const companyState = this.getCompanyState();
     
     let taxPerc1 = 0, taxAmt1 = 0, taxPerc2 = 0, taxAmt2 = 0, igstPerc = 0, igstAmt = 0;
@@ -905,7 +853,7 @@ export class ReverseVoucherEntryComponent {
     console.log('Place of Supply:', placeOfSupply);
     console.log('Company State:', companyState);
   
-    if (this.isIndiaGST && this.vendorCreditNoteForm.get('GSTNo')?.value) {
+    if (this.isIndiaGST && this.reverseVoucherForm.get('GSTNo')?.value) {
       // Get HSN/SAC tax rate
       const hssacSid = row.get('HSSACMasterSid')?.value;
       const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
@@ -948,7 +896,7 @@ export class ReverseVoucherEntryComponent {
           console.log(`DEFAULT: ${igstPerc}% IGST`);
           break;
       }
-    } else if (this.isVATMode && this.vendorCreditNoteForm.get('GSTNo')?.value) {
+    } else if (this.isVATMode && this.reverseVoucherForm.get('GSTNo')?.value) {
       // VAT calculation for non-India countries
       const hssacSid = row.get('HSSACMasterSid')?.value;
       const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
@@ -977,17 +925,17 @@ export class ReverseVoucherEntryComponent {
   
   updateBillAmount() {
     const totalLocalAmount = this.calculateTotalLocalAmount();
-    this.vendorCreditNoteForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
+    this.reverseVoucherForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
   }
   recalculateAllRows() {
     for (let i = 0; i < this.details.length; i++) {
       const exRateCtrl = this.details.at(i).get('ExchangeRate');
       if (exRateCtrl && (exRateCtrl.value === null || exRateCtrl.value === undefined)) {
-        exRateCtrl.setValue(this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1);
+        exRateCtrl.setValue(this.reverseVoucherForm.get('ExchangeRate')?.value || 1);
       }
       const currCtrl = this.details.at(i).get('CurrencyCode');
       if (currCtrl && !currCtrl.value) {
-        currCtrl.setValue(this.vendorCreditNoteForm.get('CurrencyCode')?.value || null);
+        currCtrl.setValue(this.reverseVoucherForm.get('CurrencyCode')?.value || null);
       }
       this.recalcRow(i);
     }
@@ -1214,29 +1162,29 @@ export class ReverseVoucherEntryComponent {
     
     if (!vendorMasterSid) {
       this.vendorBranchList = [];
-      this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(null);
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
-      this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(null); // Clear PartyMasterSid
-      this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
-      this.vendorCreditNoteForm.get('PartyName')?.setValue('');
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
-      this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2B');
-      this.vendorCreditNoteForm.get('GSTType')?.setValue('');
+      this.reverseVoucherForm.get('CustomerBranchSid')?.setValue(null);
+      this.reverseVoucherForm.get('PartyAddress')?.setValue('');
+      this.reverseVoucherForm.get('PartyMasterSid')?.setValue(null); // Clear PartyMasterSid
+      this.reverseVoucherForm.get('GSTNo')?.setValue('');
+      this.reverseVoucherForm.get('PartyName')?.setValue('');
+      this.reverseVoucherForm.get('PlaceOfSupply')?.setValue('');
+      this.reverseVoucherForm.get('InvoiceType')?.setValue('B2B');
+      this.reverseVoucherForm.get('GSTType')?.setValue('');
       return;
     }
   
     const vendor = this.vendorList.find(v => v.CustomerMasterSid === vendorMasterSid);
     if (vendor) {
       // Set PartyName to vendor name
-      this.vendorCreditNoteForm.get('PartyName')?.setValue(vendor.CustomerName || '');
+      this.reverseVoucherForm.get('PartyName')?.setValue(vendor.CustomerName || '');
       
       // CRITICAL: Set PartyMasterSid from vendor's SubledgerMasterSid
       if (vendor.SubledgerMasterSid) {
-        this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
+        this.reverseVoucherForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
         console.log('DEBUG - Set PartyMasterSid from vendor:', vendor.SubledgerMasterSid);
       } else {
         console.warn('DEBUG - Vendor has no SubledgerMasterSid:', vendor);
-        this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(null);
+        this.reverseVoucherForm.get('PartyMasterSid')?.setValue(null);
       }
   
       // Rest of your existing code for GST, InvoiceType, etc...
@@ -1244,13 +1192,13 @@ export class ReverseVoucherEntryComponent {
       console.log('Vendor Country Code:', countryCode);
       
       if (countryCode === 'IN' && vendor.GSTNo) {
-        this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2B');
+        this.reverseVoucherForm.get('InvoiceType')?.setValue('B2B');
         console.log('Invoice Type: B2B (Indian vendor with GST)');
       } else if (countryCode !== 'IN') {
-        this.vendorCreditNoteForm.get('InvoiceType')?.setValue('EXWP');
+        this.reverseVoucherForm.get('InvoiceType')?.setValue('EXWP');
         console.log('Invoice Type: EXWP (Export vendor)');
       } else {
-        this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2C');
+        this.reverseVoucherForm.get('InvoiceType')?.setValue('B2C');
         console.log('Invoice Type: B2C (Indian vendor without GST)');
       }
   
@@ -1259,10 +1207,10 @@ export class ReverseVoucherEntryComponent {
     }
   
     // Reset branch selection when vendor changes
-    this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(null);
-    this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
-    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
-    this.vendorCreditNoteForm.get('GSTType')?.setValue('');
+    this.reverseVoucherForm.get('CustomerBranchSid')?.setValue(null);
+    this.reverseVoucherForm.get('PartyAddress')?.setValue('');
+    this.reverseVoucherForm.get('PlaceOfSupply')?.setValue('');
+    this.reverseVoucherForm.get('GSTType')?.setValue('');
     this.getVendorBranchByVendor(Number(vendorMasterSid));
   }
   
@@ -1273,9 +1221,9 @@ export class ReverseVoucherEntryComponent {
       : selectedBranch;
   
     if (!branchSid) {
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
-      this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
+      this.reverseVoucherForm.get('PartyAddress')?.setValue('');
+      this.reverseVoucherForm.get('GSTNo')?.setValue('');
+      this.reverseVoucherForm.get('PlaceOfSupply')?.setValue('');
       return;
     }
   
@@ -1284,7 +1232,7 @@ export class ReverseVoucherEntryComponent {
     if (foundBranch) {
       // Set address from branch
       const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue(address);
+      this.reverseVoucherForm.get('PartyAddress')?.setValue(address);
   
       // Get Place of Supply from state lookup
       let placeOfSupply = '';
@@ -1306,7 +1254,7 @@ export class ReverseVoucherEntryComponent {
       }
   
       console.log('Setting Place of Supply:', placeOfSupply);
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+      this.reverseVoucherForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
   
       // Set GST No based on country
       const vendorMasterSid = foundBranch.CustomerMasterSid;
@@ -1315,9 +1263,9 @@ export class ReverseVoucherEntryComponent {
         if (vendor) {
           const countryCode = this.getCustomerCountryCode(vendor);
           if (countryCode === 'IN') {
-            this.vendorCreditNoteForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+            this.reverseVoucherForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
           } else {
-            this.vendorCreditNoteForm.get('GSTNo')?.setValue(vendor.PanType || '');
+            this.reverseVoucherForm.get('GSTNo')?.setValue(vendor.PanType || '');
           }
         }
       }
@@ -1325,9 +1273,9 @@ export class ReverseVoucherEntryComponent {
       // Auto-determine GST Type based on Place of Supply
       this.determineGSTType(placeOfSupply);
     } else {
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
-      this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
+      this.reverseVoucherForm.get('PartyAddress')?.setValue('');
+      this.reverseVoucherForm.get('GSTNo')?.setValue('');
+      this.reverseVoucherForm.get('PlaceOfSupply')?.setValue('');
     }
   }
   
@@ -1340,13 +1288,13 @@ export class ReverseVoucherEntryComponent {
   }
   determineGSTType(placeOfSupply: string) {
     if (!placeOfSupply) {
-      this.vendorCreditNoteForm.get('GSTType')?.setValue('');
+      this.reverseVoucherForm.get('GSTType')?.setValue('');
       return;
     }
   
     const companyState = this.getCompanyState();
-    const vendorGSTNo = this.vendorCreditNoteForm.get('GSTNo')?.value;
-    const invoiceType = this.vendorCreditNoteForm.get('InvoiceType')?.value;
+    const vendorGSTNo = this.reverseVoucherForm.get('GSTNo')?.value;
+    const invoiceType = this.reverseVoucherForm.get('InvoiceType')?.value;
     
     console.log('=== DETERMINING GST TYPE ===');
     console.log('Company State:', companyState);
@@ -1359,7 +1307,7 @@ export class ReverseVoucherEntryComponent {
   
     // Scenario 3: Export (Vendor outside India)
     if (invoiceType === 'EXWP' || invoiceType === 'EXWOP') {
-      this.vendorCreditNoteForm.get('GSTType')?.setValue('EXWP');
+      this.reverseVoucherForm.get('GSTType')?.setValue('EXWP');
       console.log('GST Type set to: EXPORT (Export scenario)');
       return;
     }
@@ -1368,20 +1316,20 @@ export class ReverseVoucherEntryComponent {
     if (this.isIndiaGST && vendorGSTNo) {
       if (placeOfSupply === companyState) {
         // Scenario 1: Same State - CGST + SGST
-        this.vendorCreditNoteForm.get('GSTType')?.setValue('CGST+SGST');
+        this.reverseVoucherForm.get('GSTType')?.setValue('CGST+SGST');
         console.log('GST Type set to: CGST+SGST (Intra-state)');
       } else {
         // Scenario 2: Different State - IGST
-        this.vendorCreditNoteForm.get('GSTType')?.setValue('IGST');
+        this.reverseVoucherForm.get('GSTType')?.setValue('IGST');
         console.log('GST Type set to: IGST (Inter-state)');
       }
     } else if (this.isIndiaGST && !vendorGSTNo) {
       // B2C or unregistered dealer in India
-      this.vendorCreditNoteForm.get('GSTType')?.setValue('B2C');
+      this.reverseVoucherForm.get('GSTType')?.setValue('B2C');
       console.log('GST Type set to: B2C (Unregistered dealer)');
     } else {
       // Non-India scenarios
-      this.vendorCreditNoteForm.get('GSTType')?.setValue('VAT');
+      this.reverseVoucherForm.get('GSTType')?.setValue('VAT');
       console.log('GST Type set to: VAT (Non-India)');
     }
   }
@@ -1587,10 +1535,10 @@ export class ReverseVoucherEntryComponent {
       : vendor;
       if (!vendor) {
         this.vendorList = [];
-        this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
+        this.reverseVoucherForm.get('PartyAddress')?.setValue('');
         return;
       }
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue(vendor.Address || '');
+      this.reverseVoucherForm.get('PartyAddress')?.setValue(vendor.Address || '');
     }
   
     // loadVendorTDS(vendorSid: number) {
@@ -1639,7 +1587,7 @@ export class ReverseVoucherEntryComponent {
     if (!vendor) return;
   
     // Set vendor information in main form
-    this.vendorCreditNoteForm.patchValue({
+    this.reverseVoucherForm.patchValue({
       PartyName: vendor.VendorName || vendor.CustomerName,
       PartyMasterSid: vendor.VendorSid
     });
@@ -1655,14 +1603,14 @@ export class ReverseVoucherEntryComponent {
         const branchToSelect = matchingBranch || branches[0];
         
         if (branchToSelect) {
-          this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(branchToSelect.CustomerBranchSid);
+          this.reverseVoucherForm.get('CustomerBranchSid')?.setValue(branchToSelect.CustomerBranchSid);
           this.triggerVendorBranchChange(branchToSelect.CustomerBranchSid);
         }
       }
     });
   
     // Set vendor address
-    this.vendorCreditNoteForm.patchValue({
+    this.reverseVoucherForm.patchValue({
       PartyAddress: vendor.VendorAddress || vendor.Address || ''
     });
   }
@@ -1682,7 +1630,7 @@ export class ReverseVoucherEntryComponent {
     if (foundBranch) {
       // Set address from branch
       const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
-      this.vendorCreditNoteForm.get('PartyAddress')?.setValue(address);
+      this.reverseVoucherForm.get('PartyAddress')?.setValue(address);
   
       // Get Place of Supply from state lookup
       let placeOfSupply = '';
@@ -1704,7 +1652,7 @@ export class ReverseVoucherEntryComponent {
       }
   
       console.log('Setting Place of Supply:', placeOfSupply);
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+      this.reverseVoucherForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
   
       // Set GST No based on country
       const vendorMasterSid = foundBranch.CustomerMasterSid;
@@ -1713,9 +1661,9 @@ export class ReverseVoucherEntryComponent {
         if (vendor) {
           const countryCode = this.getCustomerCountryCode(vendor);
           if (countryCode === 'IN') {
-            this.vendorCreditNoteForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+            this.reverseVoucherForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
           } else {
-            this.vendorCreditNoteForm.get('GSTNo')?.setValue(vendor.PanType || '');
+            this.reverseVoucherForm.get('GSTNo')?.setValue(vendor.PanType || '');
           }
         }
       }
@@ -1746,20 +1694,26 @@ export class ReverseVoucherEntryComponent {
         firstValueFrom(this.operationService.getAllHssac()),
         firstValueFrom(this.operationService.getAllUom()),
         firstValueFrom(this.operationService.getAllState()),
-        firstValueFrom(this.operationService.getAllVendorInvoice()),
-      ]).then(([vendors,currencies, charges, hssac, uom, states, vendorInvoice]) => {
+        firstValueFrom(this.operationService.getAllVoucher()),
+        firstValueFrom(this.accountService.getAllCostCenters()),
+        firstValueFrom(this.accountService.getAllProfitCenters()),
+      ]).then(([vendors,currencies, charges, hssac, uom, states, voucher, costCenters, profitCenters]) => {
         this.vendorList = vendors.data || [];
+        this.costCenterList = costCenters.data || [];
+        this.profitCenterList = profitCenters.data || [];
         this.subledgerList = vendors.data || [];
         this.currencyList = currencies.data || [];
         this.chargeList = charges.data || [];
         this.hssacList = hssac || [];
         this.uomList = uom.data || [];
-        this.vendorInvoiceList = vendorInvoice || [];
+        this.voucherList = voucher || [];
          this.stateList = states?.data || states || [];
         this.loadDepartments(company?.CompanyMasterSid).catch(e => {
         console.error('Error loading departments', e);
         this.departmentList = [];
       });
+      this.loadCOAList();
+      this.loadSubledgerList();
       
       this.loadMasterJobs().catch(e => {
         console.error('Error loading master jobs', e);
@@ -1772,6 +1726,29 @@ export class ReverseVoucherEntryComponent {
         this.appSettingService.showError('Error loading lookup data');
       });
     }
+    loadCOAList(): void {
+    this.accountService.getAllCoaWithLedgerCategory({
+      LedgerCategory: 'Ledger',
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+    }).subscribe({
+      next: (response: any) => {
+        this.coaList = response.data || [];
+      },
+      error: (err) => {
+        console.error('Error loading COA list:', err);
+      },
+    });
+  }
+  loadSubledgerList(): void {
+    this.masterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid).subscribe({
+      next: (response: any) => {
+        this.subledgerList = response.data || [];
+      },
+      error: (err) => {
+        console.error('Error loading subledger list:', err);
+      },
+    });
+  }
   async loadMasterJobs() {
     try {
       const companyRaw = localStorage.getItem('selected-company');
@@ -1814,47 +1791,47 @@ export class ReverseVoucherEntryComponent {
     const job = this.masterJobList.find(j => j.MasterJobSid === jobSid);
     return job?.MasterJobNumber || job?.displayLabel || '-';
   }
-    loadVendorCreditNoteById(id: number) {
+    loadReverseVoucherById(id: number) {
       this.spinner.show();
-      this.operationService.getVendorCreditNoteById(id).subscribe({
+      this.operationService.getReverseVoucherById(id).subscribe({
         next: (response) => {
           if (response.status && response.data) {
-            console.log(response.data,'loadVendorCreditNoteById')
-            this.vendorCreditNoteData = response.data;
-            this.populateForm(this.vendorCreditNoteData);
+            console.log(response.data,'loadReverseVoucherById')
+            this.reverseVoucherData = response.data;
+            this.populateForm(this.reverseVoucherData);
             this.setFormReadonly();
           } else {
-            this.appSettingService.showError('Vendor CreditNote not found');
-            this.router.navigate(['/operation/vendor-credit-note/list']);
+            this.appSettingService.showError('Reverse Voucher not found');
+            this.router.navigate(['/accounts/reverse-voucher/list']);
           }
         },
         error: (error) => {
           this.spinner.hide();
-          this.appSettingService.showError('Error loading Vendor CreditNote');
+          this.appSettingService.showError('Error loading Reverse Voucher');
           console.error('Error:', error);
-          this.router.navigate(['/operation/vendor-credit-note/list']);
+          this.router.navigate(['/accounts/reverse-voucher/list']);
         }
       });
     }
   
    setFormReadonly() {
     if (this.isViewMode || this.isPosted) {
-      this.vendorCreditNoteForm.disable();
+      this.reverseVoucherForm.disable();
       
       // Also disable details array if posted
       // if (this.isPosted) {
       //   this.details.disable();
       // }
     } else {
-      this.vendorCreditNoteForm.enable();
+      this.reverseVoucherForm.enable();
       this.details.enable();
       
       // Keep readonly fields as is
-      this.vendorCreditNoteForm.get('VoucherNumber')?.disable();
-      this.vendorCreditNoteForm.get('PostedOn')?.disable();
-      this.vendorCreditNoteForm.get('PartyAddress')?.disable();
-      this.vendorCreditNoteForm.get('GSTNo')?.disable();
-      this.vendorCreditNoteForm.get('PlaceOfSupply')?.disable();
+      this.reverseVoucherForm.get('VoucherNumber')?.disable();
+      this.reverseVoucherForm.get('PostedOn')?.disable();
+      this.reverseVoucherForm.get('PartyAddress')?.disable();
+      this.reverseVoucherForm.get('GSTNo')?.disable();
+      this.reverseVoucherForm.get('PlaceOfSupply')?.disable();
     }
   }
   
@@ -1892,7 +1869,7 @@ export class ReverseVoucherEntryComponent {
         || null;
       
       console.log(currency,'currency')
-      this.vendorCreditNoteForm.patchValue({
+      this.reverseVoucherForm.patchValue({ 
         ReversalVoucher: reversalVoucherDisplay,
         VoucherNumber: header.VoucherNumber,
         VoucherDate: this.formatDateForNgb(header.VoucherDate),
@@ -1904,7 +1881,7 @@ export class ReverseVoucherEntryComponent {
         GSTNo: header.GST_VAT,
         PlaceOfSupply: header.PlaceOfSupply,
         PostedOn: header.PostDate ? this.formatDateForDisplay(header.PostDate) : null,
-        CurrencyCode: header.CurrencyCode || currency.currencyCode,
+        CurrencyCode: header.CurrencyCode,
         ExchangeRate: header.ExchangeRate || 1,
         BillNo: header.DocumentNumber,
         BillDate: header.DocumentDate ? this.formatDateForNgb(header.DocumentDate) : null,
@@ -1932,10 +1909,10 @@ export class ReverseVoucherEntryComponent {
       this.getVendorBranchByVendor(cm);
       console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
       if(branchSid){
-        this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
+        this.reverseVoucherForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
         this.pendingBranchToSelect = Number(branchSid);
         console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
-        const currentVendor = this.vendorCreditNoteForm.get('CustomerMasterSid')?.value;
+        const currentVendor = this.reverseVoucherForm.get('CustomerMasterSid')?.value;
         if (currentVendor) {
           this.getVendorBranchByVendor(Number(currentVendor));
         } else {
@@ -1944,8 +1921,8 @@ export class ReverseVoucherEntryComponent {
             Number(b.CustomerName) === Number(branchSid)
           );
           if (found) {
-            this.vendorCreditNoteForm.get('PartyName')?.setValue(Number(branchSid));
-            this.vendorCreditNoteForm.get('PartyAddress')?.setValue(found.Address);
+            this.reverseVoucherForm.get('PartyName')?.setValue(Number(branchSid));
+            this.reverseVoucherForm.get('PartyAddress')?.setValue(found.Address);
           }
         }
       }
@@ -1962,7 +1939,6 @@ export class ReverseVoucherEntryComponent {
           const row = this.createDetailGroup({
             Sno: detail.Sno,
             VoucherDetailSid: detail.VoucherDetailSid,
-            LedgerMasterSid: detail.LedgerMasterSid,
             ChargeMasterSid: detail.ChargeMasterSid,
             ChargeDescription: detail.ChargeDescription,
             HSSACMasterSid: detail.HSSACMasterSid,
@@ -1982,7 +1958,11 @@ export class ReverseVoucherEntryComponent {
             MasterJobSid: detail.MasterJobSid,
             HouseJobSid: detail.HouseJobSid,
             DepartmentMasterSid: detail.DepartmentMasterSid,
-            Remarks: detail.Remarks
+            Remarks: detail.Remarks,
+            COAMasterSid: detail.COAMasterSid,
+            LedgerMasterSid: detail.LedgerMasterSid,
+            ProfitCenterMasterSid: detail.ProfitCenterMasterSid,
+            CostCenterMasterSid: detail.CostCenterMasterSid,
           });
           console.log(`Created form group for detail ${index}:`, row.value);
           this.details.push(row);
@@ -2011,7 +1991,7 @@ export class ReverseVoucherEntryComponent {
       // Populate others
       if (data.VoucherOthers && data.VoucherOthers.length > 0) {
         const others = data.VoucherOthers[0];
-        this.vendorCreditNoteForm.get('voucherOthers')?.patchValue({
+        this.reverseVoucherForm.get('voucherOthers')?.patchValue({
           ContainerNumber: others.ContainerNumber || '',
           VoucherNote: others.VoucherNote || '',
           Footer: others.Footer || ''
@@ -2021,9 +2001,9 @@ export class ReverseVoucherEntryComponent {
   
     // Save
     onSave() {
-      if (this.vendorCreditNoteForm.invalid) {
+      if (this.reverseVoucherForm.invalid) {
         this.appSettingService.showWarning('Please fill all required fields');
-        this.markFormGroupTouched(this.vendorCreditNoteForm);
+        this.markFormGroupTouched(this.reverseVoucherForm);
         return;
       }
   
@@ -2036,36 +2016,36 @@ export class ReverseVoucherEntryComponent {
   
       this.spinner.show();
       if (this.isEditMode) {
-        this.operationService.updateVendorCreditNoteById(this.headerId!, payload).subscribe({
+        this.operationService.updateReverseVoucherById(this.headerId!, payload).subscribe({
           next: (response) => {
             this.spinner.hide();
             if (response.status) {
-              this.appSettingService.showSuccess('Vendor CreditNote updated successfully');
-              this.router.navigate(['/operation/vendor-credit-note/list']);
+              this.appSettingService.showSuccess('Reverse Voucher updated successfully');
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
-              this.appSettingService.showError('Failed to update Vendor CreditNote');
+              this.appSettingService.showError('Failed to update Reverse Voucher');
             }
           },
           error: (error) => {
             this.spinner.hide();
-            this.appSettingService.showError('Error updating Vendor CreditNote');
+            this.appSettingService.showError('Error updating Reverse Voucher');
             console.error('Error:', error);
           }
         });
       } else {
-        this.operationService.createVendorCreditNote(payload).subscribe({
+        this.operationService.createReverseVoucher(payload).subscribe({
           next: (response) => {
             this.spinner.hide();
             if (response.status) {
-              this.appSettingService.showSuccess('Vendor CreditNote created successfully');
-              this.router.navigate(['/operation/vendor-credit-note/list']);
+              this.appSettingService.showSuccess('Reverse Voucher created successfully');
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
-              this.appSettingService.showError(response.message || 'Failed to create Vendor CreditNote');
+              this.appSettingService.showError(response.message || 'Failed to create Reverse Voucher');
             }
           },
           error: (error) => {
             this.spinner.hide();
-            this.appSettingService.showError('Error creating Vendor CreditNote');
+            this.appSettingService.showError('Error creating Reverse Voucher');
             console.error('Error:', error);
           }
         });
@@ -2074,7 +2054,7 @@ export class ReverseVoucherEntryComponent {
     
   
    preparePayload(): any {
-    const formValue = this.vendorCreditNoteForm.getRawValue();
+    const formValue = this.reverseVoucherForm.getRawValue();
   
     const payload: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2135,7 +2115,10 @@ export class ReverseVoucherEntryComponent {
       MasterJobSid: detail.MasterJobSid,
       HouseJobSid: detail.HouseJobSid,
       DepartmentMasterSid: detail.DepartmentMasterSid,
-      Remarks: detail.Remarks
+      Remarks: detail.Remarks,
+      COAMasterSid: detail.COAMasterSid,
+      ProfitCenterMasterSid: detail.ProfitCenterMasterSid,  
+      CostCenterMasterSid: detail.CostCenterMasterSid,
     }));
   
     // Add TDS
@@ -2192,25 +2175,53 @@ export class ReverseVoucherEntryComponent {
   // }
   
   // Check if voucher is posted (for UI controls)
+
+    private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.voucherList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
   get isPosted(): boolean {
-    return this.vendorCreditNoteData?.PostStatus === 'P';
+    return this.reverseVoucherData?.PostStatus === 'P';
   }
   
   // Check if voucher is draft
   get isDraft(): boolean {
-    return !this.vendorCreditNoteData?.PostStatus || this.vendorCreditNoteData?.PostStatus === 'U';
+    return !this.reverseVoucherData?.PostStatus || this.reverseVoucherData?.PostStatus === 'U';
   }
   
   
     onReset() {
       if (this.isEditMode) {
-        this.loadVendorCreditNoteById(this.headerId!);
+        this.loadReverseVoucherById(this.headerId!);
       } else {
-        this.vendorCreditNoteForm.reset();
+        this.reverseVoucherForm.reset();
         this.details.clear();
         // this.tdsGroup.reset();
         const currencySettings = this.companySettings.getCurrencySettings();
-        this.vendorCreditNoteForm.patchValue({
+        this.reverseVoucherForm.patchValue({
           CurrencyCode: currencySettings.code,
           ExchangeRate: 1,
           InvoiceType: 'B2B',
@@ -2220,7 +2231,7 @@ export class ReverseVoucherEntryComponent {
     }
   
     onCancel() {
-      this.router.navigate(['/operation/vendor-credit-note/list']);
+      this.router.navigate(['/accounts/reverse-voucher/list']);
     }
   
     onPrint() {
@@ -2234,8 +2245,8 @@ export class ReverseVoucherEntryComponent {
     }
   
     onSubmit() {
-      if (this.vendorCreditNoteForm.invalid) {
-        this.markFormGroupTouched(this.vendorCreditNoteForm);
+      if (this.reverseVoucherForm.invalid) {
+        this.markFormGroupTouched(this.reverseVoucherForm);
         this.appSettingService.showError('Please fill all required fields');
         return;
       }
@@ -2250,40 +2261,40 @@ export class ReverseVoucherEntryComponent {
       this.spinner.show();
   
       if (this.isEditMode && this.headerId) {
-        this.operationService.updateVendorCreditNoteById(this.headerId, payload).subscribe({
+        this.operationService.updateReverseVoucherById(this.headerId, payload).subscribe({
           next: (response) => {
             this.spinner.hide();
             this.isSaving = false;
             if (response.status) {
-              this.appSettingService.showSuccess('Vendor CreditNote updated successfully');
-              this.router.navigate(['/operation/vendor-credit-note/list']);
+              this.appSettingService.showSuccess('Reverse Voucher updated successfully');
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
-              this.appSettingService.showError('Failed to update Vendor CreditNote');
+              this.appSettingService.showError('Failed to update Reverse Voucher');
             }
           },
           error: (error) => {
             this.spinner.hide();
             this.isSaving = false;
-            this.appSettingService.showError('Error updating Vendor CreditNote');
+            this.appSettingService.showError('Error updating Reverse Voucher');
             console.error('Error:', error);
           }
         });
       } else {
-        this.operationService.createVendorCreditNote(payload).subscribe({
+        this.operationService.createReverseVoucher(payload).subscribe({
           next: (response) => {
             this.spinner.hide();
             this.isSaving = false;
             if (response.status) {
-              this.appSettingService.showSuccess('Vendor CreditNote created successfully');
-              this.router.navigate(['/operation/vendor-credit-note/list']);
+              this.appSettingService.showSuccess('Reverse Voucher created successfully');
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
-              this.appSettingService.showError('Failed to create Vendor CreditNote');
+              this.appSettingService.showError('Failed to create Reverse Voucher');
             }
           },
           error: (error) => {
             this.spinner.hide();
             this.isSaving = false;
-            this.appSettingService.showError('Error creating Vendor CreditNote');
+            this.appSettingService.showError('Error creating Reverse Voucher');
             console.error('Error:', error);
           }
         });
@@ -2291,7 +2302,7 @@ export class ReverseVoucherEntryComponent {
     }
   
     isFieldInvalid(fieldName: string): boolean {
-      const field = this.vendorCreditNoteForm.get(fieldName);
+      const field = this.reverseVoucherForm.get(fieldName);
       return !!(field && field.invalid && (field.dirty || field.touched));
     }
   
@@ -2304,7 +2315,7 @@ export class ReverseVoucherEntryComponent {
     setToday(fieldName: string, datepicker: any): void {
       const today = new Date();
       const ngbDate = { day: today.getDate(), month: today.getMonth() + 1, year: today.getFullYear() };
-      this.vendorCreditNoteForm.get(fieldName)?.setValue(ngbDate);
+      this.reverseVoucherForm.get(fieldName)?.setValue(ngbDate);
       datepicker.close();
     }
   
@@ -2315,7 +2326,7 @@ export class ReverseVoucherEntryComponent {
   
       const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
       if (currency) {
-        this.vendorCreditNoteForm.patchValue({
+        this.reverseVoucherForm.patchValue({
           CurrencyCode: currency.currencyCode,
           ExchangeRate: currency.ExchangeRate || 1
         });
@@ -2361,4 +2372,14 @@ export class ReverseVoucherEntryComponent {
     if (this.details.length > index) this.details.removeAt(index);
     this.recalculateAllRows();
   }
+
+  getPostStatusDisplay(): string {
+  const postStatus = this.reverseVoucherForm.get('PostStatus')?.value;
+  if (postStatus === 'P') {
+    return 'Posted';
+  } else if (postStatus === 'U') {
+    return 'Unposted';
+  }
+  return postStatus || 'Unposted'; 
+}
 }

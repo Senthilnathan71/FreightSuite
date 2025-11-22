@@ -246,9 +246,8 @@ export class CreditNoteEntryComponent {
         ExchangeRate: [{ value: 1, disabled: true }],
         GST_VAT: [{ value: '', disabled: true }],
         GSTType: [{ value: '', disabled: true }],
-        PostStatus: [''],
+        PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
-        VoucherType: [''],
         Narration: ['hi'],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
@@ -527,7 +526,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       );
       
       if (matchingOutstanding) {
-        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingLocalAmount);
         
         console.log('DEBUG - Outstanding amount found:', {
           invoiceNumber: invoiceNumber,
@@ -776,15 +775,6 @@ onFinalSave() {
         // Add PostStatus to payload
         const postStatus = isFinal ? 'P' : 'D'; // 'P' for Posted, 'D' for Draft
       
-        let normalizedVoucherType: number | null = null;
-        const vt = raw.VoucherType;
-        if (Array.isArray(vt) && vt.length > 0) {
-          normalizedVoucherType = Number(vt[0]);
-        } else if (vt !== null && vt !== undefined && vt !== '') {
-          normalizedVoucherType = Number(vt);
-        }
-        if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-      
         let voucherDate: Date;
         if (!raw.VoucherDate) {
           voucherDate = new Date();
@@ -856,8 +846,6 @@ onFinalSave() {
           CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
           PlaceOfSupply: raw.PlaceOfSupply || '',
           COAMasterSid: raw.COAMasterSid ?? 1,
-          VoucherType: normalizedVoucherType,
-          VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
           InvoiceType: raw.InvoiceType || 'REG',
           GSTType: raw.GSTType || '',
           CurrencyMasterSid: currencyMasterId,
@@ -1339,7 +1327,6 @@ private getCustomerCountryCode(customer: any): string {
       GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
       GSTType: header.GSTType || null,
-      VoucherType: voucherTypeForControl,
       Narration: header.Narration || '',
       CreditNoteReason: header.CreditNoteReason || '',
       Remarks: header.Remarks || '',
@@ -2036,15 +2023,6 @@ private normalizeParty(raw: any) {
     const createdByValue = userEmailFromSettings || this.currUserEmail || null;
     const updatedByValue = this.isEditMode ? (userEmailFromSettings || this.currUserEmail || null) : null;
 
-    let normalizedVoucherType: number | null = null;
-    const vt = raw.VoucherType;
-    if (Array.isArray(vt) && vt.length > 0) {
-      normalizedVoucherType = Number(vt[0]);
-    } else if (vt !== null && vt !== undefined && vt !== '') {
-      normalizedVoucherType = Number(vt);
-    }
-    if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-
     let voucherDate: Date;
     if (!raw.VoucherDate) {
       voucherDate = new Date();
@@ -2119,8 +2097,6 @@ private normalizeParty(raw: any) {
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,
-      VoucherType: normalizedVoucherType,
-      VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
       CurrencyMasterSid: currencyMasterId,

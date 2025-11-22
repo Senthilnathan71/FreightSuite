@@ -204,7 +204,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             Remarks : ['',[Validators.maxLength(200)]],
             status : ['Active'],
             CoLoad : [false],
-            VoyageType : [null],
+            VoyageType : ['Sea'],
             Carrier : [null],
 
             // NEW header port/date fields (replaces detail table)

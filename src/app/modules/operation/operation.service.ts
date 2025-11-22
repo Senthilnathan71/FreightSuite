@@ -1312,4 +1312,77 @@ export class OperationService {
       })
     );
   }
+createReverseVoucher(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('reverse-voucher/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllReverseVoucher() {
+    return this.http.get<{ status: boolean; data: any[] }>('reverse-voucher').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  getAllVoucher() {
+    return this.http.get<{ status: boolean; data: any[] }>('reverse-voucher/voucher').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getVoucherById(VoucherHeaderSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/voucher/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+
+  getReverseVoucherById(VoucherHeaderSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateReverseVoucherById(VoucherHeaderSid: number, payload: any) {
+    return this.http.patch<{ status: boolean; data: any }>(`reverse-voucher/update/${VoucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  deleteReverseVoucherById(VoucherHeaderSid: number) {
+    return this.http.delete<{ status: boolean; data: any }>(`reverse-voucher/deleteVoucher/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  searchReverseVoucher(payload: any) {
+    return this.http.post<{ data: any }>('reverse-voucher/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  postVoucherSid(payload: any) {
+    return this.http.post<{ data: any }>('reverse-voucher/post', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
 }

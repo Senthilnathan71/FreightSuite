@@ -444,7 +444,7 @@ gstTypes = [
       );
       
       if (matchingOutstanding) {
-        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingLocalAmount);
         
         console.log('DEBUG - Outstanding amount found:', {
           invoiceNumber: invoiceNumber,
