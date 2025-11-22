@@ -19,6 +19,16 @@
                         [disabled]="isPosted">
                         <i class="fas fa-check-circle me-1"></i> Final
                     </button> -->
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        *ngIf="isEditMode && !receiptForm.get('CashOrBank')?.value" (click)="reportBank()" [disabled]="!receiptPrintData">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
+                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value" (click)="reportCash()" [disabled]="!receiptPrintData">
+                        <i class="fas fa-print me-1"></i>  Print
+                    </button>
+
+                
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back

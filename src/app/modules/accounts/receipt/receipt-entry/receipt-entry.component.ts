@@ -33,6 +33,8 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { BankReceiptComponent } from '../report/bank-receipt/bank-receipt.component';
+import { CashReceiptComponent } from '../report/cash-receipt/cash-receipt.component';
 
 /**
  * Receipt Entry Component
@@ -114,7 +116,7 @@ export class ReceiptEntryComponent implements OnInit {
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
-
+  receiptPrintData:any
 
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
@@ -760,6 +762,8 @@ export class ReceiptEntryComponent implements OnInit {
       (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
+          this.receiptPrintData = resp.data
+          console.log(this.receiptPrintData,"PRINTDATA")
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -1978,7 +1982,22 @@ export class ReceiptEntryComponent implements OnInit {
 
 
 
+   reportBank() {
+      const modalRef = this.modalService.open(BankReceiptComponent, {
+        size: 'xl',
+        scrollable: true,
+      })
+      modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+      modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+    }
 
+  reportCash() {
+    const modalRef = this.modalService.open(CashReceiptComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

@@ -34,20 +34,20 @@
                         style="border-top:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black;">
                         <div style="width: 200px; white-space: nowrap;"><strong>Shipper</strong>
                         </div>
-                        <div style="min-height: 100px; height: auto;"> {{housejobData.ShipperName}}
+                        <div style="min-height: 100px; height: auto;"> {{housejobData.ShipperName}} <br>
                             {{housejobData.ShipperAddress}} </div>
                     </div>
                     <div class="d-flex flex-column" style=" border-left: 1px solid black; ">
                         <div style="width: 200px; white-space: nowrap;"><strong>Consignee </strong>
                         </div>
-                        <div style="min-height: 100px; height: auto;"> {{housejobData.ConsigneeName}}
+                        <div style="min-height: 100px; height: auto;"> {{housejobData.ConsigneeName}} <br>
                             {{housejobData.ConsigneeAddress}} </div>
                     </div>
 
                     <div class="d-flex flex-column"
                         style="border-top:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black; border-right:1px solid black;">
                         <div style="width: 200px; white-space: nowrap;"><strong>Notify Party</strong></div>
-                        <div style="min-height: 78px; height: auto;"> {{housejobData.Notify}} {{housejobData.Address}}
+                        <div style="min-height: 78px; height: auto;"> {{housejobData.Notify}} <br> {{housejobData.Address}}
                         </div>
                     </div>
                     <!-- <div class="d-flex " style="border: 1px solid black;">
@@ -65,7 +65,7 @@
                         style=" border-left: 1px solid black; border-right: 1px solid black;">
                         <div style="width: 200px; white-space: nowrap;"><strong>Airport of Departure(Addr.of first
                                 Carrier) and requested Routing</strong></div>
-                        <div style=" height: auto;" class="text-center"> {{housejobData.POL}}</div>
+                        <div style=" height: auto;"> {{housejobData.POL}}</div>
                     </div>
 
                 </div>
@@ -208,34 +208,57 @@
                         </div>
                     </div>
 
-                    <div class="col-md-2" style=" border-left: 1px solid black; ">
+                  
+                    <div class="col-md-2" style="border-left: 1px solid black;">
                         <div class="d-flex flex-column">
-                            <div style=" white-space: nowrap;border-bottom: 1px solid black; text-align: center;">
-                                <strong>WT </strong>
+
+                            <div
+                                style="white-space: nowrap; border-bottom: 1px solid black; text-align: center; font-size: 12px;">
+                                <strong>WT</strong>
                             </div>
-                            <div class="d-flex gap-2">
-                                <div><strong class="fs-2 text-center">
-                                        PPD
-                                    </strong></div>
-                                <div style="border-left: 1px solid black;"><strong class="fs-2 text-center">
-                                        COLL
-                                    </strong></div>
+
+                            <div class="d-flex gap-2" style=" font-size: 12px;">
+                                <div style="width: 50px; text-align: center;">
+                                    <strong>PP/CC</strong>
+                                    <div>
+                                        <span *ngIf="housejobData?.FreightTerms === 'Prepaid'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
+
+                                <div style="width: 50px; border-left: 1px solid black; text-align: center;">
+                                    <strong>COLL</strong>
+                                    <div>
+                                        <span *ngIf="housejobData?.FreightTerms === 'Collect'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
                             </div>
+
+
+
                         </div>
                     </div>
+
                     <div class="col-md-2" style=" border-left: 1px solid black; ">
                         <div class="d-flex flex-column">
-                            <div style=" white-space: nowrap;border-bottom: 1px solid black;text-align: center;">
-                                <strong>Other
+                            <div
+                                style=" white-space: nowrap;border-bottom: 1px solid black;text-align: center; font-size: 12px ;">
+                                <strong class="mb-0">Other
                                 </strong>
                             </div>
-                            <div class="d-flex gap-2">
-                                <div><strong class="fs-1 text-center">
-                                        PPD
-                                    </strong></div>
-                                <div style="border-left: 1px solid black;"><strong class="fs-1 text-center">
-                                        COLL
-                                    </strong></div>
+                            <div class="d-flex gap-2" style=" font-size: 12px;">
+                                <div style="width: 50px; text-align: center;">
+                                    <strong>PP/CC</strong>
+                                    <div>
+                                        <span *ngIf="housejobData?.FreightTerms === 'Prepaid' " class="fw-bold">X</span>
+                                    </div>
+                                </div>
+
+                                <div style="width: 50px; border-left: 1px solid black; text-align: center;">
+                                    <strong>COLL</strong>
+                                    <div>
+                                        <span *ngIf="housejobData?.FreightTerms === 'Collect'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -360,7 +383,7 @@
                     </div>
                     <div
                         style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        {{ masterJobData?.WeightIn }} 
+                        <!-- {{ houseJobData?.masterJobData?.WeightIn }} -->
                     </div>
                     <div
                         style="width: 15%; white-space: nowrap;  border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
@@ -368,7 +391,7 @@
                     </div>
                     <div
                         style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        456
+                        
                     </div>
                     <div
                         style="width: 10%; white-space: nowrap;  border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
