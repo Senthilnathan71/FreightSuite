@@ -24,7 +24,7 @@
 
   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
     (click)="openPrintModal()" 
-    *ngIf="isEditMode"  [disabled]="!invoiceForm">
+    *ngIf="isEditMode"  [disabled]="!invoiceData">
     <i class="fas fa-print me-1"></i> Print
   </button>
 
@@ -290,8 +290,8 @@
               </aside>
             </div>
             <div class="col-md-12 px-0">
-              <div class="card mb-0">
-                <div class="card-body py-1">
+              <div class=" mb-0">
+                <div class="py-1">
                   <form [formGroup]="invoiceForm" novalidate>
                     <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
@@ -303,7 +303,7 @@
                       <table class="table table-hover table-sm mb-0 text-center">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius: 10px;"></th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
@@ -350,7 +350,7 @@
                               No.</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
                               House No.</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;border-top-right-radius: 10px;">
                               Department</th>
                           </tr>
                           <tr class="align-middle bg-info">
@@ -374,8 +374,8 @@
                           <ng-container *ngFor="let row of details.controls; let i = index">
                             <tr [formGroupName]="i">
                               <!-- Delete Button - Only show for new invoices -->
-                              <td>
-                                <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0"
+                              <td *ngIf="!isEditMode">
+                                <button  type="button" class="btn btn-sm pt-0"
                                   (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
@@ -767,9 +767,9 @@
 
 
           <div class="text-center" style="border-top: 1px solid black;">
-            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+            <h5 class="fw-bold my-1">{{ getInvoiceTitle() }}</h5>
             <p style="font-size: 12px;">
-              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '-'}}
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
             </p>
           </div>
 
@@ -878,10 +878,19 @@
                 <div>: {{ invoiceData.houseJob?.FreightTerms  || invoiceData?.bookingHeader?.FreightTerms  }}</div>
               </div>
               <div class="d-flex">
-                <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
-                <div>: {{ invoiceData.houseJob?.Cargo?.[0]?.NoOfPackage || invoiceData?.bookingHeader?.NoOfPackage }} / {{
-                  invoiceData.houseJob?.Cargo?.[0]?.GrossWeight || invoiceData?.bookingHeader?.GrossWeight}} / {{
-                  invoiceData.houseJob?.Cargo?.[0]?.Volume || invoiceData?.bookingHeader?.Volume}}</div>
+              <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
+                <div>
+                   : {{
+                    getDisplayValue(invoiceData.houseJob?.Cargo?.[0]?.NoOfPackage, invoiceData?.bookingHeader?.NoOfPackage)
+                  }}
+                  {{
+                    invoiceData.houseJob?.Cargo?.[0]?.GrossWeight || invoiceData?.bookingHeader?.GrossWeight ? ' / ' + (invoiceData.houseJob?.Cargo?.[0]?.GrossWeight || invoiceData?.bookingHeader?.GrossWeight) : ''
+                  }}
+                  {{
+                    invoiceData.houseJob?.Cargo?.[0]?.Volume || invoiceData?.bookingHeader?.Volume ? ' / ' + (invoiceData.houseJob?.Cargo?.[0]?.Volume || invoiceData?.bookingHeader?.Volume) : ''
+                  }}
+                </div>
+
               </div>
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Exp Inv No</strong></div>
@@ -989,7 +998,7 @@
 
           <div class="d-flex ">
             <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
-            <p class="mb-0 ">: {{getAmountInWords()}}</p>
+            <p class="mb-0 fst-italic">: {{getAmountInWords()}}</p>
           </div>
 
           <div class="d-flex   mt-2">

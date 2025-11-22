@@ -1,0 +1,893 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">MAWB</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
+    </div>
+</div>
+
+
+<div class="modal-body">
+    <div id="printContent">
+        <div style="
+    width: 280mm;
+    min-height: 405mm;
+    margin: 10px auto !important;
+    background: #fff;
+    box-sizing: border-box;
+    position: relative;
+    color: #000;
+    page-break-after: always;
+  ">
+
+            <div class="row mb-0">
+                <div class="col-md-6 p-0">
+                    <div
+                        style="display: flex; border-top:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black; width: 100%;">
+
+                        <!-- LEFT SECTION -->
+                        <div style="width: 70%; ">
+                            <!-- Header -->
+                            <strong>
+                                Shipper
+                            </strong>
+                            <!-- Content -->
+                            <div style="padding: 4px; min-height: 79px;  line-height: 16px;">
+                                {{ masterAirWayData?.houseJob?.[0]?.ShipperName }} <br>
+                                {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
+                            </div>
+                        </div>
+
+                        <!-- RIGHT SECTION -->
+                        <div
+                            style="width: 35%; border-left:  1px solid black; border-bottom: 1px solid black ; height: 50px;">
+                            <!-- Header -->
+                            <strong style=" padding: 2px; font-size: 12px;">
+                                Shipper's Account Number
+                            </strong>
+                            <!-- Content -->
+                            <div style="padding: 1px; text-align: center;"></div>
+                        </div>
+
+                    </div>
+
+                    <div style="display: flex;  border-left: 1px solid black;  width: 100%;">
+
+                        <!-- LEFT SECTION -->
+                        <div style="width: 70%; ">
+                            <!-- Header -->
+                            <strong>
+                                Consignee
+                            </strong>
+                            <!-- Content -->
+                            <div style="padding: 4px; min-height: 79px;  line-height: 16px;">
+                                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }} <br>
+                                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
+                            </div>
+                        </div>
+
+                        <!-- RIGHT SECTION -->
+                        <div
+                            style="width: 35%; border-left:  1px solid black; border-bottom: 1px solid black ; height: 50px;">
+                            <!-- Header -->
+                            <strong style=" padding: 2px; font-size: 12px;">
+                                Consignee's Account Number
+                            </strong>
+                            <!-- Content -->
+                            <div style="padding: 1px; text-align: center;"></div>
+                        </div>
+
+                    </div>
+                    <div class="d-flex flex-column"
+                        style="border-top:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black;">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Issuing Carrier's Agent Name and City
+                            </strong></div>
+                        <div style="min-height: 78px; height: auto;">
+                            {{getAgentName(masterAirWayData?.DestinationAgent)}} <br>
+                            {{getAgentName(masterAirWayData?.DestinationAgentAddress)}}</div>
+                    </div>
+                    <div class="d-flex" style="border-left: 1px solid black; border-bottom: 1px solid black; ">
+                        <div class="d-flex flex-column" style="width: 260px;">
+                            <div style="width: 200px; white-space: nowrap; text-align: center;"><strong>Agent's IATA
+                                    Code</strong></div>
+                            <div style="min-height: 20px; height: auto; text-align: center;"> </div>
+                        </div>
+                        <div class="d-flex flex-column" style="border-left: 1px solid black; ">
+                            <div style="width: 200px; white-space: nowrap;text-align: center"><strong>Account No
+                                </strong></div>
+                            <div style="min-height: 20px; height: auto;text-align: center"> </div>
+                        </div>
+
+                    </div>
+                    <div class="text-center" style="border-left: 1px solid black; border-bottom: 1px solid black; ">
+                        <div class="d-flex flex-column ">
+                            <div style=" white-space: nowrap; "><strong>Airport departure(Addr. of first
+                                    Carrier) and requested Routing </strong></div>
+                            <div style="min-height: 20px; height: auto;"> {{ masterAirWayData?.POL }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 p-0">
+                    <div class="d-flex flex-column" style="border:1px solid black;">
+                        <div class="d-flex ">
+                            <div style="width: 70px; white-space: nowrap;"><strong>MAWB</strong></div>
+                            <div>: {{ masterAirWayData?.MBLNo }}</div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center align-items-center"
+                            style="min-height: 79px; height: auto;">
+                            <div class="company-logo">
+                                <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                    class="img-fluid">
+                            </div>
+
+                            <div class="text-center">
+                                <h5 class="mb-0">{{ currentCompany?.companyName || 'Company Name' }}</h5>
+                                <h6 class="mb-0">{{ currentBranch?.branchName || 'Company Branch' }}</h6>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div
+                        style="min-height: 101px; height: auto; border-left:1px solid black ; border-right: 1px solid black ; border-bottom: 1px solid black;">
+                        <!-- <div class="d-flex pb-1" style="border-left:1px solid black; border-right: 1px solid black;">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Job No </strong></div>
+                            <div>: </div>
+                        </div>
+                        <div class="d-flex  pb-1" style="border-left:1px solid black; border-right: 1px solid black;">
+                            <div style="width: 200px; white-space: nowrap;"><strong>MAWB No </strong></div>
+                            <div>: </div>
+                        </div>
+                        <div class="d-flex  pb-1" style="border-left:1px solid black;border-right: 1px solid black; ">
+                            <div style="width: 200px; white-space: nowrap;"><strong>HAWB No</strong></div>
+                            <div>: </div>
+                        </div>
+                        <div class="d-flex  pb-1"
+                            style="border-right:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black;">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Agent</strong></div>
+                            <div>: </div>
+                        </div> -->
+                    </div>
+
+                    <div class="d-flex "
+                        style="border-right:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black;">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Account Information </strong></div>
+                        <div style="min-height: 141px; height: auto;"> </div>
+                    </div>
+                    <div class="d-flex text-center"
+                        style="border-right:1px solid black; border-left: 1px solid black; border-bottom: 1px solid black;">
+                        <div>
+                            <div style="width: 200px; white-space: nowrap;"><strong>Reference Number </strong></div>
+                            <div style="min-height: 20px; height: auto;"> </div>
+                        </div>
+                        <div style="border-left: 1px solid black; ">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Optional Shipping Information
+                                </strong></div>
+                            <div style="min-height: 20px; height: auto;"> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-0">
+                <div class="col-md-6 px-0 d-flex"
+                    style=" border-left: 1px solid black; border-bottom: 1px solid black;">
+                    <div class="col-md-2">
+                        <div class="d-flex flex-column text-center">
+                            <div style=" white-space: nowrap; text-align: center;"><strong>To </strong></div>
+                            <div>{{ masterAirWayData?.POO }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column text-center">
+                            <div style=" white-space: nowrap; "><strong>By first Carrier </strong>
+                            </div>
+                            <div> {{ masterAirWayData?.voyages?.[0]?.CarrierName }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-1" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap;text-align: center;"><strong>To </strong></div>
+                            <div>{{ masterAirWayData?.POL }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-1" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap; text-align: center;"><strong>By </strong></div>
+                            <div>{{ masterAirWayData?.POD }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-1" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap; text-align: center;"><strong>To </strong></div>
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="col-md-1 " style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap; text-align: center;"><strong>By </strong></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 px-0 d-flex"
+                    style=" border-left: 1px solid black; border-bottom: 1px solid black;">
+                    <div class="col-md-2">
+                        <div class="d-flex flex-column text-center">
+                            <div style=" white-space: nowrap; text-align: center;"><strong>Curr</strong></div>
+                            <div>{{ getCurrencyCodeById(currentCurrency) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2" style="border-left: 1px solid black;">
+                        <div class="d-flex flex-column">
+
+                            <div
+                                style="white-space: nowrap; border-bottom: 1px solid black; text-align: center; font-size: 12px;">
+                                <strong>WT</strong>
+                            </div>
+
+                            <div class="d-flex gap-2" style=" font-size: 12px;">
+                                <div style="width: 50px; text-align: center;">
+                                    <strong>PP/CC</strong>
+                                    <div>
+                                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
+
+                                <div style="width: 50px; border-left: 1px solid black; text-align: center;">
+                                    <strong>COLL</strong>
+                                    <div>
+                                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-2" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div
+                                style=" white-space: nowrap;border-bottom: 1px solid black;text-align: center; font-size: 12px ;">
+                                <strong class="mb-0">Other
+                                </strong>
+                            </div>
+                            <div class="d-flex gap-2" style=" font-size: 12px;">
+                                <div style="width: 50px; text-align: center;">
+                                    <strong>PP/CC</strong>
+                                    <div>
+                                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid' " class="fw-bold">X</span>
+                                    </div>
+                                </div>
+
+                                <div style="width: 50px; border-left: 1px solid black; text-align: center;">
+                                    <strong>COLL</strong>
+                                    <div>
+                                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'"  class="fw-bold">X</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" style=" border-left: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap;"><strong class="fs-1">Declared Value of Carriage
+                                </strong></div>
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" style=" border-left: 1px solid black; border-right: 1px solid black; ">
+                        <div class="d-flex flex-column">
+                            <div style=" white-space: nowrap;"><strong class="fs-1">Declared Value of Customs
+                                </strong></div>
+                            <div></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row mb-0">
+                <div class="col-md-6 p-0 d-flex">
+                    <div class="col-md-6">
+                        <div class="d-flex flex-column text-center"
+                            style=" border-left: 1px solid black; border-bottom: 1px solid black;">
+                            <div style=" white-space: nowrap;"><strong>Airport of
+                                    Destination
+                                </strong>
+                            </div>
+                            <div style="min-height: 20px ; height: auto;"> {{ masterAirWayData?.FPD }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex  flex-column"
+                            style=" border-left: 1px solid black; border-bottom: 1px solid black;">
+                            <div style="white-space: nowrap; text-align: center;"><strong>
+                                    Flight/Date
+                                </strong>
+                            </div>
+                            <div style="min-height: 20px ; height: auto;"> {{ masterAirWayData?.voyages?.[0]?.ETA }}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-6 p-0 d-flex">
+                    <div class="col-md-6">
+                        <div class="d-flex flex-column"
+                            style=" border-bottom: 1px solid black; border-left: 1px solid black;">
+                            <div style="width: 200px; white-space: nowrap; text-align: center;"><strong>Amount of
+                                    Insurance</strong>
+                            </div>
+                            <div style="min-height: 20px ; height: auto;"> </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex  flex-column"
+                            style="  border-bottom: 1px solid black; border-right: 1px solid black; border-right: 1px solid black; ">
+                            <div style="width: 200px; white-space: nowrap; text-align: center;"><strong>
+
+                                    Insurnce</strong>
+                            </div>
+                            <div style="min-height: 20px ; height: auto;"> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-0">
+                <div class="col-md-12" style=" border-bottom: 1px solid black; border-left:1px solid black; border-right: 1px solid black;">
+                    <p>Handling Information</p>
+                    <div class="d-flex flex-column">
+                        <div style=" white-space: nowrap; height: 50px;"></div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+            <div class="row mb-0">
+                <div class="d-flex p-0">
+                    <div
+                        style="width: 10%; white-space: nowrap; border: 1px solid black; border-top: none; text-align: center;">
+                        <strong>No of Pieces</strong>
+                    </div>
+                    <div
+                        style="width: 3%; white-space: nowrap;  border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <div>
+                            <strong class="d-flex flex-column">K </strong>
+                            <strong class="d-flex flex-column">b</strong>
+                            <strong class="d-flex flex-column"></strong>
+                        </div>
+                    </div>
+                    <div
+                        style="width: 15%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Gross Wt</strong>
+                    </div>
+                    <div
+                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Kg Lb</strong>
+                    </div>
+                    <div
+                        style="width: 15%; white-space: nowrap;  border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Chargeable Wt</strong>
+                    </div>
+                    <div
+                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Rate</strong>
+                    </div>
+                    <div
+                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Total</strong>
+                    </div>
+                    <div
+                        style="width: 30%; white-space: nowrap;  border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
+                        <strong>Description and Marks</strong>
+                    </div>
+                </div>
+
+                <!-- MAIN DATA ROW -->
+                <div class="d-flex p-0" style="min-height: 300px ; height: auto;">
+                    <div style="width: 10%; border: 1px solid black; border-top: none; text-align: center;">
+                        {{ masterAirWayData?.NoOfPkg }}
+                    </div>
+
+                    <div style="width: 3%; border-right: 1px solid black; text-align: center;">
+                        <p>K</p>
+                        <p>A</p>
+                        <p>Q</p>
+                    </div>
+
+                    <div style="width: 15%; border-right: 1px solid black; text-align: center;">
+                        {{ masterAirWayData?.GrossWeight }}
+                    </div>
+
+                    <div style="width: 10%; border-right: 1px solid black; text-align: center;">
+                        {{ masterAirWayData?.WeightIn }}
+                    </div>
+
+                    <div style="width: 15%; border-right: 1px solid black; text-align: center;">
+                        {{ masterAirWayData?.ChargeableWeight }}
+                    </div>
+
+                    <div style="width: 10%; border-right: 1px solid black;text-align: center;">
+                        {{ getFreightTotals().totalExchangeRate }}
+                    </div>
+
+                    <div style="width: 10%; border-right: 1px solid black;text-align: center;">
+                        {{ getFreightTotals().totalRevenueAmount }}
+                    </div>
+
+                    <div style="width: 30%; border-right: 1px solid black; text-align: center;">
+                        {{ masterAirWayData?.CommodityDescription }} <br>
+                        {{ masterAirWayData?.MarksandNumber }}
+                    </div>
+                </div>
+
+
+                <div class="d-flex p-0" style="height: 40px;">
+                    <div style="width: 10%; border: 1px solid black; border-top: none; text-align: center;">
+                        <strong>{{ masterAirWayData?.NoOfPkg }}</strong>
+                    </div>
+
+                    <div style="width: 3%; border-right: 1px solid black; border-bottom: 1px solid black ;"></div>
+
+                    <div
+                        style="width: 15%; border-right: 1px solid black; text-align: center; border-bottom: 1px solid black ;">
+                        <strong>{{ masterAirWayData?.GrossWeight }}</strong>
+                    </div>
+
+                    <div style="width: 10%; border-right: 1px solid black; border-bottom: 1px solid black ;"></div>
+
+                    <div
+                        style="width: 15%; border-right: 1px solid black; text-align: center; border-bottom: 1px solid black ;">
+                        <strong>{{ masterAirWayData?.ChargeableWeight }}</strong>
+                    </div>
+
+                    <div
+                        style="width: 10%; border-right: 1px solid black; border-bottom: 1px solid black ;text-align: center; ">
+                        <strong> {{ getFreightTotals().totalExchangeRate }}</strong>
+                    </div>
+
+                    <div
+                        style="width: 10%; border-right: 1px solid black; text-align: center; border-bottom: 1px solid black ;text-align: center;">
+                        <strong>{{ getFreightTotals().totalRevenueAmount }}</strong>
+                    </div>
+
+                    <div style="width: 30%; border-right: 1px solid black; border-bottom: 1px solid black ;">
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row mb-0 d-flex align-items-stretch">
+
+                <!-- Left Column -->
+                <div class="col-md-6 px-0 d-flex flex-column" style="border: 1px solid black; border-top: none;">
+
+                    <!-- === First Row === -->
+                    <div class="d-flex" style="border-bottom: 1px solid black; ">
+                        <!-- Prepaid -->
+                        <div class="col-md-4 px-0">
+                            <div class="d-flex flex-column  px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Prepaid</strong> <br>
+                                </div>
+                                <div>
+                                    <p class="mb-0 text-center"> {{ freightCharges[0]?.RevenueAmount }}</p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Weight Charge with center line -->
+                        <div class="col-md-4 px-0 position-relative">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Weight Charge</strong>
+                                </div>
+                                <div style="position: relative; height: 20px;">
+                                    <div style="
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 50%;
+                        width: 1px;
+                        background-color: black;
+                        transform: translateX(-50%);
+                    "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Collect</strong>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === Second Row === -->
+                    <div class="d-flex">
+
+
+                        <div class="col-md-12 px-0 position-relative">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong style="width: fit-content;">Valuation Charge</strong>
+                                </div>
+                                <div style="position: relative; height: 20px;">
+                                    <div style="
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background-color: black;
+            transform: translateX(-50%);
+          "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+
+                    </div>
+
+                    <div class="d-flex">
+
+
+                        <div class="col-md-12 px-0 position-relative" style="border-top: 1px solid black;">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong style="width: fit-content;">Tax</strong>
+                                </div>
+                                <div style="position: relative; height: 20px;">
+                                    <div style="
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background-color: black;
+            transform: translateX(-50%);
+          "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+
+                    </div>
+                </div>
+
+
+                <!-- Right Column (Others) -->
+                <div class="col-md-6 px-0" style="border: 1px solid black; border-top: none; border-left: none;">
+                    <div class="w-100 p-2">
+                        <strong>Others Charges</strong>
+
+                        <div>
+                            <span *ngFor="let charge of otherCharges">
+                                {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}&nbsp;&nbsp;
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="row mb-0 d-flex align-items-stretch">
+
+                <!-- Left Column -->
+                <div class="col-md-6 px-0 d-flex flex-column" style="border: 1px solid black; border-top: none;">
+
+
+
+                    <!-- === Second Row === -->
+                    <div class="d-flex">
+
+
+                        <div class="col-md-12 px-0 position-relative">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong style="width: fit-content;">Total other Charges due agent</strong>
+                                </div>
+                                <div style="position: relative; height: 20px;">
+                                    <div style="
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background-color: black;
+            transform: translateX(-50%);
+          "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+
+                    </div>
+
+                    <div class="d-flex">
+
+
+                        <div class="col-md-12 px-0 position-relative" style="border-top: 1px solid black;">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong style="width: fit-content;">Total other Charges due Carrier</strong>
+
+                                </div>
+                                <div style="position: relative; height: 20px;">
+                                    <div style="text-align: center;">
+                                        {{ getTotalExchangeRate() }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+                    <div class="col-md-12 px-0 position-relative">
+                        <div class="">
+                            <div
+                                style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                <strong style="width: fit-content;"></strong>
+                            </div>
+                            <div style="position: relative; height: 20px;">
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Right Column (Others) -->
+                <div class="col-md-6 px-0 " style="border: 1px solid black; border-top: none; border-left: none;">
+                    <div class="  w-100" style="font-size: 12px;">
+                        <strong> Shipper certifies that the particulars on the face hereof are correct and that insofar
+                            as any part of the
+                            consignment contains dangerous goods such part is properly described by name and is in
+                            proper
+                            condition for carriage by air according to the applicable Dangerous Goods
+                            Regulations.</strong>
+                    </div>
+                    <div class="  w-100 mt-5" style="text-align: center;">
+                        <p class="mb-0">{{getAgentName(masterAirWayData?.DestinationAgent)}} <strong>As Agent</strong>
+                        </p>
+                        <strong class="mb-0">Signature of Sipper or his Agent</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-0 d-flex align-items-stretch">
+
+                <!-- Left Column -->
+                <div class="col-md-6 px-0 d-flex flex-column" style="border-right: 1px solid black; border-top: none;">
+
+                    <div class="d-flex" style="border-bottom: 1px solid black;border-left: 1px solid black; ">
+                        <!-- Prepaid -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Prepaid</strong>
+                                </div>
+                                <div class="text-center">{{getGrandTotal()}}</div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Charge with center line -->
+                        <div class="col-md-4 px-0 position-relative">
+                            <div class="px-2">
+
+                                <div style="position: relative; height: 45px;">
+                                    <div style="
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 50%;
+                        width: 1px;
+                        background-color: black;
+                        transform: translateX(-50%);
+                    "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Collect</strong>
+                                </div>
+                                <div style="min-height: 2px; height: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex" style="border-bottom: 1px solid black;border-left: 1px solid black; ">
+                        <!-- Prepaid -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Prepaid</strong>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Charge with center line -->
+                        <div class="col-md-4 px-0 position-relative">
+                            <div class="px-2">
+
+                                <div style="position: relative; height: 45px;">
+                                    <div style="
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 50%;
+                        width: 1px;
+                        background-color: black;
+                        transform: translateX(-50%);
+                    "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Collect</strong>
+                                </div>
+                                <div style="min-height: 20px; height: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Right Column (Others) -->
+                <div class="col-md-6 px-0 " style="border: 1px solid black; border-top: none; border-left: none;">
+                    <div>
+                        <div class="  w-100" style="height: 28px;">
+
+                        </div>
+                        <div class="d-flex justify-content-between p-2">
+                            <div class="d-flex mb-1 flex-column">
+                                <div style=" white-space: nowrap; text-align: center;"> {{ masterAirWayData?.MBLDate |
+                                    formatDate }}</div>
+                                <div> <strong>
+                                        Executed on Date
+                                    </strong> </div>
+                            </div>
+                            <div class="d-flex mb-1 flex-column">
+                                <div style="white-space: nowrap; text-align: center;">{{ currentCountryName }}</div>
+                                <div> <strong>
+                                        at Place
+                                    </strong> </div>
+                            </div>
+                            <div class="d-flex mb-1 flex-column">
+                                <div style=" white-space: nowrap; text-align: center;">
+                                    {{getAgentName(masterAirWayData?.DestinationAgent)}} </div>
+                                <div> <strong>
+                                        signature of issuing Carrier or its Agent
+                                    </strong> </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row mb-0 d-flex align-items-stretch">
+                <div class="col-md-6 px-0 d-flex flex-column" style="border-right: 1px solid black; border-top: none;">
+                    <div class="d-flex" style="border-bottom: 1px solid black;border-left: 1px solid black; ">
+                        <!-- Prepaid -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Prepaid</strong>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Charge with center line -->
+                        <div class="col-md-4 px-0 position-relative">
+                            <div class="px-2">
+
+                                <div style="position: relative; height: 45px;">
+                                    <div style="
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 50%;
+                        width: 1px;
+                        background-color: black;
+                        transform: translateX(-50%);
+                    "></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collect -->
+                        <div class="col-md-4 px-0">
+                            <div class="px-2">
+                                <div
+                                    style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                    <strong>Total Collect</strong>
+                                </div>
+                                <div style="min-height: 20px; height: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 px-0 d-flex flex-column">
+                    <div class="col-md-4 px-0"
+                        style="border-right: 1px solid black; border-top: none;border-bottom: 1px solid black;">
+                        <div class="px-2">
+                            <div
+                                style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
+                                <strong>Total Collect</strong>
+                            </div>
+                            <div style="min-height: 23px; height: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer style="
+      position: absolute;
+      bottom: 2mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10pt;
+    ">
+                <div class="d-flex justify-content-between">
+                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                    <span>
+                        This document is computer-generated and does not require a signature.
+                    </span>
+                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>

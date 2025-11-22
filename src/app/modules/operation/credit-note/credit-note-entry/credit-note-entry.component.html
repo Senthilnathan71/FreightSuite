@@ -96,13 +96,16 @@
     </div>
     
     <!-- Get Button with proper styling and disable state -->
-    <button 
+     <div class="mb-1">
+       <button 
       type="button" 
       class="btn btn-info btn-sm" 
-      style="min-width: 30px; height: 30px;"
+      style="min-width: 50px; height: 25px;"
       (click)="getInvoiceData()"
       [disabled]="!creditNoteForm.get('ReversalVoucher')?.value">Get
     </button>
+     </div>
+   
   </div>
 </aside>
 
@@ -298,8 +301,8 @@
               </aside>
             </div>
             <div class="col-md-12 px-0">
-              <div class="card mb-0">
-                <div class="card-body py-1">
+              <div class=" mb-0">
+                <div class="py-1">
                   <form [formGroup]="creditNoteForm" novalidate>
                     <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
@@ -311,7 +314,7 @@
                       <table class="table table-hover table-sm mb-0 text-center">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius:10px ;"></th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
@@ -336,7 +339,7 @@
                               Rate</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
                               Amount</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px; ;">
                               Taxable Amt
                             </th>
                             <!-- India GST Columns -->
@@ -358,7 +361,7 @@
                               No.</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
                               House No.</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;border-top-right-radius:10px">
                               Department</th>
                           </tr>
                           <tr class="align-middle bg-info">
@@ -382,8 +385,8 @@
                           <ng-container *ngFor="let row of details.controls; let i = index">
                             <tr [formGroupName]="i">
                               <!-- Delete Button - Only show for new invoices -->
-                              <td>
-                                <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0"
+                              <td *ngIf="!isEditMode">
+                                <button  type="button" class="btn btn-sm pt-0"
                                   (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
@@ -751,10 +754,10 @@
           </div>
 
 
-          <div class="text-center">
-            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+          <div class="text-center" style="border-top: 1px solid black;">
+            <h5 class="fw-bold my-1">CREDIT NOTE INVOICE</h5>
             <p style="font-size: 12px;">
-              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '-'}}
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
             </p>
           </div>
 
@@ -762,28 +765,28 @@
             <div class="col-md-6">
               <strong>BILLED TO</strong><br />
               <span>{{ getCustomerName(creditNoteForm.get('CustomerMasterSid')?.value) }}</span><br />
-              {{creditNoteForm.get('PartyAddress')?.value || '-'}} <br>
+              {{creditNoteForm.get('PartyAddress')?.value || ''}} <br>
               <span class="fw-semibold">
                 PAN :
-              </span> {{currentCompany?.Pan || currentCompany?.PAN || '-'}}
+              </span> {{currentCompany?.Pan || currentCompany?.PAN || ''}}
             </div>
             <div class="col-md-6 ">
               <div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice No</strong></div>
-                  <div>: {{creditNoteForm.get('VoucherNumber')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('VoucherNumber')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice Date</strong></div>
-                  <div>: {{ (creditNoteData?.VoucherDate | formatDate )|| '-' }}</div>
+                  <div>: {{ (creditNoteData?.VoucherDate | formatDate )|| '' }}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>GST No</strong></div>
-                  <div>: {{creditNoteForm.get('GST_VAT')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('GST_VAT')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>IRN No</strong></div>
-                  <div>: {{creditNoteForm.get('IRNNumber')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('IRNNumber')?.value || ''}}</div>
                 </div>
               </div>
             </div>
@@ -898,7 +901,7 @@
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Sales Person</strong></div>
-                <div>: Vimal</div>
+                <div>: </div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Carrier Name</strong></div>
@@ -958,8 +961,9 @@
                     <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
                     <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
                   </ng-container>
-                  <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
-                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td>
+                  <!-- <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td> -->
+                  <td>{{ getRowTotal(detail) | number:'1.2-2' }}</td>
                 </tr>
                 <tr>
                   <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
@@ -972,10 +976,10 @@
 
           <div class="d-flex ">
             <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
-            <p class="mb-0 ">: {{getAmountInWords()}}</p>
+            <p class="mb-0 fst-italic">: {{getAmountInWords()}}</p>
           </div>
 
-          <div class="d-flex   mt-2">
+          <div class="d-flex ">
             <p class="fw-bold" style="width: 180px;"> Remarks</p>
             <p style="margin-bottom: 0;">: {{creditNoteForm.get('Remarks')?.value || '-'}}</p>
           </div>

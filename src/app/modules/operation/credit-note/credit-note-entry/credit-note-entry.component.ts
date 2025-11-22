@@ -2593,4 +2593,14 @@ private normalizeParty(raw: any) {
     });
   }
 
+  getRowTotal(detail: any): number {
+    const taxable = Number(detail.get('TaxableAmount')?.value || 0);
+    const cgst = Number(detail.get('TaxAmount1')?.value || 0);
+    const sgst = Number(detail.get('TaxAmount2')?.value || 0);
+    const igst = Number(detail.get('TaxAmountIGST')?.value || 0);
+
+    return taxable + cgst + sgst + igst;
+  }
+
+
 }
