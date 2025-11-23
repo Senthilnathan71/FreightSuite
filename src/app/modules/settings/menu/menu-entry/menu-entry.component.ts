@@ -204,6 +204,7 @@ export class MenuEntryComponent implements OnInit {
       menuPermissions: this.fb.group({
         add: [false],
         edit: [false],
+        view : [false],
         delete: [false]
       }),
       otherPermissions: this.fb.group({
@@ -414,6 +415,7 @@ export class MenuEntryComponent implements OnInit {
   private readonly permissionNameMap: Record<string, string> = {
   add: 'Add',
   edit: 'Edit',
+  view : 'View',
   delete: 'Delete',
   edoc: 'Edoc',
   terms_and_condition: 'Terms and Condition',

@@ -47,6 +47,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -281,6 +282,7 @@ dataFromEnqPage:any;
 
   // SECTION2 - CONSTRUCTOR
   constructor(
+    public mps : MenuPermissionService,
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
     private router: Router,
@@ -310,7 +312,6 @@ dataFromEnqPage:any;
     if (userProfile) {
       this.userData = userProfile;
       this.currentUserEmail = this.userData?.userEmail;
-      this.checkPermissions();
     }
      
   
@@ -487,28 +488,6 @@ private extractCargoData(enquiryCargo: any[]): any {
   return enquiryCargo[0];
 }
 
-
-
-
-  checkPermissions() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (this.currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(this.currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

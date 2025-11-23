@@ -125,10 +125,16 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!menuForm.get('ModuleMasterSid')?.value">
-                            <ng-select [items]="moduleList" bindLabel="ModuleName" bindValue="ModuleMasterSid"
-                                formControlName="ModuleMasterSid" placeholder="" 
-                                [class.is-invalid]="menuForm.get('ModuleMasterSid')?.invalid && menuForm.get('ModuleMasterSid')?.touched">
+                            <ng-select 
+                                [items]="moduleList" 
+                                bindLabel="ModuleName" 
+                                bindValue="ModuleMasterSid"
+                                formControlName="ModuleMasterSid" 
+                                placeholder="" 
+                                [class.is-invalid]="menuForm.get('ModuleMasterSid')?.invalid && menuForm.get('ModuleMasterSid')?.touched"
+                            >
                             </ng-select>
+                            
                             <label class="input-label">Module <span class="text-danger">*</span></label>
                             @if(menuForm.get('ModuleMasterSid')?.touched &&
                             menuForm.get('ModuleMasterSid')?.invalid){
@@ -200,6 +206,7 @@
                             <tr class="">
                                 <td class="bg-info text-white px-2">Add</td>
                                 <td class="bg-info text-white px-2">Modify</td>
+                                <td class="bg-info text-white px-2">View</td>
                                 <td class="bg-info text-white px-2">Delete</td>
                             </tr>
                         </thead>
@@ -214,6 +221,12 @@
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
                                         <input type="checkbox" formControlName="edit" class="form-check-input">
+                                        <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" formControlName="view" class="form-check-input">
                                         <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>

@@ -235,8 +235,8 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
-  getRoleMenuById(RoleMenuMasterSid) {
-    return this.http.get<{ data: any }>(`role-menu/fetch/${RoleMenuMasterSid}`).pipe(
+  getRoleMenuById(CompanyMasterSid: number, RoleMenuMasterSid: number) {
+    return this.http.get<{ data: any }>(`role-menu/fetch/${CompanyMasterSid}/${RoleMenuMasterSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -253,8 +253,17 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
-  updateRoleMenuById(RoleMenuMasterSid: number, payload) {
-    return this.http.patch<{ data: any }>(`role-menu/update/${RoleMenuMasterSid}`, payload).pipe(
+  updateRoleMenu(payload) {
+    return this.http.patch<{ data: any }>(`role-menu/update`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllModulesWithMenus(){
+    return this.http.get<{ data: any[] }>('role-menu/menu-with-modules').pipe(
       map((resp) => {
         let response = resp;
         return response;

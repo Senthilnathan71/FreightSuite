@@ -63,14 +63,14 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 				tooltip: 'View ',
 				// condition: (row: any) => this.hasPermission('View')
 			},
-			{
-				icon: 'fas fa-trash',
-				label: 'Delete',
-				action: 'delete',
-				tooltip: 'Delete ',
-				class: "text-danger",
-				// condition: (row: any) => this.hasPermission('Delete')
-			}
+			// {
+			// 	icon: 'fas fa-trash',
+			// 	label: 'Delete',
+			// 	action: 'delete',
+			// 	tooltip: 'Delete ',
+			// 	class: "text-danger",
+			// 	// condition: (row: any) => this.hasPermission('Delete')
+			// }
 		],
 		selectable: false,
 		multiSelect: false,
@@ -203,40 +203,18 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		try {
 			if (response.status && response.data) {
 				// ✅ Correctly extract from nested response structure
-				const { data: items, totalCount } = response.data;
+				const { items, totalCount } = response.data;
 				console.log('RoleMenu Search Response:', items);
 
-				this.allItems = items.map((item: any) => {
-					// ✅ Handle missing or invalid menus gracefully
-					const menus = Array.isArray(item.menus) ? item.menus : [];
-
-					// ✅ Extract unique module names
-					const modules = [
-						...new Set(menus.map((m: any) => m.ModuleName).filter(Boolean)),
-					];
-
-					// ✅ Extract menu names
-					const menuNames = menus.map((m: any) => m.MenuName).filter(Boolean);
-
-					// ✅ Prepare short comma-separated display values
-					const shortModules =
-						modules.length > 10
-							? `${modules.slice(0, 10).join(', ')}, ...`
-							: modules.join(', ') || '-';
-
-					const shortMenus =
-						menuNames.length > 10
-							? `${menuNames.slice(0, 10).join(', ')}, ...`
-							: menuNames.join(', ') || '-';
-
-					// ✅ Return flattened and display-ready record
+				this.allItems = (items || []).map((item: any) => {
 					return {
 						...item,
 						UserRoleName: item.RoleName || '-', // role name for table display
-						ModuleDisplay: shortModules, // ✅ matches your table key
-						MenuDisplay: shortMenus, // ✅ matches your table key
-						fullModuleTooltip: modules.join(', '), // ✅ tooltip data
-						fullMenuTooltip: menuNames.join(', '), // ✅ tooltip data
+						ModuleDisplay: item.Modules,
+						// ModuleDisplay: shortModules, // ✅ matches your table key
+						// MenuDisplay: shortMenus, // ✅ matches your table key
+						// fullModuleTooltip: modules.join(', '), // ✅ tooltip data
+						// fullMenuTooltip: menuNames.join(', '), // ✅ tooltip data
 						status: item.status === 'A' ? 'Active' : 'Suspended',
 					};
 				});
@@ -347,6 +325,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 
 
 	viewRolemen(item: any, content: any): void {
+		console.log(item);
 		this.router.navigate(['/settings/rolemenu/entry', item.RoleMenuHeaderSid]);
 		// this.openModal(content, item)
 		console.log(this.viewRolemen, "Edit")
@@ -841,7 +820,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		}
 
 		if (this.isEditMode) {
-			this.settingService.updateRoleMenuById(this.RoleMenuMasterSid, payload).subscribe(
+			this.settingService.updateRoleMenu(payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);

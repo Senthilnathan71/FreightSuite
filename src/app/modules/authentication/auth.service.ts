@@ -30,16 +30,16 @@ export class authService {
                     })
                 )
             }),
-            catchError((err) => {
-                console.error("Login failed:", err);
-                let message = 'Login failed. Please check your credentials and try again.';
-                if (err?.error?.message) {
-                    message = err.error.message;
-                } else if (err?.message) {
-                    message = err.message;
-                }
-                return of({ status: false, message });
-            })
+            // catchError((err) => {
+            //     console.error("Login failed:", err);
+            //     let message = 'Login failed. Please check your credentials and try again.';
+            //     if (err?.error?.message) {
+            //         message = err.error.message;
+            //     } else if (err?.message) {
+            //         message = err.message;
+            //     }
+            //     return of({ status: false, message });
+            // })
         )
     }
 
