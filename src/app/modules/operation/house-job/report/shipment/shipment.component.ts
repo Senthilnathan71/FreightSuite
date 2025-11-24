@@ -332,7 +332,7 @@ getChargeName(ChargeMasterSid: number): string {
  
   else if (vessel) {
  
-    return `:<br>${vessel}`;
+    return `:${vessel}`;
  
   }
  
@@ -340,7 +340,7 @@ getChargeName(ChargeMasterSid: number): string {
  
   else if (voyage) {
  
-    return `:<br>${voyage}`;
+    return `:${voyage}`;
  
   }
  

@@ -1,141 +1,164 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Cash Receipt</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+    </div>
+</div>
+
 <!-- cash-Receipt -->
 <div class="modal-body">
-    <div  id="printContent">
+    <div id="printContent">
         <div class="print-a4">
+            <!-- Company Info -->
+            <div class="row ">
+                <div class="company-header">
+                    <div class="company-logo">
+                        <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    </div>
 
-    <!-- Company Info -->
-    <div class="row ">
-        <div class="company-header">
-            <div class="company-logo">
-                <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <div class="company-info ">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                        <p class="mb-1">
+                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                        </p>
+                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+
+                        <!-- Dynamic GST No/PAN based on country code -->
+                        <div class="d-flex mb-1" style="text-align: start;" *ngIf="getTaxNumber()">
+                            <div style="width: 80px; white-space: nowrap;">
+                                <strong>{{ getTaxNumberLabel() }}</strong>
+                            </div>
+                            <div>: {{ getTaxNumber() }}</div>
+                        </div>
+
+                    </div>
+
+                </div>
+              
             </div>
 
-            <div class="company-info ">
-                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                <p class="mb-1">
-                    {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+            <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+            <section class="cash-receipt">
+                <h5 style=" text-align: center; margin: 5px auto;">Cash Receipt</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex mb-1">
+                            <div style="width: 230px; white-space: nowrap;"><strong>Receipt No</strong></div>
+                            <div>: {{receiptPrintData?.VoucherNumber}} </div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 230px; white-space: nowrap;"><strong>Received From</strong></div>
+                            <div>: {{receiptPrintData?.PartyName}}  </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex mb-1">
+                            <div style="width: 230px; white-space: nowrap;"><strong>Receipt Date</strong></div>
+                            <div>: {{receiptPrintData?.VoucherDate | formatDate }} </div>
+                        </div>
+
+                        <div class="d-flex mb-1">
+                            <div style="width: 230px; white-space: nowrap;"><strong>Currency </strong></div>
+                            <div>: {{receiptPrintData?.CurrencyCode}} </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-sm table-hover tablebordered ">
+                    <tbody>
+                        <tr>
+                            <th style="width: 60%; ">Description</th>
+                            <th style="width: 10%; ">Curr</th>
+                            <th style="width: 10%; ">Ex.Rate </th>
+                            <th style="width: 20%; ">Amount </th>
+                        </tr>
+                        <tr>
+                            <td style="width: 60%; ">{{receiptPrintData?.Narration}} </td>
+                            <td style="width: 10%; ">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
+                            <td style="width: 10%;text-align: right; ">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate}}</td>
+                            <td style="width: 20%;text-align: right; ">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>Amount in Words :
+                    <strong>{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</strong>
                 </p>
-                <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-            </div>
+
+
+                <h5 style="padding: 4px 0;">Remittance Details</h5>
+
+                <table class="table table-sm table-hover tablebordered ">
+                    <tbody>
+                        <tr>
+                            <th style="width: 22%; ">Voucher No</th>
+                            <th style="width: 13%; ">Voucher Type</th>
+                            <th style="width: 15%; ">Voucher Date</th>
+                            <th style="width: 7%;">Curr.</th>
+                            <th style="width: 15%;">Curr. Amt</th>
+                            <th style="width: 15%;">Local Amount</th>
+                            <th style="width: 13%;">TDS Amount</th>
+                        </tr>
+                        <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
+                            <td>{{voucher?.VoucherNumber}}</td>
+                            <td>{{voucher?.VoucherType}}</td>
+                            <td>{{voucher?.VoucherDate | formatDate}}</td>
+                            <td>{{voucher?.CurrencyCode}} </td>
+                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount}}</td>
+                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount}}</td>
+                            <td style="text-align: right;"></td>
+                        </tr>
+                        <tr>
+
+                            <td style="text-align: right;" colspan="4">Total</td>
+                            <td style="text-align: right;">
+                                <strong>{{getTotalOriginalCurrencyAmount()}}</strong>
+                            </td>
+                            <td style="text-align: right;">{{getTotalOriginalLocalAmount()}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style="border-top-style: hidden;">
+                    <tbody>
+                        <tr style="height: 5rem;">
+                            <td
+                                style="width: 50%;text-align: center; vertical-align: bottom;border-right-style: hidden;">
+                                <p style="padding-bottom: .5rem;">Checked By</p>
+                            </td>
+                            <td style="width: 50%;text-align: center; vertical-align: bottom;">
+                                <p style="padding-bottom: .5rem; ">Approved By</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <footer class="text-center mb-0 px-2">
+                <div class="d-flex justify-content-between">
+                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                    <span>
+                        This document is computer-generated and does not require a signature.
+                    </span>
+                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
+
         </div>
-    </div>
-
-    <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-    <section class="cash-receipt">
-
-
-        <h5 style=" text-align: center; margin: 5px auto;">Cash Receipt</h5>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="d-flex mb-1">
-                    <div style="width: 230px; white-space: nowrap;"><strong>Receipt No</strong></div>
-                    <div>: BOMFEE2400053</div>
-                </div>
-                <div class="d-flex mb-1">
-                    <div style="width: 230px; white-space: nowrap;"><strong>Received From</strong></div>
-                    <div>: BOMFEE2400053</div>
-                </div>
-
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex mb-1">
-                    <div style="width: 230px; white-space: nowrap;"><strong>Receipt Date</strong></div>
-                    <div>: BOMFEE2400053</div>
-                </div>
-
-                <div class="d-flex mb-1">
-                    <div style="width: 230px; white-space: nowrap;"><strong>Currency </strong></div>
-                    <div>: BOMFEE2400053</div>
-                </div>
-
-            </div>
-        </div>
-
-        <table class="table table-sm table-hover tablebordered ">
-            <tbody>
-                <tr>
-
-                    <th style="width: 60%; ">Description</th>
-                    <th style="width: 10%; ">Curr</th>
-                    <th style="width: 10%; ">Ex.Rate </th>
-                    <th style="width: 20%; ">Amount </th>
-
-                </tr>
-                <tr>
-                    <td style="width: 60%; ">Gain Well industries Ltd</td>
-                    <td style="width: 10%; ">INR</td>
-                    <td style="width: 10%;text-align: right; ">1.00 </td>
-                    <td style="width: 20%;text-align: right; ">3500.00 </td>
-                </tr>
-
-            </tbody>
-        </table>
-
-        <p>Amount in Words :
-            <strong>INR Three Thousand Five Hundred only.</strong>
-        </p>
-
-
-        <h5 style="padding: 4px 0;">Remittance Details</h5>
-
-        <table class="table table-sm table-hover tablebordered ">
-            <tbody>
-                <tr>
-                    <th style="width: 22%; ">Voucher No</th>
-                    <th style="width: 13%; ">Voucher Type</th>
-                    <th style="width: 15%; ">Voucher Date</th>
-                    <th style="width: 7%;">Curr.</th>
-                    <th style="width: 15%;">Curr. Amt</th>
-                    <th style="width: 15%;">Local Amount</th>
-                    <th style="width: 13%;">TDS Amount</th>
-                </tr>
-                <tr>
-                    <td>BOM78996</td>
-                    <td>Inv</td>
-                    <td>18-Sep-25 </td>
-                    <td>INR </td>
-                    <td style="text-align: right;">3500.00</td>
-                    <td style="text-align: right;">3500.00</td>
-                    <td style="text-align: right;">0</td>
-                </tr>
-                <tr>
-
-                    <td style="text-align: right;" colspan="5">Total</td>
-                    <td style="text-align: right;">
-                        <strong>3500.00</strong>
-                    </td>
-                    <td style="text-align: right;">0</td>
-                </tr>
-            </tbody>
-        </table>
-        <table style="border-top-style: hidden;">
-            <tbody>
-                <tr style="height: 5rem;">
-                    <td style="width: 50%;text-align: center; vertical-align: bottom;border-right-style: hidden;">
-                        <p style="padding-bottom: .5rem;">Checked By</p>
-                    </td>
-                    <td style="width: 50%;text-align: center; vertical-align: bottom;">
-                        <p style="padding-bottom: .5rem; ">Approved By</p>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <footer class="text-center mb-0 px-2">
-         <div class="d-flex justify-content-between">
-            <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-            <span>
-                This document is computer-generated and does not require a signature.
-            </span>
-            <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-        </div> 
-    </footer>
-
-</div>
     </div>
 </div>
