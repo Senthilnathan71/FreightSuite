@@ -116,6 +116,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.mps.clear();
     this.enquiryManager.destroy();
     this.quotationManager.destroy();
   }

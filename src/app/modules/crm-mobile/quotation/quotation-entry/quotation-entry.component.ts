@@ -3178,6 +3178,7 @@ ${this.userData.userName}`;
 
   ngOnDestroy(): void {
     this.commonService.clearDocumentData()
+    this.mps.clear();
     this.subscription.unsubscribe();
   }
 

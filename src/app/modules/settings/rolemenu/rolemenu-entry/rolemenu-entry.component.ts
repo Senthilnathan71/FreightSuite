@@ -281,7 +281,9 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         processedMenu.disableView = false;
       }
       if (hasPermission('delete')) {
-        if (this.isEditMode) {
+        if (!this.isEditMode) {
+          processedMenu.DeleteRole = true;
+        } else {
           processedMenu.DeleteRole = menu.DeleteRole === "Y";
         }
         processedMenu.disableDelete = false;
