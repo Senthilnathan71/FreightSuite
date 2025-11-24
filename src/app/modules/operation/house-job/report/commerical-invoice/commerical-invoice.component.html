@@ -191,7 +191,7 @@
         <table class="table table-sm table-hover tablebordered">
           <thead>
             <tr>
-              <th>Container</th>
+              <th>No.Containers</th>
               <th>Type</th>
               <th>Commodity Description</th>
               <th>No of Pkgs</th>
@@ -203,7 +203,7 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{housejobData?.Products?.[0]?.ContainerNo}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
               <td>{{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}</td>
               <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
               <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
