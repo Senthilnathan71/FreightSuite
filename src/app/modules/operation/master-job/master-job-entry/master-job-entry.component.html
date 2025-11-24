@@ -798,7 +798,6 @@
                     <div class="text-center">Click 'Attach Booking' to add booking details.</div>
                 </div>
                 }
-
         </div>
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Container'">
@@ -1258,11 +1257,12 @@
 
 
                 </div>
-                <div>
-                    <button *ngIf="isTranshipment" class="table-action-btn primary" (click)="bookingCreateInMasterJob()">
-                        <i class="fas fa-history"></i> Create Booking
-            </button>
-
+                <div class="row mt-3" *ngIf="isTranshipment">
+                    <div class="col-md-12 text-end">
+                        <button class="btn btn-primary" (click)="bookingCreateInMasterJob()">
+                            <i class="fas fa-plus-circle"></i> Create Booking from Transhipment
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
