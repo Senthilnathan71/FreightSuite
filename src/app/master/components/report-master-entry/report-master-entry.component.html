@@ -172,23 +172,6 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="query">
-                                <label for="text-input" class="input-label">Query <span
-                                        class="text-danger"></span></label>
-
-                                @if(reportForm.get('query').touched &&
-                                reportForm.get('query').invalid){
-                                <div class="error-message">
-                                    @if(reportForm.get('query').hasError('required')){
-                                    <span>Required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
                     </div>
                 </div>
 
@@ -196,21 +179,76 @@
         </div>
 
         <div class="mx-0">
-            <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
+            <div class="col-12 p-2 bg-white py-2 rounded shadow-sm mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Report Parameters</h5>
+                    <button type="button" class="btn btn-info btn-sm" (click)="addParameter()">
+                        <i class="fas fa-plus me-1"></i>Add Parameter
+                    </button>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                         <thead>
                             <tr class="bg-info text-light">
                                 <th class="bg-transparent text-light">Parameter Name</th>
-                                <th class="bg-transparent text-light">Parameter Type</th>
-                                <th class="bg-transparent text-light">Parameter Value</th>
+                                <th class="bg-transparent text-light">Field Type</th>
+                                <th class="bg-transparent text-light">Dropdown Value (JSON)</th>
+                                <th class="bg-transparent text-light">Parameter Query</th>
+                                <th class="bg-transparent text-light text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>ss</td>
-                                <td>ss</td>
-                                <td>ss</td>
+                        <tbody formArrayName="parameters">
+                            <tr *ngFor="let param of parameters.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <input type="text" class="form-control form-control-sm"
+                                           formControlName="ParameterName"
+                                           placeholder="Enter parameter name">
+                                    <small class="text-danger"
+                                           *ngIf="param.get('ParameterName')?.touched && param.get('ParameterName')?.invalid">
+                                        Required
+                                    </small>
+                                </td>
+                                <td>
+                                    <ng-select class="ng-select-sm"
+                                               [items]="parameterFieldTypes"
+                                               bindLabel="label"
+                                               bindValue="value"
+                                               formControlName="ParameterFieldType"
+                                               placeholder="Select type">
+                                    </ng-select>
+                                    <small class="text-danger"
+                                           *ngIf="param.get('ParameterFieldType')?.touched && param.get('ParameterFieldType')?.invalid">
+                                        Required
+                                    </small>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm"
+                                              formControlName="DropDownValue"
+                                              rows="2"
+                                              placeholder='{"key1":"value1","key2":"value2"}'
+                                              [disabled]="param.get('ParameterFieldType')?.value !== 'DROPDOWN'">
+                                    </textarea>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm"
+                                              formControlName="ParameterQuery"
+                                              rows="2"
+                                              placeholder="Enter SQL query">
+                                    </textarea>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm"
+                                            (click)="removeParameter(i)"
+                                            [disabled]="parameters.length === 0">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="parameters.length === 0">
+                                <td colspan="5" class="text-center text-muted py-3">
+                                    No parameters added. Click "Add Parameter" to add one.
+                                </td>
                             </tr>
                         </tbody>
                     </table>

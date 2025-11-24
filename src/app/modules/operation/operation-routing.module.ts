@@ -29,6 +29,7 @@ import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-
 import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
 import { CreditNoteEntryComponent } from './credit-note/credit-note-entry/credit-note-entry.component';
 import { CreditNoteListComponent } from './credit-note/credit-note-list/credit-note-list.component';
+import { OperationReportsComponent } from '../../operation/components/operation-reports/operation-reports.component';
 import { VendorCreditNoteListComponent } from './vendor-credit-note/vendor-credit-note-list/vendor-credit-note-list.component';
 import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-credit-note-entry/vendor-credit-note-entry.component';
 
@@ -401,8 +402,16 @@ export const OperationRoutes: Routes = [
           title: 'Service Job',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
         }
-     }
+      },
+      {
+        path: 'reports',
+        component: OperationReportsComponent,
+        data: {
+          title: 'Operation Reports',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Reports' }],
+        }
+      }
     ],
   },
-  
+
 ]

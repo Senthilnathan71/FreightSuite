@@ -3837,6 +3837,15 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
   );
 }
 
+getReportMasterWithParameters(ReportMasterSid: number) {
+  return this.http.get<{ data: any }>(`report-master/${ReportMasterSid}/parameters`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
 updateReportById(ReportMasterSid: number, payload: any) {
   return this.http.patch<{ data: any }>(`report-master/update/${ReportMasterSid}`, payload).pipe(
     map((resp) => {

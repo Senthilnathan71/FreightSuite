@@ -1,8 +1,8 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
-import { MasterService } from '../../master.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
@@ -12,12 +12,13 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+
 @Component({
   selector: 'app-report-master-entry',
   standalone: true,
   imports: [NgSelectModule, ReactiveFormsModule, CommonModule, MultiSelectComponent, DetailsComponent, NgbDropdownModule],
   templateUrl: './report-master-entry.component.html',
-  styleUrl: './report-master-entry.component.scss'
+  styleUrls: ['./report-master-entry.component.scss']
 })
 export class ReportMasterEntryComponent implements OnInit {
   reportForm!: FormGroup;
@@ -25,7 +26,7 @@ export class ReportMasterEntryComponent implements OnInit {
   ReportMasterSid!: number;
   currentCompany: any;
   reportData: any;
-  auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
   currentMenuId: number;
   TandCList: any;
@@ -45,7 +46,14 @@ export class ReportMasterEntryComponent implements OnInit {
     { id: 3, name: "Ana Report" }
   ];
   reportMenus: any[] = [];
-  excludedCompanies: any[] = [];
+
+  parameterFieldTypes = [
+    { value: 'DATE', label: 'Date' },
+    { value: 'DROPDOWN', label: 'Dropdown' },
+    { value: 'NUMBER', label: 'Number' },
+    { value: 'TEXT', label: 'Text' },
+    { value: 'YEAR', label: 'Year' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -80,16 +88,42 @@ export class ReportMasterEntryComponent implements OnInit {
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
       excludedCompanyIds: ['', [Validators.pattern(/^(\d+)(,\s*\d+)*$/)]],
-      query: ['', Validators.required],
-      Status: ['A']
+      Status: ['A'],
+      parameters: this.fb.array([])
     });
+  }
+
+  // FormArray getter for parameters
+  get parameters(): FormArray {
+    return this.reportForm.get('parameters') as FormArray;
+  }
+
+  // Create a new parameter FormGroup
+  createParameterGroup(data: any = {}): FormGroup {
+    return this.fb.group({
+      ReportMasterDetailSid: [data.ReportMasterDetailSid || null],
+      ParameterName: [data.ParameterName || '', Validators.required],
+      ParameterFieldType: [data.ParameterFieldType || '', Validators.required],
+      DropDownValue: [data.DropDownValue || ''],
+      ParameterQuery: [data.ParameterQuery || ''],
+      Status: [data.Status || 'A']
+    });
+  }
+
+  // Add a new parameter row
+  addParameter(): void {
+    this.parameters.push(this.createParameterGroup());
+  }
+
+  // Remove a parameter row
+  removeParameter(index: number): void {
+    this.parameters.removeAt(index);
   }
 
   menuDropdown() {
     this.masterService.getAllMenu().subscribe({
       next: (resp: any) => {
         this.reportMenus = resp;
-        console.log('Menu:', this.reportMenus);
       },
       error: () => {
         this.appSettingsService.showError('Failed to load report menus');
@@ -106,7 +140,6 @@ export class ReportMasterEntryComponent implements OnInit {
     return '';
   }
 
-
   loadReportData() {
     this.masterService.getReportMasterById(this.ReportMasterSid).subscribe({
       next: (resp: any) => {
@@ -118,8 +151,25 @@ export class ReportMasterEntryComponent implements OnInit {
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
-          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany),
-          query: resp.data.Query,
+          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany)
+        });
+
+        // Fetch and populate parameters
+        this.masterService.getReportMasterWithParameters(this.ReportMasterSid).subscribe({
+          next: (paramsResp: any) => {
+            // Clear existing parameters
+            this.parameters.clear();
+
+            // Add each parameter to FormArray
+            if (paramsResp.data && Array.isArray(paramsResp.data)) {
+              paramsResp.data.forEach((param: any) => {
+                this.parameters.push(this.createParameterGroup(param));
+              });
+            }
+          },
+          error: () => {
+            this.appSettingsService.showError('Failed to load parameters');
+          }
         });
       },
       error: () => {
@@ -127,7 +177,6 @@ export class ReportMasterEntryComponent implements OnInit {
       }
     });
   }
-
 
   onSubmit() {
     if (this.reportForm.invalid) {
@@ -142,7 +191,6 @@ export class ReportMasterEntryComponent implements OnInit {
       ReportDisplayName: formValue.displayName,
       ReportMenuSid: formValue.reportMenuId,
       ReportFormat: formValue.reportFormatId,
-      Query: formValue.query,
       ReportType: formValue.reportType,
       ReportExcludedCompany: formValue.excludedCompanyIds
         ? formValue.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
@@ -150,7 +198,7 @@ export class ReportMasterEntryComponent implements OnInit {
       CreatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
       CompanySid: this.currentCompany?.CompanyMasterSid,
       Status: "A",
-      reportDetails: []
+      reportDetails: formValue.parameters || []
     };
 
     if (this.isEditMode) {
@@ -158,7 +206,7 @@ export class ReportMasterEntryComponent implements OnInit {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['master/report-master/list']);
+            this.router.navigate(['/master/report-master/list']);
           } else {
             this.appSettingsService.showError(resp.message);
           }
@@ -172,7 +220,7 @@ export class ReportMasterEntryComponent implements OnInit {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['master/report-master/list']);
+            this.router.navigate(['/master/report-master/list']);
           } else {
             this.appSettingsService.showError(resp.message);
           }
@@ -192,20 +240,17 @@ export class ReportMasterEntryComponent implements OnInit {
     }
   }
 
-
   navigateback() {
     this.router.navigate(["/master/report-master/list"])
   }
-
 
   showInfo() {
     if (!this.reportData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.reportData;
     modalRef.componentInstance.idLabel = 'Report Master Id';
-    modalRef.componentInstance.idValue = this.reportData?.ProductMasterSId;
+    modalRef.componentInstance.idValue = this.reportData?.ReportMasterSid;
   }
-
 
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -222,7 +267,6 @@ export class ReportMasterEntryComponent implements OnInit {
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.ReportMasterSid;
-
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }
@@ -232,6 +276,7 @@ export class ReportMasterEntryComponent implements OnInit {
       }
     );
   }
+
   openEmail() {
     if (!this.reportData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -262,18 +307,18 @@ export class ReportMasterEntryComponent implements OnInit {
     });
     modalRef.componentInstance.item = this.reportData;
     modalRef.componentInstance.idLabel = 'Report Master Id';
-    modalRef.componentInstance.idValue = this.reportData?.ProductMasterSId;
+    modalRef.componentInstance.idValue = this.reportData?.ReportMasterSid;
   }
+
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ReportMasterSid) return;
 
-    this.masterService.getAuditLogs('ProductMaster', this.ReportMasterSid.toString()).subscribe({
+    this.masterService.getAuditLogs('ReportMaster', this.ReportMasterSid.toString()).subscribe({
       next: (logs: any[]) => {
         const formatFields = (val: any) => {
           if (!val) return ['NA'];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          delete obj.updatedOn; // Remove updatedOn field
-          // If no fields exist after deleting updatedOn
+          delete obj.updatedOn;
           if (Object.keys(obj).length === 0) return ['NA'];
           return Object.entries(obj).map(
             ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
@@ -291,7 +336,4 @@ export class ReportMasterEntryComponent implements OnInit {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
-
-
-
 }

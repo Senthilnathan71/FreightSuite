@@ -1,0 +1,163 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    <i class="mdi mdi-email"></i> Email Report
+  </h5>
+  <button type="button" class="close" aria-label="Close" (click)="close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="emailForm" (ngSubmit)="onSubmit()">
+    <!-- Report Name Display -->
+    <div class="alert alert-info mb-3">
+      <i class="mdi mdi-information"></i>
+      <strong>Report:</strong> {{ reportName }}
+    </div>
+
+    <!-- To Email -->
+    <div class="form-group">
+      <label for="email" class="form-label">
+        To Email <span class="text-danger">*</span>
+      </label>
+      <input
+        type="email"
+        id="email"
+        class="form-control"
+        formControlName="email"
+        placeholder="recipient@example.com"
+        [class.is-invalid]="hasError('email')"
+      />
+      <div *ngIf="hasError('email')" class="invalid-feedback d-block">
+        {{ getErrorMessage('email') }}
+      </div>
+    </div>
+
+    <!-- CC Email -->
+    <div class="form-group">
+      <label for="cc" class="form-label">
+        CC (Optional)
+      </label>
+      <input
+        type="email"
+        id="cc"
+        class="form-control"
+        formControlName="cc"
+        placeholder="cc@example.com"
+        [class.is-invalid]="hasError('cc')"
+      />
+      <div *ngIf="hasError('cc')" class="invalid-feedback d-block">
+        {{ getErrorMessage('cc') }}
+      </div>
+      <small class="form-text text-muted">
+        Separate multiple email addresses with commas
+      </small>
+    </div>
+
+    <!-- Subject -->
+    <div class="form-group">
+      <label for="subject" class="form-label">
+        Subject <span class="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        id="subject"
+        class="form-control"
+        formControlName="subject"
+        placeholder="Enter email subject"
+        [class.is-invalid]="hasError('subject')"
+      />
+      <div *ngIf="hasError('subject')" class="invalid-feedback d-block">
+        {{ getErrorMessage('subject') }}
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="form-group">
+      <label for="message" class="form-label">
+        Message <span class="text-danger">*</span>
+      </label>
+      <textarea
+        id="message"
+        class="form-control"
+        formControlName="message"
+        rows="6"
+        placeholder="Enter email message"
+        [class.is-invalid]="hasError('message')"
+      ></textarea>
+      <div *ngIf="hasError('message')" class="invalid-feedback d-block">
+        {{ getErrorMessage('message') }}
+      </div>
+    </div>
+
+    <!-- Format Selection -->
+    <div class="form-group">
+      <label class="form-label">
+        Attachment Format <span class="text-danger">*</span>
+      </label>
+      <div class="format-options">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            id="formatPdf"
+            value="PDF"
+            formControlName="format"
+          />
+          <label class="form-check-label" for="formatPdf">
+            <i class="mdi mdi-file-pdf text-danger"></i> PDF
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            id="formatExcel"
+            value="EXCEL"
+            formControlName="format"
+          />
+          <label class="form-check-label" for="formatExcel">
+            <i class="mdi mdi-file-excel text-success"></i> Excel
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            id="formatCsv"
+            value="CSV"
+            formControlName="format"
+          />
+          <label class="form-check-label" for="formatCsv">
+            <i class="mdi mdi-file-delimited text-info"></i> CSV
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="close()"
+    [disabled]="sending"
+  >
+    <i class="mdi mdi-close"></i> Cancel
+  </button>
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="onSubmit()"
+    [disabled]="!emailForm.valid || sending"
+  >
+    <span *ngIf="!sending">
+      <i class="mdi mdi-send"></i> Send Email
+    </span>
+    <span *ngIf="sending">
+      <span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+      Sending...
+    </span>
+  </button>
+</div>

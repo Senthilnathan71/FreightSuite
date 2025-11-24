@@ -1,0 +1,86 @@
+<div class="export-actions-container">
+  <div class="btn-group" role="group" aria-label="Export actions">
+    <!-- Excel Export -->
+    <button
+      *ngIf="showExcel"
+      type="button"
+      class="btn btn-success btn-sm"
+      (click)="exportToExcel()"
+      [disabled]="disabled || loading"
+      title="Export to Excel"
+    >
+      <span *ngIf="!isExporting('EXCEL')">
+        <i class="mdi mdi-file-excel"></i>
+        <span class="d-none d-md-inline ml-1">Excel</span>
+      </span>
+      <span *ngIf="isExporting('EXCEL')">
+        <span class="spinner-border spinner-border-sm" role="status"></span>
+        <span class="d-none d-md-inline ml-1">Exporting...</span>
+      </span>
+    </button>
+
+    <!-- PDF Export -->
+    <button
+      *ngIf="showPdf"
+      type="button"
+      class="btn btn-danger btn-sm"
+      (click)="exportToPdf()"
+      [disabled]="disabled || loading"
+      title="Export to PDF"
+    >
+      <span *ngIf="!isExporting('PDF')">
+        <i class="mdi mdi-file-pdf"></i>
+        <span class="d-none d-md-inline ml-1">PDF</span>
+      </span>
+      <span *ngIf="isExporting('PDF')">
+        <span class="spinner-border spinner-border-sm" role="status"></span>
+        <span class="d-none d-md-inline ml-1">Exporting...</span>
+      </span>
+    </button>
+
+    <!-- CSV Export -->
+    <button
+      *ngIf="showCsv"
+      type="button"
+      class="btn btn-info btn-sm"
+      (click)="exportToCsv()"
+      [disabled]="disabled || loading"
+      title="Export to CSV"
+    >
+      <span *ngIf="!isExporting('CSV')">
+        <i class="mdi mdi-file-delimited"></i>
+        <span class="d-none d-md-inline ml-1">CSV</span>
+      </span>
+      <span *ngIf="isExporting('CSV')">
+        <span class="spinner-border spinner-border-sm" role="status"></span>
+        <span class="d-none d-md-inline ml-1">Exporting...</span>
+      </span>
+    </button>
+
+    <!-- Email -->
+    <button
+      *ngIf="showEmail"
+      type="button"
+      class="btn btn-primary btn-sm"
+      (click)="emailReport()"
+      [disabled]="disabled || loading"
+      title="Email Report"
+    >
+      <i class="mdi mdi-email"></i>
+      <span class="d-none d-md-inline ml-1">Email</span>
+    </button>
+
+    <!-- Print -->
+    <button
+      *ngIf="showPrint"
+      type="button"
+      class="btn btn-secondary btn-sm"
+      (click)="printReport()"
+      [disabled]="disabled || loading"
+      title="Print Report"
+    >
+      <i class="mdi mdi-printer"></i>
+      <span class="d-none d-md-inline ml-1">Print</span>
+    </button>
+  </div>
+</div>
