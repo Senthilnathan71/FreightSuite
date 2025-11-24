@@ -1,207 +1,256 @@
-<div class="customs-form">
+<div class="compact-form">
   <form [formGroup]="customsForm">
 
-    <div class="grid">
+    <div class="row">
 
       <!-- Line Code -->
-      <div class="col">
-        <label>Line Code</label>
-        <input type="text" formControlName="LineCode" />
-        <div class="error" *ngIf="customsForm.get('LineCode').touched && customsForm.get('LineCode').invalid">
-          <small *ngIf="customsForm.get('LineCode').hasError('required')">Line Code is required.</small>
-          <small *ngIf="customsForm.get('LineCode').hasError('maxlength')">Max 6 characters allowed.</small>
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="LineCode" placeholder="" class=" custom-input-field sm" />
+          <label class="input-label">Line Code</label>
+          <div class="error-message" *ngIf="customsForm.get('LineCode').touched && customsForm.get('LineCode').invalid">
+            <small *ngIf="customsForm.get('LineCode').hasError('required')">Line Code is required.</small>
+            <small *ngIf="customsForm.get('LineCode').hasError('maxlength')">Max 6 characters allowed.</small>
+          </div>
         </div>
+
       </div>
 
       <!-- Voyage Agent Code -->
-      <div class="col">
-        <label>Voyage Agent Code</label>
-        <input type="text" formControlName="VoyageAgentCode" />
-        <div class="error" *ngIf="customsForm.get('VoyageAgentCode').touched && customsForm.get('VoyageAgentCode').invalid">
-          <small *ngIf="customsForm.get('VoyageAgentCode').hasError('required')">Required</small>
-          <small *ngIf="customsForm.get('VoyageAgentCode').hasError('maxlength')">Max 6 characters</small>
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="VoyageAgentCode" placeholder="" class=" custom-input-field sm" />
+          <label class="input-label">Voyage Agent Code</label>
+          <div class="error-message"
+            *ngIf="customsForm.get('VoyageAgentCode').touched && customsForm.get('VoyageAgentCode').invalid">
+            <small *ngIf="customsForm.get('VoyageAgentCode').hasError('required')">Required</small>
+            <small *ngIf="customsForm.get('VoyageAgentCode').hasError('maxlength')">Max 6 characters</small>
+          </div>
         </div>
+
       </div>
 
       <!-- Rotation Number -->
-      <div class="col">
-        <label>Rotation Number</label>
-        <input type="text" formControlName="RotationNumber" />
-      </div>
-
-      <!-- Manifest Sequence -->
-      <div class="col">
-        <label>Manifest Sequence</label>
-        <input type="text" formControlName="ManifestSequence" />
-      </div>
-
-      <!-- Cargo Code -->
-      <div class="col">
-        <label>Cargo Code</label>
-        <ng-select
-          [items]="cargoCodeList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="CargoCode"
-          appendTo="body"
-          placeholder="">
-        </ng-select>
-      </div>
-
-      <!-- Storage Request -->
-      <div class="col">
-        <label>Storage Request</label>
-        <ng-select
-          [items]="storageRequestList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="StorageRequest"
-          appendTo="body"
-          placeholder="">
-        </ng-select>
-      </div>
-
-      <!-- Package Type -->
-      <div class="col">
-        <label>Package Type Code</label>
-        <ng-select
-          [items]="packageTypeList"
-          bindLabel="UOMCode"
-          bindValue="UOMCode"
-          formControlName="PackageTypeCode"
-          appendTo="body"
-          placeholder="">
-        </ng-select>
-      </div>
-
-      <!-- Freight Tonne -->
-      <div class="col">
-        <label>Freight Tonne</label>
-        <input type="number" formControlName="FreightTonne" step="0.001">
-      </div>
-
-      <!-- Pallets -->
-      <div class="col">
-        <label>No of Pallets</label>
-        <input type="number" formControlName="NoOfPallets">
-      </div>
-
-      <!-- SLAC -->
-      <div class="col">
-        <label>SLAC Indicator</label>
-        <input type="text" formControlName="SLACIndicator">
-      </div>
-
-      <!-- Importer Code -->
-      <div class="col">
-        <label>Importer Code</label>
-        <ng-select 
-          [items]="importerCodeList"
-          bindValue="value"
-          bindLabel="label"
-          formControlName="ImporterCode"
-          appendTo="body">
-        </ng-select>
-      </div>
-
-      <!-- Serial Number -->
-      <div class="col">
-        <label>Serial Number</label>
-        <input type="number" formControlName="SerialNumber" />
-      </div>
-
-      <!-- Used or New -->
-      <div class="col">
-        <label>Used/New</label>
-        <ng-select
-          [items]="usedNewList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="UsedOrNew"
-          appendTo="body">
-        </ng-select>
-      </div>
-
-      <!-- UNHS Code -->
-      <div class="col">
-        <label>UNHS Code</label>
-        <input type="text" formControlName="UNHSCode">
-      </div>
-
-      <!-- UN Number -->
-      <div class="col">
-        <label>UN Number</label>
-        <input type="text" formControlName="UNNumber">
-      </div>
-
-      <!-- Flash Points -->
-      <div class="col">
-        <label>Flash Points</label>
-        <input type="number" formControlName="FlashPoints" step="0.1">
-        <div class="error" *ngIf="customsForm.get('FlashPoints').invalid && customsForm.get('FlashPoints').touched">
-          <small>Max allowed: 999.9</small>
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="RotationNumber" placeholder="" class=" custom-input-field sm" />
+          <label class="input-label">Rotation Number</label>
         </div>
       </div>
 
+      <!-- Manifest Sequence -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="ManifestSequence" placeholder="" class=" custom-input-field sm" />
+          <label class="input-label">Manifest Sequence</label>
+        </div>
+      </div>
+
+      <!-- Cargo Code -->
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!customsForm.get('CargoCode')?.value">
+          <label class="input-label">Cargo Code</label>
+          <ng-select [items]="cargoCodeList" bindLabel="label" bindValue="value" formControlName="CargoCode"
+            appendTo="body" placeholder="">
+          </ng-select>
+
+        </div>
+
+      </div>
+
+      <!-- Storage Request -->
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('StorageRequest')?.value">
+
+          <label class="input-label">Storage Request</label>
+          <ng-select [items]="storageRequestList" bindLabel="label" bindValue="value" formControlName="StorageRequest"
+            appendTo="body" placeholder="">
+          </ng-select>
+        </div>
+      </div>
+
+      <!-- Package Type -->
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('PackageTypeCode')?.value">
+
+          <label class="input-label">Package Type Code</label>
+          <ng-select [items]="packageTypeList" bindLabel="UOMCode" bindValue="UOMCode" formControlName="PackageTypeCode"
+            appendTo="body" placeholder="">
+          </ng-select>
+
+        </div>
+      </div>
+
+      <!-- Freight Tonne -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="number" formControlName="FreightTonne" step="0.001" placeholder=""
+          class=" custom-input-field sm">
+          <label class="input-label">Freight Tonne</label>
+
+        </div>
+
+      </div>
+
+      <!-- Pallets -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+
+          <input type="number" formControlName="NoOfPallets" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">No of Pallets</label>
+        </div>
+
+      </div>
+
+      <!-- SLAC -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="SLACIndicator" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">SLAC Indicator</label>
+        </div>
+
+      </div>
+
+      <!-- Importer Code -->
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('ImporterCode')?.value">
+          <label class="input-label">Importer Code</label>
+          <ng-select [items]="importerCodeList" bindValue="value" bindLabel="label" formControlName="ImporterCode"
+            appendTo="body">
+          </ng-select>
+        </div>
+
+      </div>
+
+      <!-- Serial Number -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+
+          <input type="number" formControlName="SerialNumber" placeholder="" class=" custom-input-field sm" />
+          <label class="input-label">Serial Number</label>
+        </div>
+
+      </div>
+
+      <!-- Used or New -->
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!customsForm.get('UsedOrNew')?.value">
+          
+          <label class="input-label">Used/New</label>
+          <ng-select [items]="usedNewList" bindLabel="label" bindValue="value" formControlName="UsedOrNew"
+            appendTo="body">
+          </ng-select>
+        </div>
+
+      </div>
+
+      <!-- UNHS Code -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="UNHSCode" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">UNHS Code</label>
+        </div>
+
+      </div>
+
+      <!-- UN Number -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="UNNumber" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">UN Number</label>
+        </div>
+
+      </div>
+
+      <!-- Flash Points -->
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="number" formControlName="FlashPoints" step="0.1" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">Flash Points</label>
+          <div class="error-message"
+            *ngIf="customsForm.get('FlashPoints').invalid && customsForm.get('FlashPoints').touched">
+            <small>Max allowed: 999.9</small>
+          </div>
+        </div>
+
+      </div>
+
       <!-- Temperature Unit -->
-      <div class="col">
-        <label>Temperature Unit</label>
-        <ng-select
-          [items]="temperatureUnitList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="TemperatureUnit"
-          appendTo="body">
-        </ng-select>
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('TemperatureUnit')?.value">
+          <label class="input-label">Temperature Unit</label>
+          <ng-select [items]="temperatureUnitList" bindLabel="label" bindValue="value" formControlName="TemperatureUnit"
+            appendTo="body">
+          </ng-select>
+        </div>
+
       </div>
 
       <!-- Hazard -->
-      <div class="col">
-        <label>Haz Storage Request</label>
-        <ng-select
-          [items]="hazStorageList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="HazStorageRequest"
-          appendTo="body">
-        </ng-select>
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('HazStorageRequest')?.value">
+
+          <label class="input-label">Haz Storage Request</label>
+          <ng-select [items]="hazStorageList" bindLabel="label" bindValue="value" formControlName="HazStorageRequest"
+            appendTo="body">
+          </ng-select>
+        </div>
       </div>
 
       <!-- Refrigeration -->
-      <div class="col">
-        <label>Refrigeration Required</label>
-        <input type="text" formControlName="RefrigerationRequired">
+      <div class="col-md-3">
+        <div class="custom-form-group">
+
+          <input type="text" formControlName="RefrigerationRequired" placeholder="" class=" custom-input-field sm">
+          <label class="input-label">Refrigeration Required</label>
+        </div>
+
       </div>
 
       <!-- Min Temp -->
-      <div class="col">
-        <label>Min Temperature</label>
-        <input type="number" step="0.1" formControlName="MinTemperature">
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="number" step="0.1" formControlName="MinTemperature" placeholder=""
+          class=" custom-input-field sm">
+          <label class="input-label">Min Temperature</label>
+        </div>
+
       </div>
 
       <!-- Max Temp -->
-      <div class="col">
-        <label>Max Temperature</label>
-        <input type="number" step="0.1" formControlName="MaxTemperature">
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="number" step="0.1" formControlName="MaxTemperature" placeholder=""
+          class=" custom-input-field sm">
+          <label class="input-label">Max Temperature</label>
+        </div>
+
       </div>
 
       <!-- Ref Temp Unit -->
-      <div class="col">
-        <label>Ref Temperature Unit</label>
-        <ng-select
-          [items]="temperatureUnitList"
-          bindLabel="label"
-          bindValue="value"
-          formControlName="RefTemperatureUnit"
-          appendTo="body">
-        </ng-select>
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!customsForm.get('RefTemperatureUnit')?.value">
+
+          <label class="input-label">Ref Temperature Unit</label>
+          <ng-select [items]="temperatureUnitList" bindLabel="label" bindValue="value"
+            formControlName="RefTemperatureUnit" appendTo="body">
+          </ng-select>
+
+        </div>
+
       </div>
 
     </div>
 
-    <div class="actions">
-      <button type="button" class="btn" (click)="resetChildForm()">Clear</button>
-      <button type="button" class="btn primary" (click)="submitForm()" [disabled]="loading">
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-sm btn-secondary" (click)="resetChildForm()">Clear</button>
+      <button type="button" class="btn btn-info btn-sm" (click)="submitForm()" [disabled]="loading">
         {{ selectedRecord ? 'Update Customs' : 'Save Customs' }}
       </button>
     </div>
