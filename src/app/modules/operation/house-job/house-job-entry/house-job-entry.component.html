@@ -1408,6 +1408,8 @@
                 <th>Net Wt</th>
                 <th>Cargo Received Date</th>
                 <th>Container No.</th>
+                <th>Delivery Date</th>
+                <th>Delivered Qty</th>
               </tr>
             </thead>
             <tbody>
@@ -1442,6 +1444,8 @@
                 <td>{{product.value.NetWeight}}</td>
                 <td>{{product.value.CargoRecDate | formatDate}}</td>
                 <td>{{product.value.ContainerNo}}</td>
+                <td>{{product.value.DeliveryDate | formatDate}}</td>
+                <td>{{product.value.DeliveredQty}}</td>
               </tr>
               }
             </tbody>
@@ -1511,6 +1515,15 @@
                 formControlName="ReleaseType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3" [formGroup]="houseJobForm">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!houseJobForm.get('JobType')?.value">
+              <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="JobType" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Job Type <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3 d-none">
@@ -1732,7 +1745,7 @@
             <div class="custom-form-group" [formGroup]="houseJobForm">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                 formControlName="GeneralNote" [textWithNumbers]="200">
-              <label for="text-input" class="input-label">General Note<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">External Note<span class="text-danger"></span></label>
             </div>
           </aside>
           @if(selectedDepartmentType === "SEA") {
@@ -2227,6 +2240,38 @@
 
         </div>
       </aside>
+      <div class="col-md-4">
+            <div class=" custom-form-group custom-form-group-select-date mb-0">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
+                  (click)="d3.toggle()" container="body">
+                <button class="btn  bi bi-calendar3 px-0" (click)="d3.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label class="input-label">Delivery Date <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </div>
+
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                formControlName="DeliveredQty" DecimalPrecision [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="0"
+                >
+              <label for="text-input" class="input-label">Delivered Qty<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('DeliveredQty')?.touched || cargoForm.get('DeliveredQty')?.dirty) &&
+              cargoForm.get('DeliveredQty')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('DeliveredQty')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 3 digits Number Only</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
     </div>
   </div>
   <div class="modal-footer">
