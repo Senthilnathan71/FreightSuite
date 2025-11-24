@@ -249,6 +249,11 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 1, name: 'Dock' },
     { id: 2, name: 'Factory' }
   ]
+  jobType = [
+    { id: 1 , name: 'Export' },
+    { id: 2 , name: 'Import' },
+    { id: 3 , name: 'Transhipment' }
+  ]
 
   // Variable Declaration - Product Part
   productDataLength: number;
@@ -485,6 +490,7 @@ auditLogs: any[] = []; // Stores audit logs
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
       FreightTerms : [null],
+      JobType: [{value:null, disabled:true}],
       Coload: [false],
       ShipmentType: [false],
       IncoTerms: [null, [Validators.required]],
@@ -615,7 +621,9 @@ auditLogs: any[] = []; // Stores audit logs
       UomMasterSid: [null],
       CargoRecDate : [null],
       ContainerNo : [''],
-      MarksAndNumbers : ['']
+      MarksAndNumbers : [''],
+      DeliveredQty: [null],
+      DeliveryDate: ['']
     });
     this.setupImmediateCBMCalculation();
     this.setupImmediateVolumetricCalculation(this.productForm)
@@ -805,7 +813,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       UomMasterSid : [data?.UomMasterSid || null],
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
       ContainerNo : [data?.ContainerNo || ''],
-      MarksAndNumbers : [data?.MarksAndNumbers || '']
+      MarksAndNumbers : [data?.MarksAndNumbers || ''],
+      DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
+      DeliveredQty: [data?.DeliveredQty || null]
+
     });
     this.setupProductFormImmediateCalculation(productForm);
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
@@ -1110,6 +1121,7 @@ loadHeaderLookups() {
       GeneralNote: response.GeneralNote,
       NominatedBy: response.NominatedBy,
       FreightTerms : response.FreightTerms,
+      JobType: response.JobType,
       ShipmentNo: response.ShipmentNo
     })
     this.b['DepartmentMasterSid']?.disable();
@@ -1240,7 +1252,9 @@ loadHeaderLookups() {
         UomMasterSid: data?.UomMasterSid,
         CargoRecDate : data?.CargoRecDate,
         ContainerNo : data?.ContainerNo,
-        MarksAndNumbers : data?.MarksAndNumbers
+        MarksAndNumbers : data?.MarksAndNumbers,
+        DeliveryDate: data?.DeliveryDate,
+        DeliveredQty: data?.DeliveredQty,
       })
       const productItem = this.slicedProductArr[productIndex];
       this.currentProductIndex = this.bookingProducts.controls.indexOf(productItem);
@@ -1384,6 +1398,7 @@ console.log('Full otherForm value:', otherFormValue);
       GeneralNote: houseJobFormValue.GeneralNote || '',
       NominatedBy: houseJobFormValue.NominatedBy || 'Self',
       FreightTerms : houseJobFormValue.FreightTerms || '',
+      JobType: houseJobFormValue.JobType || '',
       ShipmentNo: houseJobFormValue.ShipmentNo || '',
       houseJobCargo: {
         HouseJobCargoSid : cargoFormValue.HouseJobCargoSid || null,
@@ -1464,6 +1479,8 @@ console.log('Full otherForm value:', otherFormValue);
         CargoRecDate : product.CargoRecDate,
         ContainerNo : product.ContainerNo,
         MarksAndNumbers : product.MarksAndNumbers,
+        DeliveryDate: product.DeliveryDate,
+        DeliveredQty: product.DeliveredQty,
       })),
       houseConnections: this.connectionResult,
       bookingRates: this.rateResult,
@@ -2395,7 +2412,9 @@ ${this.userData['userName']}`;
       GrossWeight: product.value.GrossWeight || '',
       NetWeight: product.value.NetWeight || '',
       Volume: product.value.Volume || '',
-      CargoRecDate: this.datePipe.transform(product.value.CargoRecDate) || ''
+      CargoRecDate: this.datePipe.transform(product.value.CargoRecDate) || '',
+      DeliveryDate: this.datePipe.transform(product.value.DeliveryDate) || '',
+      DeliveredQty: product.value.DeliveredQty || ''
     }));
 
     const companyName = this.currentCompany?.companyName ?? 'Company';
