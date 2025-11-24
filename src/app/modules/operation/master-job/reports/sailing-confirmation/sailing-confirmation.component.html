@@ -31,14 +31,16 @@
                         </div>
 
                         <div class="company-info ">
-                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                            <p class="mb-1">
-                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">
+                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                                || '' }}
                             </p>
-                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
                         </div>
                     </div>
     </div>
@@ -48,7 +50,7 @@
     <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
 
     <!-- Title -->
-    <h5 class="text-center fw-bold pb-2" style="margin: 0;">Sailing Confirmation / BL No : 8397498379373</h5>
+    <h5 class="text-center fw-bold pb-2" style="margin: 0;">Sailing Confirmation / BL No : </h5>
 
     <!-- Enquiry Details -->
     <div class="row mx-3 px-5 p-3 " style="border: 1px solid black;">
@@ -144,14 +146,13 @@
         <p>MBL No :  {{ masterJobData?.MasterJobNumber }}</p>
     </div>
     <footer class="text-center mb-0 px-2">
-        <!-- <div class="d-flex justify-content-between">
-                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                        <span>
-                            This document is computer-generated and does not require a signature.
-                        </span>
+                    <div class="d-flex justify-content-between">
+                        <div><span>Printed By :</span> {{userData.userName}}</div>
+                        <span>This document is computer-generated and does not require a signature.</span>
                         <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-         </div> -->
-    </footer>
+                    </div>
+                   
+                </footer>
 
 </div>
     </div>

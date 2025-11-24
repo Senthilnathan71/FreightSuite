@@ -1,4 +1,5 @@
 import { Injectable, Type } from '@angular/core';
+import { MblComponent } from '../components/reports/mbl/mbl.component';
 
 /**
  * Report Configuration Interface
@@ -244,6 +245,35 @@ export class ReportRegistryService {
       });
     } catch (error) {
       console.warn('Job Card Report component not yet created:', error);
+    }
+
+    // MBL Report
+    try {
+      const { MblComponent } = await import(
+        '../components/reports/mbl/mbl.component'
+      );
+
+      this.registerReport({
+        id: 'master-job-mbl',
+        title: 'MBL',
+        component: MblComponent,
+        filenameTemplate: 'MBL_{jobNumber}_{date}',
+        module: 'master-job',
+        apiEndpoint: 'master-job/send-email',
+        fetchDataEndpoint: 'master-job/{id}/report-data',
+        emailSubjectTemplate: 'MBL - Job No: {jobNumber}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>MBL</strong> for Job No: <strong>{jobNumber}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+    } catch (error) {
+      console.warn('MBL Report component not yet created:', error);
     }
   }
 

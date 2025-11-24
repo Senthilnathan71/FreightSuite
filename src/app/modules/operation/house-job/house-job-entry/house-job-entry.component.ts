@@ -148,6 +148,7 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
   filterOption : any;
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
+  chargeWiseSummary : any[] = [];
   masterJobData: any;
   selectTab(tab: string) {
     if (tab === "Rate") {
@@ -995,7 +996,8 @@ loadHeaderLookups() {
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
-    }).subscribe(({ currencies }) => {
+      charges : this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err=> of({ data : []})))
+    }).subscribe(({ currencies,charges }) => {
       const rawCurrencies: any[] = Array.isArray(currencies)
         ? currencies
         : currencies?.data || [];
@@ -1003,6 +1005,7 @@ loadHeaderLookups() {
         ...c,
         countryName: c?.countryMaster?.countryName || ''
       }));
+      this.chargeList = charges || [];
     })
   }
 
@@ -2640,8 +2643,10 @@ ${this.userData['userName']}`;
           })
         modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.chargeList = this.chargeList || [];
+        console.log("Parent",this.chargeList)
         modalRef.componentInstance.profitSummary = this.profitSummary || [];
         modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+        modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     }
 

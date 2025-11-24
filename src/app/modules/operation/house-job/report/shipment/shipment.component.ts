@@ -26,13 +26,14 @@ export class ShipmentComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() chargeList:any;
-  chargeWiseSummary : any[] = [];
   rateResult : any[] = [];
   @Input() customerWiseSummary : any;
+  @Input() chargeWiseSummary : any;
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    console.log('houseJobData',this.housejobData);
   }
 
 
@@ -43,6 +44,10 @@ export class ShipmentComponent {
 
 
 getChargeName(ChargeMasterSid: number): string {
+  console.log("Status",{
+    ChargeMasterSid,
+    list : this.chargeList
+  })
   if (!ChargeMasterSid) return 'N/A';
   if (!this.chargeList?.length) return 'N/A';
 

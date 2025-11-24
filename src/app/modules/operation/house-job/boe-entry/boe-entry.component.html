@@ -1,61 +1,110 @@
-<div class="form-container">
-  <form [formGroup]="boeForm">
-    <table class="boe-table">
-      <thead>
-        <tr>
-          <th>SNo</th>
-          <th>Declaration No</th>
-          <th class="required">BOE No</th>
-          <th>BOE Date</th>
-          <th>BOE Value</th>
-          <th>Invoice No</th>
-          <th>Transaction Type</th>
-          <th>Amount</th>
-          <th colspan="2">Exit/Entry Document</th>
-          <th colspan="3">Claim</th>
-          <th>Note</th>
-          <th>Action</th>
-        </tr>
-        <tr class="subheader">
-          <th colspan="8"></th>
-          <th>Process Date</th>
-          <th>Recv’d Date</th>
-          <th>Ack. No</th>
-          <th>Ack. Date</th>
-          <th>Ack. Status</th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
+<div class="modern-table-container compact-form">
+  <div class="table-toolbar">
+    <div class="toolbar-left">
 
-      <tbody formArrayName="boeDetails">
-        <tr *ngFor="let row of boeDetails.controls; let i = index" [formGroupName]="i">
-          <td>{{ i + 1 }}</td>
-          <td><input formControlName="DeclarationNo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="BOENo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="BOEDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="number" formControlName="BOEValue" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="BOEInvoiceValue" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="TransactionType" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="number" formControlName="Amount" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="ProcessDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="ReceivedDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="AckNo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="AckDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="AckStatus" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="Note" [readonly]="!row.get('isEdit')?.value" /></td>
-
-          <td class="actions-cell">
-            <button type="button" *ngIf="!row.get('isEdit')?.value" (click)="editRow(i)" class="btn btn-edit">✏️</button>
-            <button type="button" *ngIf="row.get('isEdit')?.value" (click)="saveRow(i)" class="btn btn-save">💾</button>
-            <button type="button" (click)="removeRow(i)" class="btn btn-delete">🗑</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="actions">
-      <button type="button" (click)="addRow()">+ Add Row</button>
     </div>
+    <div class="toolbar-right">
+      <button type="button" class="table-action-btn primary" (click)="addRow()"> <i class="fas fa-plus me-1"></i> Add
+        Row</button>
+    </div>
+  </div>
+
+  <form [formGroup]="boeForm">
+    <div class="modern-table-wrapper">
+      <table class="modern-table mb-0">
+        <thead>
+          <tr>
+            <th style="border-top-left-radius: 10px"></th>
+            <th>SNo</th>
+            <th>Declaration No</th>
+            <th class="required">BOE No</th>
+            <th>BOE Date</th>
+            <th>BOE Value</th>
+            <th>Invoice No</th>
+            <th>Transaction Type</th>
+            <th>Amount</th>
+            <th colspan="2">Exit/Entry Document</th>
+            <th colspan="3">Claim</th>
+            <th style="border-top-right-radius: 10px">Note</th>
+
+          </tr>
+          <tr class="subheader">
+            <th colspan="8"></th>
+            <th>Process Date</th>
+            <th>Recv’d Date</th>
+            <th>Ack. No</th>
+            <th>Ack. Date</th>
+            <th>Ack. Status</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody formArrayName="boeDetails">
+          <tr *ngFor="let row of boeDetails.controls; let i = index" [formGroupName]="i">
+            <td class="actions-cell">
+              <button type="button" *ngIf="!row.get('isEdit')?.value" (click)="editRow(i)" class="btn btn-edit px-0">
+                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+              </button>
+              <button type="button" *ngIf="row.get('isEdit')?.value" (click)="saveRow(i)" class="btn btn-save px-1">
+                <i class="fas fa-save  me-1 text-info"></i>
+              </button>
+              <button type="button" (click)="removeRow(i)" class="btn btn-delete px-1">
+                <i-feather name="trash-2" class="feather-sm text-danger"></i-feather>
+              </button>
+            </td>
+            <td>{{ i + 1 }}</td>
+            <td><input formControlName="DeclarationNo" class="custom-input-field sm" style="width:120px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input formControlName="BOENo" class="custom-input-field sm" style="width:120px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td>
+              <div class="d-flex align-items-center">
+                <input type="date"  placeholder="dd-mm-yyyy" class="custom-input-field sm" formControlName="BOEDate" style="width:130px"
+                  [readonly]="!row.get('isEdit')?.value" />
+                <button class="btn bi bi-calendar3 " type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+            </td>
+
+            <td>
+              <input type="number" class="custom-input-field sm" formControlName="BOEValue" style="width:110px"
+                [readonly]="!row.get('isEdit')?.value" />
+            </td>
+
+            <td><input formControlName="BOEInvoiceValue" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input formControlName="TransactionType" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input type="number" formControlName="Amount" class="custom-input-field sm" style="width:110px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input type="date" formControlName="ProcessDate" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input type="date" formControlName="ReceivedDate" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input formControlName="AckNo" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input type="date" formControlName="AckDate" class="custom-input-field sm" style="width:130px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input formControlName="AckStatus" class="custom-input-field sm" style="width:120px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+
+            <td><input formControlName="Note" class="custom-input-field sm" style="width:150px"
+                [readonly]="!row.get('isEdit')?.value" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
   </form>
 </div>

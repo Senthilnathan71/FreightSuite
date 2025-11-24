@@ -139,6 +139,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   profitSummary: any;
   customerWiseSummary: any;
+  chargeWiseSummary : any[] = []
 
   // Lookup data
   departments: any[] = [];
@@ -1000,8 +1001,8 @@ updateTranshipmentList() {
       status: rate.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
-    // this.calculateChargeWiseProfit();
-    // this.calculateCustomerWiseAmount();
+    this.calculateChargeWiseProfit();
+    this.calculateCustomerWiseAmount();
     console.log("CUSTOMER WISE SUMMARY", this.customerWiseSummary);
 
 
@@ -2538,6 +2539,7 @@ updateTranshipmentList() {
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.agentList = this.agentList;
+      modalRef.componentInstance.yardList = this.yardList;
   }
 
   reportcargomanifest() {
@@ -2593,6 +2595,7 @@ updateTranshipmentList() {
     modalRef.componentInstance.chargeList = this.chargeList;
     modalRef.componentInstance.profitSummary = this.profitSummary || [];
     modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+     modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
   }
 
   reportPackingList() {
