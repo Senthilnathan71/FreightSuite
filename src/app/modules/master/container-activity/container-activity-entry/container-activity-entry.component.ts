@@ -17,6 +17,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-container-activity-entry',
@@ -95,12 +96,14 @@ MenuMasterSid: any;
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService
   ) { }
 
   ngOnInit(): void {
     this.getAllCompanies();
     this.loadContainerActivities();
+     this.mps.init().subscribe();
     this.initForm();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -117,32 +120,11 @@ MenuMasterSid: any;
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+     
     }
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        },
-        error: (error) => {
-          console.error('Error fetching permissions:', error);
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
+ 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));

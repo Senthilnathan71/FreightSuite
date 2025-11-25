@@ -22,6 +22,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-charge-entry',
@@ -117,11 +118,13 @@ selectedTab = this.tab[0].name;
     private modalService: NgbModal,
     private datePipe: DatePipe,
     private commonService: CommonService,
+    public mps : MenuPermissionService,
   ) {
     this.initForms();
   }
 
   ngOnInit(): void {
+    this.mps.init().subscribe();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
@@ -136,7 +139,7 @@ selectedTab = this.tab[0].name;
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if(userProfile){
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
 
     this.loadLookupData();
@@ -237,23 +240,7 @@ selectedTab = this.tab[0].name;
     this.chargeTds.removeAt(index);
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
     hasAnyDropdownPermission(): boolean {
   const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

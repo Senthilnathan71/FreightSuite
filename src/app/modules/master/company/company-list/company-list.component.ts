@@ -21,6 +21,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-company-list',
   standalone: true,
@@ -39,26 +40,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
    headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'CompanyMasterSid',
-    emptyMessage: 'No comapny found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   tableLoading = false;
 
@@ -87,7 +69,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps:MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -103,38 +86,125 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     // )
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     this.userData = userProfile;
-    this.checkPermissions();
+    
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // Initialize table configuration
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
       this.initializeHeaderActions();
-      this.initializeModalDropdownItems();
+    })
+    
+      
+     
     // Initialize base component
     super.ngOnInit();
   }
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-             this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-        }
-      });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
+  initializeTableConfig(){
+    this.tableConfig = {
+    columns:  [
+      {
+        key: 'companyName',
+        label: 'Company Name ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'companyCode',
+        label: 'Company Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'branchName',
+        label: 'Branch Name ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+        {
+        key: 'country',
+        label: 'Country',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+    
+      {
+        key: 'state',
+        label: 'State',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        cellClass: 'vessel-column'
+      },
+        {
+        key: 'city',
+        label: 'City',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'gst',
+        label: 'VAT/GST No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state : !this.mps.can('view')
+        
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'CompanyMasterSid',
+    emptyMessage: 'No comapny found',
+    dragAndDrop: true
+  };
   }
+  
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -187,7 +257,9 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
+
+        
       },
       {
         label: 'Report',
@@ -203,34 +275,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     ];
   }
 
-   initializeModalDropdownItems(): void {
-    this.modalDropdownItems = [
-      {
-        label: 'Edoc',
-        icon: 'fas fa-file-alt',
-        action: 'edoc',
-        condition: this.hasPermission('Edoc')
-      },
-      {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
-      },
-      {
-        label: 'Authorize',
-        icon: 'fas fa-shield-alt',
-        action: 'authority',
-        condition: this.hasPermission('Authority')
-      },
-      {
-        label: 'Email',
-        icon: 'fas fa-envelope',
-        action: 'email',
-        condition: this.hasPermission('Email')
-      }
-    ];
-  }
+   
 
   onActionTriggered(action: string): void {
     switch (action) {
@@ -305,96 +350,18 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     this.router.navigate(['operation/booking/entry']);
   }
 
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      // {
-      //   key: 'BookingNo',
-      //   label: 'Booking No',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   template: 'link',
-      //   width: '180px',
-      //   dataType: 'string'
-      // },
-      {
-        key: 'companyName',
-        label: 'Company Name ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'companyCode',
-        label: 'Company Code',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'branchName',
-        label: 'Branch Name ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-        {
-        key: 'country',
-        label: 'Country',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-    
-      {
-        key: 'state',
-        label: 'State',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        cellClass: 'vessel-column'
-      },
-        {
-        key: 'city',
-        label: 'City',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'gst',
-        label: 'VAT/GST No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.viewCompany(event.row);
+    }else if (event.action === 'delete') {
+      this.deleteBy(event.row)
     }
+  }
+
+  deleteBy(row: any) {
+    this.deleteCompany(row.CompanyMasterSid)
   }
 
   onTableRowClick(row: any): void {

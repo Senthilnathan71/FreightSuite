@@ -34,6 +34,7 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-cost-center',
   standalone: true,
@@ -72,6 +73,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   btnDisable: boolean = false;
   costCenterList: any[] = [];
   modalRef!: NgbModalRef;
+  tableConfig: TableConfig;
   searchType = 'CostCenterName';
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -103,34 +105,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'CostCenterMasterSid',
-    emptyMessage: 'No cost-center found',
-    dragAndDrop: true
-  };
+  
 
   tableLoading = false;
 
@@ -146,6 +121,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   // Alias for compatibility with existing template
   get allCostcenter() { return this.allItems; }
   constructor(
+    public mps : MenuPermissionService,
     private modalService: NgbModal,
     private router: Router,
     private fb: FormBuilder,
@@ -179,7 +155,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     this.route.paramMap.subscribe(params => {
       this.CostCenterMasterSid = +params.get('id');
@@ -192,7 +168,11 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
-    this.initializeModalDropdownItems();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    })
+    // this.initializeModalDropdownItems();
 
     // Initialize base component
     super.ngOnInit();
@@ -251,7 +231,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -267,34 +247,34 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     ];
   }
 
-   initializeModalDropdownItems(): void {
-    this.modalDropdownItems = [
-      {
-        label: 'Edoc',
-        icon: 'fas fa-file-alt',
-        action: 'edoc',
-        condition: this.hasPermission('Edoc')
-      },
-      {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
-      },
-      {
-        label: 'Authorize',
-        icon: 'fas fa-shield-alt',
-        action: 'authority',
-        condition: this.hasPermission('Authority')
-      },
-      {
-        label: 'Email',
-        icon: 'fas fa-envelope',
-        action: 'email',
-        condition: this.hasPermission('Email')
-      }
-    ];
-  }
+  //  initializeModalDropdownItems(): void {
+  //   this.modalDropdownItems = [
+  //     {
+  //       label: 'Edoc',
+  //       icon: 'fas fa-file-alt',
+  //       action: 'edoc',
+  //       condition: this.hasPermission('Edoc')
+  //     },
+  //     {
+  //       label: 'Terms & Condition',
+  //       icon: 'fas fa-clipboard',
+  //       action: 'terms',
+  //       condition: this.hasPermission('Terms and Condition')
+  //     },
+  //     {
+  //       label: 'Authorize',
+  //       icon: 'fas fa-shield-alt',
+  //       action: 'authority',
+  //       condition: this.hasPermission('Authority')
+  //     },
+  //     {
+  //       label: 'Email',
+  //       icon: 'fas fa-envelope',
+  //       action: 'email',
+  //       condition: this.hasPermission('Email')
+  //     }
+  //   ];
+  // }
 
   onActionTriggered(action: string): void {
     switch (action) {
@@ -369,8 +349,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
+    this.tableConfig = {
+    columns: [
       {
         key: 'CostCenterName',
         label: 'Cost Center Name ',
@@ -406,7 +386,34 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state : !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'CostCenterMasterSid',
+    emptyMessage: 'No cost-center found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers
@@ -494,28 +501,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   //   });
   // }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-             this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

@@ -29,6 +29,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -147,10 +148,12 @@ export class TdsSetEntryComponent implements OnInit {
         private settingService: SettingsService,
         public dropdownStore:DropdownStore,
         private operationService: OperationService,
-        private commonService: CommonService
+        private commonService: CommonService,
+        public mps : MenuPermissionService
     ) { }
 
     ngOnInit(): void {
+        this.mps.init().subscribe;
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -164,7 +167,7 @@ export class TdsSetEntryComponent implements OnInit {
         const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+      
 		}
         this.currentRoute.paramMap.subscribe(
             (param) => {
@@ -181,22 +184,7 @@ export class TdsSetEntryComponent implements OnInit {
             }
         )
     }
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        console.log(currentMenuId)
-        console.log(userRole)
-        if (currentMenuId && userRole) {
-            this.settingService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions)
-                        .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                    console.log(this.permissions)
-                }
-            });
-        }
-    }
+    
 
     initTdsForm() {
         this.tdsForm = this.fb.group({
@@ -765,9 +753,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         this.filteredExemptionList = this.tdsExemptionList.slice(start, end);
     }
 
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
+   
 
     hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

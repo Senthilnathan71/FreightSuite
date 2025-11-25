@@ -18,6 +18,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
 }
@@ -74,7 +75,8 @@ export class DepartmentEntryComponent {
     private router: Router,
     private modalService : NgbModal,
     private ngZone: NgZone,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService
   ) { 
     const { webkitSpeechRecognition }: IWindow = window as any;
     this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
@@ -214,6 +216,7 @@ export class DepartmentEntryComponent {
      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+       this.mps.init().subscribe();
     this.initForm();
     this.getAllDivisions();
     // Subscribe to route params and load lead if ID exists
@@ -235,32 +238,12 @@ export class DepartmentEntryComponent {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+      
 		}
 
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
  
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));

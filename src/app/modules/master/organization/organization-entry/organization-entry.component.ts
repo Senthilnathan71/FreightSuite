@@ -65,6 +65,7 @@ import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } f
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-organization-entry',
@@ -114,7 +115,8 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
     private casepipe : UpperCasePipe,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
     effect(()=> {
@@ -427,6 +429,7 @@ onCountryChange(): void {
   }
 
   ngOnInit(): void {
+    this.mps.init().subscribe();
     this.dropdownStore.loadCountries().subscribe(() => {
       this.dropdownStore.loadStates().subscribe();
     });
