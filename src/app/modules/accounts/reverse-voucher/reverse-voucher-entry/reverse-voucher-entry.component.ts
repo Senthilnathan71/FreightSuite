@@ -16,6 +16,13 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CommonService } from 'src/app/common/common.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -60,6 +67,10 @@ export class ReverseVoucherEntryComponent {
     houseJobList: any[] = [];
     stateList: any[] = [];
     coaList: any[] = [];
+    MenuMasterSid: any;
+    currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
     costCenterList: any[] = [];
     profitCenterList: any[] = [];
     houseJobListByMasterJob: { [key: number]: any[] } = {};
@@ -196,7 +207,9 @@ export class ReverseVoucherEntryComponent {
       private appSettingService: AppSettingsService,
       private masterService: MasterService,
       private spinner: NgxSpinnerService,
-      private companySettings: CompanySettingsManagerService
+      private companySettings: CompanySettingsManagerService,
+      public mps: MenuPermissionService,
+      private commonService: CommonService,
     ) {}
   
     ngOnInit(): void {
@@ -208,6 +221,8 @@ export class ReverseVoucherEntryComponent {
       try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
@@ -2382,4 +2397,85 @@ export class ReverseVoucherEntryComponent {
   }
   return postStatus || 'Unposted'; 
 }
+
+showInfo() {
+      if(!this.reverseVoucherData) return;
+      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.item = this.reverseVoucherData;
+      modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
+      modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
+    }
+    openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.currentClauseId;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+  
+    openEmail() {
+    if (!this.reverseVoucherData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.reverseVoucherData;
+    modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
+    modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
+  }
+  
+  openAuthority() {
+    if (!this.reverseVoucherData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.reverseVoucherData;
+    modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
+    modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
+  }
+  
+  openEDoc() {
+    if (!this.reverseVoucherData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.reverseVoucherData;
+    modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
+    modalRef.componentInstance.idValue = this.reverseVoucherData.VoucherHeaderSid;
+  const data:any={
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
+      DocumentSid: this.reverseVoucherData?.VoucherHeaderSid
+    }
+  
+        this.commonService.documentData.set(data)
+  }
+
+  openFollowup() {
+
+  }
 }

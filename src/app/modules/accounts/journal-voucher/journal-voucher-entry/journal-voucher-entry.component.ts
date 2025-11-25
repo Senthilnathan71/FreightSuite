@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
-import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateStruct, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,13 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-journal-voucher-entry',
@@ -23,6 +30,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
     NgbDatepickerModule,
     FeatherModule,
     NgSelectModule,
+    NgbDropdownModule
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
@@ -34,7 +42,9 @@ export class JournalVoucherEntryComponent implements OnInit {
   isPosted = false;
   todayDateInNgbStruct!: NgbDateStruct;
   isSaving = false;
-
+  currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
   // Add these properties from vendor invoice component
   currentCompany: any;
   currentBranch: any;
@@ -46,6 +56,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   currentUserState: string;
   userData: any;
   currUserEmail: string | null = null;
+  MenuMasterSid: any;
 
   // Master Data Lists
   coaList: any[] = [];
@@ -57,6 +68,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   houseJobList: any[] = [];
   costCenterList: any[] = [];
   profitCenterList: any[] = [];
+  voucherData: any;
   hssacList: any[] = [];
   uomList: any[] = [];
   HSSACLookupConfig = {
@@ -90,11 +102,16 @@ export class JournalVoucherEntryComponent implements OnInit {
     private dropdownStore: DropdownStore,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
+    public mps: MenuPermissionService,
+    private modalService : NgbModal,
+    private commonService: CommonService,
+    private masterService: MasterService,
     private spinner: NgxSpinnerService // Add spinner service
   ) {}
 
   ngOnInit(): void {
     this.loadUserAndCompanyData();
+    this.mps.init().subscribe();
     this.initializeForm();
     this.setTodayDate();
     this.loadMasterData();
@@ -110,6 +127,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
@@ -247,8 +265,9 @@ export class JournalVoucherEntryComponent implements OnInit {
   loadVoucherForEdit(id: number): void {
     this.journalVoucherService.getJournalVoucherById(id).subscribe({
       next: (response) => {
-        const voucher = response.data;
         
+        const voucher = response.data;
+        this.voucherData = voucher;
         if (!voucher) {
           this.appSettingService.showError('Voucher not found', 'Error');
           this.router.navigate(['/accounts/journal-voucher/list']);
@@ -793,4 +812,86 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
   navigateToBack(): void {
     this.router.navigate(['/accounts/journal-voucher/list']);
   }
+
+  showInfo() {
+      if(!this.voucherData) return;
+      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.item = this.voucherData;
+      modalRef.componentInstance.idLabel = 'Journal Voucher Id';
+      modalRef.componentInstance.idValue = this.voucherHeaderSid;
+    }
+    openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.currentClauseId;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+  
+    openEmail() {
+    if (!this.voucherData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.voucherData;
+    modalRef.componentInstance.idLabel = 'Journal Voucher Id';
+    modalRef.componentInstance.idValue = this.voucherHeaderSid;
+  }
+  
+  openAuthority() {
+    if (!this.voucherData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.voucherData;
+    modalRef.componentInstance.idLabel = 'Journal Voucher Id';
+    modalRef.componentInstance.idValue = this.voucherHeaderSid;
+  }
+  
+  openEDoc() {
+    if (!this.voucherData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.voucherData;
+    modalRef.componentInstance.idLabel = 'Journal Voucher Id';
+    modalRef.componentInstance.idValue = this.voucherHeaderSid;
+  const data:any={
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
+      DocumentSid: this.voucherHeaderSid
+    }
+  
+        this.commonService.documentData.set(data)
+  }
+
+  openFollowup() {
+
+  }
+  
 }

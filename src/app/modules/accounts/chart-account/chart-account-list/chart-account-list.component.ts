@@ -18,6 +18,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-chart-account-list',
   standalone: true,
@@ -54,35 +55,9 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
   currentCompany: any;
   currentBranch: any;
   headerActions: HeaderAction[] = [];
+  tableConfig: TableConfig;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Booking',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        // condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'COAMasterSid',
-    emptyMessage: 'No chart-account found',
-    dragAndDrop: true
-  };
+  
 
   tableLoading = false;
 
@@ -99,6 +74,7 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
   get allChartAccounts() { return this.allItems; }
   constructor(
     private masterService: MasterService,
+    public mps: MenuPermissionService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
@@ -126,6 +102,11 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
+    
     // Initialize base component
     super.ngOnInit();
   }
@@ -192,7 +173,7 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -233,35 +214,9 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     });
   }
 
-  // Legacy methods for template compatibility
-  searchChartAccounts() {
-    this.search();
-  }
-
-  clearFilterValue() {
-    this.clearFilter();
-  }
-
-  override trackBy(index: number, item: any): number {
-    return item.COAMasterSid || index;
-  }
-
-  viewChartAccount(item: any): void {
-    this.router.navigate(['/accounts/chart-accounts/entry', item.COAMasterSid]);
-  }
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      // {
-      //   key: 'BookingNo',
-      //   label: 'Booking No',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   template: 'link',
-      //   width: '180px',
-      //   dataType: 'string'
-      // },
+  private initializeTableConfig(){
+  this.tableConfig = {
+    columns: [
       {
         key: 'Category',
         label: 'Category',
@@ -330,8 +285,52 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Booking',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'COAMasterSid',
+    emptyMessage: 'No chart-account found',
+    dragAndDrop: true
+  }}
+
+  // Legacy methods for template compatibility
+  searchChartAccounts() {
+    this.search();
   }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.COAMasterSid || index;
+  }
+
+  viewChartAccount(item: any): void {
+    this.router.navigate(['/accounts/chart-accounts/entry', item.COAMasterSid]);
+  }
+  // Table configuration
+ 
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {

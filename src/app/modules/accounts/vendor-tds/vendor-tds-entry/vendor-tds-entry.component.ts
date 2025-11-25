@@ -20,6 +20,9 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -33,7 +36,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
     TextWithNumbersDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './vendor-tds-entry.component.html',
   styleUrl: './vendor-tds-entry.component.scss',
@@ -51,12 +55,10 @@ export class VendorTdsEntryComponent {
   userData: any;
   supplierTDSdata: any;
   deleteToggler = false;
-  permissions : string[] = [];
-  currentMenuPermissions: any = {};
-
+  CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   supplierTDSForm!: FormGroup;
-  // supplierList: any[] = [];
-  // tdsList: any[] = [];
+  supplierList: any[] = [];
+  tdsList: any[] = [];
   cusBranchList: any[] = [];
 
   // Datepicker related variable
@@ -67,7 +69,7 @@ export class VendorTdsEntryComponent {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
-
+  MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
@@ -80,12 +82,15 @@ export class VendorTdsEntryComponent {
     private calendar: NgbCalendar,
     private accountService: AccountsService,
     private modalService : NgbModal,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    public mps: MenuPermissionService
   ) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     this.initTdsForm();
     this.loadLookUps();
     this.currRoute.paramMap.subscribe(
@@ -100,50 +105,15 @@ export class VendorTdsEntryComponent {
         }
       }
     );
-    // this.appSettingService.getUser().subscribe(
-    //   (resp) => {
-    //     this.userData = resp;
-    //     this.checkPermissions();
-    //   }
-    // );
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
 		}
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.accountService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-    }
 
   initTdsForm() {
     this.supplierTDSForm = this.fb.group({
@@ -184,13 +154,24 @@ export class VendorTdsEntryComponent {
     this.tdsDetailArray.push(tdsDetailGroup);
   }
 
-  loadLookUps() {    
-    const payload={
-      CompanyMasterSid:this.currentCompany?.CompanyMasterSid,
-      types: ['vendor', 'transporter', 'agent']
-    }
-    this.dropdownStore.loadCustomerTypeData(payload)
-    this.dropdownStore.loadtdsSet(Number(this.currentCompany?.CompanyMasterSid))
+  // loadLookUps() {    
+  //   const payload={
+  //     CompanyMasterSid:this.currentCompany?.CompanyMasterSid,
+  //     types: ['vendor', 'transporter', 'agent']
+  //   }
+  //   this.dropdownStore.loadCustomerTypeData(payload).subscribe();
+  //   this.dropdownStore.loadtdsSet(Number(this.currentCompany?.CompanyMasterSid)).subscribe();
+  // }
+
+  loadLookUps() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    forkJoin({
+      suppliers: this.accountService.getAllSuppliers(CompanyMasterSid),
+      tdsSet: this.accountService.getAllTDSSet(CompanyMasterSid),
+    }).subscribe(({ suppliers, tdsSet }) => {
+      this.supplierList = suppliers.data;
+      this.tdsList = tdsSet.data;
+    });
   }
 
   loadSupplierTDS() {
@@ -271,7 +252,7 @@ export class VendorTdsEntryComponent {
       CertificateAmt: detailFormValue.CertificateAmt,
       EffectiveFrom: detailFormValue.EffectiveFrom,
       EffectiveTo: detailFormValue.EffectiveTo,
-      Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+      Status: formValue.Status === 'Active' ? 'A' : 'S',
       ...(this.isEditMode ? { UpdatedBy: currUserEmail } : { CreatedBy: currUserEmail }),
     };
 
@@ -346,9 +327,9 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   handleLedgerChange(ledger: any) {
     this.supplierTDSForm.get('VendorName')?.setValue(ledger?.CustomerName || '');
-    this.supplierTDSForm.get('PanNO')?.setValue(ledger?.PanName || '');
+    this.supplierTDSForm.get('PanNO')?.setValue(ledger?.PanType || ledger?.PanName || '');
     this.supplierTDSForm.get('CompanyType')?.setValue(ledger?.CompanyType || '');
-    this.supplierTDSForm.get('CountryName')?.setValue(ledger?.countryMaster?.countryName || '');
+    this.supplierTDSForm.get('CountryName')?.setValue(ledger.countryMaster?.countryName || ledger?.CountryName || '');
     if (ledger && ledger.CustomerMasterSid !== undefined) {
       this.accountService.getCustomerBranchByCusId(ledger.CustomerMasterSid).subscribe({
         next: (resp: any) => {
@@ -482,19 +463,22 @@ openAuditLogs(modal: TemplateRef<any>) {
         centered: true,
         backdrop: 'static'
       });
+      modalRef.componentInstance.item = this.supplierTDSdata;
+    modalRef.componentInstance.idLabel = 'Supplier TDS Mapping Id';
+    modalRef.componentInstance.idValue = this.supplierTDSdata?.SupplierTdsMappingSid;
     }
   
   
       openAuthority() {
-      const MenuMasterSid = localStorage.getItem('currentMenuId');
-      if (!MenuMasterSid) return;
+      if (!this.supplierTDSdata) return;
       const modalRef = this.modalService.open(AuthorityLogComponent, {
         size: 'lg',
         centered: true,
         backdrop: 'static'
       });
-      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-      modalRef.componentInstance.documentSid = this.SupplierTdsMappingSid;
+      modalRef.componentInstance.item = this.supplierTDSdata;
+      modalRef.componentInstance.idLabel = 'Supplier TDS Mapping Id';
+      modalRef.componentInstance.idValue = this.supplierTDSdata?.SupplierTdsMappingSid;
     }
   
     openEDoc() {
@@ -504,6 +488,20 @@ openAuditLogs(modal: TemplateRef<any>) {
         centered: true,
         backdrop: 'static'
       });
+      modalRef.componentInstance.item = this.supplierTDSdata;
+      modalRef.componentInstance.idLabel = 'Supplier TDS Mapping Id';
+      modalRef.componentInstance.idValue = this.supplierTDSdata?.SupplierTdsMappingSid;
+      const data:any={
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
+      DocumentSid: this.supplierTDSdata?.SupplierTdsMappingSid
+
+      }
+    }
+
+    openFollowup(){
+
     }
 
   // onReset() {

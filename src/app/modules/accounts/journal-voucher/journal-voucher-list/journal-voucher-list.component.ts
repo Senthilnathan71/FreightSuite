@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { JournalVoucherService, JournalVoucherSearchResponse } from '../journal-voucher.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -50,48 +51,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
   headerActions: HeaderAction[] = [];
 
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Journal Voucher',
-      },
-      {
-        icon: 'fas fa-edit',
-        label: 'Edit',
-        action: 'edit',
-        tooltip: 'Edit Journal Voucher',
-        condition: (row: any) => row.PostStatus === 'U' // Only unposted can be edited
-      },
-      // {
-      //   icon: 'fas fa-check-circle',
-      //   label: 'Post',
-      //   action: 'post',
-      //   tooltip: 'Post Voucher',
-      //   class: 'text-success',
-      //   condition: (row: any) => row.PostStatus === 'U' // Only unposted can be posted
-      // },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Journal Voucher',
-        class: 'text-danger',
-        condition: (row: any) => row.PostStatus === 'U' // Only unposted can be deleted
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VoucherHeaderSid',
-    emptyMessage: 'No journal vouchers found',
-    dragAndDrop: true
-  };
+ tableConfig: TableConfig;
 
   tableLoading = false;
 
@@ -114,6 +74,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     private excelReportService: ExcelExportService,
     private dialog: MatDialog,
     private spinner: NgxSpinnerService,
+    public mps: MenuPermissionService,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -130,7 +91,10 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
-
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    })
     // Initialize base component
     super.ngOnInit();
   }
@@ -218,6 +182,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -272,8 +237,9 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
   }
 
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+  private initializeTableConfig(){
+    this.tableConfig = {
+      columns : [
       {
         key: 'VoucherNumber',
         label: 'Voucher No.',
@@ -340,7 +306,34 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Journal Voucher',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Journal Voucher',
+        class: 'text-danger',
+        state: !this.mps.can('delete'),
+        condition: (row: any) => row.PostStatus === 'U' // Only unposted can be deleted
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoucherHeaderSid',
+    emptyMessage: 'No journal vouchers found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

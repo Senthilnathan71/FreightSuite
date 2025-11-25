@@ -151,7 +151,7 @@ export class AccountsService {
   }
 
   getAllSuppliers(CompanyMasterSid: number){
-    return this.http.post<{data:any}>('customer/suppliers',{CompanyMasterSid}).pipe(
+    return this.http.post<{data:any}>('customer/vendor-supplier',{CompanyMasterSid}).pipe(
       map((resp:any)=>{
         let response = resp;
         return response;

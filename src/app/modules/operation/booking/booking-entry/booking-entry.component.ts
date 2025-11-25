@@ -50,6 +50,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -208,8 +209,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ]
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-  permissions: any[] = [];
-  currentMenuPermissions = {};
+  
   private initialFormValue: string;
   bookingStatusTimeline : any[];
 
@@ -376,6 +376,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     public dropdownStore: DropdownStore,
     private pdfService:PdfDownloadService,
     private commonService: CommonService,
+    public mps: MenuPermissionService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
@@ -442,11 +443,11 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     if (this.userData) {
-      this.checkPermissions();
     }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
+    this.mps.init().subscribe();
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
     this.currentCompany = (
       (this.userData.userCompanyMaster || [])
@@ -551,22 +552,6 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
   }
 
-  checkPermissions() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (this.currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(this.currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
 
   /**
   |--------------------------------------------------
@@ -3047,15 +3032,6 @@ ${this.userData['userName']}`;
         grossCtrl.setErrors(null);
       }
     }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
   }
 
   getBookingStatus() {
