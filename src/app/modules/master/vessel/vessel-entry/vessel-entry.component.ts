@@ -18,6 +18,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -56,6 +57,7 @@ export class VesselEntryComponent implements OnInit {
     auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
     constructor(
+         public mps : MenuPermissionService, 
         private masterServ: MasterService,
         private appSettingService: AppSettingsService,
         private currRoute: ActivatedRoute,
@@ -63,12 +65,14 @@ export class VesselEntryComponent implements OnInit {
         private route: Router,
         private modalService : NgbModal,
         private commonService: CommonService,
+
     ) { }
 
     ngOnInit() {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+        this.mps.init().subscribe();
         this.initForm();
 
         this.currRoute.paramMap.subscribe(

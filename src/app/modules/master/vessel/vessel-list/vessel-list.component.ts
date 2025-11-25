@@ -19,6 +19,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-vessel-list',
   standalone: true,
@@ -45,7 +46,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
   searched = false;
   userData: any;
   loading: boolean = false;
-
+tableConfig: TableConfig ;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   // pagination
@@ -63,35 +64,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View vessel',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Zone',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VesselMasterSid',
-    emptyMessage: 'No vessel found',
-    dragAndDrop: true
-  };
-
+ 
   tableLoading = false;
 
   protected config: ListComponentConfig = {
@@ -109,6 +82,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
     private excelReportService: ExcelExportService, private spinner: NgxSpinnerService,
+    public mps : MenuPermissionService,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -125,40 +99,23 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+    
     }
     // this.loadVessels();
     // Initialize table configuration
     this.initializeTableConfig();
       this.initializeHeaderActions();
+     this.mps.init().subscribe(()=>{
+     this.initializeTableConfig();
+     this.initializeHeaderActions();
+    });
     // Initialize base component
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-             this.initializeHeaderActions();
-          },
-        });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+
+
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -212,7 +169,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -281,7 +238,8 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+    this. tableConfig = {
+    columns: [
       {
         key: 'VesselName',
         label: 'Vessel Name',
@@ -325,7 +283,35 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View vessel',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VesselMasterSid',
+    emptyMessage: 'No vessel found',
+    dragAndDrop: true
+  };
+
   }
 
   // Table event handlers

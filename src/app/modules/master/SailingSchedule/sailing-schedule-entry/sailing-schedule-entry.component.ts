@@ -26,6 +26,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -109,6 +110,7 @@ export class SailingScheduleEntryComponent implements OnInit {
 
 
     constructor(
+        public mps : MenuPermissionService, 
         private route : Router,
         private currentRoute : ActivatedRoute,
         private appSettingService : AppSettingsService,
@@ -138,7 +140,6 @@ export class SailingScheduleEntryComponent implements OnInit {
         const userProfile = this.appSettingService.getDecryptedUserProfile();
         if(userProfile){
             this.userData = userProfile;
-            this.checkPermissions();
         }
 
         this.initScheduleForm();
@@ -168,23 +169,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         });
     }
 
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        if (currentMenuId && userRole) {
-            this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions)
-                      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                }
-            });
-        }
-    }
 
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
+
     hasAnyDropdownPermission(): boolean {
   const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
