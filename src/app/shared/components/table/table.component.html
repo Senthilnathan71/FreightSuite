@@ -135,7 +135,7 @@
             <div class="action-buttons">
               <button *ngFor="let action of config.actions" class="action-icon me-1" [class]="action.class"
                 [title]="action.tooltip || action.label" (click)="onActionClick(action.action, row)"
-                [style.display]="action.condition ? (action.condition(row) ? 'inline-flex' : 'none') : 'inline-flex'">
+                [style.display]="action.condition ? (action.condition(row) ? 'inline-flex' : 'none') : 'inline-flex'" [disabled]="action.state">
                 <i [class]="action.icon"></i>
               </button>
             </div>

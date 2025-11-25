@@ -21,6 +21,7 @@ export interface TableAction {
   action: string;
   tooltip?: string;
   condition?: (row: any) => boolean;
+  state ?: boolean;   // Whether the action is enabled or disabled
   class?: string;
 }
 

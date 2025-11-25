@@ -1,11 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, map, Observable, of, shareReplay, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AppSettingsService } from './app-settings.service';
 
 export interface PermissionApiResponse {
   data: {
-    MenuPermissions: Record<string, boolean>;
+    MenuPermissions: Record<string, string | boolean | undefined>;
   };
 }
 
@@ -27,10 +28,24 @@ export interface PermissionSet {
   providedIn: 'root'
 })
 export class MenuPermissionService {
-private readonly API_URL = 'role-menu/menu-permissions';
+  private readonly API_URL = 'role-menu/menu-permissions';
+
+  // Cache keyed by company_menu_role
   private cache = new Map<string, PermissionSet>();
-  private loading$ = new BehaviorSubject<boolean>(false);
-  private initialized = false;
+
+  // track inflight requests (dedupe)
+  private inFlight = new Map<string, Observable<PermissionSet>>();
+
+  // public permission stream for the currently active key
+  private permissionSubject = new BehaviorSubject<PermissionSet | null>(null);
+  permission$ = this.permissionSubject.asObservable();
+
+  // whether the current permissionSubject has loaded data
+  private loadedSubject = new BehaviorSubject<boolean>(false);
+  loaded$ = this.loadedSubject.asObservable();
+
+  // keep current key so getPerms() & can() work w/out passing ids
+  private currentKey: string | null = null;
 
   private readonly MAIN_KEYS = {
     INSERT: 'InsertRole',
@@ -41,135 +56,163 @@ private readonly API_URL = 'role-menu/menu-permissions';
 
   constructor(
     private http: HttpClient,
-    private appSettingsService : AppSettingsService
+    private appSettingsService: AppSettingsService
   ) {
-    this.autoInit();
+    // intentionally do NOT auto init here (avoids blocking work in constructor)
   }
 
-  // Auto-initialize on service creation
-  private autoInit(): void {
-    const menuId = this.getMenuId();
-    const roleId = this.getRoleId();
-    const companyId = this.getCompanyId();
-    console.log("init permission",{
-      CompanyMasterSid : companyId,
-      RoleMasterSid : roleId,
-      MenuMasterSid : menuId
-    });
-    
-    if (menuId && roleId && companyId && !this.initialized) {
-      const payload = {
-        CompanyMasterSid: companyId,
-        RoleMasterSid : roleId,
-        MenuMasterSid : menuId
-      }
-      console.log("init permission", payload);
-      this.fetch(payload).subscribe({
-        next: () =>{
-           this.initialized = true;
-           console.log("Permissions Fetched",this.getPerms());
-        },
-        error: (err) => console.error('Permission init failed:', err)
-      });
-    }
-  }
+  /**
+   * Initialize permissions for the current company/menu/role.
+   * If already cached, emits from cache and returns it.
+   * If not cached, triggers an HTTP fetch, caches and emits the result.
+   *
+   * Call this from the component that needs permissions (e.g., header/layout).
+   */
+  init(forceReload = false): Observable<PermissionSet | null> {
+    console.log('%c[MenuPermissionService] init() called', 'color: #4CAF50');
 
-  // Main permission check
-  can(permission: keyof MainPermissions): boolean {
-    return this.getPerms()?.mainPermissions[permission] ?? false;
-  }
-
-  // Other permission check
-  has(key: string): boolean {
-    const perms = this.getPerms()?.otherPermissions;
-    if (!perms) return false;
-    
-    const normalized = key.toLowerCase();
-    return Object.entries(perms).some(
-      ([k, v]) => k.toLowerCase() === normalized && v
-    );
-  }
-
-  hasAtLeastOne(): boolean {
-    const perms = this.getPerms()?.otherPermissions;
-    if (!perms) return false;
-    
-    return Object.keys(perms).some(key => perms[key]);
-  }
-
-  // Get all permissions
-  get permissions(): PermissionSet | null {
-    return this.getPerms();
-  }
-
-  // Loading state
-  get isLoading(): Observable<boolean> {
-    return this.loading$.asObservable();
-  }
-
-  // Refresh permissions
-  refresh(): Observable<PermissionSet> {
     const companyId = this.getCompanyId();
     const menuId = this.getMenuId();
     const roleId = this.getRoleId();
-    
-    if (!menuId || !roleId) {
-      return of({
-        mainPermissions: { insert: false, update: false, delete: false, view: false },
-        otherPermissions: {}
-      });
+
+    console.log('[MPS] IDs:', { companyId, menuId, roleId });
+
+    if (!companyId || !menuId || !roleId) {
+      console.warn('[MPS] Missing IDs → clearing permissions');
+      this.currentKey = null;
+      this.permissionSubject.next(null);
+      this.loadedSubject.next(true);
+      return of(null);
     }
 
-    const key = this.key(companyId,menuId, roleId);
-    this.cache.delete(key);
-    return this.fetch({
+    const key = this.buildKey(companyId, menuId, roleId);
+    this.currentKey = key;
+
+    console.log('%c[MPS] Built key: ' + key, 'color: #03A9F4');
+
+    if (!forceReload && this.cache.has(key)) {
+      console.log('%c[MPS] ✔ Using cached permissions for key: ' + key, 'color: #8BC34A');
+      const cached = this.cache.get(key)!;
+      this.permissionSubject.next(cached);
+      this.loadedSubject.next(true);
+      return of(cached);
+    }
+
+    if (this.inFlight.has(key)) {
+      console.log('%c[MPS] ⏳ Returning in-flight request for key: ' + key, 'color: #FF9800');
+      return this.inFlight.get(key)!;
+    }
+
+
+    const payload = {
       CompanyMasterSid: companyId,
       MenuMasterSid: menuId,
       RoleMasterSid: roleId
-    });
-  }
+    };
+    console.log('%c[MPS] 🔥 API request triggered', 'color: #E91E63', payload);
 
-  // Clear cache
-  clear(): void {
-    this.cache.clear();
-    this.initialized = false;
-  }
+    const request$ = this.http.post<PermissionApiResponse>(this.API_URL, payload).pipe(
 
-  // ========================================
-  // PRIVATE METHODS
-  // ========================================
+      tap(() => console.log('%c[MPS] 🌐 API responded', 'color: cyan')),
 
-  private fetch(payload:any): Observable<PermissionSet> {
-    const cacheKey = this.key(
-      payload.CompanyMasterSid,
-      payload.MenuMasterSid, 
-      payload.RoleMasterSid
-    );
-    
-    if (this.cache.has(cacheKey)) {
-      return of(this.cache.get(cacheKey)!);
-    }
-
-    this.loading$.next(true);
-
-
-    return this.http.post<PermissionApiResponse>(this.API_URL, payload).pipe(
-      map(res => this.transform(res)),
-      tap(perms => {
-        this.cache.set(cacheKey, perms);
-        this.loading$.next(false);
+      map(res => {
+        console.log('%c[MPS] Raw API Response:', 'color: #9C27B0', res);
+        return this.transform(res);
       }),
+
+      tap(perms => {
+        console.log('%c[MPS] Transformed permissions:', 'color: #4CAF50', perms);
+
+        this.cache.set(key, perms);
+        console.log('%c[MPS] ✔ Cached permissions for key: ' + key, 'color: #8BC34A');
+
+        if (this.currentKey === key) {
+          console.log('%c[MPS] 📢 Emitting permissions to subscribers', 'color: #673AB7');
+          this.permissionSubject.next(perms);
+          this.loadedSubject.next(true);
+        }
+      }),
+
       catchError(err => {
-        this.loading$.next(false);
-        console.error('Permission fetch error:', err);
-        return of({
+        console.error('%c[MPS] ❌ API ERROR:', 'color: red', err);
+        const fallback: PermissionSet = {
           mainPermissions: { insert: false, update: false, delete: false, view: false },
           otherPermissions: {}
-        });
+        };
+        this.cache.set(key, fallback);
+        this.permissionSubject.next(fallback);
+        this.loadedSubject.next(true);
+        return of(fallback);
       }),
+
+      finalize(() => {
+        console.log('%c[MPS] ✔ Request finalized (in-flight cleared) for key: ' + key, 'color: #795548');
+        this.inFlight.delete(key);
+      }),
+
       shareReplay(1)
     );
+
+    this.inFlight.set(key, request$);
+    return request$;
   }
+
+
+  /**
+   * Force refresh of current permission key by clearing cache and re-initializing.
+   */
+  refresh(): Observable<PermissionSet | null> {
+    if (!this.currentKey) {
+      // nothing to refresh, try init which will compute a key from app settings
+      return this.init(true);
+    }
+    this.cache.delete(this.currentKey);
+    return this.init(true);
+  }
+
+  /**
+   * Clear all cached permission data. Useful on logout or switching user.
+   */
+  clear(): void {
+    this.cache.clear();
+    this.inFlight.clear();
+    this.currentKey = null;
+    this.permissionSubject.next(null);
+    this.loadedSubject.next(false);
+  }
+
+  /**
+   * Synchronous check for main permissions (insert/update/delete/view).
+   * Returns false if permissions are not available yet.
+   */
+  can(permission: keyof MainPermissions): boolean {
+    const perms = this.permissionSubject.getValue();
+    if (!perms) return false;
+    return perms.mainPermissions[permission] ?? false;
+  }
+
+  /**
+   * Check for arbitrary other permission keys (case-insensitive).
+   */
+  has(key: string): boolean {
+    const perms = this.permissionSubject.getValue();
+    if (!perms) return false;
+    const normalized = key.toLowerCase();
+    return Object.entries(perms.otherPermissions).some(([k, v]) => k.toLowerCase() === normalized && v);
+  }
+
+  /**
+   * Returns true if any 'other' permission is enabled.
+   */
+  hasAtLeastOne(): boolean {
+    const perms = this.permissionSubject.getValue();
+    if (!perms) return false;
+    return Object.values(perms.otherPermissions).some(Boolean);
+  }
+
+  // ---------------------------
+  // PRIVATE HELPERS
+  // ---------------------------
 
   private transform(res: PermissionApiResponse): PermissionSet {
     const raw = res.data.MenuPermissions;
@@ -190,36 +233,30 @@ private readonly API_URL = 'role-menu/menu-permissions';
       }
     });
 
+    // ⭐ Console Logging (clean + grouped + no performance issue)
+    console.group('🔐 Menu Permissions Fetched');
+    console.table([mainPermissions]);
+    console.table([otherPermissions]);
+    console.groupEnd();
+
     return { mainPermissions, otherPermissions };
   }
 
-  private toBool(val?: string | boolean): boolean {
-    if (!val) return false;
-    if(typeof val === 'boolean'){ 
-      return val
-    } else {
-      const v = val.toLowerCase().trim();
-      return v === 'istrue' || v === 'true' || v === 'y' || v === '1';
-    }
+
+  private toBool(val?: string | boolean | null | undefined): boolean {
+    if (val === undefined || val === null) return false;
+    if (typeof val === 'boolean') return val;
+    const v = String(val).toLowerCase().trim();
+    return v === 'istrue' || v === 'true' || v === 'y' || v === '1';
   }
 
-  private getPerms(): PermissionSet | null {
-    const companyId = this.getCompanyId();
-    const menuId = this.getMenuId();
-    const roleId = this.getRoleId();
-    
-    if (!menuId || !roleId) return null;
-    
-    return this.cache.get(this.key(companyId,menuId, roleId)) ?? null;
-  }
-
-  private key(companyId:number,menuId: number, roleId: number): string {
+  private buildKey(companyId: number, menuId: number, roleId: number): string {
     return `${companyId}_${menuId}_${roleId}`;
   }
 
   private getCompanyId(): number | null {
     const currentCompany = this.appSettingsService.getCurrentCompanyInfo();
-    return currentCompany ? currentCompany?.CompanyMasterSid : null;
+    return currentCompany ? Number(currentCompany?.CompanyMasterSid) : null;
   }
 
   private getMenuId(): number | null {
@@ -231,10 +268,9 @@ private readonly API_URL = 'role-menu/menu-permissions';
     try {
       const data = this.appSettingsService.getDecryptedUserProfile();
       if (!data) return null;
-      return data?.userRoleMaster?.[0]?.RoleMasterSid ?? null;
+      return Number(data?.userRoleMaster?.[0]?.RoleMasterSid) ?? null;
     } catch {
       return null;
     }
   }
-
 }
