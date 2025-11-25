@@ -139,7 +139,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   profitSummary: any;
   customerWiseSummary: any;
-  chargeWiseSummary : any[] = []
+  chargeWiseSummary: any[] = []
 
   // Lookup data
   departments: any[] = [];
@@ -325,6 +325,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
     this.loadInitialData().subscribe(() => {
       const loadingPlanData = this.operationService.getLoadingPlanData();
+      console.log(loadingPlanData, 'loadingPlanData')
       if (loadingPlanData) {
         this.patchLoadingPlanData(loadingPlanData);
       }
@@ -334,8 +335,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
         if (this.masterJobSid) {
           this.isEditMode = true;
           this.loadMasterJobData(this.masterJobSid);
-    this.updateTranshipmentList();
-
         }
       });
     });
@@ -364,7 +363,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   patchLoadingPlanData(data: any) {
-    console.log(data, 'patchLoadingPlanData');
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     selectedDepartment ? this.onDeptChange(selectedDepartment) : null;
     const selectedPOL = this.portList.find(port => port.PortCode === data.POL);
@@ -402,6 +400,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.addContainer(container);
     });
 
+    //1
     const allShipments = data.bookingList || [];
     this.attachedBookings.clear();
     allShipments.forEach(shipment => {
@@ -410,61 +409,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
 
     this.updateAttachedBookingsPagination();
-    this.updateTranshipmentList();
   }
 
-  transhipmentHouses: any[] = [];
 
-updateTranshipmentList() {
-  this.transhipmentHouses = [];
-  this.isTranshipment = false;
 
-  const shipments = this.attachedBookings.getRawValue();
-  
-  if (shipments.length === 0) {
-    return;
-  }
 
-  let remaining = shipments.length;
-  let found = false;
-
-  shipments.forEach(s => {
-    const deptName = this.getDepartmentName(s.DepartmentMasterSid);
-    const isValidJobType = s.JobType === 'Transhipment';
-    const isValidDept = deptName === 'LCL Export';
-
-    if (isValidDept && isValidJobType && s.HouseJobSid) {
-      this.operationService.getHouseJobById(s.HouseJobSid).subscribe({
-        next: (resp: any) => {
-          if (resp.status && resp.data) {
-            found = true;
-            this.transhipmentHouses.push(resp.data);
-          }
-          
-          remaining--;
-          if (remaining === 0) {
-            this.isTranshipment = found;
-            if (found) {
-              console.log(`✅ Found ${this.transhipmentHouses.length} transhipment house(s)`);
-            }
-          }
-        },
-        error: (error) => {
-          console.error('Error fetching house job:', error);
-          remaining--;
-          if (remaining === 0) {
-            this.isTranshipment = found;
-          }
-        }
-      });
-    } else {
-      remaining--;
-      if (remaining === 0) {
-        this.isTranshipment = found;
-      }
-    }
-  });
-}
 
 
 
@@ -2184,16 +2133,79 @@ updateTranshipmentList() {
   }
 
 
+  bookingItems: any
+
+  //2
   patchShipments(shipments: any[]) {
+    this.bookingItems = shipments
     this.attachedBookings.clear();
+    console.log(shipments, 'shipments')
     shipments.forEach(shipment => {
       const formGrp = this.createShipmentGroup(shipment)
       console.log(formGrp);
       this.attachedBookings.push(formGrp);
     });
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+    console.log(this.totalLengthOfAttachedBookings, 'totalLengthOfAttachedBookings')
     this.updateAttachedBookingsPagination();
+    this.getTranshipmentList();
   }
+
+
+  transhipmentHouseJobSids: number[] = [];
+   getTranshipmentList() {
+    // ✅ Reset first
+    this.isTranshipment = false;
+    this.transhipmentHouseJobSids = [];
+
+    console.log('🔍 Checking bookingItems:', this.bookingItems);
+
+    this.bookingItems.forEach(item => {
+      const departmentName = this.getDepartmentName(item.DepartmentMasterSid);
+
+      console.log('📋 Item:', {
+        DepartmentMasterSid: item.DepartmentMasterSid,
+        DepartmentName: departmentName,
+        JobType: item.JobType,
+        HouseJobSid: item.HouseJobSid
+      });
+
+      // Make comparison case-insensitive and trim whitespace
+      const normalizedDepartment = departmentName?.trim().toLowerCase();
+      const normalizedJobType = item.JobType?.trim().toLowerCase();
+
+      if (normalizedDepartment === 'lcl export' && normalizedJobType === 'transhipment') {
+        this.isTranshipment = true;
+        this.transhipmentHouseJobSids.push(item.HouseJobSid);
+        console.log('✅ Found transhipment item!');
+      }
+    });
+
+    console.log('🎯 Final State:', {
+      isTranshipment: this.isTranshipment,
+      transhipmentHouseJobSids: this.transhipmentHouseJobSids
+    });
+
+    if (this.transhipmentHouseJobSids.length) {
+      this.loadAllHouses();
+    }
+  }
+
+
+  loadedHouses: any[] = [];
+
+  loadAllHouses() {
+    this.loadedHouses = [];
+
+    this.transhipmentHouseJobSids.forEach(id => {
+      this.operationService.getHouseJobById(id).subscribe((resp: any) => {
+        if (resp.status && resp.data) {
+          this.loadedHouses.push(resp.data);
+        }
+      });
+    });
+  }
+
 
   detachBooking(shipmentIndex: number, booking: any) {
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
@@ -2261,6 +2273,7 @@ updateTranshipmentList() {
         this.modalService.dismissAll();
       }
     });
+    //3
     modalRef.componentInstance.onSubmit.subscribe((data: any[]) => {
       data.forEach(booking => {
         const formGroup = this.createShipmentGroup(booking);
@@ -2539,7 +2552,7 @@ updateTranshipmentList() {
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.agentList = this.agentList;
-      modalRef.componentInstance.yardList = this.yardList;
+    modalRef.componentInstance.yardList = this.yardList;
   }
 
   reportcargomanifest() {
@@ -2595,7 +2608,7 @@ updateTranshipmentList() {
     modalRef.componentInstance.chargeList = this.chargeList;
     modalRef.componentInstance.profitSummary = this.profitSummary || [];
     modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
-     modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
+    modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
   }
 
   reportPackingList() {
@@ -2746,42 +2759,35 @@ updateTranshipmentList() {
     };
   }
 
- bookingCreateInMasterJob() {
-  if (this.transhipmentHouses.length === 0) {
-    this.toastr.warning('No transhipment houses found to create booking');
-    return;
-  }
-
-  this.spinner.show();
-  const bookingPayload = {
-    houses: this.transhipmentHouses,
-    createdBy: this.appSettingsService.userSettingSource.value['userEmail']
-  };
-
-  this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
-    next: (results: any) => {
-      this.spinner.hide();
-      
-      // ✅ Handle array of results
-      if (Array.isArray(results)) {
-        const successCount = results.length;
-        this.toastr.success(`${successCount} Booking(s) created successfully`);
-        
-        // Optionally navigate to booking list or refresh data
-        // this.router.navigate(['/operation/booking/list']);
-      } else if (results.status) {
-        this.toastr.success('Booking created successfully');
-      } else {
-        this.toastr.error(results.message || 'Failed to create booking');
-      }
-    },
-    error: (error) => {
-      this.spinner.hide();
-      this.toastr.error('Failed to create booking');
-      console.error('Error creating booking:', error);
+  bookingCreateInMasterJob() {
+    // ✅ When all are loaded, trigger booking creation
+    if (this.loadedHouses.length === this.transhipmentHouseJobSids.length) {
+      this.toastr.warning('No transhipment houses found to create booking');
     }
-  });
- }
+
+    const bookingPayload = {
+      houses: this.loadedHouses,  // ✅ send all houses
+      createdBy: this.appSettingsService.userSettingSource.value['userEmail']
+    };
+
+    this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
+      next: (results: any) => {
+        this.spinner.hide();
+
+        if (Array.isArray(results)) {
+          this.toastr.success(`${results.length} Booking(s) created successfully`);
+        } else if (results.status) {
+          this.toastr.success('Booking created successfully');
+        } else {
+          this.toastr.error(results.message || 'Failed to create booking');
+        }
+      },
+      error: () => {
+        this.spinner.hide();
+        this.toastr.error('Failed to create booking');
+      }
+    });
+  }
 }
 interface CustomerProfit {
   CustomerName: string,
