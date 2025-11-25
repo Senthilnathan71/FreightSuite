@@ -9,7 +9,7 @@
                         </div>
                         <h5 class="page-title mb-0  text-info">{{isEditMode ? 'Edit' : 'Add'}} Port Master</h5>
                         @if(isEditMode){
-                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                        <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                             <i class="fas fs-6 fa-info-circle"></i>
                         </a>
                         }
@@ -18,37 +18,44 @@
                 <div class="col-md-8 pb-1">
                     <div
                         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                             (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button>
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button appPreventMultiClick type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="goBack()">
                             <i class="fas fa-chevron-left me-1"></i>
                             Back
                         </button>
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button appPreventMultiClick type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="reset()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="onSubmit()" [disabled]=" btnDisable"
-                            *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+                        <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSubmit()" 
+                           [disabled]="(!mps.can('update') && isEditMode) || btnDisable  ">
                             <i class="fas fa-save me-1"></i>
                             Save
                         </button>
-                        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+                                        <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+                                            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                                                <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                                        class="fas fa-file-alt me-1"></i> Edoc</button>
+                                                <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                                    (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                                                <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                                    (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                                                <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                                        class="fas fa-envelope me-1"></i> Email</button>
+                                                <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark" (click)="openFollowup()">
+                                                    <i class="fas fa-paperclip me-1"></i> Followup
+                                                </button>
+                                            </div>
+                                        </div>
                     </div>
                 </div>
             </div>
@@ -342,7 +349,7 @@
                                             </aside>
                                         </div>
 
-                                        <aside class="col-md-12">
+                                        <aside class="col-md-12 mt-md-1">
                                             <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="ExportRestriction"
@@ -356,7 +363,7 @@
                                                 </div>
                                             </div>
                                         </aside>
-                                        <aside class="col-md-12">
+                                        <aside class="col-md-12 mt-md-2">
                                             <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="ImportRestriction"
@@ -370,7 +377,7 @@
                                                 </div>
                                             </div>
                                         </aside>
-                                        <aside class="col-md-12">
+                                        <aside class="col-md-12 mt-md-1">
                                             <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="Remarks"

@@ -16,6 +16,8 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -73,7 +75,9 @@ export class HawbStockEntryComponent implements OnInit {
     private modalService: NgbModal,
     private calendar: NgbCalendar,
     private appSettingService: AppSettingsService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
   ) {}
 
   ngOnInit(): void {
@@ -84,13 +88,13 @@ export class HawbStockEntryComponent implements OnInit {
        this.appSettingService.getUser().subscribe(user => {
     if(user) {
       this.userData = user;
-      this.checkPermissions();
+
     }
   });
     this.initForm();
     this.loadUserData();
     this.loadCustomers();
-    
+    this.mps.init().subscribe();
     
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -102,27 +106,7 @@ export class HawbStockEntryComponent implements OnInit {
     });
   }
 
-        checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-
+ 
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
@@ -415,6 +399,31 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+
+ openFollowup() {
+    if (!this.hawstockData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.hawstockData?.QuoteHeaderSid;
+    modalRef.componentInstance.parentEmail = this.hawstockData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.hawstockData.QuoteNumber} Date:${new Date(this.hawstockData.QuoteDate).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
 
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.HawbStockSid) return;

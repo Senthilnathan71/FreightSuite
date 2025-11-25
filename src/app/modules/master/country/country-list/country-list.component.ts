@@ -21,6 +21,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-country-list',
   standalone: true,
@@ -56,27 +57,71 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  tableConfig:TableConfig;
     headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-  tableConfig: TableConfig = {
-    columns: [],
+  private initializeTableConfig() {
+  this.tableConfig = {
+    columns: [{
+        key: 'countryName',
+        label: 'Country Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'countryCode',
+        label: 'Country Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'zoneName',
+        label: 'Zone',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'currencyName',
+        label: 'Currency',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View country',
-        condition: (row: any) => this.hasPermission('View')
+       state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
+        tooltip: 'Delete country',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+        state: !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -88,6 +133,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No country found',
     dragAndDrop: true
   };
+}
 
   tableLoading = false;
 
@@ -110,7 +156,8 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -127,8 +174,12 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+   
     }
+     this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
     this.loadZones();
     this.loadCurrencies();
     // this.loadCountries();
@@ -137,27 +188,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     // Initialize base component
     super.ngOnInit();
   }
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-        }
-      });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -249,7 +280,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -331,53 +362,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     });
   }
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'countryName',
-        label: 'Country Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'countryCode',
-        label: 'Country Code',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'zoneName',
-        label: 'Zone',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'currencyName',
-        label: 'Currency',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
+
 
 
 

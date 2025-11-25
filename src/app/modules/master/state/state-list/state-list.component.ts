@@ -21,6 +21,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-state-list',
   standalone: true,
@@ -64,16 +65,71 @@ export class StateListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  tableConfig:TableConfig;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
+   private initializeTableConfig() {
+  this.tableConfig = {
+    columns: [
+       {
+        key: 'stateName',
+        label: 'State Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'stateCode',
+        label: 'State Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'stateGSTCode',
+        label: 'GST Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'countryName',
+        label: 'Country',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+
+      {
+        key: 'zoneName',
+        label: 'Zone',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
+        state : !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
@@ -81,7 +137,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+       state : !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -93,6 +149,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No state found',
     dragAndDrop: true
   };
+}
 
   tableLoading = false;
 
@@ -116,7 +173,8 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    public dropdownStore:DropdownStore
+    public dropdownStore:DropdownStore,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -134,11 +192,15 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+     
     }
     // this.loadStates();
     this.dropdownStore.loadCountries()
-    this.dropdownStore.loadZones()
+    this.dropdownStore.loadZones();
+      this.mps.init().subscribe(()=>{
+         this.initializeTableConfig();
+        this.initializeHeaderActions();
+    });
     // Initialize table configuration
     this.initializeTableConfig();
         this.initializeHeaderActions();
@@ -146,30 +208,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-                this.initializeHeaderActions();
-            console.log(this.permissions);
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+ 
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -234,7 +273,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+       disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -294,66 +333,6 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     this.router.navigate(['/master/state/entry/', item.StateMasterSid]);
   }
 
-
-
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
-      {
-        key: 'stateName',
-        label: 'State Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'stateCode',
-        label: 'State Code',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'stateGSTCode',
-        label: 'GST Code',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'countryName',
-        label: 'Country',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-
-      {
-        key: 'zoneName',
-        label: 'Zone',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {

@@ -41,7 +41,7 @@ export class DocumentAuthorizationComponent {
 
     // Pagination related Declaring
     page = 1;
-    pageSize = 15;
+    pageSize = 10;
     totalLengthOfCollection: number;
 
     // Sorting related declaration
