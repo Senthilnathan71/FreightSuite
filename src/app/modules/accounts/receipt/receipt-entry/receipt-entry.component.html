@@ -4,13 +4,20 @@
 <div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' :
-                    'Create Receipt') }}</h5>
+            <div class="col-md-4  pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' :
+                        'Create Receipt') }}</h5>
+                    @if(isEditMode){
+                    <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                    }
+                </div>
             </div>
             <div class="col-md-8 pb-2">
                 <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                             (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
@@ -37,11 +44,25 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isPosted">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isPosted || (mps.can('update') && !isEditMode)">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-    
+                    <div *ngIf="mps.hasAtLeastOne() && !isEditMode" ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                    class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
@@ -547,15 +568,19 @@
                             <!-- @if(!isEditMode){ -->
                             <th class="bg-transparent text-light">Curr. Amt</th>
                             <th class="bg-transparent text-light">Local Amt</th>
+                            @if(!isPosted){
                             <th class="bg-transparent text-light">OS Curr. Amt</th>
                             <th class="bg-transparent text-light">OS Local Amt</th>
+                            }
                             <!-- } -->
                             <th class="bg-warning text-light">Curr.</th>
                             <th class="bg-warning text-light">Ex. Rate</th>
                             <th class="bg-warning text-light">Curr Amt</th>
                             <th class="bg-warning text-light">Local Amt</th>
                             <th class="bg-warning text-light">TDS Amt</th>
+                            @if(!isPosted){
                             <th class="bg-warning text-light">Balance</th>
+                            }
                         </tr>
                     </thead>
                     <tbody formArrayName="voucherMatchings">
@@ -612,8 +637,10 @@
                                 <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
+                            
 
                             <!-- OS Current Amount -->
+                             @if(!isPosted){
                             <td>
                                 <input type="text" formControlName="osCurrAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
@@ -624,7 +651,7 @@
                                 <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
-                            <!-- } -->
+                            }
 
                             <!-- Match Curr -->
                             <td class="dofi-min-w-80">
@@ -687,6 +714,7 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
                                 />
                             </td>
+                            @if(!isPosted){
                             <td>
                                 <input 
                                     type="text" 
@@ -697,7 +725,7 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                 />
                             </td>
-
+                            }
                         </tr>
 
                         <!-- TOTAL ROW -->
@@ -706,10 +734,10 @@
                             <!-- @if(!isEditMode){ -->
                             <td>{{ getTotalCurrAmt() }}</td>
                             <td>{{ getTotalLocalAmt() }}</td>
-
+                            @if(!isPosted){
                             <td>{{ getTotalOSCurrAmt() }}</td>
                             <td>{{ getTotalOSLocalAmount() }}</td>
-                            <!-- } -->
+                            }
                             <td></td> <!-- matchCurr -->
                             <td></td> <!-- matchExRate -->
 

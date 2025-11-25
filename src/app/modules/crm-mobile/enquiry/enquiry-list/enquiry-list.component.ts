@@ -26,6 +26,7 @@ import { Observable } from 'rxjs';
 import { NewLineKind } from 'typescript';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { getConcatenatedPorts, getFormattedPort } from 'src/app/common/helper';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-enquiry-list',
   standalone: true,
@@ -69,34 +70,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-      // {
-      //   icon: 'fas fa-file', 
-      //   label: 'File',
-      //   action: 'file',
-      //   tooltip: 'Create Quotation',
-      //   class: "text-info",
-      //   condition: (row: any) => this.hasPermission('Delete')
-      // }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'EnquiryHeaderSid',
-    emptyMessage: 'No Enquiry found',
-    dragAndDrop: true
-  };
+  tableConfig : TableConfig;
 
   tableLoading = false;
   headerActions: HeaderAction[] = [];
@@ -112,6 +86,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   // Alias for compatibility with existing template
   get allEnquirys() { return this.allItems; }
   constructor(
+    public mps : MenuPermissionService,
     private leadService: LeadService,
     private route: Router,
     private appService: AppService,
@@ -136,8 +111,12 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
       }
     )
     // Initialize table configuration
-    this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    });
     // Initialize base component
     super.ngOnInit();
   }
@@ -201,7 +180,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -266,7 +245,8 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
 
 
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+    this.tableConfig  = {
+    columns: [
       {
         key: 'EnquiryNumber',
         label: 'Enquiry No',
@@ -317,15 +297,6 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string'
       },
-      // {
-      //   key: 'ShipmentExpectedDate',
-      //   label: 'Expected Shipment Date ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-
-      // },
       {
         key: 'status',
         label: 'Status',
@@ -337,7 +308,32 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash', 
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Quotation',
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'EnquiryHeaderSid',
+    emptyMessage: 'No Enquiry found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers
@@ -350,11 +346,25 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   } else if (event.action === 'view') {
     // Handle view action - navigate to enquiry entry page
     this.viewEnquiry(event.row);
+  } else if(event.action === 'delete'){
+    this.deleteEnquiry(event.row.EnquiryHeaderSid);
   } else if (event.action === 'file') {
     // Handle file action
     this.file(event.row);
   }
 }
+  deleteEnquiry(EnquiryHeaderSid: number) {
+    this.leadService.deleteEnquiryById(EnquiryHeaderSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess("Enquiry Deleted Successfully");
+          this.search();
+        } else {
+          this.appSettingService.showError("Error deleting Enquiry");
+        }
+      }
+    )
+  }
   
 
   viewEnquiry(row: any) {

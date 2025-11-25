@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
@@ -35,6 +35,14 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { BankReceiptComponent } from '../report/bank-receipt/bank-receipt.component';
 import { CashReceiptComponent } from '../report/cash-receipt/cash-receipt.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 /**
  * Receipt Entry Component
@@ -49,6 +57,7 @@ import { CashReceiptComponent } from '../report/cash-receipt/cash-receipt.compon
   selector: 'app-receipt-entry',
   standalone: true,
   imports: [
+    NgbDropdownModule,
     CommonModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
@@ -90,6 +99,7 @@ export class ReceiptEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   currentYearId: any;
+  currentMenuId : number;
   receiptData: any;
   userData: any;
   searchType: string = 'Party';
@@ -167,12 +177,15 @@ export class ReceiptEntryComponent implements OnInit {
     { id: 8, name: "Invoice" }
   ]
 
+  TandCList : any[] = [];
   allPendingCosts: any[] = [];
   selectedCosts: any[] = [];
   private destroy$ = new Subject<void>();
 
 
   constructor(
+    public mps : MenuPermissionService,
+    private commonService : CommonService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
@@ -190,21 +203,20 @@ export class ReceiptEntryComponent implements OnInit {
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo()
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.getCurrentCompanyBranches();
 
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
 
     console.log("USER DATA", this.userData);
     console.log("CURRENT COMPANY", this.currentCompany);
     console.log("CURRENT BRANCH", this.currentBranch);
     console.log("CURRENT USER COUNTRY", this.currentUserCountry);
     console.log("CURRENT YEAR ID", this.currentYearId);
-
+    this.mps.init().subscribe();
     this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
@@ -1663,6 +1675,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   onPartyChange(party: any) {
     console.log("Selected Party", party);
+    const partyCountry = String(party?.countryMaster?.countryName).trim().toLowerCase();
     this.errorLogger();
     if (!party) {
       this.receiptForm.patchValue({
@@ -1683,7 +1696,7 @@ export class ReceiptEntryComponent implements OnInit {
       CustomerBranchSid: party.CustomerBranchSid,
       COAMasterSid: party.COAMappedId,
       LedgerMasterSid: party.SubledgerMasterSid,
-      GST_VAT: party.GSTNo
+      GST_VAT: partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo
     })
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
@@ -1753,17 +1766,34 @@ export class ReceiptEntryComponent implements OnInit {
         newValue: !ctrl.value
       })
     }
-    this.r['BankCOA']?.setValue(null);
     ctrl.setValue(element.checked);
+    this.r['BankCOA']?.setValue(null);
 
-    if(element.checked){
-      this.receiptForm.patchValue({
-        InstrumentMode : null,
-        InstrumentNumber : '',
-        InstrumentDate : null,
-        ClearanceDate : null
-      })
+    const mode = this.receiptForm.get('InstrumentMode');
+    const number = this.receiptForm.get('InstrumentNumber');
+    const date = this.receiptForm.get('InstrumentDate');
+
+    // Reset values
+    this.receiptForm.patchValue({
+      InstrumentMode: null,
+      InstrumentNumber: '',
+      InstrumentDate: null,
+      ClearanceDate: null
+    });
+
+    if (element.checked) {
+      mode?.clearValidators();
+      number?.clearValidators();
+      date?.clearValidators();
+    } else {
+      mode?.setValidators([Validators.required]);
+      number?.setValidators([Validators.required]);
+      date?.setValidators([Validators.required]);
     }
+
+    mode?.updateValueAndValidity();
+    number?.updateValueAndValidity();
+    date?.updateValueAndValidity();
   }
 
  
@@ -1980,6 +2010,99 @@ export class ReceiptEntryComponent implements OnInit {
     this.receiptForm.updateValueAndValidity();
   }
 
+  showInfo() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.receiptData;
+    modalRef.componentInstance.idLabel = 'Receipt ID';
+    modalRef.componentInstance.idValue = this.receiptData?.VoucherHeaderSid;
+  }
+
+  openEDoc() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.screenName = 'Edoc';
+    modalRef.componentInstance.formData = this.receiptData;
+    modalRef.componentInstance.resetTrigger = false;
+    const data: any = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.receiptData?.VoucherHeaderSid
+    }
+    this.commonService.documentData.set(data)
+  }
+
+  openTandC() {
+    if (!this.currentMenuId) {
+      this.appSettingService.showError('Error: Menu ID not found.');
+      return;
+    }
+
+    const payload = { MenuMasterSid: this.currentMenuId };
+
+    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
+      if (termsData && termsData.length > 0) {
+        this.TandCList = termsData;
+        const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.headerId;
+      } else {
+        console.warn('No Terms and Conditions data found to display.');
+      }
+    });
+  }
+
+  loadTandC(payload: { MenuMasterSid: number }): Observable<any[]> {
+    return this.accountService.getTandCByCondition(payload).pipe(
+      map((resp: any) => {
+        if (resp && resp.status) {
+          return resp.data;
+        }
+        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+        return [];
+      }),
+      catchError((error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+        return of([]);
+      })
+    );
+  }
+
+  openEmail() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  openAuthority() {
+    if (!this.currentMenuId) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = this.currentMenuId;
+    modalRef.componentInstance.documentSid = this.headerId;
+  }
+
+
+  openFollowup() {
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  }
 
 
    reportBank() {

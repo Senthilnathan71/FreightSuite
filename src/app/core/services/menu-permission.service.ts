@@ -259,12 +259,12 @@ export class MenuPermissionService {
     return currentCompany ? Number(currentCompany?.CompanyMasterSid) : null;
   }
 
-  private getMenuId(): number | null {
+  getMenuId(): number | null {
     const id = localStorage.getItem('currentMenuId');
     return id ? Number(id) : null;
   }
 
-  private getRoleId(): number | null {
+  getRoleId(): number | null {
     try {
       const data = this.appSettingsService.getDecryptedUserProfile();
       if (!data) return null;

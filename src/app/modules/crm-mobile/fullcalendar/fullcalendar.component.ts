@@ -22,6 +22,7 @@ import { EmailEntryComponent } from '../../settings/email/email-entry/email-entr
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 
 const colors: any = {
@@ -160,7 +161,7 @@ export class FullcalendarComponent implements OnInit {
   currentBranch: any;
   leadList: any[] = [];
 
-  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService, private ngbModal: NgbModal) { }
+  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService, private ngbModal: NgbModal,public mps : MenuPermissionService) { }
 
   ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
@@ -168,6 +169,7 @@ export class FullcalendarComponent implements OnInit {
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
+    this.mps.init().subscribe();
     this.loadCustomers()
     this.loadLeads();
     this.loadSalesPersons()
@@ -221,6 +223,11 @@ export class FullcalendarComponent implements OnInit {
   }
 
   handleEvent(action: string, event: CalendarEvent): void {
+    if(!this.mps.can('view')){
+      this.appSettingService.showWarning("You do not have permission to view meetings.");
+      return;
+    }
+    console.log("Update Permission", this.mps.can('update'))
     this.modalData = { event, action };
     this.PreCustomerMeetingSid = event.id
     // console.log(this.PreCustomerMeetingSid)
@@ -795,7 +802,10 @@ export class FullcalendarComponent implements OnInit {
     // });
   }
 
-
+  canUpdate():boolean{
+    console.log("Can Update",this.mps.can('update'));
+    return !this.mps.can('update');
+  }
 
 
 }

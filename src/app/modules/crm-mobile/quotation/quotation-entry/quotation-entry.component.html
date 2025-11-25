@@ -63,7 +63,7 @@
         }
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
           [disabled]="(!mps.can('update') && isEditMode) || disableAllModification || quotationApproved">
-          <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : 'Save'}}
+          <i class="fas fa-save me-1"></i> Save
         </button>
         
         <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
@@ -79,6 +79,8 @@
               (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
             <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
           </div>
         </div>
       </div>

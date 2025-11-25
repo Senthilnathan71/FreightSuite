@@ -167,9 +167,9 @@ export class PaymentService {
    * @returns List of payments
    */
   getPayments(filter: PaymentFilter): Observable<PaymentListItem[]> {
-    return this.http.post<any>(`${this.apiUrl}/list`, filter).pipe(
+    return this.http.post<any>(`${this.apiUrl}/search-list`, filter).pipe(
       map((response: any) => {
-        if (response.data) {
+        if (response.status) {
           return response.data.map((item: any) => this.processPaymentListItem(item));
         }
         if (Array.isArray(response)) {
@@ -227,13 +227,9 @@ export class PaymentService {
    * @returns Deletion confirmation
    */
   deletePayment(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
-      catchError((error) => {
-        console.error('Error deleting payment:', error);
-        this.appSettingsService.showError(
-          error.error?.message || 'Failed to delete payment'
-        );
-        return throwError(() => error);
+    return this.http.delete<any>(`${this.apiUrl}/delete/${id}`).pipe(
+      map((response: any) => {
+        return response;
       })
     );
   }

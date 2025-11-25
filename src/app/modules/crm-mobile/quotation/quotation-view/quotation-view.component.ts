@@ -88,6 +88,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
     this.isMobile = this.appService.getDevice();
     this.userData = this.appSettings.getDecryptedUserProfile();
+    this.initializeTableConfigs();
     this.mps.init().subscribe(()=>{
       this.initializeTableConfigs();
     });
@@ -96,7 +97,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
     this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
 
-    this.initializeTableConfigs();
     this.loadAllFields();
 
     // Initial load

@@ -25,6 +25,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptFilter, ReceiptListItem } from '../../models/receipt.model';
 import { AccountsService } from '../../accounts.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 /**
  * Receipt List Component
@@ -70,45 +71,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      // {
-      //   icon: 'fas fa-file',
-      //   label: 'View',
-      //   action: 'view',
-      //   tooltip: 'View Receipt',
-      // },
-      {
-        icon: 'fas fa-eye',
-        label: 'Edit',
-        action: 'edit',
-        tooltip: 'Edit Receipt',
-      },
-      // {
-      //   icon: 'fas fa-undo',
-      //   label: 'Reverse',
-      //   action: 'reverse',
-      //   tooltip: 'Reverse Receipt',
-      //   class: 'text-warning',
-      // },
-      // {
-      //   icon: 'fas fa-trash',
-      //   label: 'Delete',
-      //   action: 'delete',
-      //   tooltip: 'Delete Receipt',
-      //   class: 'text-danger',
-      // }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VoucherHeaderSid',
-    emptyMessage: 'No receipts found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -127,6 +90,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   get allReceipts() { return this.allItems; }
 
   constructor(
+    private mps : MenuPermissionService,
     private receiptService: ReceiptService,
     private accountService : AccountsService,
     private router: Router,
@@ -148,43 +112,19 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
 
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
 
     this.initializeHeaderActions();
     this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+      
+    })
     this.initializeModalDropdownItems();
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-
-    if (currentMenuId && userRole) {
-      this.accountService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              key => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            // Re-initialize actions after permissions are available
-            this.initializeHeaderActions();
-            // Refresh table actions to apply conditions
-            this.tableConfig.actions = this.tableConfig.actions?.map(action => ({
-              ...action,
-              condition: action.condition
-            }));
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -213,7 +153,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
         ListAmount : item.VoucherDetail[0]?.LocalAmount || 0,
-        CashOrBank : item.BankOrCash === 'C' ? 'Cash' : 'Bank',
+        CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
@@ -264,6 +204,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -280,82 +221,122 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   }
 
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'VoucherNumber',
-        label: 'Receipt No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '150px'
-      },
-      {
-        key: 'VoucherDate',
-        label: 'Receipt Date',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '130px'
-      },
-      {
-        key: 'CashOrBank',
-        label: 'Cash or Bank',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '120px',
-      },
-      {
-        key: 'PartyName',
-        label: 'Customer Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '200px',
-      },
-      {
-        key: 'ListAmount',
-        label: 'Amount',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'number',
-        width: '130px',
-      },
-      {
-        key: 'CurrencyCode',
-        label: 'Currency',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'number',
-        width: '120px',
-      },
-      {
-        key: 'PostStatus',
-        label: 'Post Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'number',
-        width: '130px',
-      },
-      {
-        key: 'Status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      },
-    ];
+    this.tableConfig = {
+      columns: [
+        {
+          key: 'VoucherNumber',
+          label: 'Receipt No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '150px'
+        },
+        {
+          key: 'VoucherDate',
+          label: 'Receipt Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '130px'
+        },
+        {
+          key: 'CashOrBank',
+          label: 'Cash or Bank',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '120px',
+        },
+        {
+          key: 'PartyName',
+          label: 'Customer Name',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '200px',
+        },
+        {
+          key: 'ListAmount',
+          label: 'Amount',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '130px',
+        },
+        {
+          key: 'CurrencyCode',
+          label: 'Currency',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '120px',
+        },
+        {
+          key: 'PostStatus',
+          label: 'Post Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '130px',
+        },
+        {
+          key: 'Status',
+          label: 'Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          template: 'status',
+          width: '100px',
+          dataType: 'string',
+          cellClass: 'status-column'
+        },
+      ],
+      actions: [
+        // {
+        //   icon: 'fas fa-file',
+        //   label: 'View',
+        //   action: 'view',
+        //   tooltip: 'View Receipt',
+        // },
+        {
+          icon: 'fas fa-eye',
+          label: 'View',
+          action: 'view',
+          tooltip: 'View Receipt',
+          state: !this.mps.can('view')
+        },
+        // {
+        //   icon: 'fas fa-undo',
+        //   label: 'Reverse',
+        //   action: 'reverse',
+        //   tooltip: 'Reverse Receipt',
+        //   class: 'text-warning',
+        // },
+        {
+          icon: 'fas fa-trash',
+          label: 'Delete',
+          action: 'delete',
+          tooltip: 'Delete Receipt',
+          class: 'text-danger',
+          state: !this.mps.can('delete')
+        }
+      ],
+      selectable: false,
+      multiSelect: false,
+      showColumnToggle: true,
+      showFilters: true,
+      showPagination: true,
+      trackByKey: 'VoucherHeaderSid',
+      emptyMessage: 'No receipts found',
+      dragAndDrop: true
+    };
   }
 
   initializeModalDropdownItems(): void {
@@ -370,7 +351,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+        condition: this.mps.has('email')
       }
     ];
   }
@@ -414,7 +395,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   }
 
   viewReceipt(row: any) {
-    this.router.navigate(['accounts/receipt/view/', row.VoucherHeaderSid]);
+    this.router.navigate(['accounts/receipt/entry/', row.VoucherHeaderSid]);
   }
 
   editReceipt(row: any) {

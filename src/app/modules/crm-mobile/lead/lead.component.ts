@@ -31,6 +31,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { CommonService } from 'src/app/common/common.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from '../../settings/follow-up/follow-up/follow-up.component';
 
 
 @Component({
@@ -141,6 +143,7 @@ MenuMasterSid:any
   leads = [{ id: 1, name: 'Lead 001' }]; // Initial lead
 
   constructor(
+    public mps : MenuPermissionService,
     private fb: FormBuilder,
     private leadService: LeadService,
     private appService: AppService,
@@ -170,7 +173,6 @@ MenuMasterSid:any
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
@@ -178,6 +180,7 @@ MenuMasterSid:any
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     console.info(this.currentBranch, this.userData, 'userData')
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
 
     console.log("Current Company", this.currentCompany);
     console.log("Current Branch", this.currentBranch);
@@ -217,35 +220,6 @@ MenuMasterSid:any
       }
     });
   }
-
-  checkPermissions() {
-		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-		if (currentMenuId && userRole) {
-			this.masterService
-				.getRoleMenuPermissions(currentMenuId, userRole)
-				.subscribe({
-					next: (response) => {
-						this.currentMenuPermissions = response.data.MenuPermissions || {};
-						this.permissions = Object.keys(this.currentMenuPermissions).filter(
-							(key) => this.currentMenuPermissions[key] === 'isTrue'
-						);
-					},
-				});
-		}
-	}
-
-	//  checks for menu permission
-	hasPermission(permission: string): boolean {
-		return this.permissions.includes(permission);
-	}
-
-	hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-    }
-
-  
 
   // // Method to load the city data
   // loadCity(): void {
@@ -762,7 +736,7 @@ openEDoc() {
   if (!this.leadData) return;
 
   // Permission check before opening modal
-  if (!this.hasPermission('Edoc')) {
+  if (!this.mps.has('edoc')) {
     this.appSettingService.showWarning('You do not have permission to access Edoc.');
     return;
   }
@@ -798,6 +772,10 @@ openEDoc() {
     }
   });
 }
+
+  openFollowup() {
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  }
 
 
 

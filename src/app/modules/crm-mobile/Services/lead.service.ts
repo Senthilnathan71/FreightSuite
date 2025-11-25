@@ -111,6 +111,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+  deletePrecustomerMeeting(PrecustomerMeetingSid:number){
+    return this.http.delete(`ff-pre-customer-meeting/delete/${PrecustomerMeetingSid}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
 
   signUp(payLoad: any) {
     return this.http.post("auth/user/create", payLoad).pipe(
@@ -439,7 +447,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   deleteEnquiryById(id: number) {
     return this.http.delete<{ data: any }>(`ff-enquiry/header/${id}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -449,7 +457,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     return this.http.post<{ data: any }>("ff-enquiry/search-list", param).pipe(
       map((resp: any) => {
         let response = resp;
-        return resp;
+        return response;
       })
     )
   }

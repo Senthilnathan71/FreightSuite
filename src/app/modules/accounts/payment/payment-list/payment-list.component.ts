@@ -23,6 +23,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ToolsDropdownComponent, DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { PaymentListItem, PaymentFilter } from '../../models/payment.model';
 import { PaymentService } from '../../services/payment.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 /**
  * Payment List Component
@@ -82,40 +83,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   dateFrom?: string;
   dateTo?: string;
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      // {
-      //   icon: 'fas fa-eye',
-      //   label: 'View',
-      //   action: 'view',
-      //   tooltip: 'View Payment',
-      // },
-      {
-        icon: 'fas fa-eye',
-        label: 'Edit',
-        action: 'edit',
-        tooltip: 'Edit Payment',
-      },
-      // {
-      //   icon: 'fas fa-undo',
-      //   label: 'Reverse',
-      //   action: 'reverse',
-      //   tooltip: 'Reverse Payment'
-      // },
-      // {
-      //   icon: 'fas fa-trash',
-      //   label: 'Delete',
-      //   action: 'delete',
-      //   tooltip: 'Delete Payment'
-      // }
-    ],
-    selectable: true,
-    showPagination: true,
-    showColumnToggle: true,
-    emptyMessage: 'No payment vouchers found',
-    loadingMessage: 'Loading payments...'
-  };
+  tableConfig: TableConfig ;
 
   headerActions: HeaderAction[] = [
     {
@@ -162,6 +130,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   get Allpayment() { return this.allItems; }
 
   constructor(
+    public mps : MenuPermissionService,
     public router: Router,
     public dialog: MatDialog,
     public appSettingsService: AppSettingsService,
@@ -183,6 +152,10 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     }
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    })
 
     super.ngOnInit();
   }
@@ -193,7 +166,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -211,79 +184,102 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
 
   initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'VoucherNumber',
-        label: 'Payment No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '120px',
-        cellClass: 'fw-bold text-primary'
-      },
-      {
-        key: 'VoucherDate',
-        label: 'Payment Date',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '110px'
-      },
-      {
-        key: 'BankName',
-        label: 'Bank',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '150px'
-      },
-      {
-        key: 'PartyName',
-        label: 'Party',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '200px',
-        cellClass: 'text-truncate'
-      },
-      {
-        key: 'LocalAmount',
-        label: 'Amount',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '130px',
-        cellClass: 'text-end pe-5'
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Created By',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '200px',
-        cellClass: 'text-truncate'
-      },
-      {
-        key: 'PostStatus',
-        label: 'Post Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        width: '120px'
-      },
-      {
-        key: 'Status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
+    this.tableConfig = {
+      columns: [
+        {
+          key: 'VoucherNumber',
+          label: 'Payment No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '120px',
+          cellClass: 'fw-bold text-primary'
+        },
+        {
+          key: 'VoucherDate',
+          label: 'Payment Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '110px'
+        },
+        {
+          key: 'CashOrBank',
+          label: 'Cash or Bank',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '150px'
+        },
+        {
+          key: 'PartyName',
+          label: 'Party',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '200px',
+          cellClass: 'text-truncate'
+        },
+        {
+          key: 'LocalAmount',
+          label: 'Amount',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '130px',
+          cellClass: 'text-end pe-5'
+        },
+        {
+          key: 'CreatedBy',
+          label: 'Created By',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '200px',
+          cellClass: 'text-truncate'
+        },
+        {
+          key: 'PostStatus',
+          label: 'Post Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '120px'
+        },
+        {
+          key: 'Status',
+          label: 'Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          template: 'status',
+          width: '100px',
+          dataType: 'string',
+          cellClass: 'status-column'
+        }
+      ],
+      actions: [
+        {
+          icon: 'fas fa-eye',
+          label: 'View',
+          action: 'view',
+          tooltip: 'View Payment',
+          state: !this.mps.can('view')
+        },
+        {
+          icon: 'fas fa-trash',
+          label: 'Delete',
+          action: 'delete',
+          tooltip: 'Delete Payment',
+          state: !this.mps.can('delete')
+        }
+      ],
+      selectable: true,
+      showPagination: true,
+      showColumnToggle: true,
+      emptyMessage: 'No payment vouchers found',
+      loadingMessage: 'Loading payments...'
+    }
   }
 
   protected searchItems(): Observable<any> {
@@ -310,6 +306,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
+        CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         LocalAmount : Number(item.VoucherDetail[0]?.LocalAmount || 0).toFixed(2),
         VoucherDate : this.datePipe.transform(item.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -373,46 +370,14 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
 
 
-  /**
-   * Load payments from API
-   */
-  loadPayments(): void {
-    this.loading = true;
-    this.spinner.show();
 
-    const filter: PaymentFilter = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherNumber: this.filterValue.trim() || undefined,
-      DateFrom: this.dateFrom,
-      DateTo: this.dateTo,
-      PaymentMode: this.selectedPaymentMode !== 'All' ? this.selectedPaymentMode : undefined,
-      Limit: 100
-    };
-
-    this.paymentService.getPayments(filter).subscribe({
-      next: (payments) => {
-        this.allPayments = payments;
-        this.paymentList = payments;
-        this.totalLengthOfCollection = payments.length;
-        this.loading = false;
-        this.spinner.hide();
-      },
-      error: (error) => {
-        console.error('Error loading payments:', error);
-        this.loading = false;
-        this.spinner.hide();
-        this.appSettingsService.showError('Failed to load payments');
-      }
-    });
-  }
 
   /**
    * Handle search triggered from header
    */
   onSearchTriggered(searchValue: string): void {
     this.filterValue = searchValue;
-    this.loadPayments();
+    this.search();
   }
 
   /**
@@ -422,9 +387,6 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     switch (action) {
       case 'create':
         this.router.navigate(['accounts/payment/entry']);
-        break;
-      case 'refresh':
-        this.loadPayments();
         break;
       case 'export':
         this.exportToExcel();
@@ -462,7 +424,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * View payment details
    */
   viewPayment(id: number): void {
-    this.router.navigate(['accounts/payment/view', id]);
+    this.router.navigate(['accounts/payment/entry', id]);
   }
 
   /**
@@ -499,7 +461,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         this.paymentService.reversePayment(reverseRequest).subscribe({
           next: () => {
             this.appSettingsService.showSuccess('Payment reversed successfully');
-            this.loadPayments();
+            this.search();
             this.spinner.hide();
           },
           error: (error) => {
@@ -531,7 +493,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         this.paymentService.deletePayment(payment.VoucherHeaderSid).subscribe({
           next: () => {
             this.appSettingsService.showSuccess('Payment deleted successfully');
-            this.loadPayments();
+            this.search();
             this.spinner.hide();
           },
           error: (error) => {
@@ -611,7 +573,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    */
   filterByPaymentMode(mode: string): void {
     this.selectedPaymentMode = mode;
-    this.loadPayments();
+    this.search();
   }
 
   /**
@@ -620,7 +582,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   filterByDateRange(dateFrom: string, dateTo: string): void {
     this.dateFrom = dateFrom;
     this.dateTo = dateTo;
-    this.loadPayments();
+    this.search();
   }
 
   /**
@@ -631,7 +593,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     this.selectedPaymentMode = 'All';
     this.dateFrom = undefined;
     this.dateTo = undefined;
-    this.loadPayments();
+    this.search();
   }
 
   // Helper methods

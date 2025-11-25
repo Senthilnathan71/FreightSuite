@@ -348,6 +348,22 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
           return a.MenuName.localeCompare(b.MenuName);
         });
 
+        
+        // 🆕 Auto-mark deleted menus at load time
+        const validMenuIds = new Set<number>();
+
+        // Collect all valid menu IDs from moduleWithMenuMap
+        this.moduleWithMenuMap.forEach((menus) => {
+          menus.forEach((m: any) => validMenuIds.add(m.MenuMasterSid));
+        });
+
+        this.originalMenuList.forEach(item => {
+          if (!validMenuIds.has(item.MenuMasterSid)) {
+            this.dynamicMenuList = this.dynamicMenuList.filter(m => m.MenuMasterSid !== item.MenuMasterSid);
+            console.log("Deleted Menu", item.MenuName);
+          }
+        });
+
         this.spinner.hide();
       },
       error: (err) => {
