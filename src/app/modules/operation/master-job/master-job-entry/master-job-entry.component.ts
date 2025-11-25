@@ -2760,11 +2760,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   bookingCreateInMasterJob() {
-    // ✅ When all are loaded, trigger booking creation
-    if (this.loadedHouses.length === this.transhipmentHouseJobSids.length) {
-      this.toastr.warning('No transhipment houses found to create booking');
-    }
-
     const bookingPayload = {
       houses: this.loadedHouses,  // ✅ send all houses
       createdBy: this.appSettingsService.userSettingSource.value['userEmail']
@@ -2774,9 +2769,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       next: (results: any) => {
         this.spinner.hide();
 
-        if (Array.isArray(results)) {
-          this.toastr.success(`${results.length} Booking(s) created successfully`);
-        } else if (results.status) {
+        if (results.status) {
           this.toastr.success('Booking created successfully');
         } else {
           this.toastr.error(results.message || 'Failed to create booking');
