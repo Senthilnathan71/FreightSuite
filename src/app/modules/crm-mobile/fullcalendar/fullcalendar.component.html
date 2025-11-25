@@ -327,7 +327,7 @@
             <i class="fas fa-envelope me-1"></i> Email
           </button> -->
           <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
-            (click)="onEditMeeting()">
+            (click)="onEditMeeting()" [disabled]="!mps.can('update')">
             Save
           </button>
         </div>
@@ -644,7 +644,7 @@
 </ng-template>
 
 <ng-template #templateNewMeetingBtn>
-  <button class="btn btn-info btn-sm ms-2" (click)="addEvent()">
+  <button class="btn btn-info btn-sm ms-2" (click)="addEvent()" [disabled]="!mps.can('insert')">
     <i class="fas fa-plus me-1"></i> New Meeting
   </button>
 </ng-template>

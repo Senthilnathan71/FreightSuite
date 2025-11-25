@@ -31,6 +31,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -147,6 +149,7 @@ export class CompanyEntryComponent implements OnInit {
 	// CONSTRUCTOR
 
 	constructor(
+		public mps : MenuPermissionService,
 		private fb: FormBuilder,
 		private masterService: MasterService,
 		private appSettingService: AppSettingsService,
@@ -173,6 +176,7 @@ export class CompanyEntryComponent implements OnInit {
 	// LIFECYCLE HOOK
 
 	ngOnInit(): void {
+		this.mps.init().subscribe();
 		this.initCompanyForm();
 		this.loadAllFields();
 		this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -204,30 +208,11 @@ export class CompanyEntryComponent implements OnInit {
 		const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+     
 		}
 
 	}
-	checkPermissions() {
-		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-		console.log(currentMenuId)
-		console.log(userRole)
-		if (currentMenuId && userRole) {
-			this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-				next: (response) => {
-					this.currentMenuPermissions = response.data.MenuPermissions || {};
-					this.permissions = Object.keys(this.currentMenuPermissions)
-						.filter(key => this.currentMenuPermissions[key] === 'isTrue');
-					console.log(this.permissions)
-				}
-			});
-		}	
-	}
-
-	hasPermission(permission: string): boolean {
-		return this.permissions.includes(permission);
-	}
+	
 
 	hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -1353,7 +1338,37 @@ openAuditLogs(modal: TemplateRef<any>) {
 
       this.commonService.documentData.set(data)
 	}
+openFollowup() {
+  if (!this.companyData) return;
+  
+  const modalRef = this.modalService.open(FollowUpComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  
+  // Use company data instead of quotation data
+  modalRef.componentInstance.documentSid = this.companyData?.CompanyMasterSid;
+  modalRef.componentInstance.parentEmail = this.companyData.email || this.companyData.Email;
+  modalRef.componentInstance.parentSubject = `Company: ${this.companyData.companyName || this.companyData.CompanyName}`;
+  modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>This email is regarding our company ${this.companyData.companyName || this.companyData.CompanyName}.</p>
+      <p>Please find the company details attached for your reference.</p>
+      <p>We look forward to your response and potential business collaboration.</p>
+      <p>
+        Company Portal: 
+        <a href="https://your-company-portal-link.com" target="_blank" style="color: #1a73e8;">Click here to access portal</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData?.['userEmail'] || 'Company Representative'}</p>
+    </div>
+  `;
 
+  // Remove or adjust PDF content ID since it's not a quotation
+  // modalRef.componentInstance.pdfContentId = 'companyContent';
+}
 
 	customEmailValidator(): ValidatorFn {
 		return (control: AbstractControl): ValidationErrors | null => {

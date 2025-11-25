@@ -79,7 +79,7 @@ export class OperationService {
   }
 
   deleteBookingById(BookingHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/deleteBooking/${BookingHeaderSid}`).pipe(
+    return this.http.delete<{ status: boolean;data: any }>(`ff-booking/deleteBooking/${BookingHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })

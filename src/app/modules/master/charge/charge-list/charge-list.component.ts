@@ -20,6 +20,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableConfig, TableEventData, TableSortConfig, TableFilter, TableColumn } from 'src/app/shared/interfaces/table.interface';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-charge-list',
@@ -50,6 +51,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
+  tableConfig: TableConfig;
 
   uoms: any[] = [];
   tdsSets: any[] = [];
@@ -59,34 +61,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Charge',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Charge',
-        class:"text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'ChargeMasterSid',
-    emptyMessage: 'No charges found',
-    dragAndDrop: false
-  };
+  
 
   protected config: ListComponentConfig = {
     storageKey: 'charge-list-state',
@@ -104,7 +79,8 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -119,6 +95,10 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     // initialize table columns (independent)
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    });
     this.initializeModalDropdownItems();
 
     // Load lookups first using forkJoin to avoid race where charges load before lookups
@@ -154,33 +134,10 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     });
 
     // Finally, permissions
-    this.checkPermissions();
+   
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster?.[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response: any) => {
-          this.currentMenuPermissions = response.data?.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions).filter(
-            key => this.currentMenuPermissions[key] === 'isTrue'
-            
-          );
-          this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-        },
-        error: (err) => {
-          console.error('Error fetching permissions', err);
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   // BaseListComponent abstract implementations
   protected searchItems(): Observable<any> {
@@ -246,7 +203,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -268,25 +225,25 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        
       },
       {
         label: 'Terms & Condition',
         icon: 'fas fa-clipboard',
         action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
+        
       },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        condition: this.hasPermission('Authority')
+        
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+        
       }
     ];
   }
@@ -395,7 +352,8 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+    this.tableConfig = {
+    columns: [
       {
         key: 'chargeCode',
         label: 'Charge Code',
@@ -449,7 +407,33 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         width: '100px',
         dataType: 'string'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Charge',
+        state : !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Charge',
+        class:"text-danger",
+        state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ChargeMasterSid',
+    emptyMessage: 'No charges found',
+    dragAndDrop: false
+  };
   }
 
   // Table event handlers

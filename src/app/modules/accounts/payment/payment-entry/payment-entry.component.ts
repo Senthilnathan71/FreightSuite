@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
@@ -38,6 +38,9 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { CommonService } from 'src/app/common/common.service';
 import { PaymentPrintComponent } from '../report/payment-print/payment-print.component';
 import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-payment-print.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 /**
  * Payment Entry Component
@@ -63,7 +66,8 @@ import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-pay
     DecimalPrecisionDirective,
     TextWithNumbersDirective,
     OnlyNumbersDirective,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss',
@@ -178,6 +182,7 @@ export class PaymentEntryComponent implements OnInit {
 
 
   constructor(
+    public mps : MenuPermissionService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
@@ -197,14 +202,14 @@ export class PaymentEntryComponent implements OnInit {
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
     this.getCurrentCompanyBranches();
 
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
+    this.currentMenuId = this.mps.getMenuId();
+    this.mps.init().subscribe();
 
     console.log("USER DATA", this.userData);
     console.log("CURRENT COMPANY", this.currentCompany);
@@ -228,27 +233,6 @@ export class PaymentEntryComponent implements OnInit {
     }
   }
 
-  checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        if (currentMenuId && userRole) {
-            this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions)
-                      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                }
-            });
-        }
-    }
-
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
-    hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-}
 
   initSearchOutstandingForm() {
     this.searchOutstandingForm = this.fb.group({
@@ -2006,70 +1990,6 @@ export class PaymentEntryComponent implements OnInit {
     this.destroy$.complete();
   }
 
-  openTandC() {
-          this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-          const payload = { MenuMasterSid: this.currentMenuId };
-          this.masterService.getTandCByCondition(payload).subscribe(
-              (resp: any) => {
-                  if (resp.status) {
-                      this.TandCList = resp.data;
-                      const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-                          size: 'lg',
-                          backdrop: 'static',
-                          centered: true
-                      });
-                      modalRef.componentInstance.terms = this.TandCList;
-                      modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-                      modalRef.componentInstance.DocumentSid = this.headerId;
-                  } else {
-                      this.appSettingService.showError('Error loading Terms and Conditions');
-                  }
-              },
-              (error) => {
-                  this.appSettingService.showError('Error loading Terms and Conditions', error);
-              }
-          );
-      }
-
-      openEmail() {
-              if (!this.paymentData) return;
-              const modalRef = this.modalService.open(EmailEntryComponent, {
-                  size: 'lg',
-                  centered: true,
-                  backdrop: 'static'
-              });
-          }
-
-          openAuthority() {
-                  const MenuMasterSid = localStorage.getItem('currentMenuId');
-                  if (!MenuMasterSid) return;
-                  const modalRef = this.modalService.open(AuthorityLogComponent, { 
-                      size: 'lg', 
-                      centered: true, 
-                      backdrop: 'static' 
-                  });
-                  modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-                  modalRef.componentInstance.documentSid = this.headerId;
-              }
-          
-              openEDoc() {
-                  if (!this.paymentData) return;
-                  const modalRef = this.modalService.open(EdocComponent, { 
-                      size: 'lg', 
-                      centered: true, 
-                      backdrop: 'static' 
-                  });
-                  const data:any={
-              CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-              BranchMasterSid: this.currentBranch.BranchMasterSid,
-              MenuMasterSid : this.currentMenuId,
-              DocumentSid: this.headerId
-            }
-          
-                this.commonService.documentData.set(data)
-              }
-
-              // print
 
   reportPayment() {
     const modalRef = this.modalService.open(PaymentPrintComponent, {
@@ -2087,4 +2007,100 @@ export class PaymentEntryComponent implements OnInit {
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
   }
+
+ showInfo() {
+    if (!this.paymentData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.paymentData;
+    modalRef.componentInstance.idLabel = 'Payment ID';
+    modalRef.componentInstance.idValue = this.paymentData?.VoucherHeaderSid;
+  }
+
+  openEDoc() {
+    if (!this.paymentData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.screenName = 'Edoc';
+    modalRef.componentInstance.formData = this.paymentData;
+    modalRef.componentInstance.resetTrigger = false;
+    const data: any = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.paymentData?.VoucherHeaderSid
+    }
+    this.commonService.documentData.set(data)
+  }
+
+  openTandC() {
+    if (!this.currentMenuId) {
+      this.appSettingService.showError('Error: Menu ID not found.');
+      return;
+    }
+
+    const payload = { MenuMasterSid: this.currentMenuId };
+
+    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
+      if (termsData && termsData.length > 0) {
+        this.TandCList = termsData;
+        const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.headerId;
+      } else {
+        console.warn('No Terms and Conditions data found to display.');
+      }
+    });
+  }
+
+  loadTandC(payload: { MenuMasterSid: number }): Observable<any[]> {
+    return this.accountService.getTandCByCondition(payload).pipe(
+      map((resp: any) => {
+        if (resp && resp.status) {
+          return resp.data;
+        }
+        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+        return [];
+      }),
+      catchError((error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+        return of([]);
+      })
+    );
+  }
+
+  openEmail() {
+    if (!this.paymentData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  openAuthority() {
+    if (!this.currentMenuId) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = this.currentMenuId;
+    modalRef.componentInstance.documentSid = this.headerId;
+  }
+
+
+  openFollowup() {
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  }
+
+  
 }

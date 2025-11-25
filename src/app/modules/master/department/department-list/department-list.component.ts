@@ -20,6 +20,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-department-list',
   standalone: true,
@@ -38,36 +39,10 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
   headerActions: HeaderAction[] = [];
   loading = false;
   permissions: string[] = [];
+  tableConfig: TableConfig;
   currentMenuPermissions: any = {};
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'DepartmentMasterSid',
-    emptyMessage: 'No Department found',
-    dragAndDrop: true
-  };
+  
 
   tableLoading = false;
 
@@ -90,7 +65,8 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
   currentBranch: any;
   constructor(private userService: authService, private masterService: MasterService, private excelReportService: ExcelExportService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog, private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -107,38 +83,21 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     // this.loadDepartments();
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+    this.initializeHeaderActions();
+    });
     // Initialize base component
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
+  
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -200,7 +159,7 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -258,8 +217,8 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
   }
 
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
+    this.tableConfig = {
+    columns: [{
         key: 'departmentCode',
         label: 'Dept Code ',
         sortable: true,
@@ -318,8 +277,33 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
         width: '100px',
         dataType: 'string',
         cellClass: 'status-column'
+      }],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
       }
-    ];
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'DepartmentMasterSid',
+    emptyMessage: 'No Department found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

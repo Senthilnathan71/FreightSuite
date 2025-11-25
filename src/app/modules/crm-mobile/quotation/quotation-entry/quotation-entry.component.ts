@@ -321,6 +321,7 @@ dataFromEnqPage:any;
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     console.log('Current Company:', this.currentCompany);
   console.log('Current Branch:', this.currentBranch);
    this.loadAllFields();

@@ -21,6 +21,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -45,8 +46,6 @@ export class ChartAccountEntryComponent implements OnInit {
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
   
   // Dynamic dropdown data
   groupList: any[] = [];
@@ -114,13 +113,15 @@ export class ChartAccountEntryComponent implements OnInit {
     private modalService: NgbModal,
     private calendar: NgbCalendar,
     private accountService: AccountsService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps: MenuPermissionService
   ) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     this.initForm();
     this.getCurrencies();
     this.setupFormListeners();
@@ -137,7 +138,6 @@ export class ChartAccountEntryComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     
     if (!this.isEditMode) {
@@ -467,32 +467,7 @@ export class ChartAccountEntryComponent implements OnInit {
     this.chartForm.updateValueAndValidity();
   }
 
-  // Other methods remain the same...
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.accountService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-  }
+ 
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
@@ -548,8 +523,8 @@ export class ChartAccountEntryComponent implements OnInit {
       backdrop: 'static',
     });
     modalRef.componentInstance.item = this.chartData;
-    modalRef.componentInstance.idLabel = 'Vessel Id';
-    modalRef.componentInstance.idValue = this.chartData?.VesselMasterSid;
+    modalRef.componentInstance.idLabel = 'COA Id';
+    modalRef.componentInstance.idValue = this.chartMasterSid;
   }
 
   openTandC() {
@@ -616,6 +591,9 @@ export class ChartAccountEntryComponent implements OnInit {
   }
 
       this.commonService.documentData.set(data)
+}
+openFollowup() {
+  
 }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()

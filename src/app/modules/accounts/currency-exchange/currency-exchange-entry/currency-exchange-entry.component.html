@@ -6,7 +6,7 @@
           <div class="brand-icon">
             <i class="fas fa-exchange-alt"></i>
           </div>
-          <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Currency Exchange</h5>
+          <h5 class="page-title mb-0 text-info">Currency Exchange</h5>
           @if(isEditMode){
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
@@ -26,24 +26,26 @@
             Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="currencyExchangeForm.invalid" (click)="onSubmit()">
+            [disabled]="(!mps.can('update') && isEditMode) || currencyExchangeForm.invalid" (click)="onSubmit()">
             <i class="fas fa-save me-1"></i>
-            {{ isEditMode ? 'Edit' : 'Save' }}
+            Save
           </button>
-          <div ngbDropdown class="d-inline-block">
+          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
               <i class="fas fa-ellipsis-v"></i>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
                   class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
                   class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
                   class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
                   class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
+                  class="fas fa- me-1"></i> Followup</button>
             </div>
           </div>
         </div>
@@ -245,32 +247,3 @@
     </div>
   </div>
 </div>
-
-@if(isEditMode){
-<div class="col-12 mt-3">
-  <div class="card">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-          <!-- eDoc Button -->
-
-          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-            <i class="fas fa-file-alt me-1"></i> e-Doc
-          </button>
-          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-            <i class="fas fa-clipboard me-1"></i> Terms & Condition
-          </button>
-          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-            <i class="fas fa-shield-alt me-1"></i> Authorize
-          </button>
-
-          <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
-            <i class="fas fa-envelope me-1"></i> Email
-          </button>
-
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-}

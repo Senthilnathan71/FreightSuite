@@ -17,6 +17,9 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { getConcatenatedPorts } from 'src/app/common/helper';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-booking-list',
@@ -39,32 +42,11 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     @ViewChild('bookingTable') bookingTable!: ReusableTableComponent;
     headerActions: HeaderAction[] = [];
     userData: any;
-    permissions: string[] = [];
-    currentMenuPermissions: any = {};
     currentCompany: any;
     currentBranch: any;
     
     // Table configuration
-    tableConfig: TableConfig = {
-        columns: [],
-        actions: [
-            {
-                icon: 'fas fa-eye',
-                label: 'View',
-                action: 'view',
-                tooltip: 'View Booking',
-                condition: (row: any) => this.hasPermission('View')
-            }
-        ],
-        selectable: false,
-        multiSelect: false,
-        showColumnToggle: true,
-        showFilters: true,
-        showPagination: true,
-        trackByKey: 'BookingHeaderSid',
-        emptyMessage: 'No bookings found',
-        dragAndDrop: true
-    };
+    tableConfig: TableConfig;
 
     tableLoading = false;
 
@@ -83,10 +65,12 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     constructor(
         private operationService: OperationService,
         private router: Router,
+        private dialog: MatDialog,
         private appSettingService: AppSettingsService,
         private excelReportService: ExcelExportService,
         private spinner: NgxSpinnerService,
-        paginationService: PaginationService
+        paginationService: PaginationService,
+        public mps: MenuPermissionService
     ) {
         super(paginationService);
     }
@@ -97,35 +81,18 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         this.appSettingService.getUser().subscribe(user => {
             if (user) {
                 this.userData = user;
-                this.checkPermissions();
             }
         });
 
         // Initialize table configuration
         this.initializeTableConfig();
         this.initializeHeaderActions();
+        this.mps.init().subscribe(()=>{
+            this.initializeTableConfig();
+            this.initializeHeaderActions();
+        })
         // Initialize base component
         super.ngOnInit();
-    }
-
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        if (currentMenuId && userRole) {
-            this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response:any) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions).filter(
-                        key => this.currentMenuPermissions[key] === 'isTrue'
-                    );
-                    this.initializeHeaderActions();
-                }
-            });
-        }
-    }
-
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
     }
 
     // Implement abstract methods from BaseListComponent
@@ -222,7 +189,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 label: 'Create',
                 icon: 'fas fa-plus',
                 action: 'create',
-                condition: this.hasPermission('Add')
+                disabled: !this.mps.can('insert')
             },
             {
                 label: 'Report',
@@ -280,6 +247,32 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
     }
 
+    deleteBooking(Booking: any) {
+        const dialogRef = this.dialog.open(DeleteWarningComponent);
+    
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === true) {
+            this.spinner.show();
+            this.operationService.deleteBookingById(Booking.BookingHeaderSid).subscribe({
+              next: (response) => {
+                this.spinner.hide();
+                if (response.status) {
+                  this.appSettingService.showSuccess('Booking deleted successfully');
+                  this.search();
+                } else {
+                  this.appSettingService.showError('Failed to delete Booking ');
+                }
+              },
+              error: (error) => {
+                this.spinner.hide();
+                this.appSettingService.showError('Error deleting Booking');
+                console.error('Error deleting Booking:', error);
+              }
+            });
+          }
+        });
+      }
+
     // New method to navigate to master job
     navigateToMasterJob(masterJobSid: number): void {
         if (masterJobSid) {
@@ -294,8 +287,9 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     // Table configuration
-    private initializeTableConfig(): void {
-        this.tableConfig.columns = [
+    private initializeTableConfig() {
+        this.tableConfig = {
+        columns : [
             {
                 key: 'BookingNo',
                 label: 'Booking No',
@@ -390,7 +384,33 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string',
                 cellClass: 'status-column'
             }
-        ];
+        ],
+        actions: [
+            {
+                icon: 'fas fa-eye',
+                label: 'View',
+                action: 'view',
+                tooltip: 'View Booking',
+                state: !this.mps.can('view')
+            },
+            {
+            icon: 'fas fa-trash',
+            label: 'Delete',
+            action: 'delete',
+            tooltip: 'Delete ',
+            class: "text-danger",
+            state: !this.mps.can('delete')
+      }
+        ],
+        selectable: false,
+        multiSelect: false,
+        showColumnToggle: true,
+        showFilters: true,
+        showPagination: true,
+        trackByKey: 'BookingHeaderSid',
+        emptyMessage: 'No bookings found',
+        dragAndDrop: true
+    };
     }
 
     // Table event handlers
@@ -401,6 +421,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     } else if (event.action === 'view') {
         // Handle view action - navigate to booking entry page
         this.viewBooking(event.row);
+    } else if (event.action === 'delete') {
+        this.deleteBooking(event.row);
     }
 }
 

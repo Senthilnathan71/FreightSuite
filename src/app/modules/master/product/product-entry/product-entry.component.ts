@@ -19,6 +19,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
     selector: 'app-product-entry',
@@ -68,6 +69,7 @@ export class ProductEntryComponent implements OnInit{
     HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC;
     uomLookupConfig = DROPDOWN_CONFIGS.UOM;
     constructor(
+        public mps : MenuPermissionService, 
         private masterService:MasterService,
         private appSettingService:AppSettingsService,
         private currentRoute : ActivatedRoute,
@@ -102,31 +104,12 @@ export class ProductEntryComponent implements OnInit{
 const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+    
 		}
     }
 
-        checkPermissions() {
-                const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-                const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-                console.log(currentMenuId)
-                console.log(userRole)
-                if (currentMenuId && userRole) {
-                this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-            next: (response) => {
-                this.currentMenuPermissions = response.data.MenuPermissions || {};
-                this.permissions = Object.keys(this.currentMenuPermissions)
-                .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                console.log(this.permissions)
-            }
-            });
-                }
-            }
+   
             
-            hasPermission(permission: string): boolean {
-            return this.permissions.includes(permission);
-            }
-
             hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));

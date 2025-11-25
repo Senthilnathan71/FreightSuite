@@ -47,6 +47,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -239,6 +240,7 @@ export class EnquiryEntryComponent implements OnInit {
 
 
   constructor(
+    public mps : MenuPermissionService,
     private appService: AppService,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
@@ -266,7 +268,7 @@ export class EnquiryEntryComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
-
+    this.mps.init().subscribe();
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingsService.decrypt(storedCompany) : null;
@@ -290,38 +292,11 @@ export class EnquiryEntryComponent implements OnInit {
         }
       });
       this.minExpDate = this.isEditMode ? undefined : this.today;
-      this.checkPermissions();
     });
     this.checkAuthorisedPerson(this.userData?.UserMasterSid);
     this.subscribeToLeadCustomerToggle();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
-
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-  }
 
   checkAuthorisedPerson(UserMasterSid) {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));

@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-currency-exchange-list',
   standalone: true,
@@ -66,26 +67,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     this.isFavorite = !this.isFavorite;
   }
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      // {
-      //   icon: 'fas fa-eye',
-      //   label: 'View',
-      //   action: 'view',
-      //   tooltip: 'View',
-      //   condition: (row: any) => this.hasPermission('View')
-      // }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'LedgerSid',
-    emptyMessage: 'No currency-exchange found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   tableLoading = false;
    headerActions: HeaderAction[] = [];
@@ -107,7 +89,8 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -125,8 +108,12 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     }
     // this.loadCurrencyExchanges();
     this.initializeTableConfig();
-    super.ngOnInit();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
+    super.ngOnInit();
   }
 
   // loadCurrencyExchanges(): void {
@@ -228,7 +215,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -280,26 +267,17 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
   }
 
   override trackBy(index: number, item: any): number {
-    return item.LedgerSid || index;
+    return item.CurrencyExchangeSid || index;
   }
 
   viewCurrencyExchange(item: any): void {
-    this.router.navigate(['/operation/booking/entry', item.LedgerSid]);
+    this.router.navigate(['accounts/currency-exchange/entry', item.CurrencyExchangeSid]);
   }
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      // {
-      //     key: 'BookingNo',
-      //     label: 'Booking No',
-      //     sortable: true,
-      //     filterable: true,
-      //     visible: true,
-      //     template: 'link',
-      //     width: '180px',
-      //     dataType: 'string'
-      // },
+    this.tableConfig = {
+      columns : [
       {
         key: 'EffectiveFrom',
         label: 'Effective From',
@@ -360,8 +338,34 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Currency Exchange',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'CurrencyExchangeSid',
+    emptyMessage: 'No currency-exchange found',
+    dragAndDrop: true
   }
+}
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {

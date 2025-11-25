@@ -22,6 +22,8 @@ import { Subject } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -79,8 +81,10 @@ export class StateEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService : NgbModal,
-        public dropdownStore:DropdownStore,
-        private commonService: CommonService,
+    public dropdownStore: DropdownStore,
+    private commonService: CommonService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
     
   ) {
     this.initForm();
@@ -107,6 +111,7 @@ export class StateEntryComponent implements OnInit {
     //     this.checkPermissions();
     //   }
     // });
+    this.mps.init().subscribe();
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -453,6 +458,31 @@ const data:any={
 
       this.commonService.documentData.set(data)
 }
+ openFollowup() {
+    if (!this.stateData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.stateData?.UserMasterSid;
+    modalRef.componentInstance.parentEmail = this.stateData;
+  //   modalRef.componentInstance.parentSubject = `Quotation No.${this.userData} Date:${new Date(this.userData).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+    <p>Dear Sir/Madam,</p>
+    <p>Please find enclosed the quotation as requested.</p>
+    <p>Kindly review the details at your convenience.</p>
+    <p>Looking forward to your feedback and the opportunity to work together.</p>
+    <p>
+      Approval Hyperlink: 
+      <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+    </p>
+    <p>Best Regards,</p>
+    <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+  
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
+  
  OnDestroy(): void {
     this.commonService.clearDocumentData()
  }

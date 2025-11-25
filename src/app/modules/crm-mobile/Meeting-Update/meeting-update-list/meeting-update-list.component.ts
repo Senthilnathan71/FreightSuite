@@ -29,6 +29,8 @@ import { PageHeaderComponent } from 'src/app/shared/components/header-list/heade
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -132,6 +134,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   };
 
   constructor(
+    public mps : MenuPermissionService,
     private router: Router,
     private appService: AppService,
     private appSettingService: AppSettingsService,
@@ -156,45 +159,21 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
      const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    });
     
     this.loadSalesPersons();
     this.initMeetingForm();
-    this.initializeTableConfig();
-    this.initializeHeaderActions();
     
     super.ngOnInit();
     this.sort('asc')
   }
-   checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.leadService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          
-          // Update header actions based on permissions
-          this.initializeHeaderActions();
-        },
-        error: (error) => {
-          console.error('Error loading permissions', error);
-        }
-      });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-  }
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -285,65 +264,94 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'customerName',
-        label: 'Customer Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'meetingType',
-        label: 'Meeting Type',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'meetingDate',
-        label: 'Meeting Date',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'date'
-      },
-      {
-        key: 'leadStatus',
-        label: 'Lead Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'salesPerson',
-        label: 'Sales Person',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'meetingStatus',
-        label: 'Meeting Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '140px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
+    this.tableConfig =
+    {
+      columns: [
+        {
+          key: 'customerName',
+          label: 'Customer Name',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'meetingType',
+          label: 'Meeting Type',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'meetingDate',
+          label: 'Meeting Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'date'
+        },
+        {
+          key: 'leadStatus',
+          label: 'Lead Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'salesPerson',
+          label: 'Sales Person',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'meetingStatus',
+          label: 'Meeting Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          template: 'status',
+          width: '140px',
+          dataType: 'string',
+          cellClass: 'status-column'
+        }
+      ],
+      actions: [
+        {
+          icon: 'fas fa-eye',
+          label: 'View',
+          action: 'view',
+          tooltip: 'View Meeting',
+          state:  !this.mps.can('view')
+        },
+        {
+          icon: 'fas fa-trash',
+          label: 'Delete',
+          action: 'delete',
+          tooltip: 'Delete Meeting',
+          state:  !this.mps.can('delete')
+        }
+      ],
+      selectable: false,
+      multiSelect: false,
+      showColumnToggle: true,
+      showFilters: true,
+      showPagination: true,
+      trackByKey: 'PreCustomerMeetingSid',
+      emptyMessage: 'No meetings found',
+      dragAndDrop: true
+    };
   }
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.openModal(this.modalContentAdd, event.row);
+    } else if (event.action === 'delete') {
+      this.deleteMeeting(event.row.PreCustomerMeetingSid);
     }
   }
 
@@ -364,7 +372,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-         condition: this.hasPermission('Create'),
+         condition: !this.mps.can('insert'),
       },
       {
         label: 'Report',
@@ -809,7 +817,7 @@ private handleMeetingDateChange(newDate: string): void {
   openEDoc() {
     console.log('openEDoc');
     // if (!this.meetingData) return;
-     if (!this.hasPermission('Edoc')) {
+     if (!this.mps.has('edoc')) {
     this.appSettingService.showWarning('You do not have permission to access Edoc.');
     return;
   }
@@ -834,6 +842,24 @@ private handleMeetingDateChange(newDate: string): void {
 
 
   }
+
+  deleteMeeting(PreCustomerMeetingSid: number) {
+    this.leadService.deletePrecustomerMeeting(PreCustomerMeetingSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess("Meeting Deleted Successfully");
+          this.search();
+        } else {
+          this.appSettingService.showError("Error deleting meeting");
+        }
+      }
+    )
+  }
+
+  openFollowup(){
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  }
+
   OnDestroy(): void {
     this.commonService.clearDocumentData()
 }

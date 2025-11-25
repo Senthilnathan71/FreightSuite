@@ -31,6 +31,8 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -174,7 +176,9 @@ get currencyList(): any[] {
     private operationServ: OperationService,
     private commonService: CommonService,
     private currencyConfigService: CurrencyConfigurationService,
-  private currencyFormatter: CurrencyFormatService
+  private currencyFormatter: CurrencyFormatService,
+    public mps: MenuPermissionService,
+      private ngbModal: NgbModal,
   ) { }
 
   ngOnInit(): void {
@@ -191,7 +195,7 @@ get currencyList(): any[] {
     this.tariffHeaderForm.get('DepartmentMasterSid')?.valueChanges.subscribe((deptValue) => {
       this.onDeptChange(deptValue);
     });
-
+    this.mps.init().subscribe();
     this.currRoute.paramMap.subscribe(param => {
       this.TariffHeaderSid = Number(param.get('id'));
       if (this.TariffHeaderSid) {
@@ -1183,6 +1187,31 @@ filterChargesByDepartment(department: any): void {
 
       this.commonService.documentData.set(data)
 }
+
+ openFollowup() {
+    if (!this.tariffData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.tariffData?.QuoteHeaderSid;
+    modalRef.componentInstance.parentEmail = this.tariffData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.tariffData.QuoteNumber} Date:${new Date(this.tariffData.QuoteDate).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }  

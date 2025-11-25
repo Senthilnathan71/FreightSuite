@@ -24,6 +24,13 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
+import { CommonService } from 'src/app/common/common.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -68,6 +75,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   chargeList: any[] = [];
   hssacList: any[] = [];
   subledgerList: any[] = [];
+  currentMenuId: number = 0;
+  TandCList: any[] = [];
   uomList: any[] = [];
   masterJobList: any[] = [];
   houseJobList: any[] = [];
@@ -199,7 +208,10 @@ currentUserState: string;
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+     private commonService: CommonService,       
+  private masterService: MasterService ,
+  public mps : MenuPermissionService
   ) {}
 
   ngOnInit(): void {
@@ -239,7 +251,7 @@ currentUserState: string;
     this.currentBranch = null;
   }
 
-
+    this.mps.init().subscribe();
     this.initForm();
     this.loadLookups();
 
@@ -2304,5 +2316,88 @@ private findHssacIdByCode(code: string): number | null {
   const hssac = this.hssacList.find(h => h.HSSACCode === code);
   return hssac?.HSSACMasterSid || null;
 }
+// eDoc Method
+openEDoc() {
+  if (!this.vendorInvoiceData) return;
+  
+  const modalRef = this.modalService.open(EdocComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.item = this.vendorInvoiceData;
+  modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
+  modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
+  
+  const data: any = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+  };
+
+  this.commonService.documentData.set(data);
+}
+
+// Terms & Conditions Method
+openTandC() {
+  this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const payload = { MenuMasterSid: this.currentMenuId };
+  
+  this.masterService.getTandCByCondition(payload).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.TandCList = resp.data;
+        const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true
+        });
+        
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+
+      } else {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+      }
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading Terms and Conditions', error);
+    }
+  );
+}
+
+// Authority Method
+openAuthority() {
+  const MenuMasterSid = localStorage.getItem('currentMenuId');
+  if (!MenuMasterSid) return;
+  
+  const modalRef = this.modalService.open(AuthorityLogComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.menuMasterSid = Number(MenuMasterSid);
+  modalRef.componentInstance.documentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+}
+
+// Email Method
+openEmail() {
+  if (!this.vendorInvoiceData) return;
+  
+  const modalRef = this.modalService.open(EmailEntryComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.item = this.vendorInvoiceData;
+  modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
+  modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
+}
+
 
 }

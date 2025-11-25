@@ -16,6 +16,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -65,13 +66,15 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     private masterService: MasterService,
     private calendar : NgbCalendar,
     private modalService : NgbModal,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps: MenuPermissionService
   ) { }
 
   ngOnInit(): void {
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+  this.mps.init().subscribe();
     this.initForm();
     this.loadCompaniesAndBranches();
     this.checkEditMode();
@@ -357,6 +360,10 @@ const data:any={
   }
 
       this.commonService.documentData.set(data)
+}
+
+openFollowup() {
+  
 }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()

@@ -15,6 +15,8 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -69,7 +71,9 @@ export class MawbStockComponent implements OnInit{
       private modalService: NgbModal,
       private calendar: NgbCalendar,
       private appSettingService: AppSettingsService,
-      private commonService: CommonService
+      private commonService: CommonService,
+      private ngbModal: NgbModal,
+      public mps: MenuPermissionService,
     ){}
   ngOnInit(): void {
       
@@ -85,7 +89,7 @@ export class MawbStockComponent implements OnInit{
       this.initForm();
       this.loadUserData();
       this.loadCustomers();
-      
+      this.mps.init().subscribe();
       
       this.route.paramMap.subscribe(params => {
         const id = params.get('id');
@@ -417,6 +421,31 @@ export class MawbStockComponent implements OnInit{
 
       this.commonService.documentData.set(data)
   }
+
+   openFollowup() {
+      if (!this.MawbStockSid) return;
+      const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      // modalRef.componentInstance.documentSid = this.MawbStockSid?.MawbStockSid;
+      // modalRef.componentInstance.parentEmail = this.MawbStockSid.Email;
+      // modalRef.componentInstance.parentSubject = `Quotation No.${this.MawbStockSid.QuoteNumber} Date:${new Date(this.MawbStockSid.QuoteDate).toLocaleDateString()}`;
+      modalRef.componentInstance.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find enclosed the quotation as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to your feedback and the opportunity to work together.</p>
+        <p>
+          Approval Hyperlink: 
+          <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+        </p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userEmail']}</p>
+      </div>
+    `;
+  
+    // Optionally, pass the quotation HTML content ID for PDF generation
+    modalRef.componentInstance.pdfContentId = 'quotationContent';
+    }
   
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.MawbStockSid) return;

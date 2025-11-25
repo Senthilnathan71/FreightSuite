@@ -9,12 +9,15 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Document Authorization</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
+                <div class="d-flex gap-2 align-items-center">
+                     <h5 class="page-title mb-0 text-info">Document Authorization</h5>
+                <app-favorite-star screenName="Document Authorization" class="mt-1 me-1"></app-favorite-star>
+                </div>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -42,10 +45,10 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Document Authorization" class="mt-1 me-1"></app-favorite-star>
+                    
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         >
                         <i class="fas fa-plus me-1"></i> Create
@@ -69,7 +72,7 @@
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <table class="table table-hover align-middle no-wrap tablebordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                            
@@ -108,22 +111,22 @@
                     <tbody>
                         @for(item of allPendingApprovals;track item){
                         <tr >
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <td >
                                 <div class="text-truncate">{{item.DocumentName}}</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <td >
                                 <div class="text-truncate">{{item.DocumentNo}}</div>
                             </td>
-                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                             <td >
                                 <div class="text-truncate">{{item.CreatedOn | formatDate}}</div>
                             </td>
-                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                             <td >
                                 <div class="text-truncate">{{item.CreatedBy}}</div>
                             </td>
-                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                             <td >
                                 <div class="text-truncate">{{item.AuthorizeStatus}}</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <td >
                                 <div class="d-flex justify-content-center">
                                      <a class="btn btn-link btn-sm text-info" (click)="goToApprovalLink(item.menuSid,item.authorizeLink)">
                                     <i-feather name="external-link" class="feather-sm"></i-feather>
@@ -138,7 +141,7 @@
             </div>
             <div class="d-flex justify-content-end mt-2">
                 <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-                    (pageChange)="updatePaginationData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                    (pageChange)="updatePaginationData()" [maxSize]="10" [rotate]="true" [ellipses]="false" size="sm">
                 </ngb-pagination>
             </div>
         </div>

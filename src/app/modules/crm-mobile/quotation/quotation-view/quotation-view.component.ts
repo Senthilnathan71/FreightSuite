@@ -88,12 +88,15 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
     this.isMobile = this.appService.getDevice();
     this.userData = this.appSettings.getDecryptedUserProfile();
+    this.initializeTableConfigs();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfigs();
+    });
 
     // Initialize Managers
     this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
     this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
 
-    this.initializeTableConfigs();
     this.loadAllFields();
 
     // Initial load
@@ -140,7 +143,13 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         { key: 'formattedPOL', label: 'POL', sortable: true, visible: true },
         { key: 'formattedPOD', label: 'POD', sortable: true, visible: true },
       ],
-      actions: [{ icon: 'fas fa-file', label: 'File', action: 'navigate', tooltip: 'Create Quotation' }],
+      actions: [{ 
+        icon: 'fas fa-file', 
+        label: 'File', 
+        action: 'navigate', 
+        tooltip: 'Create Quotation',
+        state: !this.mps.can('insert')
+      }],
       selectable: false,
       multiSelect: false,
       showColumnToggle: true,
@@ -230,7 +239,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           label: 'View',
           action: 'view',
           tooltip: 'View Quotation',
-          condition : (row: any) => this.mps.can('view')
+          state : !this.mps.can('view')
         }
       ],
       selectable: false,

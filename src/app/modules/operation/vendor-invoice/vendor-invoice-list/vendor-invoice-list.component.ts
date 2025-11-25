@@ -23,6 +23,7 @@ import { TableConfig } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -55,6 +56,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   loading = false;
   isFavorite: boolean = false;
   permissions: string[] = [];
+  tableConfig: TableConfig;
   currentMenuPermissions: any = {};
 
   // Company
@@ -65,33 +67,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     this.isFavorite = !this.isFavorite;
   }
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Vendor Invoice',
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Vendor Invoice',
-        class: "text-danger",
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VoucherHeaderSid',
-    emptyMessage: 'No Vendor Invoice found',
-    dragAndDrop: true
-  };
-
+  
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
@@ -118,6 +94,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -129,25 +106,21 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+     
     }
 
     this.initializeHeaderActions();
     this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+     this.initializeHeaderActions();
+    this.initializeTableConfig();
+    });
     this.initializeModalDropdownItems();
     super.ngOnInit();
     this.loadVendorInvoices();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    // Implement permission checking logic if needed
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   protected searchItems(): Observable<any> {
     this.spinner.show();
@@ -222,6 +195,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -238,7 +212,8 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   }
 
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+   this.tableConfig = {
+    columns: [
       {
         key: 'VoucherNumber',
         label: 'Vendor Invoice No',
@@ -318,7 +293,34 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         dataType: 'string',
         width: '100px',
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Vendor Invoice',
+         state : !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Vendor Invoice',
+        class: "text-danger",
+        state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoucherHeaderSid',
+    emptyMessage: 'No Vendor Invoice found',
+    dragAndDrop: true
+  };
+
   }
 
   private initializeModalDropdownItems(): void {

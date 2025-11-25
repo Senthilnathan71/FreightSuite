@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { Observable } from 'rxjs';
@@ -23,6 +23,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { AccountsService } from '../../accounts.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-reverse-voucher-list',
@@ -40,7 +41,8 @@ import { AccountsService } from '../../accounts.service';
             ReusableTableComponent,
             PageHeaderComponent,
             ToolsDropdownComponent,
-            CustomDatePipe
+            CustomDatePipe,
+            NgbDropdownModule
   ],
   providers: [CustomDatePipe],
   templateUrl: './reverse-voucher-list.component.html',
@@ -69,25 +71,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         this.isFavorite = !this.isFavorite;
       }
     
-      tableConfig: TableConfig = {
-        columns: [],
-        actions: [
-          {
-            icon: 'fas fa-eye',
-            label: 'View',
-            action: 'view',
-            tooltip: 'View Reverse Voucher',
-          },
-        ],
-        selectable: false,
-        multiSelect: false,
-        showColumnToggle: true,
-        showFilters: true,
-        showPagination: true,
-        trackByKey: 'VoucherHeaderSid',
-        emptyMessage: 'No Reverse Voucher found',
-        dragAndDrop: true
-      };
+      tableConfig: TableConfig;
     
       headerActions: HeaderAction[] = [];
       modalDropdownItems: DropdownMenuItem[] = [];
@@ -116,6 +100,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         private spinner: NgxSpinnerService,
         paginationService: PaginationService,
         private datePipe: CustomDatePipe,
+        public mps: MenuPermissionService
       ) {
         super(paginationService);
       }
@@ -132,6 +117,10 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
     
         this.initializeHeaderActions();
         this.initializeTableConfig();
+        this.mps.init().subscribe(()=>{
+          this.initializeTableConfig();
+          this.initializeHeaderActions();
+        })
         this.initializeModalDropdownItems();
         super.ngOnInit();
         this.loadVouchers();
@@ -210,11 +199,6 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       
       return invoice ? invoice.VoucherNumber : `ID: ${reversalVoucherId}`;
     }
-    
-  //   goToVoucher(voucherHeaderSid: number) {
-  //   if (!voucherHeaderSid) return;
-  //   this.router.navigate(['/operation/vendor-invoice/view', voucherHeaderSid]);
-  // }
   
       protected override handleSearchError(error: any): void {
         this.spinner.hide();
@@ -252,6 +236,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             label: 'Create',
             icon: 'fas fa-plus',
             action: 'create',
+            disabled: !this.mps.can('insert')
           },
           {
             label: 'Report',
@@ -267,8 +252,9 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         ];
       }
     
-      private initializeTableConfig(): void {
-        this.tableConfig.columns = [
+      private initializeTableConfig() {
+        this.tableConfig = {
+          columns : [
           {
             key: 'VoucherNumber',
             label: 'Reverse Voucher No',
@@ -311,7 +297,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         template: 'status',
         dataType: 'string',
       },
-          {
+      {
             key: 'Status',
             label: 'Status',
             sortable: true,
@@ -319,7 +305,33 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             visible: true,
             dataType: 'string',
           }
-        ];
+        ],
+        actions: [
+          {
+            icon: 'fas fa-eye',
+            label: 'View',
+            action: 'view',
+            tooltip: 'View Reverse Voucher',
+            state: !this.mps.can('view')
+          },
+          {
+            icon: 'fas fa-trash',
+            label: 'Delete',
+            action: 'delete',
+            tooltip: 'Delete ',
+            class: "text-danger",
+            state: !this.mps.can('delete')
+          }
+        ],
+        selectable: false,
+        multiSelect: false,
+        showColumnToggle: true,
+        showFilters: true,
+        showPagination: true,
+        trackByKey: 'VoucherHeaderSid',
+        emptyMessage: 'No Reverse Voucher found',
+        dragAndDrop: true
+      };
       }
     
       private initializeModalDropdownItems(): void {
@@ -409,15 +421,6 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         // Handle column filters if needed
         console.log('Filters changed:', filters);
       }
-  
-  //     navigateToVoucher(voucherSid: number) {
-  //   if (!voucherSid) return;
-  
-  //   this.router.navigate([
-  //     '/operation/vendor-invoice/entry',
-  //     voucherSid
-  //   ]);
-  // }
     
       viewReverseVoucher(ReverseVoucher: any) {
         this.router.navigate(['/accounts/reverse-voucher/entry', ReverseVoucher.VoucherHeaderSid]);
@@ -428,16 +431,10 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       deleteReverseVoucher(ReverseVoucher: any) {
-        const dialogRef = this.dialog.open(DeleteWarningComponent, {
-          width: '400px',
-          data: {
-            title: 'Delete Reverse Voucher',
-            message: `Are you sure you want to delete Reverse Voucher ${ReverseVoucher.VoucherNumber}?`
-          }
-        });
+        const dialogRef = this.dialog.open(DeleteWarningComponent);
     
         dialogRef.afterClosed().subscribe(result => {
-          if (result === 'confirm') {
+          if (result === true) {
             this.spinner.show();
             this.operationService.deleteReverseVoucherById(ReverseVoucher.VoucherHeaderSid).subscribe({
               next: (response) => {

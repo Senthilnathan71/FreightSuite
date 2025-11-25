@@ -76,7 +76,7 @@
             <!-- Loop for data -->
             <ul class="list-style-none feed-body m-0 pb-4">
                 <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of pendingSchedule">
-                    <div class="col text-capitalize text-truncate">{{ ps?.preCustomerName }}</div>
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerMaster?.preCustomerName }}</div>
                     <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
                         ps.meetingDate | date: 'dd-MMM-yyyy' }}</div>
                 </li>
@@ -182,7 +182,7 @@
             <!-- Loop for data -->
             <ul class="list-style-none feed-body m-0 pb-4">
                 <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of todoInActive">
-                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerName }}</div>
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerMaster?.preCustomerName }}</div>
                     <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
                         ps.createdOn | date: 'dd-MMM-yyyy' }}</div>
                 </li>

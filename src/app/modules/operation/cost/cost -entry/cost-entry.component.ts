@@ -892,7 +892,7 @@ createRateFormGroup(data?: any): FormGroup {
     const amount = Number(noOfUnit) * Number(perUnit);
 
     const CurrencyMasterSid = formGroup.get('CostCurrencyMasterSid')?.value;
-    const exchangeRate = formGroup.get('CostExchangeRate')?.value || 1;
+    const exchangeRate = formGroup.get('CostExchangeRate')?.getRawValue() || 1;
 
     const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
     const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
@@ -943,7 +943,7 @@ createRateFormGroup(data?: any): FormGroup {
     const amount = Number(noOfUnit) * Number(perUnit);
 
     const CurrencyMasterSid = formGroup.get('RevenueCurrencyMasterSid')?.value;
-    const exchangeRate = formGroup.get('RevenueExchangeRate')?.value || 1;
+    const exchangeRate = formGroup.get('RevenueExchangeRate')?.getRawValue() || 1;
 
     const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
     const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
@@ -973,6 +973,7 @@ createRateFormGroup(data?: any): FormGroup {
     if (fromCurrencyCode === toCurrencyCode) {
       const formGroup = this.rateFormArray.at(index) as FormGroup;
       formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(1, fromCurrencyCode), });
+      formGroup.get('CostExchangeRate')?.disable();
       this.calculateCostLocalAmount(index);
       return;
     }
@@ -982,6 +983,7 @@ createRateFormGroup(data?: any): FormGroup {
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
+          formGroup.get('CostExchangeRate')?.enable();
           formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
           this.calculateCostLocalAmount(index);
         }
@@ -1004,6 +1006,7 @@ createRateFormGroup(data?: any): FormGroup {
       formGroup.patchValue({ 
         RevenueExchangeRate:  this.getFormattedExchangeRate(1, fromCurrencyCode),
       });
+      formGroup.get('RevenueExchangeRate')?.disable();
       this.calculateRevenueLocalAmount(index);
       return;
     }
@@ -1013,6 +1016,7 @@ createRateFormGroup(data?: any): FormGroup {
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
+          formGroup.get('RevenueExchangeRate')?.enable();
           formGroup.patchValue({ RevenueExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
           this.calculateRevenueLocalAmount(index);
         }

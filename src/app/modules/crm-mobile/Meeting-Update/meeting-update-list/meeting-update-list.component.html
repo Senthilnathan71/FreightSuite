@@ -119,21 +119,23 @@
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
         <div class="ms-auto d-flex align-items-center">
-            <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+            <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
                 <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                     ngbDropdownToggle>
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                    <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                    <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
                         (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                    <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem
+                    <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem
                         appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
                         Condition</button>
-                    <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                    <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
                         (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                    <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                    <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
                         (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                    <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                        (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
@@ -308,7 +310,7 @@
                 Reset
             </button>
             <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
-                (click)="onUpdateMeeting()">
+                (click)="onUpdateMeeting()" [disabled]="!mps.can('update')">
                 Update
             </button>
         </div>
