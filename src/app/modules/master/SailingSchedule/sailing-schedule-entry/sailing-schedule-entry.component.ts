@@ -27,6 +27,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -141,7 +142,7 @@ export class SailingScheduleEntryComponent implements OnInit {
         if(userProfile){
             this.userData = userProfile;
         }
-
+        this.mps.init().subscribe();
         this.initScheduleForm();
         this.loadAllFields();
 
@@ -171,10 +172,6 @@ export class SailingScheduleEntryComponent implements OnInit {
 
 
 
-    hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-}
     
     initScheduleForm(){
         // Header-only fields (includes ports and key dates)
@@ -695,6 +692,14 @@ private patchFormData(scheduleData: any) {
             },
             error: err => console.error('Error fetching audit logs:', err)
         });
+    }
+
+    openFollowup(){
+        const modalRef = this.modalService.open(FollowUpComponent,{
+            size : 'lg',
+            backdrop : 'static',
+            centered : true
+        })
     }
 
     ngOnDestroy(): void {

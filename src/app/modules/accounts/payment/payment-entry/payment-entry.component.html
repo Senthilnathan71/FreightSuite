@@ -2,11 +2,11 @@
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-1">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-2 pb-1">
                 <div class="d-flex align-items-center gap-2">
-                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Payment' : (isEditMode ? 'Edit Payment' :
+                <h5 class="page-title my-0 text-info">{{ isViewMode ? 'View Payment' : (isEditMode ? 'Edit Payment' :
                     'Create Payment') }}</h5>
                 @if(isEditMode){
                 <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
@@ -15,7 +15,57 @@
                 }
                 </div>
             </div>
-            <div class="col-md-8 pb-1">
+            <div class="col-md-6">
+                   <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
+
+                <div class="d-flex  gap-2 pb-1 align-items-center justify-content-center ps-5">
+
+                    <!-- Search Type -->
+                    <div class="col-md-3 col-sm-4">
+                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
+                            clearable="false">
+                        </ng-select>
+                    </div>
+
+                    <!-- Party -->
+                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
+                    <div class="col-md-4">
+                        <ng-select 
+                            [items]="onlyCustomerList" 
+                            bindLabel="CustomerName" 
+                            bindValue="SubledgerMasterSid"
+                            formControlName="LedgerMasterSid"
+                            placeholder="Select Party"
+                        >
+                        </ng-select>
+                    </div>
+                    }  @else {
+                    <div class="col-md-5 ">
+                        <input formControlName="FilterText" class="form-control" placeholder="">
+                    </div>
+                    }
+
+                    <!-- Search Button -->
+                    <div class=" d-flex align-items-end">
+                        <button 
+                            class="btn btn-info btn-sm" 
+                            [disabled]="
+                                !searchOutstandingForm.get('SearchType')?.value || 
+                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
+                                r['LedgerMasterSid']?.value
+                            " 
+                            (click)="searchOutstanding()"
+                        >
+                            <i class="fas fa-search me-1 fs-2"></i> Get OS
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+            </div>
+            <div class="col-md-4 pb-1">
+                
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -64,69 +114,23 @@
                     </div>
                 </div>
             </div>
-            <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
-
-                <div class="d-flex flex-wrap gap-2 mb-3 p-2 bg-light rounded">
-
-                    <!-- Search Type -->
-                    <div class="col-md-2 col-sm-4">
-                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
-                            clearable="false">
-                        </ng-select>
-                    </div>
-
-                    <!-- Party -->
-                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
-                    <div class="col-md-3">
-                        <ng-select 
-                            [items]="onlyCustomerList" 
-                            bindLabel="CustomerName" 
-                            bindValue="SubledgerMasterSid"
-                            formControlName="LedgerMasterSid"
-                            placeholder="Select Party"
-                        >
-                        </ng-select>
-                    </div>
-                    }  @else {
-                    <div class="col-md-3 col-sm-6">
-                        <input formControlName="FilterText" class="form-control" placeholder="Enter keyword">
-                    </div>
-                    }
-
-                    <!-- Search Button -->
-                    <div class="col-auto d-flex align-items-end">
-                        <button 
-                            class="btn btn-info px-4" 
-                            [disabled]="
-                                !searchOutstandingForm.get('SearchType')?.value || 
-                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
-                                r['LedgerMasterSid']?.value
-                            " 
-                            (click)="searchOutstanding()"
-                        >
-                            <i class="fas fa-search me-1"></i> Get OS
-                        </button>
-                    </div>
-
-                </div>
-
-            </form>
+         
         </div>
     </div>
 
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row" [formGroup]="paymentForm">
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" 
                                 formControlName="VoucherNumber">
                             <label for="text-input" class="input-label">Payment No <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -141,7 +145,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-3 d-flex align-items-center">
+                    <aside class="col-md-2 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
                                 <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
@@ -151,7 +155,7 @@
                             </div>
                         </div>
                     </aside>
-                    <aside class="col-md-3 d-flex align-items-center">
+                    <aside class="col-md-2 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
                                 <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
@@ -168,7 +172,7 @@
                         </div>
                     </aside>
                     @if(paymentForm.get('CashOrBank')?.value){
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
                                 <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
                                     [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
@@ -179,7 +183,7 @@
                         </div>
                     </aside>
                     } @else {
-                        <aside class="col-md-3">
+                        <aside class="col-md-2">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
                                 <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
                                     [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
@@ -190,7 +194,7 @@
                         </aside>
                     }
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-2" >
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!r['CurrencyMasterSid']?.value">
                             <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid"
@@ -203,7 +207,7 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="ExchangeRate">
@@ -211,7 +215,7 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!paymentForm.get('CustomerBranchSid')?.value">
                             <dofi-searchable-dropdown [items]="partyList" formControlName="CustomerBranchSid"
@@ -223,7 +227,7 @@
                             <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="BankPartyName">
@@ -233,7 +237,7 @@
                     </aside>
 
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="PartyAddress">
@@ -241,7 +245,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="GST_VAT">
@@ -250,7 +254,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="Narration">
@@ -260,7 +264,7 @@
                     </aside>
 
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="Remarks">
@@ -269,7 +273,7 @@
                         </div>
                     </aside>
                    @if(!paymentForm.get('CashOrBank')?.value){
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
                             <ng-select 
                                 class="ng-select" 
@@ -282,7 +286,7 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="InstrumentNumber">
@@ -290,7 +294,7 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input 
@@ -310,7 +314,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -728,9 +732,10 @@
 
                         </tr>
 
+                        <tr><td style="visibility: hidden; font-size: 5px;">ftydfydy</td></tr>
                         <!-- TOTAL ROW -->
-                        <tr class="table-info fw-bold text-end">
-                            <td colspan="6" class="text-end">Total</td>
+                        <tr class="table-info fw-bold text-end " >
+                            <td colspan="6" class="text-end">Total :</td>
                             <!-- @if(!isEditMode){ -->
                             <td>{{ getTotalCurrAmt() }}</td>
                             <td>{{ getTotalLocalAmt() }}</td>

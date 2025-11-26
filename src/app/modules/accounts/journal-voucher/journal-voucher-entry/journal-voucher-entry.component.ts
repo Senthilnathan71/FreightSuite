@@ -20,6 +20,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { CommonService } from 'src/app/common/common.service';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 @Component({
   selector: 'app-journal-voucher-entry',
@@ -30,7 +31,8 @@ import { CommonService } from 'src/app/common/common.service';
     NgbDatepickerModule,
     FeatherModule,
     NgSelectModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    DecimalPrecisionDirective
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
@@ -78,8 +80,8 @@ export class JournalVoucherEntryComponent implements OnInit {
 };
 
   statusList = [
-    { id: 'Active', name: 'Active' },
-    { id: 'Inactive', name: 'Inactive' },
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' },
   ];
 
   drCrList = [
@@ -167,7 +169,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       voucherDate: [null, Validators.required],
       narration: ['', Validators.maxLength(200)],
       remarks: ['', Validators.maxLength(200)],
-      status: ['Active'],
+      Status: ['A'],
       postStatus: [{ value: 'Unposted', disabled: true }],
       postDate: [{ value: '', disabled: true }],
       details: this.fb.array([]),
@@ -288,7 +290,7 @@ export class JournalVoucherEntryComponent implements OnInit {
           voucherDate: voucherDateStruct,
           narration: voucher.Narration,
           remarks: voucher.Remarks,
-          status: voucher.Status,
+          Status: voucher.Status,
           postStatus: voucher.PostStatus === 'P' ? 'Posted' : 'Unposted',
           postDate: voucher.PostDate ? new Date(voucher.PostDate).toLocaleDateString() : '',
         });
@@ -794,7 +796,7 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
       VoucherDate: voucherDateString,
       Narration: formValue.narration || null,
       Remarks: formValue.remarks || null,
-      Status: formValue.status,
+      Status: formValue.Status,
       PostStatus: 'U', // Unposted for draft
       PartyName: 'System Journal Entry',
       DocumentNumber: `JV-${new Date().getTime()}`,
