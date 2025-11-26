@@ -10,7 +10,7 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -27,6 +27,13 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -43,7 +50,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgxSpinnerModule,
     NumberFormatPipe,
     CustomDatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrls: ['./invoice-entry.component.scss'],
@@ -58,6 +66,10 @@ export class InvoiceEntryComponent implements OnInit {
   isDataModified: boolean = false;
   // current user email to send CreatedBy / UpdatedBy
   currUserEmail: string | null = null;
+  MenuMasterSid: any;
+    currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
   isViewMode: boolean = false;
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
@@ -171,7 +183,9 @@ export class InvoiceEntryComponent implements OnInit {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    public mps: MenuPermissionService,
+    private commonService: CommonService,
   ) { }
 
   ngOnInit(): void {
@@ -182,6 +196,8 @@ export class InvoiceEntryComponent implements OnInit {
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
@@ -2298,5 +2314,85 @@ getDisplayValue(cargoValue: any, bookingValue: any): string {
   return cargoValue || bookingValue || '';
 }
 
+showInfo() {
+      if(!this.invoiceData) return;
+      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.item = this.invoiceData;
+      modalRef.componentInstance.idLabel = 'Invoice Id';
+      modalRef.componentInstance.idValue = this.invoiceData?.VoucherHeaderSid;
+    }
+    openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.currentClauseId;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+  
+    openEmail() {
+    if (!this.invoiceData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.invoiceData;
+    modalRef.componentInstance.idLabel = 'Invoice Id';
+    modalRef.componentInstance.idValue = this.invoiceData?.VoucherHeaderSid;
+  }
+  
+  openAuthority() {
+    if (!this.invoiceData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.invoiceData;
+    modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
+    modalRef.componentInstance.idValue = this.invoiceData?.VoucherHeaderSid;
+  }
+  
+  openEDoc() {
+    if (!this.invoiceData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.invoiceData;
+    modalRef.componentInstance.idLabel = 'Invoice Id';
+    modalRef.componentInstance.idValue = this.invoiceData.VoucherHeaderSid;
+  const data:any={
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
+      DocumentSid: this.invoiceData?.VoucherHeaderSid
+    }
+  
+        this.commonService.documentData.set(data)
+  }
+
+  openFollowup() {
+
+  }
 
 }

@@ -139,7 +139,7 @@ export class LoadingPlanEntryComponent {
     private spinnerService : NgxSpinnerService,
     private spinner: NgxSpinnerService,
     private pdfService:PdfDownloadService,
-
+    
   ) {
     this.masterJobContainers = this.fb.array([]);
     // effect(()=>{

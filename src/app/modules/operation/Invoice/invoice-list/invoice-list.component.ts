@@ -25,6 +25,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-invoice-list',
@@ -66,8 +67,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   // pageSize = 15;
   // totalLengthOfCollection = 0;
   isFavorite: boolean = false;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
   masterJobMap: { [id: number]: string } = {};
   houseJobMap: { [id: number]: string } = {};
 
@@ -79,34 +78,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     this.isFavorite = !this.isFavorite;
   }
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-      // {
-      //   icon: 'fas fa-trash',
-      //   label: 'Delete',
-      //   action: 'delete',
-      //   tooltip: 'Delete ',
-      //   class: "text-danger",
-      //   // condition: (row: any) => this.hasPermission('Delete')
-      // }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VoucherHeaderSid',
-    emptyMessage: 'No Invoice found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
 
@@ -134,6 +106,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
      private datePipe: CustomDatePipe,
+     private mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -148,33 +121,15 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
 
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     this.initializeHeaderActions();
     this.initializeTableConfig();
-    this.initializeModalDropdownItems();
+    this.mps.init().subscribe(()=>{
+          this.initializeTableConfig();
+          this.initializeHeaderActions();
+        });
     super.ngOnInit();
     this.loadInvoices();
-  }
-
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-
-    if (currentMenuId && userRole) {
-      // Assuming you have a similar permission service for operations
-      // this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-      //   next: (response) => {
-      //     this.currentMenuPermissions = response.data.MenuPermissions || {};
-      //     this.permissions = Object.keys(this.currentMenuPermissions)
-      //       .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      //   }
-      // });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
   }
 
 
@@ -252,7 +207,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -269,8 +224,9 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   }
 
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+  private initializeTableConfig() {
+    this.tableConfig = {
+    columns: [
       {
         key: 'VoucherNumber',
         label: 'Invoice No',
@@ -306,24 +262,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         width: '150px',
       },
-      //  {
-      //   key: 'LocalAmount',
-      //   label: 'Local Amount ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
-      //  {
-      //   key: 'IRNNumber',
-      //   label: 'Job No ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
         {
         key: 'MasterNumber',
         label: 'Job No  ',
@@ -352,15 +290,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         width: '150px',
       },
-      //  {
-      //   key: 'HouseJobSid',
-      //   label: 'Credit Note No',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
       {
         key: 'Status',
         label: 'Status',
@@ -372,36 +301,33 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       },
-    ];
-  }
-
-  initializeModalDropdownItems(): void {
-    this.modalDropdownItems = [
+    ],
+    actions: [
       {
-        label: 'Edoc',
-        icon: 'fas fa-file-alt',
-        action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state: !this.mps.can('view')
       },
       {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
-      },
-      {
-        label: 'Authorize',
-        icon: 'fas fa-shield-alt',
-        action: 'authority',
-        condition: this.hasPermission('Authority')
-      },
-      {
-        label: 'Email',
-        icon: 'fas fa-envelope',
-        action: 'email',
-        condition: this.hasPermission('Email')
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
       }
-    ];
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoucherHeaderSid',
+    emptyMessage: 'No Invoice found',
+    dragAndDrop: true
+  };
   }
 
   onActionTriggered(action: string): void {
@@ -420,24 +346,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     }
   }
 
-  // onModalDropdownItemClick(action: string): void {
-  //   switch (action) {
-  //     case 'edoc':
-  //       this.openEDoc();
-  //       break;
-  //     case 'terms':
-  //       this.openTandC();
-  //       break;
-  //     case 'authority':
-  //       this.openAuthority();
-  //       break;
-  //     case 'email':
-  //       this.openEmail();
-  //       break;
-  //     default:
-  //       console.warn(`Unknown dropdown action: ${action}`);
-  //   }
-  // }
+  
 
   private updateHeaderActionState(): void {
     this.headerActions = this.headerActions.map(action => {

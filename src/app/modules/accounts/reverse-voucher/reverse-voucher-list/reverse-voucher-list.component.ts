@@ -112,7 +112,6 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
     
         if (userProfile) {
           this.userData = userProfile;
-          this.checkPermissions();
         }
     
         this.initializeHeaderActions();
@@ -120,21 +119,12 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         this.mps.init().subscribe(()=>{
           this.initializeTableConfig();
           this.initializeHeaderActions();
-        })
+        });
         this.initializeModalDropdownItems();
         super.ngOnInit();
         this.loadVouchers();
       }
     
-      checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        // Implement permission checking logic if needed
-      }
-    
-      hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-      }
     
       loadVouchers() {
       this.operationService.getAllVoucher().subscribe({

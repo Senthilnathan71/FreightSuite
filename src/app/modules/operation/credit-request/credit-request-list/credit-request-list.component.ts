@@ -19,6 +19,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { Observable } from 'rxjs';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-credit-request-list',
@@ -56,26 +57,7 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
     this.isFavorite = !this.isFavorite;
   }
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'CustomerCreditRequestSid',
-    emptyMessage: 'No credit request found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   tableLoading = false;
 
@@ -98,6 +80,7 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datepipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -107,38 +90,16 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
      const userProfile = this.appSettingService.getDecryptedUserProfile();
      if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
      }
      this.initializeTableConfig();
      this.initializeHeaderActions();
+     this.mps.init().subscribe(()=>{
+          this.initializeTableConfig();
+          this.initializeHeaderActions();
+        })
      super.ngOnInit();
   }
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-  }
+  
 
   protected override searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -244,9 +205,9 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
     return item.CustomerCreditRequestSid || index;
   }
   
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
+  private initializeTableConfig() {
+    this.tableConfig = {
+    columns: [
       {
         key: 'CustomerName',
         label: 'Customer name',
@@ -271,7 +232,25 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
         visible: true,
         dataType: 'string'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+      },
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'CustomerCreditRequestSid',
+    emptyMessage: 'No credit request found',
+    dragAndDrop: true
+  };
   }
 
   onTableActionClick(event: TableEventData): void {

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -16,6 +16,14 @@ import { OperationService } from '../../operation.service';
 import { firstValueFrom } from 'rxjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -32,7 +40,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgxSpinnerModule,
     NumberFormatPipe,
     CustomDatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './credit-note-entry.component.html',
   styleUrl: './credit-note-entry.component.scss'
@@ -44,7 +53,10 @@ export class CreditNoteEntryComponent {
   currentCompany: any;
   currentBranch: any;
   creditNoteData : any;
-
+  MenuMasterSid: any;
+  currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
@@ -149,7 +161,10 @@ export class CreditNoteEntryComponent {
         private operationService: OperationService,
         private appSettingService: AppSettingsService,
         private spinner: NgxSpinnerService,
-        private companySettings: CompanySettingsManagerService
+        private companySettings: CompanySettingsManagerService,
+        public mps: MenuPermissionService,
+        private commonService: CommonService,
+        private masterService: MasterService,
       ) {}
       ngOnInit(): void {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -159,6 +174,8 @@ export class CreditNoteEntryComponent {
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
@@ -2578,5 +2595,84 @@ private normalizeParty(raw: any) {
     return taxable + cgst + sgst + igst;
   }
 
-
+  showInfo() {
+        if(!this.creditNoteData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.creditNoteData;
+        modalRef.componentInstance.idLabel = 'Credit Note Id';
+        modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+      }
+      openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions', error);
+          }
+        );
+      }
+    
+      openEmail() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+    }
+    
+    openAuthority() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+    }
+    
+    openEDoc() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(EdocComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData.VoucherHeaderSid;
+    const data:any={
+        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch.BranchMasterSid,
+        MenuMasterSid : this.MenuMasterSid,
+        DocumentSid: this.creditNoteData?.VoucherHeaderSid
+      }
+    
+          this.commonService.documentData.set(data)
+    }
+  
+    openFollowup() {
+  
+    }
 }

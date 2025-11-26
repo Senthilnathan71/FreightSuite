@@ -1998,14 +1998,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.masterJobSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+        const ignoredFields = ['updatedOn', 'updatedBy']; 
 
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
           if (Object.keys(obj).length === 0) return [];
           return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .filter(([key]) => !ignoredFields.includes(key)) 
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
 

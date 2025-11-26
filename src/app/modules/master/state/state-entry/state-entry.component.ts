@@ -94,8 +94,8 @@ export class StateEntryComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
-    this.dropdownStore.loadCountries().subscribe();
-    this.dropdownStore.loadZones().subscribe();
+    this.dropdownStore.loadCountries().subscribe(() => {
+    this.dropdownStore.loadZones().subscribe(() => {
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];
@@ -105,6 +105,8 @@ export class StateEntryComponent implements OnInit {
         this.stateForm.get('status')?.enable();
       }
     });
+  });
+})
     //  this.appSettingService.getUser().subscribe((user) => {
     //   if (user) {
     //     this.userData = user;
@@ -148,17 +150,57 @@ export class StateEntryComponent implements OnInit {
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
+  onCountryChange(selectedCountryId: number) {
+  
+  if (selectedCountryId) {
+    // Find the selected country
+    const selectedCountry = this.dropdownStore.countries().find(
+      country => country.CountryMasterSid === selectedCountryId
+    );
+    
+    
+    if (selectedCountry) {
+      // Check if ZoneMasterSid exists in the country object
+      const zoneId = selectedCountry.ZoneMasterSid;
+      
+      if (zoneId) {
+        // Check if this zone exists in available zones
+        const zoneExists = this.dropdownStore.zone().some(
+          zone => zone.ZoneMasterSid === zoneId
+        );
+        
+        
+        if (zoneExists) {
+          this.stateForm.patchValue({
+            ZoneMasterSid: zoneId
+          });
+        } else {
+          this.stateForm.patchValue({ ZoneMasterSid: '' });
+        }
+      } else {
+        this.stateForm.patchValue({ ZoneMasterSid: '' });
+      }
+    }
+  } else {
+    this.stateForm.patchValue({ ZoneMasterSid: '' });
+  }
+}
+
   initForm() {
     this.stateForm = this.fb.group({
       stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],
       stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
       stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$'), this.trimSpaceValidator()]],
       CountryMasterSid: ['', Validators.required],
-      ZoneMasterSid: ['', Validators.required],
+      ZoneMasterSid: [{value:'', disabled: true}, Validators.required],
       region: [''],
       status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['']
     });
+
+     this.stateForm.get('CountryMasterSid')?.valueChanges.subscribe(selectedCountryId => {
+    this.onCountryChange(selectedCountryId);
+  });
 
     this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
       if (val) {
@@ -259,6 +301,11 @@ export class StateEntryComponent implements OnInit {
           status: state.status || 'A',
           Remarks: state.Remarks || ''
         });
+        setTimeout(() => {
+        this.stateForm.patchValue({
+          ZoneMasterSid: state.ZoneMasterSid
+        });
+      });
         // Enable status control when in edit mode
         this.stateForm.get('status')?.enable();
       },

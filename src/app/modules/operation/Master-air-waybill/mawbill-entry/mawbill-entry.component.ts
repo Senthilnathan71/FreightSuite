@@ -48,6 +48,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
 import { MAWBComponent } from '../report/mawb/mawb.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -279,6 +281,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     private datepipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
     private commonService: CommonService,
+    public mps: MenuPermissionService
   ) {
     this.initForm();
     this.initContainerForm();
@@ -291,6 +294,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
      const storedMenuId = localStorage.getItem('currentMenuId');
+     this.mps.init().subscribe();
   console.log('📋 localStorage currentMenuId:', storedMenuId);
   
   this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
@@ -2232,7 +2236,13 @@ onYardChange(selectedYard: any): void {
     this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
   }
 
-
+  showInfo() {
+        if(!this.masterAirWayData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.masterAirWayData;
+        modalRef.componentInstance.idLabel = 'Master AirWay Id';
+        modalRef.componentInstance.idValue = this.masterAirWayData?.MasterJobSid;
+      }
   // print
 
    reportMAWBModel() {
