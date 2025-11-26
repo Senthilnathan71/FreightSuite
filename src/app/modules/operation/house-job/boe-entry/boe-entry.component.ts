@@ -1,106 +1,171 @@
+import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FeatherModule } from 'angular-feather';
 import { OperationService } from '../../operation.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import { FeatherModule } from 'angular-feather';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-boe-entry',
-  standalone:true,
-  imports:[
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    NgSelectModule,
+    ReactiveFormsModule,
+    NgbPaginationModule,
     FeatherModule,
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
+    OnlyNumbersDirective,
+    DecimalPrecisionDirective,
+    TextWithNumbersDirective,
+    NumberFormatPipe,
+    SearchableDropdown,
+    SearchableDropdownModal,
+    NgxSpinnerModule,
+    FormsModule,
+    NgbTooltipModule
   ],
   templateUrl: './boe-entry.component.html',
-  styleUrls: ['./boe-entry.component.scss']
+  styleUrls: ['./boe-entry.component.scss'],
+  providers: [
+    CustomDatePipe
+  ]
 })
-export class BoeEntryComponent implements OnInit {
-  @Input() screenName: string = 'HouseJob';
-  @Input() formData: any; // contains HouseJobSid, CompanyMasterSid, etc.
+export class BoeEntryComponent implements OnInit, OnChanges {
+
+  @Input() screenName: string;
+  @Input() formData: any;
   @Input() resetTrigger: boolean = false;
-  @Input() dataItems: any[] = [];
-  @Output() dataEmitter = new EventEmitter<any>();
+  
+  // Use only setter/getter for dataItems to avoid duplication
+  private _dataItems: any[] = [];
+  
+  @Input()
+  set dataItems(value: any[]) {
+    this._dataItems = value || [];
+    
+    // Process dataItems when form is ready
+    if (this.boeForm) {
+      this.boeFormArray?.clear();
+      if (this._dataItems && this._dataItems.length > 0) {
+        this.patchValues(this._dataItems);
+      } else {
+        this.addBoeRow();
+      }
+    }
+  }
+  
+  get dataItems(): any[] {
+    return this._dataItems;
+  }
+  
+  @Output() dataEmitter = new EventEmitter<any[]>();
+  @Output() validationResult = new EventEmitter<boolean>();
   @Output() reloadParent = new EventEmitter<any>();
 
   boeForm!: FormGroup;
-  loading = false;
+  currentBoeIndex: number = -1;
+  
+  // Data management
+  private prevValue: boolean;
+  
+  // Pagination
+  boeDataLength: number = 0;
+  page = 1;
+  pageSize = 5;
+  slicedBoeFormArray: any[] = [];
 
-  constructor(private fb: FormBuilder, private boeApi: OperationService) {}
+  // Lookup data
+  currentCompany: any;
+  currentBranch: any;
+  userData: any;
+  digitsAfterDecimal = 3;
 
-  ngOnInit(): void {
-    this.initForm();
+  constructor(
+    private fb: FormBuilder,
+    private operationService: OperationService,
+    private appSettingService: AppSettingsService,
+    private spinner: NgxSpinnerService
+  ) { 
+    this.initBoeForm();
   }
 
-ngOnChanges(changes: SimpleChanges): void {
-  console.log(changes, 'changes');
+  ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
-  // ✅ Always check for formData
-  if (changes['formData']) {
-    if (this.formData?.HouseJobSid) {
-      console.log('✅ BOE received formData with HouseJobSid:', this.formData.HouseJobSid);
-    } else {
-      console.warn('⚠️ formData exists but missing HouseJobSid');
+    // If dataItems was set before ngOnInit, process them now
+    if (this._dataItems && this._dataItems.length > 0) {
+      this.patchValues(this._dataItems);
     }
   }
 
-  // ✅ If we get new dataItems OR formData, check readiness
-  if ((changes['dataItems'] || changes['formData']) && this.dataItems && this.dataItems.length) {
-    this.tryPopulateForm();
+  ngOnChanges(changes: SimpleChanges): void {
+    // Handle reset trigger
+    if (changes['resetTrigger'] && changes['resetTrigger'].currentValue !== this.prevValue) {
+      this.prevValue = changes['resetTrigger'].currentValue;
+      this.boeDataLength = 0;
+      this.slicedBoeFormArray = [];
+      this.boeFormArray.clear();
+      
+      // Re-populate if we have data
+      if (this._dataItems && this._dataItems.length > 0) {
+        this.patchValues(this._dataItems);
+      }
+    }
+
+    // Handle formData changes
+    if (changes['formData'] && this.formData) {
+      this.setParentData(this.formData);
+    }
   }
 
-  // ✅ If reset trigger toggles, clear and repopulate
-  if (changes['resetTrigger'] && this.resetTrigger) {
-    console.log('🔄 Reset triggered');
-    this.initForm();
-    if (this.dataItems?.length) this.tryPopulateForm();
-  }
-}
-
-/** ✅ Safe method to initialize + populate the form only when data is ready */
-private tryPopulateForm() {
-  // wait until both inputs exist
-  if (!this.formData?.HouseJobSid) {
-    console.warn('⏳ Waiting for HouseJobSid...');
-    return;
+  private setParentData(value: any) {
+    // Set parent data if needed
+    console.log("Parent Value Changed", value);
   }
 
-  console.log('📦 Populating BOE form with data:', this.dataItems);
-
-  // Initialize form
-  this.initForm();
-
-  // Build the rows
-  this.dataItems.forEach((item) => {
-    this.boeDetails.push(this.createRow(item));
-  });
-
-  console.log('✅ BOE form populated with', this.boeDetails.length, 'rows');
-}
-
-
-
-
-
-  get boeDetails(): FormArray {
-    return this.boeForm.get('boeDetails') as FormArray;
+  // Form initialization
+  initBoeForm() {
+    this.boeForm = this.fb.group({
+      boeFormArray: this.fb.array([])
+    });
   }
 
-  initForm() {
-  this.boeForm = this.fb.group({
-    boeDetails: this.fb.array([])
-  });
-}
+  // Getter for form array
+  get boeFormArray(): FormArray {
+    return this.boeForm.get('boeFormArray') as FormArray;
+  }
 
+  // Create individual BOE form group
+  createBoeFormGroup(data?: any): FormGroup {
+    const ParentSid = data?.ParentSid || this.formData?.HouseJobSid;
 
-  createRow(data?: any): FormGroup {
     return this.fb.group({
       HouseJobBOESid: [data?.HouseJobBOESid || null],
-      CompanyMasterSid: [data?.CompanyMasterSid || this.formData?.CompanyMasterSid],
-      HouseJobSid: [this.formData?.HouseJobSid || data?.HouseJobSid],
+      ParentSid: [ParentSid],
+      CompanyMasterSid: [data?.CompanyMasterSid || this.currentCompany?.CompanyMasterSid],
+      BranchMasterSid: [data?.BranchMasterSid || this.currentBranch?.BranchMasterSid],
+      MenuMasterSid: [Number(localStorage.getItem('currentMenuId'))],
+      
       DeclarationNo: [data?.DeclarationNo || ''],
-      BOENo: [data?.BOENo || ''],
+      BOENo: [data?.BOENo || '', [Validators.required]],
       BOEDate: [data?.BOEDate ? this.formatDate(data.BOEDate) : ''],
       BOEValue: [data?.BOEValue || null],
       BOEInvoiceValue: [data?.BOEInvoiceValue || ''],
@@ -108,97 +173,220 @@ private tryPopulateForm() {
       Amount: [data?.Amount || null],
       ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
       ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
-      AckNo: [data?.AckNumber || ''],
+      AckNo: [data?.AckNo || ''],
       AckDate: [data?.AckDate ? this.formatDate(data.AckDate) : ''],
       AckStatus: [data?.AckStatus || ''],
-      Note: [data?.Remarks || ''],
-      isEdit: [false],
-      CreatedBy: data?.CreatedBy,
-      UpdatedBy: data?.UpdatedBy
+      Note: [data?.Note || data?.Remarks || ''],
+      
+      status: [data?.status || 'Active'],
+      CreatedBy: [data?.CreatedBy || this.userData?.userEmail],
+      UpdatedBy: [data?.UpdatedBy || this.userData?.userEmail]
     });
   }
 
-  formatDate(date: string) {
-    return date ? new Date(date).toISOString().slice(0, 10) : '';
+  // Format date for input
+  formatDate(date: string | Date): string {
+    if (!date) return '';
+    const dateObj = new Date(date);
+    return dateObj.toISOString().split('T')[0];
   }
 
-  
-
-  addRow() {
-    this.boeDetails.push(this.createRow());
+  // Patch values from input data
+  patchValues(items: any[]) {
+    console.log('Patching BOE values:', items);
+    if (items && items.length > 0) {
+      for (const item of items) {
+        this.addBoeRow(item);
+      }
+    } else {
+      this.addBoeRow();
+    }
+    this.updateBoePagination();
   }
 
-  editRow(i: number) {
-    this.boeDetails.at(i).get('isEdit')?.setValue(true);
+  // Add new BOE row
+  addBoeRow(data?: any) {
+    // When adding a new row without data, populate it with parent form values
+    if (!data && this.formData) {
+      const ParentSid = this.formData?.HouseJobSid;
+      data = {
+        ParentSid: ParentSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid || null,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid || null
+      };
+    }
+
+    const formGroup = this.createBoeFormGroup(data);
+    this.boeFormArray.push(formGroup);
+    this.updateBoePagination();
+    
+    // Emit data changes
+    this.dataEmitter.emit(this.boeFormArray.getRawValue());
   }
 
- saveRow(i: number) {
-  const row = this.boeDetails.at(i);
-  const value = row.value;
+  // Delete BOE row
+  deleteBoe(index: number, HouseJobBOESid?: number) {
+    const formGroup = this.boeFormArray.at(index) as FormGroup;
 
-  // ✅ Pull HouseJobSid safely from formData
-  const houseJobSid = this.formData?.HouseJobSid;
-  const companySid = this.formData?.CompanyMasterSid;
-
-  if (!houseJobSid) {
-    console.warn('⚠️ HouseJobSid is missing — cannot create BOE');
-    console.log('Current formData:', this.formData);
-    return;
-  }
-
-  const payload = {
-    ...value,
-    Sno: i + 1, // 👈 Automatically assign row number before sending
-    HouseJobSid: houseJobSid,
-    CompanyMasterSid: companySid,
-    CreatedBy: this.formData?.CreatedBy || 'admin',
-    Remarks: value.Note,
-    AckNumber: value.AckNo,
-  };
-
-  // ✅ Update
-  if (value.HouseJobBOESid) {
-    this.boeApi.updateBoeById(value.HouseJobBOESid, payload).subscribe({
-      next: (resp: any) => {
-        row.patchValue({ isEdit: false });
-        this.dataEmitter.emit(this.boeDetails.value);
-      },
-      error: (err) => console.error('Error updating BOE:', err)
-    });
-  } 
-  // ✅ Create
-  else {
-    this.boeApi.createBoe(payload).subscribe({
-      next: (resp: any) => {
-        const created = resp?.data || resp;
-        const newId = created?.HouseJobBOESid ?? null;
-
-        if (newId) {
-          row.patchValue({ HouseJobBOESid: newId, isEdit: false });
-        }
-        this.dataEmitter.emit(this.boeDetails.value);
-      },
-      error: (err) => console.error('Error creating BOE:', err)
-    });
-  }
-}
-
-
-
-  removeRow(i: number) {
-    const row = this.boeDetails.at(i);
-    const id = row.get('HouseJobBOESid')?.value;
-    if (id) {
-      this.boeApi.deleteBoeById(id).subscribe({
-        next: () => {
-          this.boeDetails.removeAt(i);
-          this.dataEmitter.emit(this.boeDetails.value);
+    if (HouseJobBOESid) {
+      this.operationService.deleteBoeById(HouseJobBOESid).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.boeFormArray.removeAt(index);
+            this.appSettingService.showSuccess("BOE Deleted Successfully");
+            this.updateBoePagination();
+            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+          } else {
+            this.appSettingService.showError(resp.message || 'Error deleting BOE');
+          }
         },
-        error: (err) => console.error(err)
+        error: (error) => {
+          this.appSettingService.showError(error?.error?.message || 'Error deleting BOE');
+        }
       });
     } else {
-      this.boeDetails.removeAt(i);
-      this.dataEmitter.emit(this.boeDetails.value);
+      this.boeFormArray.removeAt(index);
+      this.appSettingService.showSuccess("BOE Deleted Successfully");
+      this.updateBoePagination();
+      this.dataEmitter.emit(this.boeFormArray.getRawValue());
     }
   }
+
+  // Save BOE row
+  saveBoe(index: number) {
+    const formGroup = this.boeFormArray.at(index) as FormGroup;
+    
+    if (formGroup.invalid) {
+      formGroup.markAllAsTouched();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    }
+
+    const value = formGroup.value;
+    const houseJobSid = this.formData?.HouseJobSid;
+    const companySid = this.formData?.CompanyMasterSid;
+
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job ID is missing — cannot save BOE');
+      return;
+    }
+
+    const payload = {
+      ...value,
+      HouseJobSid: houseJobSid,
+      CompanyMasterSid: companySid,
+      CreatedBy: this.formData?.CreatedBy || this.userData?.userEmail,
+      UpdatedBy: this.userData?.userEmail,
+      Remarks: value.Note,
+      AckNumber: value.AckNo,
+      Sno: index + 1
+    };
+
+    this.spinner.show();
+
+    // Update existing BOE
+    if (value.HouseJobBOESid) {
+      this.operationService.updateBoeById(value.HouseJobBOESid, payload).subscribe({
+        next: (resp: any) => {
+          this.spinner.hide();
+          if (resp.status) {
+            this.appSettingService.showSuccess('BOE updated successfully');
+            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+          } else {
+            this.appSettingService.showError(resp.message || 'Error updating BOE');
+          }
+        },
+        error: (err) => {
+          this.spinner.hide();
+          this.appSettingService.showError('Error updating BOE');
+          console.error('Error updating BOE:', err);
+        }
+      });
+    } 
+    // Create new BOE
+    else {
+      this.operationService.createBoe(payload).subscribe({
+        next: (resp: any) => {
+          this.spinner.hide();
+          if (resp.status) {
+            const created = resp?.data || resp;
+            const newId = created?.HouseJobBOESid ?? null;
+
+            if (newId) {
+              formGroup.patchValue({ HouseJobBOESid: newId });
+            }
+            this.appSettingService.showSuccess('BOE created successfully');
+            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+          } else {
+            this.appSettingService.showError(resp.message || 'Error creating BOE');
+          }
+        },
+        error: (err) => {
+          this.spinner.hide();
+          this.appSettingService.showError('Error creating BOE');
+          console.error('Error creating BOE:', err);
+        }
+      });
+    }
+  }
+
+  // Validate BOE form array
+  validateBoeArray(): boolean {
+    if (!this.boeFormArray || this.boeFormArray.length === 0) {
+      this.validationResult.emit(true); // Empty is valid
+      return true;
+    }
+
+    if (this.boeFormArray.invalid) {
+      this.boeFormArray.markAllAsTouched();
+      this.appSettingService.showError("Please fill all the required fields correctly");
+      this.validationResult.emit(false);
+      return false;
+    }
+
+    for (let i = 0; i < this.boeFormArray.length; i++) {
+      const boe = this.boeFormArray.at(i) as FormGroup;
+
+      const requiredFields = ['BOENo'];
+      const hasAllRequired = requiredFields.every(field => {
+        const control = boe.get(field);
+        return !!control?.value;
+      });
+
+      if (!hasAllRequired) {
+        this.appSettingService.showWarning(
+          `[SNo: ${i + 1}] Please fill all required mandatory (*) fields.`
+        );
+        this.validationResult.emit(false);
+        return false;
+      }
+    }
+
+    this.validationResult.emit(true);
+    return true;
+  }
+
+  // Pagination methods
+  updateBoePagination() {
+    this.boeDataLength = this.boeFormArray.length;
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.slicedBoeFormArray = this.boeFormArray.controls.slice(start, end);
+  }
+
+  onPageChange(page: number) {
+    this.page = page;
+    this.updateBoePagination();
+  }
+
+  // Check if BOE can be edited (always true for BOE)
+  canEditBoe(index: number): boolean {
+    return true;
+  }
+  getBoeData(): any[] {
+  return this.boeFormArray ? this.boeFormArray.getRawValue() : [];
+}
+validateBoeData(): boolean {
+  return this.validateBoeArray();
+}
 }

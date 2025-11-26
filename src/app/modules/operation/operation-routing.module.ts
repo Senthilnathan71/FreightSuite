@@ -288,14 +288,14 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Shipment Instruction' }],
         },
       },
-      // {
-      //   path: 'house-job',
-      //   component: HouseJobEntryComponent,
-      //   data: {
-      //     title: 'House Job',
-      //     urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
-      //   },
-      // },
+      {
+        path: 'house-job/entry',
+        component: HouseJobEntryComponent,
+        data: {
+          title: 'House Job',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
+        },
+      },
       {
         path: 'house-job/entry/:id',
         component: HouseJobEntryComponent,
