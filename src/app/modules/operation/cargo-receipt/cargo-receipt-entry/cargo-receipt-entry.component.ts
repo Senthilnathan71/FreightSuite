@@ -1,7 +1,7 @@
 import { Component, effect, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbModalRef, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalRef, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -14,6 +14,14 @@ import { FeatherModule } from 'angular-feather';
 import { Subject } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
+import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -26,7 +34,8 @@ import { SearchableDropdown } from "src/app/component/searchable-dropdown/search
     ReactiveFormsModule,
     CustomDatePipe,
     FormsModule,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule 
 ],
   templateUrl: './cargo-receipt-entry.component.html',
   styleUrl: './cargo-receipt-entry.component.scss',
@@ -45,6 +54,10 @@ export class CargoReceiptEntryComponent implements OnInit {
   BookingHeaderSid!: number;
   BookingProductSid!: number;
   bookingData: any;
+  MenuMasterSid: any;
+    currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
   isEditMode = false;
   modalRef: NgbModalRef;
   today = this.calendar.getToday();
@@ -52,6 +65,7 @@ export class CargoReceiptEntryComponent implements OnInit {
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   currentDate = new Date();
   currentCompany: any;
+  currentBranch: any;
   cfsList:any[] = [];
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
 
@@ -64,7 +78,11 @@ export class CargoReceiptEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private calendar: NgbCalendar,
     private datePipe: CustomDatePipe,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    public mps: MenuPermissionService,
+    private commonService: CommonService,
+    private masterService: MasterService,
+    private modalService: NgbModal,
   ) {
     effect(() => {
       const cfsData = this.dropdownStore.customerTypeData();
@@ -75,6 +93,9 @@ export class CargoReceiptEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.mps.init().subscribe();
     this.initForm();
     this.loadAllFields();
     this.route.paramMap.subscribe((param) => {
@@ -286,5 +307,86 @@ export class CargoReceiptEntryComponent implements OnInit {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  showInfo() {
+        if(!this.bookingData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.bookingData;
+        modalRef.componentInstance.idLabel = 'Cargo Receipt Id';
+        modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+      }
+      openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions', error);
+          }
+        );
+      }
+    
+      openEmail() {
+      if (!this.bookingData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.bookingData;
+      modalRef.componentInstance.idLabel = 'Cargo Receipt Id';
+      modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+    }
+    
+    openAuthority() {
+      if (!this.bookingData) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.bookingData;
+      modalRef.componentInstance.idLabel = 'Cargo Receipt Id';
+      modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+    }
+    
+    openEDoc() {
+      if (!this.bookingData) return;
+      const modalRef = this.modalService.open(EdocComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.bookingData;
+      modalRef.componentInstance.idLabel = 'Cargo Receipt Id';
+      modalRef.componentInstance.idValue = this.bookingData.BookingHeaderSid;
+    const data:any={
+        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch.BranchMasterSid,
+        MenuMasterSid : this.MenuMasterSid,
+        DocumentSid: this.bookingData?.BookingHeaderSid
+      }
+    
+          this.commonService.documentData.set(data)
+    }
+  
+    openFollowup() {
+  
+    }
   
 }

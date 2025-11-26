@@ -799,7 +799,7 @@ export class OperationService {
   }
 
   deleteCreditNoteById(VoucherHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    return this.http.delete<{ status: boolean ,data: any }>(`credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })

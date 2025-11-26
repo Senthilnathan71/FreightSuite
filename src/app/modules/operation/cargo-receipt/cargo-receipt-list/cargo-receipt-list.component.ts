@@ -19,6 +19,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-cargo-receipt-list',
@@ -61,26 +62,7 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
   currentBranch: any;
   userData: any;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Booking',
-        // condition: (row: any) => this.hasPermission('View')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'BookingHeaderSid',
-    emptyMessage: 'No cargo receipt found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   tableLoading = false;
   headerActions: HeaderAction[] = [];
@@ -104,6 +86,7 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
     private excelReportService: ExcelExportService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -123,6 +106,10 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
     // this.loadCargoReceipts();
     this.initializeHeaderActions();
     this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+          this.initializeTableConfig();
+          this.initializeHeaderActions();
+        })
     // this.initializeModalDropdownItems();
     super.ngOnInit();
   }
@@ -218,8 +205,9 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
   }
 
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+  private initializeTableConfig() {
+    this.tableConfig = {
+    columns: [
       {
         key: 'departmentName',
         label: 'Dept',
@@ -306,37 +294,27 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Booking',
+        state: !this.mps.can('view')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'BookingHeaderSid',
+    emptyMessage: 'No cargo receipt found',
+    dragAndDrop: true
+  };
   }
 
-  // initializeModalDropdownItems(): void {
-  //   this.modalDropdownItems = [
-  //     {
-  //       label: 'Edoc',
-  //       icon: 'fas fa-file-alt',
-  //       action: 'edoc',
-  //       condition: this.hasPermission('Edoc')
-  //     },
-  //     {
-  //       label: 'Terms & Condition',
-  //       icon: 'fas fa-clipboard',
-  //       action: 'terms',
-  //       condition: this.hasPermission('Terms and Condition')
-  //     },
-  //     {
-  //       label: 'Authorize',
-  //       icon: 'fas fa-shield-alt',
-  //       action: 'authority',
-  //       condition: this.hasPermission('Authority')
-  //     },
-  //     {
-  //       label: 'Email',
-  //       icon: 'fas fa-envelope',
-  //       action: 'email',
-  //       condition: this.hasPermission('Email')
-  //     }
-  //   ];
-  // }
 
   onActionTriggered(action: string): void {
     switch (action) {
@@ -354,24 +332,6 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
     }
   }
 
-  // onModalDropdownItemClick(action: string): void {
-  //   switch (action) {
-  //     case 'edoc':
-  //       this.openEDoc();
-  //       break;
-  //     case 'terms':
-  //       this.openTandC();
-  //       break;
-  //     case 'authority':
-  //       this.openAuthority();
-  //       break;
-  //     case 'email':
-  //       this.openEmail();
-  //       break;
-  //     default:
-  //       console.warn(`Unknown dropdown action: ${action}`);
-  //   }
-  // }
 
   private updateHeaderActionState(): void {
     this.headerActions = this.headerActions.map(action => {

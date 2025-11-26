@@ -10,6 +10,11 @@
             <div class="brand-content">
                 <h1 class="workspace-title">Master Air Waybill</h1>
             </div>
+            @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
         </div>
         <div class="header-actions">
             <div class="action-group" *ngIf="isEditMode">
@@ -62,9 +67,10 @@
 
 
             <div class="action-group">
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                [disabled]="(!mps.can('update') && isEditMode)">
                     <i class="fas fa-save me-1"></i>
-                    <span>{{isEditMode ? 'Update' : 'Save'}}</span>
+                    <span>Save</span>
                 </button>
             </div>
 
