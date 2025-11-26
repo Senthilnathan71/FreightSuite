@@ -125,7 +125,7 @@ export class HouseJobEntryComponent  implements OnInit {
     |--------------------------------------------------
   */
 
-
+@ViewChild(BoeEntryComponent) boeComponent!: BoeEntryComponent;
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   parsedBookings: BookingData[] = [];
   showParsedData = false;
@@ -146,6 +146,7 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
+  cargoCurrencyValue: any;
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
   chargeWiseSummary : any[] = [];
@@ -161,6 +162,7 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
   ];
+  
 
   // Variable Declaration - Header Part
   HouseJobSid: number;
@@ -238,7 +240,7 @@ auditLogs: any[] = []; // Stores audit logs
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
-    { id: 3, name: 'Refer' },
+    { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
   ];
@@ -276,6 +278,11 @@ auditLogs: any[] = []; // Stores audit logs
   currencyList: any[] = [];
   imcoList: any[] = [];
   uomList: any[] = [];
+  yardlist: any[] = [];
+  cfslist: any[] = [];
+  yardCFSList: any[] = [];
+  filteredYardCFSList: any[] = [];
+  currentYardCFSType: 'yard' | 'cfs' | null = null;
     measurementUnitList =[
     { id: 1, name: 'M' },
     { id: 2, name: 'CM' },
@@ -442,6 +449,9 @@ auditLogs: any[] = []; // Stores audit logs
     });
     this.spinner.hide();
   });
+    this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
+    console.log('CargoCurrency value changed:', value);
+  });
 }
   /**
   |--------------------------------------------------
@@ -491,7 +501,7 @@ auditLogs: any[] = []; // Stores audit logs
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
       FreightTerms : [null],
-      JobType: [{value:null, disabled:true}],
+      JobType: [null],
       Coload: [false],
       ShipmentType: [false],
       IncoTerms: [null, [Validators.required]],
@@ -953,7 +963,9 @@ loadHeaderLookups() {
     incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
     salesmans: this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
     forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
-  }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder }) => {
+    yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
+    cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),
+  }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
     this.shipperList = shippers.data;
     this.filteredShipperList = shippers.data;
     this.consigneeList = consignees.data;
@@ -964,6 +976,8 @@ loadHeaderLookups() {
     this.incoList = incos.data;
     this.salesmanList = salesmans;
     this.agentList = agents.data;
+    this.yardlist = yard.data;
+    this.cfslist = cfs.data;
     this.deliveryAgentList = [...this.agentList];
     this.originAgentList = [...this.agentList];
     this.forwarderList = forwarder.data;
@@ -1333,202 +1347,219 @@ loadHeaderLookups() {
     }
   }
 
-
+onCurrencyChange(event: any) {
+  console.log('Currency dropdown change:', event);
+  console.log('Form control value:', this.otherForm.get('CargoCurrency')?.value);
+}
 
 
   onSubmit() {
-    if (this.houseJobForm.invalid) {
-      this.houseJobForm.markAllAsTouched();
-      this.houseJobForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
-      return;
-    }
-    const houseJobFormValue = this.houseJobForm.getRawValue();
-    const cargoFormValue = this.cargoForm.getRawValue();
-    const otherFormValue = this.otherForm.getRawValue();
-    const detailFormValue = this.detailForm.getRawValue();
-    const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    console.log('=== FORM DEBUG INFO ===');
-console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
-console.log('DoNo from form:', otherFormValue?.DONo);
-console.log('DoDate from form:', otherFormValue?.DODate);
-console.log('Full otherForm value:', otherFormValue);
-
-    const payload = {
-      MasterJobSid : houseJobFormValue.MasterJobSid,
-      BookingNo : houseJobFormValue.BookingNo,
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid : currentMenuId,
-      DepartmentMasterSid: houseJobFormValue.DepartmentMasterSid,
-      CustomerMasterSid: houseJobFormValue.CustomerMasterSid,
-      CustomerBranchSid: houseJobFormValue.CustomerBranchSid || null,
-      CustomerName: houseJobFormValue.CustomerName,
-      CustomerAddress: houseJobFormValue.CustomerAddress,
-      SalesmanSid: houseJobFormValue.SalesmanSid || null,
-      ShipperName: houseJobFormValue.ShipperName,
-      ShipperAddress: houseJobFormValue.ShipperAddress,
-      ConsigneeName: houseJobFormValue.ConsigneeName,
-      ConsigneeAddress: houseJobFormValue.ConsigneeAddress,
-      Notify: houseJobFormValue.Notify || '',
-      NotifyAddress: houseJobFormValue.NotifyAddress || '',
-      DestinationAgent: houseJobFormValue.DestinationAgent,
-      AgentAddress: houseJobFormValue.AgentAddress || '',
-      CarrierName: houseJobFormValue.CarrierName || null,
-      QuotationHeaderSid: houseJobFormValue.QuotationHeaderSid || null,
-      HBLNo: houseJobFormValue.HBLNo || '',
-      MBLNo: houseJobFormValue.MBLNo || '',
-      MBLDate: houseJobFormValue.MBLDate ? new Date(houseJobFormValue.MBLDate) : null,
-      status: houseJobFormValue.status === 'Active' ? 'A' : 'S',
-      VesselName: houseJobFormValue.VesselName || null,
-      VoyageMasterSid: houseJobFormValue.VoyageMasterSid || null,
-      VoyageNo: houseJobFormValue.VoyageNo || null,
-      ETA: houseJobFormValue.ETA ? new Date(houseJobFormValue.ETA) : null,
-      ETD: houseJobFormValue.ETD ? new Date(houseJobFormValue.ETD) : null,
-      POO: houseJobFormValue.POO || null,
-      POL: houseJobFormValue.POL,
-      POD: houseJobFormValue.POD,
-      POLTerminal: houseJobFormValue.POLTerminal || '',
-      PODTerminal: houseJobFormValue.PODTerminal || '',
-      FPD: houseJobFormValue.FPD || null,
-      MovementType: houseJobFormValue.MovementType || null,
-      DoValid: houseJobFormValue.DoValid ? new Date(houseJobFormValue.DoValid) : null,
-      Coload: houseJobFormValue.Coload ? 'Y' : 'N',
-      ShipmentType: houseJobFormValue.ShipmentType ? 'Y' : 'N',
-      IncoTerms: houseJobFormValue.IncoTerms,
-      InternalNote: houseJobFormValue.InternalNote || '',
-      GeneralNote: houseJobFormValue.GeneralNote || '',
-      NominatedBy: houseJobFormValue.NominatedBy || 'Self',
-      FreightTerms : houseJobFormValue.FreightTerms || '',
-      JobType: houseJobFormValue.JobType || '',
-      ShipmentNo: houseJobFormValue.ShipmentNo || '',
-      houseJobCargo: {
-        HouseJobCargoSid : cargoFormValue.HouseJobCargoSid || null,
-        CargoType: cargoFormValue.CargoType || null,
-        ContainerType: cargoFormValue.ContainerType || null,
-        NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
-        GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
-        NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
-        Volume: parseFloat(cargoFormValue.Volume) || 0,
-        Volumetric: parseFloat(cargoFormValue.Volumetric) || 0,
-        ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
-        NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
-        ShipmentTerms: cargoFormValue.ShipmentTerms || null,
-         CommodityDescription: cargoFormValue.CommodityDescription || null,
-          MarksAndNumber: cargoFormValue.MarksAndNumber || null,
-        MovementType: cargoFormValue.MovementType || null,
-        FreightTerms: cargoFormValue.FreightTerms || null,
-        ModeOfTransport : cargoFormValue.ModeOfTransport || null,
-        StuffingAt: cargoFormValue.StuffingAt || 'Dock',
-      },
-      
-      houseJobOthers: {
-        HouseJobOthersSid : otherFormValue.HouseJobOthersSid || null,
-        CustomerRefNo: otherFormValue.CustomerRefNo || '',
-        YardCFS: otherFormValue.YardCFS || '',
-        ReleaseType: otherFormValue.ReleaseType || null,
-        HBLNo: otherFormValue.HBLNo || '',
-        Forwarder: otherFormValue.Forwarder || null,
-        ForwarderAddress: otherFormValue.ForwarderAddress || '',
-        NotifyParty: otherFormValue.NotifyParty || null,
-        NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
-        Notify2: otherFormValue?.Notify2,
-        NotifyAddress2: otherFormValue?.NotifyAddress2,
-        Coloader: otherFormValue?.Coloader,
-        PickupPlace: otherFormValue.PickupPlace || '',
-        DeliveryPlace: otherFormValue.DeliveryPlace || '',
-        DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
-        CHAName: otherFormValue.CHAName || '',
-        PickupAddress: otherFormValue.PickupAddress || '',
-        DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency?.currencyCode || null,
-        CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
-        SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
-        BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
-        Depo: otherFormValue.Depo || '',
-        ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
-        SwitchBLAgent: otherFormValue?.SwitchBLAgent,
-        AgentAddress: otherFormValue?.AgentAddress,
-        SwitchBLShipper: otherFormValue?.SwitchBLShipper,
-        SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
-        SwitchLocation: otherFormValue?.SwitchLocation,
-        CarrierBookingRef : otherFormValue?.CarrierBookingRef,
-        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
-        DONo: otherFormValue?.DoNo || otherFormValue?.DONo || '',
-       DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
-       InternalNote: otherFormValue?.InternalNote || '',
-       GeneralNote: otherFormValue?.GeneralNote || ''
-      },
-      houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
-        HouseJobProductSid : product.HouseJobProductSid || null,
-        ProductName: product.ProductName || '',
-        ShippingBillNo: product.ShippingBillNo || '',
-        ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
-        ExternaPkg: product.ExternaPkg || null,
-        ExternlQty: String(product.ExternlQty),
-        GrossWeight: parseFloat(product.GrossWeight) || 0,
-        NetWeight: parseFloat(product.NetWeight) || 0,
-        Volume: parseFloat(product.Volume) || 0,
-        Volumetric: parseFloat(product.Volumetric) || 0,
-        IsHaz: product.IsHaz ? 'Y' : 'N',
-        ImcoClass: product.ImcoClass || '',
-        UnNo: product.UnNo || '',
-        PkgGroup: product.PkgGroup || '',
-        Length: Number(product.Length),
-        Width: Number(product.Width),
-        Height: Number(product.Height),
-        UomMasterSid: product.UomMasterSid,
-        CargoRecDate : product.CargoRecDate,
-        ContainerNo : product.ContainerNo,
-        MarksAndNumbers : product.MarksAndNumbers,
-        DeliveryDate: product.DeliveryDate,
-        DeliveredQty: product.DeliveredQty,
-      })),
-      houseConnections: this.connectionResult,
-      bookingRates: this.rateResult,
-      milestones: this.milestoneResult ,
-      ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
-    };
-
-    console.log('Submitted payload:', payload);
-
-    if (this.isEditMode && this.HouseJobSid) {
-      this.operationService.updateHouseById(this.HouseJobSid, payload).subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess('House Job successfully updated.');
-            this.loadHouseById(this.HouseJobSid);
-          } else {
-            this.appSettingService.showError('Error updating booking.');
-            console.error(resp.message);
-          }
-        },
-        error: (err) => {
-          this.appSettingService.showError('Failed to update booking.');
-          console.error(err);
-        }
-      });
-    } 
-    // else {
-    //   this.operationService.createHouse(payload).subscribe({
-    //     next: (resp: any) => {
-    //       if (resp.status) {
-    //         this.appSettingService.showSuccess('Booking successfully created.');
-    //         const bookingId = resp.data?.newBooking?.HouseJobSid;
-    //         this.router.navigate(['operation/booking/entry', bookingId]);
-    //       } else {
-    //         this.appSettingService.showError('Error creating booking.');
-    //         console.error(resp.message);
-    //       }
-    //     },
-    //     error: (err) => {
-    //       this.appSettingService.showError('Failed to create booking.');
-    //       console.error(err);
-    //     }
-    //   });
-    // }
+  if (this.houseJobForm.invalid) {
+    this.houseJobForm.markAllAsTouched();
+    this.houseJobForm.updateValueAndValidity();
+    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    return;
   }
+
+  const houseJobFormValue = this.houseJobForm.getRawValue();
+  const cargoFormValue = this.cargoForm.getRawValue();
+  const otherFormValue = this.otherForm.getRawValue();
+  const detailFormValue = this.detailForm.getRawValue();
+  const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
+  console.log('=== FORM DEBUG INFO ===');
+  console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
+  console.log('DONo from form:', otherFormValue?.DONo);
+  console.log('DODate from form:', otherFormValue?.DODate);
+  console.log('SwitchBLShipper from form:', otherFormValue?.SwitchBLShipper);
+  console.log('SwitchLocation from form:', otherFormValue?.SwitchLocation);
+  console.log('Full otherForm value:', otherFormValue);
+
+  // Fix CargoCurrency extraction
+  let cargoCurrencyValue = null;
+const rawCargoCurrency = otherFormValue.CargoCurrency;
+
+console.log('CargoCurrency debug:', {
+  rawValue: rawCargoCurrency,
+  type: typeof rawCargoCurrency,
+  isEmptyString: rawCargoCurrency === '',
+  extractedValue: cargoCurrencyValue
+});
+
+if (rawCargoCurrency && rawCargoCurrency !== '') {
+  if (typeof rawCargoCurrency === 'object' && rawCargoCurrency.currencyCode) {
+    cargoCurrencyValue = rawCargoCurrency.currencyCode;
+  } else if (typeof rawCargoCurrency === 'string' && rawCargoCurrency.trim() !== '') {
+    cargoCurrencyValue = rawCargoCurrency;
+  }
+}
+
+console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
+
+  const payload = {
+    MasterJobSid: houseJobFormValue.MasterJobSid,
+    BookingNo: houseJobFormValue.BookingNo,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    MenuMasterSid: currentMenuId,
+    DepartmentMasterSid: houseJobFormValue.DepartmentMasterSid,
+    CustomerMasterSid: houseJobFormValue.CustomerMasterSid,
+    CustomerBranchSid: houseJobFormValue.CustomerBranchSid || null,
+    CustomerName: houseJobFormValue.CustomerName,
+    CustomerAddress: houseJobFormValue.CustomerAddress,
+    SalesmanSid: houseJobFormValue.SalesmanSid || null,
+    ShipperName: houseJobFormValue.ShipperName,
+    ShipperAddress: houseJobFormValue.ShipperAddress,
+    ConsigneeName: houseJobFormValue.ConsigneeName,
+    ConsigneeAddress: houseJobFormValue.ConsigneeAddress,
+    Notify: houseJobFormValue.Notify || '',
+    NotifyAddress: houseJobFormValue.NotifyAddress || '',
+    DestinationAgent: houseJobFormValue.DestinationAgent,
+    AgentAddress: houseJobFormValue.AgentAddress || '',
+    CarrierName: houseJobFormValue.CarrierName || null,
+    QuotationHeaderSid: houseJobFormValue.QuotationHeaderSid || null,
+    HBLNo: houseJobFormValue.HBLNo || '',
+    MBLNo: houseJobFormValue.MBLNo || '',
+    MBLDate: houseJobFormValue.MBLDate ? new Date(houseJobFormValue.MBLDate) : null,
+    status: houseJobFormValue.status === 'Active' ? 'A' : 'S',
+    VesselName: houseJobFormValue.VesselName || null,
+    VoyageMasterSid: houseJobFormValue.VoyageMasterSid || null,
+    VoyageNo: houseJobFormValue.VoyageNo || null,
+    ETA: houseJobFormValue.ETA ? new Date(houseJobFormValue.ETA) : null,
+    ETD: houseJobFormValue.ETD ? new Date(houseJobFormValue.ETD) : null,
+    POO: houseJobFormValue.POO || null,
+    POL: houseJobFormValue.POL,
+    POD: houseJobFormValue.POD,
+    POLTerminal: houseJobFormValue.POLTerminal || '',
+    PODTerminal: houseJobFormValue.PODTerminal || '',
+    FPD: houseJobFormValue.FPD || null,
+    MovementType: houseJobFormValue.MovementType || null,
+    DoValid: houseJobFormValue.DoValid ? new Date(houseJobFormValue.DoValid) : null,
+    Coload: houseJobFormValue.Coload ? 'Y' : 'N',
+    ShipmentType: houseJobFormValue.ShipmentType ? 'Y' : 'N',
+    IncoTerms: houseJobFormValue.IncoTerms,
+    InternalNote: houseJobFormValue.InternalNote || '',
+    GeneralNote: houseJobFormValue.GeneralNote || '',
+    NominatedBy: houseJobFormValue.NominatedBy || 'Self',
+    FreightTerms: houseJobFormValue.FreightTerms || '',
+    JobType: houseJobFormValue.JobType || '',
+    ShipmentNo: houseJobFormValue.ShipmentNo || '',
+    
+    houseJobCargo: {
+      HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
+      CargoType: cargoFormValue.CargoType || null,
+      ContainerType: cargoFormValue.ContainerType || null,
+      NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
+      GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
+      NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
+      Volume: parseFloat(cargoFormValue.Volume) || 0,
+      Volumetric: parseFloat(cargoFormValue.Volumetric) || 0,
+      ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
+      NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
+      ShipmentTerms: cargoFormValue.ShipmentTerms || null,
+      CommodityDescription: cargoFormValue.CommodityDescription || null,
+      MarksAndNumber: cargoFormValue.MarksAndNumber || null,
+      MovementType: cargoFormValue.MovementType || null,
+      FreightTerms: cargoFormValue.FreightTerms || null,
+      ModeOfTransport: cargoFormValue.ModeOfTransport || null,
+      StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+    },
+    
+    houseJobOthers: {
+      HouseJobOthersSid: otherFormValue.HouseJobOthersSid || null,
+      CustomerRefNo: otherFormValue.CustomerRefNo || '',
+      YardCFS: otherFormValue.YardCFS || '',
+      ReleaseType: otherFormValue.ReleaseType || null,
+      HBLNo: otherFormValue.HBLNo || '',
+      Forwarder: otherFormValue.Forwarder || null,
+      ForwarderAddress: otherFormValue.ForwarderAddress || '',
+      NotifyParty: otherFormValue.NotifyParty || null,
+      NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
+      Notify2: otherFormValue?.Notify2 || null,
+      NotifyAddress2: otherFormValue?.NotifyAddress2 || '',
+      Coloader: otherFormValue?.Coloader || null,
+      PickupPlace: otherFormValue.PickupPlace || '',
+      DeliveryPlace: otherFormValue.DeliveryPlace || '',
+      DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
+      CHAName: otherFormValue.CHAName || '',
+      PickupAddress: otherFormValue.PickupAddress || '',
+      DeliveryAddress: otherFormValue.DeliveryAddress || '',
+      // FIXED: CargoCurrency handling
+      CargoCurrency: cargoCurrencyValue,
+      CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
+      SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
+      BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
+      Depo: otherFormValue.Depo || '',
+      ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
+      SwitchBLAgent: otherFormValue?.SwitchBLAgent || null,
+      AgentAddress: otherFormValue?.AgentAddress || '',
+      // FIXED: Correct field names
+      SwitchBLShipper: otherFormValue?.SwitchBLShipper || null,
+      SwitchBLConsignee: otherFormValue?.SwitchBLConsignee || null,
+      SwitchLocation: otherFormValue?.SwitchLocation || '',
+      CarrierBookingRef: otherFormValue?.CarrierBookingRef || '',
+      CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
+      // FIXED: DONo and DODate handling
+      DONo: otherFormValue?.DONo || '',
+      DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
+      InternalNote: otherFormValue?.InternalNote || '',
+      GeneralNote: otherFormValue?.GeneralNote || ''
+    },
+    
+    houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
+      HouseJobProductSid: product.HouseJobProductSid || null,
+      ProductName: product.ProductName || '',
+      ShippingBillNo: product.ShippingBillNo || '',
+      ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
+      ExternaPkg: product.ExternaPkg || null,
+      ExternlQty: String(product.ExternlQty),
+      GrossWeight: parseFloat(product.GrossWeight) || 0,
+      NetWeight: parseFloat(product.NetWeight) || 0,
+      Volume: parseFloat(product.Volume) || 0,
+      Volumetric: parseFloat(product.Volumetric) || 0,
+      IsHaz: product.IsHaz ? 'Y' : 'N',
+      ImcoClass: product.ImcoClass || '',
+      UnNo: product.UnNo || '',
+      PkgGroup: product.PkgGroup || '',
+      Length: Number(product.Length),
+      Width: Number(product.Width),
+      Height: Number(product.Height),
+      UomMasterSid: product.UomMasterSid,
+      CargoRecDate: product.CargoRecDate,
+      ContainerNo: product.ContainerNo,
+      MarksAndNumbers: product.MarksAndNumbers,
+      DeliveryDate: product.DeliveryDate,
+      DeliveredQty: product.DeliveredQty,
+    })),
+    houseJobBOE: boeData,
+    houseConnections: this.connectionResult,
+    bookingRates: this.rateResult,
+    milestones: this.milestoneResult,
+    ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
+  };
+
+  console.log('Final payload being sent:', JSON.stringify(payload, null, 2));
+
+  // Rest of your API call code remains the same...
+  if (this.isEditMode && this.HouseJobSid) {
+    this.operationService.updateHouseById(this.HouseJobSid, payload).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('House Job successfully updated.');
+          this.loadHouseById(this.HouseJobSid);
+        } else {
+          this.appSettingService.showError('Error updating booking.');
+          console.error(resp.message);
+        }
+      },
+      error: (err) => {
+        this.appSettingService.showError('Failed to update booking.');
+        console.error(err);
+      }
+    });
+  }
+}
 
   /**
     |--------------------------------------------------
@@ -1553,11 +1584,14 @@ console.log('Full otherForm value:', otherFormValue);
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
       this.b['MovementType'].setValue(null);
+      this.b['JobType'].setValue('');
       this.handleImportExport();
+      this.handleCFSOrYard()
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+    this.autoSetJobType(department);
     if (this.selectedDepartmentType === "AIR") {
     // Set IncoTerms to CIF
     this.b['IncoTerms']?.setValue('CIF');
@@ -1582,6 +1616,28 @@ console.log('Full otherForm value:', otherFormValue);
     this.onRouteChange()
     this.handleImportExport();
   }
+  private autoSetJobType(department: any): void {
+  if (!department) {
+    this.b['JobType']?.setValue('');
+    return;
+  }
+
+  const departmentName = department.departmentName?.toLowerCase() || '';
+  const exportImport = department.ExportImport;
+  
+  let jobType = '';
+  
+  // Determine JobType based on department name and export/import
+  
+    if (exportImport === 'Export') {
+      jobType = 'Export';
+    } else if (exportImport === 'Import') {
+      jobType = 'Import';
+    } 
+  
+  // Set the JobType value
+  this.b['JobType']?.setValue(jobType);
+}
 
   onRouteChange(): void {
     const polSid = this.b['POL']?.value;
@@ -1771,35 +1827,34 @@ console.log('Full otherForm value:', otherFormValue);
   }
 
   handlePOLChange(selectedPort: any) {
-    this.b['VesselName']?.setValue(null);
-    this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    if (!selectedPort) {
-      this.filteredPOD = [...this.filteredPorts];
-      return;
-    }
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
-    this.b['ETA']?.setValue(new Date(selectedPort.ETA));
-    this.getVesselBasedOnPorts();
+  this.b['VesselName']?.setValue(null);
+  this.b['VoyageNo']?.setValue(null);
+  this.b['ETA']?.setValue('');
+  this.b['ETD']?.setValue('');
+  if (!selectedPort) {
+    this.filteredPOD = [...this.filteredPorts];
+    return;
   }
+  this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+  this.getVesselBasedOnPorts(); // Add this call
+}
 
   handlePODChange(selectedPort: any) {
-    this.b['VesselName']?.setValue(null);
-    this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    if (!selectedPort) {
-      this.filteredPOL = [...this.filteredPorts];
-      this.b['FPD']?.setValue(null);
-      this.PODandFPODsame = true;
-      return;
-    }
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
-    this.b['FPD']?.setValue(selectedPort.PortCode);
-    this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
-    this.getVesselBasedOnPorts();
+  this.b['VesselName']?.setValue(null);
+  this.b['VoyageNo']?.setValue(null);
+  this.b['ETA']?.setValue('');
+  this.b['ETD']?.setValue('');
+  if (!selectedPort) {
+    this.filteredPOL = [...this.filteredPorts];
+    this.b['FPD']?.setValue(null);
+    this.PODandFPODsame = true;
+    return;
   }
+  this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+  this.b['FPD']?.setValue(selectedPort.PortCode);
+  this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value;
+  this.getVesselBasedOnPorts(); // Add this call
+}
 
   handleFPODChange(port){
     if(!port){
@@ -1809,16 +1864,26 @@ console.log('Full otherForm value:', otherFormValue);
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
   }
 
-  onVesselChange(vessel: any) {
-    if (!vessel) {
-      this.voyageList = [];
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
-      return;
-    }
-    this.getVoyageForPortsAndVessels();
+  onVesselChange(vesselVoyage: any) {
+  console.log('Selected vessel voyage:', vesselVoyage);
+  if (!vesselVoyage) {
+    this.houseJobForm.patchValue({
+      VoyageMasterSid: null,
+      VoyageNo: null,
+      ETA: '',
+      ETD: ''
+    });
+    return;
   }
+  
+  this.houseJobForm.patchValue({
+    VoyageMasterSid: vesselVoyage.VoyageMasterSid,
+    VoyageNo: vesselVoyage.VoyageNo,
+    ETA: new Date(vesselVoyage.ETA),
+    ETD: new Date(vesselVoyage.ETD)
+  });
+}
+
 
   onVoyageChange(voyage: any) {
     if (!voyage) {
@@ -1847,29 +1912,50 @@ console.log('Full otherForm value:', otherFormValue);
   }
 
   getVesselBasedOnPorts() {
-    // const POO = this.b['POO']?.value;
-    const POL = this.b['POL']?.value;
-    const POD = this.b['POD']?.value;
-    // const FPOD = this.b['FPD']?.value;
-    const MovementType = this.selectedDepartment?.departmentType;
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    if (!POLSid || !PODSid) return;
-    const payload = {  POL: POLSid, POD: PODSid, MovementType: MovementType };
-    this.operationService.getVesselsBasedOnPorts(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.headerVesselList = resp.data;
-          console.log(this.headerVesselList);
-          if (this.headerVesselList.length === 0) {
-            this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")
-          }
-        } else {
-          this.appSettingService.showError("Error loading Vessel")
+  const POL = this.b['POL']?.value;
+  const POD = this.b['POD']?.value;
+  const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
+  const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
+  const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+  
+  if (!POLSid || !PODSid || !voyageType) return;
+  
+  const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
+
+  this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.headerVesselList = resp.data.map(vslVoy => ({
+          ...vslVoy,
+          ETD: this.datePipe.transform(vslVoy.ETD),
+          ETA: this.datePipe.transform(vslVoy.ETA)
+        }));
+        console.log('Vessel list:', this.headerVesselList);
+        
+        if (this.headerVesselList.length === 0) {
+          this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
         }
+      } else {
+        this.appSettingService.showError("Error loading Vessel");
       }
-    )
+    }
+  );
+}
+
+getVoyageTypeBasedOnDept(deptId: number) {
+  const dept = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
+  const deptType = dept?.departmentType;
+  switch (deptType) {
+    case 'Sea':
+      return 'Sea';
+    case 'Air':
+      return 'Air';
+    case 'Transport':
+      return 'Road';
+    default:
+      return 'Sea';
   }
+}
 
   getVoyageForPortsAndVessels() {
     const POO = this.b['POO']?.value;
@@ -2031,21 +2117,54 @@ console.log('Full otherForm value:', otherFormValue);
 
   handleCFSOrYard() {
     const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
-    if (!this.selectedDepartment && !stuffingAt && this.selectedDepartmentType !== "SEA") {
-      this.YardCFSLabel = "Yard/CFS";
+
+    console.log('handleCFSOrYard called:', {
+      selectedDepartment: this.selectedDepartment,
+      stuffingAt: stuffingAt,
+      selectedFCLLCL: this.selectedFCLLCL
+    });
+
+    if (!this.selectedDepartment) {
+      this.YardCFSLabel = "CFS";
+      this.currentYardCFSType = null;
+
       return;
     }
 
-    if (this.selectedFCLLCL === "FCL" && this.selectedDepartment?.ExportImport === "Export") {
-      const map: Record<string, string> = {
-        "Dock": "CFS Name",
-        "Factory": "Container Yard"
-      };
-      this.YardCFSLabel = map[stuffingAt] || "Yard/CFS";
-      return;
+    const isFCL = this.selectedFCLLCL === "FCL";
+    const isExport = this.selectedDepartment?.ExportImport === "Export";
+    const isLCL = this.selectedFCLLCL === "LCL";
+    const isAIR = this.selectedFCLLCL === "AIR";
+
+    console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
+
+    // Determine Yard/CFS type based on business rules
+    this.o['YardCFS']?.reset();
+    if (isFCL && isExport) {
+      if (stuffingAt === "Factory") {
+        // FCL Export with Factory Stuffing -> Container Yard
+        this.YardCFSLabel = "Yard";
+        // this.currentYardCFSType = 'yard';
+      } else {
+        this.YardCFSLabel = "CFS";
+        // this.currentYardCFSType = null;
+      }
     }
-    this.YardCFSLabel = "Yard/CFS";
+
+    else {
+
+      this.YardCFSLabel = "CFS";
+
+    }
+
+    console.log('Final Yard/CFS settings:', {
+      label: this.YardCFSLabel,
+      type: this.currentYardCFSType
+    });
+
+
   }
+
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 

@@ -2758,6 +2758,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       revenue: Array.from(revenueHmap.values())
     };
   }
+  navigateTohouseJob() {
+    this.router.navigate(['operation/house-job/entry']);
+  }
+  
 
   bookingCreateInMasterJob() {
     const bookingPayload = {
