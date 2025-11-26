@@ -9,7 +9,7 @@
           </div>
           <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Organization</h5>
           @if (isEditMode) {
-          <a class="text-info d-flex align-items-center w-2 h-2" (click)="showCustomerInfo()">
+          <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showCustomerInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -37,7 +37,7 @@
               [class.fa-spin]="btnDisable"></i>
             Save
           </button>
-          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+         <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
           <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
             <i class="fas fa-ellipsis-v"></i>
           </button>
@@ -829,23 +829,23 @@
                       tabindex="-1" aria-label="State Code" style="width: 5em;" disabled
                       [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
 
-                    <input type="text" class="custom-input-field sm gstin-fixed"
+                    <input type="text" class="custom-input-field sm gstin-fixed mx-2"
                       [value]="getPANNo()" disabled tabindex="-1" aria-label="PAN"
                       style="width: 10em;" />
 
                     <!-- 13th Digit -->
                     <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
-                      class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+                      class="custom-input-field sm gstin-editable text-center" (input)="generateGST(branchIndex)"
                       [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)"
                       aria-label="13th Digit" style="width: 4em;" />
 
                     <!-- 14th Digit (Fixed) -->
-                    <input type="text" class="custom-input-field sm gstin-fixed" value="Z" disabled tabindex="-1"
-                      aria-label="14th Digit" style="width: 3em;" />
+                    <input type="text" class="custom-input-field sm gstin-fixed mx-2" value="Z" disabled tabindex="-1"
+                      aria-label="14th Digit" style="width: 40px;" />
 
                     <!-- 15th Digit -->
                     <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
-                      class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+                      class="custom-input-field sm gstin-editable text-center" (input)="generateGST(branchIndex)"
                       aria-label="15th Digit" style="width: 4em;"
                       [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" />
 

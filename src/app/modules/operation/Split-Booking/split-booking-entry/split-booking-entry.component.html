@@ -6,12 +6,12 @@
           <div class="brand-icon">
             <i class="fas fa-code-branch"></i>
           </div>
-          <h4 class="page-title mb-0">Split Booking</h4>
+          <h5 class="page-title mb-0 text-info">Split Booking</h5>
         </div>
       </div>
       <div class="col-md-8 pb-1">
         <div
-          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
@@ -22,6 +22,25 @@
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSplit()">
             <i class="fas fa-save me-1"></i>Save
           </button>
+          
+             <div *ngIf="mps.hasAtLeastOne() " ngbDropdown class="d-inline-block">
+                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                        <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                        <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                        <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        <!-- <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem (click)="openFollowup()">
+                            <i class="fas fa-paperclip me-1"></i> Followup
+                        </button> -->
+                    </div>
+                </div>
         </div>
       </div>
     </div>
@@ -73,14 +92,14 @@
 
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input class="form-control custom-input-field sm" type="text" formControlName="ShipperName">
+                <input class="form-control custom-input-field sm" type="text" formControlName="ShipperName" placeholder="">
                 <label class="input-label">Shipper <span class="text-danger"></span></label>
               </div>
             </aside>
 
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input class="form-control custom-input-field sm" type="text" formControlName="ConsigneeName">
+                <input class="form-control custom-input-field sm" type="text" formControlName="ConsigneeName" placeholder="">
                 <label class="input-label">Consignee <span class="text-danger"></span></label>
               </div>
             </aside>
@@ -106,7 +125,7 @@
 
           <!-- Products Section -->
           <div class="col-12" *ngIf="products?.length > 0">
-              <div class="col-md-4 d-flex pb-1">
+              <div class="col-md-4 d-flex py-1">
                 <h5 class="page-title mb-0">Product</h5>
               </div>
           </div>
@@ -141,7 +160,7 @@
                         <td>{{ product.get('GrossWeight')?.value }}</td>
                         <td>{{ product.get('Volume')?.value }}</td>
 
-                        <td class="text-center">
+                        <td class="">
                           <input type="checkbox" class="form-check-input" formControlName="selected"
                             (change)="onSelectRow(i)">
                         </td>

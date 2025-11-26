@@ -292,6 +292,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         visible: true,
         dataType: 'string',
         width: '100px',
+        template: 'status',
       }
     ],
     actions: [

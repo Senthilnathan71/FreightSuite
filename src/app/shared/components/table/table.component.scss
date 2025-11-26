@@ -507,6 +507,19 @@
             box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.25);
           }
 
+           
+        // Style for disabled buttons
+        &:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+          color: #999;
+          pointer-events: all;
+
+          &:hover{
+            border: 1px solid #dee2e6;
+          }
+        }
+
           i,
           i-feather {
             width: 14px;

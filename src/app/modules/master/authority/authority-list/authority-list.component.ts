@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-authority-list',
   standalone: true,
@@ -61,15 +62,54 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
   };
     headerActions: HeaderAction[] = [];
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
+  tableConfig:TableConfig;
+    private initializeTableConfig() {
+  this.tableConfig = {
+    columns: [
+      
+      {
+        key: 'DepartmentMaster',
+        label: 'Department',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'menuName',
+        label: 'Screen ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'branchName',
+        label: 'Branch',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View Booking',
-        condition: (row: any) => this.hasPermission('View')
+        state : !this.mps.can('view')
       },
         {
         icon: 'fas fa-trash',
@@ -77,7 +117,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
         action: 'delete',
         tooltip: 'Delete Zone',
         class:"text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+        state : !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -88,7 +128,8 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     trackByKey: 'AuthorityMasterSid',
     emptyMessage: 'No Authorization found',
     dragAndDrop: true
-  };
+  }
+};
 
   tableLoading = false;
   // Alias for compatibility with existing template
@@ -100,7 +141,8 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -111,37 +153,16 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     const userInfo = this.appSettingService.getDecryptedUserProfile();
     if (userInfo) {
       this.userData = userInfo;
-      this.checkPermissions();
     }
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
+
     this.initializeTableConfig();
-    this.initializeHeaderActions();
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            this.initializeHeaderActions();
-            console.log(this.permissions);
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   protected override searchItems(): Observable<any> {
     this.spinner.show();
@@ -209,7 +230,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -257,47 +278,6 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
 
   clearFilterValue() {
     this.clearFilter();
-  }
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
-      {
-        key: 'DepartmentMaster',
-        label: 'Department',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'menuName',
-        label: 'Screen ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'branchName',
-        label: 'Branch',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
   }
 
   // Table event handlers

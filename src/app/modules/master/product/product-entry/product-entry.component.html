@@ -41,7 +41,7 @@
             Save
         </button>
         
-        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+       <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>

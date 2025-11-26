@@ -14,6 +14,14 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { OperationService } from '../../operation.service';
 import { firstValueFrom } from 'rxjs';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CommonService } from 'src/app/common/common.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -63,7 +71,9 @@ export class VendorCreditNoteEntryComponent {
   searchVendors: any[] = []; 
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
-
+  currentMenuId: number;
+   MenuMasterSid: any;
+     TandCList: any[]=[];
   CurrencyLookupConfig = {
   displayFields: ['currencyCode', 'currencyName','countryName'],
   displayLabels: ['Code', 'Name','Country'],
@@ -197,7 +207,11 @@ gstTypes = [
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
+    private commonService: CommonService,
+    private masterService: MasterService,
   ) {}
 
   ngOnInit(): void {
@@ -205,7 +219,7 @@ gstTypes = [
     if (userProfile) {
       this.userData = userProfile;
     }
-
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     try {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -240,7 +254,7 @@ gstTypes = [
 
     this.initForm();
     this.loadLookups();
-
+    this.mps.init().subscribe();
     try {
       const decryptedProfileRaw = localStorage.getItem('user-profile');
       const decryptedProfile = decryptedProfileRaw ? this.appSettingService.decrypt(decryptedProfileRaw) : null;
@@ -2403,4 +2417,94 @@ get isDraft(): boolean {
   this.recalculateAllRows();
 }
 
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.headerId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  openEmail() {
+    if (!this.vendorCreditNoteData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.headerId;
+  }
+
+openEDoc() {
+  if (!this.vendorCreditNoteData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.vendorCreditNoteData;
+  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idValue = this.vendorCreditNoteData?.headerId;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.headerId
+  }
+
+      this.commonService.documentData.set(data)
+}
+
+ openFollowup() {
+    if (!this.vendorCreditNoteData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.vendorCreditNoteData?.QuoteHeaderSid;
+    modalRef.componentInstance.parentEmail = this.vendorCreditNoteData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.vendorCreditNoteData.QuoteNumber} Date:${new Date(this.vendorCreditNoteData.QuoteDate).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
 }

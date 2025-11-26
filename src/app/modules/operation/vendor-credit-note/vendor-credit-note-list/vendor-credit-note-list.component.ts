@@ -22,6 +22,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-vendor-credit-note-list',
@@ -68,15 +69,118 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       this.isFavorite = !this.isFavorite;
     }
   
-    tableConfig: TableConfig = {
-      columns: [],
+    tableConfig:TableConfig;
+    private initializeTableConfig() {
+    this.tableConfig = {
+      columns: [
+         {
+          key: 'VoucherNumber',
+          label: 'Vendor CreditNote No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: "150px"
+        },
+        {
+        key: 'ReversalVoucherDisplay',
+        label: 'Vendor Invo No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        template: 'link'       
+      },
+        {
+          key: 'VoucherDate',
+          label: 'Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '100px',
+        },
+        {
+          key: 'VendorName',
+          label: 'Vendor Name',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '180px',
+        },
+        {
+          key: 'BillNo',
+          label: 'Bill No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '120px',
+        },
+        {
+          key: 'BillDate',
+          label: 'Bill Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '100px',
+        },
+        {
+          key: 'CurrencyCode',
+          label: 'Curr',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '100px',
+        },
+        {
+          key: 'LocalAmount',
+          label: 'Amt',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '120px',
+        },
+        {
+          key: 'MBLNo',
+          label: 'MBL No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          width: '120px',
+        },
+        {
+          key: 'Status',
+          label: 'Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+          template: 'status',
+          width: '100px',
+        }
+      ],
       actions: [
         {
           icon: 'fas fa-eye',
           label: 'View',
           action: 'view',
           tooltip: 'View Vendor Credit Note',
+          state: !this.mps.can('view')
         },
+         {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
       ],
       selectable: false,
       multiSelect: false,
@@ -86,7 +190,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       trackByKey: 'VoucherHeaderSid',
       emptyMessage: 'No Vendor CreditNote found',
       dragAndDrop: true
-    };
+    }
+  };
   
     headerActions: HeaderAction[] = [];
     modalDropdownItems: DropdownMenuItem[] = [];
@@ -114,6 +219,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       private spinner: NgxSpinnerService,
       paginationService: PaginationService,
       private datePipe: CustomDatePipe,
+      public mps : MenuPermissionService,
     ) {
       super(paginationService);
     }
@@ -125,9 +231,13 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   
       if (userProfile) {
         this.userData = userProfile;
-        this.checkPermissions();
+       ;
       }
   
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
       this.initializeHeaderActions();
       this.initializeTableConfig();
       this.initializeModalDropdownItems();
@@ -135,15 +245,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       this.loadVendorInvoices();
     }
   
-    checkPermissions() {
-      const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-      const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-      // Implement permission checking logic if needed
-    }
-  
-    hasPermission(permission: string): boolean {
-      return this.permissions.includes(permission);
-    }
+ 
   
     loadVendorInvoices() {
     this.operationService.getAllVendorInvoice().subscribe({
@@ -251,6 +353,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           label: 'Create',
           icon: 'fas fa-plus',
           action: 'create',
+          disabled: !this.mps.can('insert')
         },
         {
           label: 'Report',
@@ -262,99 +365,6 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           label: 'Reset',
           icon: 'fas fa-sync-alt',
           action: 'reset'
-        }
-      ];
-    }
-  
-    private initializeTableConfig(): void {
-      this.tableConfig.columns = [
-        {
-          key: 'VoucherNumber',
-          label: 'Vendor CreditNote No',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: "150px"
-        },
-        {
-        key: 'ReversalVoucherDisplay',
-        label: 'Vendor Invoice No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        template: 'link'       
-      },
-        {
-          key: 'VoucherDate',
-          label: 'Date',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string'
-        },
-        {
-          key: 'VendorName',
-          label: 'Vendor Name',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: '180px',
-        },
-        {
-          key: 'BillNo',
-          label: 'Bill No',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: '120px',
-        },
-        {
-          key: 'BillDate',
-          label: 'Bill Date',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string'
-        },
-        {
-          key: 'CurrencyCode',
-          label: 'Currency',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: '100px',
-        },
-        {
-          key: 'LocalAmount',
-          label: 'Amount',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'number',
-          width: '120px',
-        },
-        {
-          key: 'MBLNo',
-          label: 'MBL No',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: '120px',
-        },
-        {
-          key: 'Status',
-          label: 'Status',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'string',
-          width: '100px',
         }
       ];
     }
