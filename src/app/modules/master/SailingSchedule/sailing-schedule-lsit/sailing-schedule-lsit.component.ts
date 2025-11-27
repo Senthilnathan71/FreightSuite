@@ -19,6 +19,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 
 @Component({
@@ -84,6 +85,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
   searched = false;
 
   constructor(
+    public mps : MenuPermissionService,
     private masterService: MasterService,
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -102,38 +104,22 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     this.initializeHeaderActions();
     this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    });
     this.loadAllPorts();
 
     // initialize base list logic (reads saved paging/sort state and triggers first load)
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster?.[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response: any) => {
-          this.currentMenuPermissions = response.data?.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions).filter(
-            key => this.currentMenuPermissions[key] === 'isTrue'
-          );
-          this.initializeHeaderActions();
-        },
-        error: err => {
-          console.error('Error getting menu permissions', err);
-        }
-      });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+
+
 
   // BaseListComponent abstract implementations
   protected searchItems(): Observable<any> {
@@ -251,14 +237,14 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         label: 'View',
         action: 'view',
         tooltip: 'View Sailing Schedule',
-        condition: (row: any) => this.hasPermission('View')
+        state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
         tooltip: 'Delete Sailing Schedule',
-        condition: (row: any) => this.hasPermission('Delete'),
+        state: !this.mps.can('delete'),
         class:"text-danger"
       }
     ];
@@ -414,7 +400,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',

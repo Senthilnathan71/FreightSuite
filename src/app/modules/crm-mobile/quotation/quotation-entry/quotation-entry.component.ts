@@ -47,6 +47,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -129,8 +130,11 @@ export class QuotationEntryComponent implements OnInit {
     ApprovedBy : ''
   }
 
-  
+   rateLock: boolean = false;
+  rateLockConfig: any;
+  canUserLockRates: boolean = false;
   tariffData: any;
+  currentUserEmail: string;
   QuoteHeaderSid: number;
   currentMenuId: number;
   currentRouteIndex : number;
@@ -278,6 +282,7 @@ dataFromEnqPage:any;
 
   // SECTION2 - CONSTRUCTOR
   constructor(
+    public mps : MenuPermissionService,
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
     private router: Router,
@@ -301,19 +306,31 @@ dataFromEnqPage:any;
 
   // SECTION3 - NGONIT
   ngOnInit(): void {
+    
     this.initQuotationForm();
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      this.currentUserEmail = this.userData?.userEmail;
     }
-    this.loadAllFields();
+     
+  
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
+    console.log('Current Company:', this.currentCompany);
+  console.log('Current Branch:', this.currentBranch);
+   this.loadAllFields();
+   this.loadRateLockConfig().then(() => {
+    this.checkRateLockPermissions();
+  }).catch(error => {
+    console.error('Failed to load rate lock config:', error);
+  });
+  
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
@@ -473,28 +490,6 @@ private extractCargoData(enquiryCargo: any[]): any {
 }
 
 
-
-
-  checkPermissions() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (this.currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(this.currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
@@ -571,6 +566,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteDate: [null],
       EnquirySid: [''],
       AgreedRate : [false],
+      RateLock: [false],
       ContactPerson:[''],
       ContactNumber:['']
     })
@@ -1315,7 +1311,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       weightUnits : this.leadService.getUOMsByType('W').pipe(catchError(err => of([]))),
       vendors: this.leadService.getCustomerByItsType(supplierFilterOption).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
-      products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
+      products : this.leadService.getAllProducts().pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
     }).pipe(tap(({ departments , cargoTypes, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
@@ -1389,6 +1385,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ...response,
       LeadOrCustomer : response.LeadOrCustomer === "C",
       AgreedRate : response.AgreedRate === "Y",
+      RateLock : response.RateLock === "Y",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
       ContactPerson:response.ContactPerson,
@@ -1421,10 +1418,13 @@ private extractCargoData(enquiryCargo: any[]): any {
         Qty : cargo?.Qty,
         ShipmentTerms : cargo?.ShipmentTerms
       }
+      this.checkRateLockPermissions();
       this.addQuoteRoute(fullRouteData)
       this.handleValidationOnDept(routeIndex, route.segmentType)
       this.onRouteChange(routeIndex);
-
+    if (response.RateLock === "Y") {
+    this.lockAllRateFields();
+  }
       if (cargo) {
         (cargo.quoteProduct || []).forEach(product => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
@@ -1551,6 +1551,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       UserMasterSid: this.userData?.UserMasterSid,
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
       AgreedRate : formValue.AgreedRate ? "Y" : "N",
+      RateLock : this.isEditMode?(formValue.RateLock ? "y" :"N"): "Y",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,
@@ -1786,13 +1787,17 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   onPODChange(event: any, routeIndex: number) {
-    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    if (!event || event === undefined) {
-      routeForm.get('FPODSid')?.setValue(null);
-      return;
-    }
-    routeForm.get('FPODSid')?.setValue(event.PortMasterSid);
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  
+  if (!event || event === undefined) {
+    routeForm.get('FPODSid')?.setValue(null);
+    return;
   }
+  
+  // Auto-set FPOD with the same value as POD
+  const selectedPortId = event.PortMasterSid;
+  routeForm.get('FPODSid')?.setValue(selectedPortId);
+}
 
   onChargeChange(charge: any, routeIndex: number, carrierIndex: number, chargeIndex: number) {
     const chargeForm = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
@@ -3174,6 +3179,7 @@ ${this.userData.userName}`;
 
   ngOnDestroy(): void {
     this.commonService.clearDocumentData()
+    this.mps.clear();
     this.subscription.unsubscribe();
   }
 
@@ -3379,5 +3385,116 @@ toggleLock() {
       return (this.departments.find(dep => dep.DepartmentMasterSid === deptId)?.departmentName);
     }
   }
+ async loadRateLockConfig(): Promise<void> {
+  try {
+    if (!this.currentCompany?.CompanyMasterSid) {
+      console.warn('No company ID available for rate lock config');
+      return;
+    }
+    
+    console.log('Loading rate lock config for company:', this.currentCompany.CompanyMasterSid);
+    console.log('Current user email:', this.currentUserEmail);
+    
+    const config = await firstValueFrom(
+      this.leadService.getAllCompanyConfigsByCompanyId(this.currentCompany.CompanyMasterSid)
+    );
+    
+    console.log('All configs loaded:', config);
+    
+    // Find the QuoteRateLockUser configuration
+    this.rateLockConfig = config.find((c: any) => c.ConfigurationName === 'QuoteRateLockUser');
+    
+    console.log('Rate lock config found:', this.rateLockConfig);
+    
+    if (this.rateLockConfig) {
+      console.log('ConfigurationValue:', this.rateLockConfig.ConfigurationValue);
+      console.log('Current user email for comparison:', this.currentUserEmail);
+    } else {
+      console.log('No rate lock configuration found');
+    }
+    
+  } catch (error) {
+    console.error('Error loading rate lock configuration:', error);
+    this.rateLockConfig = null;
+  }
+}
+ checkRateLockPermissions(): void {
+  if (!this.rateLockConfig || !this.currentUserEmail) {
+    this.canUserLockRates = false;
+    return;
+  }
 
+  const allowedEmails = this.rateLockConfig.ConfigurationValue
+    ?.split(',')
+    .map((email: string) => email.trim().toLowerCase()) || [];
+
+  this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
+  
+  // Apply rate lock state based on form value
+  if (this.quotationForm.get('RateLock')?.value === true) {
+    this.lockAllRateFields();
+  }
+}
+ onRateLockChange(): void {
+  if (!this.canUserLockRates) return;
+
+  const rateLockValue = this.quotationForm.get('RateLock')?.value;
+  
+  if (rateLockValue) {
+    this.lockAllRateFields();
+  } else {
+    this.unlockAllRateFields();
+  }
+}
+ lockAllRateFields(): void {
+  this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+    const carrierArr = this.quoteCarriers(routeIndex);
+    carrierArr.controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+      const chargeArr = this.quoteCharges(routeIndex, carrierIndex);
+      chargeArr.controls.forEach((charge: FormGroup) => {
+        // Disable all charge-related rate fields
+        const rateFieldsToDisable = [
+          'RevenueRate', 'RevenueExchangeRate', 'RevenueCurrencyMasterSid',
+          'CostRate', 'CostExchangeRate', 'CostCurrencyMasterSid',
+          'Qty', 'ChargeUomSid'
+        ];
+        
+        rateFieldsToDisable.forEach(field => {
+          const control = charge.get(field);
+          if (control && control.enabled) {
+            control.disable({ emitEvent: false });
+          }
+        });
+      });
+    });
+  });
+}
+
+// Update the unlockAllRateFields method
+unlockAllRateFields(): void {
+  this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+    const carrierArr = this.quoteCarriers(routeIndex);
+    carrierArr.controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+      const chargeArr = this.quoteCharges(routeIndex, carrierIndex);
+      chargeArr.controls.forEach((charge: FormGroup) => {
+        // Enable all charge-related rate fields
+        const rateFieldsToEnable = [
+          'RevenueRate', 'RevenueExchangeRate', 'RevenueCurrencyMasterSid',
+          'CostRate', 'CostExchangeRate', 'CostCurrencyMasterSid',
+          'Qty', 'ChargeUomSid'
+        ];
+        
+        rateFieldsToEnable.forEach(field => {
+          const control = charge.get(field);
+          if (control && control.disabled && !this.disableAllModification && !this.quotationApproved) {
+            control.enable({ emitEvent: false });
+          }
+        });
+      });
+    });
+  });
+}
+isRateLocked(): boolean {
+  return this.quotationForm.get('RateLock')?.value === true;
+}
 }

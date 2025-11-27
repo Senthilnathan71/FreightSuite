@@ -31,22 +31,26 @@
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                        [disabled]="documentForm.invalid">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" 
+                        [disabled]="((!mps.can('update') && isEditMode)||documentForm.invalid)">
                             <i class="fas fa-save me-1"></i>
                             Save
                         </button>
-                        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button type="button" *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button type="button" *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button type="button" *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button type="button" *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+                        <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+          </div>
+        </div>
                     </div>
                 </div>
             </div>
@@ -135,17 +139,7 @@
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Type" [textWithNumbers]="100"
                                     >
-                                <label for="text-input" class="input-label">Type <span
-                                        class="text-danger">*</span></label>
-                                @if(documentForm.get('Type').touched && documentForm.get('Type').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('Type').hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(documentForm.get('Type').hasError('maxlength')){
-                                            <span>Max 100 Characters</span>
-                                        }
-                                    </div>
-                                }
+                                <label for="text-input" class="input-label">Type </label>
                             </div>
                         </aside>
                         <aside class="col-md-12">
@@ -184,14 +178,8 @@
                   (change)="onCOASelected($event)"
                   >
         </ng-select>
-        <label for="text-input" class="input-label">COA Ledger <span class="text-danger">*</span></label>
-        @if(documentForm.get('COALedger').touched && documentForm.get('COALedger').invalid){
-            <div class="error-message">
-                @if(documentForm.get('COALedger').hasError('required')){
-                    <span>Required</span>
-                }
-            </div>
-        }
+        <label for="text-input" class="input-label">COA Ledger</label>
+        
     </div>
 </aside>
 

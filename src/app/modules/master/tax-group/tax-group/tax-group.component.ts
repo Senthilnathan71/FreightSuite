@@ -10,6 +10,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 interface TaxGroup {
   TaxGroupMasterSid?: number;
@@ -65,9 +66,11 @@ export class TaxGroupComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private dialog: MatDialog,
+    public mps: MenuPermissionService
   ) { }
 
   ngOnInit(): void {
+    this.mps.init().subscribe();
     this.loadCompanyData();
     this.loadTaxGroups();
   }

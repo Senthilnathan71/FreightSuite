@@ -22,6 +22,8 @@ import { Subject } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -79,8 +81,10 @@ export class StateEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService : NgbModal,
-        public dropdownStore:DropdownStore,
-        private commonService: CommonService,
+    public dropdownStore: DropdownStore,
+    private commonService: CommonService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
     
   ) {
     this.initForm();
@@ -90,8 +94,8 @@ export class StateEntryComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
-    this.dropdownStore.loadCountries().subscribe();
-    this.dropdownStore.loadZones().subscribe();
+    this.dropdownStore.loadCountries().subscribe(() => {
+    this.dropdownStore.loadZones().subscribe(() => {
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];
@@ -101,12 +105,15 @@ export class StateEntryComponent implements OnInit {
         this.stateForm.get('status')?.enable();
       }
     });
+  });
+})
     //  this.appSettingService.getUser().subscribe((user) => {
     //   if (user) {
     //     this.userData = user;
     //     this.checkPermissions();
     //   }
     // });
+    this.mps.init().subscribe();
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -143,17 +150,57 @@ export class StateEntryComponent implements OnInit {
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
+  onCountryChange(selectedCountryId: number) {
+  
+  if (selectedCountryId) {
+    // Find the selected country
+    const selectedCountry = this.dropdownStore.countries().find(
+      country => country.CountryMasterSid === selectedCountryId
+    );
+    
+    
+    if (selectedCountry) {
+      // Check if ZoneMasterSid exists in the country object
+      const zoneId = selectedCountry.ZoneMasterSid;
+      
+      if (zoneId) {
+        // Check if this zone exists in available zones
+        const zoneExists = this.dropdownStore.zone().some(
+          zone => zone.ZoneMasterSid === zoneId
+        );
+        
+        
+        if (zoneExists) {
+          this.stateForm.patchValue({
+            ZoneMasterSid: zoneId
+          });
+        } else {
+          this.stateForm.patchValue({ ZoneMasterSid: '' });
+        }
+      } else {
+        this.stateForm.patchValue({ ZoneMasterSid: '' });
+      }
+    }
+  } else {
+    this.stateForm.patchValue({ ZoneMasterSid: '' });
+  }
+}
+
   initForm() {
     this.stateForm = this.fb.group({
       stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],
       stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
       stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$'), this.trimSpaceValidator()]],
       CountryMasterSid: ['', Validators.required],
-      ZoneMasterSid: ['', Validators.required],
+      ZoneMasterSid: [{value:'', disabled: true}, Validators.required],
       region: [''],
       status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['']
     });
+
+     this.stateForm.get('CountryMasterSid')?.valueChanges.subscribe(selectedCountryId => {
+    this.onCountryChange(selectedCountryId);
+  });
 
     this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
       if (val) {
@@ -254,6 +301,11 @@ export class StateEntryComponent implements OnInit {
           status: state.status || 'A',
           Remarks: state.Remarks || ''
         });
+        setTimeout(() => {
+        this.stateForm.patchValue({
+          ZoneMasterSid: state.ZoneMasterSid
+        });
+      });
         // Enable status control when in edit mode
         this.stateForm.get('status')?.enable();
       },
@@ -453,6 +505,31 @@ const data:any={
 
       this.commonService.documentData.set(data)
 }
+ openFollowup() {
+    if (!this.stateData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.stateData?.UserMasterSid;
+    modalRef.componentInstance.parentEmail = this.stateData;
+  //   modalRef.componentInstance.parentSubject = `Quotation No.${this.userData} Date:${new Date(this.userData).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+    <p>Dear Sir/Madam,</p>
+    <p>Please find enclosed the quotation as requested.</p>
+    <p>Kindly review the details at your convenience.</p>
+    <p>Looking forward to your feedback and the opportunity to work together.</p>
+    <p>
+      Approval Hyperlink: 
+      <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+    </p>
+    <p>Best Regards,</p>
+    <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+  
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
+  
  OnDestroy(): void {
     this.commonService.clearDocumentData()
  }

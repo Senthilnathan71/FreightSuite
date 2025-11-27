@@ -17,6 +17,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -69,7 +71,9 @@ export class MilestoneEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService : NgbModal,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
   ) {
     this.initForm();
   }
@@ -86,9 +90,8 @@ export class MilestoneEntryComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
 		}
-
+    this.mps.init().subscribe();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.milestoneId = +params['id'];
@@ -99,26 +102,6 @@ export class MilestoneEntryComponent implements OnInit {
     });
   }
 
-   checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
 
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -355,6 +338,32 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+
+ openFollowup() {
+    if (!this.milestoneData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.milestoneData?.QuoteHeaderSid;
+    modalRef.componentInstance.parentEmail = this.milestoneData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.milestoneData.QuoteNumber} Date:${new Date(this.milestoneData.QuoteDate).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
+
 
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.milestoneId) return;

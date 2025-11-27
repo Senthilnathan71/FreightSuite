@@ -191,19 +191,19 @@
         <table class="table table-sm table-hover tablebordered">
           <thead>
             <tr>
-              <th>Container</th>
+              <th>No.Containers</th>
               <th>Type</th>
               <th>Commodity Description</th>
               <th>No of Pkgs</th>
-              <th>Gross Wt</th>
-              <th>Volume</th>
+              <th class="text-center">Gross Wt</th>
+              <th class="text-center">Volume</th>
               <!-- <th>Chargeable Wt</th> -->
-              <th>Net Wt</th>
+              <th class="text-center">Net Wt</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>{{housejobData?.Products?.[0]?.ContainerNo}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
               <td>{{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}</td>
               <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
               <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>

@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { forkJoin, Observable } from 'rxjs';
 import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-quotation-view',
@@ -60,9 +61,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   currentCompany: any;
   currentBranch: any;
   userData: any;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
-
   // Table Configurations
   enquiryTableConfig: TableConfig;
   quotationTableConfig: TableConfig;
@@ -71,6 +69,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   quotationPaginationConfig: PaginationConfig;
 
   constructor(
+    public mps : MenuPermissionService,
     private leadService: LeadService,
     private appSettings: AppSettingsService,
     private spinner: NgxSpinnerService,
@@ -88,14 +87,16 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     this.currentBranch = storedBranch ? this.appSettings.decrypt(storedBranch) : null;
 
     this.isMobile = this.appService.getDevice();
-    this.userData = this.appSettings.getDecryptedUserProfile()
-    this.checkPermissions();
+    this.userData = this.appSettings.getDecryptedUserProfile();
+    this.initializeTableConfigs();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfigs();
+    });
 
     // Initialize Managers
     this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
     this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
 
-    this.initializeTableConfigs();
     this.loadAllFields();
 
     // Initial load
@@ -103,22 +104,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.leadService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-        }
-      });
-    }
-  }
 
   loadAllFields(){
     forkJoin([
@@ -134,6 +119,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.mps.clear();
     this.enquiryManager.destroy();
     this.quotationManager.destroy();
   }
@@ -157,7 +143,13 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         { key: 'formattedPOL', label: 'POL', sortable: true, visible: true },
         { key: 'formattedPOD', label: 'POD', sortable: true, visible: true },
       ],
-      actions: [{ icon: 'fas fa-file', label: 'File', action: 'navigate', tooltip: 'Create Quotation' }],
+      actions: [{ 
+        icon: 'fas fa-file', 
+        label: 'File', 
+        action: 'navigate', 
+        tooltip: 'Create Quotation',
+        state: !this.mps.can('insert')
+      }],
       selectable: false,
       multiSelect: false,
       showColumnToggle: true,
@@ -246,7 +238,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           icon: 'fas fa-eye',
           label: 'View',
           action: 'view',
-          tooltip: 'View Quotation'
+          tooltip: 'View Quotation',
+          state : !this.mps.can('view')
         }
       ],
       selectable: false,
@@ -273,7 +266,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         label: 'Create', 
         icon: 'fas fa-plus', 
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -285,9 +278,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     ];
   }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   // --- Enquiry Methods ---
 

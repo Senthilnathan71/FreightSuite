@@ -22,13 +22,11 @@
 
 <div class="row compact-form">
     <div class="col-12">
-         <app-page-header 
-    [title]="'Zone'" [showFavorite]="true" [showSearch]="true" 
-    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
-    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
-    >
-    </app-page-header>
+        <app-page-header [title]="'Zone'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
+            [searchButtonText]="'Search'" [(searchValue)]="filterValue" [actions]="headerActions"
+            (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
+            (actionTriggered)="onActionTriggered($event)">
+        </app-page-header>
         <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col-md pb-1">
                 <div class="d-flex align-items-center gap-2">
@@ -90,22 +88,14 @@
 
         </div> -->
     </div>
-       <div class="col-12 px-0">
-         <app-reusable-table
-        #bookingTable
-        [config]="tableConfig"
-        [data]="allZone"
-        [loading]="tableLoading"
-        [totalRecords]="totalLengthOfCollection"
-        [paginationConfig]="paginationConfig"
-        (actionClick)="onTableActionClick($event)"
-        (rowClick)="onTableRowClick($event)"
-        (sortChange)="onTableSortChange($event)"
-        (filterChange)="onTableFilterChange($event)"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)">
-    </app-reusable-table>
-    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
+    <div class="col-12 px-0">
+        <app-reusable-table #bookingTable [config]="tableConfig" [data]="allZone" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+        <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -173,13 +163,13 @@
             </div>
         </div>
     </div> -->
-    <div class="col-12" *ngIf="searched && totalLengthOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
-    </div>
-    <ng-template #content let-modal>
-        <div class="modal-header p-2 bg-info text-white">
-            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Zone</h4>
-            <!-- @if(isEditMode){
+        <div class="col-12" *ngIf="searched && totalLengthOfCollection === 0">
+            <div class="alert alert-info text-center">No records found</div>
+        </div>
+        <ng-template #content let-modal>
+            <div class="modal-header p-2 bg-info text-white">
+                <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Zone</h4>
+                <!-- @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
@@ -187,90 +177,91 @@
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div> -->
-        <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
-                <i class="fas fa-info-circle fs-6"></i>
-            </a>
+                <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+                    <i class="fas fa-info-circle fs-6"></i>
+                </a>
 
-            <div class="ms-auto d-flex align-items-center">
-                <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
+              <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                         ngbDropdownToggle>
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                        <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem
+                            appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
+                            Condition</button>
+                        <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                        <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
                     </div>
-                    </div>
-
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
-            </div>
-        </div>
-        <div class="modal-body">
-            <form [formGroup]="zoneForm">
-                <div class="col-md-12">
-
-                    <div class="row compact-form">
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" formControlName="ZoneName" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="100">
-                                <label for="text-input" class="input-label">Zone Name <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(zoneForm.get('ZoneName')?.touched && zoneForm.get('ZoneName')?.invalid){
-                                <div class="error-message">
-                                    @if(zoneForm.get('ZoneName')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(zoneForm.get('ZoneName')?.hasError('maxlength')){
-                                    <span>Max 100 Chars</span>
-                                    } @else if(zoneForm.get('ZoneName')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are allowed</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="ZoneCode" id="text-input" placeholder=""
-                                    class="custom-input-field sm" [textWithNumbers]="9">
-                                <label for="text-input" class="input-label">Zone Code <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(zoneForm.get('ZoneCode')?.touched && zoneForm.get('ZoneCode')?.invalid){
-                                <div class="error-message">
-                                    @if(zoneForm.get('ZoneCode')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(zoneForm.get('ZoneCode')?.hasError('maxlength')){
-                                    <span>Max 9 Characters</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select"[class.filled]="!!zoneForm.get('status')?.value">
-                                <ng-select [items]="statusList" formControlName="status"
-                                    [class.is-invalid]="zoneForm.get('status')?.invalid && zoneForm.get('status')?.touched"
-                                    [disabled]="zoneForm.get('status')?.disabled">
-                                </ng-select>
-                                <label class="input-label">Status <span class="text-danger">*</span></label>
-                                @if(zoneForm.get('status')?.touched && zoneForm.get('status')?.invalid){
-                                <div class="error-message">
-                                    <span>Required</span>
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                    </div>
-
                 </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <!-- @if(isEditMode){
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="zoneForm">
+                    <div class="col-md-12">
+
+                        <div class="row compact-form">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="ZoneName" placeholder=""
+                                        class="custom-input-field sm" [onlyText]="100">
+                                    <label for="text-input" class="input-label">Zone Name <span
+                                            class="text-danger fw-bold">*</span></label>
+                                    @if(zoneForm.get('ZoneName')?.touched && zoneForm.get('ZoneName')?.invalid){
+                                    <div class="error-message">
+                                        @if(zoneForm.get('ZoneName')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(zoneForm.get('ZoneName')?.hasError('maxlength')){
+                                        <span>Max 100 Chars</span>
+                                        } @else if(zoneForm.get('ZoneName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" formControlName="ZoneCode" id="text-input" placeholder=""
+                                        class="custom-input-field sm" [textWithNumbers]="9">
+                                    <label for="text-input" class="input-label">Zone Code <span
+                                            class="text-danger fw-bold">*</span></label>
+                                    @if(zoneForm.get('ZoneCode')?.touched && zoneForm.get('ZoneCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(zoneForm.get('ZoneCode')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(zoneForm.get('ZoneCode')?.hasError('maxlength')){
+                                        <span>Max 9 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!zoneForm.get('status')?.value">
+                                    <ng-select [items]="statusList" formControlName="status"
+                                        [class.is-invalid]="zoneForm.get('status')?.invalid && zoneForm.get('status')?.touched"
+                                        [disabled]="zoneForm.get('status')?.disabled">
+                                    </ng-select>
+                                    <label class="input-label">Status <span class="text-danger">*</span></label>
+                                    @if(zoneForm.get('status')?.touched && zoneForm.get('status')?.invalid){
+                                    <div class="error-message">
+                                        <span>Required</span>
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <!-- @if(isEditMode){
                   @if(hasPermission('Edoc')) {
       <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
@@ -293,68 +284,71 @@
       </button>
     }
 } -->
-       <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                (click)="openAuditLogs(auditLogModal)">
-                <i class="fas fa-history me-1"></i>Logs
-            </button>
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                    (click)="openAuditLogs(auditLogModal)">
+                    <i class="fas fa-history me-1"></i>Logs
+                </button>
 
-            
-            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
-            <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
-                [disabled]="btnDisable || zoneForm.invalid"
-                *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
-                Save
-            </button>
+
+                <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+                <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="resetForm()">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Reset
+                </button>
+                <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
+                    
+                     [disabled]="(!mps.can('update') && isEditMode)"
+                     
+                    >
+                    Save
+                </button>
+            </div>
+        </ng-template>
+    </div>
+
+    <ng-template #auditLogModal let-modal>
+        <div class="modal-header bg-info text-white p-2">
+            <h5 class="modal-title mb-0">Audit Logs</h5>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body p-3">
+            <div class="table-responsive">
+                <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Changed At</th>
+                            <th>Changed By</th>
+                            <th>Operation</th>
+                            <th class="text-center">Old Value</th>
+                            <th class="text-center">New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let log of auditLogs">
+                            <td>{{ log.changedAt | date:'medium' }}</td>
+                            <td>{{ log.changedBy || '-' }}</td>
+                            <td>{{ log.operation }}</td>
+                            <td class="bg-light-danger">
+                                <ul>
+                                    <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                            <td class="bg-light-success">
+                                <ul>
+                                    <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr *ngIf="auditLogs.length === 0">
+                            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.close()">Close</button>
         </div>
     </ng-template>
-</div>
-
-<ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.close()">Close</button>
-  </div>
-</ng-template>

@@ -38,7 +38,7 @@
       </a>
 
       <div class="ms-auto d-flex align-items-center">
-        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
+        <div *ngIf="hasAnyDropdownPermission() && isEditMode" ngbDropdown class="d-inline-block me-2">
           <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
             <i class="fas fa-ellipsis-v"></i>
           </button>
@@ -93,8 +93,15 @@
 
            <!-- Tax Code -->
         <aside class="col-md-6">
-          <div class="custom-form-group">
-            <input type="text" formControlName="TaxCode" class="custom-input-field sm" placeholder="" />
+          <div class="custom-form-group custom-form-group-select"
+            [class.filled]="!!taxGroupForm.get('TaxCode')?.value">
+            <ng-select 
+      formControlName="TaxCode" 
+      [items]="taxCodeOptions" 
+      bindLabel="name"
+      bindValue="name"
+      placeholder="">
+    </ng-select>
             <label class="input-label">Tax Code <span class="text-danger">*</span></label>
             <div class="error-message"
               *ngIf="taxGroupForm.get('TaxCode')?.touched && taxGroupForm.get('TaxCode')?.invalid">

@@ -22,6 +22,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-container-type-list',
   standalone: true,
@@ -51,38 +52,12 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
+  tableConfig: TableConfig;
   headerActions: HeaderAction[] = [];
   // Alias for compatibility with existing template
   get containerList() { return this.allItems; }
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'ContainerTypeMasterSid',
-    emptyMessage: 'No container-type found',
-    dragAndDrop: true
-  };
+  
 
   tableLoading = false;
   protected config: ListComponentConfig = {
@@ -105,7 +80,8 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -117,33 +93,18 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     this.initializeTableConfig();
      this.initializeHeaderActions();   // Initialize base component
+     this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-             this.initializeHeaderActions();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
+  
 
 
   override trackBy(index: number, item: any): number {
@@ -158,8 +119,8 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
+    this.tableConfig = {
+    columns: [
       {
         key: 'ContainerName',
         label: 'Container Name ',
@@ -211,7 +172,33 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state : !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+       state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ContainerTypeMasterSid',
+    emptyMessage: 'No container-type found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers
@@ -327,7 +314,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',

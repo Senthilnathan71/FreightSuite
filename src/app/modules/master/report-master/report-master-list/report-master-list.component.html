@@ -1,162 +1,31 @@
-<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
-</ngx-spinner>
-
 <div class="row compact-form">
   <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-      <div class="col pb-2">
-        <h4 class="page-title mb-0">Report Master</h4>
-      </div>
-
-      <div class="col-md pb-2">
-        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-          <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-            <div class="form-outline flex-grow-1 position-relative">
-              <input name="filterValue" [(ngModel)]="filterValue" type="text" class="form-control pe-5"
-                placeholder="Search" aria-label="Search input" />
-              <button *ngIf="filterValue" type="button"
-                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                tabindex="0" aria-label="Clear search" (click)="clearFilterValue()">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <div class="mt-md-0 mt-1">
-              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="loadReports()">
-                <i class="fas fa-search me-1"></i> Search
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="col-md-auto pb-2">
-        <form
-          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <app-favorite-star screenName="Report Master" class="mt-1 me-1"></app-favorite-star>
-
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="navigateTocreateReport()">
-            <i class="fas fa-plus me-1"></i> Create
-          </button>
-
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reportExport()"
-            [disabled]="!filteredReportList || filteredReportList.length === 0">
-            <i class="fas fa-file-alt me-1"></i> Report
-          </button>
-
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
-            [disabled]="!filteredReportList || filteredReportList.length === 0">
-            <i class="fas fa-sync-alt me-1"></i> Reset
-          </button>
-        </form>
-      </div>
-    </div>
+    <app-page-header
+      [title]="'Report Master'"
+      [showFavorite]="true"
+      [showSearch]="true"
+      [searchPlaceholder]="'Search'"
+      [(searchValue)]="filterValue"
+      [actions]="headerActions"
+      (searchTriggered)="onSearchTriggered($event)"
+      (searchCleared)="onSearchCleared()"
+      (actionTriggered)="onActionTriggered($event)">
+    </app-page-header>
   </div>
 
-  <!-- Table -->
-  <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-    <div class="col-12 p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-          <thead>
-            <tr class="bg-info">
-              <th class="bg-transparent text-light" width="10%">Action</th>
-              <th class="bg-transparent text-light" width="20%" (click)="sort('ReportName')">
-                Report Name
-                <i class="fas" [ngClass]="{
-                    'fa-sort-up': sortColumn === 'ReportName' && sortDirection === 'asc',
-                    'fa-sort-down': sortColumn === 'ReportName' && sortDirection === 'desc'
-                  }"></i>
-              </th>
-              <th class="bg-transparent text-light" width="20%" (click)="sort('ReportDisplayName')">
-                Display Report Name
-                <i class="fas" [ngClass]="{
-                    'fa-sort-up': sortColumn === 'ReportDisplayName' && sortDirection === 'asc',
-                    'fa-sort-down': sortColumn === 'ReportDisplayName' && sortDirection === 'desc'
-                  }"></i>
-              </th>
-              <th class="bg-transparent text-light" width="20%" (click)="sort('ReportFormat')">
-                Report Format
-                <i class="fas" [ngClass]="{
-                    'fa-sort-up': sortColumn === 'ReportFormat' && sortDirection === 'asc',
-                    'fa-sort-down': sortColumn === 'ReportFormat' && sortDirection === 'desc'
-                  }"></i>
-              </th>
-              <!-- <th class="bg-transparent text-light" width="15%" (click)="sort('Status')">
-                Status
-                <i
-                  class="fas"
-                  [ngClass]="{
-                    'fa-sort-up': sortColumn === 'Status' && sortDirection === 'asc',
-                    'fa-sort-down': sortColumn === 'Status' && sortDirection === 'desc'
-                  }"
-                ></i>
-              </th> -->
-            </tr>
-          </thead>
-
-          <tbody *ngIf="filteredReportList.length > 0; else noData">
-            <tr *ngFor="let items of filteredReportList">
-              <td class="text-center">
-                <div class="d-flex align-items-center justify-content-center">
-                  <a class="text-info mx-2 cursor-pointer" title="View"
-                    [routerLink]="['/master/report-master/entry/', items.ReportMasterSid]">
-                    <i-feather name="eye" class="feather-sm"></i-feather>
-                  </a>
-                  <a class="text-danger mx-2 ps-3 border-start cursor-pointer" title="Delete"
-                    (click)="deleteReport(items.ReportMasterSid)">
-                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                  </a>
-                </div>
-              </td>
-              <td>
-                <div class="text-truncate">{{ items.ReportName }}</div>
-              </td>
-              <td>
-                <div class="text-truncate">{{ items.ReportDisplayName }}</div>
-              </td>
-              <td>
-                <div class="text-truncate">{{ items.ReportFormat }}</div>
-              </td>
-              <!-- <td>
-                <div
-                  class="px-2 rounded-pill d-inline-flex align-items-center gap-1"
-                  [ngClass]="{
-                    'bg-light-success': items.Status === 'A',
-                    'bg-light-danger': items.Status !== 'A'
-                  }"
-                >
-                  <span
-                    class="dofi-w-4 dofi-h-4 d-inline-block rounded"
-                    [ngClass]="{
-                      'bg-success': items.Status === 'A',
-                      'bg-danger': items.Status !== 'A'
-                    }"
-                  ></span>
-                  {{ items.Status === 'A' ? 'Active' : 'Suspended' }}
-                </div>
-              </td> -->
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-
-    <div>
-      <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection"
-        [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false"
-        [maxSize]="10">
-      </ngb-pagination>
-    </div>
-
+  <div class="col-12 px-0">
+    <app-reusable-table
+      #reportTable
+      [config]="tableConfig"
+      [data]="allReports"
+      [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection"
+      [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)"
+      (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
   </div>
-
-
-  <ng-template #noData>
-    <div class="col-12 text-center py-3">
-      <span class="text-muted">No Records Found</span>
-    </div>
-  </ng-template>
 </div>

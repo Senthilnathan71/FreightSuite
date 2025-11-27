@@ -39,6 +39,8 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
   selector: 'app-hs-sac',
   standalone: true,
@@ -103,16 +105,90 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
 
   loading = true;
   // Alias for compatibility with existing template
+  tableConfig:TableConfig;
+  private initializeTableConfig() {
+  this.tableConfig = {
+    columns: [
+         {
+        key: 'HSSACCode',
+        label: 'HS-SAC Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: "130px"
+      },
+      {
+        key: 'HSSACName',
+        label: 'HS-SAC Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ServiceName',
+        label: 'Service Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'TaxRate',
+        label: 'Tax Rate',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: "120px"
+      },
+      {
+        key: 'TaxType',
+        label: ' Tax Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
 
-  tableConfig: TableConfig = {
-    columns: [],
+        width: "120px"
+      },
+      {
+        key: 'EffectiveFrom',
+        label: 'Effective From',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: "150px"
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        // condition: (row: any) => this.hasPermission('View')
+        state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
@@ -120,7 +196,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+        state: !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -131,7 +207,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     trackByKey: 'HSSACMasterSid',
     emptyMessage: 'No Ha-sac found',
     dragAndDrop: true
-  };
+  }
+};
 
   tableLoading = false;
   protected config: ListComponentConfig = {
@@ -168,7 +245,9 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService,
+      private ngbModal: NgbModal,
   ) {
     super(paginationService);
   }
@@ -191,7 +270,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     this.route.paramMap.subscribe(params => {
       this.HSSACMasterSid = +params.get('id');
@@ -205,66 +284,76 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     this.initializeHeaderActions();
     this.initializeModalDropdownItems();
     this.loadTaxData();
-  }
-  loadTaxData(): void {
-    this.masterService.getAllTax().subscribe({
-      next: (response: any[]) => {
-        this.taxList = response;
-        console.log('Tax data loaded:', this.taxList);
-      },
-      error: (error) => {
-        console.error('Error loading tax data:', error);
-        this.appSettingService.showError('Failed to load tax data');
-      }
+    this.mps.init().subscribe(() => {
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
     });
   }
-
-  // Add this method to handle tax type selection change
-  onTaxTypeChange(selectedTaxType: string): void {
-    if (selectedTaxType) {
-      // Find the selected tax object from the taxList
-      const selectedTax = this.taxList.find(tax => tax.TaxCode === selectedTaxType);
-
-      if (selectedTax) {
-        // Auto-fill the TaxRate field with the selected tax's rate
-        this.hssacForm.patchValue({
-          TaxRate: selectedTax.TaxRate,
-          TaxGroupSid: selectedTax.TaxGroupSid,
-        });
+  // In the component class
+// In the component class
+loadTaxData(): void {
+  this.masterService.getAllTaxGroup().subscribe({
+    next: (response: any) => {
+      console.log('Complete API Response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response));
+      
+      // Handle different possible response structures
+      if (Array.isArray(response)) {
+        // If response is directly an array
+        this.taxList = response;
+      } else if (response && Array.isArray(response.data)) {
+        // If response has data property containing array
+        this.taxList = response.data;
+      } else if (response && response.data && Array.isArray(response.data.items)) {
+        // If response has data.items structure (common in paginated APIs)
+        this.taxList = response.data.items;
+      } else {
+        console.warn('Unexpected response structure:', response);
+        this.taxList = [];
       }
-    } else {
-      // Clear TaxRate if no tax type is selected
+      
+      console.log('Processed taxList:', this.taxList);
+      console.log('Tax list length:', this.taxList.length);
+      
+      if (this.taxList.length > 0) {
+        console.log('First tax item:', this.taxList[0]);
+        console.log('Available properties in first item:', Object.keys(this.taxList[0]));
+      }
+    },
+    error: (error) => {
+      console.error('Error loading tax data:', error);
+      console.error('Error details:', error.error);
+      this.appSettingService.showError('Failed to load tax data');
+    }
+  });
+}
+
+// Update the tax type change handler
+onTaxTypeChange(selectedTaxGroup: string): void {
+  if (selectedTaxGroup) {
+    // Find the selected tax object from the taxList using TaxGroup
+    const selectedTax = this.taxList.find(tax => tax.TaxGroup === selectedTaxGroup);
+
+    if (selectedTax) {
+      // Auto-fill the TaxRate field with the selected tax's rate
       this.hssacForm.patchValue({
-        TaxRate: '',
-        TaxGroupSid: '',
+        TaxRate: selectedTax.TaxRate,
+        TaxGroupSid: selectedTax.TaxGroupSid,
       });
     }
+  } else {
+    // Clear TaxRate if no tax type is selected
+    this.hssacForm.patchValue({
+      TaxRate: '',
+      TaxGroupSid: '',
+    });
   }
+}
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-        }
-      });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
-      hasAnyDropdownPermission(): boolean {
+hasAnyDropdownPermission(): boolean {
   const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
 }
@@ -335,7 +424,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -357,25 +446,25 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        // condition: this.hasPermission('Edoc')
       },
       {
         label: 'Terms & Condition',
         icon: 'fas fa-clipboard',
         action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
+        // condition: this.hasPermission('Terms and Condition')
       },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        condition: this.hasPermission('Authority')
+        // condition: this.hasPermission('Authority')
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+        // condition: this.hasPermission('Email')
       }
     ];
   }
@@ -450,86 +539,6 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
 
   override trackBy(index: number, item: any): number {
     return item.HSSACMasterSid || index;
-  }
-
-
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
-      {
-        key: 'HSSACCode',
-        label: 'HS-SAC Code',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: "130px"
-      },
-      {
-        key: 'HSSACName',
-        label: 'HS-SAC Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'ServiceName',
-        label: 'Service Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'TaxRate',
-        label: 'Tax Rate',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: "120px"
-      },
-      {
-        key: 'TaxType',
-        label: ' Tax Type',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-
-        width: "120px"
-      },
-      {
-        key: 'EffectiveFrom',
-        label: 'Effective From',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: "150px"
-      },
-      {
-        key: 'Remarks',
-        label: 'Remarks',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
   }
 
   // Table event handlers
@@ -872,6 +881,30 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       this.commonService.documentData.set(data)
   }
 
+   openFollowup() {
+      if (!this.hssacData) return;
+      const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.documentSid = this.hssacData?.QuoteHeaderSid;
+      modalRef.componentInstance.parentEmail = this.hssacData.Email;
+      modalRef.componentInstance.parentSubject = `Quotation No.${this.hssacData.QuoteNumber} Date:${new Date(this.hssacData.QuoteDate).toLocaleDateString()}`;
+      modalRef.componentInstance.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find enclosed the quotation as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to your feedback and the opportunity to work together.</p>
+        <p>
+          Approval Hyperlink: 
+          <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+        </p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userEmail']}</p>
+      </div>
+    `;
+  
+    // Optionally, pass the quotation HTML content ID for PDF generation
+    modalRef.componentInstance.pdfContentId = 'quotationContent';
+    }
 
   //  openAuditLogs(modal: TemplateRef<any>) {
   //   if (!this.HSSACMasterSid) return;

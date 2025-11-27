@@ -3,11 +3,16 @@
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
         <h4 class="page-title mb-0">Credit Note</h4>
+        @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
       </div>
       <div class="col-md-8 pb-1">
 
         <div
-          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <!-- Draft Save Button -->
           <!-- <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
             [disabled]="creditNoteForm.invalid">
@@ -16,7 +21,7 @@
 
           <!-- Final Save Button -->
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
-            [disabled]="creditNoteForm.invalid || details.length === 0" >
+            [disabled]="creditNoteForm.invalid || details.length === 0">
             <i class="fas fa-check-circle me-1"></i> Final
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
@@ -31,11 +36,28 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()"
+          [disabled]="(!mps.can('update') && isEditMode)">
             <i class="fas fa-save me-1"></i> Save
           </button>
-
-
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                  class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                  class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                  class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
+                  class="fas fa-paperclip me-1"></i> Followup</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -98,13 +120,16 @@
     </div>
     
     <!-- Get Button with proper styling and disable state -->
-    <button 
+     <div class="mb-1">
+       <button 
       type="button" 
       class="btn btn-info btn-sm" 
-      style="min-width: 30px; height: 30px;"
+      style="min-width: 50px; height: 25px;"
       (click)="getInvoiceData()"
       [disabled]="!creditNoteForm.get('ReversalVoucher')?.value">Get
     </button>
+     </div>
+   
   </div>
 </aside>
 
@@ -300,8 +325,8 @@
               </aside>
             </div>
             <div class="col-md-12 px-0">
-              <div class="card mb-0">
-                <div class="card-body py-1">
+              <div class=" mb-0">
+                <div class="py-1">
                   <form [formGroup]="creditNoteForm" novalidate>
                     <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
@@ -313,7 +338,7 @@
                       <table class="table table-hover table-sm mb-0 text-center">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius:10px ;"></th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
@@ -338,7 +363,7 @@
                               Rate</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
                               Amount</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px; ;">
                               Taxable Amt
                             </th>
                             <!-- India GST Columns -->
@@ -360,7 +385,7 @@
                               No.</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
                               House No.</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;border-top-right-radius:10px">
                               Department</th>
                           </tr>
                           <tr class="align-middle bg-info">
@@ -384,8 +409,8 @@
                           <ng-container *ngFor="let row of details.controls; let i = index">
                             <tr [formGroupName]="i">
                               <!-- Delete Button - Only show for new invoices -->
-                              <td>
-                                <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0"
+                              <td *ngIf="!isEditMode">
+                                <button  type="button" class="btn btn-sm pt-0"
                                   (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
@@ -753,10 +778,10 @@
           </div>
 
 
-          <div class="text-center">
-            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+          <div class="text-center" style="border-top: 1px solid black;">
+            <h5 class="fw-bold my-1">CREDIT NOTE INVOICE</h5>
             <p style="font-size: 12px;">
-              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '-'}}
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
             </p>
           </div>
 
@@ -764,28 +789,28 @@
             <div class="col-md-6">
               <strong>BILLED TO</strong><br />
               <span>{{ getCustomerName(creditNoteForm.get('CustomerMasterSid')?.value) }}</span><br />
-              {{creditNoteForm.get('PartyAddress')?.value || '-'}} <br>
+              {{creditNoteForm.get('PartyAddress')?.value || ''}} <br>
               <span class="fw-semibold">
                 PAN :
-              </span> {{currentCompany?.Pan || currentCompany?.PAN || '-'}}
+              </span> {{currentCompany?.Pan || currentCompany?.PAN || ''}}
             </div>
             <div class="col-md-6 ">
               <div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice No</strong></div>
-                  <div>: {{creditNoteForm.get('VoucherNumber')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('VoucherNumber')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice Date</strong></div>
-                  <div>: {{ (creditNoteData?.VoucherDate | formatDate )|| '-' }}</div>
+                  <div>: {{ (creditNoteData?.VoucherDate | formatDate )|| '' }}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>GST No</strong></div>
-                  <div>: {{creditNoteForm.get('GST_VAT')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('GST_VAT')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>IRN No</strong></div>
-                  <div>: {{creditNoteForm.get('IRNNumber')?.value || '-'}}</div>
+                  <div>: {{creditNoteForm.get('IRNNumber')?.value || ''}}</div>
                 </div>
               </div>
             </div>
@@ -900,7 +925,7 @@
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Sales Person</strong></div>
-                <div>: Vimal</div>
+                <div>: </div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Carrier Name</strong></div>
@@ -960,8 +985,9 @@
                     <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
                     <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
                   </ng-container>
-                  <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
-                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td>
+                  <!-- <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td> -->
+                  <td>{{ getRowTotal(detail) | number:'1.2-2' }}</td>
                 </tr>
                 <tr>
                   <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
@@ -974,10 +1000,10 @@
 
           <div class="d-flex ">
             <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
-            <p class="mb-0 ">: {{getAmountInWords()}}</p>
+            <p class="mb-0 fst-italic">: {{getAmountInWords()}}</p>
           </div>
 
-          <div class="d-flex   mt-2">
+          <div class="d-flex ">
             <p class="fw-bold" style="width: 180px;"> Remarks</p>
             <p style="margin-bottom: 0;">: {{creditNoteForm.get('Remarks')?.value || '-'}}</p>
           </div>

@@ -33,21 +33,25 @@
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]=" btnDisable" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+                        [disabled]=" ((!mps.can('update') && isEditMode) || btnDisable)" >
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-                    <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+                   <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+          </div>
+        </div>
                 </div>
             </div>
         </div>
@@ -125,7 +129,7 @@
                                 </div>
 
                                 <label class="input-label" for="dp">
-                                    Start Date <span class="text-danger">*</span>
+                                    Start Date <span class="text-danger"></span>
                                 </label>
                                 <div *ngIf="yearForm.get('StartDate')?.touched && yearForm.get('StartDate')?.invalid">
                                     <p *ngIf="yearForm.get('StartDate')?.errors?.['required']" class="error-message">
@@ -165,44 +169,45 @@
                                 </div>
 
                                <label class="input-label" for="dp">End Date <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                 <div *ngIf="yearForm.get('EndDate')?.touched && yearForm.get('EndDate')?.invalid">
                                         <p *ngIf="yearForm.get('EndDate')?.errors?.['required']" class="error-message">
                                             Required</p>
                                     </div>
+                                    <div class="error-message" *ngIf="yearForm.errors?.['dateRangeInvalid']">
+  Start and End date must cover exactly 364 days.
+</div>
                             </div>
                         </aside>
+                        
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="CurrentYear" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
+  <div class="custom-form-group">
+    <div class="form-check mt-3">
+      <input class="form-check-input" type="checkbox" formControlName="CurrentYear" id="currentYear">
+      <label class="form-check-label" for="currentYear">
+        Current Year <span class="text-danger fw-bold">*</span>
+      </label>
+    </div>
+    <div class="error-message" *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
+      <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Required</span>
+    </div>
+  </div>
+</aside>
 
-                                <label for="text-input" class="input-label">Current Year <span
-                                        class="text-danger fw-bold">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
-                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Required</span>
-                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('maxlength')">Only 1 character
-                                        allowed</span>
-                                </div>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="YearEndCompleted" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-
-                                <label for="text-input" class="input-label">Year-End Completed <span
-                                        class="text-danger fw-bold">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
-                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Required</span>
-                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('maxlength')">Only 1
-                                        character allowed</span>
-                                </div>
-                            </div>
-                        </aside>
+<aside class="col-md-4">
+  <div class="custom-form-group">
+    <div class="form-check mt-3">
+      <input class="form-check-input" type="checkbox" formControlName="YearEndCompleted" id="yearEndCompleted">
+      <label class="form-check-label" for="yearEndCompleted">
+        Year-End Completed <span class="text-danger fw-bold">*</span>
+      </label>
+    </div>
+    <div class="error-message" 
+         *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
+      <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Required</span>
+    </div>
+  </div>
+</aside>
 
                         
                         <aside class="col-md-4">

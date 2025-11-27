@@ -1,0 +1,177 @@
+<div class="compact-form">
+  <form [formGroup]="vehicleForm">
+
+    <div class="row">
+
+      <!-- Vehicle Indicator -->
+
+      <aside class="col-md-3">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!vehicleForm['VehicleIndicator']?.value">
+          <ng-select [items]="vehicleIndicatorList" class="ng-select" bindLabel="label" bindValue="value"
+            formControlName="VehicleIndicator" appendTo="body">
+          </ng-select>
+          <label for="text-input" class="input-label">Vehicle Type</label>
+        </div>
+      </aside>
+
+      <!-- Used/New -->
+      <aside class="col-md-3">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!vehicleForm['UsedNew']?.value">
+          <ng-select [items]="usedNewList" bindLabel="label" class="ng-select" bindValue="value"
+            formControlName="UsedNew" appendTo="body">
+          </ng-select>
+          <label for="text-input" class="input-label">Used / New</label>
+        </div>
+      </aside>
+
+      <!-- Rolling -->
+      <aside class="col-md-3">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!vehicleForm['Rolling']?.value">
+          <ng-select [items]="rollingList" bindLabel="label" class="ng-select" bindValue="value"
+            formControlName="Rolling" appendTo="body">
+          </ng-select>
+          <label for="text-input" class="input-label">Rolling</label>
+        </div>
+      </aside>
+
+      <aside class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="ChassisNo" placeholder="" class="custom-input-field sm" />
+          <label class="input-label">Chassis No</label>
+        </div>
+      </aside>
+
+    </div>
+
+    <div class="row">
+      <!-- Case No -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="CaseNo" class="custom-input-field sm" />
+          <label class="input-label">Case No</label>
+        </div>
+      </aside>
+
+      <!-- Make -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="Make" class="custom-input-field sm" />
+          <label class="input-label">Make</label>
+        </div>
+      </aside>
+
+      <!-- Model -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="Model" class="custom-input-field sm" />
+          <label class="input-label">Model</label>
+        </div>
+      </aside>
+
+      <!-- Engine No -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="EngineNo" class="custom-input-field sm" />
+          <label class="input-label">Engine No</label>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Year Built -->
+    <div class="row">
+
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="YearBuilt" maxlength="4" class="custom-input-field sm" />
+          <label class="input-label">Year Built</label>
+        </div>
+      </aside>
+
+      <!-- Color -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="Color" class="custom-input-field sm" />
+          <label class="input-label">Color</label>
+        </div>
+
+      </aside>
+
+      <!-- Weight -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="number" step="0.001" formControlName="Weight" class="custom-input-field sm" />
+          <label class="input-label">Weight</label>
+        </div>
+      </aside>
+
+      <!-- Volume -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="number" step="0.001" formControlName="Volume" class="custom-input-field sm" />
+          <label class="input-label">Volume</label>
+
+        </div>
+      </aside>
+    </div>
+
+
+    <div class="row">
+      <!-- Goods Description -->
+      <aside class="col-md-3">
+
+        <div class="custom-form-group">
+          <input type="text" formControlName="GoodsDescription" class="custom-input-field sm" />
+          <label class="input-label">Goods Description</label>
+
+        </div>
+      </aside>
+
+      <!-- Remarks -->
+      <aside class="col-md-3">
+        <div class="custom-form-group">
+          <textarea formControlName="Remarks" rows="1" class="custom-input-field sm"></textarea>
+          <label class="input-label">Remarks</label>
+
+        </div>
+      </aside>
+
+      <aside class="col-md-3">
+
+      </aside>
+
+      <aside class="col-md-3">
+
+      </aside>
+    </div>
+
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-info btn-sm" (click)="resetChildForm()">Clear</button>
+      <button type="button" class="btn btn-light-secondary btn-sm" (click)="submitForm()" [disabled]="loading">
+        {{ selectedRecord ? 'Update Vehicle' : 'Save Vehicle' }}
+      </button>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+   
+
+  </form>
+</div>

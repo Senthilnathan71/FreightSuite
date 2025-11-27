@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
@@ -19,7 +19,7 @@ import {
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
-import { catchError, combineLatest, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
+import { catchError, combineLatest, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
@@ -33,6 +33,16 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { BankReceiptComponent } from '../report/bank-receipt/bank-receipt.component';
+import { CashReceiptComponent } from '../report/cash-receipt/cash-receipt.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 /**
  * Receipt Entry Component
@@ -47,6 +57,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
   selector: 'app-receipt-entry',
   standalone: true,
   imports: [
+    NgbDropdownModule,
     CommonModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
@@ -57,7 +68,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
     SearchableDropdown,
     DecimalPrecisionDirective,
     TextWithNumbersDirective,
-    OnlyNumbersDirective
+    OnlyNumbersDirective,
+    NgxSpinnerModule
   ],
   templateUrl: './receipt-entry.component.html',
   styleUrl: './receipt-entry.component.scss',
@@ -75,6 +87,7 @@ export class ReceiptEntryComponent implements OnInit {
   selectedTab = 'Detail';
   isSaving = false;
   isViewMode: boolean = false;
+  isPosted : boolean = false;
   /**
  * Calculate local amount before round off the Currency Amount
  * 
@@ -86,17 +99,20 @@ export class ReceiptEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   currentYearId: any;
+  currentMenuId : number;
   receiptData: any;
   userData: any;
   searchType: string = 'Party';
   selectedParty: any;
   filterText: any;
+  matchingError: string | null = null;
 
   today = new Date();
   todayDateInNgbStruct = toNgbDateStruct(this.today);
   searchOutstandingForm!: FormGroup;
   receiptForm!: FormGroup;
   partyList: any[] = [];
+  onlyCustomerList : any[] = [];
   currencyList: any[] = [];
   coaList: any[] = [];
   ledgerList: any[][] = [];
@@ -110,7 +126,7 @@ export class ReceiptEntryComponent implements OnInit {
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
-
+  receiptPrintData:any
 
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
@@ -161,12 +177,15 @@ export class ReceiptEntryComponent implements OnInit {
     { id: 8, name: "Invoice" }
   ]
 
+  TandCList : any[] = [];
   allPendingCosts: any[] = [];
   selectedCosts: any[] = [];
   private destroy$ = new Subject<void>();
 
 
   constructor(
+    public mps : MenuPermissionService,
+    private commonService : CommonService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
@@ -177,26 +196,27 @@ export class ReceiptEntryComponent implements OnInit {
     private dropdownStore: DropdownStore,
     private accountService: AccountsService,
     private currencyFormatService: CurrencyFormatService,
-    private currencyConfigService: CurrencyConfigurationService
+    private currencyConfigService: CurrencyConfigurationService,
+    private spinner : NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo()
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.getCurrentCompanyBranches();
 
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
 
     console.log("USER DATA", this.userData);
     console.log("CURRENT COMPANY", this.currentCompany);
     console.log("CURRENT BRANCH", this.currentBranch);
     console.log("CURRENT USER COUNTRY", this.currentUserCountry);
     console.log("CURRENT YEAR ID", this.currentYearId);
-
+    this.mps.init().subscribe();
     this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
@@ -239,7 +259,7 @@ export class ReceiptEntryComponent implements OnInit {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     this.receiptForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],  // Receipt Number
-      VoucherDate: [null], // Receipt Date
+      VoucherDate: [new Date()], // Receipt Date
       MultiBranch: [{value : false, disabled: true}],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
@@ -253,7 +273,6 @@ export class ReceiptEntryComponent implements OnInit {
       PartyAddress: [''],
       CustomerBranchSid: [null],
       COAMasterSid: [null, [Validators.required]],
-      LedgerMasterSid: [null, [Validators.required]],
       GST_VAT: [''],
       BankPartyName: [''],
       Narration: ['', [Validators.required]],
@@ -268,6 +287,12 @@ export class ReceiptEntryComponent implements OnInit {
       voucherMatchings: this.fb.array([]), // voucherMatching formArray
       interBranches: this.fb.array([]), // interBranch formArray
     });
+    ['CashOrBank','InstrumentMode','InstrumentNumber','BankPartyName'].forEach(ctrl => {
+      this.receiptForm.get(ctrl)?.valueChanges.subscribe(() => {
+        this.updateDetailNarration();
+      })
+    })
+    this.setupBillMatchingValidation()
   }
 
   
@@ -350,6 +375,13 @@ export class ReceiptEntryComponent implements OnInit {
 
       this.currencyConfigService.initializeConfigurations(this.currencyList);
       console.log("CURRENCY CONFIG INITIALIZED", this.currencyConfigService.getAllCurrencyConfigs());
+
+
+      const cusMap = new Map<number, any>();
+      this.partyList.forEach(customer => {
+        cusMap.set(customer.CustomerMasterSid, customer);
+      });
+      this.onlyCustomerList = Array.from(cusMap.values());
     })
   }
 
@@ -383,7 +415,7 @@ export class ReceiptEntryComponent implements OnInit {
  * Load payment modes
  */
   private loadPaymentModes(): void {
-    this.paymentModes = this.receiptService.getPaymentModes();
+    this.paymentModes = this.receiptService.getInstrumentModes();
   }
 
   /**
@@ -511,7 +543,7 @@ export class ReceiptEntryComponent implements OnInit {
   //   }
   // }
 
-    onSubmit(isPostingTrue?: boolean) {
+  onSubmit(isPostingTrue?: boolean) {
     const formValue = this.receiptForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
     if (this.detailItems.length === 0) {
@@ -546,6 +578,11 @@ export class ReceiptEntryComponent implements OnInit {
       return;
     }
 
+    if (this.matchingError) {
+      this.appSettingService.showError(this.matchingError);
+      return;
+    }
+
     if (this.receiptForm.invalid) {
       this; this.appSettingService.showError('Please fill all required fields');
       this.markFormGroupTouched(this.receiptForm);
@@ -555,20 +592,27 @@ export class ReceiptEntryComponent implements OnInit {
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const voucherMatching = this.voucherMatchings.getRawValue()
-    .filter(vm => (vm.matchCurrAmt || vm.matchLocalAmt))
-    .map((vm)=>({
-      ...vm,
-      DrCr : vm.drCr ?? '',
-      VoucherType : vm.voucherTypeMasterSid,
-      CurrencyCode : vm.matchCurr ?? '',
-      ExchangeRate : vm.matchExRate || 1,
-      Amount : vm.matchCurrAmt ?? 0,
-      LocalAmount : vm.matchLocalAmt ?? 0,
-    }));
-    
+      .map((vm) => ({
+        VoucherHeaderSid: vm.VoucherHeaderSid,
+        VoucherDetailSid: vm.VoucherDetailSid,
+        VoucherTransactionSid: vm.VoucherTransactionSid,
+        VoucherType: vm.voucherType,
+        CurrencyCode: vm.curr,
+        ExchangeRate: vm.exRate || 1,
+        DrCr: vm.drCr,
+        Amount: vm.currAmt,
+        LocalAmount: vm.localAmt,
+        MatchingCurrency: vm.matchCurr,
+        MatchingExRate: vm.matchExRate,
+        MatchingAmount: vm.matchCurrAmt,
+        MatchingLocalAmount: vm.matchLocalAmt,
+        MatchingTDSAmount: vm.tdsAmt,
+        tdsAmt: vm.tdsAmt,
+      }));
+
     console.log("Only filled voucher matchings", voucherMatching);
     const totalTDSAmount = voucherMatching.reduce((acc, curr) => acc + curr.tdsAmt, 0);
-    const totalLocalAmount = voucherMatching.reduce((acc, curr) => acc + curr.matchLocalAmt, 0);
+    const totalLocalAmount = voucherMatching.reduce((acc, curr) => acc + curr.MatchingLocalAmount, 0);
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -609,14 +653,9 @@ export class ReceiptEntryComponent implements OnInit {
         const isBankRecord = d.COAMasterSid === formValue.BankCOA;
         return {
           ...d,
-          ...(isBankRecord ? {
-            DrCr: 'D',
-            Amount: this.voucherMatchings.length > 0 ? totalLocalAmount - totalTDSAmount : d.Amount,
-            LocalAmount: this.voucherMatchings.length > 0 ? totalLocalAmount - totalTDSAmount : d.LocalAmount
-          } : {})
         }
       }),
-      voucherMatching : voucherMatching,
+      voucherMatching: voucherMatching,
       ...(this.isEditMode ? {
         UpdatedBy: currentUserEmail
       } : {
@@ -640,18 +679,85 @@ export class ReceiptEntryComponent implements OnInit {
       );
     } else {
       this.accountService.createReceipt(payload).subscribe(
-        (resp: any) => {
+        async (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Receipt created successfully');
-            const id = resp.data?.voucherHeader?.VoucherHeaderSid;
-            if (id) {
-              this.router.navigate(['accounts/receipt/entry', id]);
+            this.headerId = resp.data?.voucherHeader?.VoucherHeaderSid;
+            this.appSettingService.showInfo(`Autoposting Receipt : ${resp.data?.voucherHeader?.VoucherNumber}`)
+            await this.postVoucher();
+            if (this.headerId) {
+              this.router.navigate(['accounts/receipt/entry', this.headerId]);
             }
           } else {
             this.appSettingService.showError(resp.message);
           }
         }
       )
+    }
+  }
+
+
+  async postVoucher() {
+    try {
+      const voucherHeaderSid = this.headerId;
+      const currentCompany = this.currentCompany;
+      const currentBranch = this.currentBranch;
+      const currentUserEmail = this.userData?.userEmail;
+      const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+
+      const currentCompanyCountry = Number(this.currentCompany?.CountryMasterSid);
+      const currentCompanyCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+      const currentCompanyState = Number(this.currentBranch?.StateMasterSid);
+
+      const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+      const customerBranchFromForm = Number(this.r['CustomerBranchSid']?.value);
+      const customerState = this.partyList.find(c => c.CustomerBranchSid === customerBranchFromForm)?.StateMasterSid;
+
+
+      let interOrIntra = 'Inter';
+      // india
+      if(currentCompanyCountryName === 'india'){
+        if(currentCompanyState === customerState){
+          interOrIntra = 'Inter';
+        }
+        else{
+          interOrIntra = 'Intra';
+        }
+      }
+
+      if (!voucherHeaderSid || !currentCompany || !currentBranch || !currentFinancialYear || !currentCompanyCountry || !currentCurrency) {
+        throw new Error('Receipt Id ,Company, branch, or financial year or country information is missing');
+      }
+
+      const postPayload = {
+        VoucherHeaderSid: this.headerId,
+        CompanyMasterSid: currentCompany.CompanyMasterSid,
+        BranchMasterSid: currentBranch.BranchMasterSid,
+        YearMasterSid: currentFinancialYear,
+        LocalCurrencyMasterSid: currentCurrency,
+        LocalCurrencyCode: currentCompany.CurrencyCode,
+        PostedBy: currentUserEmail,
+        TaxDetails: {
+          CountryMasterSid: currentCompanyCountry,
+          countryName: currentCompanyCountryName,
+          TaxCategory: interOrIntra,
+          EffectiveFrom: new Date().toISOString(),
+          TaxType: 'Output'
+        }
+      };
+
+      const result = await firstValueFrom(this.receiptService.postReceipt(postPayload));
+
+      this.spinner.hide();
+      if (result.status) {
+        this.appSettingService.showSuccess('Receipt posted successfully!');
+        this.receiptData.PostStatus = 'P';
+      } else {
+        this.appSettingService.showError(result.message || 'Failed to post receipt.');
+      }
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Post voucher error:', error);
     }
   }
 
@@ -668,6 +774,8 @@ export class ReceiptEntryComponent implements OnInit {
       (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
+          this.receiptPrintData = resp.data
+          console.log(this.receiptPrintData,"PRINTDATA")
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -692,7 +800,6 @@ export class ReceiptEntryComponent implements OnInit {
       PartyAddress: headerInfo.PartyAddress,
       CustomerBranchSid: headerInfo.CustomerBranchSid,
       COAMasterSid: headerInfo.COAMasterSid,
-      LedgerMasterSid: headerInfo.LedgerMasterSid,
       GST_VAT: headerInfo.GST_VAT,
       BankPartyName: headerInfo.BankPartyName,
       Narration: headerInfo.Narration,
@@ -703,6 +810,8 @@ export class ReceiptEntryComponent implements OnInit {
       ClearanceDate: headerInfo.ClearanceDate,
     })
 
+    console.log("Header",this.receiptForm.value);
+    
     const detailItems = response.VoucherDetail || [];
     detailItems.forEach((d, index) => {
       const detailRecord = {
@@ -754,10 +863,15 @@ export class ReceiptEntryComponent implements OnInit {
         MasterJobSid: d.MasterJobSid
       })
     })
+    console.log("Detail",this.receiptForm.value);
+    this.isPosted = response.PostStatus === 'P';
+    if(this.isPosted){
+      this.receiptForm.disable();
+    }
 
-    const voucherMatchingHeader = response.voucherMatchingHeader[0] || [];
-    console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
-    const voucherMatchingRecords = voucherMatchingHeader.voucherMatchings || [];
+    // const voucherMatchingHeader = response.voucherMatchingHeader || [];
+    // console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
+    const voucherMatchingRecords = response.voucherMatchings || [];
     console.log("VOUCHER MATCHING RECORDS", voucherMatchingRecords);
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
@@ -920,7 +1034,7 @@ export class ReceiptEntryComponent implements OnInit {
       console.error('Could not find the selected bank or party ledger details.');
       return;
     }
-
+    const outstandingCurrencyAmount = this.getTotalOSCurrAmt();
     // 3. Create the Party Row (Credit)
     const partyData = {
       Sno: 1,
@@ -929,10 +1043,12 @@ export class ReceiptEntryComponent implements OnInit {
       DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
+      Amount : outstandingCurrencyAmount,
     }
     console.log("PartyData", partyData);
     this.addDetailRow(partyData);
     this.fetchLedgerForCOA(partyLedger, 0);
+    this.calculateLocalAmount(0);
 
     // 4. Create the Bank Row (Debit)
     const bankData = {
@@ -942,11 +1058,14 @@ export class ReceiptEntryComponent implements OnInit {
       DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
+      Amount : outstandingCurrencyAmount,
     }
     console.log("BankData", bankData);
     this.addDetailRow(bankData);
     this.fetchLedgerForCOA(bankLedger, 1);
+    this.calculateLocalAmount(1);
 
+    this.updateDetailNarration();
   }
 
    handleCOAChange(coa: any, detailIndex: number) {
@@ -958,14 +1077,52 @@ export class ReceiptEntryComponent implements OnInit {
     this.fetchLedgerForCOA(coa, detailIndex);
   }
 
+  /**
+   * Update the narration for the party detail
+   * eg Party row -  Being Bank Transfer Recd. NEFT 7887
+   * Bank row - Being NEFT 7887 from KRS Logistics
+   */
+  updateDetailNarration(){
+
+
+    const allDetails = this.detailItems.getRawValue();
+    let partyDetailIndex = allDetails.findIndex(d => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
+    let bankDetailIndex = allDetails.findIndex(d => d.COAMasterSid === this.r['BankCOA']?.value);
+    const partyCtrl = this.detailItems.at(partyDetailIndex) as FormGroup;
+    const bankCtrl = this.detailItems.at(bankDetailIndex) as FormGroup;
+    if(partyDetailIndex === -1) partyCtrl?.setValue(null);
+    if(bankDetailIndex === -1) bankCtrl?.setValue(null);
+    
+
+    const cashOrBank = this.r['CashOrBank']?.value ? "Cash" : "Bank"
+    console.log(cashOrBank);
+    const instrumentMode = this.r['InstrumentMode']?.value;
+    const instrumentNumber = this.r['InstrumentNumber']?.value;
+    const bankPartyName = this.r['BankPartyName']?.value;
+
+    partyCtrl?.patchValue({
+      Narration : cashOrBank === "Bank" ?
+      `Being Bank Transfer Recd. ${instrumentMode} ${instrumentNumber}` :
+      `Being Cash Transfer Recd.`
+    })
+
+    bankCtrl?.patchValue({
+      Narration : cashOrBank === "Bank" ?
+      `Being ${instrumentMode} ${instrumentNumber} from ${bankPartyName}` :
+      `Being Cash Transfer Recd.`
+    })
+    
+  }
+
   fetchLedgerForCOA(coa: any, detailIndex: number) {
     const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get('LedgerMasterSid');
     if (coa.SubledgerName === 'Y') {
       ledgerCtrl.enable();
       ledgerCtrl.setValidators([Validators.required]);
       this.accountService.getLedgerByCOAMasterSid({
-        COAMasterSid: coa.COAMasterSid,
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+        COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        DrCr : 'D'
       }).subscribe(
         (resp: any) => {
           if (resp.status) {
@@ -1113,14 +1270,16 @@ export class ReceiptEntryComponent implements OnInit {
   patchOutstandingFormArray(transactions: any[]) {
     this.voucherMatchings.clear();
 
-    const currencyInHeader = this.r['CurrencyCode']?.value;
+    const currencyInHeader = this.r['CurrencyMasterSid']?.value;
     const exchangeRateInHeader = this.r['ExchangeRate']?.value;
+    const searchType = this.searchOutstandingForm.get('SearchType')?.value;
 
     transactions.forEach(tx => {
-
+      console.log("Transaction",tx)
       const isMatchedRecord = !!tx.VoucherMatchingSid;  // <–– detect matched data
 
       const form = this.fb.group({
+        VoucherMatchingHeaderSid : [tx.VoucherMatchingHeaderSid || null],
         VoucherMatchingSid: [tx.VoucherMatchingSid || null],
         VoucherTransactionSid: [tx.VoucherTransactionSid],
         VoucherHeaderSid: [tx.VoucherHeaderSid],
@@ -1130,40 +1289,40 @@ export class ReceiptEntryComponent implements OnInit {
 
         // Voucher Info
         voucherNo: [tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo],
-        voucherTypeMasterSid: [tx.VoucherType],
+        voucherTypeMasterSid: [tx.VoucherTypeMasterSid],
         voucherType: [tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName || tx.VoucherType],
         voucherDate: [new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate)],
         drCr: [tx.DrCr === "C" ? "Cr" : "Dr"],
 
         // System amounts
         curr: [tx.CurrencyCode],
-        currAmt: [tx.OriginalCurrencyAmount ?? tx.Amount],
-        localAmt: [tx.OriginalAmount ?? tx.LocalAmount],
+        currAmt: [tx.OriginalCurrencyAmount],
+        localAmt: [tx.OriginalLocalAmount],
 
-        osCurrAmt: [tx.OutstandingCurrencyAmount ?? tx.Amount],
-        osLocalAmt: [tx.OutstandingAmount ?? tx.LocalAmount],
+        osCurrAmt: [tx.OutstandingCurrencyAmount],
+        osLocalAmt: [tx.OutstandingLocalAmount],
 
         exRate: [tx.ExchangeRate || 1],
 
         // Matching values (either blank or existing)
         matchCurr: [
-          isMatchedRecord ? tx.CurrencyCode : currencyInHeader
+          isMatchedRecord ? tx.MatchingCurrency : currencyInHeader
         ],
         matchExRate: [
-          isMatchedRecord ? tx.ExchangeRate : (exchangeRateInHeader || 1)
+          isMatchedRecord ? tx.MatchingExRate : (exchangeRateInHeader || 1)
         ],
         matchCurrAmt: [
-          isMatchedRecord ? tx.Amount : null
+          isMatchedRecord ? tx.MatchingAmount : (searchType === "Invoice" && !this.isEditMode ? tx.OutstandingCurrencyAmount : null )
         ],
         matchLocalAmt: [
-          isMatchedRecord ? tx.LocalAmount : null
+          isMatchedRecord ? tx.MatchingLocalAmount : (searchType === "Invoice" && !this.isEditMode ? tx.OutstandingLocalAmount : null )
         ],
         tdsAmt: [
-          isMatchedRecord ? tx.TDSAmount ?? null : null
+          isMatchedRecord ? tx.MatchingTDSAmount ?? null : null
         ],
 
         balance: [
-          isMatchedRecord ? (tx.OutstandingAmount - tx.LocalAmount) : null
+          isMatchedRecord ? (tx.OutstandingLocalAmount - tx.LocalAmount) : null
         ]
       });
 
@@ -1175,7 +1334,8 @@ export class ReceiptEntryComponent implements OnInit {
       ].forEach(field => form.get(field)?.disable());
       form.get('matchLocalAmt').valueChanges.subscribe(val => {
         const osLocalAmt = form.get('osLocalAmt')?.value;
-        form.get('balance')?.setValue(osLocalAmt - val);
+        const balance = Number(osLocalAmt-val).toFixed(2);
+        form.get('balance')?.setValue(Number(balance));
       });
       this.voucherMatchings.push(form);
     });
@@ -1515,6 +1675,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   onPartyChange(party: any) {
     console.log("Selected Party", party);
+    const partyCountry = String(party?.countryMaster?.countryName).trim().toLowerCase();
     this.errorLogger();
     if (!party) {
       this.receiptForm.patchValue({
@@ -1535,7 +1696,7 @@ export class ReceiptEntryComponent implements OnInit {
       CustomerBranchSid: party.CustomerBranchSid,
       COAMasterSid: party.COAMappedId,
       LedgerMasterSid: party.SubledgerMasterSid,
-      GST_VAT: party.GSTNo
+      GST_VAT: partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo
     })
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
@@ -1605,8 +1766,34 @@ export class ReceiptEntryComponent implements OnInit {
         newValue: !ctrl.value
       })
     }
-    this.r['BankCOA']?.setValue(null);
     ctrl.setValue(element.checked);
+    this.r['BankCOA']?.setValue(null);
+
+    const mode = this.receiptForm.get('InstrumentMode');
+    const number = this.receiptForm.get('InstrumentNumber');
+    const date = this.receiptForm.get('InstrumentDate');
+
+    // Reset values
+    this.receiptForm.patchValue({
+      InstrumentMode: null,
+      InstrumentNumber: '',
+      InstrumentDate: null,
+      ClearanceDate: null
+    });
+
+    if (element.checked) {
+      mode?.clearValidators();
+      number?.clearValidators();
+      date?.clearValidators();
+    } else {
+      mode?.setValidators([Validators.required]);
+      number?.setValidators([Validators.required]);
+      date?.setValidators([Validators.required]);
+    }
+
+    mode?.updateValueAndValidity();
+    number?.updateValueAndValidity();
+    date?.updateValueAndValidity();
   }
 
  
@@ -1774,6 +1961,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   public errorLogger(): void {
     console.log('Form Status:', this.receiptForm.status);
+    console.log('Form Value', this.receiptForm.value);
     if (this.receiptForm.invalid) {
       const invalid = this.findInvalidControlsRecursive(this.receiptForm);
       console.log('Invalid controls:', invalid);
@@ -1782,8 +1970,157 @@ export class ReceiptEntryComponent implements OnInit {
     }
   }
 
+  private setupBillMatchingValidation(): void {
+    this.voucherMatchings.valueChanges
+      .subscribe(() => this.validateTotalMatchingAmount());
+    this.detailItems.valueChanges
+      .subscribe(() => this.validateTotalMatchingAmount());
+  }
+
+  private validateTotalMatchingAmount(): void {
+    // Find party detail (D) row: usually first or with party LedgerMasterSid
+    console.log("Validating");
+    const detailItems = this.detailItems.getRawValue();
+    const partyDetail = detailItems.find((d: any) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
+    if(!partyDetail) {
+      this.matchingError = null;
+      return;
+    }
+    const partyAmount = Number(partyDetail?.Amount ?? 0);
+    console.log("party info",{
+      partyDetail,
+      partyAmount
+    })
+
+    // Calculate sum of all matching amounts
+    const totalBillMatchingAmount = this.voucherMatchings.controls
+      .reduce((sum, c) => sum + Number(c.get('matchCurrAmt')?.value ?? 0), 0);
+
+    console.log("totalBillMatchingAmount",totalBillMatchingAmount);
+    console.log(totalBillMatchingAmount > partyAmount);
+    if (totalBillMatchingAmount > partyAmount) {
+       this.matchingError = 'Total bill matching amount cannot be greater than party detail amount.';
+    } else {
+      if (this.matchingError) {
+        // Remove the custom error if present and condition is not met
+         this.matchingError = null;
+      }
+    }
+    console.log("FINAL DECISION",this.matchingError);
+    this.receiptForm.updateValueAndValidity();
+  }
+
+  showInfo() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.receiptData;
+    modalRef.componentInstance.idLabel = 'Receipt ID';
+    modalRef.componentInstance.idValue = this.receiptData?.VoucherHeaderSid;
+  }
+
+  openEDoc() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.screenName = 'Edoc';
+    modalRef.componentInstance.formData = this.receiptData;
+    modalRef.componentInstance.resetTrigger = false;
+    const data: any = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.receiptData?.VoucherHeaderSid
+    }
+    this.commonService.documentData.set(data)
+  }
+
+  openTandC() {
+    if (!this.currentMenuId) {
+      this.appSettingService.showError('Error: Menu ID not found.');
+      return;
+    }
+
+    const payload = { MenuMasterSid: this.currentMenuId };
+
+    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
+      if (termsData && termsData.length > 0) {
+        this.TandCList = termsData;
+        const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.headerId;
+      } else {
+        console.warn('No Terms and Conditions data found to display.');
+      }
+    });
+  }
+
+  loadTandC(payload: { MenuMasterSid: number }): Observable<any[]> {
+    return this.accountService.getTandCByCondition(payload).pipe(
+      map((resp: any) => {
+        if (resp && resp.status) {
+          return resp.data;
+        }
+        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+        return [];
+      }),
+      catchError((error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+        return of([]);
+      })
+    );
+  }
+
+  openEmail() {
+    if (!this.receiptData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  openAuthority() {
+    if (!this.currentMenuId) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = this.currentMenuId;
+    modalRef.componentInstance.documentSid = this.headerId;
+  }
 
 
+  openFollowup() {
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  }
+
+
+   reportBank() {
+      const modalRef = this.modalService.open(BankReceiptComponent, {
+        size: 'xl',
+        scrollable: true,
+      })
+      modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+      modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+    }
+
+  reportCash() {
+    const modalRef = this.modalService.open(CashReceiptComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

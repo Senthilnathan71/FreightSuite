@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-vendor-tds-list',
   standalone: true,
@@ -46,8 +47,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
   // searchPerformed: boolean;
   userData: any;
 
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
+  
 
   // Pagination related Declaring
   // page = 1;
@@ -63,34 +63,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
   currentCompany: any;
   currentBranch: any;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        // condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'SupplierTdsMappingSid',
-    emptyMessage: 'No supplier-tds found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig ;
 
   tableLoading = false;
   protected config: ListComponentConfig = {
@@ -109,6 +82,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
+    public mps: MenuPermissionService,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -120,79 +94,20 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
     this.appSettingService.getUser().subscribe(user => {
       if (user) {
         this.userData = user;
-        this.checkPermissions();
       }
     })
     // this.searchSupplierTDS();
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    })
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.accountService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            this.initializeHeaderActions();
-            console.log(this.permissions);
-          },
-        });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
-  // Search
-  // searchSupplierTDS() {
-  //     this.spinner.show();
-  //     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  //     const params = {
-  //         search: this.filterValue.trim() || '',
-  //         page: this.page,
-  //         pageSize: this.pageSize,
-  //         activeCompanyId : CompanyMasterSid,
-  //     }
-  //     this.accountService.searchSupplierTDS(params).subscribe({
-  //         next : (resp: any) => {
-  //             if (resp.status) {
-  //                 this.allSupplierTDS = resp.data?.items.map(data => {
-  //                     return {
-  //                         SupplierTdsMappingSid: data.SupplierTdsMappingSid,
-  //                         SupplierName: data.customerMaster?.CustomerName,
-  //                         PanNo: data.customerMaster?.PanName,
-  //                         CompanyType: data?.CompanyType,
-  //                         CountryName: data.customerMaster?.countryMaster?.countryName,
-  //                         status : data.Status === 'A' ? 'Active' : 'Suspended'
-  //                     }
-  //                 });
-  //                 console.log(this.allSupplierTDS);
-  //                 this.totalLengthOfCollection = resp.data?.totalCount || 0;
-  //                 this.applySorting();
-  //                 this.searchPerformed = true;
-  //             } else {
-  //                 this.appSettingService.showError(resp.message);
-  //                 console.error('Error searching supplier TDS mapping', resp.message)
-  //                 this.allSupplierTDS = [];
-  //                 this.totalLengthOfCollection = 0;
-  //             }
-  //             this.spinner.hide();
-  //         }, error : (error: any) => {
-  //             console.error(error);
-  //         }
-  //     })
-  // }
   protected searchItems(): Observable<any> {
     this.spinner.show();
     return this.accountService.searchSupplierTDS(this.getSearchParams());
@@ -217,7 +132,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
         return {
           SupplierTdsMappingSid: data.SupplierTdsMappingSid,
           SupplierName: data.customerMaster?.CustomerName,
-          PanNo: data.customerMaster?.PanName,
+          PanNo: data.customerMaster?.PanType,
           CompanyType: data?.CompanyType,
           CountryName: data.customerMaster?.countryMaster?.countryName,
           status: data.Status === 'A' ? 'Active' : 'Suspended'
@@ -259,7 +174,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -324,9 +239,9 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
 
 
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
+  private initializeTableConfig(){
+    this.tableConfig = {
+      columns : [
       {
         key: 'SupplierName',
         label: 'Supplier Name',
@@ -370,7 +285,33 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'SupplierTdsMappingSid',
+    emptyMessage: 'No supplier-tds found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

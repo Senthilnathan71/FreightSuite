@@ -3,11 +3,16 @@
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
         <h4 class="page-title mb-0">Invoice</h4>
+        @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
       </div>
       <div class="col-md-8 pb-1">
 
        <!-- Replace the button section in your HTML -->
-<div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+<div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
   <!-- Draft Save Button -->
   <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
     (click)="onDraftSave()" 
@@ -24,7 +29,7 @@
 
   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
     (click)="openPrintModal()" 
-    *ngIf="isEditMode">
+    *ngIf="isEditMode"  [disabled]="!invoiceData">
     <i class="fas fa-print me-1"></i> Print
   </button>
 
@@ -42,30 +47,28 @@
   <!-- Regular Save (for backward compatibility) -->
   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
     (click)="onSave()" 
-    [disabled]="isPosted">
+    [disabled]="(!mps.can('update') && isEditMode) || isPosted">
     <i class="fas fa-save me-1"></i> Save
   </button>
+  <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                  class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                  class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                  class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
+                  class="fas fa-paperclip me-1"></i> Followup</button>
+            </div>
+          </div>
 </div>
-
-<!-- Add status indicator -->
-<!-- <div class="row mt-2" *ngIf="isEditMode">
-  <div class="col-12">
-    <div class="alert" 
-         [class.alert-warning]="isDraft" 
-         [class.alert-success]="isPosted"
-         style="padding: 0.25rem 1rem; margin-bottom: 0;">
-      <small>
-        <i class="fas" 
-           [class.fa-edit]="isDraft" 
-           [class.fa-check-circle]="isPosted"></i>
-        Status: <strong>{{ isDraft ? 'DRAFT' : 'POSTED' }}</strong>
-        <span *ngIf="isPosted" class="ms-2">
-          <i class="fas fa-lock me-1"></i>Editing disabled
-        </span>
-      </small>
-    </div>
-  </div>
-</div> -->
       </div>
     </div>
   </div>
@@ -290,8 +293,8 @@
               </aside>
             </div>
             <div class="col-md-12 px-0">
-              <div class="card mb-0">
-                <div class="card-body py-1">
+              <div class=" mb-0">
+                <div class="py-1">
                   <form [formGroup]="invoiceForm" novalidate>
                     <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
@@ -303,7 +306,7 @@
                       <table class="table table-hover table-sm mb-0 text-center">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius: 10px;"></th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
@@ -350,7 +353,7 @@
                               No.</th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
                               House No.</th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;border-top-right-radius: 10px;">
                               Department</th>
                           </tr>
                           <tr class="align-middle bg-info">
@@ -374,8 +377,8 @@
                           <ng-container *ngFor="let row of details.controls; let i = index">
                             <tr [formGroupName]="i">
                               <!-- Delete Button - Only show for new invoices -->
-                              <td>
-                                <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0"
+                              <td *ngIf="!isEditMode">
+                                <button  type="button" class="btn btn-sm pt-0"
                                   (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
@@ -751,25 +754,25 @@
                   class="img-fluid">
                 <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
               </div>
-
               <div class="company-info ">
-                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                <p class="mb-1">
-                  {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p class="my-0">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
+                <p class="my-0">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
+                <p class="my-0">
+                  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
                 </p>
-                <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                <p class="my-0">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p class="my-0"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
               </div>
             </div>
           </div>
 
 
-          <div class="text-center">
-            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+          <div class="text-center" style="border-top: 1px solid black;">
+            <h5 class="fw-bold my-1">{{ getInvoiceTitle() }}</h5>
             <p style="font-size: 12px;">
-              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '-'}}
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
             </p>
           </div>
 
@@ -777,28 +780,28 @@
             <div class="col-md-6">
               <strong>BILLED TO</strong><br />
               <span>{{ getCustomerName(invoiceForm.get('CustomerMasterSid')?.value) }}</span><br />
-              {{invoiceForm.get('PartyAddress')?.value || '-'}} <br>
+              {{invoiceForm.get('PartyAddress')?.value || ''}} <br>
               <span class="fw-semibold">
                 PAN :
-              </span> {{currentCompany?.Pan || currentCompany?.PAN || '-'}}
+              </span> {{currentCompany?.Pan || currentCompany?.PAN || ''}}
             </div>
             <div class="col-md-6 ">
               <div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice No</strong></div>
-                  <div>: {{invoiceForm.get('VoucherNumber')?.value || '-'}}</div>
+                  <div>: {{invoiceForm.get('VoucherNumber')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice Date</strong></div>
-                  <div>: {{ (invoiceData?.VoucherDate | formatDate )|| '-' }}</div>
+                  <div>: {{ (invoiceData?.VoucherDate | formatDate )|| '' }}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>GST No</strong></div>
-                  <div>: {{invoiceForm.get('GST_VAT')?.value || '-'}}</div>
+                  <div>: {{invoiceForm.get('GST_VAT')?.value || ''}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>IRN No</strong></div>
-                  <div>: {{invoiceForm.get('IRNNumber')?.value || '-'}}</div>
+                  <div>: {{invoiceForm.get('IRNNumber')?.value || ''}}</div>
                 </div>
               </div>
             </div>
@@ -808,31 +811,31 @@
             <div class="col-md-6">
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Shipper</strong></div>
-                <div>: {{ invoiceData?.houseJob?.ShipperName }}</div>
+                <div>: {{ invoiceData?.houseJob?.ShipperName || invoiceData?.bookingHeader?.ShipperName}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Consignee / Notify</strong></div>
-                <div>: {{ invoiceData?.houseJob?.ConsigneeName }}</div>
+                <div>: {{ invoiceData?.houseJob?.ConsigneeName || invoiceData?.bookingHeader?.ConsigneeName}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Vessel </strong></div>
-                <div>: {{ invoiceData.houseJob?.VesselName }} </div>
+                <div>: {{ invoiceData.houseJob?.VesselName || invoiceData?.bookingHeader?.VesselName}} </div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Voyage / Flight No.</strong></div>
-                <div>: {{ invoiceData.houseJob?.VoyageNo }}</div>
+                <div>: {{ invoiceData.houseJob?.VoyageNo || invoiceData?.bookingHeader?.VoyageNo}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Loading Port</strong></div>
-                <div>: {{ invoiceData?.masterJob?.POL }}</div>
+                <div>: {{ invoiceData?.houseJob?.POL || invoiceData?.bookingHeader?.POL}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Place of Supply</strong></div>
-                <div>: {{ invoiceData?.masterJob?.POD }}</div>
+                <div>: {{ invoiceData?.houseJob?.POO || invoiceData?.bookingHeader?.POO}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Final Destination</strong></div>
-                <div>: {{ invoiceData.masterJob?.FPD }}</div>
+                <div>: {{ invoiceData.houseJob?.FPD || invoiceData?.bookingHeader?.FPD}}</div>
               </div>
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Vessel / Flight Date</strong></div>
@@ -840,19 +843,19 @@
             </div> -->
               <div class="d-flex">
                 <div style="width: 180px;"><strong>ETD</strong></div>
-                <div>: {{ invoiceData?.houseJob?.ETD | formatDate }}</div>
+                <div>: {{ invoiceData?.houseJob?.ETD || invoiceData?.bookingHeader?.ETD | formatDate  }}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>ETA</strong></div>
-                <div>: {{ invoiceData?.houseJob?.ETA | formatDate }}</div>
+                <div>: {{ invoiceData?.houseJob?.ETA || invoiceData?.bookingHeader?.ETA | formatDate }}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>S Bill No</strong></div>
-                <div>: </div>
+                <div>: {{ invoiceData.houseJob?.Products?.[0]?.ShippingBillNo }}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Shipper Reference No</strong></div>
-                <div>: </div>
+                <div>: {{ invoiceData.houseJob?.Others?.[0]?.CustomerRefNo }}</div>
               </div>
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Forwarder B/L No</strong></div>
@@ -875,13 +878,22 @@
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Freight</strong></div>
-                <div>: {{ invoiceData.masterJob?.FreightPPCC }}</div>
+                <div>: {{ invoiceData.houseJob?.FreightTerms  || invoiceData?.bookingHeader?.FreightTerms  }}</div>
               </div>
               <div class="d-flex">
-                <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
-                <div>: {{ invoiceData.masterJob?.NoOfPkg }} / {{
-                  invoiceData.masterJob?.GrossWeight }} / {{
-                  invoiceData.masterJob?.Volume }}</div>
+              <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
+                <div>
+                   : {{
+                    getDisplayValue(invoiceData.houseJob?.Cargo?.[0]?.NoOfPackage, invoiceData?.bookingHeader?.NoOfPackage)
+                  }}
+                  {{
+                    invoiceData.houseJob?.Cargo?.[0]?.GrossWeight || invoiceData?.bookingHeader?.GrossWeight ? ' / ' + (invoiceData.houseJob?.Cargo?.[0]?.GrossWeight || invoiceData?.bookingHeader?.GrossWeight) : ''
+                  }}
+                  {{
+                    invoiceData.houseJob?.Cargo?.[0]?.Volume || invoiceData?.bookingHeader?.Volume ? ' / ' + (invoiceData.houseJob?.Cargo?.[0]?.Volume || invoiceData?.bookingHeader?.Volume) : ''
+                  }}
+                </div>
+
               </div>
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Exp Inv No</strong></div>
@@ -913,21 +925,21 @@
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Sales Person</strong></div>
-                <div>: Vimal</div>
+                <div>: {{ getSalesmanName(invoiceData?.houseJob?.SalesmanSid) }}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Carrier Name</strong></div>
-                <div>: {{ invoiceData.houseJob?.CarrierName }}</div>
+                <div>: {{ invoiceData.houseJob?.CarrierName || invoiceData?.bookingHeader?.CarrierName}}</div>
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>CFS Name</strong></div>
-                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.others?.[0]?.CFS }} </div>
+                <div>: {{ invoiceData.houseJob?.Others?.[0]?.YardCFS || invoiceData?.bookingHeader?.YardCFS}} </div>
               </div>
             </div>
           </div>
 
           <div class=" table-responsive ">
-            <table class="table tablebordered table-sm align-middle my-1">
+            <table class="table tablebordered table-sm align-middle my-1 ">
               <thead>
                 <tr>
                   <th>Particulars</th>
@@ -949,36 +961,38 @@
                     <th>VAT %</th>
                     <th>VAT Amt</th>
                   </ng-container>
+                 
                   <th>Total ({{invoiceForm.get('CurrencyCode')?.value}})</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let detail of details.controls; let i = index">
-                  <td>{{detail.get('ChargeDescription')?.value}}</td>
-                  <td>{{getHSSACCode(detail.get('HSSACMasterSid')?.value, i)}}</td>
-                  <td>{{detail.get('CurrencyCode')?.value}}</td>
-                  <td>{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
-                  <td>{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
-                  <td>{{detail.get('ExchangeRate')?.value | number:'1.2-4'}}</td>
-                  <td>{{detail.get('TaxableAmount')?.value | number:'1.2-2'}}</td>
+                <tr *ngFor="let detail of filteredDetailItems; let i = index">
+                  <td>{{detail.ChargeDescription}}</td>
+                  <td>{{getHSSACCode(detail.HSSACMasterSid, i)}}</td>
+                  <td>{{detail.CurrencyCode}}</td>
+                  <td>{{detail.NumberOfUnit | number:'1.3-3'}}</td>
+                  <td>{{detail.Rate | number:'1.2-2'}}</td>
+                  <td>{{detail.ExchangeRate ?? 0 | number:'1.2-4'}}</td>
+                  <td>{{detail.TaxableAmount ?? 0 | number:'1.2-2'}}</td>
                   <ng-container *ngIf="isIndiaGST">
-                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxPercentageIGST')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxAmountIGST')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxPercentage1 ?? 0 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxAmount1 ?? 0 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxPercentage2 ?? 0 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxAmount2 ?? 0 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxPercentageIGST ?? 0 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxAmountIGST ?? 0 | number:'1.2-2'}}</td>
                   </ng-container>
                   <ng-container *ngIf="isVATMode">
-                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
-                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxPercentage1 | number:'1.2-2'}}</td>
+                    <td>{{detail.TaxAmount1 | number:'1.2-2'}}</td>
                   </ng-container>
-                  <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
-                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td>
+                  <!-- <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td> -->
+                  <td>{{ getRowTotal(detail) | number:'1.2-2' }}</td>
                 </tr>
                 <tr>
                   <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
-                  <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+                  <td><strong>{{getGrandRowTotal() | number:'1.2-2'}}</strong></td>
                   <!-- <td><strong>{{getTotalPartyAmount() | number:'1.2-2'}}</strong></td> -->
                 </tr>
               </tbody>
@@ -987,15 +1001,15 @@
 
           <div class="d-flex ">
             <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
-            <p class="mb-0 ">: {{getAmountInWords()}}</p>
+            <p class="mb-0 fst-italic">: {{getAmountInWords()}}</p>
           </div>
 
           <div class="d-flex   mt-2">
             <p class="fw-bold" style="width: 180px;"> Remarks</p>
-            <p style="margin-bottom: 0;">: {{invoiceForm.get('Remarks')?.value || '-'}}</p>
+            <p style="margin-bottom: 0;">: {{invoiceForm.get('Remarks')?.value || ''}}</p>
           </div>
 
-          <p style=" margin-bottom: 0;" class="mt-3" *ngIf="bankDetails">Bank Details</p>
+          <p style=" margin-bottom: 0;" class="mt-3 fw-bold" *ngIf="bankDetails">Bank Details</p>
           <div *ngIf="bankDetails" class=" ">
             <div class="d-flex">
               <div style="width: 180px; margin-bottom: 0; font-size: 12px;"><strong>Account Name</strong></div>

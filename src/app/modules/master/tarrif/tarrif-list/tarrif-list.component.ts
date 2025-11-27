@@ -23,6 +23,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-tarrif-list',
   standalone: true,
@@ -72,16 +73,79 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
+  tableConfig:TableConfig;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
+  private initializeTableConfig() {
+  this.tableConfig = {
+    columns: [
+       {
+      key: 'Dept',
+      label: 'Department',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'POL',
+      label: 'POL',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'POD',
+      label: 'POD',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'carrier',
+      label: 'Carrier',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'agent',
+      label: 'Agent',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string',
+      cellClass: 'vessel-column'
+    },
+    // {
+    //   key: 'EffectiveDate',
+    //   label: 'Effective From',
+    //   sortable: true,
+    //   filterable: true,
+    //   visible: true,
+    //   dataType: 'string'
+    // },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      template: 'status',
+      width: '100px',
+      dataType: 'string',
+      cellClass: 'status-column'
+    }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View tarrif',
-        // condition: (row: any) => this.hasPermission('View')
+        state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
@@ -89,7 +153,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete Zone',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+         state: !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -100,7 +164,8 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     trackByKey: 'TariffHeaderSid',
     emptyMessage: 'No Tarrif found',
     dragAndDrop: true
-  };
+  }
+};
 
   tableLoading = false;
 
@@ -125,7 +190,8 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -144,7 +210,6 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingServ.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     // this.loadTariffs();
 
@@ -152,35 +217,12 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     this.initializeTableConfig();
     this.initializeHeaderActions();
     this.initializeModalDropdownItems();
-
+    this.mps.init().subscribe(() => {
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
     // Initialize base component
     super.ngOnInit();
-  }
-
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterServ
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-           this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
   }
 
 
@@ -256,7 +298,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -278,25 +320,25 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        // condition: this.hasPermission('Edoc')
       },
       {
         label: 'Terms & Condition',
         icon: 'fas fa-clipboard',
         action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
+        // condition: this.hasPermission('Terms and Condition')
       },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        condition: this.hasPermission('Authority')
+        // condition: this.hasPermission('Authority')
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+        // condition: this.hasPermission('Email')
       }
     ];
   }
@@ -355,71 +397,6 @@ private updateHeaderActionState(): void {
     })
   }
 
-  // Table configuration
-  private initializeTableConfig(): void {
-  this.tableConfig.columns = [
-    {
-      key: 'Dept',
-      label: 'Department',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      dataType: 'string'
-    },
-    {
-      key: 'POL',
-      label: 'POL',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      dataType: 'string'
-    },
-    {
-      key: 'POD',
-      label: 'POD',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      dataType: 'string'
-    },
-    {
-      key: 'carrier',
-      label: 'Carrier',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      dataType: 'string'
-    },
-    {
-      key: 'agent',
-      label: 'Agent',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      dataType: 'string',
-      cellClass: 'vessel-column'
-    },
-    // {
-    //   key: 'EffectiveDate',
-    //   label: 'Effective From',
-    //   sortable: true,
-    //   filterable: true,
-    //   visible: true,
-    //   dataType: 'string'
-    // },
-    {
-      key: 'status',
-      label: 'Status',
-      sortable: true,
-      filterable: true,
-      visible: true,
-      template: 'status',
-      width: '100px',
-      dataType: 'string',
-      cellClass: 'status-column'
-    }
-  ];
-}
 
 
   // Table event handlers

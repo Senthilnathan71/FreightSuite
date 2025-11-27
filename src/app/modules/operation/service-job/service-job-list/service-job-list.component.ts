@@ -19,6 +19,7 @@ import { NgxSpinnerModule } from 'ngx-spinner';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { FeatherModule } from 'angular-feather';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 // You will need to import your DeleteWarningComponent
 // import { DeleteWarningComponent } from 'path/to/delete-warning.component';
 
@@ -50,15 +51,26 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     currentBranch: any;
 
     headerActions: HeaderAction[] = [];
-    tableConfig: TableConfig = {
-        columns: [],
+
+    tableConfig:TableConfig;
+    private initializeTableConfig() {
+    this.tableConfig = {
+        columns: [
+             { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true, dataType: 'string' },
+            { key: 'ShipmentNo', label: 'Ref. No', sortable: true, filterable: true, visible: true, dataType: 'string' },
+            { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true, dataType: 'string' },
+            { key: 'departmentName', label: 'Dept', sortable: true, filterable: true, visible: true, dataType: 'string' },
+            { key: 'POL', label: 'POL', sortable: true, visible: true, dataType: 'string' },
+            { key: 'POD', label: 'POD', sortable: true, visible: true, dataType: 'string' },
+            { key: 'Status', label: 'Status', sortable: true, visible: true, template: 'status', dataType: 'string' }
+        ],
         actions: [
             {
                 icon: 'fas fa-eye',
                 label: 'View',
                 action: 'view',
                 tooltip: 'View Service Job',
-                // condition: (row: any) => this.hasPermission('View')
+                state: !this.mps.can('view')
             }
         ],
         selectable: false,
@@ -68,7 +80,8 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
         showPagination: true,
         trackByKey: 'HouseJobSid',
         emptyMessage: 'No service jobs found',
-    };
+    }
+};
 
     tableLoading = false;
 
@@ -92,7 +105,9 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
         private excelReportService: ExcelExportService,
         private spinner: NgxSpinnerService,
         paginationService: PaginationService,
-        private datePipe: CustomDatePipe
+        private datePipe: CustomDatePipe,
+        public mps : MenuPermissionService,
+        private ngbModal: NgbModal,
     ) {
         super(paginationService);
     }
@@ -104,42 +119,17 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
         this.appSettingService.getUser().subscribe(user => {
             if (user) {
                 this.userData = user;
-                this.checkPermissions();
             }
         });
-        
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
         this.initializeTableConfig();
         this.initializeHeaderActions();
         super.ngOnInit(); // This triggers the initial data fetch
     }
 
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        if (currentMenuId && userRole) {
-            this.operationService
-                .getRoleMenuPermissions(currentMenuId, userRole)
-                .subscribe({
-                    next: (response) => {
-                        this.currentMenuPermissions = response.data.MenuPermissions || {};
-                        this.permissions = Object.keys(this.currentMenuPermissions).filter(
-                            key => this.currentMenuPermissions[key] === 'isTrue'
-                        );
-                        // Re-initialize actions after permissions are available
-                        this.initializeHeaderActions();
-                        // Refresh table actions to apply conditions
-                        this.tableConfig.actions = this.tableConfig.actions?.map(action => ({
-                           ...action,
-                           condition: action.condition
-                        }));
-                    },
-                });
-        }
-    }
-
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
 
     // --- Abstract Method Implementations from BaseListComponent ---
 
@@ -231,26 +221,13 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     }
     
     // --- Component-Specific Logic ---
-
-    private initializeTableConfig(): void {
-        this.tableConfig.columns = [
-            { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true, dataType: 'string' },
-            { key: 'ShipmentNo', label: 'Ref. No', sortable: true, filterable: true, visible: true, dataType: 'string' },
-            { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true, dataType: 'string' },
-            { key: 'departmentName', label: 'Dept', sortable: true, filterable: true, visible: true, dataType: 'string' },
-            { key: 'POL', label: 'POL', sortable: true, visible: true, dataType: 'string' },
-            { key: 'POD', label: 'POD', sortable: true, visible: true, dataType: 'string' },
-            { key: 'Status', label: 'Status', sortable: true, visible: true, template: 'status', dataType: 'string' }
-        ];
-    }
-
     private initializeHeaderActions(): void {
         this.headerActions = [
             {
                 label: 'Create',
                 icon: 'fas fa-plus',
                 action: 'create',
-                condition: this.hasPermission('Add')
+               disabled: !this.mps.can('insert')
             },
             {
                 label: 'Report',

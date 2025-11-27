@@ -1,0 +1,273 @@
+.report-master-list-container {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 120px);
+
+  .page-header {
+    margin-bottom: 1.5rem;
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+
+      i {
+        color: #007bff;
+        margin-right: 0.5rem;
+      }
+    }
+
+    .text-muted {
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
+
+    button {
+      font-weight: 600;
+
+      i {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+
+    .card-body {
+      padding: 1.25rem;
+
+      .form-group {
+        margin-bottom: 0;
+
+        label {
+          font-weight: 600;
+          font-size: 0.875rem;
+          color: #495057;
+          margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+          font-size: 0.875rem;
+
+          &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+          }
+        }
+      }
+    }
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+
+    table {
+      margin-bottom: 0;
+      font-size: 0.875rem;
+
+      thead {
+        th {
+          background-color: #f8f9fa;
+          border-bottom: 2px solid #dee2e6;
+          color: #495057;
+          font-weight: 600;
+          padding: 0.75rem;
+          white-space: nowrap;
+        }
+      }
+
+      tbody {
+        tr {
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background-color: #f1f3f5;
+          }
+
+          td {
+            vertical-align: middle;
+            padding: 0.75rem;
+
+            strong {
+              color: #333;
+            }
+
+            small {
+              color: #6c757d;
+            }
+
+            .badge {
+              font-size: 0.75rem;
+              padding: 0.35rem 0.65rem;
+              font-weight: 600;
+            }
+
+            .btn-group {
+              .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+
+                i {
+                  font-size: 1rem;
+                }
+
+                &:hover {
+                  transform: translateY(-1px);
+                  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Badge colors
+  .badge-primary {
+    background-color: #007bff;
+  }
+
+  .badge-success {
+    background-color: #28a745;
+  }
+
+  .badge-danger {
+    background-color: #dc3545;
+  }
+
+  .badge-info {
+    background-color: #17a2b8;
+  }
+
+  .badge-secondary {
+    background-color: #6c757d;
+  }
+
+  // Loading and empty states
+  .text-center {
+    i.mdi-information-outline {
+      opacity: 0.3;
+    }
+
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      border-width: 0.3em;
+    }
+  }
+
+  // Pagination
+  .pagination-container {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+
+    .pagination {
+      .page-item {
+        .page-link {
+          color: #007bff;
+          border: 1px solid #dee2e6;
+          padding: 0.5rem 0.75rem;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #e9ecef;
+          }
+        }
+
+        &.active .page-link {
+          background-color: #007bff;
+          border-color: #007bff;
+          color: white;
+        }
+
+        &.disabled .page-link {
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .page-header {
+      .row {
+        flex-direction: column;
+
+        .col-auto {
+          margin-top: 1rem;
+          width: 100%;
+
+          button {
+            width: 100%;
+          }
+        }
+      }
+    }
+
+    .card {
+      .card-body {
+        .row {
+          .col-md-4,
+          .col-md-3,
+          .col-md-2 {
+            margin-bottom: 1rem;
+          }
+        }
+      }
+    }
+
+    .table-responsive {
+      table {
+        font-size: 0.75rem;
+
+        thead th,
+        tbody td {
+          padding: 0.5rem;
+        }
+
+        .btn-group {
+          display: flex;
+          flex-direction: column;
+
+          .btn {
+            margin-bottom: 0.25rem;
+          }
+        }
+      }
+    }
+
+    .pagination-container {
+      .d-flex {
+        flex-direction: column;
+
+        > div:first-child {
+          margin-bottom: 1rem;
+          text-align: center;
+        }
+
+        nav {
+          display: flex;
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    padding: 0.5rem;
+
+    .page-header {
+      .page-title {
+        font-size: 1.25rem;
+      }
+    }
+  }
+}

@@ -24,6 +24,13 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
+import { CommonService } from 'src/app/common/common.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -68,6 +75,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   chargeList: any[] = [];
   hssacList: any[] = [];
   subledgerList: any[] = [];
+  currentMenuId: number = 0;
+  TandCList: any[] = [];
   uomList: any[] = [];
   masterJobList: any[] = [];
   houseJobList: any[] = [];
@@ -199,7 +208,10 @@ currentUserState: string;
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+     private commonService: CommonService,       
+  private masterService: MasterService ,
+  public mps : MenuPermissionService
   ) {}
 
   ngOnInit(): void {
@@ -239,7 +251,7 @@ currentUserState: string;
     this.currentBranch = null;
   }
 
-
+    this.mps.init().subscribe();
     this.initForm();
     this.loadLookups();
 
@@ -343,6 +355,7 @@ currentUserState: string;
 
   createDetailGroup(data?: any): FormGroup {
   return this.fb.group({
+    VoucherDetailSid: [data?.VoucherDetailSid || null],
     CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
     ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
     ChargeDescription: [data?.ChargeDescription || ''],
@@ -1793,6 +1806,7 @@ getMasterJobNumber(jobSid: number): string {
   const formValue = this.vendorInvoiceForm.getRawValue();
 
   const payload: any = {
+    VoucherHeaderSid: this.headerId,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     PartyMasterSid: formValue.PartyMasterSid,
@@ -1817,7 +1831,7 @@ getMasterJobNumber(jobSid: number): string {
     HouseJobSid: formValue.HouseJobSid,
     VoucherDate: this.fromNgbDate(formValue.VoucherDate),
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
-    status: formValue.Status,
+    Status: formValue.Status,
     CreatedBy: this.currUserEmail || 'System',
     UpdatedBy: this.currUserEmail || 'System'
   };
@@ -1825,7 +1839,7 @@ getMasterJobNumber(jobSid: number): string {
   // Add details with CostRevenueChargesSid
   payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
     Sno: index + 1,
-    CostRevenueChargesSid: detail.CostRevenueChargesSid, // Include original cost ID
+    VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
     ChargeMasterSid: detail.ChargeMasterSid,
     ChargeDescription: detail.ChargeDescription,
     HSSACMasterSid: detail.HSSACMasterSid,
@@ -2000,12 +2014,12 @@ private async postVoucher(voucherHeaderSid: number) {
     const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
     
     this.spinner.hide();
-    if (result.success) {
+    if (result.status) {
       this.appSettingService.showSuccess('Invoice posted successfully!');
       this.vendorInvoiceData.PostStatus = 'P'; // Update local state
       
       // Navigate to list or stay on page but disable edits
-      this.router.navigate(['operation/invoice/list']);
+      this.router.navigate(['/operation/vendor-invoice/list']);
     } else {
       this.appSettingService.showError(result.message || 'Failed to post invoice.');
     }
@@ -2302,5 +2316,88 @@ private findHssacIdByCode(code: string): number | null {
   const hssac = this.hssacList.find(h => h.HSSACCode === code);
   return hssac?.HSSACMasterSid || null;
 }
+// eDoc Method
+openEDoc() {
+  if (!this.vendorInvoiceData) return;
+  
+  const modalRef = this.modalService.open(EdocComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.item = this.vendorInvoiceData;
+  modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
+  modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
+  
+  const data: any = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+  };
+
+  this.commonService.documentData.set(data);
+}
+
+// Terms & Conditions Method
+openTandC() {
+  this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const payload = { MenuMasterSid: this.currentMenuId };
+  
+  this.masterService.getTandCByCondition(payload).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.TandCList = resp.data;
+        const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true
+        });
+        
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+
+      } else {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+      }
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading Terms and Conditions', error);
+    }
+  );
+}
+
+// Authority Method
+openAuthority() {
+  const MenuMasterSid = localStorage.getItem('currentMenuId');
+  if (!MenuMasterSid) return;
+  
+  const modalRef = this.modalService.open(AuthorityLogComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.menuMasterSid = Number(MenuMasterSid);
+  modalRef.componentInstance.documentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+}
+
+// Email Method
+openEmail() {
+  if (!this.vendorInvoiceData) return;
+  
+  const modalRef = this.modalService.open(EmailEntryComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+  
+  modalRef.componentInstance.item = this.vendorInvoiceData;
+  modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
+  modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
+}
+
 
 }

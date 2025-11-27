@@ -1,61 +1,177 @@
-<div class="form-container">
-  <form [formGroup]="boeForm">
-    <table class="boe-table">
-      <thead>
-        <tr>
-          <th>SNo</th>
-          <th>Declaration No</th>
-          <th class="required">BOE No</th>
-          <th>BOE Date</th>
-          <th>BOE Value</th>
-          <th>Invoice No</th>
-          <th>Transaction Type</th>
-          <th>Amount</th>
-          <th colspan="2">Exit/Entry Document</th>
-          <th colspan="3">Claim</th>
-          <th>Note</th>
-          <th>Action</th>
-        </tr>
-        <tr class="subheader">
-          <th colspan="8"></th>
-          <th>Process Date</th>
-          <th>Recv’d Date</th>
-          <th>Ack. No</th>
-          <th>Ack. Date</th>
-          <th>Ack. Status</th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-
-      <tbody formArrayName="boeDetails">
-        <tr *ngFor="let row of boeDetails.controls; let i = index" [formGroupName]="i">
-          <td>{{ i + 1 }}</td>
-          <td><input formControlName="DeclarationNo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="BOENo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="BOEDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="number" formControlName="BOEValue" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="BOEInvoiceValue" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="TransactionType" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="number" formControlName="Amount" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="ProcessDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="ReceivedDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="AckNo" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input type="date" formControlName="AckDate" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="AckStatus" [readonly]="!row.get('isEdit')?.value" /></td>
-          <td><input formControlName="Note" [readonly]="!row.get('isEdit')?.value" /></td>
-
-          <td class="actions-cell">
-            <button type="button" *ngIf="!row.get('isEdit')?.value" (click)="editRow(i)" class="btn btn-edit">✏️</button>
-            <button type="button" *ngIf="row.get('isEdit')?.value" (click)="saveRow(i)" class="btn btn-save">💾</button>
-            <button type="button" (click)="removeRow(i)" class="btn btn-delete">🗑</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="actions">
-      <button type="button" (click)="addRow()">+ Add Row</button>
+<div class="modern-table-container compact-form">
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <h5 class="mb-0">BOE Management</h5>
     </div>
-  </form>
+    <div class="toolbar-right">
+      <button type="button" class="table-action-btn primary" (click)="addBoeRow()">
+        <i class="fas fa-plus"></i> Add BOE
+      </button>
+    </div>
+  </div>
+
+  <div class="modern-table-wrapper">
+    <form [formGroup]="boeForm">
+      <table class="modern-table mb-0">
+        <thead>
+          <tr class="align-middle-center" style="text-align:center;">
+            <th style="border-top-left-radius: 10px; width: 100px;">Action</th>
+            <th width="60">SNo.</th>
+            <th>Declaration No.</th>
+            <th class="required">BOE No.</th>
+            <th>BOE Date</th>
+            <th>BOE Value</th>
+            <th>Invoice No.</th>
+            <th>Transaction Type</th>
+            <th>Amount</th>
+            <th colspan="2" class="text-center" style="border-left: 1px solid white; border-right: 1px solid white;">
+              Exit/Entry Document
+            </th>
+            <th colspan="3" class="text-center" style="border-right: 1px solid white;">
+              Claim
+            </th>
+            <th style="border-top-right-radius: 10px">Note</th>
+          </tr>
+
+          <tr class="subheader">
+            <th colspan="9"></th>
+            <th style="border-left: 1px solid white;">Process Date</th>
+            <th style="border-right: 1px solid white;">Recv'd Date</th>
+            <th>Ack. No</th>
+            <th>Ack. Date</th>
+            <th style="border-right: 1px solid white;">Ack. Status</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody formArrayName="boeFormArray">
+          <tr *ngFor="let row of slicedBoeFormArray; let i = index" [formGroupName]="i">
+            <!-- Action Column -->
+            <td class="actions-cell">
+              <button type="button" (click)="saveBoe((page-1)*pageSize + i)" class="btn btn-save px-1" 
+                      title="Save BOE">
+                <i class="fas fa-save me-1 text-info fs-3"></i>
+              </button>
+              <button type="button" (click)="deleteBoe((page-1)*pageSize + i, row.get('HouseJobBOESid')?.value)" 
+                      class="btn btn-delete px-1" title="Delete BOE">
+                <i-feather name="trash-2" class="feather-sm text-danger fs-3"></i-feather>
+              </button>
+            </td>
+
+            <!-- Serial Number -->
+            <td>{{ (page-1)*pageSize + i + 1 }}</td>
+
+            <!-- Declaration No -->
+            <td>
+              <input formControlName="DeclarationNo" class="custom-input-field sm"
+                     style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- BOE No -->
+            <td>
+              <input formControlName="BOENo" class="custom-input-field sm"
+                     style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- BOE Date -->
+            <td>
+              <input type="date" placeholder="dd-mm-yyyy" class="custom-input-field sm" formControlName="BOEDate"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- BOE Value -->
+            <td>
+              <input type="number" class="custom-input-field sm" formControlName="BOEValue"
+                     style="width:110px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"/>
+            </td>
+
+            <!-- Invoice No -->
+            <td>
+              <input formControlName="BOEInvoiceValue" class="custom-input-field sm"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Transaction Type -->
+            <td>
+              <input formControlName="TransactionType" class="custom-input-field sm"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Amount -->
+            <td>
+              <input type="number" formControlName="Amount" class="custom-input-field sm"
+                     style="width:110px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"/>
+            </td>
+
+            <!-- Process Date -->
+            <td>
+              <input type="date" class="custom-input-field sm" formControlName="ProcessDate"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Received Date -->
+            <td>
+              <input type="date" class="custom-input-field sm" formControlName="ReceivedDate"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Ack No -->
+            <td>
+              <input formControlName="AckNo" class="custom-input-field sm"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Ack Date -->
+            <td>
+              <input type="date" class="custom-input-field sm" formControlName="AckDate"
+                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Ack Status -->
+            <td>
+              <input formControlName="AckStatus" class="custom-input-field sm"
+                     style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+
+            <!-- Note -->
+            <td>
+              <input formControlName="Note" class="custom-input-field sm"
+                     style="width:150px; height:22px; padding:2px 4px; font-size:12px;"
+                     [readonly]="!canEditBoe(i)" />
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="boeFormArray.length === 0">
+            <td colspan="14" class="text-center py-1">No BOE Records Found</td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+
+    <!-- Pagination -->
+    <div class="mt-2 mb-1" *ngIf="boeDataLength > pageSize">
+      <ngb-pagination class="d-flex justify-content-end" 
+                      [collectionSize]="boeDataLength" 
+                      [pageSize]="pageSize"
+                      [(page)]="page" 
+                      (pageChange)="onPageChange($event)" 
+                      [rotate]="true" 
+                      [ellipses]="false" 
+                      [maxSize]="10">
+      </ngb-pagination>
+    </div>
+  </div>
 </div>

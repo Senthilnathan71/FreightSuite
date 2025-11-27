@@ -64,24 +64,25 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" appPreventMultiClick>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"  [disabled]="(!mps.can('update') && isEditMode)" appPreventMultiClick>
           <i class="fas fa-save me-1"></i>
           <span>Save</span>
         </button>
       </div>
-      <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+      <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-          <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+          <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
             (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-          <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
             (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-          <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+          <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
             (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-          <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+          <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
             (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
         </div>
       </div>
     </div>
@@ -138,6 +139,13 @@
           }
         </div>
       </div>
+      <div class="smart-field-group">
+  <div class="custom-form-group">
+    <input type="text" id="job-type-input" placeholder="" class="form-control custom-input-field sm" 
+           formControlName="JobType" [readonly]="true">
+    <label for="job-type-input" class="input-label">Job Type</label>
+  </div>
+</div>
       <div class="smart-field-group">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -2711,7 +2719,7 @@
             </div> -->
              <div class="d-flex mb-1 flex-wrap">
               <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
-              <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETA | formatDate }}</div>
+              <div class="text-break">: {{bookingHeader?.ETA | formatDate }}</div>
             </div>
             <div class="d-flex mb-1 flex-wrap">
               <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>

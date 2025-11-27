@@ -22,6 +22,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { Observable } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-credit-note-list',
@@ -48,63 +49,22 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 export class CreditNoteListComponent extends BaseListComponent implements OnInit{
   @ViewChild('invoiceTable') invoiceTable!: ReusableTableComponent;
   searchType = 'CreditNoteNo';
-  // filterValue = '';
   results: any[] = [];
   creditNoteList: any[] = [];
   invoiceList: any[] =[];
-  // searchPerformed = false;
   companyMap: { [id: number]: string } = {};
   userData: any;
-  // sortColumn: string = 'InvoiceNo';
-  // sortDirection: string = 'asc';
   loading = false;
-
-  // Pagination 
-  // page = 1;
-  // pageSize = 15;
-  // totalLengthOfCollection = 0;
   isFavorite: boolean = false;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
   masterJobMap: { [id: number]: string } = {};
   houseJobMap: { [id: number]: string } = {};
-
-  // Company
   currentCompany: any;
   currentBranch: any;
-
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
 
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-      // {
-      //   icon: 'fas fa-trash',
-      //   label: 'Delete',
-      //   action: 'delete',
-      //   tooltip: 'Delete ',
-      //   class: "text-danger",
-      //   // condition: (row: any) => this.hasPermission('Delete')
-      // }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'VoucherHeaderSid',
-    emptyMessage: 'No Credit Note found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
 
@@ -131,7 +91,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-     private datePipe: CustomDatePipe,
+    private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -146,39 +107,21 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
 
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
     this.initializeHeaderActions();
     this.initializeTableConfig();
-    this.initializeModalDropdownItems();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    })
     super.ngOnInit();
     this.loadCreditNotes();
-  }
-
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-
-    if (currentMenuId && userRole) {
-      // Assuming you have a similar permission service for operations
-      // this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-      //   next: (response) => {
-      //     this.currentMenuPermissions = response.data.MenuPermissions || {};
-      //     this.permissions = Object.keys(this.currentMenuPermissions)
-      //       .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      //   }
-      // });
-    }
-  }
-   hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
   }
 
   loadInvoices() {
     this.operationService.getAllInvoice().subscribe({
       next: (resp: any) => {
         this.invoiceList = resp?.data || resp || [];
-        // Now load credit notes after invoices are loaded
         this.loadCreditNotes();
       },
       error: (err) => {
@@ -272,7 +215,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -288,8 +231,9 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     ];
   }
 
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+  private initializeTableConfig() {
+    this.tableConfig = {
+    columns: [
       {
         key: 'VoucherNumber',
         label: 'Credit Note',
@@ -305,16 +249,16 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string',        
+        dataType: 'string',   
+        template: 'link'     
       },
       {
         key: 'VoucherDate',
-        label: 'Date ',
+        label: 'Date',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"150px"
       },
       {
         key: 'PartyName',
@@ -332,26 +276,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
+        width: '120px',
       },
-      //  {
-      //   key: 'LocalAmount',
-      //   label: 'Local Amount ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
-      //  {
-      //   key: 'IRNNumber',
-      //   label: 'Job No ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
         {
         key: 'MasterNumber',
         label: 'Job No  ',
@@ -380,15 +306,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         dataType: 'string',
         width: '150px',
       },
-      //  {
-      //   key: 'HouseJobSid',
-      //   label: 'Credit Note No',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string',
-      //   width: '150px',
-      // },
       {
         key: 'Status',
         label: 'Status',
@@ -400,35 +317,33 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         dataType: 'string',
         cellClass: 'status-column'
       },
-    ];
-  }
-  initializeModalDropdownItems(): void {
-    this.modalDropdownItems = [
+    ],
+    actions: [
       {
-        label: 'Edoc',
-        icon: 'fas fa-file-alt',
-        action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state: !this.mps.can('view')
       },
       {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
-      },
-      {
-        label: 'Authorize',
-        icon: 'fas fa-shield-alt',
-        action: 'authority',
-        condition: this.hasPermission('Authority')
-      },
-      {
-        label: 'Email',
-        icon: 'fas fa-envelope',
-        action: 'email',
-        condition: this.hasPermission('Email')
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state: !this.mps.can('delete')
       }
-    ];
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoucherHeaderSid',
+    emptyMessage: 'No Credit Note found',
+    dragAndDrop: true
+  };
   }
   onActionTriggered(action: string): void {
     switch (action) {
@@ -455,10 +370,15 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   onTableActionClick(event: TableEventData): void {
+    if (event.column?.key === 'ReversalVoucherDisplay') {
+    // Clicking VENDOR INVOICE link
+    this.navigateToInvoice(event.row.ReversalVoucher);
+    return;
+  }
       if (event.action === 'view') {
         this.editbyrow(event.row);
       } else if (event.action === 'delete') {
-        this.deleteCreditNoteByRow(event.row);
+        this.deleteCreditNote(event.row);
       }
     }
 
@@ -466,9 +386,15 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
      this.router.navigate(['operation/credit-note/entry/', row.VoucherHeaderSid]);
   }
 
-  deleteCreditNoteByRow(row: any) {
-    this.deleteCreditNote(row.VoucherHeaderSid);
-  }
+  navigateToInvoice(voucherSid: number) {
+  if (!voucherSid) return;
+
+  this.router.navigate([
+    '/operation/invoice/entry',
+    voucherSid
+  ]);
+}
+
 
   onTableRowClick(row: any): void {
     // Row clicking can be handled by the table component if needed
@@ -516,16 +442,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       }
     });
 
-    // Load house jobs mapping if needed
-    // this.operationService.getAllHouseJobs({}).subscribe({
-    //   next: (response: any) => {
-    //     if (response.data) {
-    //       response.data.forEach((job: any) => {
-    //         this.houseJobMap[job.HouseJobSid] = job.HouseJobNumber;
-    //       });
-    //     }
-    //   }
-    // });
   }
   loadCreditNotes(): void {
     this.spinner.show();
@@ -584,13 +500,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     });
   }
   getAllCompanies() {
-    // Assuming you have a service to get companies
-    // this.masterService.getAllCompanies().subscribe((companies: any[]) => {
-    //   this.companyMap = {};
-    //   companies.forEach(c => {
-    //     this.companyMap[c.CompanyMasterSid] = c.companyName;
-    //   });
-    // });
+    
   }
 
   updatePaginatedData(): void {
@@ -603,13 +513,26 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     return index;
   }
 
-  deleteCreditNote(id: number) {
+  deleteCreditNote(id: any) {
       const dialogRef = this.dialog.open(DeleteWarningComponent);
       dialogRef.afterClosed().subscribe(result => {
         if (result === true) {
-          this.operationService.deleteCreditNoteById(id).subscribe((resp: any) => {
-            this.appSettingService.showSuccess("Deleted!");
-            this.loadCreditNotes();
+          this.spinner.show();
+          this.operationService.deleteCreditNoteById(id.VoucherHeaderSid).subscribe({
+            next: (response) => {
+              this.spinner.hide();
+              if (response.status) {
+                this.appSettingService.showSuccess("Credit Note Deleted Successfully!");
+                this.search();
+              } else {
+                this.appSettingService.showError('Failed to delete Credit Note');
+              }
+            },
+            error: (error) => {
+                this.spinner.hide();
+                this.appSettingService.showError('Error deleting Credit Note');
+                console.error('Error deleting Credit Note:', error);
+              }
           });
         }
       });
@@ -629,6 +552,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   viewCreditNote(id: number) {
-    this.router.navigate(['operation/cred/entry/', id]);
+    this.router.navigate(['operation/credit-note/entry/', id]);
   }
 }

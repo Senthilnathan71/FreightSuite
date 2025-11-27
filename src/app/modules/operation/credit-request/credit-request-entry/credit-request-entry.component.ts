@@ -16,6 +16,12 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -33,7 +39,8 @@ import { CommonService } from 'src/app/common/common.service';
     NgbDropdownModule,
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
-    NgbAccordionModule
+    NgbAccordionModule,
+    NgbDropdownModule
   ],
   templateUrl: './credit-request-entry.component.html',
   styleUrl: './credit-request-entry.component.scss',
@@ -52,8 +59,7 @@ export class CreditRequestEntryComponent {
   customerId: number;
   customerData: any;
   userData: any;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
+  
   departmentListPerRow: any[][] = [];
   salesmanListPerRow: any[][] = [];
 
@@ -109,6 +115,8 @@ export class CreditRequestEntryComponent {
   ]
   currentCompany: any;
   currentBranch: any;
+  TandCList: any[]=[];
+  currentClauseId: any;
 
   expandedIndex: number | null = null;
 
@@ -122,6 +130,8 @@ export class CreditRequestEntryComponent {
     private modalService: NgbModal,
     private datePipe: DatePipe,
     private commonService: CommonService,
+    private masterService: MasterService,
+    public mps : MenuPermissionService
   ) {
     this.initForm();
   }
@@ -130,6 +140,7 @@ export class CreditRequestEntryComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     this.route.params.subscribe(params => {
       if (params['CustomerMasterSid']) {
         this.customerId = +params['CustomerMasterSid'];
@@ -141,7 +152,6 @@ export class CreditRequestEntryComponent {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if(userProfile){
       this.userData = userProfile;
-      this.checkPermissions();
     }
   }
 
@@ -236,23 +246,7 @@ export class CreditRequestEntryComponent {
     kycArray.removeAt(kycIndex);
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   getCustomerById(CustomerMasterSid: number) {
     this.operationService.getCustomerById(CustomerMasterSid).subscribe({
@@ -600,4 +594,65 @@ getDepartmentName(deptId: number, rowIndex: number): string {
   goBack() {
     this.router.navigate(['operation/credit-request/list']);
   }
+
+  showInfo() {
+        if(!this.customerData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.customerData;
+        modalRef.componentInstance.idLabel = 'Customer Id';
+        modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+      }
+      openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions', error);
+          }
+        );
+      }
+    
+      openEmail() {
+      if (!this.customerData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.customerData;
+      modalRef.componentInstance.idLabel = 'Customer Id';
+      modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+    }
+    
+    openAuthority() {
+      if (!this.customerData) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.customerData;
+      modalRef.componentInstance.idLabel = 'Customer Id';
+      modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+    }
+    
+    openFollowup() {
+  
+    }
 }

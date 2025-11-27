@@ -6,10 +6,17 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { CommonService } from 'src/app/common/common.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-merge-booking',
@@ -19,7 +26,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
     ReactiveFormsModule,
     CommonModule,
     NgbPaginationModule,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './merge-booking.component.html',
   styleUrls: ['./merge-booking.component.scss']
@@ -35,6 +43,10 @@ export class MergeBookingComponent implements OnInit {
   ports: any[] = [];
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
+  MenuMasterSid: any;
+  currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
 
   toBookingOptions: any[] = [];
 
@@ -54,12 +66,18 @@ export class MergeBookingComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    public mps: MenuPermissionService,
+    private commonService: CommonService,
+    private masterService: MasterService,
+     private modalService: NgbModal,
   ) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     this.loadAllLookups();
     this.initFromBooking();
     this.initToBooking();
@@ -346,5 +364,61 @@ export class MergeBookingComponent implements OnInit {
       this.toBookingForm.get(key)?.enable();
     });
   }
+
+  openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions', error);
+          }
+        );
+      }
+    
+      openEmail() {
+      const modalRef = this.modalService.open(EmailEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      
+    }
+    
+    openAuthority() {
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      
+    }
+    
+    openEDoc() {
+      const modalRef = this.modalService.open(EdocComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+    }
+  
+    openFollowup() {
+  
+    }
 
 }

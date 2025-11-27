@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError,map, mergeMap } from "rxjs";
+import { catchError,map, mergeMap, of } from "rxjs";
 import { AppSettingsService } from "src/app/core/services/app-settings.service";
 
 @Injectable({
@@ -29,7 +29,17 @@ export class authService {
                         return res
                     })
                 )
-            })
+            }),
+            // catchError((err) => {
+            //     console.error("Login failed:", err);
+            //     let message = 'Login failed. Please check your credentials and try again.';
+            //     if (err?.error?.message) {
+            //         message = err.error.message;
+            //     } else if (err?.message) {
+            //         message = err.message;
+            //     }
+            //     return of({ status: false, message });
+            // })
         )
     }
 

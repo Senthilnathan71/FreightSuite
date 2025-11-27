@@ -21,6 +21,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
     selector: 'app-product-list',
     standalone: true,
@@ -46,6 +47,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     productList: Product[];
     slicedProductList: Product[];
     searched: boolean = false;
+    tableConfig: TableConfig;
     userData: any;
     modeOfProductType = [
         { id: "1", name: "General" },
@@ -71,33 +73,89 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
         this.isFavorite = !this.isFavorite;
     }
     // Table configuration
-    tableConfig: TableConfig = {
-        columns: [],
-        actions: [
-            {
-                icon: 'fas fa-eye',
-                label: 'View',
-                action: 'view',
-                tooltip: 'View',
-                condition: (row: any) => this.hasPermission('View')
-            },
-            {
-                icon: 'fas fa-trash',
-                label: 'Delete',
-                action: 'delete',
-                tooltip: 'Delete',
-                class: "text-danger",
-                condition: (row: any) => this.hasPermission('Delete')
-            }
-        ],
-        selectable: false,
-        multiSelect: false,
-        showColumnToggle: true,
-        showFilters: true,
-        showPagination: true,
-        trackByKey: 'ProductMasterSId',
-        emptyMessage: 'No product found',
-        dragAndDrop: true
+    private initializeTableConfig(): void {
+        this.tableConfig = {
+            columns: [
+                {
+                    key: 'ProductName',
+                    label: 'Product Name',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'ProductCode',
+                    label: 'Product Code',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'ProductType',
+                    label: 'Type',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'UOMCode',
+                    label: ' UOM',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'HSNCode',
+                    label: 'HSN Code',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'status',
+                    label: 'Status',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    template: 'status',
+                    width: '100px',
+                    dataType: 'string',
+                    cellClass: 'status-column'
+                }
+            ],
+            actions: [
+                {
+                    icon: 'fas fa-eye',
+                    label: 'View',
+                    action: 'view',
+                    tooltip: 'View',
+                    state: !this.mps.can('view')
+                },
+                {
+                    icon: 'fas fa-trash',
+                    label: 'Delete',
+                    action: 'delete',
+                    tooltip: 'Delete',
+                    state: !this.mps.can('delete'),
+                      class:"text-danger"
+
+                }
+            ],
+            selectable: false,
+            multiSelect: false,
+            showColumnToggle: true,
+            showFilters: true,
+            showPagination: true,
+            trackByKey: 'ProductMasterSId',
+            emptyMessage: 'No product found',
+            dragAndDrop: true
+        }
+
     };
 
     tableLoading = false;
@@ -114,6 +172,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     // Alias for compatibility with existing template
     get allProduct() { return this.allItems; }
     constructor(
+        public mps: MenuPermissionService,
         private router: Router,
         private masterService: MasterService,
         private appSettingService: AppSettingsService,
@@ -142,37 +201,21 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
         const userProfile = this.appSettingService.getDecryptedUserProfile();
         if (userProfile) {
             this.userData = userProfile;
-            this.checkPermissions();
         }
         // this.loadProducts();
         // Initialize table configuration
         this.initializeTableConfig();
+        this.initializeHeaderActions();
+        this.mps.init().subscribe(() => {
+            this.initializeTableConfig();
             this.initializeHeaderActions();
+        });
         // Initialize base component
         super.ngOnInit();
     }
 
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        console.log(currentMenuId)
-        console.log(userRole)
-        if (currentMenuId && userRole) {
-            this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions)
-                        .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                    console.log(this.permissions)
-                    this.initializeHeaderActions();
-                }
-            });
-        }
-    }
 
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
+
 
     // Implement abstract methods from BaseListComponent
     protected searchItems(): Observable<any> {
@@ -186,8 +229,6 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
             search: this.filterValue.trim(),
             page: Number(this.page),
             pageSize: Number(this.pageSize),
-            activeCompanyId: this.currentCompany?.CompanyMasterSid,
-            activeBranchId: this.currentBranch?.BranchMasterSid,
             sortColumn: this.sortColumn,
             sortDirection: this.sortDirection
         };
@@ -205,7 +246,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
             this.applySorting();
-             this.updateHeaderActionState();
+            this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Error searching product.');
             this.allItems = [];
@@ -221,63 +262,63 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
         super.handleSearchError(error);
     }
 
-      onSearchTriggered(searchValue: string): void {
-    this.filterValue = searchValue;
-    this.searchProduct();
-  }
+    onSearchTriggered(searchValue: string): void {
+        this.filterValue = searchValue;
+        this.searchProduct();
+    }
     onSearchCleared(): void {
-    this.filterValue = '';
-    this.clearFilterValue();
-  }
+        this.filterValue = '';
+        this.clearFilterValue();
+    }
 
     initializeHeaderActions(): void {
-    this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        condition: this.hasPermission('Add')
-      },
-      {
-        label: 'Report',
-        icon: 'fas fa-file-alt',
-        action: 'report',
-        disabled: this.totalLengthOfCollection === 0
-      },
-      {
-        label: 'Reset',
-        icon: 'fas fa-sync-alt',
-        action: 'reset'
-      }
-    ];
-  }
-
-
-  onActionTriggered(action: string): void {
-    switch (action) {
-      case 'create':
-        this. navigateTocreateProduct()
-        break;
-      case 'report':
-        this.report();
-        break;
-      case 'reset':
-        this.resetPage();
-        break;
-      default:
-        console.warn(`Unknown action: ${action}`);
+        this.headerActions = [
+            {
+                label: 'Create',
+                icon: 'fas fa-plus',
+                action: 'create',
+                disabled: !this.mps.can('insert')
+            },
+            {
+                label: 'Report',
+                icon: 'fas fa-file-alt',
+                action: 'report',
+                disabled: this.totalLengthOfCollection === 0
+            },
+            {
+                label: 'Reset',
+                icon: 'fas fa-sync-alt',
+                action: 'reset'
+            }
+        ];
     }
-  }
 
 
-  private updateHeaderActionState(): void {
-    this.headerActions = this.headerActions.map(action => {
-      if (action.action === 'report') {
-        return { ...action, disabled: this.totalLengthOfCollection === 0 };
-      }
-      return action;
-    });
-  }
+    onActionTriggered(action: string): void {
+        switch (action) {
+            case 'create':
+                this.navigateTocreateProduct()
+                break;
+            case 'report':
+                this.report();
+                break;
+            case 'reset':
+                this.resetPage();
+                break;
+            default:
+                console.warn(`Unknown action: ${action}`);
+        }
+    }
+
+
+    private updateHeaderActionState(): void {
+        this.headerActions = this.headerActions.map(action => {
+            if (action.action === 'report') {
+                return { ...action, disabled: this.totalLengthOfCollection === 0 };
+            }
+            return action;
+        });
+    }
 
     // Legacy methods for template compatibility
     searchProduct() {
@@ -298,63 +339,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     }
 
 
-    // Table configuration
-    private initializeTableConfig(): void {
-        this.tableConfig.columns = [
 
-            {
-                key: 'ProductName',
-                label: 'Product Name',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
-            {
-                key: 'ProductCode',
-                label: 'Product Code',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
-            {
-                key: 'ProductType',
-                label: 'Type',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
-            {
-                key: 'UOMCode',
-                label: ' UOM',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
-              {
-                key: 'HSNCode',
-                label: 'HSN Code',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
-            {
-                key: 'status',
-                label: 'Status',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                template: 'status',
-                width: '100px',
-                dataType: 'string',
-                cellClass: 'status-column'
-            }
-        ];
-    }
 
     // Table event handlers
     onTableActionClick(event: TableEventData): void {
@@ -387,7 +372,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
 
     report(): void {
         const formattedData = this.allProduct;
-        const companyName = this.currentCompany?.companyName ?? 'Company';
+
 
         // Get visible columns in their current order from the table component
         const visibleColumns = this.productTable.getVisibleColumns();
@@ -400,7 +385,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
             data: formattedData,
             headers: dynamicHeaders,
             fileName: 'Product-Report',
-            title: companyName
+
         });
     }
 
@@ -500,7 +485,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
         this.sortColumn = 'ProductName';
         this.sortDirection = 'asc';
         // this.loadProducts();
-// 
+        // 
     }
 
     deleteProductById(ProductMasterSid) {
@@ -560,8 +545,11 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     //     });
     // }
 
-    getProductType(id) {
-        return this.modeOfProductType.find(type => type.id === id).name;
+    getProductType(id: string | number): string {
+        if (!id) return 'Unknown';
+
+        const productType = this.modeOfProductType.find(type => type.id === id.toString());
+        return productType?.name;
     }
 
     // clearFilterValue() {

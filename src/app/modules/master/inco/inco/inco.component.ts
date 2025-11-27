@@ -33,6 +33,8 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -109,15 +111,63 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     { id: 'Prepaid', name: 'Prepaid' },
     { id: 'Collect', name: 'Collect' }
   ];
-  tableConfig: TableConfig = {
-    columns: [],
+
+  tableConfig:TableConfig;
+   private initializeTableConfig() {
+  this.tableConfig= {
+    columns: [
+         {
+        key: 'IncoName',
+        label: 'IncoName',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'IncoCode',
+        label: 'IncoCode ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+
+      {
+        key: 'IncoType',
+        label: 'Inco Type ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'OceanFreight',
+        label: 'Ocean Freight',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
+         state: !this.mps.can('view')
       },
       // {
       //   icon: 'fas fa-trash',
@@ -137,6 +187,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No inco found',
     dragAndDrop: true
   };
+}
 
   tableLoading = false;
 
@@ -163,7 +214,9 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private commonService: CommonService  
+    private commonService: CommonService,
+    public mps : MenuPermissionService,
+    private ngbModal: NgbModal,
   ) {
     super(paginationService);
   }
@@ -185,7 +238,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     this.route.paramMap.subscribe(params => {
       this.IncoMasterSid = +params.get('id');
@@ -201,30 +254,12 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+       this.initializeHeaderActions();
+    });
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -297,7 +332,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+         disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -320,25 +355,25 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        condition: this.hasPermission('Edoc')
+        
       },
       {
         label: 'Terms & Condition',
         icon: 'fas fa-clipboard',
         action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
+       
       },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        condition: this.hasPermission('Authority')
+    
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+
       }
     ];
   }
@@ -399,57 +434,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     this.editInco(item.IncoMasterSid, content)
   }
 
-
-
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'IncoName',
-        label: 'IncoName',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'IncoCode',
-        label: 'IncoCode ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-
-      {
-        key: 'IncoType',
-        label: 'Inco Type ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'OceanFreight',
-        label: 'Ocean Freight',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'Status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
+ 
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
@@ -917,6 +902,30 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
       this.commonService.documentData.set(data)
 }
+ openFollowup() {
+    if (!this.incoData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.incoData?.UserMasterSid;
+    modalRef.componentInstance.parentEmail = this.incoData;
+  //   modalRef.componentInstance.parentSubject = `Quotation No.${this.userData} Date:${new Date(this.userData).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+    <p>Dear Sir/Madam,</p>
+    <p>Please find enclosed the quotation as requested.</p>
+    <p>Kindly review the details at your convenience.</p>
+    <p>Looking forward to your feedback and the opportunity to work together.</p>
+    <p>
+      Approval Hyperlink: 
+      <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+    </p>
+    <p>Best Regards,</p>
+    <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+  
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
  OnDestroy(): void {
     this.commonService.clearDocumentData()
  }

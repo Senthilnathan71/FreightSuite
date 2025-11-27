@@ -15,6 +15,11 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-authority-entry',
@@ -48,7 +53,7 @@ export class AuthorityEntryComponent implements OnInit {
   isModalEditMode: boolean = false;
   authorityDetailsLength: number = 0;
   modalRef: NgbModalRef;
-
+  MenuMasterSid:any
   authorityForm!: FormGroup;
   authorityDetailForm!: FormGroup;
   authorityDetailsList: any[] = [];
@@ -83,7 +88,9 @@ auditLogs: any[] = []; // Stores audit logs
     private appSettingService: AppSettingsService,
     private route: Router,
     private currentRoute: ActivatedRoute,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private commonService: CommonService,
+    public mps : MenuPermissionService,
   ) { }
 
   ngOnInit(): void {
@@ -100,7 +107,7 @@ auditLogs: any[] = []; // Stores audit logs
     console.log(this.branchList);
 
     // this.filterBranchByCompany(CompanyMasterSid);
-
+    this.mps.init().subscribe();
     this.currentRoute.paramMap.subscribe((param) => {
       this.AuthorityMasterSid = +param.get('id');
       if (this.AuthorityMasterSid) {
@@ -541,28 +548,69 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.idValue = this.detailData?.AuthorityDetailSid;
   }
 
-  openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.AuthorityMasterSid;
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
-      }
-    );
-  }
+   openTandC() {
+     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+     const payload = { MenuMasterSid: this.currentMenuId };
+     this.masterService.getTandCByCondition(payload).subscribe(
+       (resp: any) => {
+         if (resp.Status) {
+           this.TandCList = resp.data;
+           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+             size: 'lg',
+             backdrop: 'static',
+             centered: true
+           });
+           modalRef.componentInstance.terms = this.TandCList;
+           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+           modalRef.componentInstance.DocumentSid = this.AuthorityMasterSid;
+         } else {
+           this.appSettingService.showError('Error loading Terms and Conditions');
+         }
+       },
+       (error) => {
+         this.appSettingService.showError('Error loading Terms and Conditions', error);
+       }
+     );
+   }
+ 
+   openEmail() {
+     if (!this.authorityData) return;
+     const modalRef = this.modalService.open(EmailEntryComponent, {
+       size: 'lg',
+       centered: true,
+       backdrop: 'static'
+     });
+   }
+ 
+   openAuthority() {
+     const MenuMasterSid = localStorage.getItem('currentMenuId');
+     if (!MenuMasterSid) return;
+     const modalRef = this.modalService.open(AuthorityLogComponent, { 
+       size: 'lg', 
+       centered: true, 
+       backdrop: 'static' 
+     });
+     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+     modalRef.componentInstance.documentSid = this.AuthorityMasterSid;
+   }
+   
+   openEDoc() {
+     if (!this.authorityData) return;
+     const modalRef = this.modalService.open(EdocComponent, { 
+       size: 'lg', 
+       centered: true, 
+       backdrop: 'static' 
+     });
+     modalRef.componentInstance.item = this.authorityData;
+     modalRef.componentInstance.idLabel = 'AuthorityMasterSid';
+     modalRef.componentInstance.idValue = this.authorityData?.AuthorityMasterSid;
+     const data:any={
+     CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+     BranchMasterSid: this.currentBranch.BranchMasterSid,
+     MenuMasterSid : this.MenuMasterSid,
+     DocumentSid: this.AuthorityMasterSid
+   }
+ 
+       this.commonService.documentData.set(data)
+   }
 }

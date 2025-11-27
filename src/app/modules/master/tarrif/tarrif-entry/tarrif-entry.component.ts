@@ -31,6 +31,8 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -174,7 +176,9 @@ get currencyList(): any[] {
     private operationServ: OperationService,
     private commonService: CommonService,
     private currencyConfigService: CurrencyConfigurationService,
-  private currencyFormatter: CurrencyFormatService
+  private currencyFormatter: CurrencyFormatService,
+    public mps: MenuPermissionService,
+      private ngbModal: NgbModal,
   ) { }
 
   ngOnInit(): void {
@@ -191,7 +195,7 @@ get currencyList(): any[] {
     this.tariffHeaderForm.get('DepartmentMasterSid')?.valueChanges.subscribe((deptValue) => {
       this.onDeptChange(deptValue);
     });
-
+    this.mps.init().subscribe();
     this.currRoute.paramMap.subscribe(param => {
       this.TariffHeaderSid = Number(param.get('id'));
       if (this.TariffHeaderSid) {
@@ -1183,6 +1187,31 @@ filterChargesByDepartment(department: any): void {
 
       this.commonService.documentData.set(data)
 }
+
+ openFollowup() {
+    if (!this.tariffData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.tariffData?.QuoteHeaderSid;
+    modalRef.componentInstance.parentEmail = this.tariffData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.tariffData.QuoteNumber} Date:${new Date(this.tariffData.QuoteDate).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }  
@@ -1205,24 +1234,27 @@ filterChargesByDepartment(department: any): void {
  
 }
 
-  setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
+ setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
   if (!chargeCode) {
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
     this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
     return;
   }
 
-  // Filter only active records with same charge code
   const sameChargeDetails = this.TariffDetailsList.filter(
     detail => detail.ChargeCode === chargeCode && detail.status === 'A'
   );
 
   if (sameChargeDetails.length === 0) {
-    // Different charge code - set to today
-    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(this.todayDate);
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    // NEW charge code - set to today's date
+    // ✅ FIX: Add one day to compensate for the adapter issue
+    const adjustedToday = new Date(this.todayDate);
+    adjustedToday.setDate(adjustedToday.getDate() + 1);
+    
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(adjustedToday);
+    this.minEffectiveFrom = this.toNgbDateStruct(adjustedToday);
   } else {
-    // Same charge code - set to next day after last expired date
+    // EXISTING charge code logic remains the same
     const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
     const nextDay = new Date(maxExpiredDate);
@@ -1232,18 +1264,18 @@ filterChargesByDepartment(department: any): void {
     this.minEffectiveFrom = this.toNgbDateStruct(nextDay);
   }
 }
-  onChargeCodeChange(chargeCode: string) {
-     const selectedCharge = this.chargeList.find(c => c.chargeCode === chargeCode);
+ onChargeCodeChange(chargeCode: string) {
+  const selectedCharge = this.chargeList.find(c => c.chargeCode === chargeCode);
+  
   // Skip auto date logic while editing
   if (this.isModalEditMode) {
-  
-      this.setChargeDetails(selectedCharge);
+    this.setChargeDetails(selectedCharge);
     return;
   }
   
   // CREATE flow - apply the business logic
-  
   this.setEffectiveDateBasedOnChargeCode(chargeCode);
+  console.log('Effective Date', this.tariffDetailsForm.get('detailEffectiveDate')?.value);
   this.setChargeDetails(selectedCharge);
 }
 

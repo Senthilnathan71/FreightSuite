@@ -44,6 +44,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { getFormattedPort } from 'src/app/common/helper';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 
 @Component({
@@ -245,7 +246,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     private spinner: NgxSpinnerService,
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
   ) {
     this.today = this.calendar.getToday();
   }
@@ -259,7 +262,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     if (this.userData) {
-      this.checkPermissions();
+    
     }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -269,7 +272,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       (this.userData.userCompanyMaster || [])
         .find(ucm => ucm.CompanyMasterSid === currentCompanyId)?.companyMaster
     );
-
+    this.mps.init().subscribe();
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -304,22 +307,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   }
 
 
-  checkPermissions() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (this.currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(this.currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
+
 
   /**
   |--------------------------------------------------
@@ -816,14 +804,13 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   }
 
 
-
-  showInfo() {
-    if (!this.houseData) return;
-    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.item = this.houseData;
-    modalRef.componentInstance.idLabel = 'Booking Id';
-    modalRef.componentInstance.idValue = this.houseData?.BookingHeaderSid;
-  }
+ showInfo() {
+        if (!this.houseData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.houseData;
+        modalRef.componentInstance.idLabel = 'TDS Set Id';
+        modalRef.componentInstance.idValue = this.houseData?.TDSSetHeaderSid;
+    }
 
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -850,71 +837,25 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       }
     );
   }
-  async openEmail() {
-    if (!this.houseData) return;
-
-    try {
-      this.spinner.show();
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Generate PDF blob automatically
-      const pdfBlob = await this.generatePDFBlob();
-      const pdfFileName = (this.houseData?.HouseNo || 'booking') + '.pdf';
-      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
-
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const modalRef = this.modalService.open(EmailEntryComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-      });
-
-      const toEmailSet = new Set<string>();
-      toEmailSet.add(this.selectedCustomer?.Email);
-
-      const toEmail = Array.from(toEmailSet);
-      const ccEmail = [this.userData['userEmail']];
-
-      const POL = this.houseData?.POL;
-      const POD = this.houseData?.POD;
-      const formattedPOL = getFormattedPort(this.portList,POL);
-      const formattedPOD = getFormattedPort(this.portList,POD);
-      const subject = `Booking No.${this.houseData.BookingNo} Date:${this.datePipe.transform(this.houseData?.BookingDateTime)} ${formattedPOL} - ${formattedPOD} confirmation`;
-
-      const mailBody = `Dear Sir/Madam,
-Please find here enclosed the booking details as requested.
-Kindly review the details at your convenience.
-Looking forward to confirm cargo readyness.
-Best Regards,
-${this.userData['userName']}`;
-
-      this.spinner.hide();
-
-      modalRef.componentInstance.setContent = {
-        EmailTo: toEmail,
-        EmailCC: ccEmail,
-        EmailBCC: [],
-        Subject: subject,
-        Mailbody: mailBody,
-        attachments: [pdfFile]
-      };
-
-    } catch (error) {
-      this.spinner.hide();
-      console.error('PDF generation error:', error);
-      this.appSettingService.showError('Error generating PDF for email attachment.');
-    }
-  }
-
-  openAuthority() {
-    if (!this.houseData) return;
-    const modalRef = this.modalService.open(AuthorityLogComponent, {
+ openEmail() {
+    if (!this.serviceJobData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
-    })
+    });
+  }
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.HouseJobSid;
   }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
@@ -930,55 +871,52 @@ ${this.userData['userName']}`;
     })
   }
 
-  openEDoc() {
-    if (!this.houseData) return;
-    const modalRef = this.modalService.open(EdocComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    })
- const data:any={
+openEDoc() {
+  if (!this.serviceJobData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.serviceJobData;
+  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idValue = this.serviceJobData?.headerId;
+  const data:any={
     CompanyMasterSid: this.currentCompany.CompanyMasterSid,
     BranchMasterSid: this.currentBranch.BranchMasterSid,
-    MenuMasterSid: this.MenuMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
     DocumentSid: this.HouseJobSid
   }
-  console.log(this.MenuMasterSid)
+
       this.commonService.documentData.set(data)
 }
 
 
 
-  async openFollowup() {
-    if (!this.houseData) return;
-    const POL = this.houseData?.POL;
-    const POD = this.houseData?.POD;
-    const FPD = this.houseData?.FPD;
-    const formattedPOL = getFormattedPort(this.portList,POL);
-    const formattedPOD = getFormattedPort(this.portList,POL);
-    const resp: any = await firstValueFrom(
-      this.operationService.getCustomerBranchEmail(this.houseData.CustomerBranchSid)
-    );
-    const toEmail = resp?.data?.Email;
-    if (!toEmail) {
-      this.appSettingService.showError('To Email is missing.')
-      return;
-    }
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.documentSid = this.houseData?.HouseJobSid;
-    modalRef.componentInstance.parentEmail = toEmail;
-    modalRef.componentInstance.parentSubject = `Booking No.${this.houseData.HouseNo} Date:${this.datePipe.transform(this.houseData?.BookingDateTime)} ${formattedPOL} - ${formattedPOD} confirmation`;
-    modalRef.componentInstance.parentMailbody = `
-      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-        <p>Dear Sir/Madam,</p>
-        <p>Please find here enclosed the booking details as requested.</p>
-        <p>Kindly review the details at your convenience.</p>
-        <p>Looking forward to confirm cargo readyness.</p>
-        <p>Best Regards,</p>
-        <p>${this.userData['userName']}</p>
-      </div>
-    `;
-  }
+  openFollowup() {
+     if (!this.serviceJobData) return;
+     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+     modalRef.componentInstance.documentSid = this.serviceJobData?.QuoteHeaderSid;
+     modalRef.componentInstance.parentEmail = this.serviceJobData.Email;
+     modalRef.componentInstance.parentSubject = `Quotation No.${this.serviceJobData.QuoteNumber} Date:${new Date(this.serviceJobData.QuoteDate).toLocaleDateString()}`;
+     modalRef.componentInstance.parentMailbody = `
+     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+       <p>Dear Sir/Madam,</p>
+       <p>Please find enclosed the quotation as requested.</p>
+       <p>Kindly review the details at your convenience.</p>
+       <p>Looking forward to your feedback and the opportunity to work together.</p>
+       <p>
+         Approval Hyperlink: 
+         <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+       </p>
+       <p>Best Regards,</p>
+       <p>${this.userData['userEmail']}</p>
+     </div>
+   `;
+ 
+   // Optionally, pass the quotation HTML content ID for PDF generation
+   modalRef.componentInstance.pdfContentId = 'quotationContent';
+   }
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.HouseJobSid) return;
@@ -1263,4 +1201,6 @@ ${this.userData['userName']}`;
     };
   }
        
+ 
+  
 }

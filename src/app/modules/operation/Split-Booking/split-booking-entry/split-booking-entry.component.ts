@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDropdownModule, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { OperationService } from '../../operation.service';
@@ -13,6 +13,14 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-split-booking-entry',
@@ -25,7 +33,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     NgbPaginationModule,
     FormsModule,
     DatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './split-booking-entry.component.html',
   styleUrls: ['./split-booking-entry.component.scss'],
@@ -48,11 +57,15 @@ export class SplitBookingEntryComponent implements OnInit {
   pageSize: number = 10;
   totalRecords: number = 0;
   slicedProducts: any[] = [];
-
   selectedRows: number[] = [];
   selectedIndex: number | null = null;
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
-
+  currentMenuId: number;
+  MenuMasterSid: any;
+  splitData: any;
+  splitId:number;
+  TandCList: any[] = [];
+    userData: any;
   splitType = [
     { name: 'Full', value: 'full' },
     { name: 'Part', value: 'part' }
@@ -63,6 +76,11 @@ export class SplitBookingEntryComponent implements OnInit {
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private router: Router,
+    public mps: MenuPermissionService,
+    private ngbModal: NgbModal,
+    private masterService: MasterService,
+    private modalService: NgbModal,
+    private commonService: CommonService,
   ) { }
 
   ngOnInit(): void {
@@ -70,7 +88,11 @@ export class SplitBookingEntryComponent implements OnInit {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initForm();
     this.loadAllLookups();
-
+    this.mps.init().subscribe();
+   const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+    }
     // Subscribe to filters
     this.bookingForm.get('CustomerMasterSid')?.valueChanges.subscribe(() => this.applyBookingFilters());
     this.bookingForm.get('POL')?.valueChanges.subscribe(() => this.applyBookingFilters());
@@ -263,8 +285,8 @@ public onSelectRow(index: number) {
   this.operationService.splitBooking(payload).subscribe({
     next: (resp: any) => {
       console.log('Split booking response:', resp);
-
       const newBookingSid = resp?.data?.BookingHeaderSid;
+      this.splitData = newBookingSid;
       if (resp.message && newBookingSid) {
         this.appSettingService.showSuccess(resp.message);
         this.router.navigate(['operation/booking/entry', newBookingSid]);
@@ -307,4 +329,95 @@ public onSelectRow(index: number) {
   back() {
     history.back();
   }
+
+
+    openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.splitId;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+     openEmail() {
+       const modalRef = this.modalService.open(EmailEntryComponent, {
+         size: 'lg',
+         centered: true,
+         backdrop: 'static'
+       });
+     }
+  
+    openAuthority() {
+      const MenuMasterSid = localStorage.getItem('currentMenuId');
+      if (!MenuMasterSid) return;
+     const modalRef = this.modalService.open(AuthorityLogComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+      modalRef.componentInstance.documentSid = this.splitId;
+    }
+  
+  openEDoc() {
+    if (!this.splitData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.splitData;
+    modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+    modalRef.componentInstance.idValue = this.splitData?.headerId;
+    const data:any={
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
+      DocumentSid: this.splitId
+    }
+  
+        this.commonService.documentData.set(data)
+  }
+  
+  //  openFollowup() {
+  //     if (!this.splitData) return;
+  //     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+  //     modalRef.componentInstance.documentSid = this.splitData?.QuoteHeaderSid;
+  //     modalRef.componentInstance.parentEmail = this.splitData.Email;
+  //     modalRef.componentInstance.parentSubject = `Quotation No.${this.splitData.QuoteNumber} Date:${new Date(this.splitData.QuoteDate).toLocaleDateString()}`;
+  //     modalRef.componentInstance.parentMailbody = `
+  //     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+  //       <p>Dear Sir/Madam,</p>
+  //       <p>Please find enclosed the quotation as requested.</p>
+  //       <p>Kindly review the details at your convenience.</p>
+  //       <p>Looking forward to your feedback and the opportunity to work together.</p>
+  //       <p>
+  //         Approval Hyperlink: 
+  //         <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+  //       </p>
+  //       <p>Best Regards,</p>
+  //       <p>${this.userData['userEmail']}</p>
+  //     </div>
+  //   `;
+  
+  //   // Optionally, pass the quotation HTML content ID for PDF generation
+  //   modalRef.componentInstance.pdfContentId = 'quotationContent';
+  //   }
 }

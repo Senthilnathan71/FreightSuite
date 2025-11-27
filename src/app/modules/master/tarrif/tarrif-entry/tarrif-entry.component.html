@@ -1,8 +1,8 @@
 
 <div class="row compact-form">
     <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
                     <div class="brand-icon">
                         <i class="fas fa-balance-scale"></i>
@@ -15,7 +15,7 @@
                     }
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -41,30 +41,37 @@
 
                     <div *ngIf="isEditMode && hasPermission('Edit')" class="d-inline-block">
                       
-                        <button appPreventMultiClick *ngIf="!isStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
+                        <button appPreventMultiClick *ngIf="!isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
                                 (click)="onEditStatusClick()">
                             <i class="fas fa-save me-1"></i> Save
                         </button>
 
                         
                         <button appPreventMultiClick *ngIf="isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                                (click)="onSave()" [disabled]="btnDisable">
+                                (click)="onSave()"  [disabled]="(!mps.can('update') && isEditMode) || btnDisable  ">
                             <i class="fas fa-save me-1"></i> Save
                         </button>
                     </div>
                    
 
-                    <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+                 <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+              <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark" (click)="openFollowup()">
+            <i class="fas fa-paperclip me-1"></i> Followup
+          </button>
+          </div>
+        </div>
                 </div>
             </div>
         </div>
@@ -525,10 +532,10 @@
 <ng-template #tariffDetailListTemplate>
                        
     <div class="table-responsive mt-1 table-borderless">
-        <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+        <table class="table table-hover align-middle no-wrap  table-sm mb-1 text-center">
             <thead>
                <tr class="bg-info text-center align-middle">
-                    <th class="bg-transparent text-light" rowspan="2" width="1%"></th>
+                    <th class="bg-transparent text-light" rowspan="2" width="1%" style="border-top-left-radius: 10px;"></th>
                     <th class="bg-transparent text-light" rowspan="2">Slab?</th>
                     <th class="bg-transparent text-light" rowspan="2">Effective From</th>
                     <th class="bg-transparent text-light" rowspan="2">Expired On</th>
@@ -542,7 +549,7 @@
                     <th class="bg-transparent text-light text-center" colspan="2" style="border-bottom: none; border-right: 1px solid #eef5f9;">Cost</th>
                     <th class="bg-transparent text-light" rowspan="2">Min Sale</th>
                     <th class="bg-transparent text-light" rowspan="2">Remarks</th>
-                    <th class="bg-transparent text-light" rowspan="2">Status</th>
+                    <th class="bg-transparent text-light" rowspan="2" style="border-top-right-radius: 10px;">Status</th>
                 </tr>
                 <tr class="bg-info text-center">
                     <th class="bg-transparent text-light" style="border-left: 1px solid #eef5f9;"> Curr</th>
@@ -561,14 +568,14 @@
                     <td>
                         <div class="d-flex align-items-center ">
                             <a class="text-info " (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate,tariffDetail)">
-                                <i-feather name="eye" class="feather-sm"></i-feather>
+                                <i class="fas fa-eye text-info cursor-pointer"></i>
                             </a>
                             <a class="link  ps-2  text-danger" (click)="deleteTariffDetail(tariffDetail.TariffDetailSid)">
-                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                               <i class="fas fa-trash text-danger cursor-pointer"></i>
                             </a>
                         </div>
                     </td>
-                    <td class="text-center">
+                    <td class="text-center px-2">
                         @if(tariffDetail.IsSlabApplicable==='Y'){
                             <div class="text-truncate text-primary cursor-pointer" [ngbPopover]=slabTemplate popoverTitle="Slab Applicable" popoverClass="bg-light-info">
                                 <i-feather name="info" class="feather-sm"></i-feather>
@@ -635,13 +642,18 @@
                    
                 </tr>
                 }
+
+            <tr *ngIf="filteredTariffDetail.length === 0">
+                <td colspan="15" class="py-1 text-center">No Record Found</td>
+            </tr>
+
             </tbody>
         </table>
         
     </div>
     <div>
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfCollection" [pageSize]="pageSize"
-                [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5">
+                [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5" size="sm">
             </ngb-pagination>
         </div>
 </ng-template>
@@ -1124,9 +1136,9 @@
 
   <!-- Edit-mode: show Edit (to enable only detailstatus) and Save when status-editing -->
   <div *ngIf="isModalEditMode" class="d-inline-block">
-    <button *ngIf="!isModalStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
+    <button *ngIf="!isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
             (click)="onEditDetailStatusClick()">
-      <i class="fas fa-edit me-1"></i> Edit
+      <i class="fas fa-edit me-1"></i> Save
     </button>
 
     <button appPreventMultiClick *ngIf="isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"

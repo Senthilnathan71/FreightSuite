@@ -33,6 +33,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-sector',
   standalone: true,
@@ -98,37 +99,11 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  tableConfig: TableConfig;
   MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: '',
-    emptyMessage: 'No sector found',
-    dragAndDrop: true
-  };
+  
 
   tableLoading = false;
 
@@ -156,6 +131,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
+    public mps :MenuPermissionService,
     private commonService: CommonService
   ) {
     super(paginationService);
@@ -177,7 +153,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+    
     }
     // this.loadSectors();
     this.route.paramMap.subscribe(params => {
@@ -190,36 +166,16 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+       this.initializeTableConfig();
+    this.initializeHeaderActions();
+    });
     this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-             this.initializeHeaderActions();
-          this.initializeModalDropdownItems();
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
       hasAnyDropdownPermission(): boolean {
   const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -294,7 +250,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -316,25 +272,25 @@ export class SectorComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        condition: this.hasPermission('Edoc')
+       
       },
       {
         label: 'Terms & Condition',
         icon: 'fas fa-clipboard',
         action: 'terms',
-        condition: this.hasPermission('Terms and Condition')
+       
       },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        condition: this.hasPermission('Authority')
+       
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        condition: this.hasPermission('Email')
+       
       }
     ];
   }
@@ -401,8 +357,8 @@ export class SectorComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
+   this.tableConfig = {
+    columns: [
       {
         key: 'sectorName',
         label: 'Sector Name',
@@ -446,7 +402,33 @@ export class SectorComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        state : !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        state : !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No sector found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

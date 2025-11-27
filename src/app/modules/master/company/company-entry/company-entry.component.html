@@ -7,7 +7,7 @@
           <div class="brand-icon">
             <i class="fas fa-building"></i>
           </div>
-          <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Company</h5>
+          <h5 class="page-title mb-0 text-info">Company</h5>
           @if(isEditMode){
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
@@ -23,7 +23,11 @@
             (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
           </button>
-
+         
+<button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100"
+        (click)="openConfigCompany()" [hidden]="!isEditMode">
+  <i class="fas fa-cog me-1"></i> Valid Config
+</button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="navigateBack()">
             <i class="fas fa-chevron-left me-1"></i>
@@ -35,22 +39,28 @@
             Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()"
-            [disabled]="companyForm.invalid" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+          [disabled]="((!mps.can('update')&& isEditMode)|| companyForm.invalid)">
             <i class="fas fa-save me-1"></i>
             Save
           </button>
-          <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-              ngbDropdownToggle>
-              <i class="fas fa-ellipsis-v"></i>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-            </div>
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+               <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
+            <i class="fas fa-paperclip me-1"></i> Followup
+          </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -994,7 +1004,7 @@
                           <div class="custom-form-group">
                             <input type="text" id="branchTaxRegistrationNo" placeholder="" class="custom-input-field sm"
                               formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
-                            <label for="branchTaxRegistrationNo" class="input-label">GST/VAT no</label>
+                            <label for="branchTaxRegistrationNo" class="input-label">GST/VAT No.</label>
                             @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
                             branchForm.get('branchTaxRegistrationNo')?.invalid){
                             <div class="error-message">
@@ -1304,16 +1314,45 @@
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
                       class="d-flex justify-content-between align-items-center w-100 position-relative p-1 bg-info text-white">
-                      <h5 class="font-bold my-1 text-light">Number Format</h5>
+                      <h5 class="font-bold my-1 text-light">Doucument Number</h5>
                     </button>
                   </h2>
                   <div ngbAccordionCollapse [id]="'branch-3'">
                       <div class="row p-1">
+                         <aside class="col-md-4">
+                        <div class="custom-form-group">
+                          <input type="text" id="BookingPrefix" placeholder="" class="custom-input-field sm"
+                            formControlName="BookingPrefix" maxlength="20">
+                          <label for="BookingPrefix" class="input-label">Booking Prefix</label>
+                          @if(branchForm.get('BookingPrefix')?.touched && branchForm.get('BookingPrefix')?.invalid){
+                          <div class="error-message">
+                            @if(branchForm.get('BookingPrefix')?.hasError('maxlength')){
+                            <span>Maximum 20 characters allowed</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                          <input type="number" id="BookingNoLen" placeholder="" class="custom-input-field sm"
+                            formControlName="BookingNoLen" min="1" max="20">
+                          <label for="BookingNoLen" class="input-label">Booking No.Length</label>
+                          @if(branchForm.get('BookingNoLen')?.touched && branchForm.get('BookingNoLen')?.invalid){
+                          <div class="error-message">
+                            @if(branchForm.get('BookingNoLen')?.hasError('min') ||
+                            branchForm.get('BookingNoLen')?.hasError('max')){
+                            <span>Must be between 1 and 20</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
                       <aside class="col-md-4">
                         <div class="custom-form-group">
                           <input type="text" id="consolePrefix" placeholder="" class="custom-input-field sm"
                             formControlName="consolePrefix" maxlength="20">
-                          <label for="consolePrefix" class="input-label">Console Prefix</label>
+                          <label for="consolePrefix" class="input-label">Master Prefix</label>
                           @if(branchForm.get('consolePrefix')?.touched && branchForm.get('consolePrefix')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('consolePrefix')?.hasError('maxlength')){
@@ -1327,7 +1366,7 @@
                         <div class="custom-form-group">
                           <input type="number" id="consoleNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="consoleNoLen" min="1" max="20">
-                          <label for="consoleNoLen" class="input-label">Console No Length</label>
+                          <label for="consoleNoLen" class="input-label">Master No. Length</label>
                           @if(branchForm.get('consoleNoLen')?.touched && branchForm.get('consoleNoLen')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('consoleNoLen')?.hasError('min') ||
@@ -1344,7 +1383,7 @@
                         <div class="custom-form-group">
                           <input type="text" id="shipmentPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="shipmentPrefix" maxlength="20">
-                          <label for="shipmentPrefix" class="input-label">Shipment Prefix</label>
+                          <label for="shipmentPrefix" class="input-label">House Prefix</label>
                           @if(branchForm.get('shipmentPrefix')?.touched && branchForm.get('shipmentPrefix')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('shipmentPrefix')?.hasError('maxlength')){
@@ -1358,7 +1397,7 @@
                         <div class="custom-form-group">
                           <input type="number" id="shipmentNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="shipmentNoLen" min="1" max="20">
-                          <label for="shipmentNoLen" class="input-label">Shipment No Length</label>
+                          <label for="shipmentNoLen" class="input-label">House No.Length</label>
                           @if(branchForm.get('shipmentNoLen')?.touched && branchForm.get('shipmentNoLen')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('shipmentNoLen')?.hasError('min') ||
@@ -1389,7 +1428,7 @@
                         <div class="custom-form-group">
                           <input type="number" id="enquiryNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="enquiryNoLen" min="1" max="20">
-                          <label for="enquiryNoLen" class="input-label">Enquiry No Length</label>
+                          <label for="enquiryNoLen" class="input-label">Enquiry No.Length</label>
                           @if(branchForm.get('enquiryNoLen')?.touched && branchForm.get('enquiryNoLen')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('enquiryNoLen')?.hasError('min') ||
@@ -1420,7 +1459,7 @@
                         <div class="custom-form-group">
                           <input type="number" id="quotationNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="quotationNoLen" min="1" max="20">
-                          <label for="quotationNoLen" class="input-label">Quotation No Length</label>
+                          <label for="quotationNoLen" class="input-label">Quotation No.Length</label>
                           @if(branchForm.get('quotationNoLen')?.touched && branchForm.get('quotationNoLen')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('quotationNoLen')?.hasError('min') ||
@@ -1634,7 +1673,7 @@
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                   (click)="submitBranchForm()" [disabled]="branchForm.invalid">
                   <i class="fas fa-save me-1"></i>
-                  {{isModalEditMode ? 'Edit' : 'Save'}}
+                  {{isModalEditMode ? 'Save' : 'Save'}}
                 </button>
               </div>
 
@@ -2064,7 +2103,7 @@
       <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchBankForm()"
         [disabled]="branchBankForm.invalid">
         <i class="fas fa-save me-1"></i>
-        {{isBankModalEdit ? 'Edit' : 'Save'}}
+        {{isBankModalEdit ? 'Save' : 'Save'}}
       </button>
     </div>
 

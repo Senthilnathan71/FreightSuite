@@ -35,20 +35,26 @@
             Reset
           </button>
           <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-            [disabled]="supplierTDSForm.invalid" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+            [disabled]="(!mps.can('update') && isEditMode) || supplierTDSForm.invalid">
             <i class="fas fa-save me-1"></i>
             Save
           </button>
-          <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
               <i class="fas fa-ellipsis-v"></i>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                  class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                  class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                  class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
+                  class="fas fa-paperclip me-1"></i> Followup</button>
             </div>
           </div>
         </div>
@@ -67,8 +73,14 @@
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!supplierTDSForm.get('CustomerMasterSid')?.value">
-              <ng-select class="ng-select" [items]="dropdownStore.customerTypeData()" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                placeholder="" formControlName="CustomerMasterSid" (change)="handleLedgerChange($event)"></ng-select>
+              <!-- <ng-select class="ng-select" [items]="supplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                placeholder="" formControlName="CustomerMasterSid" (change)="handleLedgerChange($event)"></ng-select> -->
+              <dofi-searchable-dropdown [items]="supplierList" formControlName="CustomerMasterSid"
+                                placeholder="" [displayFields]="CustomerLookupConfig.displayFields"
+                                [displayLabels]="CustomerLookupConfig.displayLabels"
+                                [labelFields]="CustomerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerMasterSid" (itemSelected)="handleLedgerChange($event)">
+                            </dofi-searchable-dropdown>
               <label for="LedgerName" class="input-label">Ledger Name <span class="text-danger">*</span></label>
               @if(supplierTDSForm.get('CustomerMasterSid')?.touched &&
               supplierTDSForm.get('CustomerMasterSid')?.invalid){
@@ -103,7 +115,7 @@
             <div class="custom-form-group">
               <input type="text" id="CompanyType" placeholder="" class="form-control custom-input-field sm"
                 formControlName="CompanyType" readonly style="cursor: not-allowed; background-color: white;">
-              <label for="CompanyType" class="input-label">Person Type</label>
+              <label for="CompanyType" class="input-label">Company Type</label>
             </div>
           </aside>
 
@@ -187,7 +199,7 @@
               </td>
 
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <ng-select class="ng-select" [items]="dropdownStore.tdsSet()" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
+                <ng-select class="ng-select" [items]="tdsList" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
                   placeholder="Select TDS Set Name" formControlName="TDSSetHeaderSid"
                   (change)="handleTDSChange($event,i)" [appendTo]="'body'">
                 </ng-select>

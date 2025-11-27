@@ -20,6 +20,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-currency-entry',
@@ -75,12 +76,14 @@ export class CurrencyEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService : NgbModal,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
+    this.mps.init().subscribe();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -103,31 +106,12 @@ export class CurrencyEntryComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+     
 		}
     this.loadlookup();
   }
 
-   checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+  
 
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

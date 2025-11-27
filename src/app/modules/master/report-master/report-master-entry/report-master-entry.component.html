@@ -152,13 +152,24 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <multi-select [control]="reportForm.get('excludedCompanyIds')"
-                                    [items]="excludedCompanies" bindLabel="companyName" bindValue="CompanyMasterSid"
-                                    placeholder="Select item">
-                                </multi-select>
-                                <label for="text-input" class="input-label">Excluded Companies <span
-                                        class="text-danger"></span></label>
+                            <div class="custom-form-group">
+                                <textarea
+                                    id="excluded-companies"
+                                    placeholder="Enter comma-separated company IDs (e.g., 3,5,7)"
+                                    class="custom-input-field sm"
+                                    formControlName="excludedCompanyIds"
+                                    rows="3">
+                                </textarea>
+                                <label for="excluded-companies" class="input-label">
+                                    Excluded Companies <span class="text-info">(comma-separated IDs)</span>
+                                </label>
+                                @if(reportForm.get('excludedCompanyIds')?.touched && reportForm.get('excludedCompanyIds')?.invalid){
+                                    <div class="error-message">
+                                        @if(reportForm.get('excludedCompanyIds')?.hasError('pattern')){
+                                            <span>Please enter valid comma-separated numbers</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-4">

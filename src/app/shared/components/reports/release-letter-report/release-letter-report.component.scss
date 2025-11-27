@@ -1,0 +1,349 @@
+.print-a4 {
+  width: 280mm;
+  min-height: 405mm;
+  margin: 10px auto;
+  padding: 15mm 10mm;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  color: #000;
+  page-break-after: always;
+
+  .report-title {
+    font-size: 1.75rem;
+    color: #2c3e50;
+    margin: 1.5rem 0;
+    padding: 0.75rem;
+    border-bottom: 3px solid #17a2b8;
+    border-top: 3px solid #17a2b8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(to right, #f8f9fa, #ffffff, #f8f9fa);
+  }
+
+  .letter-meta {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+
+    p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #495057;
+    }
+  }
+
+  .to-address {
+    margin-bottom: 1.5rem;
+
+    p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #212529;
+    }
+  }
+
+  .letter-body {
+    font-size: 0.875rem;
+    line-height: 1.8;
+    color: #212529;
+    text-align: justify;
+
+    p {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .details-box {
+    padding: 1.25rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #17a2b8;
+    border-radius: 4px;
+
+    .box-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #dee2e6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-group {
+      .info-item {
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        display: flex;
+        align-items: baseline;
+
+        .label {
+          color: #6c757d;
+          font-weight: 600;
+          min-width: 150px;
+          display: inline-block;
+          position: relative;
+
+          &::after {
+            content: ':';
+            position: absolute;
+            right: 5px;
+          }
+        }
+
+        .value {
+          color: #212529;
+          flex: 1;
+          font-weight: 500;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .container-details {
+    .section-subtitle {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #495057;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #17a2b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .table {
+    font-size: 0.8125rem;
+    margin-bottom: 0;
+    border-collapse: collapse;
+
+    thead {
+      tr {
+        background-color: #e9ecef;
+
+        th {
+          font-weight: 700;
+          color: #495057;
+          padding: 0.75rem 0.5rem;
+          border: 1px solid #dee2e6;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        td {
+          padding: 0.6rem 0.5rem;
+          vertical-align: middle;
+          border: 1px solid #dee2e6;
+          color: #212529;
+
+          &.fw-bold {
+            color: #0d6efd;
+          }
+
+          .badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            font-weight: 600;
+          }
+        }
+
+        &:nth-child(even) {
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+
+  .note-box {
+    padding: 1rem;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+
+    p {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: #856404;
+      font-weight: 600;
+    }
+
+    ul {
+      margin-left: 1.25rem;
+      padding-left: 0;
+
+      li {
+        font-size: 0.875rem;
+        color: #856404;
+        line-height: 1.8;
+        margin-bottom: 0.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .signature-section {
+    margin-top: 3rem;
+    padding-left: 2rem;
+
+    .signature-line {
+      width: 200px;
+      height: 60px;
+      border-bottom: 1px solid #212529;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Print-specific styles
+@media print {
+  .print-a4 {
+    width: 100%;
+    margin: 0;
+    border: none;
+    padding: 10mm;
+    page-break-after: always;
+
+    .report-title {
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      border-width: 2px;
+    }
+
+    .letter-meta,
+    .to-address,
+    .letter-body {
+      p {
+        font-size: 0.8rem;
+      }
+    }
+
+    .details-box {
+      padding: 1rem;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+
+      .box-title {
+        font-size: 0.9rem;
+      }
+
+      .info-group .info-item {
+        font-size: 0.8rem;
+
+        .label {
+          min-width: 130px;
+        }
+      }
+    }
+
+    .table {
+      font-size: 0.75rem;
+
+      thead th {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.4rem;
+      }
+
+      tbody td {
+        padding: 0.4rem 0.4rem;
+      }
+    }
+
+    .note-box {
+      padding: 0.75rem;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      border: 1px solid #ffc107;
+
+      p, li {
+        font-size: 0.8rem;
+      }
+    }
+
+    .signature-section {
+      margin-top: 2rem;
+
+      .signature-line {
+        height: 50px;
+      }
+
+      p {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .print-a4 {
+    width: 100%;
+    padding: 10mm 5mm;
+    margin: 0;
+
+    .report-title {
+      font-size: 1.25rem;
+      padding: 0.5rem;
+    }
+
+    .details-box {
+      .info-group .info-item {
+        flex-direction: column;
+
+        .label {
+          min-width: auto;
+          margin-bottom: 0.25rem;
+
+          &::after {
+            position: static;
+          }
+        }
+      }
+    }
+
+    .table {
+      font-size: 0.75rem;
+
+      thead th {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.3rem;
+      }
+
+      tbody td {
+        padding: 0.4rem 0.3rem;
+      }
+    }
+
+    .signature-section {
+      margin-top: 2rem;
+      padding-left: 0;
+
+      .signature-line {
+        width: 150px;
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 <div class="row compact-form">
     <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
                        <div class="brand-icon">
                         <i class="fas fa-lock"></i>
@@ -9,14 +9,14 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Authorization</h5>
                 @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showAuthorityInfo()">
+                <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showAuthorityInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
                 </div>
                
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     
@@ -40,7 +40,21 @@
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Edit' : 'Save'}}
                     </button>
-                    
+                         <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+          </div>
+        </div>
                 </div>
             </div>
         </div>
@@ -55,14 +69,14 @@
 
                         <h5 class="card-titlename mb-0">Authorization Information</h5>
                     </div> -->
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('MenuMaster')?.value">
                             <ng-select class="ng-select" [items]="menuResults" bindLabel="MenuName"
                                 bindValue="MenuMasterSid"  formControlName="MenuMaster">
 
                                 <ng-option value="">Select Menu</ng-option>
                             </ng-select>
-                            <label class="input-label">Menu/Screen <span class="text-danger">*</span></label>
+                            <label class="input-label">Menu / Screen <span class="text-danger">*</span></label>
                             @if(authorityForm.get('MenuMaster')?.touched && authorityForm.get('MenuMaster')?.invalid){
                             <div class="error-message">
                                 @if(authorityForm.get('MenuMaster')?.hasError('required')){
@@ -73,7 +87,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('BranchMasterSid')?.value">
                             <ng-select formControlName="BranchMasterSid" [items]="branchList" bindLabel="branchName"
                                 bindValue="BranchMasterSid">
@@ -110,7 +124,7 @@
 </aside> -->
 
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('DepartmentMaster')?.value">
                             <multi-select [control]="authorityForm.get('DepartmentMaster')" [items]="departmentResults" bindLabel="departmentName" bindValue="departmentName">
                             </multi-select>
@@ -140,7 +154,7 @@
                             <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
                         </div>
                     </aside> -->
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             @if(isEditMode){
                             <ng-select
@@ -176,7 +190,7 @@
 
     <div class="col-12 px-0">
         <div class="card">
-            <div class="px-2 d-flex align-items-center py-1">
+            <div class="px-5 mx-2 d-flex align-items-center py-1">
                 <h5 class="text-info mb-0">Authorization Details</h5>
                 <div class="ms-auto">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -187,18 +201,18 @@
                 </div>
             </div>
             <div class="card-body pt-0" *ngIf="authDetails.length > 0">
-                <div class="row" [formGroup]="authorityForm">
-                    <div class="table-responsive" style="max-height: 35vh;">
+                <div class="row px-5" [formGroup]="authorityForm">
+                    <div class="table-responsive" style="max-height: 40vh;">
                         <table class="tableS">
                             <thead>
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col"
-                                        width="3%">Action
+                                        width="1%">
                                     </th>
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Approval Level</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Approval Level</th>
                                     <th class="bg-transparent text-light" scope="col" width="30%">Authorizer</th>
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Final Level</th>
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Final Level</th>
+                                    <th class="bg-transparent text-light" scope="col" width="7%">Status</th>
                                 </tr>
                             </thead>
                             <tbody formArrayName="authDetails">
@@ -206,9 +220,9 @@
                                     <tr [formGroupName]="detailIndex">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <button class="text-danger mx-2 ps-1 btn btn-link" [disabled]="authDetails.length === 1"
+                                                <button class="text-danger mx-2 btn btn-link py-0" [disabled]="authDetails.length === 1"
                                                     (click)="removeAuthDetail(detailIndex,detail.value.AuthorityDetailSid)">
-                                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                                    <i class="fas fa-trash text-danger fs-2"></i>
                                             </button>
                                             </div>
                                         </td>
@@ -222,7 +236,7 @@
                                         <td>
                                             <!-- <div class="custom-form-group custom-form-group-select"> -->
                                                 <ng-select formControlName="UserMasterSid" [items]="filteredAuthorisers[detailIndex]" bindLabel="userName"
-                                                    bindValue="UserMasterSid" placeholder="Select Authorizer" appendTo="body" [clearable]="true" [searchable]="true"
+                                                    bindValue="UserMasterSid" placeholder="" appendTo="body" [clearable]="true" [searchable]="true"
                                                     (change)="onAuthorizerChange($event, detailIndex)">
                                                 </ng-select>
                                             <!-- </div> -->

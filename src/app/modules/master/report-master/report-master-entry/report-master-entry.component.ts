@@ -61,7 +61,6 @@ export class ReportMasterEntryComponent implements OnInit {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.initForm();
     this.menuDropdown();
-    this.allCompanies();
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -80,7 +79,7 @@ export class ReportMasterEntryComponent implements OnInit {
       reportMenuId: [null, Validators.required],
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
-      excludedCompanyIds: [null],
+      excludedCompanyIds: ['', [Validators.pattern(/^(\d+)(,\s*\d+)*$/)]],
       query: ['', Validators.required],
       Status: ['A']
     });
@@ -98,16 +97,13 @@ export class ReportMasterEntryComponent implements OnInit {
     });
   }
 
-  allCompanies() {
-    this.masterService.getAllCompanies().subscribe({
-      next: (resp: any) => {
-        this.excludedCompanies = resp;
-        console.log("All Companies", this.excludedCompanies);
-      },
-      error: () => {
-        this.appSettingsService.showError('Failed to load report menus');
-      }
-    })
+  formatExcludedCompanies(data: any): string {
+    if (!data) return '';
+    if (Array.isArray(data)) return data.join(',');
+    if (typeof data === 'object' && data.company && Array.isArray(data.company)) {
+      return data.company.join(',');
+    }
+    return '';
   }
 
 
@@ -122,7 +118,7 @@ export class ReportMasterEntryComponent implements OnInit {
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
-          excludedCompanyIds: resp.data.ReportExcludedCompany,
+          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany),
           query: resp.data.Query,
         });
       },
@@ -148,7 +144,9 @@ export class ReportMasterEntryComponent implements OnInit {
       ReportFormat: formValue.reportFormatId,
       Query: formValue.query,
       ReportType: formValue.reportType,
-      ReportExcludedCompany: formValue.excludedCompanyIds,
+      ReportExcludedCompany: formValue.excludedCompanyIds
+        ? formValue.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
+        : null,
       CreatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
       CompanySid: this.currentCompany?.CompanyMasterSid,
       Status: "A",
@@ -196,7 +194,7 @@ export class ReportMasterEntryComponent implements OnInit {
 
 
   navigateback() {
-    this.router.navigate(["master/report-master/list"])
+    this.router.navigate(["/master/report-master/list"])
   }
 
 

@@ -99,8 +99,8 @@
             <tr *ngFor="let group of getCurrentData(); let i = index"
               [style.border-left]="(group.hasChanges && group.TaxGroupMasterSid !== undefined) ? '3px solid #ffc107' : ''">
               <td class="text-center " style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <button type="button" class="btn btn-sm py-0" (click)="deleteRow(i)" placement="top"
-                  ngbTooltip="Delete">
+                <button type="button" class="btn btn-sm py-0 btn-light" (click)="deleteRow(i)" placement="top"
+                  ngbTooltip="Delete"  [disabled]="(!mps.can('delete') )">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
               </td>

@@ -21,6 +21,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -116,7 +117,8 @@ noOfTeuOptions = [
     private router: Router,
     private modalService : NgbModal,
     private ngZone: NgZone,
-    private commonService: CommonService
+    private commonService: CommonService,
+    public mps : MenuPermissionService
   ) {
     const { webkitSpeechRecognition }: IWindow = window as any;
     this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
@@ -202,6 +204,7 @@ noOfTeuOptions = [
 
 
   ngOnInit(): void {
+    this.mps.init().subscribe();
     this.getAllCompanies()
     this.loadContainerTypes();
     this.initForm();
@@ -230,30 +233,11 @@ noOfTeuOptions = [
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+     
 		}
   }
 
-   checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+   
 
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

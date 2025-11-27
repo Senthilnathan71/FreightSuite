@@ -1,0 +1,127 @@
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Milestone Summary</h5>
+    <div class="d-flex gap-2 align-items-center">
+ 
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+        <i class="fas fa-envelope me-1"></i>Send Email
+      </button>
+ 
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+ 
+    </div>
+  </div>
+
+
+  <div class="modal-body">
+    <div id="printContent">
+        <div class="print-a4">
+            <div
+      class="mt-5 mb-3"
+      style="border: 1px solid black; max-width: 80%; margin: 0 auto"
+    >
+      <div class="row">
+        <div class="col-md-6 ps-5 pt-5">
+          <h5>DEMO</h5>
+        </div>
+        <div class="col-md-6 pt-2 text-end mb-2 pe-4">
+          <strong><h3 class="mb-0">DEMO INDIA PVT LTD</h3></strong>
+          <p class="mb-0"></p>
+          <p class="mb-0"></p>
+          <p class="mb-0"></p>
+          <p class="mb-0"></p>
+        </div>
+      </div>
+ 
+      <div
+        style="
+          height: 1px;
+          background-color: black;
+          width: 100%;
+          margin: 1rem 0;
+        "
+      ></div>
+ 
+      <div class=" mx-5">
+        <h5 class="text-center"><strong>Milestone Summary</strong></h5>
+      </div>
+ 
+      <div class="row mx-5 mt-2" style="border: 1px solid black;">
+        <div class="col-md-4">
+          <div class="d-flex ">
+            <div style="width: 120px; white-space: nowrap">
+              <strong>Milestone </strong>
+            </div>
+            <div>:</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex mb-1">
+            <div style="width: 120px; white-space: nowrap">
+              <strong>Date & Time </strong>
+            </div>
+            <div>:</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex mb-1">
+            <div style="width: 120px; white-space: nowrap">
+              <strong>Remarks </strong>
+            </div>
+            <div>:</div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="row mx-5 mt-4 text-center">
+        <div class="col-md-4">
+          <i class="fas fa-chalkboard-teacher fs-2"></i>
+        </div>
+        <div class="col-md-4">
+          <i class="fas fa-calendar-alt fs-2"></i>
+        </div>
+          <div class="col-md-4">
+          <i class="fas fa-calendar-alt fs-2"></i>
+        </div>
+      </div>
+ 
+      <div class="row mx-5 mt-2">
+        <table class="table table-bordered" style="border: black;">
+          <thead>
+            <tr>
+              <th style="width: 470px;">Task Description</th>
+              <th></th>
+              <th>End</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+ 
+       <footer class="text-center  px-4 pt-3">
+        <div class="d-flex justify-content-between">
+          <div class=""><span>Printed By :</span></div>
+          <span>
+            This document is computer-generated and does not require a
+            signature.
+          </span>
+          <div><span>Printed On :</span></div>
+        </div>
+      </footer>
+    </div>
+        </div>
+    </div>
+  </div>
+
+

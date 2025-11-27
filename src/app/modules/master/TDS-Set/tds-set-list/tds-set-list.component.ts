@@ -21,6 +21,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
     selector: 'app-tds-set-list',
     standalone: true,
@@ -54,6 +55,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
     // totalLengthOfCollection: number;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
+    tableConfig: TableConfig;
 
     // sortColumn: string = 'TDSSetName';
     // sortDirection: string = 'asc';
@@ -62,34 +64,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
     currentBranch: any;
     headerActions: HeaderAction[] = [];
     // Table configuration
-    tableConfig: TableConfig = {
-        columns: [],
-        actions: [
-            {
-                icon: 'fas fa-eye',
-                label: 'View',
-                action: 'view',
-                tooltip: 'View',
-                condition: (row: any) => this.hasPermission('View')
-            },
-            {
-                icon: 'fas fa-trash',
-                label: 'Delete',
-                action: 'delete',
-                tooltip: 'Delete',
-                class: "text-danger",
-                condition: (row: any) => this.hasPermission('Delete')
-            }
-        ],
-        selectable: false,
-        multiSelect: false,
-        showColumnToggle: true,
-        showFilters: true,
-        showPagination: true,
-        trackByKey: 'TDSSetHeaderSid',
-        emptyMessage: 'No tsd-set found',
-        dragAndDrop: true
-    };
+   
 
     tableLoading = false;
 
@@ -114,6 +89,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
         private spinner: NgxSpinnerService,
         paginationService: PaginationService,
         private datePipe: CustomDatePipe,
+        public mps : MenuPermissionService
     ) {
         super(paginationService);
     }
@@ -130,11 +106,15 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
         const userProfile = this.appSettingService.getDecryptedUserProfile();
         if (userProfile) {
             this.userData = userProfile;
-            this.checkPermissions();
+           
         }
         // this.loadTds();
         this.initializeTableConfig();
         this.initializeHeaderActions();
+        this.mps.init().subscribe(()=>{
+            this.initializeHeaderActions();
+             this.initializeTableConfig();
+        })
 
         // Initialize base component
         super.ngOnInit();
@@ -213,7 +193,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 label: 'Create',
                 icon: 'fas fa-plus',
                 action: 'create',
-                condition: this.hasPermission('Add')
+                disabled : !this.mps.can('insert')
             },
             {
                 label: 'Report',
@@ -287,9 +267,9 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
 
     // Table configuration
     private initializeTableConfig(): void {
-        this.tableConfig.columns = [
-
-            {
+        this.tableConfig= {
+        columns: [
+             {
                 key: 'TDSSetName',
                 label: 'TDS Name',
                 sortable: true,
@@ -332,7 +312,33 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string',
                 cellClass: 'status-column'
             }
-        ];
+        ],
+        actions: [
+            {
+                icon: 'fas fa-eye',
+                label: 'View',
+                action: 'view',
+                tooltip: 'View',
+                state : !this.mps.can('view')
+            },
+            {
+                icon: 'fas fa-trash',
+                label: 'Delete',
+                action: 'delete',
+                tooltip: 'Delete',
+                class: "text-danger",
+                state : !this.mps.can('delete')
+            }
+        ],
+        selectable: false,
+        multiSelect: false,
+        showColumnToggle: true,
+        showFilters: true,
+        showPagination: true,
+        trackByKey: 'TDSSetHeaderSid',
+        emptyMessage: 'No tsd-set found',
+        dragAndDrop: true
+    };
     }
 
     // Table event handlers
@@ -382,23 +388,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
             title: companyName
         });
     }
-    checkPermissions() {
-        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-        console.log(currentMenuId)
-        console.log(userRole)
-        if (currentMenuId && userRole) {
-            this.settingService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-                next: (response) => {
-                    this.currentMenuPermissions = response.data.MenuPermissions || {};
-                    this.permissions = Object.keys(this.currentMenuPermissions)
-                        .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                    console.log(this.permissions)
-                    this.initializeHeaderActions();
-                }
-            });
-        }
-    }
+    
 
     // loadTds() {
     //     this.spinner.show();
@@ -458,9 +448,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
 
 
 
-    hasPermission(permission: string): boolean {
-        return this.permissions.includes(permission);
-    }
+ 
 
     reset() {
         this.tdsList = [];

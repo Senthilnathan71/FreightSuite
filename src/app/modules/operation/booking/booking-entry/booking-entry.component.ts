@@ -50,6 +50,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -202,14 +203,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
   measurementUnitList =[
-    { id: 1, name: 'm' },
-    { id: 2, name: 'cm' },
-    { id: 3, name: 'inch'}
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
+    { id: 3, name: 'Inch'}
   ]
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-  permissions: any[] = [];
-  currentMenuPermissions = {};
+  
   private initialFormValue: string;
   bookingStatusTimeline : any[];
 
@@ -376,6 +376,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     public dropdownStore: DropdownStore,
     private pdfService:PdfDownloadService,
     private commonService: CommonService,
+    public mps: MenuPermissionService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
@@ -442,11 +443,11 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     if (this.userData) {
-      this.checkPermissions();
     }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
+    this.mps.init().subscribe();
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
     this.currentCompany = (
       (this.userData.userCompanyMaster || [])
@@ -551,22 +552,6 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
   }
 
-  checkPermissions() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (this.currentMenuId && userRole) {
-      this.leadService
-        .getRoleMenuPermissions(this.currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-          },
-        });
-    }
-  }
 
   /**
   |--------------------------------------------------
@@ -608,6 +593,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       isVesselFreeText: [false],
       isVoyageFreeText: [false],
       VoyageMasterSid: [null],
+      JobType: [{ value: '', disabled: false }],
       VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: '', disabled: true }],
       ETD: [{ value: '', disabled: true }],
@@ -1133,7 +1119,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   loadProductLookups() {
     forkJoin({
-      products: this.operationService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
+      products: this.operationService.getAllProducts().pipe(catchError(err => of([]))),
       packageTypes: this.operationService.getUOMsByType('P').pipe(catchError(err => of([]))),
       imcos: this.operationService.getAllIMCO().pipe(catchError(err => of([]))),
       uoms: this.operationService.getUOMsByType('M').pipe(catchError(err => of([]))),
@@ -1196,6 +1182,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
       VesselName: response.VesselName,
       VoyageMasterSid: response.VoyageMasterSid,
+      JobType: response.JobType,
       VoyageNo: response.VoyageNo,
       ETA: response.ETA ? new Date(response.ETA) : null,
       ETD: response.ETD ? new Date(response.ETD) : null,
@@ -1527,6 +1514,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       status: bookingFormValue.status === 'Active' ? 'A' : 'S',
       VesselName: bookingFormValue.VesselName || null,
       VoyageMasterSid: bookingFormValue.VoyageMasterSid || null,
+       JobType: bookingFormValue.JobType || '',
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
@@ -1686,12 +1674,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
       this.b['MovementType'].setValue(null);
+       this.b['JobType'].setValue('');
       this.handleImportExport();
       this.handleCFSOrYard()
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+     this.autoSetJobType(department);
     const isFCLDepartment = this.selectedFCLLCL === "FCL";
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
   
@@ -1709,6 +1699,38 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.onRouteChange()
     this.handleImportExport();
   }
+  private autoSetJobType(department: any): void {
+  if (!department) {
+    this.b['JobType']?.setValue('');
+    return;
+  }
+
+  const departmentName = department.departmentName?.toLowerCase() || '';
+  const exportImport = department.ExportImport;
+  
+  let jobType = '';
+  
+  // Determine JobType based on department name and export/import
+  if (departmentName.includes('fcl') || departmentName.includes('lcl')) {
+    if (exportImport === 'Export') {
+      jobType = 'Export';
+    } else if (exportImport === 'Import') {
+      jobType = 'Import';
+    }
+  }
+  
+  // Additional logic for other department types if needed
+  if (departmentName.includes('air')) {
+    if (exportImport === 'Export') {
+      jobType = 'Air Export';
+    } else if (exportImport === 'Import') {
+      jobType = 'Air Import';
+    }
+  }
+  
+  // Set the JobType value
+  this.b['JobType']?.setValue(jobType);
+}
 
   onRouteChange(): void {
     const polSid = this.b['POL']?.value;
@@ -3012,15 +3034,6 @@ ${this.userData['userName']}`;
     }
   }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-  }
-
   getBookingStatus() {
     return this.bookingForm.get('status')?.value;
   }
@@ -3210,6 +3223,7 @@ async downloadPDF() {
     Volume: this.c['Volume']?.value || 0,
     Haz: isHaz ? 'Y' : 'N',
     VoyageMasterSid: selectedVoyage?.VoyageMasterSid || this.b['VoyageMasterSid']?.value,
+    JobType: this.b['JobType']?.value || selectedVoyage?.JobType,
     VesselName: this.b['VesselName']?.value || selectedVoyage?.VesselName,
     VoyageNo: this.b['VoyageNo']?.value || selectedVoyage?.VoyageNo,
     CarrierName: this.b['CarrierName']?.value,

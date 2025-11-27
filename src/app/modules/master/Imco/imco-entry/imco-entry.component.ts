@@ -18,6 +18,8 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
     selector: 'app-imco-entry',
@@ -60,7 +62,9 @@ export class ImcoEntryComponent implements OnInit {
         private currRoute: ActivatedRoute,
         private appSettingService: AppSettingsService,
         private modalService : NgbModal,
-        private commonService: CommonService
+        private commonService: CommonService,
+        public mps : MenuPermissionService,
+        private ngbModal: NgbModal,
     ) { }
 
     ngOnInit() {
@@ -68,6 +72,7 @@ export class ImcoEntryComponent implements OnInit {
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
       this.MenuMasterSid =  localStorage.getItem('currentMenuId');  
         this.initImcoForm();
+        this.mps.init().subscribe();
         this.currRoute.paramMap.subscribe(
             (param) => {
                 this.ImcoMasterSid = +param.get('id');
@@ -318,6 +323,31 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+
+ openFollowup() {
+    if (!this.imcoData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.imcoData?.UserMasterSid;
+    modalRef.componentInstance.parentEmail = this.imcoData;
+  //   modalRef.componentInstance.parentSubject = `Quotation No.${this.userData} Date:${new Date(this.userData).toLocaleDateString()}`;
+    modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+    <p>Dear Sir/Madam,</p>
+    <p>Please find enclosed the quotation as requested.</p>
+    <p>Kindly review the details at your convenience.</p>
+    <p>Looking forward to your feedback and the opportunity to work together.</p>
+    <p>
+      Approval Hyperlink: 
+      <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+    </p>
+    <p>Best Regards,</p>
+    <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+  
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }

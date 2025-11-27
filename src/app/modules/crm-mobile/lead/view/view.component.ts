@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { LeadStatusLabels } from 'src/app/common/helper';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -39,6 +40,8 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   @ViewChild('leadTable') leadTable!: ReusableTableComponent;
   leads: any[] = [];
   errorMessage: string = '';
+  tableConfig : TableConfig;
+  headerActions : HeaderAction[];
   // searchPerformed: boolean = false;
 
   // pagination
@@ -52,30 +55,10 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   // Sorting
   // sortColumn = "preCustomerName";
   // sortDirection = "asc";
-  headerActions: HeaderAction[] = [];
   // Company context
   currentCompany: any;
   currentBranch: any;
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Zone',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'PreCustomerMasterSid',
-    emptyMessage: 'No bookings found',
-    dragAndDrop: true
-  };
+
 
   tableLoading = false;
 
@@ -91,6 +74,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   // Alias for compatibility with existing template
   get allleads() { return this.allItems; }
   constructor(
+    public mps : MenuPermissionService,
     private leadService: LeadService,
     private route: Router,
     private appService: AppService,
@@ -107,11 +91,90 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // this.searchLeads();
     this.isMobile = this.appService.getDevice();
-    this.initializeTableConfig();
-    this.initializeHeaderActions();
     // Initialize base component
+    this.initializeHeaderActions();
+    this.initializeTableConfig();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    });
+    
     super.ngOnInit();
   }
+
+  initializeTableConfig() {
+    this.tableConfig = {
+      columns: [
+        {
+          key: 'preCustomerName',
+          label: 'Lead Name',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'phone',
+          label: 'Phone',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'preCustomerType',
+          label: 'Type',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'meetingStatus',
+          label: 'Lead Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'status',
+          label: 'Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          template: 'status',
+          width: '100px',
+          dataType: 'string'
+        },
+      ],
+      actions: [
+        {
+          icon: 'fas fa-eye',
+          label: 'View',
+          action: 'view',
+          tooltip: 'View Zone',
+          state: !this.mps.can('view')
+        },
+        {
+          icon: 'fas fa-trash',
+          label: 'Delete',
+          action: 'delete',
+          tooltip: 'Delete Zone',
+          state: !this.mps.can('delete')
+        },
+      ],
+      selectable: false,
+      multiSelect: false,
+      showColumnToggle: true,
+      showFilters: true,
+      showPagination: true,
+      trackByKey: 'PreCustomerMasterSid',
+      emptyMessage: 'No bookings found',
+      dragAndDrop: true
+    };
+  }
+
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -143,7 +206,6 @@ export class ViewComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
-        this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
@@ -174,13 +236,13 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.clearFilterValue();
   }
 
-  initializeHeaderActions(): void {
-    this.headerActions = [
+  initializeHeaderActions() {
+    this.headerActions =  [
       {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        // condition: this.hasPermission('Add')
+        disabled : !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -212,14 +274,6 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     }
   }
 
-  private updateHeaderActionState(): void {
-    this.headerActions = this.headerActions.map(action => {
-      if (action.action === 'report') {
-        return { ...action, disabled: this.totalLengthOfCollection === 0 };
-      }
-      return action;
-    });
-  }
 
   clearFilterValue() {
     this.clearFilter();
@@ -253,59 +307,14 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'preCustomerName',
-        label: 'Lead Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'phone',
-        label: 'Phone',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'preCustomerType',
-        label: 'Type',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'meetingStatus',
-        label: 'Lead Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string'
-      },
-    ];
-  }
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.viewleads(event.row);
-    }
+    } else if (event.action === 'delete') {
+      this.deleteLead(event.row.PreCustomerMasterSid);
+    } 
   }
 
   onTableRowClick(row: any): void {
@@ -388,6 +397,19 @@ export class ViewComponent extends BaseListComponent implements OnInit {
 
   viewLead(id) {
     this.route.navigate(['crm/lead', id])
+  }
+
+  deleteLead(PreCustomerMasterSid: number) {
+    this.leadService.deleteLeadById(PreCustomerMasterSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess("Lead Deleted Successfully");
+          this.search();
+        } else {
+          this.appSettingService.showError("Error deleting lead");
+        }
+      }
+    )
   }
 
   createMeeting(PreCustomerMasterSid: number) {

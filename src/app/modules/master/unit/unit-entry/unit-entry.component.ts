@@ -18,6 +18,8 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 
 @Component({
@@ -74,6 +76,7 @@ export class UnitEntryComponent {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   constructor(
+    public mps : MenuPermissionService, 
     private config: NgSelectConfig, 
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -98,13 +101,13 @@ export class UnitEntryComponent {
   //     this.checkPermissions();
   //   }
   // });
+   this.mps.init().subscribe();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch')); 
   this.MenuMasterSid =  localStorage.getItem('currentMenuId');
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
 		}
     this.loadContainerTypes();
     
@@ -138,26 +141,8 @@ export class UnitEntryComponent {
 
 
   
-      checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
+  
 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
 
 hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -387,6 +372,14 @@ openEDoc() {
 //     error: err => console.error('Error fetching audit logs:', err)
 //   });
 // }
+
+   openFollowup(){
+        const modalRef = this.modalService.open(FollowUpComponent,{
+            size : 'lg',
+            backdrop : 'static',
+            centered : true
+        })
+    }
 
 openAuditLogs(modal: TemplateRef<any>) {
   if (!this.idParam) return;

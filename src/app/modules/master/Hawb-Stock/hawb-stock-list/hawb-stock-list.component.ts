@@ -20,6 +20,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-hawb-stock-list',
   standalone: true,
@@ -60,35 +61,72 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
+  tableConfig:TableConfig;
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'HawbStockSid',
-    emptyMessage: 'No hawb found',
-    dragAndDrop: true
-  };
+  private initializeTableConfig() {
+    this.tableConfig = {
+      columns: [
+
+        {
+          key: 'AirwayBillType',
+          label: 'Received From',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'BLNumber',
+          label: 'Airawy BL Number',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'ReceivedDate',
+          label: 'Received Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'StockStatus',
+          label: 'Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
+        }
+      ],
+      actions: [
+        {
+          icon: 'fas fa-eye',
+          label: 'View',
+          action: 'view',
+          tooltip: 'View',
+          state: !this.mps.can('view')
+        },
+        {
+          icon: 'fas fa-trash',
+          label: 'Delete',
+          action: 'delete',
+          tooltip: 'Delete',
+          class: "text-danger",
+          state: !this.mps.can('delete')
+        }
+      ],
+      selectable: false,
+      multiSelect: false,
+      showColumnToggle: true,
+      showFilters: true,
+      showPagination: true,
+      trackByKey: 'HawbStockSid',
+      emptyMessage: 'No hawb found',
+      dragAndDrop: true
+    };
+  }
 
   tableLoading = false;
 
@@ -112,6 +150,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+     public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -127,36 +166,20 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
     // this.loadHawbStocks();
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
+     this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+       this.initializeHeaderActions();
+    });
     // Initialize base component
     super.ngOnInit();
   }
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
-          this.initializeHeaderActions();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -230,7 +253,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -307,45 +330,8 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
       }
     });
   }
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-
-      {
-        key: 'AirwayBillType',
-        label: 'Received From',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'BLNumber',
-        label: 'Airawy BL Number',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'ReceivedDate',
-        label: 'Received Date',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'StockStatus',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-      }
-    ];
-  }
-
+ 
+ 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {

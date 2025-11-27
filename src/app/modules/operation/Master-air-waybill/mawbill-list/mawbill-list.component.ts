@@ -22,6 +22,7 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { MasterJobUploadModalComponent } from '../../master-job/components/master-job-upload-modal/master-job-upload-modal.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({ 
   selector: 'app-mawbill-list',
@@ -48,8 +49,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   allMasterJob: any[] = [];
   // searchPerformed: boolean;
   userData: any;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
+  
   // page = 1;
   // pageSize = 10;
   // totalLengthOfCollection: number;
@@ -59,26 +59,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   currentBranch: any;
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: '',
-    emptyMessage: 'No master job found',
-    dragAndDrop: true
-  };
+  tableConfig: TableConfig;
 
   tableLoading = false;
 
@@ -102,6 +83,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -112,38 +94,18 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
     this.appSettingService.getUser().subscribe((user) => {
       if (user) {
         this.userData = user;
-        this.checkPermissions();
       }
     });
     // this.searchMasterJob();
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+          this.initializeTableConfig();
+          this.initializeHeaderActions();
+        });
     // this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
-  }
-
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.operationService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            this.initializeHeaderActions();
-            // this.initializeModalDropdownItems();
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
   }
 
   // Implement abstract methods from BaseListComponent
@@ -201,13 +163,13 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Excel Import',
         icon: 'fas fa-file-excel',
         action: 'excel-dropdown',
-        condition: this.hasPermission('Add'),
+        disabled: !this.mps.can('insert'),
         tooltip: 'Import master jobs and house jobs from Excel template. Download the template, fill in your data, and upload to create multiple jobs at once.',
         children: [
           {
@@ -303,19 +265,10 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
 
 
   // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      // {
-      //   key: 'BookingNo',
-      //   label: 'Booking No',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   template: 'link',
-      //   width: '180px',
-      //   dataType: 'string'
-      // },
-      {
+  private initializeTableConfig() {
+    this.tableConfig = {
+    columns: [
+       {
         key: 'departmentName',
         label: 'Department',
         sortable: true,
@@ -330,7 +283,6 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        // template: "link"
       },
       {
         key: 'MasterJobDate',
@@ -390,14 +342,6 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
       },
-      // {
-      //   key: 'NoOfContainers',
-      //   label: 'No Of Containers ',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   dataType: 'string'
-      // },
       {
         key: 'Status',
         label: 'Status',
@@ -409,7 +353,33 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+      },
+      {
+            icon: 'fas fa-trash',
+            label: 'Delete',
+            action: 'delete',
+            tooltip: 'Delete ',
+            class: "text-danger",
+            state: !this.mps.can('delete')
+          }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No master job found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

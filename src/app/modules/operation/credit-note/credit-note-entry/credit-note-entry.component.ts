@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -16,6 +16,14 @@ import { OperationService } from '../../operation.service';
 import { firstValueFrom } from 'rxjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -32,7 +40,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgxSpinnerModule,
     NumberFormatPipe,
     CustomDatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './credit-note-entry.component.html',
   styleUrl: './credit-note-entry.component.scss'
@@ -44,7 +53,10 @@ export class CreditNoteEntryComponent {
   currentCompany: any;
   currentBranch: any;
   creditNoteData : any;
-
+  MenuMasterSid: any;
+  currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
@@ -149,7 +161,10 @@ export class CreditNoteEntryComponent {
         private operationService: OperationService,
         private appSettingService: AppSettingsService,
         private spinner: NgxSpinnerService,
-        private companySettings: CompanySettingsManagerService
+        private companySettings: CompanySettingsManagerService,
+        public mps: MenuPermissionService,
+        private commonService: CommonService,
+        private masterService: MasterService,
       ) {}
       ngOnInit(): void {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -159,6 +174,8 @@ export class CreditNoteEntryComponent {
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
@@ -246,9 +263,8 @@ export class CreditNoteEntryComponent {
         ExchangeRate: [{ value: 1, disabled: true }],
         GST_VAT: [{ value: '', disabled: true }],
         GSTType: [{ value: '', disabled: true }],
-        PostStatus: [''],
+        PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
-        VoucherType: [1],
         Narration: ['hi'],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
@@ -415,6 +431,34 @@ export class CreditNoteEntryComponent {
         }
       }
 
+      private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
+
       getInvoiceData(invoice?: any) {
   const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
   if (!invoiceId) {
@@ -429,12 +473,16 @@ export class CreditNoteEntryComponent {
   if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
     invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
     reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   } else {
     // If it's just an ID, try to find the invoice in the list to get the number
     const foundInvoice = this.invoiceList.find(inv => 
       inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
     );
     invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   }
 
   this.spinner.show();
@@ -495,7 +543,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       );
       
       if (matchingOutstanding) {
-        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingLocalAmount);
         
         console.log('DEBUG - Outstanding amount found:', {
           invoiceNumber: invoiceNumber,
@@ -532,10 +580,13 @@ private patchInvoiceData(invoiceData: any) {
   const header = invoiceData;
   const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
   this.originalInvoiceRates = new Map();
+  const currentNarration = this.creditNoteForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.creditNoteForm.get('ReversalVoucher')?.value);
   this.creditNoteForm.patchValue({
     ReversalVoucher: invoiceHeaderSid,
     CustomerMasterSid: header.CustomerMasterSid || null,
     PartyMasterSid: header.PartyMasterSid || null,
+    Narration: autoNarration || header.Narration || currentNarration || '',
     PartyName: header.PartyName || '',
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',
@@ -663,6 +714,7 @@ private patchInvoiceData(invoiceData: any) {
     });
 
     this.details.push(this.createDetailGroup({
+      VoucherDetailSid: detail.VoucherDetailSid,
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
       HSSACMasterSid: detail.HSSACMasterSid,
@@ -740,15 +792,6 @@ onFinalSave() {
         // Add PostStatus to payload
         const postStatus = isFinal ? 'P' : 'D'; // 'P' for Posted, 'D' for Draft
       
-        let normalizedVoucherType: number | null = null;
-        const vt = raw.VoucherType;
-        if (Array.isArray(vt) && vt.length > 0) {
-          normalizedVoucherType = Number(vt[0]);
-        } else if (vt !== null && vt !== undefined && vt !== '') {
-          normalizedVoucherType = Number(vt);
-        }
-        if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-      
         let voucherDate: Date;
         if (!raw.VoucherDate) {
           voucherDate = new Date();
@@ -771,6 +814,7 @@ onFinalSave() {
       
         const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
           const detail = {
+            VoucherDetailSid: d.VoucherDetailSid,
             ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
             ChargeDescription: d.ChargeDescription || '',
             HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -778,7 +822,6 @@ onFinalSave() {
             DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
             NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
             DrCr: d.DrCr || 'D',
-            PlaceOfSupply: d.PlaceOfSupply || '',
             CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
             CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
             Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -820,11 +863,10 @@ onFinalSave() {
           CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
           PlaceOfSupply: raw.PlaceOfSupply || '',
           COAMasterSid: raw.COAMasterSid ?? 1,
-          VoucherType: normalizedVoucherType,
-          VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
           InvoiceType: raw.InvoiceType || 'REG',
           GSTType: raw.GSTType || '',
           CurrencyMasterSid: currencyMasterId,
+          PostStatus: raw.PostStatus || '',
           CurrencyCode: raw.CurrencyCode || undefined,
           ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
           MasterJobSid: masterJobSid,
@@ -833,7 +875,6 @@ onFinalSave() {
           Remarks: raw.Remarks || undefined,
           Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
           status: (raw.status != null ? raw.status : 'A'),
-          PostStatus: postStatus, // Add PostStatus here
           VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
         };
       
@@ -906,7 +947,7 @@ onFinalSave() {
             LocalCurrencyCode: currentCompany.CurrencyCode , 
             PostedBy: currentUserEmail ,
             TaxDetails: {
-              CountryMasterSid: currentCountry,
+              CountryMasterSid: currentCountry || this.currentUserCountry,
               countryName: currentCompany.CountryName,
               TaxCategory: 'Inter', 
               EffectiveFrom: new Date().toISOString(),
@@ -917,19 +958,19 @@ onFinalSave() {
           const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
           
           this.spinner.hide();
-          if (result.success) {
-            this.appSettingService.showSuccess('Invoice posted successfully!');
+          if (result.status) {
+            this.appSettingService.showSuccess('Credted Note posted successfully!');
             this.creditNoteData.PostStatus = 'P'; // Update local state
             
             // Navigate to list or stay on page but disable edits
-            this.router.navigate(['operation/invoice/list']);
+            this.router.navigate(['operation/credit-note/list']);
           } else {
-            this.appSettingService.showError(result.message || 'Failed to post invoice.');
+            this.appSettingService.showError(result.message || 'Failed to post Credit Note.');
           }
         } catch (error) {
           this.spinner.hide();
           console.error('Post voucher error:', error);
-          this.appSettingService.showError('Failed to post invoice. Please try again.');
+          this.appSettingService.showError('Failed to post Credit Note. Please try again.');
         }
       }
       async loadDepartments(companyMasterSid: number) {
@@ -1303,7 +1344,6 @@ private getCustomerCountryCode(customer: any): string {
       GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
       GSTType: header.GSTType || null,
-      VoucherType: voucherTypeForControl,
       Narration: header.Narration || '',
       CreditNoteReason: header.CreditNoteReason || '',
       Remarks: header.Remarks || '',
@@ -1359,6 +1399,7 @@ private getCustomerCountryCode(customer: any): string {
       });
 
       this.details.push(this.createDetailGroup({
+        VoucherDetailSid: det.VoucherDetailSid,
         ChargeMasterSid: det.ChargeMasterSid,
         ChargeDescription: det.ChargeDescription,
         HSSACMasterSid: det.HSSACMasterSid,
@@ -1423,6 +1464,7 @@ private getCustomerCountryCode(customer: any): string {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
+      VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
@@ -1998,15 +2040,6 @@ private normalizeParty(raw: any) {
     const createdByValue = userEmailFromSettings || this.currUserEmail || null;
     const updatedByValue = this.isEditMode ? (userEmailFromSettings || this.currUserEmail || null) : null;
 
-    let normalizedVoucherType: number | null = null;
-    const vt = raw.VoucherType;
-    if (Array.isArray(vt) && vt.length > 0) {
-      normalizedVoucherType = Number(vt[0]);
-    } else if (vt !== null && vt !== undefined && vt !== '') {
-      normalizedVoucherType = Number(vt);
-    }
-    if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-
     let voucherDate: Date;
     if (!raw.VoucherDate) {
       voucherDate = new Date();
@@ -2031,6 +2064,7 @@ private normalizeParty(raw: any) {
 
     const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
       const detail = {
+        VoucherDetailSid: d.VoucherDetailSid,
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -2080,8 +2114,6 @@ private normalizeParty(raw: any) {
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,
-      VoucherType: normalizedVoucherType,
-      VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
       CurrencyMasterSid: currencyMasterId,
@@ -2114,7 +2146,8 @@ private normalizeParty(raw: any) {
         next: (resp: any) => {
           if (resp?.status) {
             this.appSettingService.showSuccess('CreditNote updated successfully.');
-            this.router.navigate(['operation/credit-note/list']);
+            const id = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || resp.data?.voucherHeaderSid || null;
+            this.router.navigate(['operation/credit-note/entry', id]);
           } else {
             this.appSettingService.showError('Error updating CreditNote.');
             console.error('updateCreditNote resp', resp);
@@ -2553,4 +2586,93 @@ private normalizeParty(raw: any) {
     });
   }
 
+  getRowTotal(detail: any): number {
+    const taxable = Number(detail.get('TaxableAmount')?.value || 0);
+    const cgst = Number(detail.get('TaxAmount1')?.value || 0);
+    const sgst = Number(detail.get('TaxAmount2')?.value || 0);
+    const igst = Number(detail.get('TaxAmountIGST')?.value || 0);
+
+    return taxable + cgst + sgst + igst;
+  }
+
+  showInfo() {
+        if(!this.creditNoteData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.creditNoteData;
+        modalRef.componentInstance.idLabel = 'Credit Note Id';
+        modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+      }
+      openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions', error);
+          }
+        );
+      }
+    
+      openEmail() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+    }
+    
+    openAuthority() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+    }
+    
+    openEDoc() {
+      if (!this.creditNoteData) return;
+      const modalRef = this.modalService.open(EdocComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+      modalRef.componentInstance.item = this.creditNoteData;
+      modalRef.componentInstance.idLabel = 'Credit Note Id';
+      modalRef.componentInstance.idValue = this.creditNoteData.VoucherHeaderSid;
+    const data:any={
+        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch.BranchMasterSid,
+        MenuMasterSid : this.MenuMasterSid,
+        DocumentSid: this.creditNoteData?.VoucherHeaderSid
+      }
+    
+          this.commonService.documentData.set(data)
+    }
+  
+    openFollowup() {
+  
+    }
 }

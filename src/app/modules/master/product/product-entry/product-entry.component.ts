@@ -19,6 +19,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
     selector: 'app-product-entry',
@@ -68,6 +70,7 @@ export class ProductEntryComponent implements OnInit{
     HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC;
     uomLookupConfig = DROPDOWN_CONFIGS.UOM;
     constructor(
+        public mps : MenuPermissionService, 
         private masterService:MasterService,
         private appSettingService:AppSettingsService,
         private currentRoute : ActivatedRoute,
@@ -78,6 +81,8 @@ export class ProductEntryComponent implements OnInit{
     ){}
 
     ngOnInit(): void {
+        
+   this.mps.init().subscribe();
          this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -102,31 +107,12 @@ export class ProductEntryComponent implements OnInit{
 const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+    
 		}
     }
 
-        checkPermissions() {
-                const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-                const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-                console.log(currentMenuId)
-                console.log(userRole)
-                if (currentMenuId && userRole) {
-                this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-            next: (response) => {
-                this.currentMenuPermissions = response.data.MenuPermissions || {};
-                this.permissions = Object.keys(this.currentMenuPermissions)
-                .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-                console.log(this.permissions)
-            }
-            });
-                }
-            }
+   
             
-            hasPermission(permission: string): boolean {
-            return this.permissions.includes(permission);
-            }
-
             hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
@@ -205,7 +191,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 UNNo : parseInt(formValue.UNNo),
                 status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
                 createdBy:createdBy,
-                CompanyMasterSid:this.currentCompany?.CompanyMasterSid
+               
             }
             if(this.isEditMode){
                 this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(
@@ -404,6 +390,16 @@ openEDoc() {
 //     error: err => console.error('Error fetching audit logs:', err)
 //   });
 // }
+
+
+openFollowup(){
+        const modalRef = this.modalService.open(FollowUpComponent,{
+            size : 'lg',
+            backdrop : 'static',
+            centered : true
+        })
+    }
+    
 openAuditLogs(modal: TemplateRef<any>) {
   if (!this.ProductMasterSId) return;
 

@@ -23,6 +23,7 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-container-activity-list',
   standalone: true,
@@ -50,40 +51,13 @@ export class ContainerActivityListComponent extends BaseListComponent implements
 
   results: any[] = [];
   containerActivityList: any[] = [];
-
+tableConfig: TableConfig;
   companyMap: { [id: number]: string } = {};
   userData: any;
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   loading = false;
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete',
-        class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'ContainerActivityMasterSid',
-    emptyMessage: 'No Container Activity found',
-    dragAndDrop: true
-  };
+
   tableLoading = false;
   // Pagination 
   get containerActivityLists() { return this.allItems; }
@@ -116,7 +90,8 @@ export class ContainerActivityListComponent extends BaseListComponent implements
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -130,34 +105,19 @@ export class ContainerActivityListComponent extends BaseListComponent implements
 
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+     
     }
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+    this.initializeHeaderActions();
+    })
     // this.initializeModalDropdownItems();
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          this.initializeHeaderActions();
-          // this.initializeModalDropdownItems();
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+ 
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -213,7 +173,7 @@ export class ContainerActivityListComponent extends BaseListComponent implements
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -322,7 +282,8 @@ export class ContainerActivityListComponent extends BaseListComponent implements
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
+     this. tableConfig= {
+    columns: [
       {
         key: 'ActivityCode',
         label: 'Activty Code',
@@ -373,7 +334,33 @@ export class ContainerActivityListComponent extends BaseListComponent implements
         width: '100px',
         dataType: 'string'
       },
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete',
+        class: "text-danger",
+        state: !this.mps.can('delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ContainerActivityMasterSid',
+    emptyMessage: 'No Container Activity found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

@@ -24,6 +24,7 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-user-list',
   standalone: true,
@@ -76,15 +77,63 @@ export class UserListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
-  tableConfig: TableConfig = {
-    columns: [],
+  tableConfig:TableConfig;
+  private initializeTableConfig() {
+  this.tableConfig= {
+    columns: [
+       {
+        key: 'userName',
+        label: 'User Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'userEmail',
+        label: 'Email',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'designation',
+        label: 'Designation',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '200px',
+      },
+      {
+        key: 'isSalesperson',
+        label: 'IsSalesman',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
         tooltip: 'View ',
-        condition: (row: any) => this.hasPermission('View')
+         state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-key',
@@ -100,7 +149,7 @@ export class UserListComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+         state: !this.mps.can('delete')
       }
     ],
     selectable: false,
@@ -112,6 +161,7 @@ export class UserListComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No User found',
     dragAndDrop: true
   };
+}
   headerActions: HeaderAction[] = [];
 
   tableLoading = false;
@@ -138,7 +188,8 @@ export class UserListComponent extends BaseListComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: NgbModal,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -157,37 +208,18 @@ export class UserListComponent extends BaseListComponent implements OnInit {
     const userProfile = this.appSettingServ.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
+      this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
     this.loadUsers();
     this.initializeHeaderActions();
     this.initializeTableConfig();
     super.ngOnInit();
   }
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterServ
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-            this.initializeHeaderActions();
-          },
-        });
-    }
-  }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   protected searchItems(): Observable<any> {
     this.spinner.show();
@@ -263,7 +295,7 @@ export class UserListComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        disabled: !this.mps.can('insert')
       },
       {
         label: 'Report',
@@ -279,56 +311,7 @@ export class UserListComponent extends BaseListComponent implements OnInit {
     ];
   }
 
-  // Table configuration
-  private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'userName',
-        label: 'User Name',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'userEmail',
-        label: 'Email',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'designation',
-        label: 'Designation',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '200px',
-      },
-      {
-        key: 'isSalesperson',
-        label: 'IsSalesman',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '150px',
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
+
 
 
 
