@@ -126,6 +126,15 @@ export class MasterService {
     );
   }
 
+  getAllCustomersWithCustomerBranch(CompanyMasterSid:number) {
+    return this.http.post('customer/with-branches',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   getAllCarriers(CompanyMasterSid: number) {
     return this.http.post('customer/carrier',{CompanyMasterSid}).pipe(
       map((resp: any) => {

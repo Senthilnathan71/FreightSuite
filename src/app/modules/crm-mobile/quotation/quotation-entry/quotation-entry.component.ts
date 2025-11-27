@@ -2333,7 +2333,6 @@ private extractCargoData(enquiryCargo: any[]): any {
     if (!this.quotationData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.quotationData?.QuoteHeaderSid;
-    modalRef.componentInstance.parentEmail = this.quotationData.Email;
     modalRef.componentInstance.parentSubject = `Quotation No.${this.quotationData.QuoteNumber} Date:${new Date(this.quotationData.QuoteDate).toLocaleDateString()}`;
     modalRef.componentInstance.parentMailbody = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
@@ -2350,8 +2349,15 @@ private extractCargoData(enquiryCargo: any[]): any {
     </div>
   `;
 
-  // Optionally, pass the quotation HTML content ID for PDF generation
-  modalRef.componentInstance.pdfContentId = 'quotationContent';
+  modalRef.componentInstance.followupSaved.subscribe((result) => {
+    console.log('Follow-up saved successfully:', result);
+    this.appSettingService.showSuccess('Follow-up created successfully');
+  });
+
+  modalRef.result.then(
+    (result) => console.log('Modal closed:', result),
+    (dismissReason) => console.log('Modal dismissed:', dismissReason)
+  );
   }
 
  openTandC() {

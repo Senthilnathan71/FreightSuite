@@ -16,6 +16,9 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { forkJoin } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-follow-up',
@@ -26,7 +29,9 @@ import html2canvas from 'html2canvas';
     FeatherModule,
     FormsModule,
     PreventMultiClickDirective,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SearchableDropdown,
+    CommonModule
   ],
   templateUrl: './follow-up.component.html',
   styleUrl: './follow-up.component.scss',
@@ -36,28 +41,43 @@ import html2canvas from 'html2canvas';
       ],
 })
 export class FollowUpComponent implements OnInit {
-  @Input() parentEmail: string;      
+  @Input() parentEmail: string;     
   @Input() parentEmailCC?: string;
   @Input() parentSubject!: string;    
   @Input() parentMailbody!: string;
   @Input() documentSid!: number;
- @Input() screenName: string = "Follow Up";
-@Input() dataItems: any[] = [];
-@Input() resetTrigger: boolean = false;
-@Input() formData: any;
+  @Input() screenName: string = "Follow Up";
+  @Input() dataItems: any[] = [];
+  @Input() resetTrigger: boolean = false;
+  @Input() formData: any;
+  @Input() FollowupSid?: number;
   // @Output() closeModal = new EventEmitter<boolean>();
   @Output() closeModalEvent = new EventEmitter<boolean>();
-@Output() dataEmitter = new EventEmitter<any>();
+  @Output() dataEmitter = new EventEmitter<any>();
+  @Output() followupSaved = new EventEmitter<any>();
   today = new Date();
   todayDate = this.toNgbDateStruct(this.today);
 
   followupForm!: FormGroup;
-  FollowupSid: number;
   isEditMode = false;
   loading = false;
   userData : any;
+  usersList: any[] = [];
+  userLookupConfig = {
+    displayFields: ['userName', 'userEmail'],
+    displayLabels: ['Name', 'Email'],
+    labelFields: ['userEmail'],
+  }
+  customerList: any[] = [];
+  customerLookupConfig = {
+    displayFields: ['CustomerName', 'BranchName' , 'Email'],
+    displayLabels: ['Customer', 'Branch', 'Email'],
+    labelFields: ['Email'],
+  }
   currentCompany : any;
   currentBranch: any;
+  showInternalUser = false;
+  showExternalUser = false;
   btnDisable: boolean = false;
   selectedFile: File | null = null;
   modeOfStatus = [
@@ -65,8 +85,9 @@ export class FollowUpComponent implements OnInit {
     { id: 'S', name: 'Suspended' },
   ];
   modeOfAction = [
-    { id: '1', name: 'Internal followup' },
-    { id: '2', name: 'External followup' },
+    { id: '1', name: 'Internal Followup' },
+    { id: '2', name: 'External Followup' },
+    { id: '3', name: 'Both'}
   ];
 
   constructor(
@@ -83,17 +104,79 @@ export class FollowUpComponent implements OnInit {
     if (userProfile) {
       this.userData = userProfile;
     }
-    const storedCompany = localStorage.getItem('selected-company');
-    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
-    const storedBranch = localStorage.getItem('selected-branch');
-    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.loadLookups();
+    this.followupForm.get('FollowupAction')?.valueChanges.subscribe(value => {
+      this.updateFieldVisibility(value);
+    });
+    
+    // Set initial visibility
+    this.updateFieldVisibility(this.followupForm.get('FollowupAction')?.value);
   }
 
+    private handleSaveResponse(resp: any): void {
+    if (resp.status) {
+      this.appSettingService.showSuccess(resp.message);
+      this.followupSaved.emit(resp); // Emit the success event
+      this.closeModal();
+    } else {
+      this.appSettingService.showError(resp.message);
+    }
+    this.btnDisable = false;
+    this.loading = false;
+  }
+
+  updateFieldVisibility(action: string): void {
+    switch (action) {
+      case 'Internal Followup':
+        this.showInternalUser = true;
+        this.showExternalUser = false;
+        // Clear external user when hidden
+        this.followupForm.get('ExternalUser')?.setValue('');
+        break;
+      case 'External Followup':
+        this.showInternalUser = false;
+        this.showExternalUser = true;
+        // Clear internal user when hidden
+        this.followupForm.get('InternalUser')?.setValue('');
+        break;
+      case 'Both':
+        this.showInternalUser = true;
+        this.showExternalUser = true;
+        break;
+      default:
+        this.showInternalUser = false;
+        this.showExternalUser = false;
+        // Clear both fields when no action selected
+        this.followupForm.get('InternalUser')?.setValue('');
+        this.followupForm.get('ExternalUser')?.setValue('');
+        break;
+    }
+  }
+
+  loadLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!CompanyMasterSid) {
+    console.error('Company ID not found');
+    this.appSettingService.showError('Company information not available');
+    return;
+    }
+    forkJoin({
+      users: this.masterService.getAllFfUser(),
+      customers: this.masterService.getAllCustomersWithCustomerBranch(CompanyMasterSid)
+    }).subscribe(({users , customers}) => {
+      this.usersList = users.data;
+      this.customerList = customers;
+    })
+  }
   initForm() {
     this.followupForm = this.fb.group({
       FollowupRequire: ['Y'], 
       FollowupDate: [, Validators.required], 
       FollowupAction: ['', Validators.required], 
+      InternalUser: [''],
+      ExternalUser:[''],
       Remarks: [''], 
       Public: [''], 
       sentEmail: [''], 
@@ -139,6 +222,8 @@ export class FollowUpComponent implements OnInit {
       FollowupRequire: formValue.FollowupRequire,
       FollowupDate: formValue.FollowupDate,
       FollowupAction: formValue.FollowupAction,
+      InternalUser: formValue.InternalUser,
+      ExternalUser: formValue.ExternalUser,
       Remarks: formValue.Remarks,
       Public: formValue.Public,
       sentEmail: formValue.sentEmail,
@@ -147,14 +232,15 @@ export class FollowUpComponent implements OnInit {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DocumentSid: this.documentSid
     };
+    const emailRecipients = this.getEmailRecipients(formValue);
     let pdfFile: File | null = null;
-  if (formValue.Mailbody) {
+    if (formValue.Mailbody) {
     pdfFile = await this.generatePdfFromHtml(formValue.Mailbody);
   }
 
     const mailContent: any = {
-      EmailTo: this.parentEmail,
-      EmailCC: this.appSettingService.userSettingSource.value['userEmail'],
+      EmailTo: emailRecipients.to,
+      EmailCC: emailRecipients.cc,
       Subject: this.parentSubject,
       Mailbody: this.parentMailbody,
       file: pdfFile
@@ -204,6 +290,58 @@ export class FollowUpComponent implements OnInit {
   }
 }
 
+
+
+private getEmailRecipients(formValue: any): { to: string, cc: string } {
+  const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  let emailTo = '';
+  let emailCC = currentUserEmail; // Always CC the current user
+
+  console.log('=== EMAIL RECIPIENT DEBUG ===');
+  console.log('Current User:', currentUserEmail);
+  console.log('Followup Action:', formValue.FollowupAction);
+  console.log('Internal User Selected:', formValue.InternalUser);
+  console.log('External User Selected:', formValue.ExternalUser);
+  console.log('Send Email Checkbox:', formValue.sentEmail);
+  switch (formValue.FollowupAction) {
+    case 'Internal Followup':
+      emailTo = formValue.InternalUser || '';
+      console.log('Internal Followup - Email To:', emailTo);
+      break;
+    
+    case 'External Followup':
+      emailTo = formValue.ExternalUser || '';
+      console.log('External Followup - Email To:', emailTo);
+      break;
+    
+    case 'Both':
+      const internalUser = formValue.InternalUser || '';
+      const externalUser = formValue.ExternalUser || '';
+      emailTo = [internalUser, externalUser].filter(email => email && email.trim() !== '').join(', ');
+      console.log('Both - Email To:', emailTo);
+      break;
+    
+    default:
+      emailTo = '';
+      console.log('Default - No email recipients');
+      break;
+  }
+
+  if (this.parentEmailCC) {
+    const ccEmails = this.parentEmailCC.split(',').map(email => email.trim());
+    ccEmails.forEach(ccEmail => {
+      if (ccEmail && ccEmail !== currentUserEmail && ccEmail !== emailTo && !emailCC.includes(ccEmail)) {
+        emailCC += (emailCC ? ', ' : '') + ccEmail;
+      }
+    });
+  }
+
+  console.log('FINAL - Email To:', emailTo);
+  console.log('FINAL - Email CC:', emailCC);
+  console.log('=== END DEBUG ===');
+
+  return { to: emailTo, cc: emailCC };
+}
 private async generatePdfFromHtml(html: string): Promise<File> {
   const element = document.createElement('div');
   element.innerHTML = html;
@@ -232,6 +370,8 @@ private async generatePdfFromHtml(html: string): Promise<File> {
       FollowupRequire: '',
       FollowupDate: null,
       FollowupAction: '',
+      InternalUser: '',
+      ExternalUser: '',
       Remarks: '',
       Public: '',
       sentEmail: '',
