@@ -210,6 +210,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
+    { name: 'Customs', icon: 'fas fa-passport' },
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
@@ -2782,6 +2783,37 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       error: () => {
         this.spinner.hide();
         this.toastr.error('Failed to create booking');
+      }
+    });
+  }
+
+  generateEDIManifest() {
+    if (!this.MasterJobSid) {
+      this.toastr.error('Master Job ID not found');
+      return;
+    }
+
+    this.spinner.show();
+    this.operationService.generateMasterJobEDIManifest(this.MasterJobSid).subscribe({
+      next: (response: string) => {
+        this.spinner.hide();
+
+        // Create blob and download
+        const blob = new Blob([response], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `EDI_Manifest_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${Date.now()}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        this.toastr.success('EDI Manifest generated successfully');
+      },
+      error: (error) => {
+        this.spinner.hide();
+        this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
       }
     });
   }

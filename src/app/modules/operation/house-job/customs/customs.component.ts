@@ -17,6 +17,8 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { finalize } from 'rxjs/operators';
 import { OperationService } from '../../operation.service';
+import { ToastrService } from 'ngx-toastr';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-customs',
@@ -35,6 +37,7 @@ export class CustomsComponent implements OnChanges {
   customsForm!: FormGroup;
   selectedRecord: any = null;
   loading = false;
+  houseJobSid: number | null = null;
 
   // Importer Codes
   importerCodeList = [
@@ -83,7 +86,12 @@ export class CustomsComponent implements OnChanges {
   // Package Types (from API)
   packageTypeList: any[] = [];
 
-  constructor(private fb: FormBuilder, private operationService: OperationService) {
+  constructor(
+    private fb: FormBuilder,
+    private operationService: OperationService,
+    private toastr: ToastrService,
+    private spinner: NgxSpinnerService
+  ) {
     this.initForm();
     this.loadPackageTypes();
   }
@@ -137,6 +145,7 @@ export class CustomsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formData'] && this.formData) {
+      this.houseJobSid = this.formData.HouseJobSid;
       this.customsForm.patchValue({
         CompanyMasterSid: this.formData.CompanyMasterSid,
         HouseJobSid: this.formData.HouseJobSid,
@@ -198,6 +207,34 @@ export class CustomsComponent implements OnChanges {
       RefTemperatureUnit: 'C',
       CreatedBy: this.formData?.CreatedBy,
       UpdatedBy: this.formData?.UpdatedBy,
+    });
+  }
+
+  generateEDIManifest() {
+    if (!this.houseJobSid) {
+      this.toastr.error('House Job ID not found');
+      return;
+    }
+
+    this.spinner.show();
+    this.operationService.generateHouseJobEDIManifest(this.houseJobSid).subscribe({
+      next: (response: string) => {
+        this.spinner.hide();
+        const blob = new Blob([response], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `EDI_Manifest_HouseJob_${this.houseJobSid}_${Date.now()}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.toastr.success('EDI Manifest generated successfully');
+      },
+      error: (error) => {
+        this.spinner.hide();
+        this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+      }
     });
   }
 }
