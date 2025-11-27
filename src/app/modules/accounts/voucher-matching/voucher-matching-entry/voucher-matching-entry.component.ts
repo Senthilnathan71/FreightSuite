@@ -89,6 +89,18 @@ selectedTab = this.tab[0].name;
     this.voucherMatching.push(row);
   }
 
+  // add inter brsnch row details
+
+  addInterBranch() {
+    const row = this.fb.group({
+      branch:[],
+      curAmt:[],
+      interBranch:[],
+      voucherType:[]
+    });
+    this.voucherMatching.push(row);
+  }
+
   // delete row
   deleteRow(index: number) {
     this.voucherMatching.removeAt(index);

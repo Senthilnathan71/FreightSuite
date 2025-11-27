@@ -57,7 +57,7 @@
 
                         <aside class="col-md-2 pe-md-2">
                             <div class="custom-form-group">
-                                <input type="text"  class="custom-input-field sm" placeholder="" />
+                                <input type="text" class="custom-input-field sm" placeholder="" />
                                 <label class="input-label">Matching No. <span class="text-danger"></span></label>
                             </div>
                         </aside>
@@ -66,7 +66,7 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d1="ngbDatepicker" (click)="d1.toggle()" readonly  />
+                                        #d1="ngbDatepicker" (click)="d1.toggle()" readonly />
 
                                     <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -82,7 +82,7 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                                         minDate></app-date-time-picker>
+                                        minDate></app-date-time-picker>
                                 </div>
                                 <label class="input-label" for="dp">Posted Date <span
                                         class="text-danger">*</span></label>
@@ -90,17 +90,14 @@
                         </aside>
 
 
-                        <aside class="col-md-2  d-md-block d-none">
-
-                        </aside>
-
                         <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
 
                         </aside>
 
-                        <aside class="col-md-2">
+
+                        <aside class="col-md-2 ">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select  bindLabel="name" bindValue="name" placeholder="">
+                                <ng-select bindLabel="name" bindValue="name" placeholder="">
                                 </ng-select>
                                 <label class="input-label">Ledger <span class="text-danger"></span></label>
                             </div>
@@ -111,7 +108,7 @@
                                 <label class="input-label">Subledger <span class="text-danger"></span></label>
 
                                 <div class="d-flex align-items-center gap-2">
-                                    <ng-select  bindLabel="name" bindValue="name" placeholder=""
+                                    <ng-select bindLabel="name" bindValue="name" placeholder=""
                                         class="flex-grow-1"></ng-select>
 
                                     <button type="button" class="btn btn-info btn-sm dofi-min-w-50 dofi-max-w-50">
@@ -126,8 +123,8 @@
                             <div class="custom-form-group custom-form-group-select">
                                 <label class="input-label"> Status <span class="text-danger">*</span></label>
                                 <div class="d-flex  justify-content-between align-items-center gap-2">
-                                    <ng-select  [items]='status' bindLabel="name" bindValue="name"
-                                        placeholder="" class="flex-grow-1">
+                                    <ng-select [items]='status' bindLabel="name" bindValue="name" placeholder=""
+                                        class="flex-grow-1">
                                     </ng-select>
 
                                 </div>
@@ -135,18 +132,11 @@
                         </aside>
 
 
-                        <aside class="col-md-2 d-flex justify-content-end">
+                        <aside class="col-md-1">
                             <div class="custom-form-group">
                                 <button type="button" class="btn-sm  dofi-min-w-80 dofi-max-w-80 btn btn-secondary">
                                     Post
                                 </button>
-                            </div>
-                        </aside>
-
-
-                        <aside class="col-md-2 ">
-                            <div class="custom-form-group">
-
                             </div>
                         </aside>
                     </div>
@@ -169,7 +159,7 @@
                     <thead class="bg-info">
                         <tr>
 
-                            <th colspan="12" class="matching-header bg-warning text-center fw-bold"
+                            <th colspan="13" class="matching-header bg-warning text-center fw-bold"
                                 style="color: black;">
                                 OS Vouchers
                             </th>
@@ -177,7 +167,7 @@
                                 style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
                         </tr>
                         <tr>
-                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light"></th>
                             <th class="bg-transparent text-light">Branch</th>
                             <th class="bg-transparent text-light">Ledger</th>
                             <th class="bg-transparent text-light">Voucher No.</th>
@@ -186,16 +176,17 @@
                             <th class="bg-transparent text-light">Dr/Cr</th>
                             <th class="bg-transparent text-light">Curr.</th>
                             <th class="bg-transparent text-light">Ex.Rate</th>
-                            <th class="bg-transparent text-light">Curr.Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">OS Curr.Amt</th>
-                            <th class="bg-transparent text-light">OS Local Amt</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex.Rate</th>
-                            <th class="bg-transparent text-light">Curr Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">TDS Amt</th>
-                            <th class="bg-transparent text-light">Balance</th>
+                            <th class="bg-transparent text-light"  style="width: 5%;">Curr.Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Local Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">OS Curr.Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">OS Local Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Curr.</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Ex.Rate</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Curr Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Local Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">TDS Amt</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Balance</th>
+                            <th class="bg-transparent text-light" style="width: 5%;">Tick Box</th>
                         </tr>
                     </thead>
 
@@ -207,24 +198,24 @@
                                 </button>
                             </td>
 
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 90px;" />
+                            <td><input type="text"  class="form-control" style="min-width: 100px;" />
                             </td>
 
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 90px;" />
-                            </td>
-
-                            <td>
-                                <input type="text" formControlName=" " class="form-control" />
+                            <td><input type="text" class="form-control" style="min-width: 100px;" />
                             </td>
 
                             <td>
-                                <input type="text" formControlName=" " class="form-control" />
+                                <input type="text" class="form-control" style="min-width: 100px;" />
+                            </td>
+
+                            <td>
+                                <input type="text"  class="form-control" style="min-width: 100px;"/>
                             </td>
 
                             <td>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        style="min-width: 87px;" #d3="ngbDatepicker" (click)="d3.toggle()" />
+                                        style="min-width: 100px;" #d3="ngbDatepicker" (click)="d3.toggle()" />
                                     <button class="btn bi bi-calendar3" (click)="d3.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -232,38 +223,40 @@
                             </td>
 
                             <td>
-                                <ng-select bindLabel="name" bindValue="id" formControlName=" " style="min-width: 80px;"
+                                <ng-select bindLabel="name" bindValue="id"  style="min-width: 73px;"
                                     appendTo="body"></ng-select>
                             </td>
 
                             <td>
-                                <ng-select bindLabel="name" bindValue="id" formControlName=" " style="min-width: 85px;"
+                                <ng-select bindLabel="name" bindValue="id"   style="min-width: 88px;"
                                     appendTo="body"></ng-select>
                             </td>
 
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text"  class="form-control" style="min-width: 55px;" />
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text"  class="form-control" style="min-width: 55px;" />
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text"  class="form-control"  style="min-width: 55px;"/>
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text" class="form-control"  style="min-width: 50px;"/>
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text" class="form-control" style="min-width: 50px;" />
                             </td>
                             <td>
                                 <ng-select bindLabel="name" bindValue="id" formControlName=" " style="min-width: 85px;"
                                     appendTo="body"></ng-select>
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text" class="form-control" style="min-width: 100px;"/>
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text"  class="form-control"  style="min-width: 60px;"/>
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 50px;" />
+                            <td><input type="text"  class="form-control" style="min-width: 60px;" />
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 75px;" />
+                            <td><input type="text"  class="form-control" style="min-width: 60px;" />
                             </td>
-                            <td><input type="text" formControlName=" " class="form-control" style="min-width: 75px;" />
+                            <td><input type="text"  class="form-control"  style="min-width: 60px;"/>
+                            </td>
+                            <td><input type="checkbox"  class="form-control"/>
                             </td>
                         </tr>
                     </tbody>
@@ -295,7 +288,7 @@
                 </div>
             </div>
             <div [hidden]="selectedTab !== 'Inter Branch'">
-                <button type="button" class="btn btn-sm btn-info mx-auto">
+                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addInterBranch()">
                     <i class="fas fa-plus"></i> Add Inter Branch Details
                 </button>
             </div>
@@ -345,16 +338,16 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
                                     <td>
-                                        <input type="text"  class="form-control" />
+                                        <input type="text" class="form-control" />
                                     </td>
 
                                     <td>
-                                        <input type="text"  class="form-control" />
+                                        <input type="text" class="form-control" />
                                     </td>
                                 </tr>
                             </tbody>
@@ -395,12 +388,12 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
                                     <td>
-                                        <input type="text"  class="form-control" />
+                                        <input type="text" class="form-control" />
                                     </td>
 
 
@@ -444,16 +437,16 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
-                                    <td><input type="text"  class="form-control" /></td>
+                                    <td><input type="text" class="form-control" /></td>
 
                                     <td>
-                                        <input type="text"  class="form-control" />
+                                        <input type="text" class="form-control" />
                                     </td>
 
                                     <td>
-                                        <input type="text"  class="form-control" />
+                                        <input type="text" class="form-control" />
                                     </td>
                                 </tr>
                             </tbody>
