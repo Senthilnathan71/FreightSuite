@@ -19,6 +19,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 
 @Component({
@@ -100,6 +101,7 @@ export class UnitEntryComponent {
   //     this.checkPermissions();
   //   }
   // });
+   this.mps.init().subscribe();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch')); 
   this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -370,6 +372,14 @@ openEDoc() {
 //     error: err => console.error('Error fetching audit logs:', err)
 //   });
 // }
+
+   openFollowup(){
+        const modalRef = this.modalService.open(FollowUpComponent,{
+            size : 'lg',
+            backdrop : 'static',
+            centered : true
+        })
+    }
 
 openAuditLogs(modal: TemplateRef<any>) {
   if (!this.idParam) return;

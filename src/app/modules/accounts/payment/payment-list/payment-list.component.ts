@@ -271,7 +271,8 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           label: 'Delete',
           action: 'delete',
           tooltip: 'Delete Payment',
-          state: !this.mps.can('delete')
+          state: !this.mps.can('delete'),
+          class: "text-danger"
         }
       ],
       selectable: true,

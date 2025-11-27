@@ -19,6 +19,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -69,6 +70,7 @@ export class VesselEntryComponent implements OnInit {
     ) { }
 
     ngOnInit() {
+        this.mps.init().subscribe();
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.MenuMasterSid =  localStorage.getItem('currentMenuId');
@@ -94,33 +96,13 @@ export class VesselEntryComponent implements OnInit {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
-      this.checkPermissions();
+    
 		}
     }
 
-     checkPermissions() {
-                const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-                const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-                console.log(currentMenuId);
-                console.log(userRole);
-                if (currentMenuId && userRole) {
-                this.masterServ
-                    .getRoleMenuPermissions(currentMenuId, userRole)
-                    .subscribe({
-                    next: (response) => {
-                        this.currentMenuPermissions = response.data.MenuPermissions || {};
-                        this.permissions = Object.keys(this.currentMenuPermissions).filter(
-                        (key) => this.currentMenuPermissions[key] === 'isTrue'
-                        );
-                        console.log(this.permissions);
-                    },
-                    });
-                }
-            }
+   
 
-            hasPermission(permission: string): boolean {
-                return this.permissions.includes(permission);
-            }
+        
 
             hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -377,6 +359,15 @@ reset() {
 //     error: err => console.error('Error fetching audit logs:', err)
 //   });
 // }
+
+openFollowup(){
+        const modalRef = this.modalService.open(FollowUpComponent,{
+            size : 'lg',
+            backdrop : 'static',
+            centered : true
+        })
+    }
+    
 openAuditLogs(modal: TemplateRef<any>) {
   if (!this.VesselMasterSid) return;
 

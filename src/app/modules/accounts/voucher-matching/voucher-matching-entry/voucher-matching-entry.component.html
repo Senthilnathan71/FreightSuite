@@ -57,7 +57,7 @@
 
                         <aside class="col-md-2 pe-md-2">
                             <div class="custom-form-group">
-                                <input type="text" formControlName="" class="custom-input-field sm" placeholder="" />
+                                <input type="text"  class="custom-input-field sm" placeholder="" />
                                 <label class="input-label">Matching No. <span class="text-danger"></span></label>
                             </div>
                         </aside>
@@ -66,7 +66,7 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="" />
+                                        #d1="ngbDatepicker" (click)="d1.toggle()" readonly  />
 
                                     <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -82,7 +82,7 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                                        formControlName="" minDate></app-date-time-picker>
+                                         minDate></app-date-time-picker>
                                 </div>
                                 <label class="input-label" for="dp">Posted Date <span
                                         class="text-danger">*</span></label>
@@ -100,7 +100,7 @@
 
                         <aside class="col-md-2">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
+                                <ng-select  bindLabel="name" bindValue="name" placeholder="">
                                 </ng-select>
                                 <label class="input-label">Ledger <span class="text-danger"></span></label>
                             </div>
@@ -111,7 +111,7 @@
                                 <label class="input-label">Subledger <span class="text-danger"></span></label>
 
                                 <div class="d-flex align-items-center gap-2">
-                                    <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder=""
+                                    <ng-select  bindLabel="name" bindValue="name" placeholder=""
                                         class="flex-grow-1"></ng-select>
 
                                     <button type="button" class="btn btn-info btn-sm dofi-min-w-50 dofi-max-w-50">
@@ -126,7 +126,7 @@
                             <div class="custom-form-group custom-form-group-select">
                                 <label class="input-label"> Status <span class="text-danger">*</span></label>
                                 <div class="d-flex  justify-content-between align-items-center gap-2">
-                                    <ng-select formControlName="" [items]='status' bindLabel="name" bindValue="name"
+                                    <ng-select  [items]='status' bindLabel="name" bindValue="name"
                                         placeholder="" class="flex-grow-1">
                                     </ng-select>
 
@@ -345,16 +345,16 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
                                     <td>
-                                        <input type="text" formControlName="" class="form-control" />
+                                        <input type="text"  class="form-control" />
                                     </td>
 
                                     <td>
-                                        <input type="text" formControlName="" class="form-control" />
+                                        <input type="text"  class="form-control" />
                                     </td>
                                 </tr>
                             </tbody>
@@ -395,12 +395,12 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
                                     <td>
-                                        <input type="text" formControlName="" class="form-control" />
+                                        <input type="text"  class="form-control" />
                                     </td>
 
 
@@ -444,16 +444,16 @@
                                         </button>
                                     </td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
-                                    <td><input type="text" formControlName="" class="form-control" /></td>
+                                    <td><input type="text"  class="form-control" /></td>
 
                                     <td>
-                                        <input type="text" formControlName="" class="form-control" />
+                                        <input type="text"  class="form-control" />
                                     </td>
 
                                     <td>
-                                        <input type="text" formControlName="" class="form-control" />
+                                        <input type="text"  class="form-control" />
                                     </td>
                                 </tr>
                             </tbody>

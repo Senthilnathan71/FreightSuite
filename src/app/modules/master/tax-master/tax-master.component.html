@@ -38,7 +38,7 @@
       </a>
 
       <div class="ms-auto d-flex align-items-center">
-        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
+        <div *ngIf="hasAnyDropdownPermission() && isEditMode" ngbDropdown class="d-inline-block me-2">
           <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
             <i class="fas fa-ellipsis-v"></i>
           </button>
