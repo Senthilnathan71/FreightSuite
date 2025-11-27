@@ -1385,4 +1385,17 @@ createReverseVoucher(payload: any) {
       })
     )
   }
+
+  // EDI Manifest Operations
+  generateMasterJobEDIManifest(masterJobSid: number): Observable<string> {
+    return this.http.get(`master-job/edi-manifest/${masterJobSid}`, {
+      responseType: 'text'
+    });
+  }
+
+  generateHouseJobEDIManifest(houseJobSid: number): Observable<string> {
+    return this.http.get(`house-job/edi-manifest/${houseJobSid}`, {
+      responseType: 'text'
+    });
+  }
 }

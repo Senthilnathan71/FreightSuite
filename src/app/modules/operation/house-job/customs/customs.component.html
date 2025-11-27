@@ -1,4 +1,12 @@
 <div class="compact-form">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0">Customs Information</h6>
+    <button class="btn btn-primary btn-sm" (click)="generateEDIManifest()"
+            [disabled]="!houseJobSid || loading">
+      <i class="fas fa-file-export me-2"></i>
+      Generate EDI Manifest
+    </button>
+  </div>
   <form [formGroup]="customsForm">
 
     <div class="row">
