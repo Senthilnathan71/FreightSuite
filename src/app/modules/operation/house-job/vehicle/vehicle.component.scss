@@ -1,0 +1,28 @@
+.color-picker-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.color-input {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-input::-webkit-color-swatch {
+  border: none;
+   border-radius: 50%;
+}
+
+.color-input:hover {
+ transform: scale(1.2);
+}
+

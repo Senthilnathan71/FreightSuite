@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
@@ -38,7 +38,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     SearchableDropdownModal,
     NgxSpinnerModule,
     FormsModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    NgbDatepickerModule
   ],
   templateUrl: './boe-entry.component.html',
   styleUrls: ['./boe-entry.component.scss'],
