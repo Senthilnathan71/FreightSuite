@@ -10,6 +10,11 @@
             <div class="brand-content">
                 <h1 class="workspace-title">Master Job</h1>
             </div>
+            @if(isEditMode){
+      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+        <i class="fas fs-6 fa-info-circle"></i>
+      </a>
+      }
         </div>
         <div class="header-actions">
             <div class="action-group" *ngIf="isEditMode">
@@ -551,24 +556,22 @@
 
                                     <!-- SOB Date Field -->
 
-                                    <!-- Cut Off Date Field -->
-                                    <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select-date mt-1">
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="CutOffDate" ngbDatepicker
-                                                    #cutOffDatePicker="ngbDatepicker"
-                                                    (click)="cutOffDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3 px-0" (click)="cutOffDatePicker.toggle()"
-                                                    type="button">
-                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                                </button>
-                                            </div>
-                                            <label class="input-label">Cut Off Date <span
-                                                    class="text-danger"></span></label>
-                                        </div>
-                                    </div>
-
+                                   <!-- Cut Off Date Field -->
+<div class="col-md-4">
+  <div class="custom-form-group custom-form-group-select-date mt-1">
+    <div class="input-group">
+      <input class="form-control" placeholder="dd-mm-yyyy"
+             formControlName="CutOffDate" ngbDatepicker
+             #cutOffDatePicker="ngbDatepicker"
+             (click)="cutOffDatePicker.toggle()" container="body" readonly />
+      <button class="btn bi bi-calendar3 px-0" (click)="cutOffDatePicker.toggle()"
+              type="button">
+        <i-feather name="calendar" class="feather-sm"></i-feather>
+      </button>
+    </div>
+    <label class="input-label">Cut Off Date <span class="text-danger"></span></label>
+  </div>
+</div>
                                     <!-- SI Cut Off Field -->
                                     <aside class="col-md-4">
                                         <div class="custom-form-group mt-1">
@@ -957,6 +960,22 @@
                             <input type="text" formControlName="InternalNote" class="custom-input-field sm"
                                 placeholder="" [textWithNumbers]="500">
                             <label class="input-label">Internal Note</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="CarrierRef" class="custom-input-field sm"
+                                placeholder="" [textWithNumbers]="20">
+                            <label class="input-label">Carrier Ref</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="AgentRef" class="custom-input-field sm"
+                                placeholder="" [textWithNumbers]="20">
+                            <label class="input-label">Agent Ref</label>
                         </div>
                     </aside>
 
@@ -2380,21 +2399,20 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
-                                maxlength="11" [textWithNumbers]="11" placeholder="">
-                            <label class="input-label">Container No <span class="text-danger">*</span></label>
+  <div class="custom-form-group">
+    <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
+           maxlength="11" [textWithNumbers]="11" placeholder="" 
+           (blur)="formatContainerNumber()">
+    <label class="input-label">Container No <span class="text-danger">*</span></label>
 
-                            <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && containerFormGroup.get('ContainerNumber')?.invalid"
-                                class="error-message">
-                                <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('required')">
-                                    Required</span>
-                                <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('maxlength')">Container
-                                    Number cannot exceed 11 characters</span>
-                            </div>
-
-                        </div>
-                    </aside>
+    <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && containerFormGroup.get('ContainerNumber')?.invalid"
+         class="error-message">
+      <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('required')">
+       (Format: ABCD1234567)
+      </span>
+    </div>
+  </div>
+</aside>
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -2412,13 +2430,34 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <!-- <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="HsCode" class="custom-input-field sm" maxlength="10"
                                 [textWithNumbers]="10" placeholder="">
                             <label class="input-label">HS Code</label>
                         </div>
-                    </aside>
+                    </aside> -->
+                    <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select" 
+       [class.filled]="!!containerFormGroup.get('HsCode')?.value">
+    <ng-select 
+      [items]="hssacList"
+      bindLabel="HSSACCode"
+      bindValue="HSSACCode"
+      formControlName="HsCode"
+      placeholder="">
+      <ng-template ng-label-tmp let-item="item">
+        {{ item.HSSACCode }} 
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item">
+        <div>
+          <strong>{{ item.HSSACCode }}</strong>
+        </div>
+      </ng-template>
+    </ng-select>
+    <label class="input-label">HS Code</label>
+  </div>
+</aside>
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">

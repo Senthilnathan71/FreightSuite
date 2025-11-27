@@ -124,7 +124,8 @@ export class HouseJobEntryComponent  implements OnInit {
     |   Section-1 Variable Declaration
     |--------------------------------------------------
   */
-
+ @ViewChild(CustomsComponent) customsComponent!: CustomsComponent;
+  @ViewChild('vehicleComponent') vehicleComponent!: VehicleComponent;
 @ViewChild(BoeEntryComponent) boeComponent!: BoeEntryComponent;
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   parsedBookings: BookingData[] = [];
@@ -138,7 +139,7 @@ vehicleDataArray: any[] = [];        // for BOE data
 resetTriggerVehicle: boolean = false; // trigger flag for reset
 customsDataArray: any[] = [];        // for BOE data
 resetTriggerCustoms: boolean = false; // trigger flag for reset
-
+hssacList: any[] = [];
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   userData : any;
@@ -452,6 +453,7 @@ auditLogs: any[] = []; // Stores audit logs
     this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
     console.log('CargoCurrency value changed:', value);
   });
+  this.loadHSSACLookups();
 }
   /**
   |--------------------------------------------------
@@ -629,6 +631,7 @@ auditLogs: any[] = []; // Stores audit logs
       Length: [''],
       Width: [''],
       Height: [''],
+      HSCode: [''],
       UomMasterSid: [null],
       CargoRecDate : [null],
       ContainerNo : [''],
@@ -685,7 +688,18 @@ private parseFloatSafe(value: any): number {
   const parsed = parseFloat(value);
   return isNaN(parsed) ? 0 : parsed;
 }
-
+loadHSSACLookups() {
+  this.operationService.getAllHssac().subscribe({
+    next: (resp: any) => {
+      this.hssacList = resp|| [];
+      console.log('HSSAC List loaded:', this.hssacList);
+    },
+    error: (err) => {
+      console.error('Error loading HSSAC data:', err);
+      this.hssacList = [];
+    }
+  });
+}
 private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   const calculateVolumetric = () => {
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
@@ -821,6 +835,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Length : [data?.Length || ''],
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
+      HSCode : [data?.HSCode || ''],
       UomMasterSid : [data?.UomMasterSid || null],
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
       ContainerNo : [data?.ContainerNo || ''],
@@ -1266,6 +1281,7 @@ loadHeaderLookups() {
         Length: data?.Length,
         Width: data?.Width,
         Height: data?.Height,
+        HSCode: data?.HSCode,
         UomMasterSid: data?.UomMasterSid,
         CargoRecDate : data?.CargoRecDate,
         ContainerNo : data?.ContainerNo,
@@ -1360,7 +1376,7 @@ onCurrencyChange(event: any) {
     this.appSettingService.showWarning('Please fill all required fields correctly.');
     return;
   }
-
+  
   const houseJobFormValue = this.houseJobForm.getRawValue();
   const cargoFormValue = this.cargoForm.getRawValue();
   const otherFormValue = this.otherForm.getRawValue();
@@ -1368,6 +1384,8 @@ onCurrencyChange(event: any) {
   const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const currentMenuId = Number(localStorage.getItem('currentMenuId'));
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
+  const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
+  const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
   console.log('=== FORM DEBUG INFO ===');
   console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
   console.log('DONo from form:', otherFormValue?.DONo);
@@ -1375,6 +1393,7 @@ onCurrencyChange(event: any) {
   console.log('SwitchBLShipper from form:', otherFormValue?.SwitchBLShipper);
   console.log('SwitchLocation from form:', otherFormValue?.SwitchLocation);
   console.log('Full otherForm value:', otherFormValue);
+  console.log('Vehicle Data:', vehicleData);
 
   // Fix CargoCurrency extraction
   let cargoCurrencyValue = null;
@@ -1526,6 +1545,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       Width: Number(product.Width),
       Height: Number(product.Height),
       UomMasterSid: product.UomMasterSid,
+      HSCode: product.HSCode,
       CargoRecDate: product.CargoRecDate,
       ContainerNo: product.ContainerNo,
       MarksAndNumbers: product.MarksAndNumbers,
@@ -1533,6 +1553,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       DeliveredQty: product.DeliveredQty,
     })),
     houseJobBOE: boeData,
+    houseJobVehicle: vehicleData,
+     houseJobCustoms: customsData,
     houseConnections: this.connectionResult,
     bookingRates: this.rateResult,
     milestones: this.milestoneResult,
@@ -2527,6 +2549,7 @@ ${this.userData['userName']}`;
   reportProducts(): void {
     const formattedData = this.slicedProductArr.map(product => ({
       ProductName: product.value.ProductName || '',
+      HSCode: product.value.HSCode || '',
       ShippingBillNo: product.value.ShippingBillNo || '',
       ShippingBillDate: this.datePipe.transform(product.value.ShippingBillDate) || '',
       ExternalPkg: product.value.ExternaPkg || '',
@@ -2550,6 +2573,7 @@ ${this.userData['userName']}`;
         { key: 'ExternalPkg', label: 'Package Type' },
         { key: 'ExternalQty', label: 'No of Pkg' },
         { key: 'GrossWeight', label: 'Gross Weight' },
+        { key: 'HSCode', label: 'HS Code' },
         { key: 'NetWeight', label: 'Net Weight' },
         { key: 'Volume', label: 'CBM' },
         { key: 'CargoRecDate', label: 'Cargo Received Date' }

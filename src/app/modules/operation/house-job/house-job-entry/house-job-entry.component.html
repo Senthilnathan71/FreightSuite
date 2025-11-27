@@ -1095,13 +1095,12 @@
 
 <div class="workspace-content" [hidden]="selectedTab !== 'Vehicle'">
   <app-vehicle
-    #vehicleComponent
+    #vehicleComponent  
     screenName="HouseJob"
     [dataItems]="vehicleDataArray"
     [resetTrigger]="resetTriggerVehicle"
     [formData]="commonFormValue"
-    (dataEmitter)="handleVehicleChange($event)"
-    (reloadParent)="loadHouseById($event)">
+    (dataEmitter)="handleVehicleChange($event)">
   </app-vehicle>
 </div>
 
@@ -2043,6 +2042,27 @@
           <label for="" class="input-label">Commodity <span class="text-danger"></span></label>
         </div>
       </aside>
+      <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select" 
+       [class.filled]="!!productForm.get('HSCode')?.value">
+    <ng-select 
+      [items]="hssacList"
+      bindLabel="HSSACCode"
+      bindValue="HSSACCode"
+      formControlName="HSCode"
+      placeholder="Select HS Code">
+      <ng-template ng-label-tmp let-item="item">
+        {{ item.HSSACCode }} 
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item">
+        <div>
+          <strong>{{ item.HSSACCode }}</strong>
+        </div>
+      </ng-template>
+    </ng-select>
+    <label class="input-label">HS Code</label>
+  </div>
+</aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

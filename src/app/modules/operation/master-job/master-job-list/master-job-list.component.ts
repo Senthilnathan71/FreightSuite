@@ -201,7 +201,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         condition: this.hasPermission('Add')
       },
       {
-        label: 'Excel Import',
+        label: 'XL Upload',
         icon: 'fas fa-file-excel',
         action: 'excel-dropdown',
         condition: this.hasPermission('Add'),

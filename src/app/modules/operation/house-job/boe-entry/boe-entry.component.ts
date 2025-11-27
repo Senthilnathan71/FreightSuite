@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
@@ -38,7 +38,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     SearchableDropdownModal,
     NgxSpinnerModule,
     FormsModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    NgbDatepickerModule
   ],
   templateUrl: './boe-entry.component.html',
   styleUrls: ['./boe-entry.component.scss'],
@@ -173,10 +174,10 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       Amount: [data?.Amount || null],
       ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
       ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
-      AckNo: [data?.AckNo || ''],
+      AckNumber: [data?.AckNumber || ''],
       AckDate: [data?.AckDate ? this.formatDate(data.AckDate) : ''],
       AckStatus: [data?.AckStatus || ''],
-      Note: [data?.Note || data?.Remarks || ''],
+      Remarks: [data?.Remarks || data?.Remarks || ''],
       
       status: [data?.status || 'Active'],
       CreatedBy: [data?.CreatedBy || this.userData?.userEmail],
@@ -277,8 +278,8 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       CompanyMasterSid: companySid,
       CreatedBy: this.formData?.CreatedBy || this.userData?.userEmail,
       UpdatedBy: this.userData?.userEmail,
-      Remarks: value.Note,
-      AckNumber: value.AckNo,
+      Remarks: value.Remarks,
+      AckNumber: value.AckNumber,
       Sno: index + 1
     };
 

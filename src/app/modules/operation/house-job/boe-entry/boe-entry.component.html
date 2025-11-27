@@ -1,7 +1,7 @@
 <div class="modern-table-container compact-form">
   <div class="table-toolbar">
     <div class="toolbar-left">
-      <h5 class="mb-0">BOE Management</h5>
+      <h5 class="my-0">BOE Management</h5>
     </div>
     <div class="toolbar-right">
       <button type="button" class="table-action-btn primary" (click)="addBoeRow()">
@@ -15,7 +15,7 @@
       <table class="modern-table mb-0">
         <thead>
           <tr class="align-middle-center" style="text-align:center;">
-            <th style="border-top-left-radius: 10px; width: 100px;">Action</th>
+            <th style="border-top-left-radius: 10px; width: 100px;"></th>
             <th width="60">SNo.</th>
             <th>Declaration No.</th>
             <th class="required">BOE No.</th>
@@ -48,13 +48,13 @@
           <tr *ngFor="let row of slicedBoeFormArray; let i = index" [formGroupName]="i">
             <!-- Action Column -->
             <td class="actions-cell">
-              <button type="button" (click)="saveBoe((page-1)*pageSize + i)" class="btn btn-save px-1" 
+              <!-- <button type="button" (click)="saveBoe((page-1)*pageSize + i)" class="btn btn-save px-1" 
                       title="Save BOE">
                 <i class="fas fa-save me-1 text-info fs-3"></i>
-              </button>
+              </button> -->
               <button type="button" (click)="deleteBoe((page-1)*pageSize + i, row.get('HouseJobBOESid')?.value)" 
-                      class="btn btn-delete px-1" title="Delete BOE">
-                <i-feather name="trash-2" class="feather-sm text-danger fs-3"></i-feather>
+                      class="btn btn-delete px-1 py-0" title="Delete BOE">
+                <i class="fas fa-trash text-danger fs-2"></i>
               </button>
             </td>
 
@@ -63,93 +63,131 @@
 
             <!-- Declaration No -->
             <td>
-              <input formControlName="DeclarationNo" class="custom-input-field sm"
+              <input formControlName="DeclarationNo" class="custom-input-field sm" [textWithNumbers]="20"
                      style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                     />
             </td>
 
             <!-- BOE No -->
             <td>
-              <input formControlName="BOENo" class="custom-input-field sm"
+              
+              <input formControlName="BOENo" class="custom-input-field sm"  [textWithNumbers]="20"
                      style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                      />
             </td>
 
             <!-- BOE Date -->
             <td>
-              <input type="date" placeholder="dd-mm-yyyy" class="custom-input-field sm" formControlName="BOEDate"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+               <div class="d-flex align-items-center">
+                          <input class="form-control"
+                                placeholder="dd-mm-yyyy"
+                                 ngbDatepicker #d1="ngbDatepicker"
+                                 (click)="d1.toggle()"
+                                 formControlName="BOEDate"
+                                 container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
+                          <button class="btn py-0" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
+                        </div>
+          
             </td>
 
             <!-- BOE Value -->
             <td>
-              <input type="number" class="custom-input-field sm" formControlName="BOEValue"
+              <input type="text" class="custom-input-field sm" formControlName="BOEValue"
                      style="width:110px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"/>
+                     DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3"/>
             </td>
 
             <!-- Invoice No -->
             <td>
               <input formControlName="BOEInvoiceValue" class="custom-input-field sm"
+              DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3"
                      style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                     />
             </td>
 
             <!-- Transaction Type -->
             <td>
-              <input formControlName="TransactionType" class="custom-input-field sm"
+              <input formControlName="TransactionType" class="custom-input-field sm" [textWithNumbers]="20"
                      style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                      />
             </td>
 
             <!-- Amount -->
             <td>
               <input type="number" formControlName="Amount" class="custom-input-field sm"
                      style="width:110px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"/>
+                     DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3"/>
             </td>
 
             <!-- Process Date -->
             <td>
-              <input type="date" class="custom-input-field sm" formControlName="ProcessDate"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+               <div class="d-flex align-items-center">
+                          <input class="form-control"
+                                 placeholder="dd-mm-yyyy"
+                                 ngbDatepicker #d3="ngbDatepicker"
+                                 (click)="d3.toggle()"
+                                 formControlName="ProcessDate"
+                                 container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
+                          <button class="btn py-0" (click)="d3.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
+                        </div>
+             
             </td>
 
             <!-- Received Date -->
             <td>
-              <input type="date" class="custom-input-field sm" formControlName="ReceivedDate"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+               <div class="d-flex align-items-center">
+                          <input class="form-control"
+                                 placeholder="dd-mm-yyyy"
+                                 ngbDatepicker #d2="ngbDatepicker"
+                                 (click)="d2.toggle()"
+                                 formControlName="ReceivedDate"
+                                 container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
+                          <button class="btn py-0" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
+                        </div>
+        
             </td>
 
             <!-- Ack No -->
             <td>
-              <input formControlName="AckNo" class="custom-input-field sm"
+              <input formControlName="AckNumber" class="custom-input-field sm" [textWithNumbers]="20"
                      style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                      />
             </td>
 
             <!-- Ack Date -->
             <td>
-              <input type="date" class="custom-input-field sm" formControlName="AckDate"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                 <div class="d-flex align-items-center">
+                          <input class="form-control"
+                                 placeholder="dd-mm-yyyy"
+                                 ngbDatepicker #d4="ngbDatepicker"
+                                 (click)="d4.toggle()"
+                                 formControlName="AckDate"
+                                 container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
+                          <button class="btn py-0" (click)="d4.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
+                        </div>
+              
             </td>
 
             <!-- Ack Status -->
             <td>
-              <input formControlName="AckStatus" class="custom-input-field sm"
+              <input formControlName="AckStatus" class="custom-input-field sm" [textWithNumbers]="10"
                      style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                      />
             </td>
 
             <!-- Note -->
             <td>
-              <input formControlName="Note" class="custom-input-field sm"
+              <input formControlName="Remarks" class="custom-input-field sm"[textWithNumbers]="200"
                      style="width:150px; height:22px; padding:2px 4px; font-size:12px;"
-                     [readonly]="!canEditBoe(i)" />
+                      />
             </td>
           </tr>
 

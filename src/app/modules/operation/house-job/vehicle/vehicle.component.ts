@@ -1,27 +1,16 @@
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { finalize } from 'rxjs/operators';
 import { OperationService } from '../../operation.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 @Component({
   selector: 'app-vehicle',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule, TextWithNumbersDirective, DecimalPrecisionDirective],
   templateUrl: './vehicle.component.html',
   styleUrls: ['./vehicle.component.scss'],
 })
@@ -30,13 +19,12 @@ export class VehicleComponent implements OnChanges {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger = false;
 
-  @Output() reloadParent = new EventEmitter<any>();
+  @Output() dataEmitter = new EventEmitter<any>();
 
   vehicleForm!: FormGroup;
-  selectedRecord: any = null;
-  loading = false;
+  vehicleDataArray: any[] = [];
 
-  // Dropdowns
+  // Dropdowns (keep your existing dropdown lists)
   vehicleIndicatorList = [
     { value: 'V', label: 'Vehicle' },
     { value: 'E', label: 'Equipment' },
@@ -53,20 +41,19 @@ export class VehicleComponent implements OnChanges {
     { value: 'S', label: 'Static' },
   ];
 
-  constructor(private fb: FormBuilder, private operationService: OperationService) {
+  constructor(private fb: FormBuilder,
+    private operationService: OperationService,
+    private appSettingService: AppSettingsService,
+  ) {
     this.initForm();
   }
 
   private initForm() {
     this.vehicleForm = this.fb.group({
       HouseJobVehicleSid: [null],
-      CompanyMasterSid: [null, Validators.required],
-      HouseJobSid: [null, Validators.required],
-
       VehicleIndicator: ['V', Validators.required],
       UsedNew: ['U', Validators.required],
       Rolling: ['R', Validators.required],
-
       ChassisNo: ['', Validators.maxLength(24)],
       CaseNo: ['', Validators.maxLength(24)],
       Make: ['', Validators.maxLength(20)],
@@ -74,94 +61,113 @@ export class VehicleComponent implements OnChanges {
       EngineNo: ['', Validators.maxLength(30)],
       YearBuilt: ['', [Validators.maxLength(4), Validators.pattern(/^\d{0,4}$/)]],
       Color: ['', Validators.maxLength(16)],
-
       GoodsDescription: ['', Validators.maxLength(200)],
       Remarks: ['', Validators.maxLength(200)],
-
       Weight: ['', [Validators.pattern(/^\d{0,6}(\.\d{0,3})?$/)]],
       Volume: ['', [Validators.pattern(/^\d{0,6}(\.\d{0,3})?$/)]],
-
-      CreatedBy: [''],
-      UpdatedBy: [''],
     });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // patch parent data (HouseJobSid, CompanyMasterSid, etc.)
-    if (changes['formData'] && this.formData) {
-      this.vehicleForm.patchValue({
-        CompanyMasterSid: this.formData.CompanyMasterSid,
-        HouseJobSid: this.formData.HouseJobSid,
-        CreatedBy: this.formData.CreatedBy,
-        UpdatedBy: this.formData.UpdatedBy,
-      });
-    }
-
-    // when parent provides vehicle records
+    // When parent provides vehicle records
     if (changes['dataItems'] && Array.isArray(this.dataItems)) {
-      if (this.dataItems.length > 0) {
-        this.selectedRecord = this.dataItems[0];
-        this.vehicleForm.patchValue({
-          ...this.selectedRecord,
-          CompanyMasterSid: this.formData?.CompanyMasterSid ?? this.selectedRecord.CompanyMasterSid,
-          HouseJobSid: this.formData?.HouseJobSid ?? this.selectedRecord.HouseJobSid,
-        });
-      } else {
-        this.resetChildForm();
-      }
+      this.vehicleDataArray = [...this.dataItems];
+      this.emitData();
     }
 
-    // reset button from parent
+    // Reset from parent
     if (changes['resetTrigger'] && this.resetTrigger) {
-      this.resetChildForm();
+      this.resetForm();
     }
   }
 
-  submitForm() {
+  // Add vehicle to array
+  addVehicle() {
     if (this.vehicleForm.invalid) {
       this.vehicleForm.markAllAsTouched();
       return;
     }
 
-    const payload = this.vehicleForm.value;
-
-    this.loading = true;
-
-    if (this.selectedRecord) {
-      // UPDATE
-      this.operationService
-        .updateVehicleById(this.selectedRecord.HouseJobVehicleSid, payload)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe(() => {
-          this.reloadParent.emit(payload.HouseJobSid);
-          this.resetChildForm();
-        });
-
-    } else {
-      // CREATE
-      this.operationService
-        .createVehicle(payload)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe(() => {
-          this.reloadParent.emit(payload.HouseJobSid);
-          this.resetChildForm();
-        });
-    }
-  }
-
-  resetChildForm() {
-    this.selectedRecord = null;
-
-    this.vehicleForm.reset({
+    const formValue = this.vehicleForm.value;
+    
+    // Add CompanyMasterSid and HouseJobSid from formData
+    const vehicleData = {
+      ...formValue,
       CompanyMasterSid: this.formData?.CompanyMasterSid,
       HouseJobSid: this.formData?.HouseJobSid,
+      CreatedBy: this.formData?.CreatedBy,
+      UpdatedBy: this.formData?.UpdatedBy,
+    };
 
+    this.vehicleDataArray.push(vehicleData);
+    this.emitData();
+    this.resetForm();
+  }
+
+  // Edit vehicle
+  editVehicle(index: number) {
+    const vehicle = this.vehicleDataArray[index];
+    this.vehicleForm.patchValue(vehicle);
+    this.vehicleDataArray.splice(index, 1);
+    this.emitData();
+  }
+
+  // Delete vehicle
+  deleteVehicle(index: number) {
+  const vehicle = this.vehicleDataArray[index];
+  const vehicleId = vehicle.HouseJobVehicleSid; // or BoeSid, adjust based on your actual ID field
+  
+  if (confirm('Are you sure you want to delete this vehicle?')) {
+    this.operationService.deleteVehicleById(vehicleId).subscribe({
+      next: (response) => {
+        // Remove from local array on successful deletion
+        this.vehicleDataArray.splice(index, 1);
+         this.appSettingService.showSuccess('Vehicle deleted successfully');
+      },
+      error: (error) => {
+        console.error('Error deleting vehicle:', error);
+        this.appSettingService.showError('Failed to delete vehicle: ' + error.message);
+      }
+    });
+  }
+}
+
+  // Reset form
+  resetForm() {
+    this.vehicleForm.reset({
       VehicleIndicator: 'V',
       UsedNew: 'U',
       Rolling: 'R',
-
-      CreatedBy: this.formData?.CreatedBy,
-      UpdatedBy: this.formData?.UpdatedBy,
     });
   }
+
+  // Emit data to parent
+  private emitData() {
+    this.dataEmitter.emit({
+      dataItems: this.vehicleDataArray,
+      formData: this.formData
+    });
+  }
+
+  // Method to get vehicle data for parent
+  getVehicleData(): any[] {
+    if(this.vehicleForm.valid && this.vehicleForm.dirty){
+      this.addVehicle()
+    }
+    return this.vehicleDataArray;
+  }
+  getVehicleTypeLabel(value: string): string {
+    const type = this.vehicleIndicatorList.find(item => item.value === value);
+    return type ? type.label : value;
+  }
+  getUsedNewLabel(value: string): string {
+    const type = this.usedNewList.find(item => item.value === value);
+    return type ? type.label : value;
+  }
+
+  getRollingLabel(value: string): string {
+    const type = this.rollingList.find(item => item.value === value);
+    return type ? type.label : value;
+  }
+  
 }
