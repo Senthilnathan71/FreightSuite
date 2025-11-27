@@ -17,6 +17,15 @@
             <span *ngIf="isFieldRequired(param.ParameterName)" class="text-danger">*</span>
           </label>
 
+          <!-- CHECKBOX Field -->
+          <input
+            *ngIf="param.ParameterFieldType === 'CHECKBOX'"
+            type="checkbox"
+            class="focus-ring form-check-input sm"
+            [id]="param.ParameterName"
+            [formControlName]="param.ParameterName"
+          />
+
           <!-- DATE Field -->
           <input
             *ngIf="param.ParameterFieldType === 'DATE'"
@@ -49,10 +58,40 @@
             placeholder="Enter {{ getParameterLabel(param.ParameterName) }}"
           />
 
-          <!-- DROPDOWN Field -->
+          <!-- DROPDOWN (Single) Field -->
           <ng-select
             *ngIf="param.ParameterFieldType === 'DROPDOWN'"
             [items]="getDropdownOptions(param.ParameterName)"
+            bindLabel="label"
+            bindValue="value"
+            [formControlName]="param.ParameterName"
+            [placeholder]="'Select ' + getParameterLabel(param.ParameterName)"
+            [clearable]="!isFieldRequired(param.ParameterName)"
+            [class.is-invalid]="hasError(param.ParameterName)"
+            [loading]="isDropdownLoading(param.ParameterName)"
+            [disabled]="isDropdownLoading(param.ParameterName)"
+          >
+            <!-- Loading template -->
+            <ng-template ng-loadingspinner-tmp>
+              <div class="text-center py-2">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span class="ms-2">Loading options...</span>
+              </div>
+            </ng-template>
+
+            <!-- No items template -->
+            <ng-template ng-notfound-tmp>
+              <div class="text-center py-2">
+                <small class="text-muted">No options available</small>
+              </div>
+            </ng-template>
+          </ng-select>
+
+          <!-- DROPDOWN (Multi) Field -->
+           <ng-select
+            *ngIf="param.ParameterFieldType === 'DROPDOWN M'"
+            [items]="getDropdownOptions(param.ParameterName)"
+            [multiple]="true"
             bindLabel="label"
             bindValue="value"
             [formControlName]="param.ParameterName"

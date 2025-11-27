@@ -50,7 +50,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
 
   buildForm(): void {
     const group: any = {};
-
+    console.log("Parameters",this.parameters);
     this.parameters.forEach(param => {
       const validators = [];
 
@@ -62,7 +62,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
       group[param.ParameterName] = [null, validators];
 
       // Load dropdown data
-      if (param.ParameterFieldType === 'DROPDOWN') {
+      if (
+        param.ParameterFieldType === 'DROPDOWN' || 
+        param.ParameterFieldType === 'DROPDOWN M'
+      ) {
         if (param.DropDownValue) {
           // Static dropdown
           this.dropdownData.set(param.ParameterName, param.DropDownValue);

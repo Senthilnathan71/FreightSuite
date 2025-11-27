@@ -13,6 +13,7 @@ import { ReportParameterFormComponent } from '../../../shared/components/general
 import { ReportViewerComponent } from '../../../shared/components/general-reports/report-viewer/report-viewer.component';
 import { ReportExportActionsComponent } from '../../../shared/components/general-reports/report-export-actions/report-export-actions.component';
 import { ReportEmailDialogComponent, EmailReportData } from '../../../shared/components/general-reports/report-email-dialog/report-email-dialog.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-accounts-reports',
@@ -40,15 +41,21 @@ export class AccountsReportsComponent implements OnInit {
   exportingReport = false;
 
   // Company ID (should come from auth service or session)
+  currentCompany : any;
   companyId = 1; // TODO: Get from auth service
 
   constructor(
     private reportService: ReportService,
     private exportService: ReportExportService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private appSettingService: AppSettingsService
   ) {}
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    if(this.currentCompany){
+      this.companyId = this.currentCompany?.CompanyMasterSid;
+    }
     this.loadAvailableReports();
   }
 
@@ -57,6 +64,7 @@ export class AccountsReportsComponent implements OnInit {
    */
   loadAvailableReports(): void {
     this.loadingReports = true;
+    console.log("Current Company ID:", this.companyId);
     this.reportService.getAccountsReports(this.companyId)
       .pipe(finalize(() => this.loadingReports = false))
       .subscribe({
@@ -100,7 +108,7 @@ export class AccountsReportsComponent implements OnInit {
       ...parameters,
       companyId: this.companyId
     };
-
+    console.log(this.reportParameters);
     this.generatingReport = true;
     this.reportService.generateReport('accounts', this.selectedReport.ReportName, this.reportParameters)
       .pipe(finalize(() => this.generatingReport = false))
