@@ -173,10 +173,10 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       Amount: [data?.Amount || null],
       ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
       ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
-      AckNo: [data?.AckNo || ''],
+      AckNumber: [data?.AckNumber || ''],
       AckDate: [data?.AckDate ? this.formatDate(data.AckDate) : ''],
       AckStatus: [data?.AckStatus || ''],
-      Note: [data?.Note || data?.Remarks || ''],
+      Remarks: [data?.Remarks || data?.Remarks || ''],
       
       status: [data?.status || 'Active'],
       CreatedBy: [data?.CreatedBy || this.userData?.userEmail],
@@ -277,8 +277,8 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       CompanyMasterSid: companySid,
       CreatedBy: this.formData?.CreatedBy || this.userData?.userEmail,
       UpdatedBy: this.userData?.userEmail,
-      Remarks: value.Note,
-      AckNumber: value.AckNo,
+      Remarks: value.Remarks,
+      AckNumber: value.AckNumber,
       Sno: index + 1
     };
 

@@ -200,4 +200,27 @@ export class CustomsComponent implements OnChanges {
       UpdatedBy: this.formData?.UpdatedBy,
     });
   }
+  getCustomsData(): any[] {
+  if (this.customsForm.valid && this.customsForm.dirty) {
+    const formValue = this.customsForm.value;
+    
+    // If we're editing an existing record
+    if (this.selectedRecord && this.selectedRecord.HouseJobCustomsSid) {
+      return [{
+        ...formValue,
+        HouseJobCustomsSid: this.selectedRecord.HouseJobCustomsSid,
+        UpdatedBy: this.formData?.UpdatedBy || this.formData?.CreatedBy
+      }];
+    } else {
+      // If creating a new record
+      return [{
+        ...formValue,
+        CreatedBy: this.formData?.CreatedBy || this.formData?.UpdatedBy
+      }];
+    }
+  }
+  
+  // Return existing data if form is not dirty
+  return this.dataItems || [];
+}
 }

@@ -1,62 +1,64 @@
 <div class="compact-form">
+  <div class="d-flex justify-content-end gap-2 mb-3">
+      <button type="button" class="btn btn-info btn-sm" (click)="resetForm()">Clear</button>
+      <button type="button" class="btn btn-light-secondary btn-sm" (click)="addVehicle()">
+        Add Vehicle
+      </button>
+    </div>
   <form [formGroup]="vehicleForm">
-
     <div class="row">
-
       <!-- Vehicle Indicator -->
-
       <aside class="col-md-3">
         <div class="custom-form-group custom-form-group-select"
-          [class.filled]="!vehicleForm['VehicleIndicator']?.value">
+        [class.filled]="!!vehicleForm.get('VehicleIndicator')?.value">
           <ng-select [items]="vehicleIndicatorList" class="ng-select" bindLabel="label" bindValue="value"
             formControlName="VehicleIndicator" appendTo="body">
           </ng-select>
-          <label for="text-input" class="input-label">Vehicle Type</label>
+          <label class="input-label">Vehicle Type</label>
         </div>
       </aside>
 
       <!-- Used/New -->
       <aside class="col-md-3">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!vehicleForm['UsedNew']?.value">
+        <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!vehicleForm.get('UsedNew')?.value">
           <ng-select [items]="usedNewList" bindLabel="label" class="ng-select" bindValue="value"
             formControlName="UsedNew" appendTo="body">
           </ng-select>
-          <label for="text-input" class="input-label">Used / New</label>
+          <label class="input-label">Used / New</label>
         </div>
       </aside>
 
       <!-- Rolling -->
       <aside class="col-md-3">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!vehicleForm['Rolling']?.value">
+        <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!vehicleForm.get('Rolling')?.value">
           <ng-select [items]="rollingList" bindLabel="label" class="ng-select" bindValue="value"
             formControlName="Rolling" appendTo="body">
           </ng-select>
-          <label for="text-input" class="input-label">Rolling</label>
+          <label class="input-label">Rolling</label>
         </div>
       </aside>
 
       <aside class="col-md-3">
         <div class="custom-form-group">
-          <input type="text" formControlName="ChassisNo" placeholder="" class="custom-input-field sm" />
+          <input type="text" formControlName="ChassisNo" class="custom-input-field sm" />
           <label class="input-label">Chassis No</label>
         </div>
       </aside>
-
     </div>
 
     <div class="row">
       <!-- Case No -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
-          <input type="text" formControlName="CaseNo" class="custom-input-field sm" />
+          <input type="text" formControlName="CaseNo" class="custom-input-field sm" [textWithNumbers]="24"/>
           <label class="input-label">Case No</label>
         </div>
       </aside>
 
       <!-- Make -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="text" formControlName="Make" class="custom-input-field sm" />
           <label class="input-label">Make</label>
@@ -65,16 +67,14 @@
 
       <!-- Model -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="text" formControlName="Model" class="custom-input-field sm" />
           <label class="input-label">Model</label>
         </div>
       </aside>
-
+      
       <!-- Engine No -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="text" formControlName="EngineNo" class="custom-input-field sm" />
           <label class="input-label">Engine No</label>
@@ -82,11 +82,9 @@
       </aside>
     </div>
 
-    <!-- Year Built -->
     <div class="row">
-
+      <!-- Year Built -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="text" formControlName="YearBuilt" maxlength="4" class="custom-input-field sm" />
           <label class="input-label">Year Built</label>
@@ -95,17 +93,14 @@
 
       <!-- Color -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
-          <input type="text" formControlName="Color" class="custom-input-field sm" />
+          <input type="color" formControlName="Color" class="custom-input-field sm" />
           <label class="input-label">Color</label>
         </div>
-
       </aside>
 
       <!-- Weight -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="number" step="0.001" formControlName="Weight" class="custom-input-field sm" />
           <label class="input-label">Weight</label>
@@ -114,64 +109,74 @@
 
       <!-- Volume -->
       <aside class="col-md-3">
-
         <div class="custom-form-group">
           <input type="number" step="0.001" formControlName="Volume" class="custom-input-field sm" />
           <label class="input-label">Volume</label>
-
         </div>
       </aside>
     </div>
 
-
     <div class="row">
       <!-- Goods Description -->
-      <aside class="col-md-3">
-
+      <aside class="col-md-6">
         <div class="custom-form-group">
           <input type="text" formControlName="GoodsDescription" class="custom-input-field sm" />
           <label class="input-label">Goods Description</label>
-
         </div>
       </aside>
 
       <!-- Remarks -->
-      <aside class="col-md-3">
+      <aside class="col-md-6">
         <div class="custom-form-group">
           <textarea formControlName="Remarks" rows="1" class="custom-input-field sm"></textarea>
           <label class="input-label">Remarks</label>
-
         </div>
       </aside>
-
-      <aside class="col-md-3">
-
-      </aside>
-
-      <aside class="col-md-3">
-
-      </aside>
     </div>
 
-
-    <div class="d-flex justify-content-end gap-2">
-      <button type="button" class="btn btn-info btn-sm" (click)="resetChildForm()">Clear</button>
-      <button type="button" class="btn btn-light-secondary btn-sm" (click)="submitForm()" [disabled]="loading">
-        {{ selectedRecord ? 'Update Vehicle' : 'Save Vehicle' }}
-      </button>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-   
-
+    
   </form>
+
+  <!-- Vehicle List -->
+<div class="table-responsive" *ngIf="vehicleDataArray.length > 0">
+  <table class="table table-sm table-bordered">
+    <thead>
+      <tr>
+        <th>Sno</th>
+        <th>Type</th>
+        <th>Chassis No</th>
+        <th>Make</th>
+        <th>Model</th>
+        <th>Engine No</th>
+        <th>Year Built</th>
+        <th>Color</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let vehicle of vehicleDataArray; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ getVehicleTypeLabel(vehicle.VehicleIndicator) }}</td>
+        <td>{{ vehicle.ChassisNo || '-' }}</td>
+        <td>{{ vehicle.Make || '-' }}</td>
+        <td>{{ vehicle.Model || '-' }}</td>
+        <td>{{ vehicle.EngineNo || '-' }}</td>
+        <td>{{ vehicle.YearBuilt || '-' }}</td>
+        <td>{{ vehicle.Color || '-' }}</td>
+        <td>
+          <button class="fas fa-eye text-info" (click)="editVehicle(i)"></button>
+          <button class="fas fa-trash text-danger" (click)="deleteVehicle(i)"></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="mt-2 text-muted">
+    Total Vehicles: {{ vehicleDataArray.length }}
+  </div>
+</div>
+
+<!-- Show message when no vehicles -->
+<div *ngIf="vehicleDataArray.length === 0" class="text-center text-muted p-3">
+  No vehicles added yet. Fill the form and click "Add Vehicle" to add vehicles.
+</div>
 </div>
