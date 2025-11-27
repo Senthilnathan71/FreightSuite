@@ -280,6 +280,7 @@ export class InvoiceEntryComponent implements OnInit {
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],
       PartyAddress: [{ value: '', disabled: true }, Validators.required],
+      COAMasterSid : [null],
       CustomerBranchSid: [null],
       DocumentNumber: [''],
       IRNNumber: [''],
@@ -561,6 +562,7 @@ export class InvoiceEntryComponent implements OnInit {
       this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+      this.invoiceForm.get('COAMasterSid')?.setValue(null);
       this.invoiceForm.get('GSTNo')?.setValue('');
       this.invoiceForm.get('PartyName')?.setValue('');
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
@@ -583,6 +585,14 @@ export class InvoiceEntryComponent implements OnInit {
       } else {
         console.warn('DEBUG - Customer has no SubledgerMasterSid:', customer);
         this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+      }
+
+      if(customer.COAMappedId){
+        this.invoiceForm.get('COAMasterSid')?.setValue(Number(customer.COAMappedId));
+        console.log("DEBUG - Set COAMasterSid from customer:", customer.COAMappedId);
+      } else {
+        this.invoiceForm.get('COAMasterSid')?.setValue(null);
+        console.log("DEBUG - Customer has no COAMappedId:", customer);
       }
 
       // Determine invoice type based on country
@@ -978,6 +988,7 @@ export class InvoiceEntryComponent implements OnInit {
       PartyMasterSid: header.PartyMasterSid || null,
       PartyName: header.PartyName || '',
       PartyAddress: header.PartyAddress || '',
+      COAMasterSid : header.COAMasterSid || null,
       DocumentNumber: header.DocumentNumber || '',
       IRNNumber: header.IRNNumber || '',
       PlaceOfSupply: header.PlaceOfSupply || '',
