@@ -25,6 +25,7 @@ import { ReverseVoucherEntryComponent } from './reverse-voucher/reverse-voucher-
 import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-list/reverse-voucher-list.component';
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
+import { VoucherMatchingListComponent } from './voucher-matching/voucher-matching-list/voucher-matching-list.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -356,6 +357,19 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
+
+           {
+        path: "voucher-matching/list",
+        component:VoucherMatchingListComponent,
+        data: {
+          title: "Voucher-Matching",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher-Matching" },
+          ],
+        },
+      },
+
 
          {
         path: "voucher-matching/entry",
