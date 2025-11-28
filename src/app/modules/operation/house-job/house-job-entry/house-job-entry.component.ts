@@ -147,6 +147,7 @@ hssacList: any[] = [];
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
+  masterJobId: number | null = null;
   cargoCurrencyValue: any;
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
@@ -367,22 +368,30 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 4, name: 'Drat' },
   ];
 
-  tabs = [
+ get filteredTabs() {
+  const allTabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
-    // { name: 'BOE', icon: 'fas fa-box' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
-{ name: 'BOE', icon: 'fas fa-file-invoice' },
-{ name: 'Vehicle', icon: 'fas fa-truck' },
-{ name: 'Customs', icon: 'fas fa-passport' },
+    { name: 'BOE', icon: 'fas fa-file-invoice' },
+    { name: 'Vehicle', icon: 'fas fa-truck' },
+    { name: 'Customs', icon: 'fas fa-passport' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
-    // { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
   ];
+ 
+  // Filter out Vehicle tab when department type is AIR
+  if (this.selectedDepartmentType === 'AIR') {
+    return allTabs.filter(tab => tab.name !== 'Vehicle');
+  }
+ 
+  return allTabs;
+}
+ 
 
   // Mail content
 
@@ -431,6 +440,14 @@ auditLogs: any[] = []; // Stores audit logs
     this.initOtherForm();
     this.initDetailsForm();
     this.spinner.show();
+    this.currentRoute.queryParams.subscribe(params => {
+    this.masterJobId = params['masterJobId'] ? +params['masterJobId'] : null;
+    
+    if (this.masterJobId) {
+      console.log('Creating house job for master job:', this.masterJobId);
+      this.loadMasterJobDataForHouseJob(this.masterJobId);
+    }
+  });
     this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
       this.currentRoute.paramMap.subscribe((param) => {
@@ -1562,7 +1579,30 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
   };
 
   console.log('Final payload being sent:', JSON.stringify(payload, null, 2));
-
+ if (!this.isEditMode) {
+    this.operationService.createHouseJob(payload).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('House Job created successfully!');
+          this.HouseJobSid = resp.data.HouseJobSid;
+          this.isEditMode = true;
+          
+          // Navigate to the edit page or reload the form
+          this.router.navigate(['/operation/master-job/list']);
+          
+          // Optionally reload the data to get the generated IDs
+          this.loadHouseById(this.HouseJobSid);
+        } else {
+          this.appSettingService.showError(resp.message || 'Error creating house job.');
+          console.error('Create error:', resp.message);
+        }
+      },
+      error: (err) => {
+        this.appSettingService.showError('Failed to create house job. Please try again.');
+        console.error('Create API error:', err);
+      }
+    });
+  } 
   // Rest of your API call code remains the same...
   if (this.isEditMode && this.HouseJobSid) {
     this.operationService.updateHouseById(this.HouseJobSid, payload).subscribe({
@@ -3289,6 +3329,48 @@ grossAmount(): number {
  
   }, 0);
  
+}
+
+loadMasterJobDataForHouseJob(masterJobId: number): void {
+  this.operationService.getMasterJobById(masterJobId).subscribe({
+    next: (response: any) => {
+      if (response.status && response.data) {
+        const masterJobData = response.data;
+        this.prepopulateFromMasterJob(masterJobData);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading master job data:', error);
+      this.appSettingService.showWarning('Failed to load master job data');
+    }
+  });
+}
+prepopulateFromMasterJob(masterJobData: any): void {
+  console.log('Prepopulating house job from master job:', masterJobData);
+  
+  // Set MasterJobSid in the form
+  this.houseJobForm.patchValue({
+    MasterJobSid: masterJobData.MasterJobSid,
+    DepartmentMasterSid: masterJobData.DepartmentMasterSid,
+    MBLNo: masterJobData.MBLNo,
+    MBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
+    VesselName: masterJobData.VesselName,
+    VoyageNo: masterJobData.VoyageNo,
+    POL: masterJobData.POL,
+    POD: masterJobData.POD,
+    FPD: masterJobData.FPD,
+    ETA: masterJobData.ETA ? new Date(masterJobData.ETA) : null,
+    ETD: masterJobData.ETD ? new Date(masterJobData.ETD) : null,
+    CarrierName: masterJobData.CarrierName
+  });
+
+  // Set department info
+  const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === masterJobData.DepartmentMasterSid);
+  if (selectedDepartment) {
+    this.onDeptChange(selectedDepartment);
+  }
+  
+  this.appSettingService.showSuccess('Master job data loaded successfully');
 }
  
  

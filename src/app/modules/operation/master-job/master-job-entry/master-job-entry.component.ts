@@ -602,7 +602,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       MasterJobContainerSid: [null],
       ContainerType: [null, Validators.required],
       ContainerNumber: ['', [Validators.required, Validators.maxLength(11),
-        
+        Validators.pattern(/^[A-Z]{4}\d{7}$/) 
       ]],
       LineSeal: ['', Validators.maxLength(10)],
       CustomsSeal: ['', Validators.maxLength(10)],
@@ -618,6 +618,60 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     });
   }
   
+  validateContainerNumber(containerNumber: string): { isValid: boolean, checkDigit?: number } {
+  if (!containerNumber || containerNumber.length !== 11) {
+    return { isValid: false };
+  }
+
+  // ISO 6346 character value mapping
+  const charMap: { [key: string]: number } = {
+    'A': 10, 'B': 12, 'C': 13, 'D': 14, 'E': 15, 'F': 16, 'G': 17, 'H': 18, 'I': 19,
+    'J': 20, 'K': 21, 'L': 23, 'M': 24, 'N': 25, 'O': 26, 'P': 27, 'Q': 28, 'R': 29,
+    'S': 30, 'T': 31, 'U': 32, 'V': 34, 'W': 35, 'X': 36, 'Y': 37, 'Z': 38
+  };
+
+  // Remove any spaces and convert to uppercase
+  const cleanNumber = containerNumber.toUpperCase().replace(/\s/g, '');
+  
+  if (cleanNumber.length !== 11) {
+    return { isValid: false };
+  }
+
+  // Extract the base number (first 10 characters) and check digit (last character)
+  const baseNumber = cleanNumber.substring(0, 10);
+  const providedCheckDigit = parseInt(cleanNumber.substring(10, 11), 10);
+
+  let sum = 0;
+
+  // Calculate sum using ISO 6346 algorithm
+  for (let i = 0; i < 10; i++) {
+    const char = baseNumber[i];
+    let value: number;
+
+    // Check if character is a letter
+    if (/[A-Z]/.test(char)) {
+      value = charMap[char] || 0;
+    } else if (/[0-9]/.test(char)) {
+      value = parseInt(char, 10);
+    } else {
+      return { isValid: false };
+    }
+
+    // Weight factor: 2^i (power of 2)
+    const weight = Math.pow(2, i);
+    sum += value * weight;
+  }
+
+  // Calculate check digit
+  const remainder = sum % 11;
+  const calculatedCheckDigit = remainder === 10 ? 0 : remainder;
+
+  return {
+    isValid: calculatedCheckDigit === providedCheckDigit,
+    checkDigit: calculatedCheckDigit
+  };
+}
+
   // Getters for form arrays
   get connections(): FormArray {
     return this.masterJobForm.get('connections') as FormArray;
@@ -635,21 +689,36 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     return this.masterJobForm.get('containerActivities') as FormArray;
   }
   formatContainerNumber(): void {
-  const containerNumberControl = this.containerFormGroup.get('ContainerNumber');
-  if (containerNumberControl && containerNumberControl.value) {
-    let value = containerNumberControl.value.toUpperCase().replace(/\s/g, '');
-    
-    // Auto-format as user types (ABCD1234567)
-    if (value.length <= 4) {
-      value = value.replace(/[^A-Z]/g, '');
-    } else {
-      value = value.substring(0, 4) + value.substring(4).replace(/\D/g, '');
+  const containerControl = this.containerFormGroup.get('ContainerNumber');
+  if (!containerControl?.value) return;
+
+  let containerNumber = containerControl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  
+  // Basic format validation: 4 letters + 6 digits + 1 check digit
+  const containerRegex = /^[A-Z]{4}\d{6}\d?$/;
+  
+  if (containerNumber.length === 10) {
+    // Calculate check digit and append it
+    const validation = this.validateContainerNumber(containerNumber + '0'); // Temporary append
+    if (validation.checkDigit !== undefined) {
+      containerNumber = containerNumber.substring(0, 10) + validation.checkDigit.toString();
+      containerControl.setValue(containerNumber);
     }
+  }
+
+  // Validate the complete container number
+  if (containerNumber.length === 11) {
+    const validation = this.validateContainerNumber(containerNumber);
     
-    containerNumberControl.setValue(value, { emitEvent: false });
-    
-    // Trigger validation
-    containerNumberControl.updateValueAndValidity();
+    if (!validation.isValid) {
+      containerControl.setErrors({ 'invalidContainerNumber': true });
+      this.toastr.error('Invalid container number. Check digit verification failed.');
+    } else {
+      containerControl.setErrors(null);
+    }
+  } else {
+    containerControl.setErrors({ 'invalidFormat': true });
+    this.toastr.error('Container number must be 11 characters: 4 letters + 6 digits + 1 check digit');
   }
 }
 
@@ -2841,9 +2910,22 @@ private autoPopulateVoyageData(vessel: any): void {
       revenue: Array.from(revenueHmap.values())
     };
   }
-  navigateTohouseJob() {
-    this.router.navigate(['operation/house-job/entry']);
+  navigateToHouseJobCreation(): void {
+  if (!this.masterJobSid) {
+    this.toastr.error('Please save the master job first before creating house job');
+    return;
   }
+
+  // Navigate to house job entry with master job ID as query parameter
+  this.router.navigate(['/operation/house-job/entry'], {
+    queryParams: { 
+      masterJobId: this.masterJobSid,
+      departmentId: this.masterJobForm.get('DepartmentMasterSid')?.value,
+      pol: this.masterJobForm.get('POL')?.value,
+      pod: this.masterJobForm.get('POD')?.value
+    }
+  });
+}
   
 loadHSSACLookups() {
   this.operationService.getAllHssac().subscribe({
