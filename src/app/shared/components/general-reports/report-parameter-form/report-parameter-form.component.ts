@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ReportService } from '../../../services/report.service';
 import { finalize } from 'rxjs/operators';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -17,7 +18,7 @@ export interface ReportParameter {
 @Component({
   selector: 'app-report-parameter-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule,MultiSelectComponent],
   templateUrl: './report-parameter-form.component.html',
   styleUrls: ['./report-parameter-form.component.scss']
 })

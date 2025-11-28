@@ -103,33 +103,19 @@ export class UserEntryComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
-	    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+	    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+        this.currentBranch = this.appSettingService.getCurrentBranchInfo();
+		this.userData = this.appSettingService.getDecryptedUserProfile();
+        this.MenuMasterSid = this.mps.getMenuId();
+		this.mps.init().subscribe();
+
 		this.initUserForm();
 		this.loadAllFields();
 		this.userForm.statusChanges.subscribe(status => {
 			this.btnDisable = status !== 'VALID';
 		});
-		// this.appSettingService.getUser().subscribe((user) => {
-		// 	if (user) {
-		// 		this.userData = user;
-		// 		this.checkPermissions();
-		// 	}
-		// });
-	     this.mps.init().subscribe();
-		 const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-    
-		}
 	}
 
-
-	hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-    }
 
 	// initializes userForm
 	initUserForm() {
@@ -217,6 +203,13 @@ openAuditLogs(modal: TemplateRef<any>) {
 			branchName : [data.branchName || ''],
 			GiveAccess : [data.GiveAccess === 'Y' || false],
 			IsDefault : [data.IsDefault === 'Y' || false],
+		})
+	}
+
+	createNewUserRoles(data?:any) {
+		return this.fb.group({
+			UserRoleMasterSid : [data.UserRoleMasterSid || null],
+			RoleMasterSid : [data.RoleMasterSid || null],
 		})
 	}
 

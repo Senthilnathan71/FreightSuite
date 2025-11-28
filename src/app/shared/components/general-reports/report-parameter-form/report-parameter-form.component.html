@@ -117,6 +117,14 @@
             </ng-template>
           </ng-select>
 
+          <!-- <multi-select 
+            *ngIf="param.ParameterFieldType === 'DROPDOWN M'" [items]="getDropdownOptions(param.ParameterName)"
+            bindLabel="label" 
+            bindValue="value" 
+            [control]="parameterForm.get(param.ParameterName)"
+            [placeholder]="'Select ' + getParameterLabel(param.ParameterName)"
+            [class.is-invalid]="hasError(param.ParameterName)"></multi-select> -->
+
           <!-- YEAR Field -->
           <ng-select
             *ngIf="param.ParameterFieldType === 'YEAR'"

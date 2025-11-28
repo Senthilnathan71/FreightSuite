@@ -43,12 +43,18 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
   /**
    * Report identifier (e.g., 'master-job-pre-alert')
    */
-  @Input() reportId!: string;
+  @Input() reportId?: string;
 
   /**
    * Entity ID (e.g., MasterJobSid, QuotationSid)
    */
-  @Input() entityId!: number;
+  @Input() entityId?: number;
+
+  /**
+   * Payload for POST requests
+   * Used when request type is 'POST' in report config
+   */
+  @Input() payload: any;
 
   /**
    * View container for dynamic component loading
@@ -124,18 +130,32 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         throw new Error('Report ID is required');
       }
 
-      if (!this.entityId) {
-        throw new Error('Entity ID is required');
-      }
-
       // Get report configuration
       this.reportConfig = this.reportService.getReportConfig(this.reportId);
       this.reportComponent = this.reportConfig.component;
 
-      // Fetch report data from backend
-      this.reportData = await this.reportService
-        .fetchReportData(this.reportId, this.entityId)
-        .toPromise();
+      const requestType = this.reportConfig.request || 'GET';
+
+      // Validate inputs based on request type
+      if (requestType === 'GET' && !this.entityId) {
+        throw new Error('Entity ID is required for GET requests');
+      }
+
+      if (requestType === 'POST' && !this.payload) {
+        throw new Error('Payload is required for POST requests');
+      }
+
+      // Fetch report data from backend based on request type
+      if (requestType === 'POST') {
+        this.reportData = await this.reportService
+          .fetchReportDataPost(this.reportId, this.payload)
+          .toPromise();
+      } else {
+        this.reportData = await this.reportService
+          .fetchReportData(this.reportId, this.entityId!)
+          .toPromise();
+      }
+
 
       // Set loading to false to render the container
       this.loading = false;
