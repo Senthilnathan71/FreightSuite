@@ -805,11 +805,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
  showInfo() {
-        if (!this.houseData) return;
+        if (!this.serviceJobData) return;
         const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-        modalRef.componentInstance.item = this.houseData;
-        modalRef.componentInstance.idLabel = 'TDS Set Id';
-        modalRef.componentInstance.idValue = this.houseData?.TDSSetHeaderSid;
+        modalRef.componentInstance.item = this.serviceJobData;
+        modalRef.componentInstance.idLabel = 'Service Job Id';
+        modalRef.componentInstance.idValue = this.serviceJobData?.HouseJobSid;
     }
 
   openTandC() {
@@ -879,7 +879,7 @@ openEDoc() {
     backdrop: 'static' 
   });
   modalRef.componentInstance.item = this.serviceJobData;
-  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idLabel = 'Service Job Id';
   modalRef.componentInstance.idValue = this.serviceJobData?.headerId;
   const data:any={
     CompanyMasterSid: this.currentCompany.CompanyMasterSid,

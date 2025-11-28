@@ -139,7 +139,9 @@ export class CreditNoteEntryComponent {
   currentCountry : number;
   currentCurrency: number;
   currentUserCurrency : string;
-  
+  branchDetails: any;
+  currentBranchCityName: string | null;
+  currentBranchCityId: number;
   currentUserCountry :string;
   get isIndiaGST(): boolean {
     return this.bookingModeCountry === 'india';
@@ -183,7 +185,12 @@ export class CreditNoteEntryComponent {
       this.currentCurrency=Number(this.currentCompany?.CurrencyMasterSid)
       this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
       this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
-  
+      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+      console.log(this.branchDetails, "BRANCH DETAILS");
+      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+      this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+      this.loadCityName();
       console.log('=== INITIAL COMPANY DATA ===');
       console.log('Current Company:', this.currentCompany);
       console.log('Current Branch:', this.currentBranch);
@@ -242,6 +249,32 @@ export class CreditNoteEntryComponent {
 
     this.creditNoteForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
+    });
+  }
+
+
+    loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+    this.spinner.show();
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+        this.spinner.hide();
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+        this.spinner.hide();
+      }
     });
   }
 
@@ -2675,4 +2708,18 @@ private normalizeParty(raw: any) {
     openFollowup() {
   
     }
+
+
+
+  getPkgWtVol() {
+    const data = this.creditNoteData?.masterJob;
+    if (!data) return '';
+    const values = [
+      data.NoOfPkg,
+      data.GrossWeight,
+      data.Volume
+    ].filter(x => x != null && x !== '');
+    return values.join(' / ');
+  }
+
 }

@@ -2507,4 +2507,23 @@ openEDoc() {
   // Optionally, pass the quotation HTML content ID for PDF generation
   modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
+
+getFirstRateError(): string {
+  for (let row of this.details.controls) {
+    const rateControl = row.get('Rate');
+    if (rateControl?.invalid && rateControl?.touched) {
+      if (rateControl.errors?.['rateExceeded']) {
+        return 'Credit note rate cannot exceed original vendor invoice rate';
+      }
+      if (rateControl.errors?.['required']) {
+        return 'Rate is required';
+      }
+      if (rateControl.errors?.['min']) {
+        return 'Rate must be greater than or equal to 0';
+      }
+    }
+  }
+  return '';
+}
+  
 }
