@@ -34,7 +34,7 @@
           <span>Report</span>
         </button> -->
         
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reportAndEmailModel(reportModel)">
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!bookingData || isFormDirty()" (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print"></i> Print
         </button>
       </div>
@@ -340,8 +340,8 @@
                   </aside> -->
 
 
-                  <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select mt-1"
+                  <aside class="col-md-6 ">
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
                       [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
@@ -371,7 +371,7 @@
                         </ng-select> -->
 
                         <!-- Swap icon -->
-                        <button class="btn  bi bi-calendar3 " type="button"
+                        <button class="btn  bi bi-calendar3 pe-0" type="button"
                           (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry">
                           </i>
@@ -396,7 +396,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group ">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
@@ -437,7 +437,7 @@
                   </aside> -->
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
                       [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
@@ -465,7 +465,7 @@
                         </dofi-searchable-dropdown>
 
                         <!-- Swap icon -->
-                        <button class="btn  bi bi-calendar3 " type="button"
+                        <button class="btn  bi bi-calendar3  " type="button"
                           (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry">
                           </i>
@@ -522,7 +522,7 @@
                   </aside> -->
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
                       [class.filled]="!!bookingForm.get('Notify')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
@@ -626,7 +626,7 @@
                   </aside> -->
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
                       [class.filled]="!!bookingForm.get('CarrierName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
@@ -651,7 +651,7 @@
                         </dofi-searchable-dropdown>
 
                         <!-- Swap icon -->
-                        <button class="btn  bi bi-calendar3 px-0" type="button"
+                        <button class="btn  bi bi-calendar3 pe-0" type="button"
                           (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry">
                           </i>
@@ -661,7 +661,7 @@
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="this.b['isCarrierFreeText']?.value">
                         <input type="text" formControlName="CarrierName" placeholder="" class="form-control" />
-                        <button class="btn bi bi-calendar3 px-0 " type="button"
+                        <button class="btn bi bi-calendar3 pe-0 " type="button"
                           (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown">
                           </i>
@@ -720,14 +720,31 @@
                       <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
                     </div>
                   </aside>
-
+                   <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('IncoTerms')?.value">
+                      <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
+                        [displayFields]="incoLookupConfig.displayFields"
+                        [displayLabels]="incoLookupConfig.displayLabels" [labelFields]="incoLookupConfig.labelFields"
+                        bindLabel="IncoName" bindValue="IncoName" (itemSelected)="onIncoTermsChange($event)">
+                      </dofi-searchable-dropdown>
+                      <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('IncoTerms')?.hasError('required')){
+                        <span>Required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Vessel & Route Card - Right Half -->
-          <div class="info-card ">
+          <div class="info-card1 ">
             <!-- <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
@@ -785,7 +802,7 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!bookingForm.get('POD')?.value">
+                      [class.filled]="!!bookingForm.get('POD')?.value" style="margin-top: 10px;">
                       <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="">
@@ -824,7 +841,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group " style="margin-top: 12px;">
+                    <div class="custom-form-group " style="margin-top: 10px;" >
                       <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                         formControlName="POLTerminal">
                       <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
@@ -832,99 +849,100 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group " style="margin-top: 12px;">
+                    <div class="custom-form-group " >
                       <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                         formControlName="PODTerminal">
                       <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
                   <!-- Vessel Name -->
-<aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select mt-2"
-    [class.filled]="!!bookingForm.get('VesselName')?.value">
+                    <aside class="col-md-6">
+                      <div class="custom-form-group custom-form-group-select inputChnages"
+                        [class.filled]="!!bookingForm.get('VesselName')?.value">
 
-    <!-- Dropdown Mode -->
-    <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
-      <dofi-searchable-dropdown
-        [items]="headerVesselList"
-        formControlName="VesselName"
-        placeholder=""
-        [displayFields]="vesselVoyageConfig.displayFields"
-        [displayLabels]="vesselVoyageConfig.displayLabels"
-        [labelFields]="vesselVoyageConfig.labelFields"
-        bindValue="VesselName"
-        (itemSelected)="onVesselChange($event)"
-        style="width: 100%;">
-      </dofi-searchable-dropdown>
+                        <!-- Dropdown Mode -->
+                        <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                          <dofi-searchable-dropdown
+                            [items]="headerVesselList"
+                            formControlName="VesselName"
+                            placeholder=""
+                            [displayFields]="vesselVoyageConfig.displayFields"
+                            [displayLabels]="vesselVoyageConfig.displayLabels"
+                            [labelFields]="vesselVoyageConfig.labelFields"
+                            bindValue="VesselName"
+                            (itemSelected)="onVesselChange($event)"
+                            style="width: 85%">
+                          </dofi-searchable-dropdown>
 
-      <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-      </button>
-    </div>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                        </div>
 
-    <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
-      <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
-      <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-      </button>
-    </div>
+                        <!-- Manual Text Input -->
+                        <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
 
-    <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-  </div>
-</aside>
+                        <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                      </div>
+                    </aside>
 
-<!-- Voyage No -->
-<aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select mt-2"
-    [class.filled]="!!bookingForm.get('VoyageNo')?.value">
+                    <!-- Voyage No -->
+                    <aside class="col-md-6">
+                      <div class="custom-form-group custom-form-group-select inputChnages"
+                        [class.filled]="!!bookingForm.get('VoyageNo')?.value">
 
-    <!-- Dropdown Mode -->
-    <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
-      <ng-select
-        [items]="voyageList"
-        bindLabel="VoyageNo"
-        bindValue="VoyageNo"
-        class="ng-select"
-        appendTo="body"
-        formControlName="VoyageNo"
-        placeholder=""
-        (change)="onVoyageChange($event)"
-        style="width: 100%;">
-        <ng-template ng-option-tmp let-item="item">
-          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-            {{ item.VoyageNo }}
-          </div>
-          <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
-            <div style="flex: 1; text-align: left;">ETA: {{ item?.ETD | formatDate }}</div>
-            <div style="flex: 1; text-align: right;">ETD: {{ item?.ETA | formatDate }}</div>
-          </div>
-        </ng-template>
-      </ng-select>
+                        <!-- Dropdown Mode -->
+                        <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
+                          <ng-select
+                            [items]="voyageList"
+                            bindLabel="VoyageNo"
+                            bindValue="VoyageNo"
+                            class="ng-select"
+                            appendTo="body"
+                            formControlName="VoyageNo"
+                            placeholder=""
+                            (change)="onVoyageChange($event)"
+                            style="width: 100%;">
+                            <ng-template ng-option-tmp let-item="item">
+                              <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+                                {{ item.VoyageNo }}
+                              </div>
+                              <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
+                                <div style="flex: 1; text-align: left;">ETA: {{ item?.ETD | formatDate }}</div>
+                                <div style="flex: 1; text-align: right;">ETD: {{ item?.ETA | formatDate }}</div>
+                                <div style="flex: 1; text-align: right;">CutOffDate: {{ item?.PortCutoff | formatDate }}</div>
+                              </div>
+                            </ng-template>
+                          </ng-select>
 
-      <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-      </button>
-    </div>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                        </div>
 
-    <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.b['isVoyageFreeText']?.value">
-      <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
-      <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-      </button>
-    </div>
+                        <!-- Manual Text Input -->
+                        <div class="input-group" *ngIf="this.b['isVoyageFreeText']?.value">
+                          <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
 
-    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-  </div>
-</aside>
+                        <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                      </div>
+                    </aside>
 
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date " style="margin-top: 12px;">
+                    <div class=" custom-form-group custom-form-group-select-date " >
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
@@ -938,7 +956,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date" style="margin-top: 12px;">
+                    <div class=" custom-form-group custom-form-group-select-date" >
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
                           container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
@@ -950,28 +968,27 @@
                       </label>
                     </div>
                   </div>
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mt-1"
-                      [class.filled]="!!bookingForm.get('IncoTerms')?.value">
-                      <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
-                        [displayFields]="incoLookupConfig.displayFields"
-                        [displayLabels]="incoLookupConfig.displayLabels" [labelFields]="incoLookupConfig.labelFields"
-                        bindLabel="IncoName" bindValue="IncoName" (itemSelected)="onIncoTermsChange($event)">
-                      </dofi-searchable-dropdown>
-                      <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
-                      <div class="error-message">
-                        @if(bookingForm.get('IncoTerms')?.hasError('required')){
-                        <span>Required</span>
-                        }
+
+                   <div class="col-md-6">
+                    <div class=" custom-form-group custom-form-group-select-date" >
+                      <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="CutOffDate"
+                          container="body" ngbDatepicker #d9="ngbDatepicker" [minDate]="minDate"
+                          (keydown.arrowDown)="d9.open()" (click)="d9.toggle()" />
+                        <button class="btn bi bi-calendar3 px-0" (click)="d9.toggle()" type="button">
+                          <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      }
+                      <label for="" class="input-label">Port Cut off date <span class="text-danger"></span>
+                      </label>
                     </div>
-                  </aside>
+                  </div>
+
+
+                 
 
 
                   <aside class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date mt-1">
+                    <div class=" custom-form-group custom-form-group-select-date ">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
                           [minDate]="minDate" ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()"
@@ -1017,7 +1034,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group mt-1">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="InternalNote">
                       <label for="text-input" class="input-label">Internal Note <span
@@ -1470,7 +1487,7 @@
           <div class="my-2 text-center">No Product added yet.</div>
         </div>
         } -->
-        <div class="col-12 px-2" [formGroup]="detailForm">
+        <div class="col-12 px-1" [formGroup]="detailForm">
           <div class="table-responsive table-borderless1" formArrayName="bookingProducts" style="overflow-y: hidden;">
             <table class="table table-hover align-middle no-wrap  table-sm mb-0">
               <thead>
@@ -1553,7 +1570,7 @@
                       <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d22="ngbDatepicker"
                         [minDate]="minDate" (keydown.arrowDown)="d22.open()" (click)="d22.toggle()"
                         formControlName="ShippingBillDate" />
-                      <button class="btn  bi bi-calendar3 px-0" (click)="d22.toggle()" type="button"> <i-feather
+                      <button class="btn  bi bi-calendar3 p-0" (click)="d22.toggle()" type="button"> <i-feather
                           name="calendar" class="feather-sm"></i-feather></button>
                     </div>
 
@@ -1633,19 +1650,19 @@
                   <td>
                     <!-- <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                     [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter] ="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"> -->
-                    <div class="d-flex align-items-center" style="margin-top: 8px;">
-                      <div class="input-group">
+                    <div class="d-flex align-items-center"style="margin-top: 4px;" >
+                     
                         <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker"
                           (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()"
                           [minDate]="today" container="body" readonly />
-                        <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                        <button class="btn p-0 " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                             class="feather-sm"></i-feather></button>
-                      </div>
+                      
                     </div>
                   </td>
                   <!-- Haz Part  -->
                   <td>
-                    <div class="form-check">
+                    <div class="form-check text-center">
                       <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz"
                         (change)="onHazChange(productIndex,$event)" (keydown.enter)="onHazChange(productIndex,$event)">
                     </div>
@@ -2642,7 +2659,7 @@
             </div>
             <div class="d-flex mb-1 flex-wrap">
               <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
-              <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+              <div class="text-break">: {{bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</div>
             </div>
             <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
               <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>

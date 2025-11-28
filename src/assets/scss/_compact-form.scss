@@ -12,7 +12,7 @@
     box-shadow: none;
     color: black;
     font-weight: 600 !important;
-     font-size: 0.9rem !important;
+    font-size: 0.9rem !important;
   }
 
   .input-label {
@@ -37,23 +37,24 @@
       padding: 6px 4px 0px;
       border-right: 0;
       font-weight: 600 !important;
-       max-height: 29px !important;
+      max-height: 29px !important;
       font-size: 0.9rem !important;
     }
-      .form-control {
-    border-radius: 0;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-    padding: 6px 4px 0px;
-    max-height: 29px;
-    color: black;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
-  }
+
+    .form-control {
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      padding: 6px 4px 0px;
+      max-height: 29px;
+      color: black;
+      font-weight: 600 !important;
+      font-size: 0.9rem !important;
+    }
   }
 
-   .form-control {
+  .form-control {
     border-radius: 0;
     border-top: 0;
     border-left: 0;
@@ -126,7 +127,7 @@
       font-size: 12px;
       color: #05608D;
       transform: none;
-      left:-2px;
+      left: -2px;
       font-weight: 600 !important;
     }
   }
@@ -144,7 +145,7 @@
       font-weight: 600;
     }
 
-    .input-group{
+    .input-group {
       margin-bottom: -3ppx !important;
     }
   }
@@ -154,7 +155,35 @@
     left: 3px;
   }
 
-  .form-check-label{
+  .form-check-label {
     color: #05608d;
   }
+
+  .inputChnages {
+  // Default label style (input not focused and empty)
+  .input-label {
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    background-color: #fff;
+    padding: 0 5px;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    font-weight: 600 !important;
+  }
+
+  // FLOAT LABEL only when INPUT has value or is focused
+  .input-group:focus-within + .input-label,
+  &.filled .input-label {
+      top: 0px;
+      font-size: 12px;
+      color: #05608D;
+      transform: none;
+      left: -2px;
+      font-weight: 600 !important;
+  }
+}
+
 }
