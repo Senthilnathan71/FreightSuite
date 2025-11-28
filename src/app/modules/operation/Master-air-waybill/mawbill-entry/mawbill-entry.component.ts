@@ -2136,6 +2136,10 @@ handleEdocChange(event: any) {
     }
   }
 
+  navigateTohouseJob() {
+    this.router.navigate(['operation/house-job/entry']);
+  }
+
   openAttachModal(){
     const requiredFields = ['DepartmentMasterSid','POL','POD'];
     if(!this.hasEveryRequiredFieldsFilled(requiredFields , this.masterJobForm)){

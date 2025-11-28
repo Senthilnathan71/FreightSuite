@@ -6,7 +6,7 @@
   <div class="row  bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
     <div class="col-md-4  pb-1">
       <div class="d-flex align-items-center gap-2">
-        <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Quotation</h5>
+        <h5 class="page-title mb-0 text-info">Quotation</h5>
         @if(isEditMode){
         <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
@@ -343,6 +343,16 @@
     </div>
   </div>
 </aside>
+ <aside class="col-md-4">
+              <div class="custom-form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="IsContract" formControlName="IsContract">
+                  <label class="form-check-label" for="IsContract">
+                    Contract
+                  </label>
+                </div>
+              </div>
+            </aside>
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
@@ -2688,7 +2698,9 @@
 <ng-template #reportModel let-modal>
 
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center">
-    <h5 class="modal-title text-white mb-0">Quotation</h5>
+    <h5 class="modal-title text-white mb-0">
+      {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
+      </h5>
     <div class="d-flex gap-2 align-items-center">
 
       <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
@@ -2730,7 +2742,9 @@
             </div>
 
             <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-            <div class="text-center  fw-bold pb-2">QUOTATION</div>
+            <div class="text-center  fw-bold pb-2">
+              {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
+              </div>
             <div class="row mx-auto">
               <div class="col-md-6">
                 <section class="d-flex flex-column">
@@ -2746,11 +2760,15 @@
               <div class="col-md-6">
                 <section class="d-flex flex-column gap-1">
                   <aside class="d-flex gap-3 justify-content-end">
-                    <p class="mb-0 col-3 fw-bold">Quotation No</p>
+                    <p class="mb-0 col-3 fw-bold">
+                      {{ selectedItem?.IsContract === 'Y' ? 'Contract No' : 'Quotation No' }}
+                      </p>
                     <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
                   </aside>
                   <aside class="d-flex gap-3 justify-content-end">
-                    <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+                    <p class="mb-0 col-3 fw-bold">
+                      {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}
+                      </p>
                     <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
                   </aside>
                   <aside class="d-flex gap-3 justify-content-end">
@@ -2881,7 +2899,9 @@
         </div>
       </div>
 
-      <div class="text-center h5 fw-bold">QUOTATION</div>
+      <div class="text-center h5 fw-bold">
+        {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
+        </div>
       <div class="row mx-auto my-3">
         <div class="col-md-6 px-md-5">
           <section class="d-flex flex-column">
@@ -2896,11 +2916,15 @@
         <div class="col-md-6">
           <section class="d-flex flex-column gap-1">
             <aside class="d-flex gap-3 justify-content-end">
-              <p class="mb-0 col-3 fw-bold">Quotation No</p>
+              <p class="mb-0 col-3 fw-bold">
+                {{ selectedItem?.IsContract === 'Y' ? 'Contract No' : 'Quotation No' }}
+                </p>
               <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
             </aside>
             <aside class="d-flex gap-3 justify-content-end">
-              <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+              <p class="mb-0 col-3 fw-bold">
+                {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}
+                </p>
               <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
             </aside>
             <aside class="d-flex gap-3 justify-content-end">
