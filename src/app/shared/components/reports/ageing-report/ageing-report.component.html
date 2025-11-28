@@ -1,124 +1,122 @@
 <div class="print-a4">
 
-    <!-- Company Info -->
-    <!-- <div class="row">
-                    <div class="company-header">
-                        <div class="company-logo">
-                            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                class="img-fluid">
-                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                        </div>
+  <!-- Header Line -->
+  <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
 
-                        <div class="company-info ">
-                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                            <p class="mb-1">
-                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                            </p>
-                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                        </div>
-                    </div>
-                </div> -->
-    <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
-    <h4 class="text-center fw-bold py-2" style="margin: 0;">Ageing Report</h4>
-    <div style="margin-top: 1rem;">
-        <div class="d-flex align-items-center">
-            <strong style="font-weight: bold; margin-bottom: 4px;">Branch :</strong>
-            <p></p>
-        </div>
-        <div class="d-flex align-items-center">
-            <strong style="font-weight: bold; margin-bottom: 4px;">Ledger :</strong>
-            <p></p>
-        </div>
-        <div class="d-flex align-items-center">
-            <strong style="font-weight: bold; margin-bottom: 4px;">To Date :</strong>
-            <p></p>
-        </div>
-        <div class="table-responsive ">
-            <table class="table tablebordered  table-sm" style="margin: 0; font-size: 12px;">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Subledger</th>
-                        <th class="bg-transparent text-light text-center">OS in Curr</th>
-                        <th class="bg-transparent text-light text-center">OS(INR)</th>
-                        <th class="bg-transparent text-light">1 -<br> 15 </th>
-                        <th class="bg-transparent text-light">16 -<br> 30 </th>
-                        <th class="bg-transparent text-light">31 -<br> 45 </th>
-                        <th class="bg-transparent text-light">46 -<br>60 </th>
-                        <th class="bg-transparent text-light">61 -<br> 90 </th>
-                        <th class="bg-transparent text-light">91 -<br> 180 </th>
-                        <th class="bg-transparent text-light">> <br>180 </th>
-                        <th class="bg-transparent text-light">On Acc<br>(INR)</th>
-                        <th class="bg-transparent text-light">Salep<br>erson</th>
-                        <th class="bg-transparent text-light">Credit<br>Days</th>
-                        <th class="bg-transparent text-light">Credit<br>Limit</th>
-                        <th class="bg-transparent text-light">Over<br>Due<br>Amt</th>
-                        <th class="bg-transparent text-light">Over<br>Due<br>Days</th>
-                </thead>
-                <tbody>
-                    <tr class="fw-bold">
-                        <td>
-                            Curr : INR
-                        </td>
-                    </tr>
-                    <tr style="white-space:nowrap">
-                        <td>A.S. & SONS >A.S. </td>
-                        <td>13770422524255335</td>
-                        <td>13770255524555355</td>
-                        <td>4500</td>
-                        <td>398</td>
-                        <td>8000</td>
-                        <td>398</td>
-                        <td>1500</td>
-                        <td>498</td>
-                        <td>387</td>
-                        <td>-270</td>
-                        <td>2398</td>
-                        <td class="text-danger">60</td>
-                        <td class="text-danger">5000</td>
-                        <td>35</td>
-                        <td class="text-danger">1500</td>
-                    </tr>
+  <!-- Report Title -->
+  <h2 class="text-center fw-bold py-2" style="margin: 0;">
+    {{ currentCompany?.companyName }}
+  </h2>
 
-                    <tr>
-                        <td class="fw-bold">
-                            Total
-                        </td>
-                        <td>13770</td>
-                        <td>13770</td>
-                        <td>4500</td>
-                        <td></td>
-                        <td>8000</td>
-                        <td></td>
-                        <td>1500</td>
-                        <td></td>
-                        <td></td>
-                        <td>-270</td>
-                        <td></td>
-                        <td>60</td>
-                        <td>5000</td>
-                        <td></td>
-                        <td>1500</td>
-                    </tr>
+  <h4 class="text-center fw-bold py-2" style="margin: 0;">
+    Customer Ageing as on {{ fullData?.concludedUpto | formatDate }}
+  </h4>
 
-
-                </tbody>
-            </table>
-        </div>
+  <!-- Header Fields -->
+  <div style="margin-top: 1rem;">
+    <div class="d-flex align-items-center">
+      <strong style="margin-bottom: 4px;">Branch :</strong>
+      <p class="ms-1">{{ fullData?.branchInvolved }}</p>
     </div>
 
+    <div class="d-flex align-items-center">
+      <strong style="margin-bottom: 4px;">Ledger :</strong>
+      <p class="ms-1">{{ fullData?.LedgerName }}</p>
+    </div>
 
+    <div class="d-flex align-items-center">
+      <strong style="margin-bottom: 4px;">To Date :</strong>
+      <p class="ms-1">{{ fullData?.concludedUpto | formatDate }}</p>
+    </div>
 
-    <!-- <footer class="text-center mb-0 px-2">
-                    <div class="d-flex justify-content-between">
-                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                        <span>
-                            This document is computer-generated and does not require a signature.
-                        </span>
-                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-                    </div>
-                </footer> -->
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light">Subledger</th>
+            <th class="bg-transparent text-light text-center">OS in Local</th>
+            <th class="bg-transparent text-light text-center">OS in Curr</th>
+
+            @for (label of bucketLabels; track $index) {
+              <th class="bg-transparent text-light">{{ label }}</th>
+            }
+
+            <th class="bg-transparent text-light">On Acc (INR)</th>
+            <!-- <th class="bg-transparent text-light">Salesperson</th> -->
+            <th class="bg-transparent text-light">Credit Days</th>
+            <th class="bg-transparent text-light">Credit Limit</th>
+            <!-- <th class="bg-transparent text-light">Over Due Amt</th>
+            <th class="bg-transparent text-light">Over Due Days</th> -->
+          </tr>
+        </thead>
+
+        <tbody>
+        
+          <!-- Loop Currency Groups -->
+          @for (group of ageingResults; track group.CurrencyCode) {
+
+            <!-- Currency Header Row -->
+             @if(params?.CurrencyWise){
+            <tr class="fw-bold">
+              <td colspan="16">
+                Curr : {{ group.CurrencyCode }}
+              </td>
+            </tr>
+            }
+
+            <!-- Loop Subledger Rows -->
+            @for (sub of group.subledgers; track sub.SubledgerMasterSid) {
+
+              <tr style="white-space: nowrap">
+                <td>{{ sub.SubledgerName }}</td>
+                <td class="text-end">{{ sub.totalOutstandingCurrency }}</td>
+                <td class="text-end">{{ sub.totalOutstandingLocal }}</td>
+
+                @for (label of bucketLabels; track $index) {
+                  <td class="text-end">{{ sub.buckets[label] || 0 }}</td>
+                }
+
+                <td class="text-end">0</td>
+                <!-- <td>-</td> -->
+                <td>-</td>
+                <td>-</td>
+                <!-- <td class="text-end">0</td>
+                <td>-</td> -->
+              </tr>
+
+            }
+
+            <!-- Totals Row -->
+            <tr class="fw-bold">
+              <td>Total</td>
+
+              <td class="text-end">{{ group.totalOutstandingCurrency }}</td>
+              <td class="text-end">{{ group.totalOutstandingLocal }}</td>
+
+              @for (label of bucketLabels; track $index) {
+                <td class="text-end">{{ group.bucketTotals[label] || 0 }}</td>
+              }
+
+              <td class="text-end">0</td>
+              <!-- <td></td> -->
+              <td></td>
+              <td></td>
+              <!-- <td class="text-end">0</td>
+              <td></td> -->
+            </tr>
+
+          }
+          <tr>
+            <td class="fw-bold">
+                Grand Total
+            </td>
+            <td class="fw-bold text-end">{{fullData?.grandTotalLocal}}</td>
+            <td colspan="14"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
