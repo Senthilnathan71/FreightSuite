@@ -5,9 +5,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { ReportService } from '../../../services/report.service';
 import { finalize } from 'rxjs/operators';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { toNgbDateStruct } from 'src/app/common/helper';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -48,8 +49,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
   parameterForm!: FormGroup;
   dropdownData: Map<string, any[]> = new Map();
   loadingDropdowns: Map<string, boolean> = new Map();
-  minDates: Map<string, any> = new Map();
-  maxDates: Map<string, any> = new Map();
+  minDates = new Map<string, NgbDateStruct>();
+  maxDates = new Map<string, NgbDateStruct>();
 
   readonly FIELD_TYPES = {
     TEXT: 'TEXT',
@@ -100,7 +101,11 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
 
       if (param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN ||
           param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M) {
-        this.loadDynamicDropdown(param);
+        if(param.DropDownValue){
+          this.dropdownData.set(param.ParameterName, param.DropDownValue);
+        } else {
+          this.loadDynamicDropdown(param);
+        }
       }
     });
 
@@ -125,10 +130,15 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     if (rules?.min != null) validators.push(Validators.min(rules.min));
     if (rules?.max != null) validators.push(Validators.max(rules.max));
     if (rules?.pattern) validators.push(Validators.pattern(rules.pattern));
-    if(rules?.minDate) 
-      this.minDates.set(param.ParameterName, new Date(rules.minDate));
-    if(rules?.maxDate) 
-      this.maxDates.set(param.ParameterName, new Date(rules.maxDate));
+    if (rules?.minDate) {
+      const d = rules.minDate === 'today' ? new Date() : new Date(rules.minDate);
+      this.minDates.set(param.ParameterName, toNgbDateStruct(d));
+    }
+
+    if (rules?.maxDate) {
+      const d = rules.maxDate === 'today' ? new Date() : new Date(rules.maxDate);
+      this.maxDates.set(param.ParameterName, toNgbDateStruct(d));
+    }
 
     // Field-specific
     switch (param.ParameterFieldType) {
@@ -145,7 +155,9 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
         validators.push(this.numberValidator());
         break;
     }
-
+    console.log(validators);
+    console.log(this.minDates);
+    console.log(this.maxDates);
     return validators;
   }
 
@@ -249,11 +261,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
       // Format dates to ISO string if they're date objects
       const formattedValue = Object.keys(formValue).reduce((acc, key) => {
         const param = this.parameters.find(p => p.ParameterName === key);
-        if (param?.ParameterFieldType === 'DATE' && formValue[key] instanceof Date) {
-          acc[key] = formValue[key].toISOString().split('T')[0];
-        } else {
-          acc[key] = formValue[key];
-        }
+        acc[key] = formValue[key];
+        
         return acc;
       }, {} as any);
 
@@ -287,4 +296,17 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     }
     return '';
   }
+
+  getMinDate(paramName: string): NgbDateStruct | null {
+    console.log('🔵 getMinDate called with:', paramName);
+    console.log('🔵 minDates:', this.minDates);
+    return this.minDates.get(paramName) || null;
+  }
+
+  getMaxDate(paramName: string): NgbDateStruct | null {
+    console.log('🔵 getMaxDate called with:', paramName);
+    console.log('🔵 maxDates:', this.maxDates);
+    return this.maxDates.get(paramName) || null;
+  }
+
 }

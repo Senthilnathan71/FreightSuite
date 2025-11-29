@@ -40,9 +40,9 @@
               <i class="mdi mdi-file-chart"></i> {{ selectedReport.ReportDisplayName }}
             </h5>
           </div>
-          <div>
+          <!-- <div>
             <span class="badge  bg-primary">{{ selectedReport.ReportFormat }}</span>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -93,7 +93,7 @@
     </div>
 
     <!-- Report Data Viewer -->
-    <div class="card" *ngIf="hasReportData()">
+    <!-- <div class="card" *ngIf="hasReportData()">
       <div class="card-header">
         <h6 class="mb-0">
           <i class="mdi mdi-table"></i> Report Data
@@ -107,7 +107,6 @@
       </div>
     </div>
 
-    <!-- No Data Message -->
     <div class="card" *ngIf="!hasReportData() && !generatingReport">
       <div class="card-body text-center py-5">
         <i class="mdi mdi-information-outline text-muted" style="font-size: 48px;"></i>
@@ -115,7 +114,7 @@
           Please fill in the parameters above and click "Generate Report" to view data.
         </p>
       </div>
-    </div>
+    </div> -->
 
     <!-- Loading Indicator -->
     <div class="card" *ngIf="generatingReport">

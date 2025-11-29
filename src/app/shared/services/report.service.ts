@@ -524,6 +524,7 @@ export class ReportService {
     // Email templates expect flat structure like {jobNumber}, but data is nested
     const flattenedData = {
       // Spread masterJob fields to top level
+      ...(reportData || {}),
       ...(reportData.masterJob || {}),
       // Spread company fields (prefixed to avoid conflicts)
       companyName: reportData.company?.name || '',

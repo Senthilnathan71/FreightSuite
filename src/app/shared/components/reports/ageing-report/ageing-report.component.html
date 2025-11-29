@@ -1,12 +1,12 @@
 <div class="print-a4">
 
   <!-- Header Line -->
-  <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
+  <!-- <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div> -->
 
   <!-- Report Title -->
-  <h2 class="text-center fw-bold py-2" style="margin: 0;">
+  <h3 class="text-center fw-bold py-2" style="margin: 0;">
     {{ currentCompany?.companyName }}
-  </h2>
+  </h3>
 
   <h4 class="text-center fw-bold py-2" style="margin: 0;">
     Customer Ageing as on {{ fullData?.concludedUpto | formatDate }}
@@ -42,12 +42,10 @@
               <th class="bg-transparent text-light">{{ label }}</th>
             }
 
-            <th class="bg-transparent text-light">On Acc (INR)</th>
-            <!-- <th class="bg-transparent text-light">Salesperson</th> -->
+            <th class="bg-transparent text-light">On Acc Local</th>
+            <th class="bg-transparent text-light">On Acc Curr</th>
             <th class="bg-transparent text-light">Credit Days</th>
             <th class="bg-transparent text-light">Credit Limit</th>
-            <!-- <th class="bg-transparent text-light">Over Due Amt</th>
-            <th class="bg-transparent text-light">Over Due Days</th> -->
           </tr>
         </thead>
 
@@ -70,19 +68,17 @@
 
               <tr style="white-space: nowrap">
                 <td>{{ sub.SubledgerName }}</td>
-                <td class="text-end">{{ sub.totalOutstandingCurrency }}</td>
                 <td class="text-end">{{ sub.totalOutstandingLocal }}</td>
+                <td class="text-end">{{ sub.totalOutstandingCurrency }}</td>
 
                 @for (label of bucketLabels; track $index) {
                   <td class="text-end">{{ sub.buckets[label] || 0 }}</td>
                 }
 
-                <td class="text-end">0</td>
-                <!-- <td>-</td> -->
-                <td>-</td>
-                <td>-</td>
-                <!-- <td class="text-end">0</td>
-                <td>-</td> -->
+                <td class="text-end">{{sub.totalOnAccountCreditLocal}}</td>
+                <td class="text-end">{{sub.totalOnAccountCreditCurr}}</td>
+                <td>{{ sub.CreditDays }}</td>
+                <td>{{sub.CreditLimit}}</td>
               </tr>
 
             }
@@ -91,16 +87,16 @@
             <tr class="fw-bold">
               <td>Total</td>
 
-              <td class="text-end">{{ group.totalOutstandingCurrency }}</td>
               <td class="text-end">{{ group.totalOutstandingLocal }}</td>
+              <td class="text-end">{{ group.totalOutstandingCurrency }}</td>
 
               @for (label of bucketLabels; track $index) {
                 <td class="text-end">{{ group.bucketTotals[label] || 0 }}</td>
               }
 
-              <td class="text-end">0</td>
+              <td class="text-end">{{group.totalOnAccountCreditLocal}}</td>
               <!-- <td></td> -->
-              <td></td>
+              <td class="text-end">{{group.totalOnAccountCreditCurr}}</td>
               <td></td>
               <!-- <td class="text-end">0</td>
               <td></td> -->
@@ -116,6 +112,15 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div>
+    <div class="pt-2">
+      Note:
+      <ul>
+        <li>Credit Days and Credit Limit are taken from Customer Credit Request. If multiple branches exist, then branch with the highest credit limit is considered.</li>
+        <li>Advance amounts are not included in the ageing buckets; they are recorded under On Account.</li>
+      </ul>
+    </div>
     </div>
   </div>
 
