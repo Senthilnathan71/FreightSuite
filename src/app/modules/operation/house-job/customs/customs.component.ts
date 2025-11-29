@@ -31,6 +31,7 @@ export class CustomsComponent implements OnChanges {
   @Input() formData: any;
   @Input() dataItems: any[] = [];
   @Input() resetTrigger = false;
+  @Input() screenName: 'HouseJob' | 'MasterJob' = 'HouseJob';
 
   @Output() reloadParent = new EventEmitter<any>();
 
@@ -38,6 +39,7 @@ export class CustomsComponent implements OnChanges {
   selectedRecord: any = null;
   loading = false;
   houseJobSid: number | null = null;
+  masterJobSid: number | null = null;
 
   // Importer Codes
   importerCodeList = [
@@ -106,7 +108,8 @@ export class CustomsComponent implements OnChanges {
     this.customsForm = this.fb.group({
       HouseJobCustomsSid: [null],
       CompanyMasterSid: [null, Validators.required],
-      HouseJobSid: [null, Validators.required],
+      HouseJobSid: [null],
+      MasterJobSid: [null],
 
       LineCode: ['', [Validators.required, Validators.maxLength(6)]],
       VoyageAgentCode: ['', [Validators.required, Validators.maxLength(6)]],
@@ -145,10 +148,12 @@ export class CustomsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formData'] && this.formData) {
-      this.houseJobSid = this.formData.HouseJobSid;
+      this.houseJobSid = this.formData.HouseJobSid || null;
+      this.masterJobSid = this.formData.MasterJobSid || null;
       this.customsForm.patchValue({
         CompanyMasterSid: this.formData.CompanyMasterSid,
-        HouseJobSid: this.formData.HouseJobSid,
+        HouseJobSid: this.screenName === 'HouseJob' ? this.formData.HouseJobSid : null,
+        MasterJobSid: this.screenName === 'MasterJob' ? this.formData.MasterJobSid : null,
         CreatedBy: this.formData.CreatedBy,
         UpdatedBy: this.formData.UpdatedBy,
       });
@@ -198,7 +203,8 @@ export class CustomsComponent implements OnChanges {
     this.selectedRecord = null;
     this.customsForm.reset({
       CompanyMasterSid: this.formData?.CompanyMasterSid,
-      HouseJobSid: this.formData?.HouseJobSid,
+      HouseJobSid: this.screenName === 'HouseJob' ? this.formData?.HouseJobSid : null,
+      MasterJobSid: this.screenName === 'MasterJob' ? this.formData?.MasterJobSid : null,
       CargoCode: 'F',
       StorageRequest: 'D',
       UsedOrNew: 'U',
@@ -234,30 +240,52 @@ export class CustomsComponent implements OnChanges {
 }
 
   generateEDIManifest() {
-    if (!this.houseJobSid) {
-      this.toastr.error('House Job ID not found');
-      return;
-    }
-
-    this.spinner.show();
-    this.operationService.generateHouseJobEDIManifest(this.houseJobSid).subscribe({
-      next: (response: string) => {
-        this.spinner.hide();
-        const blob = new Blob([response], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `EDI_Manifest_HouseJob_${this.houseJobSid}_${Date.now()}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        this.toastr.success('EDI Manifest generated successfully');
-      },
-      error: (error) => {
-        this.spinner.hide();
-        this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+    if (this.screenName === 'HouseJob') {
+      if (!this.houseJobSid) {
+        this.toastr.error('House Job ID not found');
+        return;
       }
-    });
+      this.spinner.show();
+      this.operationService.generateHouseJobEDIManifest(this.houseJobSid).subscribe({
+        next: (response: string) => {
+          this.spinner.hide();
+          this.downloadEDIFile(response, `EDI_Manifest_HouseJob_${this.houseJobSid}_${Date.now()}.txt`);
+          this.toastr.success('EDI Manifest generated successfully');
+        },
+        error: (error) => {
+          this.spinner.hide();
+          this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+        }
+      });
+    } else {
+      if (!this.masterJobSid) {
+        this.toastr.error('Master Job ID not found');
+        return;
+      }
+      this.spinner.show();
+      this.operationService.generateMasterJobEDIManifest(this.masterJobSid).subscribe({
+        next: (response: string) => {
+          this.spinner.hide();
+          this.downloadEDIFile(response, `EDI_Manifest_MasterJob_${this.masterJobSid}_${Date.now()}.txt`);
+          this.toastr.success('EDI Manifest generated successfully');
+        },
+        error: (error) => {
+          this.spinner.hide();
+          this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+        }
+      });
+    }
+  }
+
+  private downloadEDIFile(content: string, filename: string) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 }

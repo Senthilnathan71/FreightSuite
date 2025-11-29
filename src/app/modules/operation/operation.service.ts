@@ -1290,6 +1290,18 @@ export class OperationService {
     )
   }
 
+  getCustomsByHouseJobSid(houseJobSid: number) {
+    return this.http.get<{ data: any[] }>(`customs/house-job/${houseJobSid}`).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+  getCustomsByMasterJobSid(masterJobSid: number) {
+    return this.http.get<{ data: any[] }>(`customs/master-job/${masterJobSid}`).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   deleteCustomsById(BoeSid: number) {
     return this.http.delete<{ data: any }>(`customs/${BoeSid}`).pipe(
       map((resp) => {

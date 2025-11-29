@@ -57,6 +57,7 @@ import { JobCardComponent } from '../reports/job-card/job-card.component';
 import { SailingConfirmationComponent } from '../reports/sailing-confirmation/sailing-confirmation.component';
 import { MblComponent } from '../reports/mbl/mbl.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { CustomsComponent } from '../../house-job/customs/customs.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -88,7 +89,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgxSpinnerModule,
     SearchableDropdown,
     NgbTooltip,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    CustomsComponent
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -192,6 +194,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   containerActivityData: any[] = [];
   containerActivityResetTrigger = false;
   currentContainerActivityFormValue: any = null;
+  customsDataArray: any[] = [];
+  customsResetTrigger = false;
+  currentCustomsFormValue: any = null;
   pdfModel: any
   // Shipment related variable declarations
   attachedBookings: FormArray;
@@ -839,6 +844,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
           console.log('Others Data:', data.others);
           console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
           this.patchFormValues(data);
+          // Load customs data for master job
+          this.loadCustomsData();
         }
         this.isLoading = false;
         this.spinner.hide();
@@ -2104,6 +2111,35 @@ private autoPopulateVoyageData(vessel: any): void {
 
     console.log('Updated containerActivityData:', this.containerActivityData);
     console.log('Updated form array length:', containerActivitiesFormArray.length);
+  }
+
+  // Customs component sync method
+  syncFormValueWithCustomsComponent() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const CreatedBy = this.userData?.UserEmail || '';
+
+    this.currentCustomsFormValue = {
+      CompanyMasterSid,
+      MasterJobSid: this.masterJobSid || 0,
+      CreatedBy,
+      UpdatedBy: CreatedBy,
+    };
+  }
+
+  // Load customs data for master job
+  loadCustomsData() {
+    if (!this.masterJobSid) return;
+
+    this.operationService.getCustomsByMasterJobSid(this.masterJobSid).subscribe({
+      next: (data: any[]) => {
+        this.customsDataArray = data || [];
+        this.syncFormValueWithCustomsComponent();
+      },
+      error: (error) => {
+        console.error('Error loading customs data:', error);
+        this.customsDataArray = [];
+      }
+    });
   }
 
   // Add this method to your component
