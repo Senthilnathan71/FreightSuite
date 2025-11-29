@@ -322,6 +322,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         label: 'Delete',
         action: 'delete',
         tooltip: 'Delete Quotation',
+        class:"text-danger",
         state: !this.mps.can('delete')
       }
     ],

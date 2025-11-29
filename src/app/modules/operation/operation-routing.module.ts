@@ -219,7 +219,7 @@ export const OperationRoutes: Routes = [
         path: 'vendor-credit-note/entry/:id',
         component: VendorCreditNoteEntryComponent,
         data: {
-          title: 'Edit Vendor Credit Note',
+          title: 'Vendor Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
         },
       },
@@ -227,7 +227,7 @@ export const OperationRoutes: Routes = [
         path: 'vendor-credit-note/view/:id',
         component: VendorCreditNoteEntryComponent,
         data: {
-          title: 'View Vendor Credit Note',
+          title: 'Vendor Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
           viewMode: true
         },

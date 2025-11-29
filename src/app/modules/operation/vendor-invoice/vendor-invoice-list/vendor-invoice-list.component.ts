@@ -221,7 +221,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: "150px"
+        width: "170px"
       },
       {
         key: 'VoucherDate',
@@ -291,7 +291,6 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '100px',
         template: 'status',
       }
     ],

@@ -75,12 +75,12 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       columns: [
          {
           key: 'VoucherNumber',
-          label: 'Vendor CreditNote No',
+          label: 'Vendor CreNote No',
           sortable: true,
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: "150px"
+          width: "170px"
         },
         {
         key: 'ReversalVoucherDisplay',
@@ -116,7 +116,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '120px',
+          width: '100px',
         },
         {
           key: 'BillDate',
@@ -134,7 +134,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '100px',
+         
         },
         {
           key: 'LocalAmount',
@@ -143,7 +143,6 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'number',
-          width: '120px',
         },
         {
           key: 'MBLNo',
@@ -162,7 +161,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           visible: true,
           dataType: 'string',
           template: 'status',
-          width: '100px',
+          
         }
       ],
       actions: [

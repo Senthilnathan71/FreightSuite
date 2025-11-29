@@ -3,13 +3,13 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title mb-0 text-info">Vendor Credit Note</h5>
+        <h5 class="page-title my-0 pt-1 text-info">Vendor Credit Note</h5>
         <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
       <div class="pill-icon">
         <i class="fas fa-file-invoice-dollar"></i>
       </div>
-      <span class="pill-label">
-        Outstanding: {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
+      <span class=" mb-0 text-dark">
+        <strong style="color: #333;">Outstanding :</strong> {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
       </span>
     </div>
       </div>
@@ -24,8 +24,8 @@
   <i class="fas fa-upload me-1"></i> Upload
 </button> -->
  <button  type="button" 
-            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
-            (click)="onFinalSave()" 
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
+            (click)="onFinalSave()" [disabled]="vendorCreditNoteData?.PostStatus=== 'P'" 
             >
       <i class="fas fa-check-circle me-1"></i> Final
     </button>
@@ -81,7 +81,7 @@
           <div class="row">
 
             <!-- Vendor Invoice No -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
@@ -91,7 +91,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-2">
+            <aside class="col-md-3">
   <div class="d-flex gap-1 align-items-end">
     <!-- Invoice Dropdown -->
     <div class="custom-form-group custom-form-group-select flex-grow-1" 
@@ -112,8 +112,8 @@
     <!-- Get Button with proper styling and disable state -->
     <button 
       type="button" 
-      class="btn btn-info btn-sm" 
-      style="min-width: 30px; height: 30px;"
+      class="btn btn-info btn-sm mb-1" 
+      style="min-width: 30px; height: 25x;"
       (click)="getVendorInvoiceData()"
       [disabled]="!vendorCreditNoteForm.get('ReversalVoucher')?.value">Get
     </button>
@@ -122,7 +122,7 @@
 
 
             <!-- Invoice Date -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker id="VoucherDate"
@@ -150,7 +150,7 @@
 
 
             <!-- Posted On (readonly) -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="PostedOn" formControlName="PostedOn" placeholder="" class="custom-input-field sm"
                   readonly />
@@ -385,8 +385,13 @@
             </button>
           </div> -->
          
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
+            <div class="d-flex justify-content-end align-items-center mb-1 gap-2">
+               <div *ngIf="getFirstRateError()" class="d-block me-2">
+    <div class="text-danger">
+      {{ getFirstRateError() }}
+    </div>
+  </div>
+              <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="addDetailRow()" type="button">
                 <i class="fas fa-plus me-1"></i>Add Charge
               </button>
             </div>
@@ -400,7 +405,7 @@
         <thead class="table-header-booking">
           <tr class="align-middle bg-info">
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px; border-top-left-radius: 10px;"></th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">SNo.</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode</th>
@@ -454,7 +459,9 @@
                   <i class="fas fa-trash text-danger"></i>
                 </button>
               </td>
-              <td>{{ i + 1 }}</td>
+              <td><span  style="color: black; font-weight: 600;">
+                {{ i + 1 }}
+              </span></td>
 
               <!-- Charge -->
               <td>
@@ -467,7 +474,7 @@
 
               <!-- Description -->
               <td>
-                <span>{{ row.get('ChargeDescription')?.value || '-' }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('ChargeDescription')?.value || '-' }}</span>
               </td>
 
               <!-- HSN/SAC -->
@@ -490,12 +497,12 @@
 
               <!-- No of Unit -->
               <td>
-                <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
               </td>
 
               <!-- Dr/Cr -->
               <td>
-                <span>{{ row.get('DrCr')?.value || '-' }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('DrCr')?.value || '-' }}</span>
               </td>
 
               <!-- Currency -->
@@ -511,18 +518,8 @@
               <td>
                 <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
                                   formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
-                                <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
-    <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
-      Credit note rate cannot exceed original vendor invoice rate
-    </div>
-    <div *ngIf="row.get('Rate')?.errors?.['required']">
-      Rate is required
-    </div>
-    <div *ngIf="row.get('Rate')?.errors?.['min']">
-      Rate must be greater than or equal to 0
-    </div>
-  </div>
+                                <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('Rate')?.value | numberFormat }}</span>
+                                
               </td>
 
               <!-- Exchange Rate -->
@@ -533,12 +530,12 @@
 
               <!-- Amount -->
               <td>
-                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('Amount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Taxable Amount -->
               <td>
-                <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- India GST Columns -->
@@ -549,13 +546,13 @@
                     <div class="d-flex">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" ">%</span>
+                      <span class=" "  style="color: black; font-weight: 600;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- CGST Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                 </td>
 
                 <!-- SGST % -->
@@ -564,13 +561,13 @@
                     <div class="d-flex gap-1">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                         (input)="onDetailChange(i, 'TaxPercentage2')">
-                      <span class="">%</span>
+                      <span class=""  style="color: black; font-weight: 600;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- SGST Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
+                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                 </td>
 
                 <!-- IGST % -->
@@ -579,7 +576,7 @@
                     <div class="d-flex gap-1">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
                         (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                      <span class="">%</span>
+                      <span class=""  style="color: black; font-weight: 600;">%</span>
                     </div>
                   </div>
                 </td>
@@ -597,24 +594,24 @@
                     <div class="d-flex">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" ">%</span>
+                      <span class=" "  style="color: black; font-weight: 600;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- VAT Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                 </td>
               </ng-container>
 
               <!-- Local Amount -->
               <td>
-                <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Party Amount -->
               <td>
-                <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
+                <span  style="color: black; font-weight: 600;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- MasterJobSid column -->
@@ -671,17 +668,19 @@
 
 <!-- Totals Section -->
 <div class="row mt-1">
-  <div class="col-md-4"></div>
-  <div class="col-md-8">
+  <div class="col-md-6"></div>
+  <div class="col-md-6">
  
         <div class="row">
         <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Currency Amount : </strong>
+            <strong style="color: black; font-weight: 700;">Currency Amount : </strong>
           </div>
           <div>
-            {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+            <strong style="color: black; font-weight: 600;">
+              {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+            </strong>
           </div>
           </div>
       
@@ -689,10 +688,12 @@
          <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Tax Amount : </strong>
+            <strong style="color: black; font-weight: 700;">Tax Amount : </strong>
           </div>
           <div>
-            {{ getTotalTaxAmount() | number:'1.2-2' }}
+            <strong style="color: black; font-weight: 600;">
+              {{ getTotalTaxAmount() | number:'1.2-2' }}
+            </strong>
           </div>
           </div>
       
@@ -700,10 +701,10 @@
          <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Total Amount :</strong>
+            <strong style="color: black; font-weight: 700;">Total Amount :</strong>
           </div>
           <div>
-            <strong>{{ getGrandTotal() | number:'1.2-2' }}</strong>
+            <strong style="color: black; font-weight: 600;">{{ getGrandTotal() | number:'1.2-2' }}</strong>
           </div>
           </div>
       
@@ -785,3 +786,4 @@
     </div>
   </div>
 </div>
+
