@@ -140,6 +140,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   currentBranch: any;
   MenuMasterSid: any;
   filterOption: any;
+  private hasShownVesselWarning = false;
   public rateComponent = CostEntryComponent;
   public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
@@ -2092,9 +2093,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+      this.hasShownVesselWarning = false;
     if (!POLSid || !PODSid || !voyageType) return;
     const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
-
+   
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -2105,8 +2107,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               CutOffDate: this.datePipe.transform(vslVoy.CutOffDate),
           }));
           console.log(this.headerVesselList);
-          if (this.headerVesselList.length === 0) {
-            this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")
+           if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
+          this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
+          this.hasShownVesselWarning = true;
           }
         } else {
           this.appSettingService.showError("Error loading Vessel")
