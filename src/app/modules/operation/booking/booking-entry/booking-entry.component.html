@@ -1711,6 +1711,95 @@
       </div>
     </div>
 
+    <!-- CRO Tab -->
+<div class="workspace-content" *ngIf="selectedTab === 'CRO'">
+  <div class="empty-state d-none">
+    <div class="empty-icon">
+      <i class="fas fa-file-export"></i>
+    </div>
+    <h3 class="empty-title">Container Release Order</h3>
+    <p class="empty-description">Manage container release details and export documentation.</p>
+    <button class="empty-action-btn">
+      <i class="fas fa-plus"></i>Add CRO Details
+    </button>
+  </div>
+  <div class="col-md-12">
+    <div class="row compact-form" [formGroup]="croForm">
+      <aside class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" id="onHireRef" placeholder="" class="custom-input-field sm" formControlName="OnHireRef" [textWithNumbers]="20">
+          <label for="onHireRef" class="input-label">On Hire Ref<span class="text-danger"></span></label>
+        </div>
+      </aside>
+      
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select-date">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #croReleaseDate="ngbDatepicker"
+              [minDate]="minDate" (keydown.arrowDown)="croReleaseDate.open()" (click)="croReleaseDate.toggle()"
+              formControlName="ReleaseOrderDate" container="body" />
+            <button class="btn bi bi-calendar3 px-0" (click)="croReleaseDate.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather>
+            </button>
+          </div>
+          <label for="croReleaseDate" class="input-label">Release Order Date<span class="text-danger"></span></label>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select-date">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #croValidityDate="ngbDatepicker"
+              [minDate]="minDate" (keydown.arrowDown)="croValidityDate.open()" (click)="croValidityDate.toggle()"
+              formControlName="ValidityDate" container="body" />
+            <button class="btn bi bi-calendar3 px-0" (click)="croValidityDate.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather>
+            </button>
+          </div>
+          <label for="croValidityDate" class="input-label">Validity Date<span class="text-danger"></span></label>
+        </div>
+      </div>
+      
+      <aside class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" id="transporter" placeholder="" class="custom-input-field sm" formControlName="Transporter" [textWithNumbers]="50">
+          <label for="transporter" class="input-label">Transporter<span class="text-danger"></span></label>
+        </div>
+      </aside>
+      
+      <aside class="col-md-6">
+        <div class="custom-form-group">
+          <input type="text" id="emptyYard" placeholder="" class="custom-input-field sm" formControlName="EmptyYard" [textWithNumbers]="200">
+          <label for="emptyYard" class="input-label">Empty Yard<span class="text-danger"></span></label>
+        </div>
+      </aside>
+      
+      <aside class="col-md-6">
+        <div class="custom-form-group">
+          <textarea id="noteToYard" placeholder="" class="custom-input-field sm" formControlName="NoteToYard" rows="2" [textWithNumbers]="200"></textarea>
+          <label for="noteToYard" class="input-label">Note to Yard<span class="text-danger"></span></label>
+        </div>
+      </aside>
+      
+      <aside class="col-md-6">
+        <div class="custom-form-group">
+          <textarea id="noteToShipper" placeholder="" class="custom-input-field sm" formControlName="NoteToShipper" rows="2" [textWithNumbers]="200"></textarea>
+          <label for="noteToShipper" class="input-label">Note to Shipper<span class="text-danger"></span></label>
+        </div>
+      </aside>
+    </div>
+    
+    <!-- Export Release Order Button -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <button class="btn btn-info btn-sm" (click)="openCroPrintModal(croPrintModal)">
+          <i class="fas fa-print me-1"></i> Export Release Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
     <div class="workspace-content" *ngIf="selectedTab === 'Others'">
       <div class="empty-state d-none">
@@ -2590,10 +2679,10 @@
         <div class="spinner-overlay">
           <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF('booking')">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail()">
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
           <i class="fas fa-envelope me-1"></i>Send Email
         </button>
      
@@ -2891,6 +2980,196 @@
 
   </div>
 </ng-template>
+<!-- Proper CRO Print Content -->
+
+
+
+  
+
+
+<!-- CRO Print Modal -->
+<ng-template #croPrintModal let-modal>
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Release Order</h5>
+    <div class="d-flex gap-2 align-items-center">
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF('cro')">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+  </div>
+
+  <div class="modal-body p-0">
+    <div id="croPrintContent" class="p-3">
+      <div class="print-a4">
+        <!-- Company Header -->
+        <div class="row mb-3">
+          <div class="company-header">
+            <div class="company-logo">
+              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+            </div>
+            <div class="company-info">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p class="mb-1">{{ currentBranch?.addressLine1 || '' }}</p>
+              <p class="mb-1">{{ currentBranch?.addressLine2 || '' }}</p>
+              <p class="mb-1">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || '' }}</p>
+              <p class="mb-1">{{ currentBranch?.postalCode || '' }}</p>
+              <p class="mb-1">{{ currentBranch?.phoneNumber || '' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+        
+        <!-- Title -->
+        <h5 class="text-center fw-bold my-4">RELEASE ORDER</h5>
+
+        <!-- Booking Info -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Booking Ref Number</strong></div>
+              <div>: {{ bookingHeader?.BookingNo || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Sales Person</strong></div>
+              <div>: 
+                <ng-container *ngIf="b['SalesmanSid']?.value">
+                  {{ getSalesmanName(b['SalesmanSid']?.value) }}
+                </ng-container>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Onhire Ref No</strong></div>
+              <div>: {{ cr['OnHireRef']?.value || '' }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Release Order Date</strong></div>
+              <div>: {{ (cr['ReleaseOrderDate']?.value | formatDate) || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Validity Date</strong></div>
+              <div>: {{ (cr['ValidityDate']?.value | formatDate) || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Transporter</strong></div>
+              <div>: {{ cr['Transporter']?.value || '' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transport Plan -->
+        <h5 class="text-center fw-bold my-4">INTENDED TRANSPORT PLAN</h5>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Vessel / Voyage</strong></div>
+              <div>: {{ (b['VesselName']?.value || '') + ' / ' + (b['VoyageNo']?.value || '') }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>ETA</strong></div>
+              <div>: {{ (b['ETA']?.value | formatDate) || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>ETD</strong></div>
+              <div>: {{ (b['ETD']?.value | formatDate) || '' }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Port of Loading</strong></div>
+              <div>: {{ b['POL']?.value || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Port of Discharge</strong></div>
+              <div>: {{ b['POD']?.value || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Final Destination</strong></div>
+              <div>: {{ b['FPD']?.value || '' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remarks -->
+        <div class="mb-3">
+          <div class="d-flex flex-wrap mb-2">
+            <div style="width: 200px;"><strong>Empty Pick Up Yard</strong></div>
+            <div>: {{ cr['EmptyYard']?.value || '' }}</div>
+          </div>
+          <div class="d-flex flex-wrap mb-2">
+            <div style="width: 200px;"><strong>Remarks to Yard</strong></div>
+            <div>: {{ cr['NoteToYard']?.value || '' }}</div>
+          </div>
+          <div class="d-flex flex-wrap mb-2">
+            <div style="width: 200px;"><strong>Remarks to Shipper</strong></div>
+            <div>: {{ cr['NoteToShipper']?.value || '' }}</div>
+          </div>
+        </div>
+
+        <!-- Container Table -->
+        <div class="table-responsive mb-3">
+          <table class="table tablebordered table-sm">
+            <thead>
+              <tr>
+                <th>Container Type</th>
+                <th>Container No</th>
+                <th>Commodity Desc</th>
+                <th>Pkg Type</th>
+                <th>No of Pkg</th>
+                <th>Gross Wt</th>
+                <th>Net Wt</th>
+                <th>Chargeable Wt</th>
+                <th>Vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ c['ContainerType']?.value || '' }}</td>
+                <td>-</td>
+                <td>{{ c['CargoType']?.value || '' }}</td>
+                <td>-</td>
+                <td class="text-end">{{ c['NoOfPackage']?.value || '' }}</td>
+                <td class="text-end">{{ c['GrossWeight']?.value || '' }}</td>
+                <td class="text-end">{{ c['NetWeight']?.value || '' }}</td>
+                <td class="text-end">{{ c['ChargeableWeight']?.value || '' }}</td>
+                <td class="text-end">{{ c['Volume']?.value || '' }}</td>
+              </tr>
+              <tr>
+                <td colspan="4" class="fw-bold text-end">Total</td>
+                <td class="text-end fw-bold">{{ c['NoOfPackage']?.value || '' }}</td>
+                <td class="text-end fw-bold">{{ c['GrossWeight']?.value || '' }}</td>
+                <td class="text-end fw-bold">{{ c['NetWeight']?.value || '' }}</td>
+                <td class="text-end fw-bold">{{ c['ChargeableWeight']?.value || '' }}</td>
+                <td class="text-end fw-bold">{{ c['Volume']?.value || '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span>Printed By:</span> {{ userData.userName }}
+            </div>
+            <div class="text-muted">
+              This document is computer-generated and does not require a signature.
+            </div>
+            <div>
+              <span>Printed On:</span> {{ currentDate | formatDate }}
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
 
 <!-- For PDF Attachment to mail -->
 <div *ngIf="isEditMode" style="display: none; position: absolute; left: -9999px;">
