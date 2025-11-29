@@ -8,8 +8,6 @@ import { EmailEntryComponent } from "./email/email-entry/email-entry.component";
 import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
 import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
 import { RolemenuEntryComponent } from "./rolemenu/rolemenu-entry/rolemenu-entry.component";
-import { DocReferenceComponent } from "./doc-reference/doc-reference.component";
-import { DocReferenceListComponent } from "./doc-reference/doc-reference-list/doc-reference-list.component"; 
 
 
 export const SettingsRoutes: Routes = [
@@ -112,67 +110,6 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Follow-Up',
                     urls: [{ title: 'Master', url: '/master' }, { title: 'Follow-up' }],
-                },
-            },
-             {
-                path: 'doc-reference/list',
-                component: DocReferenceListComponent,
-                data: {
-                    title: 'Document Reference List',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
-                },
-            },
-            {
-                path: 'doc-reference/add',
-                component: DocReferenceComponent,
-                data: {
-                    title: 'Add Document Reference',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
-                },
-            },
-            {
-                path: 'doc-reference/edit/:id',
-                component: DocReferenceComponent,
-                data: {
-                    title: 'Edit Document Reference',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
-                },
-            }, 
-
-
-            {
-                path: 'doc-reference',
-                redirectTo: 'doc-reference/list',
-                pathMatch: 'full'
-            },
-
-
-            {
-                path: 'doc-reference',
-                component: DocReferenceComponent,
-                data: {
-                    title: 'Document Reference',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
-                },
-            },
-
-
-            {
-                path: 'doc-reference/entry',
-                component: DocReferenceComponent,
-                data: {
-                    title: 'Document Reference',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
-                },
-            },
-
-            
-            {
-                path: 'doc-reference/entry/:id',
-                component: DocReferenceComponent,
-                data: {
-                    title: 'Edit Document Reference',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Document Reference' }],
                 },
             },
         ]

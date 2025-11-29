@@ -392,7 +392,7 @@ export class DocReferenceListComponent
 
 
   addNew() {
-    this.router.navigate(['/settings/doc-reference/add']);
+    this.router.navigate(['/operation/doc-reference/add']);
   }
 
 
@@ -408,7 +408,7 @@ export class DocReferenceListComponent
 
   editDocument(row: any): void {
     this.router.navigate([
-      '/settings/doc-reference/edit',
+      '/operation/doc-reference/edit',
       row.RefDocumentSid,
     ]);
   }

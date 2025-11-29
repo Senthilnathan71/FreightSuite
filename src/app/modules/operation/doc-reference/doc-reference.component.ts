@@ -30,8 +30,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-import { EdocComponent } from '../edoc/edoc/edoc.component';
-import { EmailEntryComponent } from '../email/email-entry/email-entry.component';
+import { EdocComponent } from '../../settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 
 
 @Component({
@@ -501,7 +501,7 @@ export class DocReferenceComponent implements OnInit {
               );
               setTimeout(() => {
                 this.router.navigate([
-                  '/settings/doc-reference/list',
+                  '/operation/doc-reference/list',
                 ]);
               }, 1000);
             } else {
@@ -553,7 +553,7 @@ export class DocReferenceComponent implements OnInit {
 
 
   goBack() {
-    this.router.navigate(['/settings/doc-reference/list']);
+    this.router.navigate(['/operation/doc-reference/list']);
   }
 
 

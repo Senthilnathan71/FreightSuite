@@ -32,6 +32,8 @@ import { CreditNoteListComponent } from './credit-note/credit-note-list/credit-n
 import { OperationReportsComponent } from '../../operation/components/operation-reports/operation-reports.component';
 import { VendorCreditNoteListComponent } from './vendor-credit-note/vendor-credit-note-list/vendor-credit-note-list.component';
 import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-credit-note-entry/vendor-credit-note-entry.component';
+import { DocReferenceComponent } from './doc-reference/doc-reference.component';
+import { DocReferenceListComponent } from './doc-reference/doc-reference-list/doc-reference-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -410,6 +412,35 @@ export const OperationRoutes: Routes = [
           title: 'Operation Reports',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Reports' }],
         }
+      },
+      {
+        path: 'doc-reference',
+        redirectTo: 'doc-reference/list',
+        pathMatch: 'full',
+      },
+      {
+        path: 'doc-reference/list',
+        component: DocReferenceListComponent,
+        data: {
+          title: 'Document Reference',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Document Reference' }],
+        },
+      },
+      {
+        path: 'doc-reference/add',
+        component: DocReferenceComponent,
+        data: {
+          title: 'Document Reference',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Document Reference' }],
+        },
+      },
+      {
+        path: 'doc-reference/edit/:id',
+        component: DocReferenceComponent,
+        data: {
+          title: 'Document Reference',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Document Reference' }],
+        },
       }
     ],
   },
