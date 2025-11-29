@@ -121,6 +121,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
   masterAirWayData:any;
+  documentSid: number | null = null; 
+  parentSubject = '';
+  parentMailbody = '';
+  userData: any;
   currentContainerModal: any;
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
@@ -167,9 +171,6 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   masterJobRateArr : any[] = [];
   rateResetTrigger = false;
   currentRateFormValue: any;
-  followUpData: any[] = [];
-  followUpResetTrigger: boolean = false;
-  currentFollowUpFormValue: any = null;
   edocData: any[] = [];
   edocResetTrigger = false;
   isAirDepartment: boolean = false;
@@ -199,7 +200,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     // { name: 'Mail', icon: 'fas fa-envelope' },
-    // { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
     // { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     // { name: 'History', icon: 'fas fa-history' },
@@ -211,7 +212,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
-    // { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
     // { name: 'Mail', icon: 'fas fa-envelope' },
     // { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
@@ -290,6 +291,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
      console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
+    this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
@@ -336,7 +338,6 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.syncFormValueWithConnectionComponent();
         this.syncFormValueWithRateComponent();
-        // this.syncFormValueWithFollowUpComponent();
         this.syncFormValueWithEdocComponent();
         // this.syncFormValueWithEmailComponent();
         // this.syncFormValueWithContainerActivityComponent();
@@ -1604,6 +1605,9 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   selectTab(tab: string): void {
+    if (tab === 'Follow Up') {
+    this.openFollowup();
+  }
     this.selectedTab = tab;
   }
 
@@ -1759,23 +1763,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
 }
   
 
-  // syncFormValueWithFollowUpComponent() {
-  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  //   const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    
-  //   this.currentFollowUpFormValue = {
-  //     CompanyMasterSid,
-  //     DepartmentMasterSid,
-  //     DocumentSid: this.masterJobSid || 0, // Use 0 for new records
-  //     MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-  //   };
-  // }
-
-  // handleFollowUpChange(event: any) {
-  //   console.log('Follow Up Changed:', event);
-  //   this.followUpData = event.dataItems || [];
-  //   this.currentFollowUpFormValue = event.formData || null;
-  // }
+  
 
   // Add sync method for Edoc
 syncFormValueWithEdocComponent() {
@@ -2262,5 +2250,33 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.currencyList=this.currencyList;
          modalRef.componentInstance.chargeList=this.chargeList;
       }
+
+      getFormattedPort(code:string){
+    console.log(code);
+    if(!code) return '';
+    const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
+    console.log(ourPort);
+    return `${ourPort} (${code})`
+  }
+
+    openFollowup() {
+    if (!this.masterAirWayData) return;
+    const POL = this.masterAirWayData?.POL;
+    const POD = this.masterAirWayData?.POD;
+    const FPD = this.masterAirWayData?.FPD;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+    this.documentSid = this.masterAirWayData?.MasterJobSid;
+    this.parentSubject = `__SUBJECT__ for Master Job No."${this.masterAirWayData.MasterJobNumber}"`;
+    this.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Kindly do the needful for "__SUBJECT__" Master Job No."${this.masterAirWayData.MasterJobNumber}" Dated:${new Date(this.masterAirWayData.MasterJobDate).toLocaleDateString()} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userName']}</p>
+      </div>
+    `;
+  }
   
 }

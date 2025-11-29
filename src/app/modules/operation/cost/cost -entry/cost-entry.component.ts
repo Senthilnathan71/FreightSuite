@@ -89,8 +89,8 @@ export class CostEntryComponent implements OnInit {
     { id: 2, name: 'Collect' }
   ]
   drcr = [
-    { id: 1, name: 'Dr', value: 'D' },
-    { id: 2, name: 'Cr', value: 'C' }
+    { id: 1, name: 'D', value: 'D' },
+    { id: 2, name: 'C', value: 'C' }
   ]
 
   ModeofStatus = [

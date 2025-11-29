@@ -157,6 +157,9 @@ hssacList: any[] = [];
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
     }
+    if (tab === 'Follow Up') {
+    this.openFollowup();
+  }
     this.selectedTab = tab;
   }
 
@@ -298,8 +301,9 @@ auditLogs: any[] = []; // Stores audit logs
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
-    
-
+  documentSid: number | null = null; 
+  parentSubject = '';
+  parentMailbody = '';
   // Variable Declaration - Rate Part
   resetTriggerRate : boolean;
   rateResult : any[] = [];
@@ -654,7 +658,7 @@ auditLogs: any[] = []; // Stores audit logs
       ContainerNo : [''],
       MarksAndNumbers : [''],
       DeliveredQty: [null],
-      DeliveryDate: ['']
+      DeliveryDate: [null]
     });
     this.setupImmediateCBMCalculation();
     this.setupImmediateVolumetricCalculation(this.productForm)
@@ -773,7 +777,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Coloader : [null],
       PickupPlace: [''],
       DeliveryPlace: [''],
-      DeliveryDate: [''],
+      DeliveryDate: [null],
       CHAName: [''],
       PickupAddress: [''],
       DeliveryAddress: [''],
@@ -2452,32 +2456,20 @@ ${this.userData['userName']}`;
     })
   }
 
-  async openFollowup() {
-    if (!this.bookingHeader) return;
-    const POL = this.bookingHeader?.POL;
-    const POD = this.bookingHeader?.POD;
-    const FPD = this.bookingHeader?.FPD;
+  openFollowup() {
+    if (!this.housejobData) return;
+    const POL = this.housejobData?.POL;
+    const POD = this.housejobData?.POD;
+    const FPD = this.housejobData?.FPD;
     const formattedPOL = this.getFormattedPort(POL);
     const formattedPOD = this.getFormattedPort(POD);
     const formattedFPD = this.getFormattedPort(FPD);
-    const resp: any = await firstValueFrom(
-      this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
-    );
-    const toEmail = resp?.data?.Email;
-    if (!toEmail) {
-      this.appSettingService.showError('To Email is missing.')
-      return;
-    }
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.documentSid = this.bookingHeader?.HouseJobSid;
-    modalRef.componentInstance.parentEmail = toEmail;
-    modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
-    modalRef.componentInstance.parentMailbody = `
+    this.documentSid = this.housejobData?.HouseJobSid;
+    this.parentSubject = `__SUBJECT__ for House No."${this.housejobData.HBLNo}"`;
+    this.parentMailbody = `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
         <p>Dear Sir/Madam,</p>
-        <p>Please find here enclosed the booking details as requested.</p>
-        <p>Kindly review the details at your convenience.</p>
-        <p>Looking forward to confirm cargo readyness.</p>
+        <p>Kindly do the needful for "__SUBJECT__" House No."${this.housejobData.HBLNo}" booking No."${this.housejobData.BookingNo}" ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
         <p>Best Regards,</p>
         <p>${this.userData['userName']}</p>
       </div>

@@ -681,9 +681,7 @@ export class ReceiptEntryComponent implements OnInit {
       this.accountService.createReceipt(payload).subscribe(
         async (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Receipt created successfully');
             this.headerId = resp.data?.voucherHeader?.VoucherHeaderSid;
-            this.appSettingService.showInfo(`Autoposting Receipt : ${resp.data?.voucherHeader?.VoucherNumber}`)
             await this.postVoucher();
             if (this.headerId) {
               this.router.navigate(['accounts/receipt/entry', this.headerId]);
@@ -750,10 +748,10 @@ export class ReceiptEntryComponent implements OnInit {
 
       this.spinner.hide();
       if (result.status) {
-        this.appSettingService.showSuccess('Receipt posted successfully!');
+        this.appSettingService.showSuccess('Receipt Created and Posted successfully!');
         this.receiptData.PostStatus = 'P';
       } else {
-        this.appSettingService.showError(result.message || 'Failed to post receipt.');
+        this.appSettingService.showError(result.message || 'Receipt Created Successfully but Failed to post receipt.');
       }
     } catch (error) {
       this.spinner.hide();

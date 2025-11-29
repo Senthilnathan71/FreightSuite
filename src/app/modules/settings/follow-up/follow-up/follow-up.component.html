@@ -42,7 +42,7 @@
                                             class="feather-sm"></i-feather></button>
                                 </div>
                                 <label for="FollowUpDate" class="input-label">Followup Date <span
-                                        class="text-danger"></span>
+                                        class="text-danger">*</span>
                                 </label>
                                 @if(followupForm.get('FollowUpDate')?.touched &&
                                 followupForm.get('FollowUpDate')?.invalid){
@@ -61,7 +61,7 @@
                                         bindValue="name">
                                     </ng-select>
                                 <label for="text-input" class="input-label">Followup Action <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger"></span>*</label>
                                 @if(followupForm.get('FollowupAction')?.touched &&
                                 followupForm.get('FollowupAction')?.invalid){
                                 <div class="error-message">
@@ -104,6 +104,14 @@
                             >
                             </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">External User </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="textarea" formControlName="Subject" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Subject <span
+                                        class="text-danger fw-bold"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-4">
