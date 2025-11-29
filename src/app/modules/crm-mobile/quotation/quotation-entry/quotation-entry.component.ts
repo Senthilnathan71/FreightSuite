@@ -129,7 +129,6 @@ export class QuotationEntryComponent implements OnInit {
     AuthorityDetailSid: null,
     ApprovedBy : ''
   }
-
    rateLock: boolean = false;
   rateLockConfig: any;
   canUserLockRates: boolean = false;
@@ -566,6 +565,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteDate: [null],
       EnquirySid: [''],
       AgreedRate : [false],
+      IsContract:[false],
       RateLock: [false],
       ContactPerson:[''],
       ContactNumber:['']
@@ -1385,6 +1385,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ...response,
       LeadOrCustomer : response.LeadOrCustomer === "C",
       AgreedRate : response.AgreedRate === "Y",
+      IsContract : response.IsContract === "Y",
       RateLock : response.RateLock === "Y",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
@@ -1551,6 +1552,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       UserMasterSid: this.userData?.UserMasterSid,
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
       AgreedRate : formValue.AgreedRate ? "Y" : "N",
+      IsContract : formValue.IsContract ? "Y" : "N",
       RateLock : this.isEditMode?(formValue.RateLock ? "y" :"N"): "Y",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
@@ -2340,10 +2342,10 @@ private extractCargoData(enquiryCargo: any[]): any {
       <p>Please find enclosed the quotation as requested.</p>
       <p>Kindly review the details at your convenience.</p>
       <p>Looking forward to your feedback and the opportunity to work together.</p>
-      <p>
-        Approval Hyperlink: 
-        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
-      </p>
+      // <p>
+      //   Approval Hyperlink: 
+      //   <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      // </p>
       <p>Best Regards,</p>
       <p>${this.userData['userEmail']}</p>
     </div>

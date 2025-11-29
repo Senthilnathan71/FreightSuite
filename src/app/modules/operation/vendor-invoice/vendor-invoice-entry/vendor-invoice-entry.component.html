@@ -7,7 +7,7 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
+        <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
           'Create Vendor Invoice') }}</h5>
       </div>
       
@@ -24,14 +24,14 @@
   <i class="fas fa-upload me-1"></i> Upload
 </button>
  <button  type="button" 
-            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
             (click)="onFinalSave()" 
-            [disabled]="vendorInvoiceForm.invalid || isSaving">
+            [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'" >
       <i class="fas fa-check-circle me-1"></i> Final
     </button>
 
     <button *ngIf="isViewMode && isPosted" type="button" 
-            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
             disabled>
       <i class="fas fa-check-circle me-1"></i> Posted
     </button>
@@ -363,7 +363,7 @@
          
             <div class="d-flex justify-content-between align-items-center mb-1">
               <h5 class="mb-0"> Vendor Invoice Line Items</h5>
-              <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
+              <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button" [disabled]="vendorInvoiceData?.PostStatus=== 'P'">
                 <i class="fas fa-plus me-1"></i>Add Charge
               </button>
             </div>
@@ -431,7 +431,11 @@
                   <i class="fas fa-trash text-danger"></i>
                 </button>
               </td>
-              <td>{{ i + 1 }}</td>
+              <td>
+                <span style="font-weight: 600; color: black;">
+                  {{ i + 1 }}
+                </span>
+                </td>
 
               <!-- Charge -->
               <td>
@@ -500,12 +504,12 @@
 
               <!-- Amount -->
               <td>
-                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
+                <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Taxable Amount -->
               <td>
-                <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
+                <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- India GST Columns -->
@@ -516,13 +520,13 @@
                     <div class="d-flex">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" ">%</span>
+                      <span class=" " style="font-weight: 600; color: black;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- CGST Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                 </td>
 
                 <!-- SGST % -->
@@ -531,13 +535,13 @@
                     <div class="d-flex gap-1">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                         (input)="onDetailChange(i, 'TaxPercentage2')">
-                      <span class="">%</span>
+                      <span class="" style="font-weight: 600; color: black;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- SGST Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
+                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                 </td>
 
                 <!-- IGST % -->
@@ -546,13 +550,13 @@
                     <div class="d-flex gap-1">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
                         (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                      <span class="">%</span>
+                      <span class="" style="font-weight: 600; color: black;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- IGST Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
+                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
                 </td>
               </ng-container>
 
@@ -564,24 +568,24 @@
                     <div class="d-flex">
                       <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" ">%</span>
+                      <span class=" " style="font-weight: 600; color: black;">%</span>
                     </div>
                   </div>
                 </td>
                 <!-- VAT Amount -->
                 <td>
-                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                 </td>
               </ng-container>
 
               <!-- Local Amount -->
               <td>
-                <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
+                <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Party Amount -->
               <td>
-                <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
+                <span style="font-weight: 600; color: black;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- MasterJobSid column -->
@@ -605,7 +609,7 @@
                   [searchable]="true" appendTo="body">
                   <ng-template ng-option-tmp let-item="item">
                     <div>
-                      <strong>{{ item.HouseJobNumber }}</strong>
+                      <strong style="font-weight: 600; color: black;">{{ item.HouseJobNumber }}</strong>
                     </div>
                   </ng-template>
                   <ng-template ng-label-tmp let-item="item">
@@ -645,9 +649,9 @@
         <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Currency Amount : </strong>
+            <strong style="font-weight: 700; color: black;">Currency Amount : </strong>
           </div>
-          <div>
+          <div style="font-weight: 600; color: black;">
             {{ getTotalCurrencyAmount() | number:'1.2-2' }}
           </div>
           </div>
@@ -656,9 +660,9 @@
          <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Tax Amount : </strong>
+            <strong style="font-weight: 700; color: black;">Tax Amount : </strong>
           </div>
-          <div>
+          <div style="font-weight: 600; color: black;">
             {{ getTotalTaxAmount() | number:'1.2-2' }}
           </div>
           </div>
@@ -667,10 +671,10 @@
          <aside class="col-md-4">
           <div class="d-flex align-items-center gap-2">
                 <div>
-            <strong>Total Amount :</strong>
+            <strong style="font-weight: 700; color: black;">Total Amount :</strong>
           </div>
           <div>
-            <strong>{{ getGrandTotal() | number:'1.2-2' }}</strong>
+            <strong style="font-weight: 600; color: black;">{{ getGrandTotal() | number:'1.2-2' }}</strong>
           </div>
           </div>
       
@@ -712,7 +716,7 @@
 </div>
 
           <!-- TDS Section -->
-          <div class="row bg-white rounded shadow-sm mx-auto mt-1" formGroupName="voucherTDS">
+          <!-- <div class="row bg-white rounded shadow-sm mx-auto mt-1" formGroupName="voucherTDS">
             <h5 class="mb-0 px-0">
              TDS (Tax Deducted at Source)
             </h5>
@@ -734,34 +738,34 @@
                   <tbody>
                     <tr>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="text" formControlName="TDSSectionCode" class="form-control form-control-sm"
+                        <input type="text" formControlName="TDSSectionCode" class="custom-input-field sm"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="text" formControlName="TDSNature" class="form-control form-control-sm" readonly />
+                        <input type="text" formControlName="TDSNature" class="custom-input-field sm" readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="text" formControlName="TDSCompanyType" class="form-control form-control-sm"
+                        <input type="text" formControlName="TDSCompanyType" class="custom-input-field sm"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="text" formControlName="CertificateNo" class="form-control form-control-sm"
+                        <input type="text" formControlName="CertificateNo" class="custom-input-field sm"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="number" formControlName="TaxableAmt" class="form-control form-control-sm text-end"
+                        <input type="number" formControlName="TaxableAmt" class="custom-input-field sm text-end"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="number" formControlName="TDSPercent" class="form-control form-control-sm text-end"
+                        <input type="number" formControlName="TDSPercent" class="custom-input-field sm text-end"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="number" formControlName="TDSAmt" class="form-control form-control-sm text-end"
+                        <input type="number" formControlName="TDSAmt" class="custom-input-field sm text-end"
                           readonly />
                       </td>
                       <td style="padding: 2px; line-height: 1.5;">
-                        <input type="text" formControlName="TDSAccountCode" class="form-control form-control-sm"
+                        <input type="text" formControlName="TDSAccountCode" class="custom-input-field sm"
                           readonly />
                       </td>
                     </tr>
@@ -775,7 +779,7 @@
                 </small>
               </div>
             </div>
-          </div>
+          </div> -->
 
         </form>
       </div>
@@ -790,48 +794,56 @@
   </div>
   <div class="modal-body">
     <!-- Search Criteria -->
-    <div class="row g-3 mb-3">
+    <div class="row g-3 mb-1 compact-form ">
+      <aside class="col-md-1"></aside>
       <div class="col-md-4">
-        <label class="form-label">Search By</label>
-        <select class="form-select form-select-sm" [(ngModel)]="searchType">
-          <option value="Master Job">Master Job</option>
-          <option value="House Job">House Job</option>
-          <option value="MBL No">MBL No</option>
-          <option value="HBL No">HBL No</option>
-          <option value="Container No">Container No</option>
-        </select>
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select class="ng-select" [(ngModel)]="searchType" aria-placeholder="Search By">
+            <ng-option value="Master Job">Master Job</ng-option>
+            <ng-option value="House Job">House Job</ng-option>
+            <ng-option value="MBL No">MBL No</ng-option>
+            <ng-option value="HBL No">HBL No</ng-option>
+            <ng-option value="Container No">Container No</ng-option>
+          </ng-select>
+          <!-- <label class="input-label">Search By</label> -->
+        </div>
+       
       </div>
       <div class="col-md-4">
-        <label class="form-label">Search Value</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="searchValue"
+        <div class="custom-form-group">
+          <!-- <label class="form-label">Search Value</label> -->
+        <input type="text" class="custom-input-field sm" [(ngModel)]="searchValue"
           placeholder="Enter search value" />
+        </div>
+        
       </div>
-      <div class="col-md-4">
+      <div class="col-md-1">
         
         <button type="button" class="btn btn-info btn-sm" 
                 (click)="searchPendingCostsAction()"
-                [disabled]="searchResultsLoading" style="margin-top: 28px;">
+                [disabled]="searchResultsLoading" style="margin-top: 10px;">
           <i class="fas fa-search me-1"></i>
-          {{ searchResultsLoading ? 'Searching...' : 'Search' }}
+          Search
         </button>
       </div>
+      <aside class="col-md-1"></aside>
     </div>
 
     <!-- Vendor Selection -->
-    <div *ngIf="searchVendors.length > 0" class="card mb-3">
+    <div *ngIf="searchVendors.length > 0" class="card mb-1">
       <div class="card-header bg-light">
         <h6 class="mb-0">Select Vendor for Costs</h6>
       </div>
-      <div class="card-body">
-        <div class="row">
+      <div class="card-body p-1">
+        <div class="row compact-form">
           <div class="col-md-6">
-            <label class="form-label fw-bold">Vendor</label>
-            <ng-select [items]="searchVendors" 
-                      bindLabel="VendorName" 
-                      [(ngModel)]="selectedVendorForCosts"
-                      (change)="onVendorSelectForCosts($event)"
-                      placeholder="Select vendor for all costs"
-                      appendTo="body">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="searchVendors" 
+              bindLabel="VendorName" 
+              [(ngModel)]="selectedVendorForCosts"
+              (change)="onVendorSelectForCosts($event)"
+              placeholder="Select vendor for all costs"
+              appendTo="body">
               <ng-template ng-option-tmp let-item="item">
                 <div>
                   <strong>{{ item.VendorName }}</strong>
@@ -840,7 +852,8 @@
                 </div>
               </ng-template>
             </ng-select>
-           
+            <!-- <label class="input-label">Vendor</label> -->
+            </div>
           </div>
           
         </div>
@@ -848,34 +861,42 @@
     </div>
 
     <!-- Main Form Auto-population Info -->
-   <div *ngIf="selectedVendorForCosts" class="card mb-3">
+   <div *ngIf="selectedVendorForCosts" class="card mb-1">
       <div class="card-header bg-success text-white">
         <h6 class="mb-0">Vendor Information (Auto-populated in Main Form)</h6>
       </div>
-      <div class="card-body">
-        <div class="row">
+      <div class="card-body p-1">
+        <div class="row compact-form">
           <div class="col-md-3">
-            <label class="form-label fw-bold">Vendor Name</label>
+            <div class="custom-form-group">
+            <!-- <label class="input-label">Vendor Name</label> -->
             <div class="form-control form-control-sm bg-light">
               {{ vendorInvoiceForm.get('PartyName')?.value || 'Not populated' }}
             </div>
+            </div>
           </div>
           <div class="col-md-3">
-            <label class="form-label fw-bold">Vendor Address</label>
+             <div class="custom-form-group">
+            <!-- <label class="form-label fw-bold">Vendor Address</label> -->
             <div class="form-control form-control-sm bg-light">
               {{ vendorInvoiceForm.get('PartyAddress')?.value || 'Not populated' }}
             </div>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label fw-bold">GST No</label>
-            <div class="form-control form-control-sm bg-light">
-              {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
             </div>
           </div>
           <div class="col-md-3">
-            <label class="form-label fw-bold">Place of Supply</label>
+            <div class="custom-form-group">
+            <!-- <label class="form-label fw-bold">GST No</label> -->
+            <div class="form-control form-control-sm bg-light">
+              {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
+            </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="custom-form-group">
+            <!-- <label class="form-label fw-bold">Place of Supply</label> -->
             <div class="form-control form-control-sm bg-light">
               {{ vendorInvoiceForm.get('PlaceOfSupply')?.value || 'Not available' }}
+            </div>
             </div>
           </div>
         </div>
@@ -898,10 +919,10 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-          <table class="table table-sm table-bordered table-hover mb-0">
+          <table class="table table-sm tablebordered table-hover mb-0">
             <thead class="table-light sticky-top">
-              <tr>
-                <th style="width: 40px;" class="sticky-top">Select</th>
+              <tr class="bg-info">
+                <th style="width: 40px;" class="sticky-top"></th>
                 
                 <th class="sticky-top">Vendor</th>
                 <th class="sticky-top">Charge Code</th>
@@ -962,7 +983,7 @@
   
   <div class="modal-footer py-1">
     <button type="button" class="btn btn-secondary" (click)="closeSearchCostsModal()">Close</button>
-    <button type="button" class="btn btn-info" 
+    <button type="button" class="btn btn-info btn-sm" 
             (click)="addSelectedCosts()"
             [disabled]="getSelectedCosts().length === 0">
       <i class="fas fa-plus me-1"></i>

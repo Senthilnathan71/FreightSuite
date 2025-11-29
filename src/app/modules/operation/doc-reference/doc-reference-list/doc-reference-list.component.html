@@ -1,0 +1,211 @@
+
+ <ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
+
+
+<div class="row compact-form">
+  <div class="col-12">
+    <app-page-header
+      [title]="'Document Reference'"
+      [showFavorite]="true"
+      [showSearch]="true"
+      [searchPlaceholder]="'Search Document No or Remarks'"
+      [searchButtonText]="'Search'"
+      [(searchValue)]="filterValue"
+      [actions]="headerActions"
+      (searchTriggered)="onSearchTriggered($event)"
+      (searchCleared)="onSearchCleared()"
+      (actionTriggered)="onActionTriggered($event)"
+    >
+      
+      <div class="d-flex align-items-center ms-2" headerRight>
+        <label class="me-2 mb-0 small text-muted">Status:</label>
+        <select
+          class="form-select form-select-sm"
+          style="width: 140px"
+          [(ngModel)]="statusFilter"
+          (change)="onStatusFilterChange()"
+        >
+          <option value="A">Active</option>
+          <option value="I">Inactive</option>
+          <option value="ALL">All</option>
+        </select>
+      </div>
+    </app-page-header>
+  </div>
+
+
+  <div class="col-12 px-0">
+    <app-reusable-table
+      #docRefTable
+      [config]="tableConfig"
+      [data]="allDocuments"
+      [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection"
+      [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)"
+      (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)"
+      (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    >
+    </app-reusable-table>
+  </div>
+</div>
+
+
+
+<ng-template #viewModal let-modal>
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+      <i class="fas fa-eye me-2"></i>
+      Document Reference Details
+    </h5>
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      aria-label="Close"
+      (click)="modal.dismiss()"
+    ></button>
+  </div>
+
+
+  <div class="modal-body" *ngIf="selectedDocument">
+    <div class="row mb-3">
+      <div class="col-5">
+        <strong>
+          <i class="fas fa-file me-2 text-primary"></i>Document No:
+        </strong>
+      </div>
+      <div class="col-7">
+        <span class="text-dark">
+          {{ selectedDocument.RefDocumentNo }}
+        </span>
+      </div>
+    </div>
+    <hr class="my-2" />
+
+
+    <div class="row mb-3">
+      <div class="col-5">
+        <strong>
+          <i class="fas fa-calendar me-2 text-primary"></i>Document Date:
+        </strong>
+      </div>
+      <div class="col-7">
+        <span class="text-dark">
+          {{ selectedDocument.RefDocumentDate }}
+        </span>
+      </div>
+    </div>
+    <hr class="my-2" />
+
+
+    <div class="row mb-3">
+      <div class="col-5">
+        <strong>
+          <i class="fas fa-comment me-2 text-primary"></i>Remarks:
+        </strong>
+      </div>
+      <div class="col-7">
+        <span class="text-dark">
+          {{ selectedDocument.Remarks || 'N/A' }}
+        </span>
+      </div>
+    </div>
+    <hr class="my-2" />
+
+
+    <div class="row mb-3">
+      <div class="col-5">
+        <strong>
+          <i class="fas fa-globe me-2 text-primary"></i>Public:
+        </strong>
+      </div>
+      <div class="col-7">
+        <span
+          *ngIf="selectedDocument.PublicText === 'Public'"
+          class="badge bg-info"
+        >
+          <i class="fas fa-check me-1"></i>{{ selectedDocument.PublicText }}
+        </span>
+        <span
+          *ngIf="selectedDocument.PublicText === 'Private'"
+          class="badge bg-secondary"
+        >
+          <i class="fas fa-lock me-1"></i>{{ selectedDocument.PublicText }}
+        </span>
+      </div>
+    </div>
+    <hr class="my-2" />
+
+
+    <div class="row mb-0">
+      <div class="col-5">
+        <strong>
+          <i
+            class="fas fa-circle me-2"
+            [ngClass]="
+              selectedDocument.StatusText === 'Active'
+                ? 'text-success'
+                : 'text-danger'
+            "
+          ></i>
+          Status:
+        </strong>
+      </div>
+      <div class="col-7">
+        <span
+          *ngIf="selectedDocument.StatusText === 'Active'"
+          class="badge bg-success"
+        >
+          <i class="fas fa-check-circle me-1"></i
+          >{{ selectedDocument.StatusText }}
+        </span>
+        <span
+          *ngIf="selectedDocument.StatusText === 'Inactive'"
+          class="badge bg-danger"
+        >
+          <i class="fas fa-times-circle me-1"></i
+          >{{ selectedDocument.StatusText }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal-body text-center text-muted" *ngIf="!selectedDocument">
+    <i class="fas fa-info-circle fa-2x mb-2"></i>
+    <p>No document data available</p>
+  </div>
+
+
+  <div class="modal-footer bg-light">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="modal.dismiss()"
+    >
+      <i class="fas fa-times me-1"></i> Close
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="modal.dismiss(); editDocument(selectedDocument)"
+    >
+      <i class="fas fa-edit me-1"></i> Edit
+    </button>
+  </div>
+</ng-template>                   
+
+
+
+

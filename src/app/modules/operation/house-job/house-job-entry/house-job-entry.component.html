@@ -9,7 +9,11 @@
         <i class="fas fa-anchor"></i>
       </div>
       <div class="brand-content">
+        @if(selectedDepartmentType === "AIR"){
+          <h1 class="workspace-title">House AirWay Bill</h1>
+        }@else{
         <h1 class="workspace-title">House Job</h1>
+        }
       </div>
       @if(isEditMode){
       <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
@@ -43,12 +47,14 @@
              @if(selectedDepartmentType === "AIR"){
                <button class="text-dark" ngbDropdownItem (click)="reportHAWB()">HAWB</button>
              }@else{ 
+              @if(houseJobForm.get('JobType')?.value !== 'Transhipment'){
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
               Order</button>
             <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
               Notice with charges</button>
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
+               }
             <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Lading</button>
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
               Loss</button>
@@ -222,7 +228,7 @@
   <!-- Modern Navigation Pills -->
   <div class="nav-pills-container">
     <div class="nav-pills">
-      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+      <div class="nav-pill" *ngFor="let tab of filteredTabs" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">
         <div class="pill-icon">
           <i [class]="tab.icon"></i>

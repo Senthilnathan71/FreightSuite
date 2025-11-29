@@ -1012,9 +1012,16 @@ export class OperationService {
       })
     );
   }
-
+  
   updateHouseById(HouseJobSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`house-job/update/${HouseJobSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+  createHouseJob(payload: any) {
+    return this.http.post<{ data: any }>(`house-job/create`, payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1283,12 +1290,32 @@ export class OperationService {
     )
   }
 
+  getCustomsByHouseJobSid(houseJobSid: number) {
+    return this.http.get<{ data: any[] }>(`customs/house-job/${houseJobSid}`).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+  getCustomsByMasterJobSid(masterJobSid: number) {
+    return this.http.get<{ data: any[] }>(`customs/master-job/${masterJobSid}`).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   deleteCustomsById(BoeSid: number) {
     return this.http.delete<{ data: any }>(`customs/${BoeSid}`).pipe(
       map((resp) => {
         return resp.data;
       })
     );
+  }
+  getAllTaxGroup() {
+    return this.http.get<{ data: any[] }>('tax-group', {  }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
   }
 
   getLedgerForTaxGroup(payload: {

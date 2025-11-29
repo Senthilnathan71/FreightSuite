@@ -9,6 +9,7 @@ import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
 import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
 import { RolemenuEntryComponent } from "./rolemenu/rolemenu-entry/rolemenu-entry.component";
 
+
 export const SettingsRoutes: Routes = [
     {
         path: '',

@@ -1207,7 +1207,7 @@ private getCustomerCountryCode(vendor: any): string {
   this.selectedVendorForCosts = null;
 
   this.searchCostsModalInstance = this.modalService.open(this.searchCostsModalRef, {
-    size: 'lg',
+    size: 'xl',
     backdrop: 'static',
     keyboard: false,
     centered:true,

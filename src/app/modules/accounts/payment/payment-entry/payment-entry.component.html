@@ -2,156 +2,173 @@
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form" [formGroup]="paymentForm">
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-2 pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <h5 class="page-title my-0 text-info">{{ isViewMode ? 'View Payment' : (isEditMode ? 'Edit Payment'
-                        :
-                        'Create Payment') }}</h5>
-                    @if(isEditMode){
-                    <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
-                        <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
-                    }
-                </div>
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+
+        <div class="col-md-2 pb-0">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="page-title my-0 text-info">
+                    {{ isViewMode ? 'View Payment' : (isEditMode ? 'Edit Payment' : 'Create Payment') }}
+                </h5>
+                @if(isEditMode){
+                <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
+                }
             </div>
-            <div class="col-md-4">
-                <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
-
-                    <div class="d-flex  gap-2 pb-1 align-items-center  ps-5">
-
-                        <!-- Search Type -->
-                        <div class="col-md-3">
-                            <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label"
-                                bindValue="value" clearable="false">
-                            </ng-select>
-                        </div>
-
-                        <!-- Party -->
-                        @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
-                        <div class="col-md-5">
-                            <ng-select [items]="onlyCustomerList" bindLabel="CustomerName"
-                                bindValue="SubledgerMasterSid" formControlName="LedgerMasterSid"
-                                placeholder="Select Party">
-                            </ng-select>
-                        </div>
-                        } @else {
-                        <div class="col-md-5">
-                            <input formControlName="FilterText" class="form-control" placeholder="">
-                        </div>
-                        }
-
-                        <!-- Search Button -->
-                        <div class=" d-flex align-items-end">
-                            <button class="btn btn-info btn-sm" [disabled]="
-                                !searchOutstandingForm.get('SearchType')?.value || 
-                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
-                                r['LedgerMasterSid']?.value
-                            " (click)="searchOutstanding()">
-                                <i class="fas fa-search me-1 fs-2"></i> Get OS
-                            </button>
-                        </div>
-
-
-
-                    </div>
-
-
-
-                </form>
-
-
-
-            </div>
-            <div class="col-md-6 pb-1">
-
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                            (click)="openAuditLogs(auditLogModal)">
-                            <i class="fas fa-history me-1"></i>Logs
-                        </button> -->
-                    <!-- <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
-                        [disabled]="isPosted">
-                        <i class="fas fa-check-circle me-1"></i> Final
-                    </button> -->
-                    <div class="col-md-4 ">
-                        <div class="form-check form-check-inline p-0 mt-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
-                                    formControlName="MultiBranch" (keydown.enter)="toggleMultiBranch($event)"
-                                    (click)="toggleMultiBranch($event)">
-                                <label for="" class="form-check-label sm">Multi Branch <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value" (click)="reportPayment()"
-                        [disabled]="!paymentDataPrint">
-                        <i class="fas fa-print me-1"></i>Print
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        *ngIf="isEditMode && !paymentForm.get('CashOrBank')?.value" (click)="reportBankPayment()"
-                        [disabled]="!paymentDataPrint">
-                        <i class="fas fa-print me-1"></i>Print
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="resetForm()">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]="isPosted || (mps.can('update') && isEditMode)">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                    <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                            ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem
-                                appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
-                                Condition</button>
-                            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
+        <!-- Search Section -->
+        <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
+            <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
+
+                <div class="d-flex pb-1 align-items-center ps-5"
+                     [ngClass]="{ 'gap-2': !isEditMode, 'gap-0': isEditMode }">
+
+                    <!-- Search Type (FIRST ng-select with increased width) -->
+                    <div class="col-md-3" style="width:160px;">
+                        <ng-select formControlName="SearchType" 
+                                   [items]="searchTypes" 
+                                   bindLabel="label"
+                                   bindValue="value"
+                                   clearable="false">
+                        </ng-select>
+                    </div>
+
+                    <!-- Party -->
+                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
+                    <div class="col-md-5">
+                        <ng-select [items]="onlyCustomerList"
+                                   bindLabel="CustomerName"
+                                   bindValue="SubledgerMasterSid"
+                                   formControlName="LedgerMasterSid"
+                                   placeholder="Select Party">
+                        </ng-select>
+                    </div>
+                    } @else {
+                    <div class="col-md-5">
+                        <input formControlName="FilterText" class="form-control" placeholder="">
+                    </div>
+                    }
+
+                    <!-- Search Button -->
+                    <div class="d-flex align-items-end">
+                        <button class="btn btn-info btn-sm"
+                            [disabled]="
+                                !searchOutstandingForm.get('SearchType')?.value || 
+                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || 
+                                searchOutstandingForm.get('FilterText')?.value) || 
+                                r['LedgerMasterSid']?.value
+                            "
+                            (click)="searchOutstanding()">
+                            <i class="fas fa-search me-1 fs-2"></i> Get OS
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- Button Section -->
+        <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-0'">
+            <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+
+                <div class="col-md-4 ">
+                    <div class="form-check form-check-inline p-0 mt-0">
+                        <div class="form-check d-flex align-items-center">
+                            <input type="checkbox" class="focus-ring form-check-input sm p-0"
+                                   formControlName="MultiBranch"
+                                   (keydown.enter)="toggleMultiBranch($event)"
+                                   (click)="toggleMultiBranch($event)">
+                            <label class="form-check-label sm">Multi Branch</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value"
+                        (click)="reportPayment()" 
+                        [disabled]="!paymentDataPrint">
+                    <i class="fas fa-print me-1"></i>Print
+                </button>
+
+                <button type="button"
+                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        *ngIf="isEditMode && !paymentForm.get('CashOrBank')?.value"
+                        (click)="reportBankPayment()" 
+                        [disabled]="!paymentDataPrint">
+                    <i class="fas fa-print me-1"></i>Print
+                </button>
+
+                <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                    <i class="fas fa-chevron-left me-1"></i> Back
+                </button>
+
+                <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
+                    <i class="fas fa-sync-alt me-1"></i> Reset
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="onSubmit()"
+                        [disabled]="isPosted || (mps.can('update') && isEditMode)">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+
+                <div *ngIf="mps.hasAtLeastOne() && isEditMode"
+                     ngbDropdown class="d-inline-block">
+
+                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" 
+                            id="dropdownBasic1" ngbDropdownToggle>
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+
+                        <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem 
+                                appPreventMultiClick (click)="openEDoc()">
+                            <i class="fas fa-file-alt me-1"></i> Edoc
+                        </button>
+
+                        <button *ngIf="mps.has('terms_and_condition')" class="text-dark" 
+                                ngbDropdownItem appPreventMultiClick (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+
+                        <button *ngIf="mps.has('authority')" class="text-dark" 
+                                ngbDropdownItem appPreventMultiClick (click)="openAuthority()">
+                            <i class="fas fa-shield-alt me-1"></i> Authorize
+                        </button>
+
+                        <button *ngIf="mps.has('email')" class="text-dark"
+                                ngbDropdownItem appPreventMultiClick (click)="openEmail()">
+                            <i class="fas fa-envelope me-1"></i> Email
+                        </button>
+
+                        <button *ngIf="mps.has('follow_up')" class="text-dark"
+                                ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
+                            <i class="fas fa-paperclip me-1"></i> Followup
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
+</div>
+
 
     <div class="col-md-12 px-0">
-
         <div class="row">
-
             <!-- FIRST CARD (Changes width dynamically) -->
-            <div [ngClass]="{
-    'col-md-12': paymentForm.get('CashOrBank')?.value,
-    'col-md-8 pe-md-0': !paymentForm.get('CashOrBank')?.value
-  }">
-
-
+            <div [ngClass]="{'col-md-12': paymentForm.get('CashOrBank')?.value,'col-md-8 pe-md-0': !paymentForm.get('CashOrBank')?.value}">
                 <div class="card h-100 mb-0">
                     <div class="card-body pb-0">
                         <div class="row">
-
                             <!-- Payment No -->
                             <aside class="col-md-3">
                                 <div class="custom-form-group">
@@ -333,7 +350,7 @@
                     <div class="card-body pb-0">
                         <div class="row">
 
-                            <!-- Instrument Number -->
+                            <!-- Instt Number -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="" placeholder="" class="custom-input-field sm"
@@ -343,7 +360,7 @@
                                 </div>
                             </aside>
 
-                            <!-- Instrument Mode -->
+                            <!-- Inst Mode -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!r['InstrumentMode']?.value">
@@ -417,7 +434,6 @@
     </div>
 
     <div class="content-workspace">
-
         <div class="workspace-content px-0" [hidden]="selectedTab !== 'Detail'" [formGroup]="paymentForm">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
@@ -549,11 +565,8 @@
                     </tbody>
                 </table>
             </div>
-
-
-
-
         </div>
+        
         <div class="workspace-content px-0" [formGroup]="paymentForm" [hidden]="selectedTab !== 'Voucher Matching'">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">

@@ -108,6 +108,6 @@ selectedTab = this.tab[0].name;
 
   // back navigation
   navigateToBack() {
-    // this.router.navigate(['accounts/journal-voucher/list']);
+    this.router.navigate(['accounts/voucher-matching/list']);
   }
 }

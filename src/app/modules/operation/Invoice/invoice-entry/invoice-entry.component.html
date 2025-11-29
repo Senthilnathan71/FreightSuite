@@ -158,9 +158,11 @@
   </div>
 </aside>
               <!-- 11. GSTType -->
-             <aside class="col-md-3">
+             <!-- For GST Type field -->
+<aside class="col-md-3">
   <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" readonly>
+    <input type="text" class="custom-input-field sm" formControlName="GSTType" 
+           placeholder="" readonly (change)="onGSTTypeChange()">
     <label class="input-label">GST Type</label>
   </div>
 </aside>
@@ -232,20 +234,17 @@
 
               <!-- 9. Currency (CurrencyCode) -->
               <aside class="col-md-3">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
-                  <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
-                    formControlName="CurrencyCode" (change)="recalculateAllRows()">
-                  </ng-select> -->
-                  <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
-                    [displayFields]="CurrencyLookupConfig.displayFields"
-                    [displayLabels]="CurrencyLookupConfig.displayLabels"
-                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
-                    (itemSelected)="recalculateAllRows()">
-                  </dofi-searchable-dropdown>
-                  <label class="input-label">Currency</label>
-                </div>
-              </aside>
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
+    <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
+      [displayFields]="CurrencyLookupConfig.displayFields"
+      [displayLabels]="CurrencyLookupConfig.displayLabels"
+      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
+      (itemSelected)="onHeaderCurrencyChange($event)">
+    </dofi-searchable-dropdown>
+    <label class="input-label">Currency</label>
+  </div>
+</aside>
 
               <!-- 10. Ex Rate (ExchangeRate) -->
               <aside class="col-md-3">
@@ -306,8 +305,8 @@
                       <table class="table table-hover table-sm mb-0 text-center">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius: 10px;"></th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
+                            <th rowspan="2"*ngIf="!isEditMode" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius: 10px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno.
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
                               Charge</th>
@@ -383,6 +382,7 @@
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
                               </td>
+                              
                               <td>{{ i + 1 }}</td>
 
                               <!-- Charge -->

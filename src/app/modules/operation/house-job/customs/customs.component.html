@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h6 class="mb-0">Customs Information</h6>
     <button class="btn btn-primary btn-sm" (click)="generateEDIManifest()"
-            [disabled]="!houseJobSid || loading">
+            [disabled]="(!houseJobSid && !masterJobSid) || loading">
       <i class="fas fa-file-export me-2"></i>
       Generate EDI Manifest
     </button>
@@ -256,12 +256,12 @@
 
     </div>
 
-    <!-- <div class="d-flex justify-content-end gap-2">
+    <div class="d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-sm btn-secondary" (click)="resetChildForm()">Clear</button>
       <button type="button" class="btn btn-info btn-sm" (click)="submitForm()" [disabled]="loading">
         {{ selectedRecord ? 'Update Customs' : 'Save Customs' }}
       </button>
-    </div> -->
+    </div>
 
   </form>
 </div>

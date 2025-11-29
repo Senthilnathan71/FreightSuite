@@ -553,6 +553,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   }
 
 
+  isFormDirty(): boolean {
+  if (!this.isEditMode) return false;
+  
+  return this.bookingForm.dirty || 
+         this.cargoForm.dirty || 
+         this.otherForm.dirty;
+}
   /**
   |--------------------------------------------------
   |   Section-4 : Main Functions
@@ -597,6 +604,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: '', disabled: true }],
       ETD: [{ value: '', disabled: true }],
+      CutOffDate: [{ value: '', disabled: true}],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1186,6 +1194,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: response.VoyageNo,
       ETA: response.ETA ? new Date(response.ETA) : null,
       ETD: response.ETD ? new Date(response.ETD) : null,
+      CutOffDate: response.CutOffDate ? new Date(response.CutOffDate) : null,
       POO: response.POO,
       POL: response.POL,
       POD: response.POD,
@@ -1518,6 +1527,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
+      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null,
       POO: bookingFormValue.POO || null,
       POL: bookingFormValue.POL,
       POD: bookingFormValue.POD,
@@ -1619,6 +1629,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully updated.');
+            this.bookingForm.markAsPristine();
+            this.cargoForm.markAsPristine();
+            this.otherForm.markAsPristine();
             // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid);
           } else {
@@ -1673,6 +1686,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.b['FPD'].setValue(null);
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
+      this.b['CutOffDate'].setValue('');
       this.b['MovementType'].setValue(null);
        this.b['JobType'].setValue('');
       this.handleImportExport();
@@ -1909,6 +1923,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue('');
     this.b['ETD']?.setValue('');
+    this.b['CutOffDate']?.setValue('');
     if (!selectedPort) {
       this.filteredPOD = [...this.filteredPorts];
       return;
@@ -1923,6 +1938,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue('');
     this.b['ETD']?.setValue('');
+    this.b['CutOffDate']?.setValue('');
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.b['FPD']?.setValue(null);
@@ -1950,7 +1966,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         VoyageMasterSid : null,
         VoyageNo: null,
         ETA: '',
-        ETD: ''
+        ETD: '',
+        CutOffDate: ''
       })
       return;
     }
@@ -1958,7 +1975,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageMasterSid : voyage.VoyageMasterSid,
       VoyageNo: voyage.VoyageNo,
       ETA: new Date(voyage.ETA),
-      ETD: new Date(voyage.ETD)
+      ETD: new Date(voyage.ETD),
+      CutOffDate: new Date(voyage.PortCutoff),
     })
   }
 
@@ -1966,6 +1984,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (!voyage) {
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
+      this.b['CutOffDate'].setValue('');
       this.b['VoyageMasterSid']?.setValue('')
       return;
     }
@@ -1974,9 +1993,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
     const polETD = voyage.ETD || null;
     const podETA = voyage?.ETA || null;
-
+    const cutOff = voyage?.PortCutoff || null;
     this.b['ETD'].setValue(new Date(polETD));
     this.b['ETA'].setValue(new Date(podETA));
+    this.b['CutOffDate'].setValue(new Date(cutOff));
     this.minStartDate = new Date(podETA);
   }
 
@@ -2010,7 +2030,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           this.headerVesselList = resp.data.map(vslVoy =>({
               ...vslVoy , 
               ETD : this.datePipe.transform(vslVoy.ETD), 
-              ETA : this.datePipe.transform(vslVoy.ETA)
+              ETA : this.datePipe.transform(vslVoy.ETA),
+              CutOffDate: this.datePipe.transform(vslVoy.CutOffDate),
           }));
           console.log(this.headerVesselList);
           if (this.headerVesselList.length === 0) {
@@ -2054,6 +2075,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               VoyageNo: voyage.VoyageNo,
               ETD: voyage.ETD,
               ETA: voyage.ETA,
+              CutOffDate: voyage.PortCutoff,
               VoyageMasterHeaderSid: voyage.VoyageMasterHeaderSid,
               POL: polWithName,
               POD: podWithName
@@ -3230,7 +3252,7 @@ async downloadPDF() {
     CarrierMasterSid: null,
     ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
-    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : null,
+    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate'] ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
     masterJobContainers: masterJobContainers
   };

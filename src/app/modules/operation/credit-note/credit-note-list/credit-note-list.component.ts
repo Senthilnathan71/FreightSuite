@@ -241,11 +241,11 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"150px"
+        width: '140px',
       },
       {
         key: 'ReversalVoucherDisplay',
-        label: 'Invoice No',
+        label: 'Inv No.',
         sortable: true,
         filterable: true,
         visible: true,
@@ -276,7 +276,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '120px',
       },
         {
         key: 'MasterNumber',
@@ -313,7 +312,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         template: 'status',
-        width: '100px',
         dataType: 'string',
         cellClass: 'status-column'
       },

@@ -2,9 +2,9 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h4 class="page-title mb-0">Credit Note</h4>
+        <h5 class="page-title mb-0 text-info">Credit Note</h5>
         @if(isEditMode){
-          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -93,7 +93,7 @@
           <div *ngIf="selectedTab === 'Credit Note'">
             <div class="row">
               <!-- 1. CreditNote No (VoucherNumber) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                     formControlName="VoucherNumber" readonly style="cursor: not-allowed;">
@@ -101,7 +101,7 @@
                 </div>
               </aside>
 
-              <aside class="col-md-3">
+              <aside class="col-md-2">
   <div class="d-flex gap-1 align-items-end">
     <!-- Invoice Dropdown -->
     <div class="custom-form-group custom-form-group-select flex-grow-1" 
@@ -114,7 +114,7 @@
   [displayFields]="invoiceLookupConfig.displayFields"
   [displayLabels]="invoiceLookupConfig.displayLabels"
   [labelFields]="invoiceLookupConfig.labelFields"
-  [bindValue]="'VoucherHeaderSid'">
+  [bindValue]="'VoucherHeaderSid'" >
 </dofi-searchable-dropdown>
       <label class="input-label">Invoice No</label>
     </div>
@@ -124,7 +124,7 @@
        <button 
       type="button" 
       class="btn btn-info btn-sm" 
-      style="min-width: 50px; height: 25px;"
+      style="min-width: 30px; height: 30px;"
       (click)="getInvoiceData()"
       [disabled]="!creditNoteForm.get('ReversalVoucher')?.value">Get
     </button>
@@ -133,23 +133,10 @@
   </div>
 </aside>
 
-              <!-- 2. Invoice Date (VoucherDate) -->
-              <aside class="col-md-3">
-                <div class="custom-form-group custom-form-group-select-date"
-                  [class.filled]="!!creditNoteForm.get('VoucherDate')?.value">
-                  <div class="input-group">
-                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                      formControlName="VoucherDate" (click)="d1.toggle()" />
-                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
-                      <i-feather name="calendar" class="feather-sm"></i-feather>
-                    </button>
-                  </div>
-                  <label class="input-label">Credit Note Date</label>
-                </div>
-              </aside>
+            
 
               <!-- 3. Customer Name (Customer selection) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!creditNoteForm.get('PartyName')?.value">
                   <dofi-searchable-dropdown [items]="customerList" formControlName="PartyName" placeholder=""
@@ -166,14 +153,29 @@
               
 
 
-              <aside class="col-md-3">
+              <aside class="col-md-2">
   <div class="custom-form-group">
     <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder="" readonly>
     <label class="input-label">Customer Address</label>
   </div>
 </aside>
+
+  <!-- 2. Invoice Date (VoucherDate) -->
+              <aside class="col-md-2">
+                <div class="custom-form-group custom-form-group-select-date"
+                  [class.filled]="!!creditNoteForm.get('VoucherDate')?.value">
+                  <div class="input-group">
+                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                      formControlName="VoucherDate" (click)="d1.toggle()" />
+                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                      <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                  <label class="input-label">Credit Note Date</label>
+                </div>
+              </aside>
               <!-- 5. Ref No (DocumentNumber) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" readonly>
                   <label class="input-label">Ref No</label>
@@ -181,7 +183,7 @@
               </aside>
 
               <!-- 7. Job No (MasterJobSid) - ng-select showing MasterJobNumber and MBLNo -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!creditNoteForm.get('MasterJobSid')?.value">
                   <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid" placeholder=""
@@ -205,7 +207,7 @@
               </aside>
 
               <!-- 15. MBL No -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo" placeholder=""
                     style="background-color: white; cursor: not-allowed;" readonly>
@@ -214,7 +216,7 @@
               </aside>
 
               <!-- 8. HBL No (HouseJob) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="HBLNo" placeholder="" readonly>
                   <label class="input-label">HBL No</label>
@@ -222,7 +224,7 @@
               </aside>
 
               <!-- 9. Currency (CurrencyCode) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!creditNoteForm.get('CurrencyCode')?.value">
                   <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
@@ -239,7 +241,7 @@
               </aside>
 
               <!-- 10. Ex Rate (ExchangeRate) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
                     (input)="recalculateAllRows()" placeholder="" readonly>
@@ -248,21 +250,21 @@
               </aside>
 
               <!-- 11. GST No (GSTNo) -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" readonly>
                   <label class="input-label">GST No / VAT</label>
                 </div>
               </aside>
               <!-- 11. GSTType -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" readonly>
                   <label class="input-label">GST Type</label>
                 </div>
               </aside>
               <!-- 12. Invoice Type -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!creditNoteForm.get('InvoiceType')?.value">
                   <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" placeholder=""
@@ -273,7 +275,7 @@
               </aside>
 
               <!-- 13. Remarks -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder="" readonly>
                   <label class="input-label">Remarks</label>
@@ -287,7 +289,7 @@
                   <label for="text-input" class="input-label">Credit Note Reason</label>
                 </div>
               </aside> -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <!-- <div class="d-flex align-items-center"> -->
 
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!creditNoteForm.get('CreditNoteReason')?.value">  
@@ -299,7 +301,7 @@
               </aside>
 
               <!-- 6. IRN No -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="IRNNumber" placeholder="" readonly>
                   <label class="input-label">IRN No</label>
@@ -307,7 +309,7 @@
               </aside>
 
               <!-- 14. IRN Status -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="IRNStatus" placeholder="" readonly>
                   <label class="input-label">IRN Status</label>
@@ -315,7 +317,7 @@
               </aside>
 
               <!-- Status -->
-              <aside class="col-md-3">
+              <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!creditNoteForm.get('status')?.value">
                   <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id"
@@ -339,7 +341,7 @@
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;border-top-left-radius:10px ;"></th>
-                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">SNo.
                             </th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
                               Charge</th>
@@ -415,7 +417,11 @@
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
                               </td>
-                              <td>{{ i + 1 }}</td>
+                              <td>
+                                <span style="color: black; font-weight: 600;">
+                                  {{ i + 1 }}
+                                </span>
+                                </td>
 
                               <!-- Charge -->
                               <td>
@@ -433,9 +439,9 @@
                               </td>
 
                               <!-- Description -->
-                              <td>
+                              <td style="min-width: 200px;">
                                
-                                <span>{{ row.get('ChargeDescription')?.value || '-' }}</span>
+                                <span class="pt-1" style="color: black; font-weight: 600;">{{ row.get('ChargeDescription')?.value || '' }}</span>
                               </td>
 
                               <!-- HSN/SAC -->
@@ -467,19 +473,19 @@
                               <!-- Unit -->
                               <td>
                                 
-                                <span>{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
+                                <span style="color: black; font-weight: 600;">{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
                               </td>
 
                               <!-- No of Unit -->
                               <td>
                                 
-                                <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
+                                <span style="color: black; font-weight: 600;"> {{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Dr/Cr -->
                               <td>
                                 
-                                <span>{{ row.get('DrCr')?.value || '-' }}</span>
+                                <span style="color: black; font-weight: 600;">{{ row.get('DrCr')?.value || '' }}</span>
                               </td>
 
                               <!-- Currency -->
@@ -500,7 +506,7 @@
                               <td>
                                 <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
                                   formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
+                                <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('Rate')?.value | numberFormat }}</span>
                                 <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
     <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
       Credit note rate cannot exceed original invoice rate
@@ -518,18 +524,18 @@
                               <td>
                                 <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm"
                                   formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-                                <span *ngIf="isEditMode">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
+                                <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
                               </td>
 
                               <!-- Amount -->
                               <td>
                                 
-                                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
+                                <span style="color: black; font-weight: 600;">{{ row.get('Amount')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Taxable Amount -->
                               <td>
-                                <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
+                                <span style="color:#333; font-weight: 600;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- India GST Columns -->
@@ -539,14 +545,14 @@
                                     <div class="d-flex">
                                       <input type="number" class="custom-input-field sm"
                                         formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
-                                      <span class=" ">%</span>
+                                      <span class=" " style="color: black; font-weight: 600;">%</span>
                                     </div>
                                   </div>
                                   <span *ngIf="isEditMode">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                                 </td>
                                 <!-- CGST Amount -->
                                 <td>
-                                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                                  <span style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                                 </td>
 
                                 <!-- SGST % -->
@@ -555,14 +561,14 @@
                                     <div class="d-flex gap-1">
                                       <input type="number" class="custom-input-field sm"
                                         formControlName="TaxPercentage2" (input)="onDetailChange(i, 'TaxPercentage2')">
-                                      <span class="">%</span>
+                                      <span class="" style="color: black; font-weight: 600;">%</span>
                                     </div>
                                   </div>
-                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
+                                  <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
                                 </td>
                                 <!-- SGST Amount -->
                                 <td>
-                                  <span>{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
+                                  <span style="color: black; font-weight: 600;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                                 </td>
 
                                 <!-- IGST % -->
@@ -572,14 +578,14 @@
                                       <input type="number" class="custom-input-field sm"
                                         formControlName="TaxPercentageIGST"
                                         (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                                      <span class="">%</span>
+                                      <span class="" style="color: black; font-weight: 600;">%</span>
                                     </div>
                                   </div>
-                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
+                                  <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
                                 </td>
                                 <!-- IGST Amount -->
                                 <td>
-                                  <span>{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
+                                  <span style="color: black; font-weight: 600;">{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
                                 </td>
                               </ng-container>
 
@@ -591,35 +597,35 @@
                                     <div class="d-flex">
                                       <input type="number" class="custom-input-field sm"
                                         formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
-                                      <span class=" ">%</span>
+                                      <span style="color: black; font-weight: 600;" class=" ">%</span>
                                     </div>
                                   </div>
-                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                  <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                                 </td>
                                 <!-- VAT Amount -->
                                 <td>
-                                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                                  <span style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                                 </td>
                               </ng-container>
 
                               <!-- Local Amount -->
                               <td>
-                                <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
+                                <span style="color: black; font-weight: 600;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                               </td>
                               <td>
-                                <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
+                                <span style="color: black; font-weight: 600;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- MasterJobSid column -->
                               <td style="min-width:200px;">
                             
-                                <span>{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span>
+                                <span style="color: black; font-weight: 600;">{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span>
                               </td>
 
                               <!-- HouseJobSid column -->
                               <td style="min-width:200px;">
                                 
-                                <span>{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
+                                <span style="color: black; font-weight: 600;">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
                                   row.get('MasterJobSid')?.value) }}</span>
                               </td>
                               <!-- Department Column -->
@@ -649,25 +655,29 @@
                       <table class="table table-sm table-borderless mb-0 w-100 align-middle"
                         style="table-layout: fixed;">
                         <tbody  class=" d-flex justify-content-end gap-4">
-                          <tr>
+                          <tr style="color: black; font-weight: 600;">
                             <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
                               <strong>Currency Amount</strong>
                             </td>
                             <td style="width: 5%; text-align: center;"><strong>:</strong></td>
                             <td class="text-end" style="width: 40%; padding-left: 10px;">
-                              {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+                              <strong>
+                                {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+                              </strong>
                             </td>
                           </tr>
-                          <tr>
+                          <tr style="color: black; font-weight: 600;">
                             <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
                               <strong>Tax Amount</strong>
                             </td>
                             <td style="width: 5%; text-align: center;"><strong>:</strong></td>
                             <td class="text-end" style="width: 40%; padding-left: 10px;">
-                              {{ getTotalTaxAmount() | number:'1.2-2' }}
+                              <strong>
+                                 {{ getTotalTaxAmount() | number:'1.2-2' }}
+                              </strong>
                             </td>
                           </tr>
-                          <tr class="table-info">
+                          <tr class="table-info" style="color: black; font-weight: 600;">
                             <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
                               <strong>Total Amount</strong>
                             </td>
@@ -764,16 +774,20 @@
                 <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
               </div>
 
-              <div class="company-info ">
-                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                <p class="mb-1">
-                  {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                </p>
-                <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-              </div>
+              <div class="company-info text-center">
+            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || ''
+              }}</p>
+            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || ''
+              }}</p>
+            <p class="my-0" style="font-size: 14px;">
+              {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+              || '' }}
+            </p>
+            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+          </div>
             </div>
           </div>
 
@@ -891,9 +905,7 @@
               </div>
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
-                <div>: {{ creditNoteData.masterJob?.NoOfPkg }} / {{
-                  creditNoteData.masterJob?.GrossWeight }} / {{
-                  creditNoteData.masterJob?.Volume }}</div>
+                <div>: {{getPkgWtVol() }}</div>
               </div>
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Exp Inv No</strong></div>

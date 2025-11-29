@@ -8,7 +8,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">Credit Request</h5>
                     @if(isEditMode){
-          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+          <a class="text-info  d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -108,7 +108,7 @@
                 <!-- Credit Request Section -->
                 <div class="col-md-12 mt-1">
                     <div class="card">
-  <div class="bg-info d-flex justify-content-between align-items-center  text-white p-1 " style="border-radius: 5px 5px 0px 0px;" >
+  <div class=" d-flex justify-content-between align-items-center   p-1 px-2" style="border-radius: 5px 5px 0px 0px;" >
     <h6 class="mb-0">
       <i class="fas fa-file-signature me-1"></i>Credit Request Details
     </h6>
@@ -117,7 +117,7 @@
     </button>
   </div>
 
-  <div class="card-body p-1">
+  <div class="card-body p-1 py-0">
     @if(creditRequest.controls.length === 0) {
       <div class="col-12 text-center py-3 text-danger">
         At least one credit request is required
@@ -157,7 +157,7 @@
             : credit.get('ApprovalStatus')?.value === 'REJECTED'
             ? '#dc3545'
             : '#0d6efd',
-        'font-size': '12px',
+        'font-size': '10px',
         'font-weight': '600',
         'text-transform': 'uppercase'
       }"
@@ -169,11 +169,11 @@
 
               <!-- Collapsible content -->
               <div ngbAccordionCollapse>
-                <div class="card-body p-1">
+                <div class="card-body p-1 " >
                   <div class="row">
 
                     <!-- Branch -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select"
                            [class.filled]="!!credit.get('CustomerBranchSid')?.value">
                         <ng-select
@@ -190,7 +190,7 @@
                     </aside>
 
                     <!-- Department -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select"
                            [class.filled]="!!credit.get('DepartmentMasterSid')?.value">
                         <ng-select
@@ -207,7 +207,7 @@
                     </aside>
 
                     <!-- Sales Person -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select"
                            [class.filled]="!!credit.get('SalesmanSid')?.value">
                         <ng-select
@@ -223,7 +223,7 @@
                     </aside>
 
                     <!-- Credit Days -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group"
                            [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
                         <input type="number" formControlName="CreditDays"
@@ -233,7 +233,7 @@
                     </aside>
 
                     <!-- Credit Limit -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group"
                            [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
                         <input type="number" formControlName="CreditLimit"
@@ -243,7 +243,7 @@
                     </aside>
 
                     <!-- Published Days -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group"
                            [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
                         <input type="number" formControlName="PublishedDays"
@@ -253,7 +253,7 @@
                     </aside>
 
                     <!-- Published Limit -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group"
                            [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
                         <input type="number" formControlName="PublishedLimit"
@@ -263,7 +263,7 @@
                     </aside>
 
                     <!-- Effective From -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select-date">
                         <div class="input-group">
                           <input class="form-control"
@@ -272,7 +272,7 @@
                                  (click)="d1.toggle()"
                                  formControlName="EffectiveFrom"
                                  [minDate]="today" container="body" />
-                          <button class="btn" (click)="d1.toggle()" type="button">
+                          <button class="btn px-0" (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -281,7 +281,7 @@
                     </aside>
 
                     <!-- Effective To -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select-date">
                         <div class="input-group">
                           <input class="form-control"
@@ -290,7 +290,7 @@
                                  (click)="d2.toggle()"
                                  formControlName="EffectiveTo"
                                  [minDate]="today" container="body" />
-                          <button class="btn" (click)="d2.toggle()" type="button">
+                          <button class="btn px-0" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -299,7 +299,7 @@
                     </aside>
 
                     <!-- Approval Status -->
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                       <div class="custom-form-group custom-form-group-select"
                            [class.filled]="!!credit.get('ApprovalStatus')?.value">
                         <!-- <input type="text" formControlName="ApprovalStatus"
@@ -316,7 +316,7 @@
                       </div>
                     </aside>
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-2">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!credit.get('Status')?.value">
                                         <ng-select 
@@ -335,8 +335,8 @@
                                     </div>
                                 </aside>
                     <!-- KYC Section -->
-                    <div class="col-12 mt-1" style="width: 80%; margin: 0 auto;">
-                      <div class="d-flex justify-content-between align-items-center  pb-1 border-bottom">
+                    <div class="col-12" style="width: 80%; margin: 0 auto;">
+                      <div class="d-flex justify-content-between align-items-center ">
                         <h6 class="mb-0">
                           <i class="fas fa-layer-group me-2"></i>KYC Documents
                         </h6>
@@ -348,7 +348,7 @@
 
                       <div [formArrayName]="'customerKyc'">
                         @if(getKycArray(i).controls.length === 0) {
-                          <div class="text-center py-2 text-muted">
+                          <div class="text-center py-1 text-muted">
                             <i class="fas fa-folder-open fa-2x mb-1"></i>
                             <p class="mb-0">No KYC documents added yet</p>
                           </div>
@@ -356,7 +356,7 @@
 
                         @if(getKycArray(i).controls.length > 0) {
                           <div class="table-responsive table-borderless pt-1" >
-                            <table class="table table-hover table-sm">
+                            <table class="table table-hover table-sm mb-0">
                               <thead class="bg-info">
                                 <tr>
                                   <th width="2%" class="bg-transparent text-light">S.No</th>
@@ -368,7 +368,7 @@
                               <tbody>
                                 @for (kyc of getKycArray(i).controls; track kyc; let k = $index) {
                                   <tr [formGroupName]="k">
-                                    <td class="text-center">{{ k + 1 }}</td>
+                                    <td class="text-center pt-1">{{ k + 1 }}</td>
                                     <td>
                                       <ng-select
                                         formControlName="KycDocName"

@@ -50,7 +50,7 @@
                     </div>
                 </div>
             </div>
-            <div class="action-group" *ngIf="!isEditMode">
+            <div class="action-group" >
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
                         <i class="fas fa-upload me-1"></i>
@@ -620,13 +620,20 @@
                                             </div>
                                         </div>
                                     </aside>
-                                     <div class="col-md-4 text-end mt-2">
-                                         
-                                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateTohouseJob()">
-              <i class="fas fa-plus me-1"></i> Create
-            </button>
-                            <button class="btn btn-sm btn-info ms-auto" (click)="openAttachModal()"><i
+                                     <div class="col-md-4 text-end mt-2 ">
+                                        <div class="d-flex justify-content-end gap-2">
+                                          <button type="button" 
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+            *ngIf="isEditMode" 
+            (click)="navigateToHouseJobCreation()">
+      <i class="fas fa-plus me-1"></i> Create 
+    </button>
+    
+                                        
+                                   
+                            <button class="btn btn-sm btn-info " (click)="openAttachModal()"><i
                                     class="fas fa-save me-1"></i> Attach Booking</button>
+                                    </div>
                         </div>
                                 </div>
                             </div>
@@ -1285,7 +1292,7 @@
                 <div class="row mt-3" *ngIf="isTranshipment">
                     <div class="col-md-12 text-end">
                         <button class="btn btn-primary" (click)="bookingCreateInMasterJob()">
-                            <i class="fas fa-plus-circle"></i> Create Booking from Transhipment
+                            <i class="fas fa-plus-circle"></i> Create T/S Booking
                         </button>
                     </div>
                 </div>
@@ -1326,20 +1333,13 @@
         </div>
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Customs'">
-            <div class="content-layout px-3 py-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">Customs Information</h5>
-                    <button class="btn btn-primary btn-sm" (click)="generateEDIManifest()"
-                            [disabled]="!masterJobSid || isLoading">
-                        <i class="fas fa-file-export me-2"></i>
-                        Generate EDI Manifest
-                    </button>
-                </div>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Click "Generate EDI Manifest" to download the Dubai Ports Authority manifest file.
-                </div>
-            </div>
+            <app-customs
+                screenName="MasterJob"
+                [dataItems]="customsDataArray"
+                [resetTrigger]="customsResetTrigger"
+                [formData]="currentCustomsFormValue"
+                (reloadParent)="loadMasterJobData($event)">
+            </app-customs>
         </div>
 
         <div class="workspace-content" *ngIf="selectedTab === 'Container Activity'">
@@ -2425,8 +2425,20 @@
     <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && containerFormGroup.get('ContainerNumber')?.invalid"
          class="error-message">
       <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('required')">
-       (Format: ABCD1234567)
+         required
       </span>
+      <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('invalidFormat')">
+         ABCD1234565
+      </span>
+      <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('invalidContainerNumber')">
+        Invalid container number 
+      </span>
+    </div>
+    
+    <!-- Show valid container number message -->
+    <div *ngIf="containerFormGroup.get('ContainerNumber')?.valid && containerFormGroup.get('ContainerNumber')?.value"
+         class="success-message">
+      ✓ Valid container number
     </div>
   </div>
 </aside>

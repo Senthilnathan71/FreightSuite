@@ -8,7 +8,7 @@
           </div>
           <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Supplier TDS Mapping</h5>
           @if(isEditMode){
-          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+          <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -108,7 +108,7 @@
             <div class="custom-form-group">
               <input type="text" id="PlanNO" placeholder="" class="form-control custom-input-field sm"
                 formControlName="PanNO" readonly style="cursor: not-allowed; background-color: white;">
-              <label for="PanNO" class="input-label">Pan No </label>
+              <label for="PanNO" class="input-label">Pan No. </label>
             </div>
           </aside>
           <aside class="col-md-4">
@@ -162,17 +162,17 @@
             Delete
           </button> -->
           <button class="btn btn-info text-white btn-sm" (click)="addTDSDetail()">
-            <i class="fas fa-plus me-1"></i>Add
+            <i class="fas fa-plus me-1"></i>Add Details
           </button>
         </div>
       </div>
 
       <div class="table-responsive " style="max-height: 35vh;">
-        <table class="table table-hover align-middle no-wrap table-bordered mb-0" [formGroup]="supplierTDSForm"
+        <table class="table table-hover align-middle no-wrap table-borderless mb-0" [formGroup]="supplierTDSForm"
           (click)="preventTableTouch($event)">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col" *ngIf="tdsDetailArray.length > 1">Action</th>
+              <th class="bg-transparent text-light" scope="col" *ngIf="tdsDetailArray.length > 1"></th>
               <th class="bg-transparent text-light" scope="col">Branch Name</th>
               <th class="bg-transparent text-light" scope="col">TDS Set Name</th>
               <th class="bg-transparent text-light" scope="col">IT Sec Code</th>
@@ -191,16 +191,16 @@
             <tr [formGroupName]="i">
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" *ngIf="tdsDetailArray.length > 1">
                 <a class="text-danger mx-2" title="Delete" (click)="removeTDSDetail(i)">
-                  <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                  <i class="fas fa-trash text-danger cursor-pointer" name="trash-2"></i>
                 </a>
               </td>
-              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                {{ cusBranchList.length > 0 ? cusBranchList[0].BranchName : '' }}
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5; color: black; font-weight: 600;">
+               {{ cusBranchList.length > 0 ? cusBranchList[0].BranchName : '' }}
               </td>
 
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <ng-select class="ng-select" [items]="tdsList" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
-                  placeholder="Select TDS Set Name" formControlName="TDSSetHeaderSid"
+                  placeholder="" formControlName="TDSSetHeaderSid"
                   (change)="handleTDSChange($event,i)" [appendTo]="'body'">
                 </ng-select>
                 @if(tds.get('TDSSetHeaderSid')?.touched && tds.get('TDSSetHeaderSid')?.invalid){
@@ -285,12 +285,15 @@
                 }
               </td>
 
-              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5; ">
+                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker" style="width: 140px;"
                   (click)="d.toggle()" (keydown.enter)="d.open()" (keydown.arrowDown)="d.open()"
-                  (keydown.tab)="d.close()" readonly formControlName="EffectiveFrom" [footerTemplate]="footerTemplate"
+                  (keydown.tab)="d.close()" readonly formControlName="EffectiveFrom" 
                   [minDate]="minEffectiveFromDate" [maxDate]="toNgbDateStruct(tds.get('EffectiveTo').value)"
                   [container]="'body'" />
+                   <button class="btn bi bi-calendar3" (click)="d.toggle()" >
+                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
                 @if(tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid){
                 <div class="text-danger small">
                   <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
@@ -298,7 +301,7 @@
                 </div>
                 }
               </td>
-
+<!-- 
               <ng-template #footerTemplate>
                 <hr class="my-1" />
                 <div class="d-flex justify-content-between px-2 pb-2">
@@ -306,13 +309,16 @@
                     (click)="tds.get('EffectiveFrom').setValue(todayDate); d.close()">Today</button>
                   <button class="btn btn-secondary btn-sm" (click)="d.close()">Close</button>
                 </div>
-              </ng-template>
+              </ng-template> -->
 
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" style="width: 140px;" ngbDatepicker 
                   #d1="ngbDatepicker" (click)="d1.toggle()" (keydown.enter)="d1.open()" (keydown.arrowDown)="d1.open()"
-                  (keydown.tab)="d1.close()" readonly formControlName="EffectiveTo" [footerTemplate]="footerTemplate1"
-                  [minDate]="toNgbDateStruct(tds.get('EffectiveFrom').value)" [container]="'body'" />
+                  (keydown.tab)="d1.close()" readonly formControlName="EffectiveTo" 
+                  [minDate]="toNgbDateStruct(tds.get('EffectiveFrom').value)" [container]="'body'" style="width: 100px;" />
+                     <button class="btn bi bi-calendar3" (click)="d1.toggle()" >
+                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
                 @if(tds.get('EffectiveTo')?.touched && tds.get('EffectiveTo')?.invalid){
                 <div class="text-danger small">
                   <span *ngIf="tds.get('EffectiveTo')?.hasError('required')">Required</span>
@@ -321,19 +327,21 @@
                 }
               </td>
 
-              <ng-template #footerTemplate1>
+              <!-- <ng-template #footerTemplate1>
                 <hr class="my-1" />
                 <div class="d-flex justify-content-between px-2 pb-2">
                   <button class="btn btn-info btn-sm"
                     (click)="tds.get('EffectiveTo').setValue(todayDate); d1.close()">Today</button>
                   <button class="btn btn-secondary btn-sm" (click)="d1.close()">Close</button>
                 </div>
-              </ng-template>
+              </ng-template> -->
             </tr>
             }
           </tbody>
         </table>
       </div>
+
+
     </div>
   </div>
   </div>
