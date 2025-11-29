@@ -1,0 +1,418 @@
+<div class="row compact-form">
+  <div class="col-12 px-0">
+    <div
+      class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
+    >
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">
+            {{ isEditMode ? 'Edit' : 'Add' }} Document Reference
+          </h5>
+          @if(isEditMode){
+          <a
+            class="text-info ps-2 d-flex align-items-center w-2 h-2"
+            (click)="showInfo()"
+          >
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
+        </div>
+      </div>
+      <div class="col-md-8 pb-1">
+        <div class="d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            *ngIf="isEditMode"
+            (click)="openAuditLogs(auditLogModal)"
+          >
+            <i class="fas fa-history me-1"></i>Logs
+          </button>
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="goBack()"
+          >
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()"
+          >
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+
+
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onSubmit()"
+            [disabled]="
+              btnDisable || docRefForm.invalid || documentReferences.length === 0
+            "
+          >
+            <i
+              class="fas"
+              [ngClass]="btnDisable ? 'fa-spinner fa-spin' : 'fa-save'"
+              class="me-1"
+            ></i>
+            {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+          </button>
+
+
+          <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+            <button
+              type="button"
+              class="btn btn-light-secondary btn-sm has-arrow"
+              id="dropdownBasic1"
+              ngbDropdownToggle
+            >
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button
+                *ngIf="hasPermission('Edoc')"
+                class="text-dark"
+                ngbDropdownItem
+                (click)="openEDoc()"
+              >
+                <i class="fas fa-file-alt me-1"></i> Edoc
+              </button>
+              <button
+                *ngIf="hasPermission('Terms and Condition')"
+                class="text-dark"
+                ngbDropdownItem
+                (click)="openTandC()"
+              >
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+              </button>
+              <button
+                *ngIf="hasPermission('Authority')"
+                class="text-dark"
+                ngbDropdownItem
+                (click)="openAuthority()"
+              >
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+              </button>
+              <button
+                *ngIf="hasPermission('Email')"
+                class="text-dark"
+                ngbDropdownItem
+                (click)="openEmail()"
+              >
+                <i class="fas fa-envelope me-1"></i> Email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-12 px-0">
+    <form [formGroup]="docRefForm">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card h-100 mb-0">
+            <div class="card-body">
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h6 class="mb-0 text-info fw-semibold">
+                  Document Reference
+                  <span class="text-muted small">* Required fields</span>
+                </h6>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-info"
+                  (click)="addDocumentRow()"
+                >
+                  <i class="fas fa-plus me-1"></i> Add
+                </button>
+              </div>
+
+
+              @if(documentReferences.length === 0) {
+              <div class="col-12 text-center py-3 text-danger">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                At least one document reference is required
+              </div>
+              }
+
+
+              @if(documentReferences.length > 0) {
+              <div class="col-12">
+                <div class="table-responsive table-borderless">
+                  <table
+                    class="table table-hover align-middle no-wrap table-sm"
+                  >
+                    <thead class="bg-info">
+                      <tr>
+                        <th class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light" width="20%">
+                          Ref Document No <span class="text-danger">*</span>
+                        </th>
+                        <th class="bg-transparent text-light" width="15%">
+                          Document Date <span class="text-danger">*</span>
+                        </th>
+                        <th class="bg-transparent text-light" width="35%">
+                          Remarks
+                        </th>
+                        <th
+                          class="bg-transparent text-light text-center"
+                          width="10%"
+                        >
+                          Public
+                        </th>
+                        <th class="bg-transparent text-light" width="17%">
+                          Status <span class="text-danger">*</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="documentReferences">
+                      @for (doc of documentReferences.controls; track doc; let i =
+                      $index) {
+                      <tr [formGroupName]="i">
+                        <td class="text-center">
+                          <button
+                            type="button"
+                            class="btn btn-sm border-0"
+                            (click)="removeDocumentRow(i)"
+                            [disabled]="documentReferences.length <= 1"
+                            title="Delete row"
+                          >
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+
+
+                       
+                        <td>
+                          <div class="position-relative">
+                            <input
+                              type="text"
+                              formControlName="refDocumentNo"
+                              class="custom-input-field sm w-100"
+                              placeholder="Enter Document No"
+                              [class.is-invalid]="
+                                doc.get('refDocumentNo')?.invalid &&
+                                doc.get('refDocumentNo')?.touched
+                              "
+                            />
+                            <div
+                              *ngIf="
+                                doc.get('refDocumentNo')?.touched &&
+                                doc.get('refDocumentNo')?.invalid
+                              "
+                              class="error-message small text-danger mt-1"
+                            >
+                              <span
+                                *ngIf="
+                                  doc.get('refDocumentNo')?.hasError('required')
+                                "
+                              >
+                                <i class="fas fa-times-circle me-1"></i>Required
+                                field
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+
+                          
+                        <td>
+                          <div class="custom-form-group custom-form-group-select-date mt-0">
+                            <div
+                              class="input-group input-group-sm"
+                              style="display:flex;align-items:center;"
+                            >
+                              <input
+                                class="form-control form-control-sm border-end-0"
+                                style="min-width:120px;height:32px;"
+                                placeholder="dd-mm-yyyy"
+                                ngbDatepicker
+                                #dp="ngbDatepicker"
+                                formControlName="documentDate"
+                                (click)="dp.toggle()"
+                                readonly
+                                container="body"
+                              />
+                              <button
+                                class="btn btn-sm btn-outline-secondary border-start-0"
+                                type="button"
+                                (click)="dp.toggle()"
+                                title="Open date picker"
+                                style="display:flex;align-items:center;justify-content:center;height:32px;padding-top:0;padding-bottom:0;"
+                              >
+                                <i class="fas fa-calendar"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div
+                            *ngIf="
+                              doc.get('documentDate')?.touched &&
+                              doc.get('documentDate')?.invalid
+                            "
+                            class="error-message small text-danger mt-1"
+                          >
+                            <span
+                              *ngIf="
+                                doc.get('documentDate')?.hasError('required')
+                              "
+                            >
+                              <i class="fas fa-times-circle me-1"></i>Required
+                              field
+                            </span>
+                          </div>
+                        </td>
+
+
+                       
+                        <td>
+                          <input
+                            type="text"
+                            formControlName="remarks"
+                            class="custom-input-field sm w-100"
+                            placeholder="Enter remarks (optional)"
+                          />
+                        </td>
+
+
+                        
+                        <td class="text-center" style="padding-top:0;padding-bottom:0;">
+                          <div
+                            style="display:flex;align-items:center;justify-content:center;height:32px;"
+                          >
+                            <input
+                              type="checkbox"
+                              formControlName="isPublic"
+                              class="form-check-input cursor-pointer"
+                              title="Check to make public"
+                              style="width:16px;height:16px;margin:0;"
+                            />
+                          </div>
+                        </td>
+
+
+                        
+                        <td>
+                          <ng-select
+                            formControlName="status"
+                            [items]="statusOptions"
+                            bindLabel="name"
+                            bindValue="id"
+                            placeholder="Select Status"
+                            appendTo="body"
+                            [clearable]="false"
+                            class="ng-select-sm"
+                          >
+                          </ng-select>
+                          <div
+                            *ngIf="
+                              doc.get('status')?.touched &&
+                              doc.get('status')?.invalid
+                            "
+                            class="error-message small text-danger mt-1"
+                          >
+                            <span
+                              *ngIf="doc.get('status')?.hasError('required')"
+                            >
+                              <i class="fas fa-times-circle me-1"></i>Required
+                              field
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              }
+
+
+              <div class="text-muted small mt-3 p-2 bg-light rounded">
+                <i class="fas fa-info-circle me-1 text-info"></i>
+                <strong>Note:</strong> These document references will be
+                available in all related screens like Attachment/eDoc sections.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+<ng-template #auditLogModal let-modal>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">
+      <i class="fas fa-history me-2"></i>Audit Logs
+    </h5>
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      aria-label="Close"
+      (click)="modal.dismiss()"
+    ></button>
+  </div>
+  <div class="modal-body p-3">
+    <div class="table-responsive">
+      <table
+        class="table align-middle no-wrap table-bordered table-sm mb-0"
+      >
+        <thead class="bg-light">
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date : 'medium' }}</td>
+            <td>{{ log.changedBy || '-' }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul class="mb-0 ps-3">
+                <li *ngFor="let field of log.oldValDisplay">
+                  {{ field }}
+                </li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul class="mb-0 ps-3">
+                <li *ngFor="let field of log.newValDisplay">
+                  {{ field }}
+                </li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="5" class="text-center text-muted py-3">
+              <i class="fas fa-info-circle me-1"></i>No audit logs found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer bg-light">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="modal.close()"
+    >
+      <i class="fas fa-times me-1"></i>Close
+    </button>
+  </div>
+</ng-template>
