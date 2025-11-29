@@ -1074,11 +1074,11 @@
               </div>
               <div class="stat-item">
                 <div class="stat-label">Gross Weight</div>
-                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['GrossWeight']?.value ? (c['GrossWeight'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Volume</div>
-                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+                <div class="stat-value">{{c['Volume']?.value ? (c['Volume'].value | number: '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Status</div>
@@ -1091,19 +1091,19 @@
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">GW</div>
-                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['GrossWeight']?.value ? (c['GrossWeight'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">NW</div>
-                <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['NetWeight']?.value ? (c['NetWeight'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">CBM</div>
-                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['Volume']?.value ? (c['Volume'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Volumetric</div>
-                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['Volumetric']?.value ? (c['Volumetric'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Char W</div>
@@ -1116,19 +1116,19 @@
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Chargeable Weight</div>
-                <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['ChargeableWeight']?.value ? (c['ChargeableWeight'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Gross Weight</div>
-                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['GrossWeight']?.value ? (c['GrossWeight'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Volume</div>
-                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['Volume']?.value ? (c['Volume'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Volumetric</div>
-                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
+                <div class="stat-value">{{ c['Volumetric']?.value ? (c['Volumetric'].value | number : '1.3-3') : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Status</div>
