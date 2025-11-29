@@ -1,12 +1,13 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
-<div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4  pb-1">
+<div class="row compact-form" [formGroup]="receiptForm">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+
+            <div class="col-md-2  pb-0">
                 <div class="d-flex align-items-center gap-2">
-                    <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' :
+                    <h5 class="page-title my-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' :
                         'Create Receipt') }}</h5>
                     @if(isEditMode){
                     <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
@@ -15,21 +16,80 @@
                     }
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                            (click)="openAuditLogs(auditLogModal)">
-                            <i class="fas fa-history me-1"></i>Logs
-                        </button> -->
-                    <!-- <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
-                        [disabled]="isPosted">
-                        <i class="fas fa-check-circle me-1"></i> Final
-                    </button> -->
+
+            <!-- Search Section -->
+
+            <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
+                   <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
+
+                <div class="d-flex pb-1 align-items-center ps-5" [ngClass]="{ 'gap-2': !isEditMode, 'gap-0': isEditMode }">
+
+                    <!-- Search Type -->
+                    <div class="col-md-3" style="width: 160px;">
+                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
+                            clearable="false">
+                        </ng-select>
+                    </div>
+
+                    <!-- Party -->
+                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
+                    <div class="col-md-5">
+                        <ng-select 
+                            [items]="onlyCustomerList" 
+                            bindLabel="CustomerName" 
+                            bindValue="SubledgerMasterSid"
+                            formControlName="LedgerMasterSid"
+                            placeholder="Select Party"
+                        >
+                        </ng-select>
+                    </div>
+                    }  @else {
+                    <div class="col-md-5">
+                        <input formControlName="FilterText" class="form-control" placeholder="">
+                    </div>
+                    }
+
+                    <!-- Search Button -->
+                    <div class="d-flex align-items-end">
+                        <button 
+                            class="btn btn-info btn-sm" 
+                            [disabled]="
+                                !searchOutstandingForm.get('SearchType')?.value || 
+                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
+                                r['LedgerMasterSid']?.value
+                            " 
+                            (click)="searchOutstanding()"
+                        >
+                            <i class="fas fa-search me-1"></i> Get OS
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+     </div>
+
+     <!-- Button Section -->
+
+            <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-0'">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+
+                 <div class="col-md-4">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    formControlName="MultiBranch" (keydown.enter)="toggleMultiBranch($event)" (click)="toggleMultiBranch($event)">
+                                <label for="" class="form-check-label sm">Multi Branch <span
+                                        class=""></span></label>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         *ngIf="isEditMode && !receiptForm.get('CashOrBank')?.value" (click)="reportBank()" [disabled]="!receiptPrintData">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
+                    
                      <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value" (click)="reportCash()" [disabled]="!receiptPrintData">
                         <i class="fas fa-print me-1"></i>  Print
@@ -40,6 +100,7 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
+
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
@@ -48,6 +109,7 @@
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
+
                     <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
@@ -63,72 +125,31 @@
                             <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
                         </div>
                     </div>
+                    
                 </div>
             </div>
-            <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
-
-                <div class="d-flex flex-wrap gap-2 mb-3 p-2 bg-light rounded">
-
-                    <!-- Search Type -->
-                    <div class="col-md-2 col-sm-4">
-                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
-                            clearable="false">
-                        </ng-select>
-                    </div>
-
-                    <!-- Party -->
-                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
-                    <div class="col-md-3">
-                        <ng-select 
-                            [items]="onlyCustomerList" 
-                            bindLabel="CustomerName" 
-                            bindValue="SubledgerMasterSid"
-                            formControlName="LedgerMasterSid"
-                            placeholder="Select Party"
-                        >
-                        </ng-select>
-                    </div>
-                    }  @else {
-                    <div class="col-md-3 col-sm-6">
-                        <input formControlName="FilterText" class="form-control" placeholder="Enter keyword">
-                    </div>
-                    }
-
-                    <!-- Search Button -->
-                    <div class="col-auto d-flex align-items-end">
-                        <button 
-                            class="btn btn-info px-4" 
-                            [disabled]="
-                                !searchOutstandingForm.get('SearchType')?.value || 
-                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
-                                r['LedgerMasterSid']?.value
-                            " 
-                            (click)="searchOutstanding()"
-                        >
-                            <i class="fas fa-search me-1"></i> Get OS
-                        </button>
-                    </div>
-
-                </div>
-
-            </form>
+         
         </div>
     </div>
 
-    <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body pb-0">
-                <div class="row" [formGroup]="receiptForm">
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+    <div class="col-md-12 px-0">
+        <div class="row">
+            <div [ngClass]="{'col-md-12': receiptForm.get('CashOrBank')?.value,'col-md-8 pe-md-0': !receiptForm.get('CashOrBank')?.value}">
+                <div class="card h-100 mb-0">
+                    <div class="card-body pb-0">
+                        <div class="row">
+                            <!-- Receipt No. -->
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="VoucherNumber">
-                            <label for="text-input" class="input-label">Receipt No <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
+                                <label for="text-input" class="input-label"><span>Receipt No.</span></label>
+                            </div>
+                         </aside>
+
+                         <!-- Receipt Date -->
                     <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select filled">
+                        <div class=" custom-form-group mb-0 custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d1="ngbDatepicker" formControlName="VoucherDate"
@@ -137,39 +158,55 @@
                                 <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Receipt Date <span class="text-danger"></span>
-                            </label>
+                            <label class="input-label">Receipt Date</label>
+                        </div>
+                    </aside>
 
+                    <!-- Narration -->
+
+                      <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Narration">
+                            <label for="text-input" class="input-label">Narration <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
+
+                    <!-- Remarks -->
+
+                    
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Remarks">
+                            <label for="text-input" class="input-label">Remarks <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <!-- Mode of Payment -->
+
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
-                                    formControlName="MultiBranch" (keydown.enter)="toggleMultiBranch($event)" (click)="toggleMultiBranch($event)">
-                                <label for="" class="form-check-label sm">Multi Branch <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0 mt-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                <input type="checkbox" id="" class="form-check-input sm"
                                     formControlName="CashOrBank"
                                 (keydown.enter)="toggleCashOrBank($event)" (click)="toggleCashOrBank($event)">
                                 <!-- <label for="" class="form-check-label sm">Cash or Bank <span
                                         class="text-danger"></span></label> -->
                                 <label class="form-check-label sm" for="paymentMode">
-                                    Mode of Payment : <b class="text-warning">
+                                 Payment : <b class="text-warning">
                                         {{ receiptForm.get('CashOrBank')?.value ? 'Cash' : 'Bank' }}
                                     </b>
                                 </label>
                             </div>
                         </div>
                     </aside>
-                    @if(receiptForm.get('CashOrBank')?.value){
-                    <aside class="col-md-3">
+
+                    <!-- Cash -->
+
+                      <aside class="col-md-3" *ngIf="receiptForm.get('CashOrBank')?.value">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
                                 <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
                                     [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
@@ -179,7 +216,9 @@
                             <label for="text-input" class="input-label">Cash <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    } @else {
+
+                    <!-- Bank -->
+
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
                                 <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
@@ -189,7 +228,8 @@
                                 <label for="text-input" class="input-label">Bank<span class="text-danger">*</span></label>
                             </div>
                         </aside>
-                    }
+
+                    <!-- Currency -->
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -204,6 +244,8 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
+
+                    <!-- Ex. Rate -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -212,6 +254,9 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
+
+                    <!-- Party -->
+
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value">
@@ -224,54 +269,65 @@
                             <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
                         </div>
                     </aside>
+
+                    <!-- Received From -->
+
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="BankPartyName">
-                            <label for="text-input" class="input-label">Received From <span
-                                    class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Received From</label>
                         </div>
                     </aside>
 
+                    <!-- Address -->
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="PartyAddress">
-                            <label for="text-input" class="input-label">Address <span
-                                    class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Address</label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+
+
+                    <!-- GST / VAT -->
+
+                       <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="GST_VAT">
                             <label for="text-input" class="input-label">{{(currentUserCountry === 'india' ? 'GST No.' :
-                                (currentUserCountry ? 'VAT No.' : 'GST No./VAT No.'))}}<span
-                                    class="text-danger"></span></label>
+                                (currentUserCountry ? 'VAT No.' : 'GST No./VAT No.'))}}</label>
                         </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
+                        </aside>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        <!-- SECOND CARD (Visible only when Bank is selected) -->
+            <div class="col-md-4 ps-md-1 mt-1 mt-md-0" *ngIf="!receiptForm.get('CashOrBank')?.value">
+                <div class="card h-100 mb-0">
+                    <div class="card-body pb-0">
+                        <div class="row">
+                            <!-- Inst No. -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Narration">
-                            <label for="text-input" class="input-label">Narration <span
+                                formControlName="InstrumentNumber">
+                            <label for="text-input" class="input-label">Inst No. <span
                                     class="text-danger">*</span></label>
-                        </div>
-                    </aside>
+                             </div>
+                            </aside>
 
+                            <!-- Inst Mode -->
 
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Remarks">
-                            <label for="text-input" class="input-label">Remarks <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                   @if(!receiptForm.get('CashOrBank')?.value){
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
                             <ng-select 
                                 class="ng-select" 
                                 [items]="paymentModes" bindLabel="label" 
@@ -281,17 +337,12 @@
                             </ng-select>
                             <label for="text-input" class="input-label">Inst Mode <span
                                     class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="InstrumentNumber">
-                            <label for="text-input" class="input-label">Inst No <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
+                              </div>
+                        </aside>
+
+                        <!-- Insta Date -->
+
+                        <aside class="col-md-6">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input 
@@ -311,7 +362,10 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+
+                    <!-- Clerance Date -->
+
+                      <aside class="col-md-6">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -319,20 +373,20 @@
                                 <button class="btn  bi bi-calendar3 " (click)="d3.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Clearance Date <span class="text-danger"></span>
-                            </label>
-
+                            <label class="input-label">Clearance Date</label>
                         </div>
                     </aside>
-                    }
+
+
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-
-
-    <div class="nav-pills-container mt-1">
+        <div class="nav-pills-container mt-1">
         <div class="nav-pills">
             <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
                 (click)="selectTab(tab.name)">
@@ -350,8 +404,43 @@
         </div>
     </div>
 
-    <div class="content-workspace">
+    <!-- <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+                 
+                   
+                    
+                    @if(receiptForm.get('CashOrBank')?.value){
+                  
+                    } @else {
+                    
+                    }
 
+                 
+                 
+                 
+                  
+
+
+                    
+                 
+                  
+
+
+                   @if(!receiptForm.get('CashOrBank')?.value){
+                 
+                  
+           
+                  
+                    }
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+
+    <div class="content-workspace">
         <div class="workspace-content px-0" [hidden]="selectedTab !== 'Detail'"  [formGroup]="receiptForm">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
@@ -549,11 +638,8 @@
                     </tbody>
                 </table>
             </div>
-
-
-
-
         </div>
+
         <div class="workspace-content px-0" [formGroup]="receiptForm" [hidden]="selectedTab !== 'Voucher Matching'">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
@@ -751,6 +837,7 @@
                 </table>
             </div>
         </div>
+        
         <div class="workspace-content px-0" [formGroup]="receiptForm" [hidden]="selectedTab !== 'Interbranch'">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">

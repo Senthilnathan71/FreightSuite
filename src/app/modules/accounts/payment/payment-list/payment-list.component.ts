@@ -201,7 +201,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           sortable: true,
           filterable: true,
           visible: true,
-          width: '110px'
+          width: '140px'
         },
         {
           key: 'CashOrBank',
@@ -209,7 +209,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           sortable: true,
           filterable: true,
           visible: true,
-          width: '150px'
+          width: '140px'
         },
         {
           key: 'PartyName',
@@ -235,7 +235,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           sortable: true,
           filterable: true,
           visible: true,
-          width: '200px',
+          width: '160px',
           cellClass: 'text-truncate'
         },
         {
@@ -253,7 +253,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           filterable: true,
           visible: true,
           template: 'status',
-          width: '100px',
+           width: '100px',
           dataType: 'string',
           cellClass: 'status-column'
         }
