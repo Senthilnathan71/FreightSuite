@@ -19,6 +19,11 @@
             <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                     <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="onFinalSave()" [disabled]="isPosted || isSaving || form.invalid">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Post
+                    </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -33,11 +38,6 @@
                         [disabled]="(!mps.can('update') && editMode) || isPosted">
                         <i class="fas fa-save me-1"></i>
                         Save
-                    </button>
-                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="onFinalSave()" [disabled]="isPosted || isSaving || form.invalid">
-                        <i class="fas fa-check-circle me-1"></i>
-                        Post
                     </button>
                     <div *ngIf="mps.hasAtLeastOne() && editMode" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"

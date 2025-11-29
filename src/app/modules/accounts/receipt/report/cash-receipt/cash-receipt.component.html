@@ -21,7 +21,7 @@
     <div id="printContent">
         <div class="print-a4">
             <!-- Company Info -->
-            <div class="row ">
+            <div class="row  ">
                 <div class="company-header">
                     <div class="company-logo">
                         <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
@@ -54,27 +54,27 @@
 
             <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
             <section class="cash-receipt">
-                <h5 style=" text-align: center; margin: 5px auto;">Cash Receipt</h5>
-                <div class="row">
+                <h5 style=" text-align: center; margin: 5px auto;" class="mb-3">Cash Receipt</h5>
+                <div class="row" style="padding: 0px 150px;">
                     <div class="col-md-6">
                         <div class="d-flex mb-1">
-                            <div style="width: 230px; white-space: nowrap;"><strong>Receipt No</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Receipt No</strong></div>
                             <div>: {{receiptPrintData?.VoucherNumber}} </div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 230px; white-space: nowrap;"><strong>Received From</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Received From</strong></div>
                             <div>: {{receiptPrintData?.PartyName}}  </div>
                         </div>
 
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex mb-1">
-                            <div style="width: 230px; white-space: nowrap;"><strong>Receipt Date</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Receipt Date</strong></div>
                             <div>: {{receiptPrintData?.VoucherDate | formatDate }} </div>
                         </div>
 
                         <div class="d-flex mb-1">
-                            <div style="width: 230px; white-space: nowrap;"><strong>Currency </strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Currency </strong></div>
                             <div>: {{receiptPrintData?.CurrencyCode}} </div>
                         </div>
                     </div>
@@ -84,27 +84,24 @@
                     <tbody>
                         <tr>
                             <th style="width: 60%; ">Description</th>
-                            <th style="width: 10%; ">Curr</th>
+                            <th style="width: 10%; ">Curr.</th>
                             <th style="width: 10%; ">Ex.Rate </th>
                             <th style="width: 20%; ">Amount </th>
                         </tr>
                         <tr>
                             <td style="width: 60%; ">{{receiptPrintData?.Narration}} </td>
                             <td style="width: 10%; ">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
-                            <td style="width: 10%;text-align: right; ">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate}}</td>
-                            <td style="width: 20%;text-align: right; ">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount}} </td>
+                            <td style="width: 10%;text-align: right; ">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate | number:'1.3-3'}}</td>
+                            <td style="width: 20%;text-align: right; ">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount |number:'1.2-2'}} </td>
                         </tr>
                     </tbody>
                 </table>
 
-                <p>Amount in Words :
-                    <strong>{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</strong>
-                </p>
 
 
-                <h5 style="padding: 4px 0;">Remittance Details</h5>
+                <h5 style="padding: 4px 0; text-decoration: underline;">Remittance Details</h5>
 
-                <table class="table table-sm table-hover tablebordered ">
+                <table class="table table-sm table-hover tablebordered">
                     <tbody>
                         <tr>
                             <th style="width: 22%; ">Voucher No</th>
@@ -120,33 +117,34 @@
                             <td>{{voucher?.VoucherType}}</td>
                             <td>{{voucher?.VoucherDate | formatDate}}</td>
                             <td>{{voucher?.CurrencyCode}} </td>
-                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount}}</td>
-                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount}}</td>
+                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
+                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
                             <td style="text-align: right;"></td>
                         </tr>
                         <tr>
 
                             <td style="text-align: right;" colspan="4">Total</td>
                             <td style="text-align: right;">
-                                <strong>{{getTotalOriginalCurrencyAmount()}}</strong>
+                                <strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong>
                             </td>
-                            <td style="text-align: right;">{{getTotalOriginalLocalAmount()}}</td>
+                            <td style="text-align: right;">{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</td>
                         </tr>
                     </tbody>
                 </table>
-                <table style="border-top-style: hidden;">
-                    <tbody>
-                        <tr style="height: 5rem;">
-                            <td
-                                style="width: 50%;text-align: center; vertical-align: bottom;border-right-style: hidden;">
-                                <p style="padding-bottom: .5rem;">Checked By</p>
-                            </td>
-                            <td style="width: 50%;text-align: center; vertical-align: bottom;">
-                                <p style="padding-bottom: .5rem; ">Approved By</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+                
+                <p>Amount in Words :
+                    <strong>{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</strong>
+                </p>
+
+                <div class="d-flex  justify-content-between align-items-center">
+                    <div>
+                        <p style="padding-bottom: .5rem;">Checked By</p>
+                    </div>
+                    <div>
+                        <p style="padding-bottom: .5rem; ">Approved By</p>
+                    </div>
+                </div>
             </section>
 
             <footer class="text-center mb-0 px-2">

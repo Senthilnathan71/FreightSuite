@@ -29,16 +29,19 @@
                         <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                     </div>
 
-                    <div class="company-info ">
-                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                        <p class="mb-1">
-                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                        </p>
-                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                    </div>
+                 <div class="company-info ">
+                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">
+                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                                || '' }}
+                            </p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
+
                 </div>
             </div>
 

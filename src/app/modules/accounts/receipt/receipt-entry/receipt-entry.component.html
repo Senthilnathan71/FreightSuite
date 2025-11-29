@@ -475,7 +475,7 @@
                                     }
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
                                         (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)">
-                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                             <i class="fas fa-trash text-danger" name="trash-2"></i>
                                     </button>
                                 </td>
                                 <td class="dofi-min-w-150">
@@ -498,7 +498,7 @@
                                     appendTo="body"
                                     ></ng-select>
                                 </td>
-                                <td class="dofi-min-w-80">
+                                <td class="dofi-min-w-40">
                                     <ng-select 
                                         class="ng-select"
                                         [items]="CrDr"
@@ -508,7 +508,7 @@
                                         appendTo="body"
                                     ></ng-select>
                                 </td>
-                                <td class="dofi-min-w-80">
+                                <td class="dofi-min-w-50">
                                     <dofi-searchable-dropdown 
                                         [items]="currencyList" 
                                         formControlName="CurrencyMasterSid" 
@@ -520,7 +520,7 @@
                                         (itemSelected)="onCurrencyChangeForEachRow($event,i)">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td class="dofi-min-w-80">
+                                <td class="dofi-min-w-70">
                                     <input 
                                         type="text" 
                                         formControlName="ExchangeRate"
@@ -530,7 +530,7 @@
                                         [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
                                     />
                                 </td>
-                                <td class="dofi-min-w-100">
+                                <td class="dofi-min-w-90">
                                     <input 
                                         type="text" 
                                         formControlName="Amount"
@@ -540,7 +540,7 @@
                                          [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
                                     />
                                 </td>
-                                <td class="dofi-min-w-100">
+                                <td class="dofi-min-w-90">
                                     <input 
                                         type="text" 
                                         formControlName="LocalAmount"
@@ -551,7 +551,7 @@
                                         readonly
                                     />
                                 </td>
-                                <td class="dofi-min-w-100">
+                                <td class="dofi-min-w-320">
                                     <input 
                                         type="text" 
                                         formControlName="Narration" 
@@ -861,7 +861,7 @@
                                     </button>
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
                                         (click)="removeInterBranch(i)">
-                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                         <i class="fas fa-trash text-danger" name="trash-2"></i>
                                     </button>
                                 </td>
                                 <td>

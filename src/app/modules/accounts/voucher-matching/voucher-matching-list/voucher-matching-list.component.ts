@@ -525,7 +525,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   navigateToAddNewReceipt() {
-    this.router.navigate(['accounts/voucher-Matching/entry']);
+    this.router.navigate(['accounts/voucher-matching/entry']);
   }
 
   formatDate(date: any): string {
