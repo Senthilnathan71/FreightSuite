@@ -36,6 +36,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -2520,17 +2521,17 @@ showInfo() {
   }
   
   openAuthority() {
-    if (!this.invoiceData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
-    });
-    modalRef.componentInstance.item = this.invoiceData;
-    modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
-    modalRef.componentInstance.idValue = this.invoiceData?.VoucherHeaderSid;
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    // modalRef.componentInstance.documentSid = this.VoucherHeaderSid;
   }
-  
+
   openEDoc() {
     if (!this.invoiceData) return;
     const modalRef = this.modalService.open(EdocComponent, { 

@@ -821,49 +821,49 @@
                 </aside>
 
                 <!-- GSTIN Section - ONLY show for India when PAN Available is checked -->
-                <aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
-                  <div class="custom-form-group gstin-group">
-                    <!-- State Code -->
-                    <input type="text" class="custom-input-field sm gstin-fixed"
-                      [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''"
-                      tabindex="-1" aria-label="State Code" style="width: 5em;" disabled
-                      [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
+      <aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
+        <div class="custom-form-group gstin-group aos-horizontal">
+      
+          <!-- State Code -->
+          <input type="text" class="custom-input-field sm gstin-fixed state-code"
+            [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''" tabindex="-1"
+            aria-label="State Code" disabled
+            [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
+      
+          <!-- PAN -->
+          <input type="text" class="custom-input-field sm gstin-fixed pan-code" [value]="getPANNo()" disabled tabindex="-1"
+            aria-label="PAN" style="border-bottom: 2px solid sandybrown;"/>
+      
+          <!-- 13th Digit -->
+          <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
+            class="custom-input-field sm gstin-editable text-center digit-13" (input)="generateGST(branchIndex)"
+            [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)" aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;" />
+      
+          <!-- 14th Digit -->
+          <input type="text" class="custom-input-field sm gstin-fixed digit-14" value="Z" disabled tabindex="-1"
+            aria-label="14th Digit" style="border-bottom: 2px solid purple;"/>
+      
+          <!-- 15th Digit -->
+          <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
+            class="custom-input-field sm gstin-editable text-center digit-15" (input)="generateGST(branchIndex)"
+            aria-label="15th Digit" [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" style="border-bottom: 2px solid #b92b27;"/>
+      
+          <label class="input-label  mt-1">GSTIN</label>
+      
+          <div *ngIf="getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid" class="error-message">
+            <span *ngIf="getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')">
+              Provided GSTIN is invalid
+            </span>
+            <span *ngIf="getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')">
+              Max 15 Chars
+            </span>
+          </div>
+      
+        </div>
+      </aside>
 
-                    <input type="text" class="custom-input-field sm gstin-fixed mx-2"
-                      [value]="getPANNo()" disabled tabindex="-1" aria-label="PAN"
-                      style="width: 10em;" />
 
-                    <!-- 13th Digit -->
-                    <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
-                      class="custom-input-field sm gstin-editable text-center" (input)="generateGST(branchIndex)"
-                      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)"
-                      aria-label="13th Digit" style="width: 4em;" />
-
-                    <!-- 14th Digit (Fixed) -->
-                    <input type="text" class="custom-input-field sm gstin-fixed mx-2" value="Z" disabled tabindex="-1"
-                      aria-label="14th Digit" style="width: 40px;" />
-
-                    <!-- 15th Digit -->
-                    <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
-                      class="custom-input-field sm gstin-editable text-center" (input)="generateGST(branchIndex)"
-                      aria-label="15th Digit" style="width: 4em;"
-                      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" />
-
-                    <label class="input-label d-block mt-1">GSTIN</label>
-
-                    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched &&
-                    getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')) {
-                      <span>Provided GSTIN is invalid</span>
-                      }
-                      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')) {
-                      <span>Max 15 Chars</span>
-                      }
-                    </div>
-                    }
-                  </div>
-                </aside>
                 <!-- Status -->
                 <aside class="col-md-4">
                   <div class="custom-form-group custom-form-group-select"

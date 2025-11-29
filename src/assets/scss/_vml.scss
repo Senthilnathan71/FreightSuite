@@ -3415,3 +3415,34 @@ textarea:disabled {
   /* Active item color */
   color: white;
 }
+
+
+
+// GST NO Input 
+
+.aos-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  
+  gap: 8px;
+  width: 100%;
+  flex-wrap: nowrap;                 
+}
+
+.aos-horizontal > * {
+  flex: 1;                          
+  min-width: 0;                    
+}
+
+.aos-horizontal input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+
+.aos-horizontal .state-code { flex: 0 0 5em; }
+.aos-horizontal .pan-code   { flex: 1; }
+.aos-horizontal .digit-13,
+.aos-horizontal .digit-15   { flex: 0 0 4em; }
+.aos-horizontal .digit-14   { flex: 0 0 40px; }

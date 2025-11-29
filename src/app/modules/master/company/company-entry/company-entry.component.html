@@ -9,7 +9,7 @@
           </div>
           <h5 class="page-title mb-0 text-info">Company</h5>
           @if(isEditMode){
-          <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
+          <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showCompanyInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -20,26 +20,26 @@
           class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-            (click)="openAuditLogs(auditLogModal)">
+            (click)="openAuditLogs(auditLogModal)" appPreventMultiClick>
             <i class="fas fa-history me-1"></i>Logs
           </button>
          
 <button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100"
-        (click)="openConfigCompany()" [hidden]="!isEditMode">
+        (click)="openConfigCompany()" [hidden]="!isEditMode" appPreventMultiClick>
   <i class="fas fa-cog me-1"></i> Valid Config
 </button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="navigateBack()">
+            (click)="navigateBack()" appPreventMultiClick>
             <i class="fas fa-chevron-left me-1"></i>
             Back
           </button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetCompanyForm()">
+            (click)="resetCompanyForm()" appPreventMultiClick>
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()"
-          [disabled]="((!mps.can('update')&& isEditMode)|| companyForm.invalid)">
+          [disabled]="((!mps.can('update')&& isEditMode)|| companyForm.invalid)" appPreventMultiClick>
             <i class="fas fa-save me-1"></i>
             Save
           </button>
@@ -93,7 +93,7 @@
   <div class="row">
     <div class="col-md-12">
       <div class="card mb-1">
-        <div class="card-body ">
+        <div class="card-body py-1">
           <div class="row" [formGroup]="companyForm">
 
             <!-- <div class="card-header-title d-flex align-items-center gap-2">
@@ -632,10 +632,10 @@
     <div>
       <div class="modal-content">
         <div [formGroup]="branchForm">
-          <div class="modal-header p-1 bg-info text-white">
-            <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
+          <div class="modal-header modalHeaderpart">
+            <h5 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h5>
             @if(isModalEditMode){
-            <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBranchInfo()">
+            <a class="text-white ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showBranchInfo()">
               <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -955,7 +955,7 @@
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
                       class="d-flex justify-content-between align-items-center w-100 position-relative p-1 bg-info text-white">
-                      <h5 class="font-bold my-1 text-light">Branch</h5>
+                      <h6 class="font-bold my-1 text-light">Branch</h6>
                     </button>
                   </h2>
                   <div ngbAccordionCollapse [id]="'branch-1'">
@@ -1133,49 +1133,53 @@
 <ng-container *ngIf="shouldShowCompanyGSTFields()">
     <!-- GSTIN -->
     <aside class="col-md-4">
-        <div class="custom-form-group gstin-group">
-            <!-- State Code (from first branch) -->
-            <input type="text" class="custom-input-field sm gstin-fixed"
-                [value]="getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)"
-                tabindex="-1" aria-label="State Code" style="width: 4em;" disabled
-                [class.border-danger]="!getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)" />
+  <div class="custom-form-group  gstin-group aos-horizontal">
 
-            <!-- PAN -->
-            <input type="text" class="custom-input-field sm gstin-fixed mx-2"
-                [value]="companyForm.get('Pan')?.value || ''" 
-                disabled tabindex="-1" aria-label="PAN"
-                style="width: 8em;" />
+    <!-- State Code -->
+    <input type="text"
+      class="custom-input-field sm gstin-fixed state-code"
+      [value]="getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)"
+      tabindex="-1" aria-label="State Code" disabled
+      [class.border-danger]="!getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)" />
 
-            <!-- 13th Digit -->
-            <input type="text" id="company_thirteenthDigit" maxlength="1"
-                class="custom-input-field sm gstin-editable text-center" 
-                (input)="generateCompanyGST()"
-                [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 12)"
-                aria-label="13th Digit" style="width: 3em;" />
+    <!-- PAN -->
+    <input type="text"
+      class="custom-input-field sm gstin-fixed pan-code mx-1"
+      [value]="companyForm.get('Pan')?.value || ''"
+      disabled tabindex="-1" aria-label="PAN" style="border-bottom: 2px solid sandybrown;"/>
 
-            <!-- 14th Digit (Fixed 'Z') -->
-            <input type="text" class="custom-input-field sm gstin-fixed mx-2 text-center" 
-                value="Z" disabled tabindex="-1"
-                aria-label="14th Digit" style="width: 39px;" />
+    <!-- 13th Digit -->
+    <input type="text" id="company_thirteenthDigit" maxlength="1"
+      class="custom-input-field sm gstin-editable text-center digit-13"
+      (input)="generateCompanyGST()"
+      [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 12)"
+      aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;"/>
 
-            <!-- 15th Digit -->
-            <input type="text" id="company_fifteenthDigit" maxlength="1"
-                class="custom-input-field sm gstin-editable text-center" 
-                (input)="generateCompanyGST()"
-                aria-label="15th Digit" style="width: 4em;"
-                [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 14)" />
+    <!-- 14th Digit -->
+    <input type="text"
+      class="custom-input-field sm gstin-fixed mx-1 text-center digit-14"
+      value="Z" disabled tabindex="-1"
+      aria-label="14th Digit" style="border-bottom: 2px solid purple;"/>
 
-            <label class="input-label d-block mt-1">GST</label>
+    <!-- 15th Digit -->
+    <input type="text" id="company_fifteenthDigit" maxlength="1"
+      class="custom-input-field sm gstin-editable text-center digit-15"
+      (input)="generateCompanyGST()"
+      aria-label="15th Digit"
+      [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 14)" style="border-bottom: 2px solid #b92b27;"/>
 
-            @if (branchForm.get('branchTaxRegistrationNo')?.touched && branchForm.get('branchTaxRegistrationNo')?.invalid) {
-                <div class="error-message">
-                    @if (branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')) {
-                        <span>Provided GST is invalid</span>
-                    }
-                </div>
+    <label class="input-label mt-1">GST</label>
+
+    @if (branchForm.get('branchTaxRegistrationNo')?.touched && branchForm.get('branchTaxRegistrationNo')?.invalid) {
+        <div class="error-message">
+            @if (branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')) {
+                <span>Provided GST is invalid</span>
             }
         </div>
-    </aside>
+    }
+  </div>
+</aside>
+
 </ng-container>
                         <aside class="col-md-4 ">
                           <div class="custom-form-group custom-form-group-select"
@@ -1329,7 +1333,7 @@
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
                       class="d-flex justify-content-between align-items-center w-100 position-relative p-1 bg-info text-white">
-                      <h5 class="font-bold my-1 text-light">Logo</h5>
+                      <h6 class="font-bold my-1 text-light">Logo</h6>
                     </button>
                   </h2>
                   <div ngbAccordionCollapse [id]="'branch-2'">
@@ -1362,12 +1366,12 @@
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
                       class="d-flex justify-content-between align-items-center w-100 position-relative p-1 bg-info text-white">
-                      <h5 class="font-bold my-1 text-light">Doucument Number</h5>
+                      <h6 class="font-bold my-1 text-light">Doucument Number</h6>
                     </button>
                   </h2>
                   <div ngbAccordionCollapse [id]="'branch-3'">
                       <div class="row p-1">
-                         <aside class="col-md-4">
+                         <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="text" id="BookingPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="BookingPrefix" maxlength="20">
@@ -1381,7 +1385,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="number" id="BookingNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="BookingNoLen" min="1" max="20">
@@ -1396,7 +1400,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="text" id="consolePrefix" placeholder="" class="custom-input-field sm"
                             formControlName="consolePrefix" maxlength="20">
@@ -1410,7 +1414,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="number" id="consoleNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="consoleNoLen" min="1" max="20">
@@ -1427,7 +1431,7 @@
                       </aside>
 
                       <!-- Shipment Settings -->
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="text" id="shipmentPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="shipmentPrefix" maxlength="20">
@@ -1441,7 +1445,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="number" id="shipmentNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="shipmentNoLen" min="1" max="20">
@@ -1458,7 +1462,7 @@
                       </aside>
 
                       <!-- Enquiry Settings -->
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="text" id="enquiryPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="enquiryPrefix" maxlength="20">
@@ -1472,7 +1476,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="number" id="enquiryNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="enquiryNoLen" min="1" max="20">
@@ -1489,7 +1493,7 @@
                       </aside>
 
                       <!-- Quotation Settings -->
-                      <aside class="col-md-4 ">
+                      <aside class="col-md-3 ">
                         <div class="custom-form-group">
                           <input type="text" id="quotationPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="quotationPrefix" maxlength="20">
@@ -1503,7 +1507,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-4 ">
+                      <aside class="col-md-3 ">
                         <div class="custom-form-group">
                           <input type="number" id="quotationNoLen" placeholder="" class="custom-input-field sm"
                             formControlName="quotationNoLen" min="1" max="20">
@@ -1760,8 +1764,8 @@
           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
             <div class="d-flex align-items-center text-center">
               <!-- Edit button -->
-              <a class="text-info mx-2" (click)="openBranchEntryModal(branchEntryContent, branchIndex)">
-                <i-feather class="feather-sm" name="eye"></i-feather>
+              <a class="text-info mx-2 cursor-pointer" (click)="openBranchEntryModal(branchEntryContent, branchIndex)">
+               <i class="fas fa-eye text-info"></i>
               </a>
               <!-- Delete button -->
               <!-- <a class="text-danger mx-2 ps-3 border-start" 
@@ -1805,7 +1809,7 @@
     </table>
     <div>
       <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalBranches" [pageSize]="branchPageSize"
-        [(page)]="branchPage" (pageChange)="updateBranchPagination()" [rotate]="true" [ellipses]="false" [maxSize]="5">
+        [(page)]="branchPage" (pageChange)="updateBranchPagination()" [rotate]="true" [ellipses]="false" [maxSize]="5" size="sm">
       </ngb-pagination>
     </div>
   </div>
@@ -1815,33 +1819,28 @@
 <!-- BRANCH BANK NAVIGATION -->
 
 <ng-template #nav2Template>
-  <div >
-      <div class="nav-pills-container">
-    <div class="nav-pills">
-      <div class="nav-pill" *ngFor="let tab of tabs1" [class.active]="selectedTab1 === tab.name"
-        (click)="selectTab1(tab.name)">
-        <div class="pill-icon">
-          <i [class]="tab.icon"></i>
+  <div>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-icon">
+          <i class="fas fa-university"></i>
         </div>
-        <span class="pill-label">{{ tab.name }}</span>
-        <div class="pill-indicator" *ngIf="selectedTab1 === tab.name"></div>
+        <h5 class="page-title mb-0 text-info pt-1">Bank</h5>
+    
       </div>
     
+      <button (click)="openBranchBankModal(bankEntryContent, currentBranchIndex)" class="btn  btn-sm btn-info">
+        <i-feather name="plus-circle" class="feather-sm me-1"></i-feather>
+        Add Bank
+      </button>
     </div>
-        <div >
-         <button (click)="openBranchBankModal(bankEntryContent, currentBranchIndex)"
-          class="btn  btn-sm btn-info">
-          <i-feather name="plus-circle" class="feather-sm me-1"></i-feather>
-          Add Bank
-        </button>
-      </div>
-   
-  </div>
+    
+
     <div class="content-workspace">
         <div class="workspace-content">
            <div class="content-layout">
                 <!-- Bank List Section -->
-    <div class="row mt-1">
+    <div class="row">
       <!-- Info Alert (when no branch selected) -->
       @if(setBranchErrorMessage) {
       <ngb-alert [dismissible]="false" type="info" class="mt-3">
@@ -1851,14 +1850,12 @@
 
       <!-- Bank List Display -->
       @if(currentBranchIndex !== null && branchBanks(currentBranchIndex).controls.length > 0) {
-      <div class="mt-1">
-        <div class="card mb-0">
-          <div class="card-body p-0">
+      <div class="">
+       
             <div class="row">
               <ng-container *ngTemplateOutlet="bankListTemplate"></ng-container>
             </div>
-          </div>
-        </div>
+        
       </div>
       } @else if (!setBranchErrorMessage && currentBranchIndex !== null) {
       <div class="text-center py-2 text-muted">
@@ -1895,17 +1892,17 @@
 <!-- BRANCH BANK LIST -->
 
 <ng-template #bankListTemplate>
-  <div class="table-responsive">
-    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+  <div class="table-responsive px-0">
+    <table class="table table-hover align-middle no-wrap table-borderless table-sm mb-1">
       <thead>
         <tr class="bg-info">
-          <th class="bg-transparent text-light" scope="col">Action</th>
+          <th class="bg-transparent text-light" scope="col" width="3%"></th>
           <th class="bg-transparent text-light" scope="col">Bank Name</th>
           <th class="bg-transparent text-light" scope="col">Address</th>
           <th class="bg-transparent text-light" scope="col">IFSC</th>
           <th class="bg-transparent text-light" scope="col">Bank A/C No</th>
-          <th class="bg-transparent text-light" scope="col">Bank A/C Name</th>
-          <th class="bg-transparent text-light" scope="col">Status</th>
+          <!-- <th class="bg-transparent text-light" scope="col">Bank A/C Name</th> -->
+          <th class="bg-transparent text-light" scope="col" width="8%">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -1913,9 +1910,9 @@
         <tr>
           <td>
             <div class="d-flex align-items-center">
-              <a class="text-info mx-2 ps-3"
+              <a class="text-info mx-2 ps-3 cursor-pointer"
                 (click)="openBranchBankModal(bankEntryContent, currentBranchIndex, $index)">
-                <i-feather class="feather-sm" name="eye"></i-feather>
+               <i class="fas fa-eye text-info"></i>
               </a>
               <!-- <a class="text-danger mx-2 ps-3 border-start" 
                    (click)="deleteBranchBankById(bankControl.value.BranchBankSid, $index)">
@@ -1954,7 +1951,7 @@
     </table>
     <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalBanks" [pageSize]="bankPageSize"
       [(page)]="bankPage" (pageChange)="updateBankPagination(currentBranchIndex)" [rotate]="true" [ellipses]="false"
-      [maxSize]="5">
+      [maxSize]="5" size="sm">
     </ngb-pagination>
   </div>
 </ng-template>
@@ -1964,15 +1961,15 @@
 <ng-template #bankEntryContent let-modal>
 
   <!-- Modal Header -->
-  <div class="modal-header p-2 bg-info text-white">
-    <h4 class="modal-title" id="modal-basic-title">
+  <div class="modal-header modalHeaderpart">
+    <h5 class="modal-title" id="modal-basic-title">
       {{isBankModalEdit ? 'Edit Bank' : 'Add Bank'}}
       @if(isBankModalEdit){
-      <a class="text-info ps-2 w-2 h-2" (click)="showBranchBankInfo()">
+      <a class="text-white ps-2 w-2 h-2 cursor-pointer" (click)="showBranchBankInfo()">
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
-    </h4>
+    </h5>
     @if(branchBankForm.invalid && hasDuplicationError()){
     <div class="alert alert-warning py-0 px-1 m-0" role="alert">
       <strong>Warning!</strong> {{ branchBankForm.getError('currencyDuplication') }}

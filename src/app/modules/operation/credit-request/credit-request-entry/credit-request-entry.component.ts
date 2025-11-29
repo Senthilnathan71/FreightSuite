@@ -22,6 +22,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -642,7 +643,7 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     
     openAuthority() {
       if (!this.customerData) return;
-      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      const modalRef = this.modalService.open(AuthorityLogComponent, { 
         size: 'lg', 
         centered: true, 
         backdrop: 'static' 
