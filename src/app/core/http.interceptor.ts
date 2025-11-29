@@ -30,12 +30,13 @@ export class HttpInterceptorService implements HttpInterceptor {
         const skipAuth = this.openURLs.includes(req.url);
         const showLoader = req.headers.get('showLoader') === 'true';
 
-        // If token already in memory OR skipping auth
-        if (skipAuth || this.jwtToken) {
+        // Skip auth for open URLs (like login)
+        if (skipAuth) {
             return this.prepareRequest(req, next, showLoader, skipAuth);
         }
 
-        // Load token from localStorage once
+        // Always read token from storage for protected routes
+        // This ensures we get the latest token after login (fixes race condition)
         return from(this.localStorage.get(this.appSettingService.tokenName)).pipe(
             switchMap(token => {
                 this.jwtToken = token;
