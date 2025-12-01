@@ -146,7 +146,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     private datePipe: CustomDatePipe,
     private excelReportService: ExcelExportService,
     paginationService: PaginationService,
-     private commonService: CommonService
+     private commonService: CommonService,
+     private ngbModal: NgbModal
   ) {
     super(paginationService);
   }
@@ -553,7 +554,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       });
     }
     this.loadMeetingData(meeting.PreCustomerMeetingSid);
-    this.modalRef = this.modalService.open(content, { size: 'lg' });
+    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
   }
 
   loadMeetingData(meetingId: number) {
@@ -856,8 +857,29 @@ private handleMeetingDateChange(newDate: string): void {
     )
   }
 
-  openFollowup(){
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+ openFollowup() {
+    if (!this.meetingData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.meetingData?.PreCustomerMeetingSid;
+    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Meeting Update for "${this.meetingData.customerName}"`;
+    modalRef.componentInstance.parentMailbodyTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Kindly do the needful for "__SUBJECT__" Meeting Update for  "${this.meetingData.customerName}" Dated:${new Date(this.meetingData.meetingDate).toLocaleDateString()}</p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  modalRef.componentInstance.followupSaved.subscribe((result) => {
+    console.log('Follow-up saved successfully:', result);
+    this.appSettingService.showSuccess('Follow-up created successfully');
+  });
+
+  modalRef.result.then(
+    (result) => console.log('Modal closed:', result),
+    (dismissReason) => console.log('Modal dismissed:', dismissReason)
+  );
   }
 
   OnDestroy(): void {

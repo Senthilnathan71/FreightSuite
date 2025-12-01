@@ -1296,11 +1296,11 @@
             </app-email-entry>
         </div> -->
 
-        <!-- <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
-            <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
-                [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
+        <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
+            <app-follow-up screenName="MasterJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
+      [parentSubject]="parentSubject">
             </app-follow-up>
-        </div> -->
+        </div>
 
         <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
             <ng-container *ngComponentOutlet="ARAPcompoent"></ng-container>

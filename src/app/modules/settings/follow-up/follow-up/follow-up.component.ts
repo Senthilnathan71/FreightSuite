@@ -59,6 +59,9 @@ export class FollowUpComponent implements OnInit {
   todayDate = this.toNgbDateStruct(this.today);
 
   followupForm!: FormGroup;
+  @Input() parentMailbodyTemplate: string = '';
+  mailBody: string = '';
+  subject: string = '';
   isEditMode = false;
   loading = false;
   userData : any;
@@ -85,8 +88,8 @@ export class FollowUpComponent implements OnInit {
     { id: 'S', name: 'Suspended' },
   ];
   modeOfAction = [
-    { id: '1', name: 'Internal Followup' },
-    { id: '2', name: 'External Followup' },
+    { id: '1', name: 'Internal' },
+    { id: '2', name: 'External' },
     { id: '3', name: 'Both'}
   ];
 
@@ -113,6 +116,14 @@ export class FollowUpComponent implements OnInit {
     
     // Set initial visibility
     this.updateFieldVisibility(this.followupForm.get('FollowupAction')?.value);
+    this.followupForm.get('Subject')?.valueChanges.subscribe(subject => {
+      if (this.parentSubject){
+        this.subject = this.parentSubject.replace('__SUBJECT__',subject || '' );
+      }
+    if (this.parentMailbodyTemplate){
+      this.mailBody = this.parentMailbodyTemplate.replace('__SUBJECT__', subject || '');
+    }
+  });
   }
 
     private handleSaveResponse(resp: any): void {
@@ -129,13 +140,13 @@ export class FollowUpComponent implements OnInit {
 
   updateFieldVisibility(action: string): void {
     switch (action) {
-      case 'Internal Followup':
+      case 'Internal':
         this.showInternalUser = true;
         this.showExternalUser = false;
         // Clear external user when hidden
         this.followupForm.get('ExternalUser')?.setValue('');
         break;
-      case 'External Followup':
+      case 'External':
         this.showInternalUser = false;
         this.showExternalUser = true;
         // Clear internal user when hidden
@@ -181,6 +192,7 @@ export class FollowUpComponent implements OnInit {
       Public: [''], 
       sentEmail: [''], 
       Status: ['Active', Validators.required], 
+      Subject: ['', Validators.required],
     });
     if (this.FollowupSid) {
       this.isEditMode = true;
@@ -241,8 +253,8 @@ export class FollowUpComponent implements OnInit {
     const mailContent: any = {
       EmailTo: emailRecipients.to,
       EmailCC: emailRecipients.cc,
-      Subject: this.parentSubject,
-      Mailbody: this.parentMailbody,
+      Subject: this.subject,
+      Mailbody: this.mailBody,
       file: pdfFile
     };
 
@@ -257,7 +269,7 @@ export class FollowUpComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            // this.activeModal.close(resp);
+            this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -274,7 +286,7 @@ export class FollowUpComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            // this.activeModal.close(resp);
+            this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -304,12 +316,12 @@ private getEmailRecipients(formValue: any): { to: string, cc: string } {
   console.log('External User Selected:', formValue.ExternalUser);
   console.log('Send Email Checkbox:', formValue.sentEmail);
   switch (formValue.FollowupAction) {
-    case 'Internal Followup':
+    case 'Internal':
       emailTo = formValue.InternalUser || '';
       console.log('Internal Followup - Email To:', emailTo);
       break;
     
-    case 'External Followup':
+    case 'External':
       emailTo = formValue.ExternalUser || '';
       console.log('External Followup - Email To:', emailTo);
       break;

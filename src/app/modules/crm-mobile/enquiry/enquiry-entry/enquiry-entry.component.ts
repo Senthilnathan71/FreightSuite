@@ -49,6 +49,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -2023,6 +2024,31 @@ calculateTotalPackageQty(): number {
   });
   return total;
 }
+
+openFollowup() {
+    if (!this.enquiryData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.enquiryData?.EnquiryHeaderSid;
+    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Enquiry No."${this.enquiryData.EnquiryNumber}"`;
+    modalRef.componentInstance.parentMailbodyTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Kindly do the needful for "__SUBJECT__" Enquiry No."${this.enquiryData.EnquiryNumber}" Dated:${new Date(this.enquiryData.EnquiryDate).toLocaleDateString()}</p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  modalRef.componentInstance.followupSaved.subscribe((result) => {
+    console.log('Follow-up saved successfully:', result);
+    this.appSettingService.showSuccess('Follow-up created successfully');
+  });
+
+  modalRef.result.then(
+    (result) => console.log('Modal closed:', result),
+    (dismissReason) => console.log('Modal dismissed:', dismissReason)
+  );
+  }
 
 
   ngOnDestroy(): void {

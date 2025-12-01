@@ -153,7 +153,8 @@ MenuMasterSid:any
     private router: Router,
     private modalService: NgbModal,
     public dropdownStore:DropdownStore,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private ngbModal: NgbModal
   ) { 
     effect(()=> {
       const countryData = this.dropdownStore.countries();
@@ -774,7 +775,28 @@ openEDoc() {
 }
 
   openFollowup() {
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    if (!this.leadData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.leadData?.PreCustomerMasterSid;
+    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Customer"${this.leadData.preCustomerName}"`;
+    modalRef.componentInstance.parentMailbodyTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Kindly do the needful for "__SUBJECT__" Customer "${this.leadData.preCustomerName}"</p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  modalRef.componentInstance.followupSaved.subscribe((result) => {
+    console.log('Follow-up saved successfully:', result);
+    this.appSettingService.showSuccess('Follow-up created successfully');
+  });
+
+  modalRef.result.then(
+    (result) => console.log('Modal closed:', result),
+    (dismissReason) => console.log('Modal dismissed:', dismissReason)
+  );
   }
 
 

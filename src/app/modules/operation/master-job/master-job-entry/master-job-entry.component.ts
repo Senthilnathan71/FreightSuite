@@ -127,6 +127,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   currentBranch: any;
   MenuMasterSid: any;
   filterOption: any;
+  documentSid: number | null = null; 
+  parentSubject = '';
+  parentMailbody = '';
   isEditContainer = false;
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
@@ -356,7 +359,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.syncFormValueWithConnectionComponent();
         this.syncFormValueWithRateComponent();
-        this.syncFormValueWithFollowUpComponent();
         this.syncFormValueWithEdocComponent();
         this.syncFormValueWithEmailComponent();
         this.syncFormValueWithContainerActivityComponent();
@@ -1793,6 +1795,9 @@ private autoPopulateVoyageData(vessel: any): void {
   }
 
   selectTab(tab: string): void {
+    if (tab === 'Follow Up') {
+    this.openFollowup();
+  }
     this.selectedTab = tab;
   }
 
@@ -1945,25 +1950,6 @@ private autoPopulateVoyageData(vessel: any): void {
     if (allRates && allRates.length > 0) {
       this.rateResult = [...allRates];
     }
-  }
-
-
-  syncFormValueWithFollowUpComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-
-    this.currentFollowUpFormValue = {
-      CompanyMasterSid,
-      DepartmentMasterSid,
-      DocumentSid: this.masterJobSid || 0, // Use 0 for new records
-      MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-    };
-  }
-
-  handleFollowUpChange(event: any) {
-    console.log('Follow Up Changed:', event);
-    this.followUpData = event.dataItems || [];
-    this.currentFollowUpFormValue = event.formData || null;
   }
 
   // Add sync method for Edoc
@@ -3034,6 +3020,49 @@ loadHSSACLookups() {
       }
     });
   }
+
+  getFormattedPort(code:string){
+    console.log(code);
+    if(!code) return '';
+    const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
+    console.log(ourPort);
+    return `${ourPort} (${code})`
+  }
+
+    openFollowup() {
+    if (!this.masterJobData) return;
+    const POL = this.masterJobData?.POL;
+    const POD = this.masterJobData?.POD;
+    const FPD = this.masterJobData?.FPD;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+    this.documentSid = this.masterJobData?.MasterJobSid;
+    this.parentSubject = `__SUBJECT__ for Master Job No."${this.masterJobData.MasterJobNumber}"`;
+    this.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Kindly do the needful for "__SUBJECT__" Master Job No."${this.masterJobData.MasterJobNumber}" Dated:${new Date(this.masterJobData.MasterJobDate).toLocaleDateString()} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userName']}</p>
+      </div>
+    `;
+  }
+
+  openConnectionModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+  openMilestoneModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    })
+    }
 }
 
 

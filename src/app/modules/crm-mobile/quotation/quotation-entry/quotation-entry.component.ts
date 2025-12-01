@@ -2335,17 +2335,11 @@ private extractCargoData(enquiryCargo: any[]): any {
     if (!this.quotationData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.quotationData?.QuoteHeaderSid;
-    modalRef.componentInstance.parentSubject = `Quotation No.${this.quotationData.QuoteNumber} Date:${new Date(this.quotationData.QuoteDate).toLocaleDateString()}`;
-    modalRef.componentInstance.parentMailbody = `
+    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Quotation No."${this.quotationData.QuoteNumber}"`;
+    modalRef.componentInstance.parentMailbodyTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
       <p>Dear Sir/Madam,</p>
-      <p>Please find enclosed the quotation as requested.</p>
-      <p>Kindly review the details at your convenience.</p>
-      <p>Looking forward to your feedback and the opportunity to work together.</p>
-      // <p>
-      //   Approval Hyperlink: 
-      //   <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
-      // </p>
+      <p>Kindly do the needful for "__SUBJECT__" Quotation No."${this.quotationData.QuoteNumber}" Dated:${new Date(this.quotationData.QuoteDate).toLocaleDateString()}</p>
       <p>Best Regards,</p>
       <p>${this.userData['userEmail']}</p>
     </div>
