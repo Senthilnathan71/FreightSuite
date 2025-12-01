@@ -140,6 +140,40 @@
   color: #6c757d !important;
 }
 
+// Date picker size adjustment
+::ng-deep ngb-datepicker {
+  font-size: 0.8125rem;
+
+  .ngb-dp-header {
+    padding: 0.25rem;
+  }
+
+  .ngb-dp-navigation-select {
+    .form-select {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.25rem;
+    }
+  }
+
+  .ngb-dp-month {
+    padding: 0 0.25rem;
+  }
+
+  .ngb-dp-day,
+  .ngb-dp-weekday {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+
+  .ngb-dp-day .btn-light {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    font-size: 0.75rem;
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .doc-ref-table {

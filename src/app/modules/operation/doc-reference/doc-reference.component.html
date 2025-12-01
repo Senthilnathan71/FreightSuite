@@ -147,7 +147,7 @@
                 <table class="table table-bordered align-middle mb-0 doc-ref-table">
                   <thead class="table-light">
                     <tr>
-                      <th class="text-center" style="width: 60px;">S.No</th>
+                      <th class="text-center" style="width: 60px;">Serial No</th>
                       <th style="width: 160px;">Ref Document No <span class="text-danger">*</span></th>
                       <th style="width: 140px;">Document Date <span class="text-danger">*</span></th>
                       <th>Remarks</th>
@@ -169,7 +169,7 @@
                           formControlName="refDocumentNo"
                           class="form-control form-control-sm"
                           placeholder="Enter Doc No"
-                          appTextWithNumbers
+                          [textWithNumbers]="20"
                           maxlength="20"
                           [class.is-invalid]="doc.get('refDocumentNo')?.invalid && doc.get('refDocumentNo')?.touched"
                         />

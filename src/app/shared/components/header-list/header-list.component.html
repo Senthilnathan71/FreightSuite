@@ -12,13 +12,14 @@
 
         <!-- Search Section -->
         <div class="col-md pb-1" *ngIf="showSearch">
-            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
+                  (ngSubmit)="onSearch()" (submit)="$event.preventDefault()">
                 <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                     <div class="form-outline flex-grow-1 position-relative">
                         <input name="filterValue" type="text" class="form-control pe-5"
                             [placeholder]="searchPlaceholder" [(ngModel)]="searchValue" aria-label="Search input"
-                            (keyup.enter)="onSearch()">
-                        <button *ngIf="searchValue"
+                            (keyup.enter)="onSearch(); $event.preventDefault()">
+                        <button type="button" *ngIf="searchValue"
                             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                             (click)="onClearSearch()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Clear search"

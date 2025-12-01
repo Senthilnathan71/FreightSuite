@@ -113,7 +113,10 @@ export class DocReferenceListComponent
 
 
   get allDocuments() {
-    return this.allItems;
+    // Apply client-side pagination if API returns all records
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return this.allItems.slice(startIndex, endIndex);
   }
 
 
@@ -369,9 +372,14 @@ export class DocReferenceListComponent
 
 
   onTableSortChange(sort: TableSortConfig): void {
-    this.sortColumn = sort.column;
-    this.sortDirection =
-      sort.direction === 'none' ? 'desc' : sort.direction;
+    if (sort.direction === 'none') {
+      // Reset to default sort when user clears sort
+      this.sortColumn = this.config.defaultSortColumn;
+      this.sortDirection = this.config.defaultSortDirection;
+    } else {
+      this.sortColumn = sort.column;
+      this.sortDirection = sort.direction;
+    }
     this.search();
   }
 
@@ -450,7 +458,7 @@ export class DocReferenceListComponent
 
 
     this.excelReportService.exportAsExcel({
-      data: this.allDocuments,
+      data: this.allItems, // Export all records, not just current page
       headers: dynamicHeaders,
       fileName: 'Document-Reference-Report',
       title: companyName,
