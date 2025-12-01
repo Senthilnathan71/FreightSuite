@@ -5,7 +5,7 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -19,7 +19,7 @@
 
 
 <div class="modal-body">
-    <div id="printContent">
+    <div id="printContent"class="p-1">
         <div class="print-a4">
 
             <div class="row ">
@@ -29,18 +29,22 @@
                         <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                     </div>
 
-                  <div class="company-info ">
-                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">
-                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
-                                || '' }}
-                            </p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
+                    <div class="company-info ">
+                        <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 ||
+                            currentBranch?.addressLine1 || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 ||
+                            currentBranch?.addressLine2 || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;">
+                            {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                            || '' }}
+                        </p>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode
+                            || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone
+                            || '' }}</p>
+                    </div>
                 </div>
             </div>
             <div style="height:1px; background-color: black; width: 100%; margin: 0.5rem 0;"></div>
@@ -67,7 +71,7 @@
                     </div>
                     <div class="d-flex flex-wrap mb-1">
                         <div style="width: 240px;"><strong>CHA</strong></div>
-                        <div>:  {{ housejobData?.Others?.[0]?.CHAName }}</div>
+                        <div>: {{ housejobData?.Others?.[0]?.CHAName }}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -135,7 +139,7 @@
                         <div style="width: 240px; white-space: nowrap;"><strong> Port of Discharge</strong></div>
                         <div>: {{housejobData.POD}}</div>
                     </div>
-                    <div class="d-flex align-items-center mb-1" >
+                    <div class="d-flex align-items-center mb-1">
                         <div style="width: 240px; white-space: nowrap;"><strong>Final Destination</strong></div>
                         <div>: {{housejobData.FPD}}</div>
                     </div>
@@ -164,15 +168,15 @@
                 <table class="table table tablebordered table-sm">
                     <thead>
                         <tr>
-                            <th>Container Type</th>
-                            <th>Container No</th>
-                            <th>Commodity Desc</th>
-                            <th>Pky Type</th>
-                            <th>No of PKg</th>
-                            <th>Gross Wt</th>
-                            <th>Net Wt</th>
-                            <th>Chargeable Wt</th>
-                            <th>Vol</th>
+                            <th class="text-center"><strong>Container Type</strong></th>
+                            <th class="text-center"><strong>Container No</strong></th>
+                            <th class="text-center"><strong>Commodity Desc</strong></th>
+                            <th class="text-center"><strong>Pky Type</strong></th>
+                            <th class="text-center"><strong>No of PKg</strong></th>
+                            <th class="text-center"><strong>Gross Wt</strong></th>
+                            <th class="text-center"><strong>Net Wt</strong></th>
+                            <th class="text-center"><strong>Chargeable Wt</strong></th>
+                            <th class="text-center"><strong>Vol</strong></th>
 
                         </tr>
                     </thead>
@@ -189,7 +193,7 @@
                             <td class="text-end"></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="fw-bold text-end">Total</td>
+                            <td colspan="4" class="fw-bold text-end"><strong>Total</strong></td>
                             <td class="text-end fw-bold">{{ totalNoOfPkg }}</td>
                             <td class="text-end fw-bold">{{ totalGrossWeight | number:'1.0-3' }}</td>
                             <td class="text-end fw-bold">{{ totalNetWeight | number:'1.0-3' }}</td>

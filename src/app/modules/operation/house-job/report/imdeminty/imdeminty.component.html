@@ -1,13 +1,13 @@
 
 
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Indeminty</h5>
+    <h5 class="modal-title text-white mb-0">Indemnity</h5>
     <div class="d-flex gap-2 align-items-center">
 
       <div class="spinner-overlay">
         <div class="spinner"></div>
       </div>
-      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
         <i class="fas fa-download me-1"></i> Download PDF
       </button>
       <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -21,7 +21,7 @@
 
 
   <div class="modal-body">
-    <div id="printContent">
+    <div id="printContent" class="p-1">
       <div class="print-a4">
 
         <!-- HEADER -->
@@ -77,9 +77,9 @@
           <table class="table tablebordered border-dark text-center align-middle">
             <thead class="bg-dark text-white">
               <tr>
-                <th>HBL No</th>
-                <th>Marks and Numbers</th>
-                <th>  Goods Description</th>
+                <th class="text-center"><strong>HBL No.</strong></th>
+                <th class="text-center"><strong>Marks and Numbers</strong></th>
+                <th class="text-center"><strong>Goods Description</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -101,9 +101,9 @@
           <table class="table tablebordered border-dark text-center align-middle">
             <thead class="bg-dark text-white">
               <tr>
-                <th>HBL No</th>
-                <th>Marks and Numbers</th>
-                <th>  Goods Description</th>
+                <th class="text-center"><strong>HBL No.</strong></th>
+                <th class="text-center"><strong>Marks and Numbers</strong></th>
+                <th class="text-center"><strong>Goods Description</strong></th>
               </tr>
             </thead>
             <tbody>

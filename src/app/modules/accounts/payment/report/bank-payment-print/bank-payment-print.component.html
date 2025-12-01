@@ -1,11 +1,11 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Cash Payment</h5>
+    <h5 class="modal-title text-white mb-0">Bank Payment</h5>
     <div class="d-flex gap-2 align-items-center">
 
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0"  (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -19,7 +19,7 @@
 
 
 <div class="modal-body">
-    <div id="printContent">
+    <div id="printContent"class="p-1">
 
         <div class="print-a4">
 
@@ -55,7 +55,7 @@
                 <div class="row" style="padding-left: 150px;">
                     <div class="col-md-6">
                         <div class="d-flex mb-1">
-                            <div style="width: 150px; white-space: nowrap;"><strong>Payment No</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Payment No.</strong></div>
                             <div>: {{paymentDataPrint?.VoucherNumber}}</div>
                         </div>
                         <div class="d-flex mb-1">
@@ -92,14 +92,14 @@
                 <table class="table table-sm table-hover tablebordered ">
                     <tbody>
                         <tr>
-                            <th style="width: 50%; font-weight: 800;">Description</th>
-                            <th style="width: 15%; font-weight: 800;">MBL/HBL Ref</th>
-                            <th style="width: 10%;font-weight: 800; ">Curr</th>
-                            <th style="width: 10%; font-weight: 800;">Ex.Rate </th>
-                            <th style="width: 15%;font-weight: 800; ">Amount </th>
+                            <th style="width: 50%; font-weight: 800;" class="text-center"><strong>Description</strong></th>
+                            <th style="width: 15%; font-weight: 800;" class="text-center"><strong>MBL/HBL Ref</strong></th>
+                            <th style="width: 10%;font-weight: 800; " class="text-center"><strong>Curr.</strong></th>
+                            <th style="width: 10%; font-weight: 800;" class="text-center"><strong>Ex.Rate</strong></th>
+                            <th style="width: 15%;font-weight: 800; " class="text-center"><strong>Amount</strong></th>
                         </tr>
                         <tr>
-                            <td>{{paymentDataPrint?.Narration}}</td>
+                            <td>{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
                             <td>
                                 {{ paymentDataPrint?.MasterNumber }}
                                 <span *ngIf="paymentDataPrint?.MasterNumber && paymentDataPrint?.HouseNumber">
@@ -121,13 +121,13 @@
                 <table class="table table-sm table-hover tablebordered " *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" >
                     <tbody>
                         <tr>
-                            <th style="width: 22%;font-weight: 800; ">Voucher No</th>
-                            <th style="width: 13%; font-weight: 800;">Voucher Type</th>
-                            <th style="width: 15%; font-weight: 800;">Voucher Date</th>
-                            <th style="width: 7%; font-weight: 800;">Curr.</th>
-                            <th style="width: 13%; font-weight: 800;">Ex. Rate</th>
-                            <th style="width: 15%; font-weight: 800;">Curr. Amt</th>
-                            <th style="width: 15%; font-weight: 800;">Local Amount</th>
+                            <th style="width: 22%;font-weight: 800; " class="text-center"><strong>Voucher No</strong></th>
+                            <th style="width: 13%; font-weight: 800;"class="text-center"><strong>Voucher Type</strong></th>
+                            <th style="width: 15%; font-weight: 800;"class="text-center"><strong>Voucher Date</strong></th>
+                            <th style="width: 7%; font-weight: 800;"class="text-center"><strong>Curr.</strong></th>
+                            <th style="width: 13%; font-weight: 800;"class="text-center"><strong>Ex. Rate</strong></th>
+                            <th style="width: 15%; font-weight: 800;"class="text-center"><strong>Curr. Amt</strong></th>
+                            <th style="width: 15%; font-weight: 800;"class="text-center"><strong>Local Amount</strong></th>
 
                         </tr>
                         <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">

@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
@@ -43,7 +47,9 @@ export class CashReceiptComponent {
 
   constructor(
     private activeModal: NgbActiveModal,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+     private pdfService: PdfDownloadService,
+    private spinner: NgxSpinnerService,
   ) {}
 
   getBankName(COAMasterSid: number) {
@@ -126,6 +132,69 @@ export class CashReceiptComponent {
 
     return convert(num);
   }
+
+
+  // pdf download
+
+    async downloadPDF() {
+  this.spinner.show();
+  try {
+   const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
+
+    
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      `Cash_Receipt_${BankReceiptNo}`,
+      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
+  }
+}
+
+
+    async generatePDFBlob(): Promise<Blob | null> {
+          const printContent = document.getElementById('printContent');
+          if (!printContent) {
+            return null;
+          }
+      
+          try {
+            const canvas = await html2canvas(printContent, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#ffffff'
+            });
+      
+            const imgWidth = 210;
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+      
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgData = canvas.toDataURL('image/png');
+      
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+      
+            while (heightLeft > 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+            }
+      
+            return pdf.output('blob');
+          } catch (error) {
+            console.error('Error generating PDF blob:', error);
+            return null;
+          }
+        }
+
+
 
   modalClose() {
     this.activeModal.close();
