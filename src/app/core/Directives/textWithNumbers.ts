@@ -17,10 +17,7 @@ export class TextWithNumbersDirective {
         // Allow navigation keys
         if (allowedKeys.includes(event.key)) return;
 
-        // Explicitly allow space, comma, and period
-        if (event.key === ' ' || event.key === ',' || event.key === '.') return;
-
-        // Allow only letters (A-Z, a-z) and numbers (0-9)
+        // Allow only letters (A-Z, a-z) and numbers (0-9) - no special characters
         const regex = /^[a-zA-Z0-9]$/;
 
         if (!regex.test(event.key)) {
@@ -56,8 +53,8 @@ export class TextWithNumbersDirective {
         const maxLength = this.textWithNumbers ?? Infinity;
         let value: string = this.el.nativeElement.value;
 
-        // Remove special characters but keep letters, numbers, spaces, commas, and periods
-        value = value.replace(/[^a-zA-Z0-9 ,.]/g, '');
+        // Remove all special characters - only allow letters and numbers
+        value = value.replace(/[^a-zA-Z0-9]/g, '');
 
         // Enforce max length
         if (value.length > maxLength) {

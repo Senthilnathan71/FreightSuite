@@ -20,7 +20,7 @@ import {
   NgbModalRef,
   NgbCalendar,
   NgbDateAdapter,
-  NgbDateParserFormatter,
+  NgbDateParserFormatter, NgbDateStruct,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -85,6 +85,7 @@ export class DocReferenceComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   today = this.calendar.getToday();
+  minDate: NgbDateStruct;
 
 
   private isSubmitting = false;
@@ -108,6 +109,8 @@ export class DocReferenceComponent implements OnInit {
     private datePipe: DatePipe,
   ) {
     this.initForm();
+    const today = new Date();
+    this.minDate = { year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() };
   }
 
 

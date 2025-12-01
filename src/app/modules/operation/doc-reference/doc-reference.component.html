@@ -147,7 +147,7 @@
                 <table class="table table-bordered align-middle mb-0 doc-ref-table">
                   <thead class="table-light">
                     <tr>
-                      <th class="text-center" style="width: 40px;">#</th>
+                      <th class="text-center" style="width: 60px;">S.No</th>
                       <th style="width: 160px;">Ref Document No <span class="text-danger">*</span></th>
                       <th style="width: 140px;">Document Date <span class="text-danger">*</span></th>
                       <th>Remarks</th>
@@ -169,6 +169,8 @@
                           formControlName="refDocumentNo"
                           class="form-control form-control-sm"
                           placeholder="Enter Doc No"
+                          appTextWithNumbers
+                          maxlength="20"
                           [class.is-invalid]="doc.get('refDocumentNo')?.invalid && doc.get('refDocumentNo')?.touched"
                         />
                         <div class="invalid-feedback" *ngIf="doc.get('refDocumentNo')?.touched && doc.get('refDocumentNo')?.hasError('required')">
@@ -181,7 +183,7 @@
 
                       <!-- Document Date -->
                       <td>
-                        <div class="input-group input-group-sm">
+                        <div class="input-group input-group-sm" style="width: 140px;">
                           <input
                             class="form-control"
                             placeholder="dd-mm-yyyy"
@@ -191,6 +193,7 @@
                             (click)="dp.toggle()"
                             readonly
                             container="body"
+                            [minDate]="minDate"
                             [class.is-invalid]="doc.get('documentDate')?.invalid && doc.get('documentDate')?.touched"
                           />
                           <button

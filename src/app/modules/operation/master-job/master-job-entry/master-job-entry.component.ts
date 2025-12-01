@@ -2348,7 +2348,7 @@ private autoPopulateVoyageData(vessel: any): void {
       const normalizedDepartment = departmentName?.trim().toLowerCase();
       const normalizedJobType = item.JobType?.trim().toLowerCase();
 
-      if (normalizedDepartment === 'lcl export' && normalizedJobType === 'transhipment') {
+      if (normalizedDepartment === 'lcl import' && normalizedJobType === 'transhipment') {
         this.isTranshipment = true;
         this.transhipmentHouseJobSids.push(item.HouseJobSid);
         console.log('✅ Found transhipment item!');

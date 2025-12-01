@@ -260,6 +260,7 @@
                                 <td class="bg-info text-white px-2 text-center">Authority</td>
                                 <td class="bg-info text-white px-2 text-center">Email</td>
                                 <td class="bg-info text-white px-2 text-center">follow up</td>
+                                <td class="bg-info text-white px-2 text-center">Doc-ref</td>
                             </tr>
                         </thead>
                         <tbody [formGroup]="otherPermissionsGroup">
@@ -296,6 +297,12 @@
                                         <input type="checkbox" formControlName="followUp"
                                             class="form-check-input">
                                         <!-- <label for="followUp" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" formControlName="docRef"
+                                            class="form-check-input">
                                     </div>
                                 </td>
                             </tr>

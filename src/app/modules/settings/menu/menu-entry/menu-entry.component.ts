@@ -212,7 +212,8 @@ export class MenuEntryComponent implements OnInit {
         terms_and_condition: [false],
         authority: [false],
         email: [false],
-        followUp: [false]
+        followUp: [false],
+        docRef: [false]
       })
     });
     this.menuForm.get('isSubMenu')?.valueChanges.subscribe(isSubMenu => {
@@ -421,7 +422,8 @@ export class MenuEntryComponent implements OnInit {
   terms_and_condition: 'Terms and Condition',
   authority: 'Authority',
   email: 'Email',
-  followUp: 'Follow Up'
+  followUp: 'Follow Up',
+  docRef: 'Document Reference'
 };
 
 

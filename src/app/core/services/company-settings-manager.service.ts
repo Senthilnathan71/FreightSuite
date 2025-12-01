@@ -121,8 +121,8 @@ export class CompanySettingsManagerService {
    */
   initializeFromStorage(): void {
     // Check if user is authenticated before making API calls
+    // Silently skip if not authenticated - this is expected on login page
     if (this.isLoggingOut || !this.isUserAuthenticated()) {
-      console.warn('User not authenticated or logging out, skipping company date format initialization');
       return;
     }
 
