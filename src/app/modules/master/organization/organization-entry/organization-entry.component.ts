@@ -3642,7 +3642,7 @@ private loadNetworks(): void {
   this.masterService.getAllNetworks(CompanyMasterSid).subscribe({
     next: (resp: any) => {
       if (resp && resp) {
-        this.networkList = resp;
+        this.networkList = resp.data;
         console.log('Networks loaded successfully:', this.networkList);
       } else {
         console.warn('No network data received');

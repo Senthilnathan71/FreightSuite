@@ -13,6 +13,9 @@ import { forkJoin } from 'rxjs';
 import { MasterService } from '../../master.service';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-network-entry',
   standalone: true,
@@ -21,16 +24,22 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
   styles: ``,
 })
 export class NetworkEntryComponent {
-  countryResults: Country[];
-    countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
-  constructor(public dropdownStore: DropdownStore,     private fb: FormBuilder,
-      private masterService: MasterService,) {
+  countryResults: any[];
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+  page = 1;
+  pageSize = 10;
+  totalLengthOfCollection = 0;
+  userData: any;
+  currentCompany: any;
+  constructor(
+    public dropdownStore: DropdownStore,    
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private appSettingsService: AppSettingsService,
+    private dialog: MatDialog
+  ) {
     this.networkForm = this.fb.group({
       networks: this.fb.array([]),
-    });
-    effect(() => {
-      const countryData = this.dropdownStore.countries();
-      this.countryResults = countryData;
     });
   }
 
@@ -42,7 +51,13 @@ export class NetworkEntryComponent {
   ];
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
+    
+    this.appSettingsService.getUser().subscribe((user) => {
+      if (user) this.userData = user;
+    });
 		this.loadAllFields();
+    this.loadNetworks();
 	}
   networkType = [
     { id: 1, name: 'Forwarders' },
@@ -53,25 +68,111 @@ export class NetworkEntryComponent {
     { id: 6, name: 'Feeder' },
   ];
 
-  countryList = [
-    { id: 1, name: 'India' },
-    { id: 2, name: 'USA' },
-    { id: 3, name: 'UK' },
-  ];
-
   get networkArray(): FormArray {
     return this.networkForm.get('networks') as FormArray;
   }
 
+  loadNetworks() {
+  const companySid = this.currentCompany?.CompanyMasterSid;
+  if (!companySid) return;
+
+  this.masterService.getAllNetworks(companySid).subscribe({
+    next: (response: any) => {
+      if (!response?.status) {
+        this.appSettingsService.showError(response.message || "Failed to load networks");
+        return;
+      }
+
+      const data = response.data || [];
+
+      this.networkArray.clear();   // reset array before loading
+
+      data.forEach((item: any) => {
+        const group = this.fb.group({
+          NetworkMasterSid: [item.NetworkMasterSid],
+          NetworkName: [item.NetworkName],
+          CountrySid: [item.CountrySid],
+          NetworkType: [item.NetworkType],
+          Status: [item.Status],
+        });
+
+        this.networkArray.push(group);
+      });
+    },
+
+    error: (err: any) => {
+      console.error("Network load error", err);
+      this.appSettingsService.showError("Error while loading networks");
+    }
+  });
+}
+
+
   addNetwork() {
     const networkGroup = this.fb.group({
-      name: [''],
-      CountryMasterSid: [],
-      type: [1],
-      status: ['A'],
+      NetworkName: [''],
+      CountrySid: [],
+      NetworkType: ['Forwarders'],
+      Status: ['A'],
     });
     this.networkArray.push(networkGroup);
   }
+
+  saveNetworks() {
+  if (this.networkArray.length === 0) {
+    // If no rows added
+    this.appSettingsService.showError("Please add at least one network.");
+    return;
+  }
+
+  const payload = this.networkArray.getRawValue().map(x => ({
+  ...x,
+  CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+  CreatedBy: this.userData?.userEmail || 'system',
+  UpdatedBy: this.userData?.userEmail || 'system'
+}));
+  this.masterService.updateNetwork(payload).subscribe({
+    next: (resp: any) => {
+      if (resp.status) {
+        this.appSettingsService.showSuccess("Network saved successfully");
+        this.loadNetworks();
+        this.loadAllFields();   
+        this.networkArray.clear();  
+      } else {
+        this.appSettingsService.showError(resp.message || "Save failed");
+      }
+    },
+    error: (err) => {
+      console.error(err);
+      this.appSettingsService.showError("Something went wrong while saving.");
+    }
+  });
+}
+
+delete(index: number) {
+  const row = this.networkArray.at(index)?.value;
+
+  // If item not saved yet → just remove from UI
+  if (!row.NetworkMasterSid) {
+    this.networkArray.removeAt(index);
+    return;
+  }
+
+  const id = row.NetworkMasterSid;
+ const dialogRef = this.dialog.open(DeleteWarningComponent);
+ dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+  this.masterService.deleteNetworkById(id).subscribe((resp: any) => {
+      this.appSettingsService.showSuccess("Network deleted successfully");
+      this.loadNetworks();  // reload table
+      this.loadAllFields();
+    });
+    }
+  });
+}
+
+
+
 
   removeNetwork(index: number) {
     this.networkArray.removeAt(index);
@@ -82,10 +183,16 @@ export class NetworkEntryComponent {
         countries : this.dropdownStore.loadCountries(),
    
       }).subscribe(({  countries  }) => {
-   this.countryResults = countries;
+        this.countryResults = countries;
       });
-  
-      // this.currencyResults = (this.dropdownStore.currencies() || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
     }
 
+    onPageChange(page: number): void {
+      this.page = page;
+    }
+
+    trackBy(index:number, item:any): number {
+      return item.NetworkMasterSid || index;
+
+    }
 }
