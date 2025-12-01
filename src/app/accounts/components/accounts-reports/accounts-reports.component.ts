@@ -14,6 +14,7 @@ import { ReportViewerComponent } from '../../../shared/components/general-report
 import { ReportExportActionsComponent } from '../../../shared/components/general-reports/report-export-actions/report-export-actions.component';
 import { ReportEmailDialogComponent, EmailReportData } from '../../../shared/components/general-reports/report-email-dialog/report-email-dialog.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { AgeingReportComponent } from 'src/app/shared/components/reports/ageing-report/ageing-report.component';
 
 @Component({
   selector: 'app-accounts-reports',
@@ -98,6 +99,39 @@ export class AccountsReportsComponent implements OnInit {
   /**
    * Handle parameter form submission
    */
+  // onGenerateReport(parameters: any): void {
+  //   if (!this.selectedReport) {
+  //     return;
+  //   }
+
+  //   // Store parameters for export/email operations
+  //   this.reportParameters = {
+  //     ...parameters,
+  //     companyId: this.companyId
+  //   };
+  //   console.log(this.reportParameters);
+  //   this.generatingReport = true;
+  //   this.reportService.generateReport('accounts', this.selectedReport.ReportName, this.reportParameters)
+  //     .pipe(finalize(() => this.generatingReport = false))
+  //     .subscribe({
+  //       next: (response: ReportGenerateResponse) => {
+  //         if (response.success && response.data) {
+  //           this.reportData = response.data;
+  //           if (response.data.length === 0) {
+  //             alert('No data found for the selected parameters.');
+  //           }
+  //         } else {
+  //           alert('Failed to generate report. Please try again.');
+  //         }
+  //       },
+  //       error: (error) => {
+  //         console.error('Error generating report:', error);
+  //         const errorMessage = error.error?.message || 'Failed to generate report. Please try again.';
+  //         alert(errorMessage);
+  //       }
+  //     });
+  // }
+
   onGenerateReport(parameters: any): void {
     if (!this.selectedReport) {
       return;
@@ -108,27 +142,18 @@ export class AccountsReportsComponent implements OnInit {
       ...parameters,
       companyId: this.companyId
     };
-    console.log(this.reportParameters);
-    this.generatingReport = true;
-    this.reportService.generateReport('accounts', this.selectedReport.ReportName, this.reportParameters)
-      .pipe(finalize(() => this.generatingReport = false))
-      .subscribe({
-        next: (response: ReportGenerateResponse) => {
-          if (response.success && response.data) {
-            this.reportData = response.data;
-            if (response.data.length === 0) {
-              alert('No data found for the selected parameters.');
-            }
-          } else {
-            alert('Failed to generate report. Please try again.');
-          }
-        },
-        error: (error) => {
-          console.error('Error generating report:', error);
-          const errorMessage = error.error?.message || 'Failed to generate report. Please try again.';
-          alert(errorMessage);
-        }
-      });
+
+    console.log('Opening report with payload:', this.reportParameters);
+
+    if (this.selectedReport.ReportName === 'ageing-report') {
+      this.reportService.openReportModal(
+        'ageing-report',
+        undefined,
+        this.reportParameters,
+      );
+    } else {
+      this.appSettingService.showError('Invalid Report Name.');
+    }
   }
 
   /**

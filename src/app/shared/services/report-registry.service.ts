@@ -24,6 +24,9 @@ export interface ReportConfig {
   /** Backend API endpoint for sending email */
   apiEndpoint: string;
 
+  /** Type of api calling you want to do */
+  request?: 'GET' | 'POST';
+
   /** Backend API endpoint for fetching report data */
   fetchDataEndpoint: string;
 
@@ -86,6 +89,7 @@ export class ReportRegistryService {
         filenameTemplate: 'PreAlert_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'Pre Alert - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -144,6 +148,7 @@ export class ReportRegistryService {
         filenameTemplate: 'CargoManifest_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'Cargo Manifest - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -173,6 +178,7 @@ export class ReportRegistryService {
         filenameTemplate: 'ReleaseLetter_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'Cargo Release Letter - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -202,6 +208,7 @@ export class ReportRegistryService {
         filenameTemplate: 'ReleaseOrder_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'Delivery/Release Order - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -231,6 +238,7 @@ export class ReportRegistryService {
         filenameTemplate: 'JobCard_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'Job Card - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -260,6 +268,7 @@ export class ReportRegistryService {
         filenameTemplate: 'MBL_{jobNumber}_{date}',
         module: 'master-job',
         apiEndpoint: 'master-job/send-email',
+        request: 'GET',
         fetchDataEndpoint: 'master-job/{id}/report-data',
         emailSubjectTemplate: 'MBL - Job No: {jobNumber}',
         emailBodyTemplate: `
@@ -274,6 +283,37 @@ export class ReportRegistryService {
       });
     } catch (error) {
       console.warn('MBL Report component not yet created:', error);
+    }
+
+    // Ageing Report
+    try {
+      const { AgeingReportComponent } = await import(
+        '../components/reports/ageing-report/ageing-report.component'
+      );
+
+      this.registerReport({
+        id: 'ageing-report',
+        title: 'Ageing Report',
+        component: AgeingReportComponent,
+        filenameTemplate: 'Ageing_Report_{LedgerName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Ageing Report - Ledger: {LedgerName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Ageing Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn('Ageing Report component not yet created:', error);
     }
   }
 

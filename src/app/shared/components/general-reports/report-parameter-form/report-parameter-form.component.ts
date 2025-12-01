@@ -1,9 +1,14 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ReportService } from '../../../services/report.service';
 import { finalize } from 'rxjs/operators';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { toNgbDateStruct } from 'src/app/common/helper';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -11,15 +16,27 @@ export interface ReportParameter {
   ParameterFieldType: string;
   DropDownValue?: any[];
   ParameterQuery?: string;
+  DefaultValue ?: any;
+  ValidationRules ?: string;
   Status: string;
 }
 
 @Component({
   selector: 'app-report-parameter-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    NgSelectModule,
+    MultiSelectComponent, 
+    NgbDatepickerModule
+  ],
   templateUrl: './report-parameter-form.component.html',
-  styleUrls: ['./report-parameter-form.component.scss']
+  styleUrls: ['./report-parameter-form.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
+  ],
 })
 export class ReportParameterFormComponent implements OnInit, OnChanges {
   @Input() parameters: ReportParameter[] = [];
@@ -32,6 +49,23 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
   parameterForm!: FormGroup;
   dropdownData: Map<string, any[]> = new Map();
   loadingDropdowns: Map<string, boolean> = new Map();
+  minDates = new Map<string, NgbDateStruct>();
+  maxDates = new Map<string, NgbDateStruct>();
+
+  readonly FIELD_TYPES = {
+    TEXT: 'TEXT',
+    NUMBER: 'NUMBER',
+    DATE: 'DATE',
+    EMAIL: 'EMAIL',
+    TEXTAREA: 'TEXTAREA',
+    DROPDOWN: 'DROPDOWN',
+    DROPDOWN_M: 'DROPDOWN M',
+    CHECKBOX: 'CHECKBOX',
+    RADIO: 'RADIO',
+    FILE: 'FILE',
+    URL: 'URL',
+    PHONE: 'PHONE'
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -48,35 +82,128 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     }
   }
 
+   /**
+   * Build dynamic form
+   */
   buildForm(): void {
     const group: any = {};
-    console.log("Parameters",this.parameters);
+
+    const today = new Date();
+
     this.parameters.forEach(param => {
-      const validators = [];
+      console.log(param);
+      const validators = this.buildValidators(param);
 
-      // Add required validator for most fields
-      if (param.ParameterFieldType !== 'TEXT') {
-        validators.push(Validators.required);
-      }
+      group[param.ParameterName] = [
+        this.getDefaultValue(param),
+        validators
+      ];
 
-      group[param.ParameterName] = [null, validators];
-
-      // Load dropdown data
-      if (
-        param.ParameterFieldType === 'DROPDOWN' || 
-        param.ParameterFieldType === 'DROPDOWN M'
-      ) {
-        if (param.DropDownValue) {
-          // Static dropdown
+      if (param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN ||
+          param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M) {
+        if(param.DropDownValue){
           this.dropdownData.set(param.ParameterName, param.DropDownValue);
-        } else if (param.ParameterQuery) {
-          // Dynamic dropdown - load via API
+        } else {
           this.loadDynamicDropdown(param);
         }
       }
     });
 
     this.parameterForm = this.fb.group(group);
+  }
+
+    /**
+   * Build validators without ValidationService
+   */
+  private buildValidators(param: ReportParameter): ValidatorFn[] {
+    const validators: ValidatorFn[] = [];
+
+    // Required
+    const rules = typeof param.ValidationRules === 'string'
+    ? JSON.parse(param.ValidationRules)
+    : param.ValidationRules;
+    console.log("Received Validation Rules", rules);
+
+    if (rules?.required) validators.push(Validators.required);
+    if (rules?.minLength) validators.push(Validators.minLength(rules.minLength));
+    if (rules?.maxLength) validators.push(Validators.maxLength(rules.maxLength));
+    if (rules?.min != null) validators.push(Validators.min(rules.min));
+    if (rules?.max != null) validators.push(Validators.max(rules.max));
+    if (rules?.pattern) validators.push(Validators.pattern(rules.pattern));
+    if (rules?.minDate) {
+      const d = rules.minDate === 'today' ? new Date() : new Date(rules.minDate);
+      this.minDates.set(param.ParameterName, toNgbDateStruct(d));
+    }
+
+    if (rules?.maxDate) {
+      const d = rules.maxDate === 'today' ? new Date() : new Date(rules.maxDate);
+      this.maxDates.set(param.ParameterName, toNgbDateStruct(d));
+    }
+
+    // Field-specific
+    switch (param.ParameterFieldType) {
+      case this.FIELD_TYPES.EMAIL:
+        validators.push(Validators.email);
+        break;
+      case this.FIELD_TYPES.URL:
+        validators.push(this.urlValidator());
+        break;
+      case this.FIELD_TYPES.PHONE:
+        validators.push(this.phoneValidator());
+        break;
+      case this.FIELD_TYPES.NUMBER:
+        validators.push(this.numberValidator());
+        break;
+    }
+    console.log(validators);
+    console.log(this.minDates);
+    console.log(this.maxDates);
+    return validators;
+  }
+
+   /** Simple Validators */
+
+  private urlValidator(): ValidatorFn {
+    return (control) => {
+      if (!control.value) return null;
+      try {
+        new URL(control.value);
+        return null;
+      } catch {
+        return { invalidUrl: true };
+      }
+    };
+  }
+
+  private phoneValidator(): ValidatorFn {
+    return (control) => {
+      if (!control.value) return null;
+      const regex = /^[0-9+\-\s()]+$/;
+      return regex.test(control.value) ? null : { invalidPhone: true };
+    };
+  }
+
+  private numberValidator(): ValidatorFn {
+    return (control) => {
+      if (!control.value) return null;
+      return isNaN(Number(control.value)) ? { invalidNumber: true } : null;
+    };
+  }
+
+  /**
+   * Get default values
+   */
+  private getDefaultValue(param: ReportParameter) {
+    if (param.ParameterFieldType === this.FIELD_TYPES.CHECKBOX)
+      return param.DefaultValue === 'true';
+
+    if (param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M)
+      return param.DefaultValue ? param.DefaultValue.split(',') : [];
+
+    if (param.ParameterFieldType === this.FIELD_TYPES.NUMBER)
+      return param.DefaultValue ? Number(param.DefaultValue) : null;
+
+    return param.DefaultValue || null;
   }
 
   /**
@@ -134,11 +261,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
       // Format dates to ISO string if they're date objects
       const formattedValue = Object.keys(formValue).reduce((acc, key) => {
         const param = this.parameters.find(p => p.ParameterName === key);
-        if (param?.ParameterFieldType === 'DATE' && formValue[key] instanceof Date) {
-          acc[key] = formValue[key].toISOString().split('T')[0];
-        } else {
-          acc[key] = formValue[key];
-        }
+        acc[key] = formValue[key];
+        
         return acc;
       }, {} as any);
 
@@ -172,4 +296,17 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     }
     return '';
   }
+
+  getMinDate(paramName: string): NgbDateStruct | null {
+    console.log('🔵 getMinDate called with:', paramName);
+    console.log('🔵 minDates:', this.minDates);
+    return this.minDates.get(paramName) || null;
+  }
+
+  getMaxDate(paramName: string): NgbDateStruct | null {
+    console.log('🔵 getMaxDate called with:', paramName);
+    console.log('🔵 maxDates:', this.maxDates);
+    return this.maxDates.get(paramName) || null;
+  }
+
 }

@@ -1,5 +1,5 @@
 
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -314,7 +314,7 @@ export class ReportService {
    * @param entityId Entity ID (e.g., MasterJobSid)
    * @returns Modal reference
    */
-  async openReportModal(reportId: string, entityId: number): Promise<NgbModalRef> {
+  async openReportModal(reportId: string, entityId?: number,payload?:any): Promise<NgbModalRef> {
     const config = this.reportRegistry.getReportConfig(reportId);
 
     // Import GenericReportModalComponent dynamically to avoid circular dependencies
@@ -334,6 +334,7 @@ export class ReportService {
     // Pass input data
     modalRef.componentInstance.reportId = reportId;
     modalRef.componentInstance.entityId = entityId;
+    modalRef.componentInstance.payload = payload;
 
     return modalRef;
   }
@@ -358,6 +359,25 @@ export class ReportService {
     const fullUrl = `${url}?reportType=${reportId}`;
 
     return this.http.get(fullUrl);
+  }
+
+  /**
+ * Fetch report data using POST request
+ * @param reportId Report identifier
+ * @param payload Request payload
+ * @returns Observable of report data
+ */
+  fetchReportDataPost(reportId: string, payload: any): Observable<any> {
+    const config = this.reportRegistry.getReportConfig(reportId);
+    const url = (config.fetchDataEndpoint).replace('{id}', reportId);
+
+    return this.http.post<any>(url, payload).pipe(
+      map(response => response.data || response),
+      catchError(error => {
+        console.error('Error fetching report data (POST):', error);
+        throw error;
+      })
+    );
   }
 
   /**
@@ -504,6 +524,7 @@ export class ReportService {
     // Email templates expect flat structure like {jobNumber}, but data is nested
     const flattenedData = {
       // Spread masterJob fields to top level
+      ...(reportData || {}),
       ...(reportData.masterJob || {}),
       // Spread company fields (prefixed to avoid conflicts)
       companyName: reportData.company?.name || '',
