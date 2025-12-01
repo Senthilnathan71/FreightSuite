@@ -463,12 +463,12 @@
                                     @if(i === detailItems.length - 1){
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
                                         (click)="addDetailRow()">
-                                        <i class="fas fa-plus text-info"></i>
+                                        <i class="fas fa-plus text-info fs-2"></i>
                                     </button>
                                     }
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
                                         (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)">
-                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                        <i class="fas fa-trash text-danger fs-2"></i>
                                     </button>
                                 </td>
                                 <td class="dofi-min-w-150">
@@ -482,11 +482,11 @@
                                         bindValue="SubledgerMasterSid" formControlName="LedgerMasterSid"
                                         appendTo="body"></ng-select>
                                 </td>
-                                <td class="dofi-min-w-80">
+                                <td class="dofi-min-w-60">
                                     <ng-select class="ng-select" [items]="CrDr" bindLabel="name" bindValue="value"
                                         formControlName="DrCr" appendTo="body"></ng-select>
                                 </td>
-                                <td class="dofi-min-w-80">
+                                <td class="dofi-min-w-70">
                                     <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid"
                                         [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
                                         [displayLabels]="CurrencyLookupConfig.displayLabels"
@@ -513,7 +513,7 @@
                                         [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
                                         readonly />
                                 </td>
-                                <td class="dofi-min-w-100">
+                                <td class="dofi-min-w-180">
                                     <input type="text" formControlName="Narration" class="custom-input-field sm"
                                         [textWithNumbers]="200" />
                                 </td>
@@ -601,12 +601,12 @@
                         <tr *ngFor="let v of voucherMatchings.controls; let i = index" [formGroupName]="i">
 
                             <!-- Voucher No -->
-                            <td>
+                            <td class="dofi-min-w-120">
                                 <input type="text" formControlName="voucherNo" class="custom-input-field sm" />
                             </td>
 
                             <!-- Voucher Type -->
-                            <td>
+                            <td class="dofi-min-w-120">
                                 <input type="text" formControlName="voucherType" class="custom-input-field sm" />
                             </td>
 
@@ -630,7 +630,7 @@
                             </td>
 
                             <!-- Currency -->
-                            <td>
+                            <td >
                                 <input type="text" formControlName="curr" class="custom-input-field sm" />
                             </td>
 

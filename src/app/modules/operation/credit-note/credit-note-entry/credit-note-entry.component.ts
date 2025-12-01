@@ -24,6 +24,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -2673,16 +2674,17 @@ private normalizeParty(raw: any) {
       modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
     }
     
+  
     openAuthority() {
-      if (!this.creditNoteData) return;
-      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-        size: 'lg', 
-        centered: true, 
-        backdrop: 'static' 
+      const MenuMasterSid = localStorage.getItem('currentMenuId');
+      if (!MenuMasterSid) return;
+      const modalRef = this.modalService.open(AuthorityLogComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
       });
-      modalRef.componentInstance.item = this.creditNoteData;
-      modalRef.componentInstance.idLabel = 'Credit Note Id';
-      modalRef.componentInstance.idValue = this.creditNoteData?.VoucherHeaderSid;
+      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+      // modalRef.componentInstance.documentSid = this.VoucherHeaderSid;
     }
     
     openEDoc() {

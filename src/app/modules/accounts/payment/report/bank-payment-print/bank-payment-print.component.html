@@ -32,15 +32,17 @@
                     </div>
 
                     <div class="company-info ">
-                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                        <p class="mb-1">
-                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                        </p>
-                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                    </div>
+                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;">
+                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                                || '' }}
+                            </p>
+                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                        </div>
                 </div>
             </div>
 
@@ -50,38 +52,38 @@
 
                 <h4 style=" text-align: center; margin: 10px auto; font-weight: 700;">Bank Payment</h4>
 
-                <div class="row">
+                <div class="row" style="padding-left: 150px;">
                     <div class="col-md-6">
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Payment No</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Payment No</strong></div>
                             <div>: {{paymentDataPrint?.VoucherNumber}}</div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Payment Date</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Payment Date</strong></div>
                             <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Paid To</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Paid To</strong></div>
                             <div>: {{paymentDataPrint?.PartyName}}</div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Bank</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Bank</strong></div>
                             <div>: {{ getBankName(paymentDataPrint?.BankCOA) }}
                             </div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Bank Ref</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Bank Ref</strong></div>
                             <div>: {{paymentDataPrint?.InstrumentMode}} / {{paymentDataPrint?.InstrumentNumber }} /
                                 {{paymentDataPrint?.InstrumentDate | formatDate}}</div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Currency</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Currency</strong></div>
                             <div>: {{paymentDataPrint?.CurrencyCode}}</div>
                         </div>
                         <div class="d-flex mb-1">
-                            <div style="width: 180px; white-space: nowrap;"><strong>Ex. Rate</strong></div>
+                            <div style="width: 150px; white-space: nowrap;"><strong>Ex. Rate</strong></div>
                             <div>: {{paymentDataPrint?.ExchangeRate}}</div>
                         </div>
                     </div>
@@ -106,17 +108,17 @@
                                 {{ paymentDataPrint?.HouseNumber }}
                             </td>
                             <td>{{paymentDataPrint?.CurrencyCode}}</td>
-                            <td style="text-align: right; ">{{paymentDataPrint?.ExchangeRate}} </td>
-                            <td style="text-align: right; ">{{paymentDataPrint?.VoucherDetail?.[0]?.Amount}}</td>
+                            <td style="text-align: right; ">{{paymentDataPrint?.ExchangeRate | number:'1.2-2'}} </td>
+                            <td style="text-align: right; ">{{paymentDataPrint?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}</td>
                         </tr>
 
                     </tbody>
                 </table>
 
 
-                <h5 style="padding: 4px 0;">Remittance Details</h5>
+                <h5 style="padding: 4px 0; text-decoration: underline;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" >Remittance Details</h5>
 
-                <table class="table table-sm table-hover tablebordered ">
+                <table class="table table-sm table-hover tablebordered " *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" >
                     <tbody>
                         <tr>
                             <th style="width: 22%;font-weight: 800; ">Voucher No</th>
@@ -133,22 +135,22 @@
                             <td>{{voucher?.VoucherType}}</td>
                             <td>{{voucher?.VoucherDate | formatDate}} </td>
                             <td>{{voucher?.CurrencyCode}} </td>
-                            <td style="text-align: right;">{{voucher?.ExchangeRate}} </td>
-                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount}}</td>
-                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount}}</td>
+                            <td style="text-align: right;">{{voucher?.ExchangeRate | number:'1.3-3'}} </td>
+                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
+                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
 
                         </tr>
                         <tr>
 
                             <td style="text-align: right; font-weight: 700;" colspan="5">Total</td>
                             <td style="text-align: right;">
-                                <strong>{{getTotalOriginalCurrencyAmount()}}</strong>
+                                <strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong>
                             </td>
-                            <td style="text-align: right;"> <strong>{{getTotalOriginalLocalAmount()}}</strong></td>
+                            <td style="text-align: right;"> <strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
                         </tr>
                     </tbody>
                 </table>
-                <div class="pb-3">
+                <div class="pb-3" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" >
                     <div class="d-flex gap-2">
                         <strong>Amount in Words :</strong>
                         <div class="fst-italic">{{paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode}} {{

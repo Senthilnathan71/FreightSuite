@@ -740,7 +740,7 @@ export class CompanyEntryComponent implements OnInit {
 		}
 
 		this.bankModalRef = this.modalService.open(content, {
-			size: 'lg',
+			size: 'xl',
 			centered: true,
 			backdrop: 'static'
 		});

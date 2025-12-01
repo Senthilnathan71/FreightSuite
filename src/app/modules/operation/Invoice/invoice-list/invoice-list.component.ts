@@ -242,7 +242,8 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        width:"120px"
       },
       {
         key: 'PartyName',
@@ -260,7 +261,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
+        width: '100px',
       },
         {
         key: 'MasterNumber',
