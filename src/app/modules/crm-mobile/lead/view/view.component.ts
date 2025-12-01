@@ -160,6 +160,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
           icon: 'fas fa-trash',
           label: 'Delete',
           action: 'delete',
+          class:'text-danger',
           tooltip: 'Delete Zone',
           state: !this.mps.can('delete')
         },
