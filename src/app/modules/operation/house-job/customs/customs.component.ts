@@ -99,8 +99,14 @@ export class CustomsComponent implements OnChanges {
   }
 
   private loadPackageTypes() {
-    this.operationService.getUOMsByType('E').subscribe((resp) => {
-      this.packageTypeList = resp.data; // format: [{ UOMCode: "BOX", Description: "Box" }]
+    this.operationService.getUOMsByType('E').subscribe({
+      next: (resp) => {
+        this.packageTypeList = resp.data; // format: [{ UOMCode: "BOX", Description: "Box" }]
+      },
+      error: (err) => {
+        console.error('Failed to load package types:', err);
+        this.toastr.error('Failed to load package types.');
+      }
     });
   }
 
@@ -116,8 +122,8 @@ export class CustomsComponent implements OnChanges {
       RotationNumber: ['', [Validators.required, Validators.maxLength(6)]],
       ManifestSequence: ['', [Validators.required, Validators.maxLength(5)]],
 
-      CargoCode: ['F', Validators.required],
-      StorageRequest: ['D'],
+      CargoCode: ['F', [Validators.required, Validators.maxLength(1)]],
+      StorageRequest: ['D', Validators.maxLength(1)],
       PackageTypeCode: ['', [Validators.required, Validators.maxLength(3)]],
 
       FreightTonne: ['', [Validators.pattern(/^\d{0,6}(\.\d{0,3})?$/)]],
@@ -127,19 +133,19 @@ export class CustomsComponent implements OnChanges {
       ImporterCode: ['', [Validators.required, Validators.maxLength(5)]],
 
       SerialNumber: ['', [Validators.required, Validators.pattern(/^\d{1,6}$/)]],
-      UsedOrNew: ['U', Validators.required],
+      UsedOrNew: ['U', [Validators.required, Validators.maxLength(1)]],
       UNHSCode: ['', [Validators.required, Validators.maxLength(10)]],
       UNNumber: ['', Validators.maxLength(5)],
 
       FlashPoints: ['', [Validators.pattern(/^\d{0,3}(\.\d{0,1})?$/)]],
-      TemperatureUnit: ['C'],
-      HazStorageRequest: ['D'],
-      RefrigerationRequired: [''],
+      TemperatureUnit: ['C', Validators.maxLength(1)],
+      HazStorageRequest: ['D', Validators.maxLength(1)],
+      RefrigerationRequired: ['', Validators.maxLength(1)],
 
       MinTemperature: ['', [Validators.pattern(/^\d{0,3}(\.\d{0,1})?$/)]],
       MaxTemperature: ['', [Validators.pattern(/^\d{0,3}(\.\d{0,1})?$/)]],
 
-      RefTemperatureUnit: ['C'],
+      RefTemperatureUnit: ['C', Validators.maxLength(1)],
 
       CreatedBy: [''],
       UpdatedBy: [''],
@@ -176,6 +182,7 @@ export class CustomsComponent implements OnChanges {
   submitForm() {
     if (this.customsForm.invalid) {
       this.customsForm.markAllAsTouched();
+      this.toastr.warning('Please fill all required fields.');
       return;
     }
 
@@ -185,16 +192,28 @@ export class CustomsComponent implements OnChanges {
     if (this.selectedRecord) {
       this.operationService.updateCustomsById(this.selectedRecord.HouseJobCustomsSid, payload)
         .pipe(finalize(() => (this.loading = false)))
-        .subscribe(() => {
-          this.reloadParent.emit(payload.HouseJobSid);
-          this.resetChildForm();
+        .subscribe({
+          next: () => {
+            this.toastr.success('Customs updated successfully.');
+            this.reloadParent.emit(payload.HouseJobSid || payload.MasterJobSid);
+            this.resetChildForm();
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || 'Failed to update customs.');
+          }
         });
     } else {
       this.operationService.createCustoms(payload)
         .pipe(finalize(() => (this.loading = false)))
-        .subscribe(() => {
-          this.reloadParent.emit(payload.HouseJobSid);
-          this.resetChildForm();
+        .subscribe({
+          next: () => {
+            this.toastr.success('Customs saved successfully.');
+            this.reloadParent.emit(payload.HouseJobSid || payload.MasterJobSid);
+            this.resetChildForm();
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || 'Failed to save customs.');
+          }
         });
     }
   }

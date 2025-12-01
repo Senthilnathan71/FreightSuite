@@ -43,6 +43,10 @@
         <div class="custom-form-group">
           <input type="text" formControlName="RotationNumber" placeholder="" class=" custom-input-field sm" />
           <label class="input-label">Rotation Number</label>
+          <div class="error-message" *ngIf="customsForm.get('RotationNumber')?.touched && customsForm.get('RotationNumber')?.invalid">
+            <small *ngIf="customsForm.get('RotationNumber')?.hasError('required')">Rotation Number is required.</small>
+            <small *ngIf="customsForm.get('RotationNumber')?.hasError('maxlength')">Max 6 characters allowed.</small>
+          </div>
         </div>
       </div>
 
@@ -51,6 +55,10 @@
         <div class="custom-form-group">
           <input type="text" formControlName="ManifestSequence" placeholder="" class=" custom-input-field sm" />
           <label class="input-label">Manifest Sequence</label>
+          <div class="error-message" *ngIf="customsForm.get('ManifestSequence')?.touched && customsForm.get('ManifestSequence')?.invalid">
+            <small *ngIf="customsForm.get('ManifestSequence')?.hasError('required')">Manifest Sequence is required.</small>
+            <small *ngIf="customsForm.get('ManifestSequence')?.hasError('maxlength')">Max 5 characters allowed.</small>
+          </div>
         </div>
       </div>
 
@@ -61,7 +69,9 @@
           <ng-select [items]="cargoCodeList" bindLabel="label" bindValue="value" formControlName="CargoCode"
             appendTo="body" placeholder="">
           </ng-select>
-
+          <div class="error-message" *ngIf="customsForm.get('CargoCode')?.touched && customsForm.get('CargoCode')?.invalid">
+            <small *ngIf="customsForm.get('CargoCode')?.hasError('required')">Cargo Code is required.</small>
+          </div>
         </div>
 
       </div>
@@ -87,7 +97,9 @@
           <ng-select [items]="packageTypeList" bindLabel="UOMCode" bindValue="UOMCode" formControlName="PackageTypeCode"
             appendTo="body" placeholder="">
           </ng-select>
-
+          <div class="error-message" *ngIf="customsForm.get('PackageTypeCode')?.touched && customsForm.get('PackageTypeCode')?.invalid">
+            <small *ngIf="customsForm.get('PackageTypeCode')?.hasError('required')">Package Type Code is required.</small>
+          </div>
         </div>
       </div>
 
@@ -129,6 +141,9 @@
           <ng-select [items]="importerCodeList" bindValue="value" bindLabel="label" formControlName="ImporterCode"
             appendTo="body">
           </ng-select>
+          <div class="error-message" *ngIf="customsForm.get('ImporterCode')?.touched && customsForm.get('ImporterCode')?.invalid">
+            <small *ngIf="customsForm.get('ImporterCode')?.hasError('required')">Importer Code is required.</small>
+          </div>
         </div>
 
       </div>
@@ -139,6 +154,10 @@
 
           <input type="number" formControlName="SerialNumber" placeholder="" class=" custom-input-field sm" />
           <label class="input-label">Serial Number</label>
+          <div class="error-message" *ngIf="customsForm.get('SerialNumber')?.touched && customsForm.get('SerialNumber')?.invalid">
+            <small *ngIf="customsForm.get('SerialNumber')?.hasError('required')">Serial Number is required.</small>
+            <small *ngIf="customsForm.get('SerialNumber')?.hasError('pattern')">Must be 1-6 digits.</small>
+          </div>
         </div>
 
       </div>
@@ -146,11 +165,14 @@
       <!-- Used or New -->
       <div class="col-md-3">
         <div class="custom-form-group custom-form-group-select" [class.filled]="!!customsForm.get('UsedOrNew')?.value">
-          
+
           <label class="input-label">Used/New</label>
           <ng-select [items]="usedNewList" bindLabel="label" bindValue="value" formControlName="UsedOrNew"
             appendTo="body">
           </ng-select>
+          <div class="error-message" *ngIf="customsForm.get('UsedOrNew')?.touched && customsForm.get('UsedOrNew')?.invalid">
+            <small *ngIf="customsForm.get('UsedOrNew')?.hasError('required')">Used/New is required.</small>
+          </div>
         </div>
 
       </div>
@@ -160,6 +182,10 @@
         <div class="custom-form-group">
           <input type="text" formControlName="UNHSCode" placeholder="" class=" custom-input-field sm">
           <label class="input-label">UNHS Code</label>
+          <div class="error-message" *ngIf="customsForm.get('UNHSCode')?.touched && customsForm.get('UNHSCode')?.invalid">
+            <small *ngIf="customsForm.get('UNHSCode')?.hasError('required')">UNHS Code is required.</small>
+            <small *ngIf="customsForm.get('UNHSCode')?.hasError('maxlength')">Max 10 characters allowed.</small>
+          </div>
         </div>
 
       </div>
