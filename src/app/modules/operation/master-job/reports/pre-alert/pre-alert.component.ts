@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -34,6 +35,7 @@ export class PreAlertComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
+    private pdfService: PdfDownloadService,
   ) { }
 
   ngOnInit() {
@@ -195,6 +197,23 @@ export class PreAlertComponent {
 
   modalClose() {
     this.activeModal.close();
+  }
+
+
+    async downloadPDF() {
+    this.spinner.show();
+    try {
+      const quotationNumber = this.masterJobData?.MasterJobNumber;
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Pre_Alert_${quotationNumber}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
   }
 }
 

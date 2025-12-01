@@ -5,7 +5,7 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -18,7 +18,7 @@
 </div>
 
 <div class="modal-body">
-    <div id="printContent">
+    <div id="printContent" class="p-1">
         <div class="print-a4">
 
     <!-- Company Info -->
@@ -50,7 +50,7 @@
     <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
 
     <!-- Title -->
-    <h5 class="text-center fw-bold pb-2" style="margin: 0;">Sailing Confirmation / BL No : </h5>
+    <h5 class="text-center fw-bold pb-2" style="margin: 0;">Sailing Confirmation </h5>
 
     <!-- Enquiry Details -->
     <div class="row mx-3 px-5 p-3 " style="border: 1px solid black;">
