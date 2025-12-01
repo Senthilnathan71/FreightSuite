@@ -140,6 +140,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   currentBranch: any;
   MenuMasterSid: any;
   filterOption: any;
+  private hasShownVesselWarning = false;
   public rateComponent = CostEntryComponent;
   public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
@@ -212,7 +213,9 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   
   private initialFormValue: string;
   bookingStatusTimeline : any[];
-
+  branchDetails: any;
+  currentBranchCityName: string | null;
+  currentBranchCityId: number;
   bookingForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
@@ -258,6 +261,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   productList: any[];
   packageTypeList: any[];
   productForm !: FormGroup;
+  croForm !: FormGroup;
   countryOfCompany: string;
 
   // Variable Declaration - Other Part
@@ -336,6 +340,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    { name: 'CRO', icon: 'fas fa-file-export' },
     // { name: 'Product', icon: 'fas fa-box' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
@@ -454,7 +459,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
         .find(ucm => ucm.CompanyMasterSid === currentCompanyId)?.companyMaster
     );
 
-
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    console.log(this.branchDetails, "BRANCH DETAILS");
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadCityName();
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -465,6 +475,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     this.initBookingForm();
     this.initCargoForm();
     this.initOtherForm();
+    this.initCroForm();
     this.initDetailsForm();
     this.onShipmentTypeChange();
 
@@ -565,6 +576,31 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   |   Section-4 : Main Functions
   |--------------------------------------------------
   */
+  loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+    this.spinner.show();
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+        this.spinner.hide();
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+        this.spinner.hide();
+      }
+    });
+  }
+
 
   // Header Form Initialization
   initBookingForm() {
@@ -845,6 +881,18 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CarrierBookingDate: ['']
     })
   }
+  initCroForm() {
+  this.croForm = this.fb.group({
+    BookingCroSid: [null],
+    OnHireRef: [''],
+    ReleaseOrderDate: [null],
+    ValidityDate: [null],
+    Transporter: [''],
+    EmptyYard: [''],
+    NoteToYard: [''],
+    NoteToShipper: ['']
+  })
+}
 
   initDetailsForm() {
     this.detailForm = this.fb.group({
@@ -1286,6 +1334,19 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       CarrierBookingRef: otherData?.CarrierBookingRef,
       CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
     })
+    const croData = response.bookingCro?.[0];
+  if (croData) {
+    this.croForm.patchValue({
+      BookingCroSid: croData.BookingCroSid,
+      OnHireRef: croData.OnHireRef,
+      ReleaseOrderDate: croData.ReleaseOrderDate ? new Date(croData.ReleaseOrderDate) : null,
+      ValidityDate: croData.ValidityDate ? new Date(croData.ValidityDate) : null,
+      Transporter: croData.Transporter,
+      EmptyYard: croData.EmptyYard,
+      NoteToYard: croData.NoteToYard,
+      NoteToShipper: croData.NoteToShipper
+    });
+  }
 
     this.bookingProducts.clear();
     const productsFromResponse = response.bookingProduct || [];
@@ -1493,6 +1554,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const bookingFormValue = this.bookingForm.getRawValue();
     const cargoFormValue = this.cargoForm.getRawValue();
     const otherFormValue = this.otherForm.getRawValue();
+    const croFormValue = this.croForm.getRawValue();
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -1595,6 +1657,16 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         CarrierBookingRef: otherFormValue?.CarrierBookingRef,
         CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
       },
+      bookingCro: {
+      BookingCroSid: croFormValue.BookingCroSid || null,
+      OnHireRef: croFormValue.OnHireRef || '',
+      ReleaseOrderDate: croFormValue.ReleaseOrderDate ? new Date(croFormValue.ReleaseOrderDate) : null,
+      ValidityDate: croFormValue.ValidityDate ? new Date(croFormValue.ValidityDate) : null,
+      Transporter: croFormValue.Transporter || '',
+      EmptyYard: croFormValue.EmptyYard || '',
+      NoteToYard: croFormValue.NoteToYard || '',
+      NoteToShipper: croFormValue.NoteToShipper || ''
+    },
       bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
         BookingProductSid: product.BookingProductSid || null,
         ProductName: product.ProductName || '',
@@ -2021,9 +2093,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+      this.hasShownVesselWarning = false;
     if (!POLSid || !PODSid || !voyageType) return;
     const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
-
+   
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -2034,8 +2107,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               CutOffDate: this.datePipe.transform(vslVoy.CutOffDate),
           }));
           console.log(this.headerVesselList);
-          if (this.headerVesselList.length === 0) {
-            this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")
+           if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
+          this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
+          this.hasShownVesselWarning = true;
           }
         } else {
           this.appSettingService.showError("Error loading Vessel")
@@ -2413,7 +2487,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
     this.cargoForm.reset();
     this.otherForm.reset();
+    this.croForm.reset();
   }
+  get cr(): { [key: string]: AbstractControl<any, any> } {
+  return this.croForm.controls || {}
+}
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
@@ -2561,37 +2639,38 @@ ${this.userData['userName']}`;
 
 
 
-  async openFollowup() {
-    if (!this.bookingHeader) return;
+  openFollowup() {
+    if (!this.bookingData) return;
     const POL = this.bookingHeader?.POL;
     const POD = this.bookingHeader?.POD;
     const FPD = this.bookingHeader?.FPD;
     const formattedPOL = this.getFormattedPort(POL);
     const formattedPOD = this.getFormattedPort(POD);
     const formattedFPD = this.getFormattedPort(FPD);
-    const resp: any = await firstValueFrom(
-      this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
-    );
-    const toEmail = resp?.data?.Email;
-    if (!toEmail) {
-      this.appSettingService.showError('To Email is missing.')
-      return;
-    }
     const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.documentSid = this.bookingHeader?.BookingHeaderSid;
-    modalRef.componentInstance.parentEmail = toEmail;
-    modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
-    modalRef.componentInstance.parentMailbody = `
-      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-        <p>Dear Sir/Madam,</p>
-        <p>Please find here enclosed the booking details as requested.</p>
-        <p>Kindly review the details at your convenience.</p>
-        <p>Looking forward to confirm cargo readyness.</p>
-        <p>Best Regards,</p>
-        <p>${this.userData['userName']}</p>
-      </div>
-    `;
+    modalRef.componentInstance.documentSid = this.bookingData?.BookingHeaderSid;
+    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Booking No."${this.bookingData.BookingNo}"`;
+    modalRef.componentInstance.parentMailbodyTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Kindly do the needful for "__SUBJECT__" Booking No."${this.bookingData.BookingNo}" Dated:${new Date(this.bookingData.BookingDateTime).toLocaleDateString()} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+ 
+  modalRef.componentInstance.followupSaved.subscribe((result) => {
+    console.log('Follow-up saved successfully:', result);
+    this.appSettingService.showSuccess('Follow-up created successfully');
+  });
+ 
+  modalRef.result.then(
+    (result) => console.log('Modal closed:', result),
+    (dismissReason) => console.log('Modal dismissed:', dismissReason)
+  );
   }
+ 
+ 
 
   openConnectionModal(content: any) {
     this.modalService.open(content, {
@@ -2877,81 +2956,81 @@ ${this.userData['userName']}`;
   // }
 
 
-  async sendEmail() {
-    try {
-      this.spinner.show();
-      const pdfBlob = await this.generatePDFBlob();
+  // async sendEmail() {
+  //   try {
+  //     this.spinner.show();
+  //     const pdfBlob = await this.generatePDFBlob();
 
-      const formData = new FormData();
-      const toEmailSet = new Set<string>();
+  //     const formData = new FormData();
+  //     const toEmailSet = new Set<string>();
 
-      if (this.bookingHeader?.Email) {
-        toEmailSet.add(this.bookingHeader.Email);
-      }
-      if (toEmailSet.size === 0 && this.bookingHeader?.CustomerBranchSid) {
-        const resp: any = await firstValueFrom(
-          this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
-        );
+  //     if (this.bookingHeader?.Email) {
+  //       toEmailSet.add(this.bookingHeader.Email);
+  //     }
+  //     if (toEmailSet.size === 0 && this.bookingHeader?.CustomerBranchSid) {
+  //       const resp: any = await firstValueFrom(
+  //         this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
+  //       );
 
-        if (resp?.status && resp.data?.Email) {
-          toEmailSet.add(resp.data.Email);
-        }
-      }
+  //       if (resp?.status && resp.data?.Email) {
+  //         toEmailSet.add(resp.data.Email);
+  //       }
+  //     }
 
-      if (toEmailSet.size === 0) {
-        this.appSettingService.showError('To Email is missing.')
-        this.spinner.hide();
-        return;
-      }
+  //     if (toEmailSet.size === 0) {
+  //       this.appSettingService.showError('To Email is missing.')
+  //       this.spinner.hide();
+  //       return;
+  //     }
 
-      const toEmail = Array.from(toEmailSet);
-      toEmail.forEach(email => {
-        if (email) {
-          formData.append("EmailTo[]", email);
-        }
-      });
-      const ccEmailSet = new Set<string>([this.userData['userName']]);
-      const ccEmail = Array.from(ccEmailSet);
+  //     const toEmail = Array.from(toEmailSet);
+  //     toEmail.forEach(email => {
+  //       if (email) {
+  //         formData.append("EmailTo[]", email);
+  //       }
+  //     });
+  //     const ccEmailSet = new Set<string>([this.userData['userName']]);
+  //     const ccEmail = Array.from(ccEmailSet);
 
-      ccEmail.forEach(email => {
-        if (email) {
-          formData.append("EmailCC[]", email);
-        }
-      });
-      const POL = this.bookingHeader?.POL;
-      const POD = this.bookingHeader?.POD;
-      const FPD = this.bookingHeader?.FPD;
-      const formattedPOL = this.getFormattedPort(POL);
-      const formattedPOD = this.getFormattedPort(POD);
-      const formattedFPD = this.getFormattedPort(FPD);
-      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`);
-      formData.append('Mailbody', `
-      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-        <p>Dear Sir/Madam,</p>
-        <p>Please find here enclosed the booking details as requested.</p>
-        <p>Kindly review the details at your convenience.</p>
-        <p>Looking forward to confirm cargo readyness.</p>
-        <p>Best Regards,</p>
-        <p>${this.userData['userName']}</p>
-      </div>
-    `);
-      formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
-      console.log(formData)
-      this.operationService.bookingPrint(formData).subscribe((resp: any) => {
-        this.spinner.hide();
-        if (resp?.data) {
-          this.appSettingService.showSuccess('Booking Print Sent successfully!');
-        }
-      }, error => {
-        this.spinner.hide();
-        this.appSettingService.showError('Failed to send email.');
-      });
-    } catch (error) {
-      this.spinner.hide();
-      console.error('PDF generation error:', error);
-      this.appSettingService.showError('Error generating PDF.');
-    }
-  }
+  //     ccEmail.forEach(email => {
+  //       if (email) {
+  //         formData.append("EmailCC[]", email);
+  //       }
+  //     });
+  //     const POL = this.bookingHeader?.POL;
+  //     const POD = this.bookingHeader?.POD;
+  //     const FPD = this.bookingHeader?.FPD;
+  //     const formattedPOL = this.getFormattedPort(POL);
+  //     const formattedPOD = this.getFormattedPort(POD);
+  //     const formattedFPD = this.getFormattedPort(FPD);
+  //     formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`);
+  //     formData.append('Mailbody', `
+  //     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+  //       <p>Dear Sir/Madam,</p>
+  //       <p>Please find here enclosed the booking details as requested.</p>
+  //       <p>Kindly review the details at your convenience.</p>
+  //       <p>Looking forward to confirm cargo readyness.</p>
+  //       <p>Best Regards,</p>
+  //       <p>${this.userData['userName']}</p>
+  //     </div>
+  //   `);
+  //     formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
+  //     console.log(formData)
+  //     this.operationService.bookingPrint(formData).subscribe((resp: any) => {
+  //       this.spinner.hide();
+  //       if (resp?.data) {
+  //         this.appSettingService.showSuccess('Booking Print Sent successfully!');
+  //       }
+  //     }, error => {
+  //       this.spinner.hide();
+  //       this.appSettingService.showError('Failed to send email.');
+  //     });
+  //   } catch (error) {
+  //     this.spinner.hide();
+  //     console.error('PDF generation error:', error);
+  //     this.appSettingService.showError('Error generating PDF.');
+  //   }
+  // }
 
 
   ngOnDestroy() {
@@ -3061,61 +3140,61 @@ ${this.userData['userName']}`;
   }
 
 
-async downloadPDF() {
-  this.spinner.show();
-  try {
-    const bookingNumber = this.bookingForm.get('BookingNumber')?.value || 'Booking';
+// async downloadPDF() {
+//   this.spinner.show();
+//   try {
+//     const bookingNumber = this.bookingForm.get('BookingNumber')?.value || 'Booking';
     
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Booking_${bookingNumber}`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
-}
+//     await this.pdfService.downloadBalancedPDF(
+//       'printContent',
+//       `Booking_${bookingNumber}`,
+//       () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+//       (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+//     );
+//   } finally {
+//     this.spinner.hide();
+//   }
+// }
     
-          async generatePDFBlob(): Promise<Blob | null> {
-            const printContent = document.getElementById('printContent');
-            if (!printContent) {
-              return null;
-            }
+          // async generatePDFBlob(): Promise<Blob | null> {
+          //   const printContent = document.getElementById('printContent');
+          //   if (!printContent) {
+          //     return null;
+          //   }
         
-            try {
-              const canvas = await html2canvas(printContent, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-              });
+          //   try {
+          //     const canvas = await html2canvas(printContent, {
+          //       scale: 2,
+          //       useCORS: true,
+          //       logging: false,
+          //       backgroundColor: '#ffffff'
+          //     });
         
-              const imgWidth = 210;
-              const pageHeight = 297;
-              const imgHeight = (canvas.height * imgWidth) / canvas.width;
-              let heightLeft = imgHeight;
-              let position = 0;
+          //     const imgWidth = 210;
+          //     const pageHeight = 297;
+          //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          //     let heightLeft = imgHeight;
+          //     let position = 0;
         
-              const pdf = new jsPDF('p', 'mm', 'a4');
-              const imgData = canvas.toDataURL('image/png');
+          //     const pdf = new jsPDF('p', 'mm', 'a4');
+          //     const imgData = canvas.toDataURL('image/png');
         
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
+          //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          //     heightLeft -= pageHeight;
         
-              while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-              }
+          //     while (heightLeft > 0) {
+          //       position = heightLeft - imgHeight;
+          //       pdf.addPage();
+          //       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          //       heightLeft -= pageHeight;
+          //     }
         
-              return pdf.output('blob');
-            } catch (error) {
-              console.error('Error generating PDF blob:', error);
-              return null;
-            }
-          }
+          //     return pdf.output('blob');
+          //   } catch (error) {
+          //     console.error('Error generating PDF blob:', error);
+          //     return null;
+          //   }
+          // }
 
   /**
 * Captures the current state of all forms and related data properties.
@@ -3285,5 +3364,380 @@ async downloadPDF() {
     }
   });
 }     
-     
+
+// Add this method to open CRO print modal
+// openCroPrintModal(content: TemplateRef<any>) {
+//   if (!this.bookingData) {
+//     this.appSettingService.showWarning('Please save the booking first.');
+//     return;
+//   }
+  
+//   // Enhanced validation for CRO data
+//   if (!this.cr['ReleaseOrderDate']?.value) {
+//     this.appSettingService.showWarning('Please fill in the Release Order Date in the CRO tab.');
+//     return;
+//   }
+
+//   // Additional validation for required CRO fields
+//   if (!this.cr['Transporter']?.value) {
+//     this.appSettingService.showWarning('Please fill in the Transporter field in the CRO tab.');
+//     return;
+//   }
+
+//   if (!this.cr['EmptyYard']?.value) {
+//     this.appSettingService.showWarning('Please fill in the Empty Yard field in the CRO tab.');
+//     return;
+//   }
+
+//   this.modalService.open(content, {
+//     size: 'xl',
+//     scrollable: true,
+//     backdrop: 'static'
+//   });
+// }
+getSalesmanName(salesmanSid: number): string {
+  const salesman = this.salesmanList.find(s => s.UserMasterSid === salesmanSid);
+  return salesman ? salesman.userName : '';
+}
+
+// Update the exportReleaseOrder method
+exportReleaseOrder() {
+  if (!this.bookingData) {
+    this.appSettingService.showWarning('Please save the booking first.');
+    return;
+  }
+  
+  // Enhanced validation for CRO data
+  if (!this.cr['ReleaseOrderDate']?.value) {
+    this.appSettingService.showWarning('Please fill in the Release Order Date in the CRO tab.');
+    return;
+  }
+
+  if (!this.cr['Transporter']?.value) {
+    this.appSettingService.showWarning('Please fill in the Transporter field in the CRO tab.');
+    return;
+  }
+
+  if (!this.cr['EmptyYard']?.value) {
+    this.appSettingService.showWarning('Please fill in the Empty Yard field in the CRO tab.');
+    return;
+  }
+
+  this.spinner.show();
+  
+  // Generate CRO PDF with better error handling
+  // this.generateCROPDF().then(() => {
+  //   this.spinner.hide();
+  //   this.appSettingService.showSuccess('Release Order exported successfully!');
+  // }).catch(error => {
+  //   this.spinner.hide();
+  //   console.error('CRO Export Error:', error);
+  //   this.appSettingService.showError('Error exporting Release Order. Please try again.');
+  // });
+}
+
+// Add this method to handle all types of PDF downloads
+downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
+  this.spinner.show();
+  
+  const elementId = this.getPdfElementId(type);
+  const fileName = this.generateFileName(type);
+  
+  if (!document.getElementById(elementId)) {
+    this.spinner.hide();
+    this.appSettingService.showWarning(`PDF content for ${type.toUpperCase()} not found.`);
+    return;
+  }
+
+  this.pdfService.downloadBalancedPDF(
+    elementId,
+    fileName,
+    () => {
+      this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
+      this.spinner.hide();
+    },
+    (error) => {
+      console.error(`PDF generation error for ${type}:`, error);
+      this.appSettingService.showError(`Error generating ${this.getPdfTypeName(type)}. Please try again.`);
+      this.spinner.hide();
+    }
+  );
+}
+
+// Helper method to get PDF element ID based on type
+private getPdfElementId(type: string): string {
+  switch (type) {
+    case 'cro':
+      return 'croPrintContent';
+    
+    case 'booking':
+    default:
+      return 'printContent';
+  }
+}
+
+// Helper method to generate appropriate file names
+private generateFileName(type: string): string {
+  const bookingNo = this.bookingHeader?.BookingNo || 'Booking';
+  const timestamp = new Date().getTime();
+  
+  switch (type) {
+    case 'cro':
+      return `CRO_${bookingNo}_${timestamp}`;
+    
+    case 'booking':
+    default:
+      return `Booking_${bookingNo}_${timestamp}`;
+  }
+}
+
+// Helper method to get display names for PDF types
+private getPdfTypeName(type: string): string {
+  switch (type) {
+    case 'cro':
+      return 'Release Order (CRO)';
+   
+    case 'booking':
+    default:
+      return 'Booking Print';
+  }
+}
+
+// Method to send email with PDF attachment
+async sendEmail(type: 'booking' | 'cro'  = 'booking'): Promise<void> {
+  try {
+    this.spinner.show();
+    
+    // Generate PDF blob
+    const pdfBlob = await this.generatePDFBlob(type);
+    if (!pdfBlob) {
+      this.spinner.hide();
+      this.appSettingService.showError('Error generating PDF for email.');
+      return;
+    }
+
+    const formData = new FormData();
+    const toEmailSet = new Set<string>();
+
+    // Add recipient emails
+    if (this.bookingHeader?.Email) {
+      toEmailSet.add(this.bookingHeader.Email);
+    }
+    if (toEmailSet.size === 0 && this.bookingHeader?.CustomerBranchSid) {
+      const resp: any = await firstValueFrom(
+        this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
+      );
+      if (resp?.status && resp.data?.Email) {
+        toEmailSet.add(resp.data.Email);
+      }
+    }
+
+    if (toEmailSet.size === 0) {
+      this.appSettingService.showError('To Email is missing.');
+      this.spinner.hide();
+      return;
+    }
+
+    // Add TO emails
+    const toEmail = Array.from(toEmailSet);
+    toEmail.forEach(email => {
+      if (email) {
+        formData.append("EmailTo[]", email);
+      }
+    });
+
+    // Add CC emails
+    const ccEmailSet = new Set<string>([this.userData['userEmail']]);
+    const ccEmail = Array.from(ccEmailSet);
+    ccEmail.forEach(email => {
+      if (email) {
+        formData.append("EmailCC[]", email);
+      }
+    });
+
+    // Set subject and body based on type
+    const { subject, body } = this.generateEmailContent(type);
+    formData.append('Subject', subject);
+    formData.append('Mailbody', body);
+
+    // Add PDF attachment
+    const fileName = this.generateFileName(type) + '.pdf';
+    formData.append('file', pdfBlob, fileName);
+
+    // Send email
+    this.operationService.bookingPrint(formData).subscribe(
+      (resp: any) => {
+        this.spinner.hide();
+        if (resp?.data) {
+          this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} sent successfully!`);
+        } else {
+          this.appSettingService.showError('Failed to send email.');
+        }
+      },
+      error => {
+        this.spinner.hide();
+        this.appSettingService.showError('Failed to send email.');
+      }
+    );
+
+  } catch (error) {
+    this.spinner.hide();
+    console.error('Email sending error:', error);
+    this.appSettingService.showError('Error sending email.');
+  }
+}
+
+// Helper method to generate email content based on type
+private generateEmailContent(type: string): { subject: string; body: string } {
+  const bookingNo = this.bookingHeader?.BookingNo || '';
+  const bookingDate = this.datePipe.transform(this.bookingHeader?.BookingDateTime);
+  const POL = this.bookingHeader?.POL;
+  const POD = this.bookingHeader?.POD;
+  const FPD = this.bookingHeader?.FPD;
+  const formattedPOL = this.getFormattedPort(POL);
+  const formattedPOD = this.getFormattedPort(POD);
+  const formattedFPD = this.getFormattedPort(FPD);
+
+  let subject = '';
+  let body = '';
+
+  switch (type) {
+    case 'cro':
+      subject = `Release Order (CRO) - Booking No.${bookingNo}`;
+      body = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+          <p>Dear Sir/Madam,</p>
+          <p>Please find attached the Container Release Order for your reference.</p>
+          <p>Booking Details: ${bookingNo} | Date: ${bookingDate} | Route: ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
+          <p>Kindly proceed with the container release as per the attached document.</p>
+          <p>Best Regards,</p>
+          <p>${this.userData['userName']}</p>
+        </div>
+      `;
+      break;
+    case 'booking':
+    default:
+      subject = `Booking No.${bookingNo} Date:${bookingDate} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
+      body = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+          <p>Dear Sir/Madam,</p>
+          <p>Please find here enclosed the booking details as requested.</p>
+          <p>Kindly review the details at your convenience.</p>
+          <p>Looking forward to confirm cargo readiness.</p>
+          <p>Best Regards,</p>
+          <p>${this.userData['userName']}</p>
+        </div>
+      `;
+      break;
+  }
+
+  return { subject, body };
+}
+
+// Enhanced PDF blob generation method
+async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null> {
+  const elementId = this.getPdfElementId(type);
+  const printContent = document.getElementById(elementId);
+  
+  if (!printContent) {
+    return null;
+  }
+
+  try {
+    // Temporarily show and position the element for PDF generation
+    const originalDisplay = printContent.style.display;
+    const originalPosition = printContent.style.position;
+    const originalLeft = printContent.style.left;
+    const originalTop = printContent.style.top;
+    const originalZIndex = printContent.style.zIndex;
+    const originalBackground = printContent.style.backgroundColor;
+    const originalWidth = printContent.style.width;
+    const originalHeight = printContent.style.height;
+    const originalMargin = printContent.style.margin;
+    const originalPadding = printContent.style.padding;
+
+    printContent.style.display = 'block';
+    printContent.style.position = 'fixed';
+    printContent.style.left = '0';
+    printContent.style.top = '0';
+    printContent.style.zIndex = '9999';
+    printContent.style.backgroundColor = 'white';
+    printContent.style.width = '210mm';
+    printContent.style.height = 'auto';
+    printContent.style.margin = '0';
+    printContent.style.padding = '10mm';
+
+    const canvas = await html2canvas(printContent, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgData = canvas.toDataURL('image/png');
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    // Restore original styles
+    printContent.style.display = originalDisplay;
+    printContent.style.position = originalPosition;
+    printContent.style.left = originalLeft;
+    printContent.style.top = originalTop;
+    printContent.style.zIndex = originalZIndex;
+    printContent.style.backgroundColor = originalBackground;
+
+    return pdf.output('blob');
+  } catch (error) {
+    console.error('Error generating PDF blob:', error);
+    return null;
+  }
+}
+
+// Open CRO print modal
+openCroPrintModal(content: TemplateRef<any>) {
+  if (!this.bookingData) {
+    this.appSettingService.showWarning('Please save the booking first.');
+    return;
+  }
+  
+  // Enhanced validation for CRO data
+  if (!this.cr['ReleaseOrderDate']?.value) {
+    this.appSettingService.showWarning('Please fill in the Release Order Date in the CRO tab.');
+    return;
+  }
+
+  if (!this.cr['Transporter']?.value) {
+    this.appSettingService.showWarning('Please fill in the Transporter field in the CRO tab.');
+    return;
+  }
+
+  if (!this.cr['EmptyYard']?.value) {
+    this.appSettingService.showWarning('Please fill in the Empty Yard field in the CRO tab.');
+    return;
+  }
+
+  this.modalService.open(content, {
+    size: 'xl',
+    scrollable: true,
+    backdrop: 'static'
+  });
+}
+
+
+
 }
