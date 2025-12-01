@@ -65,7 +65,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
+       
       }
     ],
     selectable: false,
@@ -110,7 +110,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     this.appSettingService.getUser().subscribe((user) => {
       if (user) {
         this.userData = user;
-        this.checkPermissions();
+        
       }
     });
     // this.searchMasterJob();
@@ -121,28 +121,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     super.ngOnInit();
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.operationService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            this.initializeHeaderActions();
-            // this.initializeModalDropdownItems();
-          },
-        });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -198,13 +177,13 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-        condition: this.hasPermission('Add')
+        
       },
       {
         label: 'XL Upload',
         icon: 'fas fa-file-excel',
         action: 'excel-dropdown',
-        condition: this.hasPermission('Add'),
+       
         tooltip: 'Import master jobs and house jobs from Excel template. Download the template, fill in your data, and upload to create multiple jobs at once.',
         children: [
           {
