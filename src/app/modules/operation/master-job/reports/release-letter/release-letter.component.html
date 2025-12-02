@@ -5,6 +5,9 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
+           <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
+            <i class="fas fa-download me-1"></i> Print
+        </button>
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
@@ -20,132 +23,169 @@
 
 <div class="modal-body">
     <div id="printContent" class="p-1">
-        <div class="print-a4">
+        <div class="print-a4" 
+     style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; 
+            border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;">
+            
 
-            <div class="row ">
-                <div class="company-header">
-                    <div class="company-logo">
-                        <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    </div>
+    <div class="row" style="display:flex; flex-wrap:wrap; margin-bottom:8px;">
+        <div class="company-header" 
+             style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem; width:100%;">
 
-                     <div class="company-info ">
-                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">
-                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
-                                || '' }}
-                            </p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                        </div>
-                </div>
+            <div class="company-logo" 
+                 style="display:flex; align-items:center; flex-direction:column;">
+                <img src="assets/images/logos/xtreme-dark-icon.svg" 
+                     alt="Company Logo" 
+                     style="width:50px; height:50px; object-fit:contain;">
+                <h4 style="margin:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
 
-            <!-- Title -->
-             <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-            <h5 class="text-center fw-bold  mb-4">RELEASE LETTER</h5>
-
-            <div class="row p-3 px-5 mx-0" style="border: 1px solid black;">
-                <div class="col-md-6">
-                    <div class="d-flex">
-                        <strong class="" style="width: 130px;">CFS</strong>
-                        <p class="mb-0">: {{ getCfsValue(masterJobData?.others?.[0]?.CFS) }}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Attn </strong>
-                        <p class="mb-0">: </p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Shipper </strong>
-                        <p class="mb-0">: {{masterJobData?.allShipments?.[0]?.ShipperName}}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Vessel </strong>
-                        <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Voyage </strong>
-                        <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
-                    </div>
-
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Date</strong>
-                        <p class="mb-0">: {{ masterJobData.MasterJobDate | formatDate }}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Your Booking Ref. </strong>
-                        <p class="mb-0">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Our Booking Ref. </strong>
-                        <p class="mb-0">: </p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Port Of Discharge </strong>
-                        <p class="mb-0">: {{masterJobData.POD}}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Final Destination</strong>
-                        <p class="mb-0">: {{masterJobData.FPD}}</p>
-                    </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Final Destination</strong>
-                        <p class="mb-0">: {{masterJobData.MarksandNumber}}</p>
-                    </div>
-                </div>
+            <div class="company-info" 
+                 style="font-size:14px; padding-left:28%; text-align:center;">
+                <h4 style="margin:0; font-weight:600;">{{ currentCompany?.companyName }}</h4>
+                <h5 style="margin:0; font-weight:600;">{{ currentBranch?.branchName }}</h5>
+                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 }}</p>
+                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 }}</p>
+                <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName }}</p>
+                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode }}</p>
+                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber }}</p>
             </div>
-
-
-
-            <!-- Cargo Details -->
-            <h6 class="fw-bold  mt-3 text-center">CARGO DETAILS</h6>
-            <table class="table tablebordered align-middle">
-                <thead>
-                    <tr>
-                        <th class="text-center">Package Type</th>
-                        <th class="text-center">No of Pkgs</th>
-                        <th class="text-center">Gross Weight</th>
-                        <th class="text-center">Volume</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let container of masterJobData?.containers">
-                        <td>{{ getPackageTypeName(container.PkgType) }}</td>
-                        <td class="text-end">{{ container.NoOfPkg || 0 }}</td>
-                        <td class="text-end">{{ container.GrossWeight | number:'1.3-3' }}</td>
-                        <td class="text-end">{{ container.Volume | number:'1.3-3' }}</td>
-                       
-                    </tr>
-                    <tr class="fw-bold">
-
-                        <td class="text-end">Total</td>
-                        <td class="text-end">{{ totalNoOfPkg }}</td>
-                        <td class="text-end">{{ totalGrossWeight | number:'1.3-3' }}</td>
-                        <td class="text-end">{{ totalVolume | number:'1.3-3' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-
-
-
-            <!-- Instruction -->
-            <p class="mb-2 "><strong>Please release the above mentioned booking to :</strong></p>
-
-            <!-- Remarks -->
-            <div class="d-flex pb-5 px-5"><strong class="" style="width: 130px;"> Remarks</strong>
-                <p class="mb-0">:{{masterJobData?.others?.[0]?.InternalNote}} </p>
-            </div>
-
-            <p class="mb-1">YOUR'S SINCERELY</p>
-            <p class="fw-bold mb-4">{{ currentCompany?.companyName || 'Company Name' }}</p>
-
-            <footer class="text-center mb-0 px-2">
-                <div class="d-flex justify-content-between">
-                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                    <span>
-                        This document is computer-generated and does not require a signature.
-                    </span>
-                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-                </div>
-            </footer>
 
         </div>
+    </div>
+
+
+    <!-- Title Separator -->
+    <div style="height:1px; background:black; width:100%; margin:1rem 0;"></div>
+
+    <h5 style="text-align:center; font-weight:600; margin-bottom:1rem;">RELEASE LETTER</h5>
+
+
+    <!-- Details Box -->
+    <div class="row" 
+         style="display:flex; flex-wrap:wrap; padding:15px 30px; margin:0; border:1px solid black;">
+
+        <!-- Left -->
+        <div class="col-md-6" style="flex:0 0 50%; max-width:50%;">
+            
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">CFS</strong>
+                <p style="margin:0;">: {{ getCfsValue(masterJobData?.others?.[0]?.CFS) }}</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Attn</strong>
+                <p style="margin:0;">:</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Shipper</strong>
+                <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.ShipperName}}</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Vessel</strong>
+                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+            </div>
+
+            <div style="display:flex;">
+                <strong style="width:130px;">Voyage</strong>
+                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+            </div>
+
+        </div>
+
+        <!-- Right -->
+        <div class="col-md-6" style="flex:0 0 50%; max-width:50%;">
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Date</strong>
+                <p style="margin:0;">: {{ masterJobData.MasterJobDate | formatDate }}</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Your Booking Ref.</strong>
+                <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Our Booking Ref.</strong>
+                <p style="margin:0;">:</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Port Of Discharge</strong>
+                <p style="margin:0;">: {{ masterJobData.POD }}</p>
+            </div>
+
+            <div style="display:flex; margin-bottom:2px;">
+                <strong style="width:130px;">Final Destination</strong>
+                <p style="margin:0;">: {{ masterJobData.FPD }}</p>
+            </div>
+
+            <div style="display:flex;">
+                <strong style="width:130px;">Final Destination</strong>
+                <p style="margin:0;">: {{ masterJobData.MarksandNumber }}</p>
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <!-- Cargo Details -->
+    <h6 style="font-weight:600; margin-top:12px; text-align:center;">CARGO DETAILS</h6>
+
+    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+        <thead>
+            <tr>
+                <th style="border:1px solid black; padding:4px; text-align:center;">Package Type</th>
+                <th style="border:1px solid black; padding:4px; text-align:center;">No of Pkgs</th>
+                <th style="border:1px solid black; padding:4px; text-align:center;">Gross Weight</th>
+                <th style="border:1px solid black; padding:4px; text-align:center;">Volume</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let container of masterJobData?.containers">
+                <td style="border:1px solid black; padding:4px;">{{ getPackageTypeName(container.PkgType) }}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ container.NoOfPkg }}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ container.GrossWeight | number:'1.3-3' }}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ container.Volume | number:'1.3-3' }}</td>
+            </tr>
+
+            <tr style="font-weight:600;">
+                <td style="border:1px solid black; padding:4px; text-align:right;">Total</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ totalNoOfPkg }}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ totalGrossWeight | number:'1.3-3' }}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{ totalVolume | number:'1.3-3' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <p style="margin:4px 0;"><strong>Please release the above mentioned booking to :</strong></p>
+
+    <div style="display:flex; padding:0 40px 40px;">
+        <strong style="width:130px;">Remarks</strong>
+        <p style="margin:0;">: {{ masterJobData?.others?.[0]?.InternalNote }}</p>
+    </div>
+
+
+    <p style="margin:0;">YOUR'S SINCERELY</p>
+    <p style="font-weight:600; margin-bottom:20px;">{{ currentCompany?.companyName }}</p>
+
+
+    <!-- Footer -->
+    <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+            <div>Printed By : {{ userData.userName }}</div>
+            <div>This document is computer-generated and does not require a signature.</div>
+            <div>Printed On : {{ currentDate | formatDate }}</div>
+        </div>
+    </footer>
+
+</div>
+
     </div>
 </div>
