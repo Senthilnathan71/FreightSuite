@@ -5,7 +5,7 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -19,7 +19,7 @@
 
 
 <div class="modal-body">
-    <div id="printContent">
+    <div id="printContent" class="p-1">
         <div class="print-a4">
 
             <div class="row ">
@@ -29,18 +29,22 @@
                         <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                     </div>
 
-                 <div class="company-info ">
-                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">
-                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
-                                || '' }}
-                            </p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
+                    <div class="company-info ">
+                        <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 ||
+                            currentBranch?.addressLine1 || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 ||
+                            currentBranch?.addressLine2 || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;">
+                            {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                            || '' }}
+                        </p>
+                        <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode
+                            || '' }}</p>
+                        <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone
+                            || '' }}</p>
+                    </div>
 
                 </div>
             </div>
@@ -55,7 +59,7 @@
                         <strong class="" style="width: 130px;">CFS</strong>
                         <p class="my-0">: {{ housejobData?.Others?.[0]?.YardCFS }}</p>
                     </div>
-                    <div class="d-flex "><strong class="" style="width: 130px;"> Attn </strong>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Attn. </strong>
                         <p class="my-0">: </p>
                     </div>
                     <div class="d-flex "><strong class="" style="width: 130px;"> Shipper </strong>
@@ -98,10 +102,10 @@
             <table class="table tablebordered align-middle">
                 <thead>
                     <tr>
-                        <th class="text-center">Package Type</th>
-                        <th class="text-center">No of Pkgs</th>
-                        <th class="text-center">Gross Weight</th>
-                        <th class="text-center">Volume</th>
+                        <th class="text-center"><strong>Package Type</strong></th>
+                        <th class="text-center"><strong>No of Pkgs</strong></th>
+                        <th class="text-center"><strong>Gross Weight</strong></th>
+                        <th class="text-center"><strong>Volume</strong></th>
 
                     </tr>
                 </thead>
@@ -111,11 +115,11 @@
                         <td class="text-end"> {{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
                         <td class="text-end"> {{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.2-2' }}</td>
                         <td class="text-end"> {{ housejobData?.Cargo?.[0]?.Volume | number:'1.2-2' }}</td>
-                       
+
                     </tr>
                     <tr class="fw-bold">
 
-                        <td class="text-end">Total</td>
+                        <td class="text-end"><strong>Total</strong></td>
                         <td class="text-end">{{ totalNoOfPkg }}</td>
                         <td class="text-end">{{ totalGrossWeight | number:'1.3-3' }}</td>
                         <td class="text-end">{{ totalVolume | number:'1.3-3' }}</td>
