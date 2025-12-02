@@ -15,7 +15,7 @@ import {
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { CommonModule, NgComponentOutlet } from '@angular/common';
+import { CommonModule, DatePipe, NgComponentOutlet } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormArray } from '@angular/forms';
 import { forkJoin, catchError, of, tap, debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
@@ -58,10 +58,12 @@ import { SailingConfirmationComponent } from '../reports/sailing-confirmation/sa
 import { MblComponent } from '../reports/mbl/mbl.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { CustomsComponent } from '../../house-job/customs/customs.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
   imports: [
+    DatePipe,
     NgbDatepickerModule,
     NgSelectModule,
     FeatherModule,
@@ -98,7 +100,8 @@ import { CustomsComponent } from '../../house-job/customs/customs.component';
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     NgbActiveModal,
-    CustomDatePipe
+    CustomDatePipe,
+    DatePipe
   ],
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy {
@@ -211,6 +214,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   currentDate = new Date();
   masterJobData: any;
   isTranshipment: boolean = false
+  arapData: any[] = [];
+arapLoading = false;
+arapFilter = {
+  voucherType: 'all', 
+  status: 'all' // 'all', 'unpaid', 'partial', 'paid'
+};
 
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -304,6 +313,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private spinner: NgxSpinnerService,
     private commonService: CommonService,
     private reportService: ReportService,
+    private datePipe: DatePipe,
+    private exportExcelService: ExcelExportService
   ) {
     this.initForm();
     this.initContainerForm();
@@ -835,30 +846,68 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
 
   loadMasterJobData(masterJobSid: number): void {
-    this.spinner.show();
-    this.operationService.getMasterJobById(masterJobSid).subscribe({
-      next: (response: any) => {
-        if (response.status && response.data) {
-          const data = response.data;
-          this.masterJobData = response.data;
-          console.log("Master Job Data", this.masterJobData);
-          console.log('API Response Data:', data);
-          console.log('Others Data:', data.others);
-          console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
-          this.patchFormValues(data);
-          // Load customs data for master job
-          this.loadCustomsData();
-        }
-        this.isLoading = false;
-        this.spinner.hide();
-      },
-      error: (error) => {
-        this.toastr.error('Failed to load master job data');
-        console.error('Error loading master job:', error);
-        this.isLoading = false;
+  this.spinner.show();
+  forkJoin({
+    masterJob: this.operationService.getMasterJobById(masterJobSid),
+    arapData: this.operationService.getMasterJobARAPData(masterJobSid)
+  }).subscribe({
+    next: (responses: any) => {
+      // Handle master job data
+      if (responses.masterJob.status && responses.masterJob.data) {
+        const data = responses.masterJob.data;
+        this.masterJobData = data;
+        console.log("Master Job Data", this.masterJobData);
+        this.patchFormValues(data);
+        this.loadCustomsData();
       }
-    });
-  }
+      
+      // Handle AR/AP data - Ensure it's always an array
+      if (responses.arapData) {
+        // Check if the response is an object with data property
+        let arapResponse = responses.arapData;
+        
+        // If it has a data property, use that
+        if (arapResponse.data !== undefined) {
+          this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
+        } 
+        // If it's directly an array
+        else if (Array.isArray(arapResponse)) {
+          this.arapData = arapResponse;
+        }
+        // If it's an object with status property
+        else if (arapResponse.status && arapResponse.data) {
+          this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
+        }
+        // Default to empty array
+        else {
+          this.arapData = [];
+        }
+        
+        // Format the data for display (only if we have data)
+        if (this.arapData.length > 0) {
+          this.arapData = this.arapData.map(item => ({
+            ...item,
+            voucherType: this.getVoucherType(item.DocumentTypeCode),
+            status: this.getPaymentStatus(item),
+            amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
+            localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
+          }));
+        }
+      } else {
+        this.arapData = [];
+      }
+      
+      this.isLoading = false;
+      this.spinner.hide();
+    },
+    error: (error) => {
+      this.toastr.error('Failed to load master job data');
+      console.error('Error loading master job:', error);
+      this.isLoading = false;
+    }
+  });
+}
+
 
   patchFormValues(data: any) {
     // Helper to find port SID by port code (if stored as code in data)
@@ -2948,7 +2997,9 @@ private autoPopulateVoyageData(vessel: any): void {
     }
   });
 }
-  
+
+
+
 loadHSSACLookups() {
   this.operationService.getAllHssac().subscribe({
     next: (resp: any) => {
@@ -2961,6 +3012,139 @@ loadHSSACLookups() {
     }
   });
 }
+ loadMasterJobARAPData() {
+  if (!this.masterJobSid) {
+    this.arapData = [];
+    return;
+  }
+
+  this.arapLoading = true;
+  this.operationService.getMasterJobARAPData(this.masterJobSid).subscribe({
+    next: (response: any) => {
+      let dataArray = [];
+      
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        dataArray = response;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        dataArray = response.data;
+      } else if (response && Array.isArray(response)) {
+        dataArray = response;
+      } else if (response && response.status && response.data) {
+        dataArray = Array.isArray(response.data) ? response.data : [];
+      }
+      
+      this.arapData = dataArray.map(item => ({
+        ...item,
+        voucherType: this.getVoucherType(item.DocumentTypeCode),
+        status: this.getPaymentStatus(item),
+        amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
+        localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
+      }));
+      
+      this.arapLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading AR/AP data:', error);
+      this.arapData = [];
+      this.arapLoading = false;
+      this.appSettingsService.showError('Failed to load AR/AP data');
+    }
+  });
+}
+
+    private getVoucherType(documentTypeCode: string): string {
+        const typeMap: { [key: string]: string } = {
+            'INV': 'Invoice',
+            'PAY': 'Payment',
+            'CRN': 'Credit Note',
+            'DRN': 'Debit Note',
+            'REC': 'Receipt',
+        };
+        return typeMap[documentTypeCode] || documentTypeCode;
+    }
+
+    private getPaymentStatus(voucher: any): string {
+        // You might need to fetch actual payment status from your payment tables
+        // This is a simplified version
+        if (voucher.Amount === voucher.LocalAmount) {
+            return 'Paid';
+        } else if (voucher.LocalAmount > 0 && voucher.LocalAmount < voucher.Amount) {
+            return 'Partial';
+        }
+        return 'Unpaid';
+    }
+
+    private formatCurrency(amount: number, currencyCode: string): string {
+        try {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currencyCode || 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount || 0);
+        } catch (error) {
+            return `${currencyCode || ''} ${(amount || 0).toFixed(2)}`;
+        }
+    }
+
+    getTotalAmount(): string {
+        const total = this.arapData.reduce((sum, item) => sum + (item.Amount || 0), 0);
+        if (this.arapData.length > 0) {
+            const currency = this.arapData[0].CurrencyCode;
+            return this.formatCurrency(total, currency);
+        }
+        return '0.00';
+    }
+
+    getTotalLocalAmount(): string {
+        const total = this.arapData.reduce((sum, item) => sum + (item.LocalAmount || 0), 0);
+        return this.formatCurrency(total, 'USD');
+    }
+
+    getCountByStatus(status: string): number {
+        return this.arapData.filter(item => item.status === status).length;
+    }
+
+    openVoucherDetails(voucherHeaderSid: number) {
+        // Navigate to voucher details page
+        this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
+    }
+
+    exportARAPReport() {
+        const dataForExport = this.arapData.map(item => ({
+            'Voucher No': item.VoucherNumber,
+            'Date': this.datePipe.transform(item.VoucherDate),
+            'Type': item.voucherType,
+            'Currency': item.CurrencyCode,
+            'Amount': item.Amount,
+            'Local Amount': item.LocalAmount,
+            'HBL No': item.HBLNo || '',
+            'Status': item.status
+        }));
+
+        this.exportExcelService.exportAsExcel({
+            data: dataForExport,
+            headers: [
+                { key: 'Voucher No', label: 'Voucher No' },
+                { key: 'Date', label: 'Date' },
+                { key: 'Type', label: 'Type' },
+                { key: 'Currency', label: 'Currency' },
+                { key: 'Amount', label: 'Amount' },
+                { key: 'Local Amount', label: 'Local Amount' },
+                { key: 'HBL No', label: 'HBL No' },
+                { key: 'Status', label: 'Status' }
+            ],
+            fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
+            title: 'AR/AP Report'
+        });
+    }
+
+    printARAPReport() {
+        // Implement print functionality
+        window.print();
+    }
+
   bookingCreateInMasterJob() {
     const bookingPayload = {
       houses: this.loadedHouses,  // ✅ send all houses

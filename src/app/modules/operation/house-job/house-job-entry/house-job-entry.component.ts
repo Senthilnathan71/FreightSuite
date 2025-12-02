@@ -313,7 +313,12 @@ auditLogs: any[] = []; // Stores audit logs
   // Variable Declaration - Milestone Part
   resetTriggerMilestone : boolean;
   milestoneResult: any[] =[];
-
+  arapData: any[] = [];
+ arapLoading = false;
+ arapFilter = {
+  voucherType: 'all', 
+  status: 'all' // 'all', 'unpaid', 'partial', 'paid'
+};
   today : any;
   minDate : any;
   currentDate = new Date();
@@ -1091,6 +1096,7 @@ loadHeaderLookups() {
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData=resp.data;
+          this.loadMasterJobARAPData();
           console.log("House Job",this.housejobData)
           this.minDate = undefined;
 
@@ -3336,6 +3342,131 @@ loadMasterJobDataForHouseJob(masterJobId: number): void {
       this.appSettingService.showWarning('Failed to load master job data');
     }
   });
+}
+
+loadMasterJobARAPData() {
+    if (!this.HouseJobSid) {
+        this.arapData = [];
+        return;
+    }
+
+    this.arapLoading = true;
+    this.operationService.getHouseJobARAPData(this.HouseJobSid).subscribe({
+        next: (response: any) => {
+            if (response.status) {
+                this.arapData = response.data || response;
+                // Format the data for display
+                this.arapData = this.arapData.map(item => ({
+                    ...item,
+                    voucherType: this.getVoucherType(item.DocumentTypeCode),
+                    status: this.getPaymentStatus(item),
+                    amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
+                    localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD') // Assuming local currency is USD
+                }));
+            } else {
+                this.arapData = [];
+            }
+            this.arapLoading = false;
+        },
+        error: (error) => {
+            console.error('Error loading AR/AP data:', error);
+            this.arapData = [];
+            this.arapLoading = false;
+            this.appSettingService.showError('Failed to load AR/AP data');
+        }
+    });
+}
+
+private getVoucherType(documentTypeCode: string): string {
+    const typeMap: { [key: string]: string } = {
+        'INV': 'Invoice',
+        'PAY': 'Payment',
+        'CRN': 'Credit Note',
+        'DRN': 'Debit Note',
+        'REC': 'Receipt',
+    };
+    return typeMap[documentTypeCode] || documentTypeCode;
+}
+
+private getPaymentStatus(voucher: any): string {
+    // You might need to fetch actual payment status from your payment tables
+    // This is a simplified version
+    if (voucher.Amount === voucher.LocalAmount) {
+        return 'Paid';
+    } else if (voucher.LocalAmount > 0 && voucher.LocalAmount < voucher.Amount) {
+        return 'Partial';
+    }
+    return 'Unpaid';
+}
+
+private formatCurrency(amount: number, currencyCode: string): string {
+    try {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode || 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount || 0);
+    } catch (error) {
+        return `${currencyCode || ''} ${(amount || 0).toFixed(2)}`;
+    }
+}
+
+getARAPTotalAmount(): string {
+    const total = this.arapData.reduce((sum, item) => sum + (item.Amount || 0), 0);
+    if (this.arapData.length > 0) {
+        const currency = this.arapData[0].CurrencyCode;
+        return this.formatCurrency(total, currency);
+    }
+    return '0.00';
+}
+
+getARAPTotalLocalAmount(): string {
+    const total = this.arapData.reduce((sum, item) => sum + (item.LocalAmount || 0), 0);
+    return this.formatCurrency(total, 'USD');
+}
+
+getCountByStatus(status: string): number {
+    return this.arapData.filter(item => item.status === status).length;
+}
+
+openVoucherDetails(voucherHeaderSid: number) {
+    // Navigate to voucher details page
+    this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
+}
+
+exportARAPReport() {
+    const dataForExport = this.arapData.map(item => ({
+        'Voucher No': item.VoucherNumber,
+        'Date': this.datePipe.transform(item.VoucherDate),
+        'Type': item.voucherType,
+        'Currency': item.CurrencyCode,
+        'Amount': item.Amount,
+        'Local Amount': item.LocalAmount,
+        'HBL No': item.HBLNo || '',
+        'Status': item.status
+    }));
+
+    this.exportExcelService.exportAsExcel({
+        data: dataForExport,
+        headers: [
+            { key: 'Voucher No', label: 'Voucher No' },
+            { key: 'Date', label: 'Date' },
+            { key: 'Type', label: 'Type' },
+            { key: 'Currency', label: 'Currency' },
+            { key: 'Amount', label: 'Amount' },
+            { key: 'Local Amount', label: 'Local Amount' },
+            { key: 'HBL No', label: 'HBL No' },
+            { key: 'Status', label: 'Status' }
+        ],
+        fileName: `ARAP-Report-HouseJob-${this.housejobData?.HBLNo || 'Unknown'}`,
+        title: 'AR/AP Report'
+    });
+}
+
+printARAPReport() {
+    // Implement print functionality
+    window.print();
 }
 prepopulateFromMasterJob(masterJobData: any): void {
   console.log('Prepopulating house job from master job:', masterJobData);

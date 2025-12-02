@@ -350,7 +350,27 @@ export class OperationService {
       })
     );
   }
-
+  getBookingARAPData(BookingHeaderSid: number) {
+    return this.http.get<{ data: any[] }>(`ff-booking/arap-data/${BookingHeaderSid}`).pipe(
+        map((resp: any) => {
+            return resp;
+        })
+    );
+}
+getMasterJobARAPData(MasterJobSid: number) {
+    return this.http.get<{ data: any[] }>(`master-job/arap-data/${MasterJobSid}`).pipe(
+        map((resp: any) => {
+            return resp;
+        })
+    );
+}
+getHouseJobARAPData(HouseJobSid: number) {
+    return this.http.get<{ data: any[] }>(`house-job/arap-data/${HouseJobSid}`).pipe(
+        map((resp: any) => {
+            return resp;
+        })
+    );
+}
   getExchangeRate(payload) {
     return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(
       map((resp) => {
@@ -1425,4 +1445,6 @@ createReverseVoucher(payload: any) {
       responseType: 'text'
     });
   }
+
+  
 }

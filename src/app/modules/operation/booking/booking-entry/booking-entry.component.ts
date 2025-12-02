@@ -278,7 +278,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   resetTriggerConnection: boolean;
   bookingConnectionsArr: any[] = [];
   connectionResult: any[] = [];
-
+  arapData: any[] = [];
+arapLoading = false;
+arapFilter = {
+  voucherType: 'all', // 'all', 'revenue', 'cost'
+  status: 'all' // 'all', 'unpaid', 'partial', 'paid'
+};
 
 
   // Variable Declaration - Rate Part
@@ -1261,6 +1266,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
     })
+     if (this.isEditMode) {
+        this.loadBookingARAPData();
+    }
     this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
@@ -1433,6 +1441,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
     this.selectedContainerType = containerType;
   }
+  
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
     this.initProductForm();
@@ -3737,7 +3746,129 @@ openCroPrintModal(content: TemplateRef<any>) {
     backdrop: 'static'
   });
 }
+loadBookingARAPData() {
+    if (!this.BookingHeaderSid) {
+        this.arapData = [];
+        return;
+    }
 
+    this.arapLoading = true;
+    this.operationService.getBookingARAPData(this.BookingHeaderSid).subscribe({
+        next: (response: any) => {
+            if (response.status) {
+                 this.arapData = response.data || response;
+                // Format the data for display
+                this.arapData = this.arapData.map(item => ({
+                    ...item,
+                    voucherType: this.getVoucherType(item.DocumentTypeCode),
+                    status: this.getPaymentStatus(item),
+                    amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
+                    localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD') // Assuming local currency is USD
+                }));
+            } else {
+                this.arapData = [];
+            }
+            this.arapLoading = false;
+        },
+        error: (error) => {
+            console.error('Error loading AR/AP data:', error);
+            this.arapData = [];
+            this.arapLoading = false;
+            this.appSettingService.showError('Failed to load AR/AP data');
+        }
+    });
+}
 
+private getVoucherType(documentTypeCode: string): string {
+    const typeMap: { [key: string]: string } = {
+        'INV': 'Invoice',
+        'PAY': 'Payment',
+        'CRN': 'Credit Note',
+        'DRN': 'Debit Note',
+        'REC': 'Receipt',
+       
+    };
+    return typeMap[documentTypeCode] || documentTypeCode;
+}
 
+private getPaymentStatus(voucher: any): string {
+    // You might need to fetch actual payment status from your payment tables
+    // This is a simplified version
+    if (voucher.Amount === voucher.LocalAmount) {
+        return 'Paid';
+    } else if (voucher.LocalAmount > 0 && voucher.LocalAmount < voucher.Amount) {
+        return 'Partial';
+    }
+    return 'Unpaid';
+}
+
+private formatCurrency(amount: number, currencyCode: string): string {
+    try {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode || 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount || 0);
+    } catch (error) {
+        return `${currencyCode || ''} ${(amount || 0).toFixed(2)}`;
+    }
+}
+
+getTotalAmount(): string {
+    const total = this.arapData.reduce((sum, item) => sum + (item.Amount || 0), 0);
+    if (this.arapData.length > 0) {
+        const currency = this.arapData[0].CurrencyCode ;
+        return this.formatCurrency(total, currency);
+    }
+    return '0.00';
+}
+
+getTotalLocalAmount(): string {
+    const total = this.arapData.reduce((sum, item) => sum + (item.LocalAmount || 0), 0);
+    return this.formatCurrency(total, 'USD');
+}
+
+getCountByStatus(status: string): number {
+    return this.arapData.filter(item => item.status === status).length;
+}
+
+openVoucherDetails(voucherHeaderSid: number) {
+    // Navigate to voucher details page
+    this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
+}
+
+exportARAPReport() {
+    const dataForExport = this.arapData.map(item => ({
+        'Voucher No': item.VoucherNumber,
+        'Date': this.datePipe.transform(item.VoucherDate),
+        'Type': item.voucherType,
+        'Currency': item.CurrencyCode,
+        'Amount': item.Amount,
+        'Local Amount': item.LocalAmount,
+        'HBL No': item.HBLNo || '',
+        'Status': item.status
+    }));
+
+    this.exportExcelService.exportAsExcel({
+        data: dataForExport,
+        headers: [
+            { key: 'Voucher No', label: 'Voucher No' },
+            { key: 'Date', label: 'Date' },
+            { key: 'Type', label: 'Type' },
+            { key: 'Currency', label: 'Currency' },
+            { key: 'Amount', label: 'Amount' },
+            { key: 'Local Amount', label: 'Local Amount' },
+            { key: 'HBL No', label: 'HBL No' },
+            { key: 'Status', label: 'Status' }
+        ],
+        fileName: `ARAP-Report-Booking-${this.bookingHeader?.BookingNo || 'Unknown'}`,
+        title: 'AR/AP Report'
+    });
+}
+
+printARAPReport() {
+    // Implement print functionality
+    window.print();
+}
 }
