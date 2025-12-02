@@ -396,7 +396,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
       },
       {
         key: 'FDC',
-        label: 'FDC',
+        label: 'FPOD',
         sortable: true,
         filterable: true,
         visible: true,

@@ -411,7 +411,8 @@ onCountryChange(): void {
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-
+  currentCountry: any;
+  currentCountryName:string;
   displayedDepartments: any[] = [];
   extraDepartmentsCount = 0;
   selectedDepartments: string[] = [];
@@ -430,13 +431,43 @@ onCountryChange(): void {
 
   ngOnInit(): void {
     this.mps.init().subscribe();
-    this.dropdownStore.loadCountries().subscribe(() => {
-      this.dropdownStore.loadStates().subscribe();
-    });
-    // ✅ Get current company & branch
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+     this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.decrypt(
+      localStorage.getItem('selected-company')
+    );
+    this.currentBranch = this.appSettingService.decrypt(
+      localStorage.getItem('selected-branch')
+    );
+
+    if (this.currentCompany && this.userData?.userCompanyMaster) {
+      const companyRecord = this.userData.userCompanyMaster.find(
+        (c: any) => c.CompanyMasterSid === this.currentCompany.CompanyMasterSid
+      );
+      this.currentCompany = companyRecord?.companyMaster || this.currentCompany;
+    }
+
+    if (this.currentBranch && this.currentCompany?.userBranchMaster) {
+      const branchRecord = this.currentCompany.userBranchMaster.find(
+        (b: any) => b.BranchMasterSid === this.currentBranch.BranchMasterSid
+      );
+      this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
+    }
+
+    // IDs
+    this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
+   this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+
+    // Convert ID → Name / Code
+    this.currentCountryName = this.currentCompany?.countryMaster?.countryName;
+  
+  
+    
+    console.log('currentCompany:', this.currentCompany);
+    console.log('currentBranch:', this.currentBranch);
+    // const currentCountry = Number(this.currentCompany?.CountryMasterSid);
+    console.log('currentCountry:', this.currentCountry);
+    console.log('currentCountryName:', this.currentCountryName);
+
     this.loadNetworks();
 
     // ✅ Get logged-in user profile
@@ -445,7 +476,7 @@ onCountryChange(): void {
       this.userData = userProfile;
       console.log('User Profile loaded:', this.userData);
       console.log('User Email:', this.userData?.userEmail || this.userData?.UserEmail);
-      this.checkPermissions();
+     
     } 
     else {
       console.error('No user profile found in localStorage');
@@ -1860,24 +1891,7 @@ onCompanyTypeChange(): void {
     return email || '';
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
+ 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));

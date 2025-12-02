@@ -83,7 +83,7 @@
             <div class="action-group">
                 <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                     <i class="fas fa-save me-1"></i>
-                    <span>{{isEditMode ? 'Update' : 'Save'}}</span>
+                    <span>{{isEditMode ? 'Save' : 'Save'}}</span>
                 </button>
             </div>
 
@@ -447,7 +447,7 @@
                         bindLabel="PortCode" bindValue="PortMasterSid"
                         (itemSelected)="onRouteChange()">
                       </dofi-searchable-dropdown>
-                                            <label class="input-label">FDC <span class="text-danger"></span></label>
+                                            <label class="input-label">FPOD <span class="text-danger"></span></label>
                                         </div>
                                     </aside>
 
@@ -657,7 +657,7 @@
                                 <div class="row compact-form" [formGroup]="masterJobForm">
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
-                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm"
+                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm" 
                                                 min="0">
                                             <label class="input-label">Total Pkg</label>
                                         </div>
@@ -775,7 +775,7 @@
                                     </td>
                                     <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
                                     <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
-                                    <td>{{shipment.HBLNo || 'N/A'}}</td>
+                                    <td>{{shipment.HBLNo }}</td>
                                     <td>{{shipment.CustomerName}}</td>
                                     <!-- <td>{{shipment.CustomerAddress}}</td> -->
                                     <td>{{shipment.ShipperName}}</td>
@@ -2677,31 +2677,57 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm" min="0"
+                            <input type="text" formControlName="NoOfPkg" class="custom-input-field sm" min="0" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
                                 placeholder="">
                             <label class="input-label">No of Pkg</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" formControlName="GrossWeight" class="custom-input-field sm"
-                                step="0.001" min="0" placeholder="">
-                            <label class="input-label">Gross Weight</label>
-                        </div>
-                    </aside>
+  <div class="custom-form-group">
+    <input type="text" formControlName="GrossWeight" class="custom-input-field sm"
+           DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+           step="0.001" min="0" placeholder="">
+    <label class="input-label">Gross Weight</label>
+    
+    <!-- Add error message for gross weight -->
+    <div *ngIf="containerFormGroup.get('GrossWeight')?.touched && containerFormGroup.get('GrossWeight')?.invalid"
+         class="error-message">
+      <span *ngIf="containerFormGroup.get('GrossWeight')?.hasError('min')">
+        Must be greater than or equal to 0
+      </span>
+    </div>
+    
+    <!-- Add warning for gross < net -->
+    <div *ngIf="containerFormGroup.hasError('grossLessThanNet') && 
+                containerFormGroup.get('GrossWeight')?.value !== null && 
+                containerFormGroup.get('NetWeight')?.value !== null"
+         class="warning-message">
+      ⚠️ Gross weight cannot be less than net weight
+    </div>
+  </div>
+</aside>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" formControlName="NetWeight" class="custom-input-field sm" step="0.001"
-                                min="0" placeholder="">
-                            <label class="input-label">Net Weight</label>
-                        </div>
-                    </aside>
-
+<aside class="col-md-4">
+  <div class="custom-form-group">
+    <input type="text" formControlName="NetWeight" class="custom-input-field sm" step="0.001"
+           DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+           min="0" placeholder="">
+    <label class="input-label">Net Weight</label>
+    
+    <!-- Add error message for net weight -->
+    <div *ngIf="containerFormGroup.get('NetWeight')?.touched && containerFormGroup.get('NetWeight')?.invalid"
+         class="error-message">
+      <span *ngIf="containerFormGroup.get('NetWeight')?.hasError('min')">
+        Must be greater than or equal to 0
+      </span>
+    </div>
+  </div>
+</aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" formControlName="ChargeableWeight" class="custom-input-field sm"
+                             DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
                                 step="0.001" min="0" placeholder="">
                             <label class="input-label">Chargeable Weight</label>
                         </div>
@@ -2709,7 +2735,8 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="number" formControlName="Volume" class="custom-input-field sm" step="0.001"
+                            <input type="text" formControlName="Volume" class="custom-input-field sm" step="0.001"
+                             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="3"
                                 min="0" placeholder="">
                             <label class="input-label">Volume (CBM)</label>
                         </div>

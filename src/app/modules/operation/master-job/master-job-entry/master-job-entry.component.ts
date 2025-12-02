@@ -16,7 +16,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule, DatePipe, NgComponentOutlet } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormArray } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormArray, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { forkJoin, catchError, of, tap, debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 import { RevenueEntryComponent } from '../../revenue/revenue-entry/revenue-entry.component';
@@ -92,7 +92,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     SearchableDropdown,
     NgbTooltip,
     DecimalPrecisionDirective,
-    CustomsComponent
+    CustomsComponent,
+     
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -615,26 +616,61 @@ arapFilter = {
     });
   }
 
-  initContainerForm(): void {
-    this.containerFormGroup = this.fb.group({
-      MasterJobContainerSid: [null],
-      ContainerType: [null, Validators.required],
-      ContainerNumber: ['', [Validators.required, Validators.maxLength(11),
-        Validators.pattern(/^[A-Z]{4}\d{7}$/) 
-      ]],
-      LineSeal: ['', Validators.maxLength(10)],
-      CustomsSeal: ['', Validators.maxLength(10)],
-      HsCode: ['', Validators.maxLength(10)],
-      CommodityDescription: ['', Validators.maxLength(500)],
-      PkgType: [null],
-      NoOfPkg: [0, [Validators.min(0)]],
-      GrossWeight: [0, [Validators.min(0)]],
-      NetWeight: [0, [Validators.min(0)]],
-      ChargeableWeight: [0, [Validators.min(0)]],
-      Volume: [0, [Validators.min(0)]],
-      IsSoc: [false]
-    });
-  }
+ initContainerForm(): void {
+  this.containerFormGroup = this.fb.group({
+    MasterJobContainerSid: [null],
+    ContainerType: [null, Validators.required],
+    ContainerNumber: ['', [Validators.required, Validators.maxLength(11),
+      Validators.pattern(/^[A-Z]{4}\d{7}$/) , this.containerNumberValidator()
+    ]],
+    LineSeal: ['', Validators.maxLength(10)],
+    CustomsSeal: ['', Validators.maxLength(10)],
+    HsCode: ['', Validators.maxLength(10)],
+    CommodityDescription: ['', Validators.maxLength(500)],
+    PkgType: [null],
+    NoOfPkg: [0, [Validators.min(0)]],
+    GrossWeight: [0, [Validators.min(0)]],
+    NetWeight: [0, [Validators.min(0)]],
+    ChargeableWeight: [0, [Validators.min(0)]],
+    Volume: [0, [Validators.min(0)]],
+    IsSoc: [false]
+  }, { validators: this.grossNetWeightValidator() });
+}
+  private grossNetWeightValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const containerGroup = control as FormGroup;
+    const grossWeight = containerGroup.get('GrossWeight')?.value;
+    const netWeight = containerGroup.get('NetWeight')?.value;
+    
+    if (grossWeight !== null && netWeight !== null && grossWeight < netWeight) {
+      return { grossLessThanNet: true };
+    }
+    return null;
+  };
+}
+// Custom validator for container number
+private containerNumberValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const containerNumber = control.value;
+    
+    if (!containerNumber) {
+      return null; // Let required validator handle this
+    }
+    
+    // Check basic format
+    if (!/^[A-Z]{4}\d{7}$/.test(containerNumber)) {
+      return { invalidFormat: true };
+    }
+    
+    // Validate check digit
+    const validation = this.validateContainerNumber(containerNumber);
+    if (!validation.isValid) {
+      return { invalidCheckDigit: true };
+    }
+    
+    return null;
+  };
+}
   
   validateContainerNumber(containerNumber: string): { isValid: boolean, checkDigit?: number } {
   if (!containerNumber || containerNumber.length !== 11) {
@@ -741,25 +777,25 @@ arapFilter = {
 }
 
   addContainer(container?: any): void {
-    const containerGroup = this.fb.group({
-      MasterJobContainerSid: [container?.MasterJobContainerSid || null],
-      ContainerType: [container?.ContainerType || null, Validators.required],
-      ContainerNumber: [container?.ContainerNumber || '', [Validators.required, Validators.maxLength(11)]],
-      LineSeal: [container?.LineSeal || '', Validators.maxLength(10)],
-      CustomsSeal: [container?.CustomsSeal || '', Validators.maxLength(10)],
-      HsCode: [container?.HsCode || '', Validators.maxLength(10)],
-      CommodityDescription: [container?.CommodityDescription || '', Validators.maxLength(500)],
-      PkgType: [container?.PkgType || null],
-      NoOfPkg: [container?.NoOfPkg || 0, [Validators.min(0)]],
-      GrossWeight: [container?.GrossWeight || 0, [Validators.min(0)]],
-      NetWeight: [container?.NetWeight || 0, [Validators.min(0)]],
-      ChargeableWeight: [container?.ChargeableWeight || 0, [Validators.min(0)]],
-      Volume: [container?.Volume || 0, [Validators.min(0)]],
-      IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false]
-    });
+  const containerGroup = this.fb.group({
+    MasterJobContainerSid: [container?.MasterJobContainerSid || null],
+    ContainerType: [container?.ContainerType || null, Validators.required],
+    ContainerNumber: [container?.ContainerNumber || '', [Validators.required, Validators.maxLength(11)]],
+    LineSeal: [container?.LineSeal || '', Validators.maxLength(10)],
+    CustomsSeal: [container?.CustomsSeal || '', Validators.maxLength(10)],
+    HsCode: [container?.HsCode || '', Validators.maxLength(10)],
+    CommodityDescription: [container?.CommodityDescription || '', Validators.maxLength(500)],
+    PkgType: [container?.PkgType || null],
+    NoOfPkg: [container?.NoOfPkg || 0, [Validators.min(0)]],
+    GrossWeight: [container?.GrossWeight || 0, [Validators.min(0)]],
+    NetWeight: [container?.NetWeight || 0, [Validators.min(0)]],
+    ChargeableWeight: [container?.ChargeableWeight || 0, [Validators.min(0)]],
+    Volume: [container?.Volume || 0, [Validators.min(0)]],
+    IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false]
+  }, { validators: this.grossNetWeightValidator() }); // Add validator here too
 
-    this.masterJobContainers.push(containerGroup);
-  }
+  this.masterJobContainers.push(containerGroup);
+}
 
   loadInitialData() {
     const companySid = this.currentCompany?.CompanyMasterSid;
@@ -1284,17 +1320,24 @@ arapFilter = {
   }
 
   // Handle POD change
-  handlePODChange(selectedPort: any) {
-    if (!selectedPort) {
-      this.filteredPOL = [...this.filteredPorts];
-      this.clearVesselAndVoyageData();
-      return;
-    }
-    const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
-    this.masterJobForm.get('POD')?.setValue(selectedPortSid, { emitEvent: false });
-    this.triggerVesselSearch();
+handlePODChange(selectedPort: any) {
+  if (!selectedPort) {
+    this.filteredPOL = [...this.filteredPorts];
+    this.clearVesselAndVoyageData();
+    // Clear FPOD if POD is cleared
+    this.masterJobForm.get('FPD')?.setValue(null);
+    return;
   }
+  
+  const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
+  this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
+  this.masterJobForm.get('POD')?.setValue(selectedPortSid, { emitEvent: false });
+  
+  // ✅ Auto-set FPOD to the same value as POD
+  this.masterJobForm.get('FPD')?.setValue(selectedPortSid);
+  
+  this.triggerVesselSearch();
+}
 
   private clearVesselAndVoyageData(): void {
     this.masterJobForm.get('VesselName')?.setValue(null);
@@ -1735,23 +1778,37 @@ private autoPopulateVoyageData(vessel: any): void {
         }
       });
     } else {
-      this.operationService.createMasterJob(formData).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          if (response.status) {
-            this.toastr.success('Master Job created successfully');
-            this.router.navigate(['/operation/master-job/list']);
-          } else {
-            this.toastr.error(response.message || 'Failed to create Master Job');
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.toastr.error('Failed to create Master Job');
-          console.error('Error creating master job:', error);
+  this.operationService.createMasterJob(formData).subscribe({
+    next: (response: any) => {
+      this.isLoading = false;
+      if (response.status) {
+        this.toastr.success('Master Job created successfully');
+        
+        // ✅ CORRECT PATH: response.data.newMasterJob.MasterJobSid
+        const masterJobSid = response.data?.newMasterJob?.MasterJobSid;
+        
+       
+        
+        if (masterJobSid) {
+          // Navigate to entry page with the new ID
+          this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+          
+          // OPTIONAL: Clear any cached loading plan data
+          this.operationService.clearLoadingPlanData();
+        } else {
+          this.toastr.warning('Master Job created but ID not returned. Check console for details.');
+          this.router.navigate(['/operation/master-job/list']);
         }
-      });
+      } else {
+        this.toastr.error(response.message || 'Failed to create Master Job');
+      }
+    },
+    error: (error) => {
+      this.isLoading = false;
+      this.toastr.error('Failed to create Master Job');
     }
+  });
+}
   }
 
 
@@ -2513,11 +2570,11 @@ private autoPopulateVoyageData(vessel: any): void {
     return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined && group.get(field)?.valid);
   }
 
-  getPortCode(portSid: number) {
-    if (!portSid || this.portList.length === 0) return '';
-    const port = this.portList.find(p => p.PortMasterSid === portSid);
-    return port ? port.PortCode : '';
-  }
+  getPortCode(portSid: number): string {
+  if (!portSid || this.portList.length === 0) return '';
+  const port = this.portList.find(p => p.PortMasterSid === portSid);
+  return port ? port.PortCode : '';
+}
 
   getMBLDate() {
     const date = this.masterJobForm.get('MBLDate')?.value;
@@ -2987,14 +3044,30 @@ private autoPopulateVoyageData(vessel: any): void {
     return;
   }
 
-  // Navigate to house job entry with master job ID as query parameter
+  // Get the current master job data
+  const masterJobData = {
+    MasterJobSid: this.masterJobSid,
+    DepartmentMasterSid: this.masterJobForm.get('DepartmentMasterSid')?.value,
+    MBLNo: this.masterJobForm.get('MBLNo')?.value,
+    MBLDate: this.masterJobForm.get('MBLDate')?.value,
+    VesselName: this.masterJobForm.get('VesselName')?.value,
+    VoyageNo: this.masterJobForm.get('VoyageNo')?.value,
+    POL: this.masterJobForm.get('POL')?.value,
+    POD: this.masterJobForm.get('POD')?.value,
+    FPD: this.masterJobForm.get('FPD')?.value,
+    ETA: this.masterJobForm.get('ETA')?.value,
+    ETD: this.masterJobForm.get('ETD')?.value,
+    CarrierName: this.masterJobForm.get('CarrierName')?.value,
+    // Get port codes instead of SIDs
+    POLCode: this.getPortCode(this.masterJobForm.get('POL')?.value),
+    PODCode: this.getPortCode(this.masterJobForm.get('POD')?.value),
+    FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value)
+  };
+
+  // Navigate to house job entry with master job data as query parameters
   this.router.navigate(['/operation/house-job/entry'], {
-    queryParams: { 
-      masterJobId: this.masterJobSid,
-      departmentId: this.masterJobForm.get('DepartmentMasterSid')?.value,
-      pol: this.masterJobForm.get('POL')?.value,
-      pod: this.masterJobForm.get('POD')?.value
-    }
+    queryParams: masterJobData,
+    state: { masterJobData: masterJobData } // Pass as state for larger data
   });
 }
 
