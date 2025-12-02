@@ -41,6 +41,10 @@ export const Approutes: Routes = [
         loadChildren: () => import('./modules/settings/settings.module').then(m => m.SettingsModule)
       },
       {
+        path: 'email',
+        loadChildren: () => import('./modules/email/email.module').then(m => m.EmailModule)
+      },
+      {
       path: 'operation',
       loadChildren: () => import('./modules/operation/operation.module').then(m => m.OperationModule)
      },

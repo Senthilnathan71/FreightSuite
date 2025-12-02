@@ -1,0 +1,197 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+        <h5 class="mb-0">Mail Configuration</h5>
+        <div>
+          <button type="button" class="btn btn-sm btn-success me-2" (click)="addRow()">
+            <i class="fas fa-plus me-1"></i> Add Row
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
+            <i class="fas fa-arrow-left me-1"></i> Back
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm mb-0">
+            <thead>
+              <tr>
+                <th class="text-center bg-success text-white" style="width: 60px;">Action</th>
+                <th class="text-center bg-success text-white" style="width: 60px;">Sno</th>
+                <th class="bg-success text-white" style="width: 150px;">Mail Name</th>
+                <th class="bg-success text-white" style="width: 150px;">Menu/Component</th>
+                <th class="bg-success text-white" style="width: 200px;">Mail Subject</th>
+                <th class="bg-success text-white" style="min-width: 250px;">Mail Body</th>
+                <th class="bg-success text-white" style="width: 130px;">To Email From</th>
+                <th class="bg-success text-white" style="width: 130px;">CC Email From</th>
+                <th class="text-center bg-success text-white" style="width: 90px;">Attachment</th>
+                <th class="text-center bg-success text-white" style="width: 90px;">Auto/Popup</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track row.Sno; let i = $index) {
+                <tr>
+                  <!-- Action Buttons -->
+                  <td class="p-1">
+                    <div class="action-buttons">
+                      @if (row.isEditing) {
+                        <button type="button" class="btn-action btn-save" (click)="saveRow(i)" title="Save">
+                          <i class="fas fa-save"></i>
+                        </button>
+                        <button type="button" class="btn-action btn-cancel" (click)="cancelEdit(i)" title="Cancel">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      } @else {
+                        <button type="button" class="btn-action btn-edit" (click)="editRow(i)" title="Edit">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn-action btn-delete" (click)="deleteRow(i)" title="Delete">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Sno -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <input type="number" class="form-control form-control-sm text-center"
+                        [(ngModel)]="row.Sno" min="1" max="999" style="width: 50px;">
+                    } @else {
+                      <span class="d-block text-center">{{ row.Sno }}</span>
+                    }
+                  </td>
+
+                  <!-- Mail Name -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <input type="text" class="form-control form-control-sm"
+                        [(ngModel)]="row.MailName" maxlength="50" placeholder="Enter mail name">
+                    } @else {
+                      <span>{{ row.MailName }}</span>
+                    }
+                  </td>
+
+                  <!-- Menu/Component -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <ng-select
+                        [(ngModel)]="row.MenuMasterSid"
+                        [items]="menuList"
+                        bindLabel="MenuName"
+                        bindValue="MenuMasterSid"
+                        placeholder="Select"
+                        [clearable]="true"
+                        [searchable]="true"
+                        appendTo="body"
+                        class="custom-ng-select">
+                      </ng-select>
+                    } @else {
+                      <span>{{ getMenuName(row.MenuMasterSid) }}</span>
+                    }
+                  </td>
+
+                  <!-- Mail Subject -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <input type="text" class="form-control form-control-sm"
+                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder="Enter subject">
+                    } @else {
+                      <span>{{ row.MailSubject }}</span>
+                    }
+                  </td>
+
+                  <!-- Mail Body -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <textarea class="form-control form-control-sm"
+                        [(ngModel)]="row.MailBody" rows="2" maxlength="2000" placeholder="Enter mail body">
+                      </textarea>
+                    } @else {
+                      <span class="mail-body-text">{{ row.MailBody }}</span>
+                    }
+                  </td>
+
+                  <!-- To Email From -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <input type="text" class="form-control form-control-sm"
+                        [(ngModel)]="row.ToEmailidFrom" maxlength="200" placeholder="e.g., Quotation email">
+                    } @else {
+                      <span>{{ row.ToEmailidFrom }}</span>
+                    }
+                  </td>
+
+                  <!-- CC Email From -->
+                  <td class="p-1">
+                    @if (row.isEditing) {
+                      <input type="text" class="form-control form-control-sm"
+                        [(ngModel)]="row.CcEmailidFrom" maxlength="200" placeholder="e.g., Organization email">
+                    } @else {
+                      <span>{{ row.CcEmailidFrom }}</span>
+                    }
+                  </td>
+
+                  <!-- Attachment -->
+                  <td class="p-1 text-center">
+                    @if (row.isEditing) {
+                      <ng-select
+                        [(ngModel)]="row.AttachmentRequire"
+                        [items]="attachmentOptions"
+                        bindLabel="label"
+                        bindValue="value"
+                        [clearable]="false"
+                        [searchable]="false"
+                        appendTo="body"
+                        class="custom-ng-select">
+                      </ng-select>
+                    } @else {
+                      <span>{{ row.AttachmentRequire === 'Y' ? 'Yes' : 'No' }}</span>
+                    }
+                  </td>
+
+                  <!-- Auto/Popup -->
+                  <td class="p-1 text-center">
+                    @if (row.isEditing) {
+                      <ng-select
+                        [(ngModel)]="row.AutoPopup"
+                        [items]="autoPopupOptions"
+                        bindLabel="label"
+                        bindValue="value"
+                        [clearable]="false"
+                        [searchable]="false"
+                        appendTo="body"
+                        class="custom-ng-select">
+                      </ng-select>
+                    } @else {
+                      <span>{{ row.AutoPopup === 'A' ? 'Auto' : 'Popup' }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+
+              @if (rows.length === 0) {
+                <tr>
+                  <td colspan="10" class="text-center text-muted py-3">
+                    No mail configurations found. Click "Add Row" to create one.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
