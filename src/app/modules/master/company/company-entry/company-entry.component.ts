@@ -1391,124 +1391,192 @@ openFollowup() {
 	}
 
 	validateTimezoneKey(event: KeyboardEvent) {
-		// Allow control keys (backspace, delete, arrows, tab, etc)
-		const allowedKeys = [8, 9, 13, 37, 38, 39, 40, 46];
-		if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.keyCode)) {
-			return;
-		}
+  const input = event.target as HTMLInputElement;
+  const cursorPos = input.selectionStart;
+  const currentValue = input.value;
 
-		// Only allow: numbers, +, -, or :
-		if (!/[0-9+-:]/.test(event.key)) {
-			event.preventDefault();
-			return;
-		}
+  // Allow all control keys
+  const allowedKeys = [8, 9, 13, 16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+  if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.keyCode)) {
+    return;
+  }
 
-		const input = event.target as HTMLInputElement;
-		const cursorPos = input.selectionStart;
-		const currentValue = input.value;
+  // Allow: numbers, +, -, colon, delete, backspace
+  if (!/[0-9+-:]/.test(event.key)) {
+    event.preventDefault();
+    return;
+  }
 
-		// Prevent + or - anywhere except start
-		if ((event.key === '+' || event.key === '-') && cursorPos !== 0) {
-			event.preventDefault();
-		}
+  // Prevent + or - anywhere except at the beginning
+  if ((event.key === '+' || event.key === '-') && cursorPos !== 0) {
+    event.preventDefault();
+    return;
+  }
 
-		// Prevent colon if one already exists or if position is wrong
-		if (event.key === ':' && (currentValue.includes(':') || cursorPos < 3)) {
-			event.preventDefault();
-		}
-	}
+  // Allow colon anywhere - we'll validate later
+}
 
-	formatAndValidateTimezone(event: Event) {
-		const input = event.target as HTMLInputElement;
-		let val = input.value.replace(/[^0-9+-:]/g, '');
+  formatTimezoneOnBlur(event: FocusEvent) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.trim();
+  
+  if (!value) {
+    this.branchForm.get('branchTimeZone').setErrors({ required: true });
+    return;
+  }
 
-		// Handle empty case
-		if (val.length === 0) {
-			this.branchForm.get('branchTimeZone').setValue('');
-			this.branchForm.get('branchTimeZone').setErrors(null);
-			return;
-		}
+  // Ensure value starts with + or -
+  if (!['+', '-'].includes(value[0])) {
+    value = '+' + value;
+  }
 
-		// Ensure first character is + or -
-		if (!['+', '-'].includes(val[0])) {
-			val = '+' + val;
-		}
+  // Remove any existing colon
+  value = value.replace(':', '');
 
-		// Auto-insert colon after 2 digits
-		if (!val.includes(':') && val.length > 3) {
-			val = val.substring(0, 3) + ':' + val.substring(3);
-		}
+  // Extract sign and numbers
+  const sign = value[0];
+  const numbers = value.substring(1).replace(/\D/g, ''); // Keep only digits
 
-		// Ensure proper format
-		const parts = val.split(':');
-		if (parts.length > 1) {
-			// Validate hours part (including sign)
-			const hoursPart = parts[0];
-			// Limit hours to valid range before proceeding
-			const hours = parseInt(hoursPart.substring(1), 10);
-			const maxHours = hoursPart.startsWith('+') ? 14 : 12;
-			if (hours > maxHours) {
-				parts[0] = hoursPart.substring(0, 1) + maxHours.toString().padStart(2, '0');
-			}
+  if (numbers.length === 0) {
+    this.branchForm.get('branchTimeZone').setErrors({ pattern: true });
+    return;
+  }
 
-			parts[1] = parts[1].substring(0, 2); // Limit minutes to 2 digits
-			val = parts[0] + ':' + parts[1];
-		}
+  // Parse hours and minutes
+  let hours = '00';
+  let minutes = '00';
+  
+  if (numbers.length === 1) {
+    // Single digit: e.g., +4 becomes +04:00
+    hours = numbers.padStart(2, '0');
+  } else if (numbers.length === 2) {
+    // Two digits: e.g., +04 becomes +04:00
+    hours = numbers;
+  } else if (numbers.length === 3) {
+    // Three digits: e.g., +430 becomes +04:30
+    hours = numbers.substring(0, 2);
+    minutes = (numbers.substring(2) + '0').substring(0, 2); // Pad to 2 digits
+  } else {
+    // Four or more digits: e.g., +0430 becomes +04:30
+    hours = numbers.substring(0, 2);
+    minutes = numbers.substring(2, 4);
+  }
 
-		// Enforce max length
-		val = val.substring(0, 6);
-		input.value = val;
-		this.branchForm.get('branchTimeZone').setValue(val);
+  // Ensure hours are 2 digits
+  hours = hours.padStart(2, '0');
+  
+  // Ensure minutes are 2 digits and valid
+  minutes = minutes.padStart(2, '0');
+  
+  // Check if minutes are valid (0-59)
+  const minutesNum = parseInt(minutes, 10);
+  if (minutesNum > 59) {
+    // Don't auto-correct, show error instead
+    this.branchForm.get('branchTimeZone').setErrors({ 
+      pattern: true,
+      message: 'Minutes must be between 00 and 59'
+    });
+    return;
+  }
 
-		// Validate final format and range
-		this.validateTimezoneRange(val);
-	}
+  // Final formatted value (before range validation)
+  const formattedValue = `${sign}${hours}:${minutes}`;
+  
+  // Update the input value (display only)
+  input.value = formattedValue;
+  
+  // Set the form control value but DON'T auto-correct invalid ranges
+  this.branchForm.get('branchTimeZone').setValue(formattedValue);
+  
+  // Now validate the range - this will set errors if out of range
+  this.validateTimezoneRange(formattedValue);
+}
+
 
 	validateTimezoneRange(value: string) {
-		if (!value) {
-			this.branchForm.get('branchTimeZone').setErrors(null);
-			return;
-		}
+  if (!value) {
+    this.branchForm.get('branchTimeZone').setErrors({ required: true });
+    return;
+  }
 
-		// First validate the format
-		const timezoneRegex = /^[+-]([01]\d|2[0-3]):[0-5]\d$/;
-		if (!timezoneRegex.test(value)) {
-			this.branchForm.get('branchTimeZone').setErrors({
-				pattern: true,
-				range: false
-			});
-			return;
-		}
+  // Basic format check
+  const timezoneRegex = /^[+-]\d{2}:\d{2}$/;
+  if (!timezoneRegex.test(value)) {
+    this.branchForm.get('branchTimeZone').setErrors({ pattern: true });
+    return;
+  }
 
-		// Extract components
-		const sign = value.charAt(0);
-		const [hoursStr, minutesStr] = value.substring(1).split(':');
-		const hours = parseInt(hoursStr, 10);
-		const minutes = parseInt(minutesStr, 10);
+  // Extract components
+  const sign = value.charAt(0);
+  const [hoursStr, minutesStr] = value.substring(1).split(':');
+  const hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
 
-		// Validate range
-		let isValid = true;
-		if (sign === '+') {
-			// Positive timezones: +00:00 to +14:00
-			if (hours > 14 || (hours === 14 && minutes > 0)) {
-				isValid = false;
-			}
-		} else {
-			// Negative timezones: -12:00 to -00:00
-			if (hours > 12 || (hours === 12 && minutes > 0)) {
-				isValid = false;
-			}
-		}
+  // Check minutes validity
+  if (minutes > 59) {
+    this.branchForm.get('branchTimeZone').setErrors({ 
+      pattern: true,
+      message: 'Minutes must be between 00 and 59'
+    });
+    return;
+  }
 
-		if (!isValid) {
-			this.branchForm.get('branchTimeZone').setErrors({
-				pattern: false,
-				range: true
-			});
-		} else {
-			this.branchForm.get('branchTimeZone').setErrors(null);
-		}
-	}
+  // Validate range WITHOUT auto-correcting
+  let isValid = true;
+  let errorMessage = '';
+  
+  if (sign === '+') {
+    // Positive timezones: +00:00 to +14:00
+    if (hours > 14) {
+      isValid = false;
+      errorMessage = 'UTC+ timezone hours must be between 00 and 14';
+    } else if (hours === 14 && minutes > 0) {
+      isValid = false;
+      errorMessage = 'UTC+14:00 is the maximum positive timezone';
+    }
+  } else {
+    // Negative timezones: -12:00 to -00:00
+    if (hours > 12) {
+      isValid = false;
+      errorMessage = 'UTC- timezone hours must be between 00 and 12';
+    } else if (hours === 12 && minutes > 0) {
+      isValid = false;
+      errorMessage = 'UTC-12:00 is the maximum negative timezone';
+    }
+  }
+
+  // Set errors if invalid - DON'T auto-correct
+  if (!isValid) {
+    this.branchForm.get('branchTimeZone').setErrors({
+      range: true,
+      message: errorMessage
+    });
+  } else {
+    // Clear errors if valid
+    this.branchForm.get('branchTimeZone').setErrors(null);
+  }
+}
+
+getTimezoneErrorMessage(): string {
+  const control = this.branchForm.get('branchTimeZone');
+  if (!control || !control.errors) return '';
+  
+  if (control.errors['message']) {
+    return control.errors['message'];
+  }
+  
+  if (control.errors['range']) {
+    return 'Timezone out of valid range';
+  }
+  
+  if (control.errors['pattern']) {
+    return 'Invalid format. Use format like ±HH:MM';
+  }
+  
+  return '';
+}
+
+
 	getCityName(CityMasterSid) {
 		if (!CityMasterSid) {
 			console.log('No CityMasterSid provided');

@@ -28,7 +28,7 @@
         (click)="openConfigCompany()" [hidden]="!isEditMode" appPreventMultiClick>
   <i class="fas fa-cog me-1"></i> Valid Config
 </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="!isEditMode"
             (click)="navigateBack()" appPreventMultiClick>
             <i class="fas fa-chevron-left me-1"></i>
             Back
@@ -128,7 +128,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="companyCode" [textWithNumbers]="10">
+                  formControlName="companyCode" >
                 <label for="text-input" class="input-label">Company Code <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -221,7 +221,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
+                  formControlName="addressLine1" rowspan="2" rows="1"></textarea>
                 <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -240,7 +240,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="webSite" [textWithNumbers]="100">
+                  formControlName="webSite">
                 <label for="text-input" class="input-label">Website </label>
 
                 <!--  Validation -->
@@ -458,7 +458,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
-                  [textWithNumbers]="500" rows="1"></textarea>
+                  rows="1"></textarea>
                 <label for="text-input" class="input-label">Remarks </label>
 
                 <!--  Validation -->
@@ -984,7 +984,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchCode" placeholder="" class="custom-input-field sm"
-                              formControlName="branchCode" [textWithNumbers]="10">
+                              formControlName="branchCode" >
                             <label for="branchCode" class="input-label">Branch Code <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.invalid){
@@ -1002,7 +1002,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine1" [textWithNumbers]="500">
+                              formControlName="branchAddressLine1" >
                             <label for="branchAddressLine1" class="input-label">Address <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchAddressLine1')?.touched &&
@@ -1022,7 +1022,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine2" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine2" [textWithNumbers]="500">
+                              formControlName="branchAddressLine2" >
                             <label for="branchAddressLine2" class="input-label">Address 2</label>
                             @if(branchForm.get('branchAddressLine2')?.touched &&
                             branchForm.get('branchAddressLine2')?.invalid){
@@ -1211,7 +1211,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchWebSite" placeholder="" class="custom-input-field sm"
-                              formControlName="branchWebSite" [textWithNumbers]="100">
+                              formControlName="branchWebSite" >
                             <label for="branchWebSite" class="input-label">Website</label>
                             @if(branchForm.get('branchWebSite')?.touched && branchForm.get('branchWebSite')?.invalid){
                             <div class="error-message">
@@ -1270,31 +1270,34 @@
                             }
                           </div>
                         </aside>
-                        <aside class="col-md-4">
-                          <div class="custom-form-group">
-                            <input type="text" id="branchTimeZone" placeholder="" class="custom-input-field sm"
-                              formControlName="branchTimeZone" (keydown)="validateTimezoneKey($event)"
-                              (input)="formatAndValidateTimezone($event)">
-                            <label for="branchTimeZone" class="input-label">Time Zone <span
-                                class="text-danger">*</span></label>
+           <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input 
+      type="text" 
+      id="branchTimeZone" 
+      placeholder="" 
+      class="custom-input-field sm"
+      formControlName="branchTimeZone" 
+      (keydown)="validateTimezoneKey($event)"
+      (blur)="formatTimezoneOnBlur($event)"
+      maxlength="6"
+      [class.is-invalid]="branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched"
+    >
+    <label for="branchTimeZone" class="input-label">Time Zone <span class="text-danger">*</span></label>
 
-                            @if(branchForm.get('branchTimeZone')?.invalid) {
-                            <div class="error-message">
-                              @if(branchForm.get('branchTimeZone')?.hasError('pattern')) {
-                              <span>Format must be ±HH:MM (e.g. -05:30)</span>
-                              }
-                              @else if(branchForm.get('branchTimeZone')?.hasError('range')) {
-                              <span>Must be between -12:00 and +14:00</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
+       @if(branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched) {
+      <div class="error-message">
+        <span>{{ getTimezoneErrorMessage() }}</span>
+      </div>
+    }
+
+  </div>
+</aside>
 
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchRemarks" placeholder="" class="custom-input-field sm"
-                              formControlName="branchRemarks" [textWithNumbers]="500">
+                              formControlName="branchRemarks" >
                             <label for="branchRemarks" class="input-label">Remarks</label>
                             @if(branchForm.get('branchRemarks')?.touched && branchForm.get('branchRemarks')?.invalid){
                             <div class="error-message">
@@ -2004,7 +2007,7 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode"
-                [textWithNumbers]="50">
+                >
               <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
               <div class="error-message">
@@ -2019,7 +2022,7 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="bankAddress" placeholder="" class="custom-input-field sm"
-                formControlName="BankAddress" [textWithNumbers]="500">
+                formControlName="BankAddress" >
               <label for="bankAddress" class="input-label">Bank Address</label>
               @if(branchBankForm.get('BankAddress')?.touched && branchBankForm.get('BankAddress')?.invalid){
               <div class="error-message">
@@ -2033,7 +2036,7 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode"
-                [textWithNumbers]="20">
+                >
               <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
               <div class="error-message">
@@ -2092,7 +2095,7 @@
           <!-- Remarks -->
           <aside class="col-12 col-sm-6 col-md-4 ">
             <div class="custom-form-group">
-              <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks" [textWithNumbers]="300"
+              <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks"
                 class="custom-input-field sm"></textarea>
               <label for="bankRemarks" class="input-label">Remarks</label>
               @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){

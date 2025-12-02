@@ -387,6 +387,7 @@ patchEnqPageValues(enqData: any) {
     )
   );
 
+
   headerFields.forEach(field => this.quotationForm.get(field)?.disable());
 
   // --- Routes array check ---------------------------------
@@ -456,7 +457,7 @@ patchEnqPageValues(enqData: any) {
     const routeGroup = this.quoteRoutes.at(routeIndex);
     const fieldsToDisable = [
       'DepartmentMasterSid', 'PORSid', 'POLSid', 'PODSid', 
-      'FPODSid', 'CargoType', 'ContainerType', 'CBM', 'ChargeableWeight'
+      'FPODSid', 'CargoType', 'ContainerType', 'CBM', 'ChargeableWeight', 'ServiceLevel'
     ];
     
     fieldsToDisable.forEach(field => {
@@ -1566,6 +1567,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteNumber: formValue.QuoteNumber,
       QuoteDate: formValue.QuoteDate,
       EnquirySid: formValue.EnquirySid,
+      FreightPPCC: formValue.FreightPPCC,
       status: formValue.status === "Active" ? 'A' : 'S',
       authDetails : {
           canAuthorize : this.authorizerDetails?.canAuthorize,

@@ -204,8 +204,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
   measurementUnitList =[
-    { id: 1, name: 'M' },
-    { id: 2, name: 'CM' },
+    { id: 1, name: 'CM' },
+    { id: 2, name: 'M' },
     { id: 3, name: 'Inch'}
   ]
   auditLogs: any[] = []; // Stores audit logs
@@ -725,8 +725,8 @@ arapFilter = {
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null],
-      ShippingBillNo: ['', isIndianCompany ? [Validators.required] : []],
-      ShippingBillDate: [null, isIndianCompany ? [Validators.required] : []],
+      ShippingBillNo: [''],
+      ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
@@ -740,7 +740,7 @@ arapFilter = {
       Length: [''],
       Width: [''],
       Height: [''],
-      UomMasterSid: [null],
+      UomMasterSid: [1],
       CargoRecDate: [null]
     });
     this.setupImmediateCBMCalculation();
@@ -956,7 +956,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
       Volumetric: [data?.Volumetric|| ''],
-      UomMasterSid: [data?.UomMasterSid || null],
+      UomMasterSid: [data?.UomMasterSid || 1],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
@@ -1071,6 +1071,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   addProduct() {
     const formGroup = this.createBookingProductGroup();
+    formGroup.get('UomMasterSid')?.setValue(1, { emitEvent: true });
     this.bookingProducts.push(formGroup);
   }
 
@@ -1551,6 +1552,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       return;
     }
 
+    if (this.selectedTab === 'CRO' && this.croForm.invalid) {
+    this.croForm.markAllAsTouched();
+    this.croForm.updateValueAndValidity();
+    this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
+    return;
+  }
+
+
     // const isRateValid = this.costEntryComponent?.validateRateArray?.();
     // console.log(isRateValid);
     // if (!isRateValid) {
@@ -1616,6 +1625,17 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: bookingFormValue.FreightTerms || '',
       ShipmentNo: bookingFormValue.ShipmentNo || '',
       BookingStatus : bookingFormValue.BookingStatus || '',
+      bookingCro: {
+      BookingCroSid: croFormValue.BookingCroSid || null,
+      OnHireRef: croFormValue.OnHireRef || '',
+      ReleaseOrderDate: croFormValue.ReleaseOrderDate ? new Date(croFormValue.ReleaseOrderDate) : null,
+      ValidityDate: croFormValue.ValidityDate ? new Date(croFormValue.ValidityDate) : null,
+      Transporter: croFormValue.Transporter || '',
+      EmptyYard: croFormValue.EmptyYard || '',
+      NoteToYard: croFormValue.NoteToYard || '',
+      NoteToShipper: croFormValue.NoteToShipper || ''
+    },
+
       bookingCargo: {
         BookingCargoSid: cargoFormValue.BookingCargoSid || null,
         CargoType: cargoFormValue.CargoType || null,
@@ -1666,16 +1686,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         CarrierBookingRef: otherFormValue?.CarrierBookingRef,
         CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
       },
-      bookingCro: {
-      BookingCroSid: croFormValue.BookingCroSid || null,
-      OnHireRef: croFormValue.OnHireRef || '',
-      ReleaseOrderDate: croFormValue.ReleaseOrderDate ? new Date(croFormValue.ReleaseOrderDate) : null,
-      ValidityDate: croFormValue.ValidityDate ? new Date(croFormValue.ValidityDate) : null,
-      Transporter: croFormValue.Transporter || '',
-      EmptyYard: croFormValue.EmptyYard || '',
-      NoteToYard: croFormValue.NoteToYard || '',
-      NoteToShipper: croFormValue.NoteToShipper || ''
-    },
       bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
         BookingProductSid: product.BookingProductSid || null,
         ProductName: product.ProductName || '',
@@ -1713,6 +1723,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.bookingForm.markAsPristine();
             this.cargoForm.markAsPristine();
             this.otherForm.markAsPristine();
+            this.croForm.markAsPristine(); 
             // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid);
           } else {
@@ -3226,6 +3237,7 @@ ${this.userData['userName']}`;
       bookingForm: this.bookingForm.getRawValue(),
       cargoForm: this.cargoForm.getRawValue(),
       otherForm: this.otherForm.getRawValue(),
+      croForm: this.croForm.getRawValue(), 
       detailForm: this.detailForm.getRawValue(),
       connectionResult: this.connectionResult,
       rateResult: this.rateResult,
