@@ -3499,4 +3499,14 @@ unlockAllRateFields(): void {
 isRateLocked(): boolean {
   return this.quotationForm.get('RateLock')?.value === true;
 }
+
+navigateToEnquiry(): void {
+  const enquiryId = this.quotationForm?.get('EnquirySid')?.value;
+  
+  if (enquiryId) {
+    this.router.navigate(['crm/enquiry/entry', enquiryId]);
+  } else if (this.enquiryNumber) {
+    this.appSettingService.showInfo('Enquiry ID not available for navigation');
+  }
+}
 }

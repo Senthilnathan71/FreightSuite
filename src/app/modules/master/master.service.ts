@@ -4021,7 +4021,7 @@ createReportMaster(payload: any) {
 getAllNetworks(CompanyMasterSid: number) {
   return this.http.post<{ data: any }>('network-master', { CompanyMasterSid }).pipe(
     map((resp: any) => {
-      let response = resp.data;
+      let response = resp;
       return response;
     })
   );
@@ -4047,9 +4047,9 @@ getNetworkById(id: number) {
 }
 
 // Update Network By ID
-updateNetworkById(id: number, payload: any) {
-  return this.http.patch<{ data: any }>(`network-master/update/${id}`, payload).pipe(
-    map((resp) => {
+updateNetwork(updates: any[]) {
+  return this.http.patch<{ data: any }>(`network-master/bulk-update`, { updates}).pipe(
+    map((resp: any) => {
       let response = resp;
       return response;
     })

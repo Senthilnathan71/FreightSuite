@@ -153,16 +153,24 @@
             </div>
             }
             <aside *ngIf="enquiryNumber" class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                  [value]="enquiryNumber" disabled style="background-color: white;cursor: not-allowed;">
-                <label for="text-input" [ngClass]="{
-                                'input-label': true,
-                                'bg-transparent': !enquiryNumber
-                              }"> Enquiry No
-                  <span class="text-danger"></span></label>
-              </div>
-            </aside>
+  <div class="custom-form-group">
+    <a href="javascript:void(0)" 
+       class="form-control custom-input-field sm enquiry-link"
+       style="display: block;"
+       (click)="navigateToEnquiry()"
+       [class.text-muted]="!quotationForm?.get('EnquirySid')?.value"
+       [class.text-primary]="quotationForm?.get('EnquirySid')?.value">
+      {{ enquiryNumber }}
+    </a>
+    
+    <label for="text-input" [ngClass]="{
+        'input-label': true,
+        'bg-transparent': !enquiryNumber
+      }"> Enquiry No
+      <span class="text-danger"></span>
+    </label>
+  </div>
+</aside>
             <!-- <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">

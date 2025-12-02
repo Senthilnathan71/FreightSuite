@@ -31,7 +31,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit"
+                            <button type="button"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -50,7 +50,7 @@
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveNetworks()">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
@@ -104,18 +104,18 @@
                     <tr *ngFor="let network of networkArray.controls; let i = index" [formGroupName]="i">
 
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm border-0" (click)="removeNetwork(i)">
+                            <button type="button" class="btn btn-sm border-0" (click)="delete(i)">
                                 <i class="fas fa-trash text-danger"></i>
                             </button>
                         </td>
 
                         <td>
-                            <input type="text" formControlName="name" class="form-control pt-2" />
+                            <input type="text" formControlName="NetworkName" class="form-control pt-2" />
                         </td>
 
                         <td>
                             <dofi-searchable-dropdown [items]="dropdownStore.countries()"
-                                formControlName="CountryMasterSid" placeholder=""
+                                formControlName="CountrySid" placeholder=""
                                 [displayFields]="countryLookupConfig.displayFields"
                                 [displayLabels]="countryLookupConfig.displayLabels"
                                 [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid">
@@ -123,12 +123,12 @@
                         </td>
 
                         <td>
-                            <ng-select [items]="networkType" bindLabel="name" bindValue="id" formControlName="type"
+                            <ng-select [items]="networkType" bindLabel="name" bindValue="name" formControlName="NetworkType"
                                 appendTo="body"></ng-select>
                         </td>
 
                         <td>
-                            <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
+                            <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="Status"
                                 appendTo="body"></ng-select>
                         </td>
                     </tr>
