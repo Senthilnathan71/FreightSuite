@@ -25,6 +25,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -65,6 +66,7 @@ export class LoadingPlanEntryComponent {
   @Output() onSubmit = new EventEmitter<any>();
 
   selectedTab = 'Container';
+  activeModal: any;
 
   selectTab(tab: string) {
     this.selectedTab = tab;
@@ -127,6 +129,10 @@ export class LoadingPlanEntryComponent {
   agentList:any;
  loadingPlanData: any[] = [];
 
+
+  branchDetails: any;
+  currentBranchCityName: string | null;
+  currentBranchCityId: number;
   constructor(
     private fb: FormBuilder,
     private modalService: NgbModal,
@@ -139,6 +145,8 @@ export class LoadingPlanEntryComponent {
     private spinnerService : NgxSpinnerService,
     private spinner: NgxSpinnerService,
     private pdfService:PdfDownloadService,
+    private appSettingsService: AppSettingsService,
+     private masterService: MasterService,
     
   ) {
     this.masterJobContainers = this.fb.array([]);
@@ -188,6 +196,12 @@ export class LoadingPlanEntryComponent {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.onInitForm();
     this.loadAllLookups();
+    this.branchDetails = this.appSettingsService.getCurrentBranchInfo();
+    console.log(this.branchDetails, "BRANCH DETAILS");
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadCityName();
 
   }
   onInitForm() {
@@ -200,6 +214,30 @@ export class LoadingPlanEntryComponent {
     });
   }
 
+
+    loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+ 
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+   
+      }
+    });
+  }
  loadAllLookups() {
   const activeCompanyId = this.currentCompany?.CompanyMasterSid;
   const activeBranchId = this.currentBranch?.BranchMasterSid;
@@ -1011,6 +1049,37 @@ getDestinationAgent(id: number): string {
   const agent = this.agentList.find(a => a.CustomerMasterSid === id);
   return agent ? agent.CustomerName : '';
 }
+
+
+// print
+
+          printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
+ 
+  const popupWin = window.open('', '_blank', 'width=900,height=600');
+  if (popupWin) {
+    popupWin.document.open();
+    popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    popupWin.document.close();
+  }
+}
+
+
+// pdf download
+
+ modalClose() {
+    this.activeModal.close(); // closes the modal
+  }
 
 
 }

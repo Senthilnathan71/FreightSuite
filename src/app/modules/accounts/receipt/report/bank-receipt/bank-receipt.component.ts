@@ -188,13 +188,20 @@ convertNumberToWords(num: number): string {
           }
         }
 
-
-        // print
-
-          printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+printDiv(divId: string, printHeightMM: number = 380): void {
+  const printContent = document.getElementById(divId);
+  if (!printContent) return;
  
+  // Save original inline height
+  const originalHeight = printContent.style.height;
+ 
+  // Convert mm to px
+  const printHeightPx = (printHeightMM * 96) / 25.4 + 'px';
+ 
+  // Temporarily set height for print
+  printContent.style.height = printHeightPx;
+ 
+  // Open print popup
   const popupWin = window.open('', '_blank', 'width=900,height=600');
   if (popupWin) {
     popupWin.document.open();
@@ -202,14 +209,21 @@ convertNumberToWords(num: number): string {
       <html>
         <head>
           <title>Print</title>
+          <style>
+            body { margin:0; }
+            #printContent { height: ${printHeightPx}; width: 280mm; }
+          </style>
         </head>
         <body onload="window.print(); window.close();">
-          ${printContents}
+          ${printContent.innerHTML}
         </body>
       </html>
     `);
     popupWin.document.close();
   }
+ 
+  // Restore original height after print
+  printContent.style.height = originalHeight;
 }
  
         

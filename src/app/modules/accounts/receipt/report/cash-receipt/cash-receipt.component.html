@@ -5,7 +5,11 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0"(click)="downloadPDF()">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+            <i class="fas fa-download me-1"></i> Print
+        </button>
+
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
@@ -13,150 +17,142 @@
         </button>
 
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
     </div>
 </div>
 
 <!-- cash-Receipt -->
 <div class="modal-body">
     <div id="printContent" class="p-1">
-        <div class="print-a4">
-            <!-- Company Info -->
-            <div class="row  ">
-                <div class="company-header">
-                    <div class="company-logo">
-                        <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    </div>
+      <div style="width:280mm; min-height:385mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; justify-content:flex-start; page-break-after:always; position: relative;">
 
-                    <div class="company-info ">
-                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                        <p class="mb-1">
-                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                        </p>
-                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+    <!-- Company Info -->
+    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; flex-direction:column;">
+            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain; margin-bottom:0;">
+            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+        </div>
 
-                        <!-- Dynamic GST No/PAN based on country code -->
-                        <div class="d-flex mb-1" style="text-align: start;" *ngIf="getTaxNumber()">
-                            <div style="width: 80px; white-space: nowrap;">
-                                <strong>{{ getTaxNumberLabel() }}</strong>
-                            </div>
-                            <div>: {{ getTaxNumber() }}</div>
-                        </div>
+        <div style="font-size:14px; text-align:center; padding-left:28%;">
+            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            <h5 style="margin:0; padding:0; font-weight:600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+            <p style="margin:2px 0; font-size:12pt;">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+            <p style="margin:2px 0; font-size:12pt;">{{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+            <p style="margin:2px 0; font-size:12pt;">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+            <p style="margin:2px 0; font-size:12pt;">{{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
 
-                    </div>
+            <div *ngIf="getTaxNumber()" style="display:flex; text-align:start; margin-bottom:4px;">
+                <div style="width:80px; white-space:nowrap;"><strong>{{ getTaxNumberLabel() }}</strong></div>
+                <div>: {{ getTaxNumber() }}</div>
+            </div>
+        </div>
+    </div>
 
+ 
+
+    <!-- Cash Receipt Section -->
+    <section style="display:flex; flex-direction:column;  border-top: 1px solid black;">
+        <h5 style="text-align:center; margin:5px auto 12px auto; font-weight:600;">Cash Receipt</h5>
+
+        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;">
+            <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:150px; white-space:nowrap;"><strong>Receipt No</strong></div>
+                    <div>: {{receiptPrintData?.VoucherNumber}}</div>
                 </div>
-              
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:150px; white-space:nowrap;"><strong>Received From</strong></div>
+                    <div>: {{receiptPrintData?.PartyName}}</div>
+                </div>
             </div>
 
-    <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-            <section class="cash-receipt">
-                <h5 style=" text-align: center; margin: 5px auto;" class="mb-3">Cash Receipt</h5>
-                <div class="row" style="padding: 0px 150px;">
-                    <div class="col-md-6">
-                        <div class="d-flex mb-1">
-                            <div style="width: 150px; white-space: nowrap;"><strong>Receipt No</strong></div>
-                            <div>: {{receiptPrintData?.VoucherNumber}} </div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 150px; white-space: nowrap;"><strong>Received From</strong></div>
-                            <div>: {{receiptPrintData?.PartyName}}  </div>
-                        </div>
-
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex mb-1">
-                            <div style="width: 150px; white-space: nowrap;"><strong>Receipt Date</strong></div>
-                            <div>: {{receiptPrintData?.VoucherDate | formatDate }} </div>
-                        </div>
-
-                        <div class="d-flex mb-1">
-                            <div style="width: 150px; white-space: nowrap;"><strong>Currency </strong></div>
-                            <div>: {{receiptPrintData?.CurrencyCode}} </div>
-                        </div>
-                    </div>
+            <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:150px; white-space:nowrap;"><strong>Receipt Date</strong></div>
+                    <div>: {{receiptPrintData?.VoucherDate | formatDate}}</div>
                 </div>
-
-                <table class="table table-sm table-hover tablebordered ">
-                    <tbody>
-                        <tr>
-                            <th style="width: 60%; " class="text-center"><strong>Description</strong></th>
-                            <th style="width: 10%; " class="text-center"><strong>Curr.</strong></th>
-                            <th style="width: 10%; " class="text-center"><strong>Ex.Rate</strong></th>
-                            <th style="width: 20%; " class="text-center"><strong>Amount</strong></th>
-                        </tr>
-                        <tr>
-                            <td style="width: 60%; ">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
-                            <td style="width: 10%; ">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
-                            <td style="width: 10%;text-align: right; ">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate | number:'1.3-3'}}</td>
-                            <td style="width: 20%;text-align: right; ">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount |number:'1.2-2'}} </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-
-
-                <h5 style="padding: 4px 0; text-decoration: underline;">Remittance Details</h5>
-
-                <table class="table table-sm table-hover tablebordered">
-                    <tbody>
-                        <tr>
-                            <th style="width: 22%; "class="text-center"><strong>Voucher No.</strong></th>
-                            <th style="width: 13%; "class="text-center"><strong>Voucher Type</strong></th>
-                            <th style="width: 15%; "class="text-center"><strong>Voucher Date</strong></th>
-                            <th style="width: 7%;"class="text-center"><strong>Curr.</strong></th>
-                            <th style="width: 15%;"class="text-center"><strong>Curr. Amt</strong></th>
-                            <th style="width: 15%;"class="text-center"><strong>Local Amount</strong></th>
-                            <th style="width: 13%;"class="text-center"><strong>TDS Amount</strong></th>
-                        </tr>
-                        <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
-                            <td>{{voucher?.VoucherNumber}}</td>
-                            <td>{{voucher?.VoucherType}}</td>
-                            <td>{{voucher?.VoucherDate | formatDate}}</td>
-                            <td>{{voucher?.CurrencyCode}} </td>
-                            <td style="text-align: right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
-                            <td style="text-align: right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
-                            <td style="text-align: right;"></td>
-                        </tr>
-                        <tr>
-
-                            <td style="text-align: right;" colspan="4"><strong>Total</strong></td>
-                            <td style="text-align: right;">
-                                <strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong>
-                            </td>
-                            <td style="text-align: right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                
-                <p>Amount in Words :
-                    <strong>{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</strong>
-                </p>
-
-                <div class="d-flex  justify-content-between align-items-center">
-                    <div>
-                        <p style="padding-bottom: .5rem;"><strong>Checked By</strong></p>
-                    </div>
-                    <div>
-                        <p style="padding-bottom: .5rem; "><strong>Approved By</strong></p>
-                    </div>
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:150px; white-space:nowrap;"><strong>Currency</strong></div>
+                    <div>: {{receiptPrintData?.CurrencyCode}}</div>
                 </div>
-            </section>
-
-            <footer class="text-center mb-0 px-2">
-                <div class="d-flex justify-content-between">
-                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                    <span>
-                        This document is computer-generated and does not require a signature.
-                    </span>
-                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-                </div>
-            </footer>
-
+            </div>
         </div>
+
+        <!-- Voucher Table -->
+        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+            <tbody>
+                <tr>
+                    <th style="width:60%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Description</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Curr.</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Ex.Rate</strong></th>
+                    <th style="width:20%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Amount</strong></th>
+                </tr>
+                <tr>
+                    <td style="width:60%; border:1px solid black; padding:2px 8px;">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
+                    <td style="width:10%; border:1px solid black; padding:2px 8px;">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
+                    <td style="width:10%; border:1px solid black; padding:2px 8px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate | number:'1.3-3'}}</td>
+                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.2-2'}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h5 style="padding:4px 0; text-decoration:underline; font-weight:600;">Remittance Details</h5>
+
+        <!-- Remittance Table -->
+        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+            <tbody>
+                <tr>
+                    <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Voucher No.</strong></th>
+                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Voucher Type</strong></th>
+                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Voucher Date</strong></th>
+                    <th style="width:7%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Curr.</strong></th>
+                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Curr. Amt</strong></th>
+                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>Local Amount</strong></th>
+                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; font-weight:700;"><strong>TDS Amount</strong></th>
+                </tr>
+                <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
+                    <td style="border:1px solid black; padding:2px 8px;">{{voucher?.VoucherNumber}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;">{{voucher?.VoucherType}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;">{{voucher?.VoucherDate | formatDate}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;">{{voucher?.CurrencyCode}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;" colspan="4"><strong>Total</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="margin:4px 0;"><strong>Amount in Words :</strong>
+            <strong>{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</strong>
+        </p>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+            <div>
+                <p style="padding-bottom:0.5rem; margin:0;"><strong>Checked By</strong></p>
+            </div>
+            <div>
+                <p style="padding-bottom:0.5rem; margin:0;"><strong>Approved By</strong></p>
+            </div>
+        </div>
+    </section>
+
+  <!-- Footer -->
+<footer style="position: absolute; bottom:0; left:0; width:100%; text-align:center; font-size:10pt; padding:0.5rem; background:#fff;  box-sizing:border-box;">
+    <div style="display:flex; justify-content:space-between; font-size:12px;">
+        <div>Printed By: {{userData.userName}}</div>
+        <span>This document is computer-generated and does not require a signature.</span>
+        <div>Printed On: {{ currentDate | formatDate }}</div>
+    </div>
+</footer>
+
+
+</div>
+
     </div>
 </div>
