@@ -37,6 +37,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -193,6 +194,7 @@ export class InvoiceEntryComponent implements OnInit {
     private commonService: CommonService,
      private taxCalculationService: TaxCalculationService,
   private currencyFormatter: CurrencyFormatService,
+  private pdfService: PdfDownloadService,
   ) { }
 
   ngOnInit(): void {
@@ -2109,60 +2111,78 @@ private applyFallbackTax(
     this.modalService.open(this.printModalRef, { size: 'xl', scrollable: true });
   }
 
-  async downloadPDF() {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      this.appSettingService.showError('Print content not found.');
-      return;
-    }
+  // async downloadPDF() {
+  //   const printContent = document.getElementById('printContent');
+  //   if (!printContent) {
+  //     this.appSettingService.showError('Print content not found.');
+  //     return;
+  //   }
 
-    try {
-      this.spinner.show();
+  //   try {
+  //     this.spinner.show();
 
-      // Generate PDF using html2canvas and jsPDF
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+  //     // Generate PDF using html2canvas and jsPDF
+  //     const canvas = await html2canvas(printContent, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       logging: false,
+  //       backgroundColor: '#ffffff'
+  //     });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+  //     const imgWidth = 210; // A4 width in mm
+  //     const pageHeight = 297; // A4 height in mm
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     let heightLeft = imgHeight;
+  //     let position = 0;
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
+  //     const pdf = new jsPDF('p', 'mm', 'a4');
+  //     const imgData = canvas.toDataURL('image/png');
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+  //     // Add first page
+  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
 
-      // Add additional pages if content exceeds one page
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+  //     // Add additional pages if content exceeds one page
+  //     while (heightLeft > 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
 
-      // Generate filename with invoice number
-      const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || 'Invoice';
-      const filename = `Invoice_${voucherNumber}.pdf`;
+  //     // Generate filename with invoice number
+  //     const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || 'Invoice';
+  //     const filename = `Invoice_${voucherNumber}.pdf`;
 
-      // Download the PDF
-      pdf.save(filename);
+  //     // Download the PDF
+  //     pdf.save(filename);
 
-      this.spinner.hide();
-      this.appSettingService.showSuccess('PDF downloaded successfully!');
-    } catch (error) {
-      this.spinner.hide();
-      console.error('Error generating PDF:', error);
-      this.appSettingService.showError('Error generating PDF. Please try again.');
-    }
+  //     this.spinner.hide();
+  //     this.appSettingService.showSuccess('PDF downloaded successfully!');
+  //   } catch (error) {
+  //     this.spinner.hide();
+  //     console.error('Error generating PDF:', error);
+  //     this.appSettingService.showError('Error generating PDF. Please try again.');
+  //   }
+  // }
+
+
+      async downloadPDF() {
+  this.spinner.show();
+  try {
+   const HouseJob = this.invoiceData?.VoucherNumber || '';
+
+    
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      `Invoice_${HouseJob}`,
+      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
   }
+}
 
   async generatePDFBlob(): Promise<Blob | null> {
     const printContent = document.getElementById('printContent');
@@ -2846,5 +2866,26 @@ private determineTaxCategory(companyState: string, billingPartyState: string, cu
   // Same state = Inter (CGST+SGST)
   // Different state = Intra (IGST)
   return isSameState ? 'Inter' : 'Intra';
+}
+
+      printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
+
+  const popupWin = window.open('', '_blank', 'width=900,height=600');
+  if (popupWin) {
+    popupWin.document.open();
+    popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    popupWin.document.close();
+  }
 }
 }

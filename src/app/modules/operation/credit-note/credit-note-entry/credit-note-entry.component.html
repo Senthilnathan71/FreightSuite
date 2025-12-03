@@ -754,6 +754,9 @@
       <h5 class="modal-title">Credit Note</h5>
       <div class="d-flex gap-1 align-items-center">
 
+           <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
+            <i class="fas fa-download me-1"></i> Print
+        </button>
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
           <i class="fas fa-download me-1"></i> Download PDF
         </button>
@@ -763,9 +766,9 @@
       </div>
     </div>
     <div class="modal-body">
-      <div id="printContent">
+      <div id="printContent" class="p-1">
         <!-- Invoice Print Template -->
-        <div class="print-a4">
+        <!-- <div class="print-a4">
           <div class="row">
             <div class="company-header">
               <div class="company-logo">
@@ -864,7 +867,7 @@
                 <div style="width: 180px;"><strong>Vessel / Flight Date</strong></div>
                 <div>: 25/JUL/2025</div>
             </div> -->
-              <div class="d-flex">
+              <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>ETD</strong></div>
                 <div>: {{ creditNoteData?.houseJob?.ETD | formatDate }}</div>
               </div>
@@ -879,12 +882,12 @@
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Shipper Reference No</strong></div>
                 <div>: </div>
-              </div>
+              </div> -->
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Forwarder B/L No</strong></div>
                 <div>: </div>
             </div> -->
-            </div>
+            <!-- </div>
 
             <div class="col-md-6">
               <div class="d-flex">
@@ -906,15 +909,15 @@
               <div class="d-flex">
                 <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
                 <div>: {{getPkgWtVol() }}</div>
-              </div>
+              </div> -->
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Exp Inv No</strong></div>
                 <div>: </div>
             </div> -->
-              <div class="d-flex">
+              <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Invoice Due Date</strong></div>
                 <div>: {{creditNoteForm.get('DueDate')?.value }}</div>
-              </div>
+              </div> -->
               <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>BOE Reference</strong></div>
                 <div>: </div>
@@ -931,7 +934,7 @@
                 <div style="width: 180px;"><strong>Sub Item Number</strong></div>
                 <div>: </div>
             </div> -->
-              <div class="d-flex">
+              <!-- <div class="d-flex">
                 <div style="width: 180px;"><strong>Currency / Ex-Rate</strong></div>
                 <div>: {{creditNoteData?.VoucherDetail?.[0]?.CurrencyCode }} / {{creditNoteData?.ExchangeRate }}</div>
               </div>
@@ -996,16 +999,16 @@
                   <ng-container *ngIf="isVATMode">
                     <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
                     <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
-                  </ng-container>
+                  </ng-container> -->
                   <!-- <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
                   <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td> -->
-                  <td>{{ getRowTotal(detail) | number:'1.2-2' }}</td>
+                  <!-- <td>{{ getRowTotal(detail) | number:'1.2-2' }}</td>
                 </tr>
                 <tr>
                   <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
-                  <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+                  <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td> -->
                   <!-- <td><strong>{{getTotalPartyAmount() | number:'1.2-2'}}</strong></td> -->
-                </tr>
+                <!-- </tr>
               </tbody>
             </table>
           </div>
@@ -1036,13 +1039,13 @@
               <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong>Bank Name </strong></div>
               <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.BankName}}</div>
             </div>
-            <!-- <div class="d-flex">
+             <div class="d-flex">
               <div style="width: 180px; margin-bottom: 0;font-size: 12px;" > <strong>
                 Swift Code
               </strong></div>
               <div style="margin-bottom: 0;font-size: 12px;">: </div>
             </div> -->
-            <div class="d-flex">
+            <!-- <div class="d-flex">
               <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong> IFSC Code</strong></div>
               <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.IFSCCode}}</div>
             </div>
@@ -1065,8 +1068,341 @@
               </span>
               <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
             </div>
-          </footer>
+          </footer> -->
+        <!-- </div>  -->
+
+        <div  style="
+  width:280mm;
+  min-height:400mm;
+  margin:10px;
+  padding:2mm 5mm;
+  background:#fff;
+  border:1px solid #000;
+  box-sizing:border-box;
+  position:relative;
+  color:#000;
+  page-break-after:always;
+">
+
+  <!-- Company Header -->
+      <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; flex-direction: column;">
+                <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              </div>
+              <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName ||
+                  currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+              </div>
+            </div>
+          </div>
+
+  <!-- Invoice Title -->
+  <div style="text-align:center; border-top:1px solid black;">
+    <h5 style="margin:2px 0; font-weight:700;">CREDIT NOTE INVOICE</h5>
+    <p style="font-size:12px; margin:2px 0;">
+     <strong>
+      GST Code :
+     </strong>  {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
+    </p>
+  </div>
+
+  <!-- Billed To Section -->
+  <div style="display:flex; flex-wrap:wrap; margin-top:8px; padding-bottom:8px; border-bottom:1px solid black;">
+
+    <div style="flex:0 0 50%; max-width:50%;">
+      <strong>BILLED TO</strong><br>
+      <span>{{ getCustomerName(creditNoteForm.get('CustomerMasterSid')?.value) }}</span><br>
+      {{ creditNoteForm.get('PartyAddress')?.value || '' }}<br>
+      <span style="font-weight:600;">PAN :</span>
+      {{ currentCompany?.Pan || currentCompany?.PAN || '' }}
+    </div>
+
+    <div style="flex:0 0 50%; max-width:50%;">
+      <div>
+        <div style="display:flex;">
+          <div style="width:180px;"><strong>Invoice No</strong></div>
+          <div>: {{ creditNoteForm.get('VoucherNumber')?.value || '' }}</div>
         </div>
+        <div style="display:flex;">
+          <div style="width:180px;"><strong>Invoice Date</strong></div>
+          <div>: {{ creditNoteData?.VoucherDate | formatDate }}</div>
+        </div>
+        <div style="display:flex;">
+          <div style="width:180px;"><strong>GST No</strong></div>
+          <div>: {{ creditNoteForm.get('GST_VAT')?.value || '' }}</div>
+        </div>
+        <div style="display:flex;">
+          <div style="width:180px;"><strong>IRN No</strong></div>
+          <div>: {{ creditNoteForm.get('IRNNumber')?.value || '' }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Shipment Details -->
+  <div style="display:flex; flex-wrap:wrap; margin-top:8px;">
+
+    <!-- Left Column -->
+    <div style="flex:0 0 50%; max-width:50%;">
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Shipper</strong></div>
+        <div>: {{ creditNoteData?.houseJob?.ShipperName }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Consignee / Notify</strong></div>
+        <div>: {{ creditNoteData?.houseJob?.ConsigneeName }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Vessel</strong></div>
+        <div>: {{ creditNoteData.houseJob?.VesselName }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Voyage / Flight No.</strong></div>
+        <div>: {{ creditNoteData.houseJob?.VoyageNo }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Loading Port</strong></div>
+        <div>: {{ creditNoteData?.masterJob?.POL }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Place of Supply</strong></div>
+        <div>: {{ creditNoteData?.masterJob?.POD }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Final Destination</strong></div>
+        <div>: {{ creditNoteData.masterJob?.FPD }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>ETD</strong></div>
+        <div>: {{ creditNoteData?.houseJob?.ETD | formatDate }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>ETA</strong></div>
+        <div>: {{ creditNoteData?.houseJob?.ETA | formatDate }}</div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div style="flex:0 0 50%; max-width:50%;">
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>HBL / HAWB</strong></div>
+        <div>: {{ creditNoteData?.houseJob?.HBLNo }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>MBL / MAWB</strong></div>
+        <div>: {{ creditNoteData?.masterJob?.MBLNo }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Job Number</strong></div>
+        <div>: {{ creditNoteData?.masterJob?.MBLNo }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Freight</strong></div>
+        <div>: {{ creditNoteData.masterJob?.FreightPPCC }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Pkgs / Wt / Vol</strong></div>
+        <div>: {{ getPkgWtVol() }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Invoice Due Date</strong></div>
+        <div>: {{ creditNoteForm.get('DueDate')?.value }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Currency / Ex-Rate</strong></div>
+        <div>: {{ creditNoteData?.VoucherDetail?.[0]?.CurrencyCode }} / {{ creditNoteData?.ExchangeRate }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>Carrier Name</strong></div>
+        <div>: {{ creditNoteData.houseJob?.CarrierName }}</div>
+      </div>
+
+      <div style="display:flex;">
+        <div style="width:180px;"><strong>CFS Name</strong></div>
+        <div>: {{ creditNoteData?.VoucherDetail?.[0]?.masterJob?.others?.[0]?.CFS }}</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div style="width:100%; overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:14px; margin:10px 0; border:1px solid black;">
+      <thead>
+        <tr>
+          <th style="border:1px solid black; padding:2px 8px;">Particulars</th>
+          <th style="border:1px solid black; padding:2px 8px;">HSN/SAC</th>
+          <th style="border:1px solid black; padding:2px 8px;">Curr</th>
+          <th style="border:1px solid black; padding:2px 8px;">No of Unit</th>
+          <th style="border:1px solid black; padding:2px 8px;">Rate</th>
+          <th style="border:1px solid black; padding:2px 8px;">ROE</th>
+          <th style="border:1px solid black; padding:2px 8px;">Taxable Value</th>
+
+          <ng-container *ngIf="isIndiaGST">
+            <th style="border:1px solid black; padding:2px 8px;">CGST %</th>
+            <th style="border:1px solid black; padding:2px 8px;">CGST Amt</th>
+            <th style="border:1px solid black; padding:2px 8px;">SGST %</th>
+            <th style="border:1px solid black; padding:2px 8px;">SGST Amt</th>
+            <th style="border:1px solid black; padding:2px 8px;">IGST %</th>
+            <th style="border:1px solid black; padding:2px 8px;">IGST Amt</th>
+          </ng-container>
+
+          <ng-container *ngIf="isVATMode">
+            <th style="border:1px solid black; padding:2px 8px;">VAT %</th>
+            <th style="border:1px solid black; padding:2px 8px;">VAT Amt</th>
+          </ng-container>
+
+          <th style="border:1px solid black; padding:2px 8px;">
+            Total ({{creditNoteForm.get('CurrencyCode')?.value}})
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let detail of details.controls; let i = index">
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('ChargeDescription')?.value }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ getHSSACCode(detail.get('HSSACMasterSid')?.value, i) }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('CurrencyCode')?.value }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('NumberOfUnit')?.value | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('Rate')?.value | number:'1.2-2' }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('ExchangeRate')?.value | number:'1.2-4' }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('TaxableAmount')?.value | number:'1.2-2' }}
+          </td>
+
+          <ng-container *ngIf="isIndiaGST">
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxPercentage1')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxAmount1')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxPercentage2')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxAmount2')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxPercentageIGST')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxAmountIGST')?.value }}</td>
+          </ng-container>
+
+          <ng-container *ngIf="isVATMode">
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxPercentage1')?.value }}</td>
+            <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxAmount1')?.value }}</td>
+          </ng-container>
+
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ getRowTotal(detail) | number:'1.2-2' }}
+          </td>
+        </tr>
+
+        <tr>
+          <td [attr.colspan]="isIndiaGST ? 13 : 9"
+              style="border:1px solid black; padding:2px 8px; text-align:right; font-weight:600;">
+            Total
+          </td>
+          <td style="border:1px solid black; padding:2px 8px; font-weight:600;">
+            {{ getGrandTotal() | number:'1.2-2' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Amount in Words -->
+  <div style="display:flex;">
+    <p style="font-weight:600; width:180px; margin:0;">Amount In Words</p>
+    <p style="margin:0; font-style:italic;">: {{ getAmountInWords() }}</p>
+  </div>
+
+  <!-- Remarks -->
+  <div style="display:flex;">
+    <p style="font-weight:600; width:180px;">Remarks</p>
+    <p style="margin:0;">: {{ creditNoteForm.get('Remarks')?.value || '-' }}</p>
+  </div>
+
+  <!-- Bank Details -->
+  <p style="margin:0; margin-top:10px;" *ngIf="bankDetails">Bank Details</p>
+
+  <div *ngIf="bankDetails">
+    <div style="display:flex; font-size:12px;">
+      <div style="width:180px;"><strong>Account Name</strong></div>
+      <div>: {{ bankDetails.BeneficiaryName }}</div>
+    </div>
+    <div style="display:flex; font-size:12px;">
+      <div style="width:180px;"><strong>Account No</strong></div>
+      <div>: {{ bankDetails.BankAccountNo }}</div>
+    </div>
+    <div style="display:flex; font-size:12px;">
+      <div style="width:180px;"><strong>Bank Name</strong></div>
+      <div>: {{ bankDetails.BankName }}</div>
+    </div>
+    <div style="display:flex; font-size:12px;">
+      <div style="width:180px;"><strong>IFSC Code</strong></div>
+      <div>: {{ bankDetails.IFSCCode }}</div>
+    </div>
+    <div style="display:flex; font-size:12px;">
+      <div style="width:180px;"><strong>Address</strong></div>
+      <div>: {{ bankDetails.BankAddress }}</div>
+    </div>
+  </div>
+
+  <!-- Signature -->
+  <div style="text-align:right; margin-top:20px;">
+    <p style="margin:0;"><strong>For {{ currentCompany?.companyName || 'Company Name' }}</strong></p>
+    <p style="margin:0;">Authorised Signatory</p>
+  </div>
+
+  <!-- Footer Stick to Bottom -->
+  <footer style="
+    position:absolute;
+    bottom:2mm;
+    left:0;
+    right:0;
+    text-align:center;
+    font-size:10pt;
+    padding:0 5mm;
+  ">
+    <div style="display:flex; justify-content:space-between;">
+      <div><span>Printed By:</span> {{ userData.userName }}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
+
+</div>
+
       </div>
     </div>
     <!-- <div class="modal-footer p-1">

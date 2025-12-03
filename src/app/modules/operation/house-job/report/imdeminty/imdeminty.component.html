@@ -7,6 +7,9 @@
       <div class="spinner-overlay">
         <div class="spinner"></div>
       </div>
+       <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
+            <i class="fas fa-download me-1"></i> Print
+        </button>
       <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
         <i class="fas fa-download me-1"></i> Download PDF
       </button>
@@ -22,119 +25,113 @@
 
   <div class="modal-body">
     <div id="printContent" class="p-1">
-      <div class="print-a4">
+   <div style="width:280mm; min-height:400mm; margin:0 auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
-        <!-- HEADER -->
-        <div class="row ">
-          <div class="company-header">
-            <div class="company-logo">
-              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+  <!-- HEADER -->
+ <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; flex-direction: column;">
+                    <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                </div>
+                <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                </div>
             </div>
-
-           <div class="company-info ">
-                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">
-                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
-                                || '' }}
-                            </p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
-
-          </div>
         </div>
 
-        <h5 class="fw-bold text-uppercase mb-2 text-center pt-2" style="border-top: 1px solid black;">Letter of
-          Indemnity</h5>
-        <!-- GREETING -->
-        <div class="mb-4">
-          <h5 class="fw-semibold mb-3">Dear Sir,</h5>
 
-          <!-- VESSEL DETAILS -->
-          <div class="p-3  rounded" style="border: 1px solid black;">
-            <div class="row gy-2">
-              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
-              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
-              <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
-              <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
-              <div class="d-flex"><strong class="w-50">Container No</strong>:  {{ housejobData?.Products?.[0]?.ContainerNo }}</div>
-            </div>
-          </div>
-        </div>
+  <!-- Title -->
+  <h5 style="text-align: center; font-weight: bold; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;">
+    Letter of Indemnity
+  </h5>
 
-        <!-- INTRO PARAGRAPH -->
-        <p class="mb-2">
-          We should advise that according to the bill of lading, the details of the following consignment are as
-          follows:
-        </p>
+  <!-- Greeting -->
+  <div style="margin-bottom: 20px;">
+    <h5 style="font-weight: 600; margin: 0 0 10px 0;">Dear Sir,</h5>
 
-        <!-- FIRST TABLE -->
-        <div class="table-responsive mb-3">
-          <table class="table tablebordered border-dark text-center align-middle">
-            <thead class="bg-dark text-white">
-              <tr>
-                <th class="text-center"><strong>HBL No.</strong></th>
-                <th class="text-center"><strong>Marks and Numbers</strong></th>
-                <th class="text-center"><strong>Goods Description</strong></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{housejobData?.HBLNo}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p class="mb-2">
-          However, we have found that the cargo outturned with the following details:
-        </p>
-
-        <!-- SECOND TABLE -->
-        <div class="table-responsive mb-3">
-          <table class="table tablebordered border-dark text-center align-middle">
-            <thead class="bg-dark text-white">
-              <tr>
-                <th class="text-center"><strong>HBL No.</strong></th>
-                <th class="text-center"><strong>Marks and Numbers</strong></th>
-                <th class="text-center"><strong>Goods Description</strong></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{housejobData?.HBLNo}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- BODY PARAGRAPH -->
-        <p class="mb-5">
-          We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
-          whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
-          payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor
-          &
-          client and any sums demanded by you for the defense of any proceeding brought against you by reason of the
-          delivery aforesaid...
-        </p>
-
-        <!-- FOOTER -->
-        <footer class="text-center mb-0 px-2">
-          <div class="d-flex justify-content-between">
-            <div><span>Printed By:</span> {{userData.userName}}</div>
-            <span>This document is computer-generated and does not require a signature.</span>
-            <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
-          </div>
-        </footer>
-
+    <!-- Vessel Details -->
+    <div style="border: 1px solid black; padding: 10px; border-radius: 5px;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <div style="display: flex;"><strong style="width: 150px;">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
+        <div style="display: flex;"><strong style="width: 150px;">Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+        <div style="display: flex;"><strong style="width: 150px;">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
+        <div style="display: flex;"><strong style="width: 150px;">Date</strong>: </div>
+        <div style="display: flex;"><strong style="width: 150px;">Container No</strong>: {{ housejobData?.Products?.[0]?.ContainerNo }}</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Intro Paragraph -->
+  <p style="margin-bottom: 10px;">
+    We should advise that according to the bill of lading, the details of the following consignment are as follows:
+  </p>
+
+  <!-- FIRST TABLE -->
+  <div style="overflow-x:auto; margin-bottom: 15px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; ">
+      <thead >
+        <tr>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">HBL No.</th>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Marks and Numbers</th>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Goods Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-bottom: 10px;">
+    However, we have found that the cargo outturned with the following details:
+  </p>
+
+  <!-- SECOND TABLE -->
+  <div style="overflow-x:auto; margin-bottom: 15px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; ">
+      <thead >
+        <tr>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">HBL No.</th>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Marks and Numbers</th>
+          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Goods Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Body Paragraph -->
+  <p style="margin-bottom: 50px;">
+    We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor & client and any sums demanded by you for the defense of any proceeding brought against you by reason of the delivery aforesaid...
+  </p>
+
+  <!-- Footer -->
+  <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;">
+    <div style="display:flex; justify-content:space-between; font-size:12px;">
+      <div>Printed By: {{ userData.userName }}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div>Printed On: {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
+
+</div>
+
     </div>
   </div>
