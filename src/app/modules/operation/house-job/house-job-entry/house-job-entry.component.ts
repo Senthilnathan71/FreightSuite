@@ -433,50 +433,51 @@ auditLogs: any[] = []; // Stores audit logs
     |--------------------------------------------------
     */
   ngOnInit(): void {
-    this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-     console.log('📋 localStorage currentCompany:', this.currentCompany);  
-    this.countryOfCompany = this.currentCompany?.CountryName;
-    console.log('📋 countryOfCompany:', this.countryOfCompany);
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.filterOption = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentCompany?.BranchMasterSid,
-    }
-    
-    this.initBookingForm();
-    this.initCargoForm();
-    this.initOtherForm();
-    this.initDetailsForm();
-    this.spinner.show();
-    this.currentRoute.queryParams.subscribe(params => {
-    this.masterJobId = params['masterJobId'] ? +params['masterJobId'] : null;
-    
-    if (this.masterJobId) {
-      console.log('Creating house job for master job:', this.masterJobId);
-      this.loadMasterJobDataForHouseJob(this.masterJobId);
+  this.userData = this.appSettingService.getDecryptedUserProfile();
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.countryOfCompany = this.currentCompany?.CountryName;
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.filterOption = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentCompany?.BranchMasterSid,
+  };
+  
+  this.initBookingForm();
+  this.initCargoForm();
+  this.initOtherForm();
+  this.initDetailsForm();
+  this.spinner.show();
+  
+  // Check for master job data in query parameters
+  this.currentRoute.queryParams.subscribe(params => {
+    if (params['MasterJobSid']) {
+      console.log('Creating house job from master job:', params);
+      this.loadMasterJobDataForHouseJob(params);
     }
   });
-    this.loadHeaderMandatoryParts().subscribe(() => {
+  
+  this.currentRoute.paramMap.subscribe((param) => {
+    this.HouseJobSid = +param.get('id');
+    if (this.HouseJobSid) {
+      this.isEditMode = true;
+      this.loadHouseById(this.HouseJobSid);
+    } else {
+      this.minDate = this.today;
+    }
+  });
+  
+  this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
-      this.currentRoute.paramMap.subscribe((param) => {
-        this.HouseJobSid = +param.get('id');
-        if (this.HouseJobSid) {
-          this.isEditMode = true;
-          this.loadHouseById(this.HouseJobSid);
-        } else {
-          this.minDate = this.today;
-        }
-      });
       this.loadCargoLookups();
       if (!this.productLookupsLoaded) {
-      this.loadProductLookups();
+        this.loadProductLookups();
       }
       this.loadOtherLookups();
     });
     this.spinner.hide();
   });
-    this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
+  
+  this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
     console.log('CargoCurrency value changed:', value);
   });
   this.loadHSSACLookups();
@@ -1444,7 +1445,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
 console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
 
   const payload = {
-    MasterJobSid: houseJobFormValue.MasterJobSid,
+     MasterJobSid: Number(houseJobFormValue.MasterJobSid) || null,
     BookingNo: houseJobFormValue.BookingNo,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1641,30 +1642,50 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
 
   // Header Part Related
 
-  onDeptChange(department) {
-    this.selectedDepartment = department;
-    if (!department) {
-      this.selectedDepartmentType = '';
-      this.selectedFCLLCL = 'LCL';
-      this.filteredPorts = [];
-      this.filteredPOL = [];
-      this.filteredPOD = [];
-      this.b['POO'].setValue(null);
-      this.b['POL'].setValue(null);
-      this.b['POD'].setValue(null);
-      this.b['FPD'].setValue(null);
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
-      this.b['MovementType'].setValue(null);
-      this.b['JobType'].setValue('');
-      this.handleImportExport();
-      this.handleCFSOrYard()
-      return;
-    }
-    this.selectedDepartmentType = department.departmentType.toUpperCase();
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
-    this.autoSetJobType(department);
-    if (this.selectedDepartmentType === "AIR") {
+ onDeptChange(department) {
+  console.log('onDeptChange called with:', department);
+  
+  if (!department) {
+    this.selectedDepartment = null;
+    this.selectedDepartmentType = '';
+    this.selectedFCLLCL = 'LCL';
+    this.filteredPorts = [];
+    this.filteredPOL = [];
+    this.filteredPOD = [];
+    this.b['POO'].setValue(null);
+    this.b['POL'].setValue(null);
+    this.b['POD'].setValue(null);
+    this.b['FPD'].setValue(null);
+    this.b['ETA'].setValue('');
+    this.b['ETD'].setValue('');
+    this.b['MovementType'].setValue(null);
+    this.b['JobType'].setValue('');
+    this.handleImportExport();
+    this.handleCFSOrYard()
+    return;
+  }
+  
+  // Set department properties
+  this.selectedDepartment = department;
+  this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
+  this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
+    ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
+    : "AIR";
+  
+  // Set the form control value
+  this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid);
+  
+  console.log('Department set:', {
+    sid: department.DepartmentMasterSid,
+    name: department.departmentName,
+    type: this.selectedDepartmentType,
+    fcllcl: this.selectedFCLLCL
+  });
+  
+  // Rest of the method remains the same...
+  this.autoSetJobType(department);
+  
+  if (this.selectedDepartmentType === "AIR") {
     // Set IncoTerms to CIF
     this.b['IncoTerms']?.setValue('CIF');
     
@@ -1676,18 +1697,20 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
   } else {
     this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
   }
-    if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
-      this.cargoForm.get('StuffingAt')?.setValue('Dock');
-      this.cargoForm.get('StuffingAt')?.disable();
-    } else {
-      this.cargoForm.get('StuffingAt')?.enable();
-    }
-    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
-    this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
-    this.handleCFSOrYard()
-    this.onRouteChange()
-    this.handleImportExport();
+  
+  if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
+    this.cargoForm.get('StuffingAt')?.setValue('Dock');
+    this.cargoForm.get('StuffingAt')?.disable();
+  } else {
+    this.cargoForm.get('StuffingAt')?.enable();
   }
+  
+  this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+  this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
+  this.handleCFSOrYard();
+  this.onRouteChange();
+  this.handleImportExport();
+}
   private autoSetJobType(department: any): void {
   if (!department) {
     this.b['JobType']?.setValue('');
@@ -1958,41 +1981,53 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
 
 
   onVoyageChange(voyage: any) {
-    if (!voyage) {
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
-      this.b['VoyageMasterSid']?.setValue('')
-      return;
-    }
-    const POL = this.b['POL'].value;
-    const POD = this.b['POD'].value;
-    this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const details = voyage.Ports || [];
-
-    const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETA = polDetail?.ETD || null;
-
-
-    const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETA || null;
-
-    this.b['ETD'].setValue(new Date(polETA));
-    this.b['ETA'].setValue(new Date(podETD));
-    this.minStartDate = new Date(podETD);
+  if (!voyage) {
+    this.b['ETA'].setValue('');
+    this.b['ETD'].setValue('');
+    this.b['VoyageMasterSid']?.setValue('');
+    return;
   }
+  
+  console.log('Selected voyage:', voyage);
+  
+  this.houseJobForm.patchValue({
+    VoyageMasterSid: voyage.VoyageMasterHeaderSid,
+    VoyageNo: voyage.VoyageNo,
+    VesselName: voyage.VesselName || this.houseJobForm.get('VesselName')?.value,
+    ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+    ETD: voyage.ETD ? new Date(voyage.ETD) : null
+  });
+
+  this.minStartDate = voyage.ETA ? new Date(voyage.ETA) : null;
+}
 
   getVesselBasedOnPorts() {
   const POL = this.b['POL']?.value;
   const POD = this.b['POD']?.value;
+  
+  if (!POL || !POD) {
+    console.log('Cannot get vessels: POL or POD is missing');
+    return;
+  }
+  
   const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
-  const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-  const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
   
-  if (!POLSid || !PODSid || !voyageType) return;
+  // Find port objects from port list
+  const polPort = this.portList.find(p => p.PortCode === POL);
+  const podPort = this.portList.find(p => p.PortCode === POD);
   
-  const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
+  if (!polPort || !podPort) {
+    console.log('Cannot get vessels: Port objects not found');
+    return;
+  }
+  
+  const payload = { 
+    POL: polPort.PortMasterSid, 
+    POD: podPort.PortMasterSid, 
+    segment: voyageType 
+  };
+
+  console.log('Getting vessels with payload:', payload);
 
   this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
     (resp: any) => {
@@ -2002,7 +2037,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
           ETD: this.datePipe.transform(vslVoy.ETD),
           ETA: this.datePipe.transform(vslVoy.ETA)
         }));
-        console.log('Vessel list:', this.headerVesselList);
+        console.log('Vessel list loaded:', this.headerVesselList.length, 'vessels');
         
         if (this.headerVesselList.length === 0) {
           this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
@@ -2010,6 +2045,10 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       } else {
         this.appSettingService.showError("Error loading Vessel");
       }
+    },
+    (error) => {
+      console.error('Error loading vessels:', error);
+      this.appSettingService.showError("Error loading Vessel data");
     }
   );
 }
@@ -2029,47 +2068,57 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 }
 
-  getVoyageForPortsAndVessels() {
-    const POO = this.b['POO']?.value;
-    const POL = this.b['POL']?.value;
-    const POD = this.b['POD']?.value;
-    const FPOD = this.b['FPD']?.value;
-    const MovementType = this.selectedDepartment?.departmentType;
-    // const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    // const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
-    const vessel = this.b['VesselName']?.value;
-    const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
-    if (!POL || !POD || !vesselId) {
-      return;
-    }
-    const payload = { VesselMasterSid: vesselId,  POL: POLSid, POD: PODSid, MovementType: MovementType }
-    this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.voyageList = resp.data.map(voyage => {
-            const pol = voyage.Ports.find(p => p.POLSid === payload.POL);
-            const pod = voyage.Ports.find(p => p.POLSid === payload.POD || p.PODSid === payload.POD);
-            const polName = this.portList.find(p => p.PortMasterSid === payload.POL)?.PortName;
-            const podName = this.portList.find(p => p.PortMasterSid === payload.POD)?.PortName;
-            const polWithName = pol ? { ...pol, PortName: polName } : null;
-            const podWithName = pod ? { ...pod, PortName: podName } : null;
+ getVoyageForPortsAndVessels() {
+  const POL = this.houseJobForm.get('POL')?.value;
+  const POD = this.houseJobForm.get('POD')?.value;
+  const vesselName = this.houseJobForm.get('VesselName')?.value;
 
-            return {
-              ...voyage,
-              POL: polWithName,
-              POD: podWithName
-            };
-          });
-          console.log(this.voyageList);
-        } else {
-          this.appSettingService.showError("Error loading sailing schedules.")
-        }
-      }
-    )
+  if (!POL || !POD || !vesselName) {
+    return;
   }
 
+  // Get port details
+  const polPort = this.portList.find(p => p.PortCode === POL);
+  const podPort = this.portList.find(p => p.PortCode === POD);
+
+  if (!polPort || !podPort) {
+    return;
+  }
+
+  const payload = {
+    VesselName: vesselName,
+    POL: polPort.PortMasterSid,
+    POD: podPort.PortMasterSid,
+    MovementType: this.selectedDepartment?.departmentType
+  };
+
+  this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.voyageList = resp.data.map((voyage: any) => {
+          return {
+            VoyageNo: voyage.VoyageNo,
+            ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+            ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+            PortCutoff: voyage.PortCutoff ? new Date(voyage.PortCutoff) : null,
+            VoyageMasterHeaderSid: voyage.VoyageMasterSid,
+            VesselName: voyage.VesselName,
+            POL: polPort,
+            POD: podPort
+          };
+        });
+
+        // Auto-select the first voyage if only one exists
+        if (this.voyageList.length === 1) {
+          this.onVoyageChange(this.voyageList[0]);
+        }
+      }
+    },
+    (err) => {
+      console.error('Error loading voyages:', err);
+    }
+  );
+}
   toggleHeaderCheckboxes(event: Event, fieldName: string) {
     if (fieldName) {
       const element = event.target as HTMLInputElement;
@@ -3329,21 +3378,30 @@ grossAmount(): number {
  
 }
 
-loadMasterJobDataForHouseJob(masterJobId: number): void {
-  this.operationService.getMasterJobById(masterJobId).subscribe({
-    next: (response: any) => {
-      if (response.status && response.data) {
-        const masterJobData = response.data;
-        this.prepopulateFromMasterJob(masterJobData);
-      }
-    },
-    error: (error) => {
-      console.error('Error loading master job data:', error);
-      this.appSettingService.showWarning('Failed to load master job data');
-    }
+loadMasterJobDataForHouseJob(masterJobParams: any): void {
+  console.log('Prepopulating house job from master job:', masterJobParams);
+  
+  // Store the master job ID
+  this.masterJobId = masterJobParams.MasterJobSid;
+  
+  // Store the master job data to use after lookups are loaded
+  this.storedMasterJobData = masterJobParams;
+  
+  // Show loading indicator
+  this.spinner.show();
+  
+  // Load all necessary data first
+  this.loadHeaderMandatoryParts().subscribe(() => {
+    this.loadHeaderLookups().subscribe(() => {
+      // Now populate the form with master job data
+      this.prepopulateFromMasterJob(this.storedMasterJobData);
+      this.spinner.hide();
+    });
   });
 }
 
+// Add a class property to store master job data
+storedMasterJobData: any;
 loadMasterJobARAPData() {
     if (!this.HouseJobSid) {
         this.arapData = [];
@@ -3471,29 +3529,143 @@ printARAPReport() {
 prepopulateFromMasterJob(masterJobData: any): void {
   console.log('Prepopulating house job from master job:', masterJobData);
   
-  // Set MasterJobSid in the form
-  this.houseJobForm.patchValue({
-    MasterJobSid: masterJobData.MasterJobSid,
-    DepartmentMasterSid: masterJobData.DepartmentMasterSid,
-    MBLNo: masterJobData.MBLNo,
-    MBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
-    VesselName: masterJobData.VesselName,
-    VoyageNo: masterJobData.VoyageNo,
-    POL: masterJobData.POL,
-    POD: masterJobData.POD,
-    FPD: masterJobData.FPD,
-    ETA: masterJobData.ETA ? new Date(masterJobData.ETA) : null,
-    ETD: masterJobData.ETD ? new Date(masterJobData.ETD) : null,
-    CarrierName: masterJobData.CarrierName
-  });
-
-  // Set department info
-  const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === masterJobData.DepartmentMasterSid);
-  if (selectedDepartment) {
-    this.onDeptChange(selectedDepartment);
+  if (!masterJobData) return;
+  
+  // Find the department first
+  const departmentSid = Number(masterJobData.DepartmentMasterSid);
+  const selectedDepartment = this.departmentList.find(
+    dep => dep.DepartmentMasterSid === departmentSid
+  );
+  
+  if (!selectedDepartment) {
+    console.error('Department not found:', departmentSid);
+    this.appSettingService.showWarning(`Department with ID ${departmentSid} not found in department list.`);
+    return;
   }
   
-  this.appSettingService.showSuccess('Master job data loaded successfully');
+  console.log('Found department:', selectedDepartment);
+  
+  // Set the department first - this triggers department-specific logic
+  this.onDeptChange(selectedDepartment);
+  
+  // Wait a moment for department change to take effect
+  setTimeout(() => {
+    // Set MasterJobSid and other basic fields
+    this.houseJobForm.patchValue({
+      MasterJobSid: masterJobData.MasterJobSid,
+      DepartmentMasterSid: departmentSid,
+      MBLNo: masterJobData.MBLNo || '',
+      MBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
+      VesselName: masterJobData.VesselName || '',
+      VoyageNo: masterJobData.VoyageNo || '',
+      CarrierName: masterJobData.CarrierName || ''
+    });
+    
+    // Debug: Check form values
+    console.log('Form after patch:', this.houseJobForm.value);
+    console.log('DepartmentMasterSid in form:', this.houseJobForm.get('DepartmentMasterSid')?.value);
+    
+    // Handle POL, POD, FPD - need to convert from codes to SIDs
+    if (masterJobData.POLCode || masterJobData.POL) {
+      this.setPortFromCode('POL', masterJobData.POLCode || masterJobData.POL);
+    }
+    
+    if (masterJobData.PODCode || masterJobData.POD) {
+      this.setPortFromCode('POD', masterJobData.PODCode || masterJobData.POD);
+    }
+    
+    if (masterJobData.FPDCode || masterJobData.FPD) {
+      this.setPortFromCode('FPD', masterJobData.FPDCode || masterJobData.FPD);
+    }
+    
+    // Set dates
+    if (masterJobData.ETA) {
+      this.houseJobForm.patchValue({
+        ETA: new Date(masterJobData.ETA)
+      });
+    }
+    
+    if (masterJobData.ETD) {
+      this.houseJobForm.patchValue({
+        ETD: new Date(masterJobData.ETD)
+      });
+    }
+    
+    // Disable department field since it's from master job
+    this.houseJobForm.get('DepartmentMasterSid')?.disable();
+    
+    // Trigger vessel search based on ports after a delay
+    setTimeout(() => {
+      this.getVesselBasedOnPorts();
+      
+      // If vessel name is provided, try to auto-select it
+      if (masterJobData.VesselName) {
+        setTimeout(() => {
+          this.autoSelectVesselVoyage(masterJobData.VesselName, masterJobData.VoyageNo);
+        }, 1000);
+      }
+    }, 500);
+    
+    this.appSettingService.showSuccess('Master job data loaded successfully');
+  }, 200);
+}
+
+private setPortFromCode(formControlName: string, portCode: string): void {
+  if (!portCode || !this.portList || this.portList.length === 0) {
+    console.warn(`Cannot set ${formControlName}: portCode is empty or portList not loaded`);
+    return;
+  }
+  
+  // Find port by code
+  const port = this.portList.find(p => p.PortCode === portCode);
+  
+  if (!port) {
+    console.warn(`Port not found for code: ${portCode}`);
+    return;
+  }
+  
+  console.log(`Setting ${formControlName} to port:`, port);
+  
+  // Update the form control
+  this.houseJobForm.patchValue({
+    [formControlName]: port.PortCode
+  });
+  
+  // Update filtered ports
+  if (formControlName === 'POL') {
+    this.handlePOLChange(port);
+  } else if (formControlName === 'POD') {
+    this.handlePODChange(port);
+  }
+}
+private autoSelectVesselVoyage(vesselName: string, voyageNo: string): void {
+  if (!vesselName || this.headerVesselList.length === 0) return;
+  
+  // Find matching vessel in the list
+  const matchingVessel = this.headerVesselList.find(vessel => 
+    vessel.VesselName?.toLowerCase() === vesselName.toLowerCase()
+  );
+  
+  if (matchingVessel) {
+    console.log('Found matching vessel:', matchingVessel);
+    
+    // Set the vessel name first
+    this.houseJobForm.patchValue({
+      VesselName: matchingVessel.VesselName
+    });
+    
+    // If voyage number matches, set it too
+    if (voyageNo && matchingVessel.VoyageNo === voyageNo) {
+      this.houseJobForm.patchValue({
+        VoyageNo: matchingVessel.VoyageNo,
+        ETA: matchingVessel.ETA ? new Date(matchingVessel.ETA) : null,
+        ETD: matchingVessel.ETD ? new Date(matchingVessel.ETD) : null
+      });
+    }
+    
+    // Get voyages for this vessel
+    this.getVoyageForPortsAndVessels();
+  }
 }
  
  
