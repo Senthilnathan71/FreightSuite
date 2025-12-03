@@ -53,8 +53,8 @@ export class TextWithNumbersDirective {
         const maxLength = this.textWithNumbers ?? Infinity;
         let value: string = this.el.nativeElement.value;
 
-        // Remove all special characters - only allow letters and numbers
-        value = value.replace(/[^a-zA-Z0-9]/g, '');
+        // Remove special characters but keep letters, numbers, spaces, commas, and periods
+        value = value.replace(/[^a-zA-Z0-9 ,.]/g, '');
 
         // Enforce max length
         if (value.length > maxLength) {

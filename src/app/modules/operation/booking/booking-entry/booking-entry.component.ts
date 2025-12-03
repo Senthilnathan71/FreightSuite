@@ -135,6 +135,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   userData: any;
+  selectedCustomer: any;
   isPrintLoading: boolean;
   currentCompany: any;
   currentBranch: any;
@@ -642,10 +643,10 @@ arapFilter = {
       isVoyageFreeText: [false],
       VoyageMasterSid: [null],
       JobType: [{ value: '', disabled: false }],
-      VoyageNo: [{ value: null, disabled: true }],
-      ETA: [{ value: '', disabled: true }],
-      ETD: [{ value: '', disabled: true }],
-      CutOffDate: [{ value: '', disabled: true}],
+      VoyageNo: [ null],
+      ETA: [ ''],
+      ETD: [''],
+      CutOffDate: [''],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1545,6 +1546,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         return;
       }
     }
+      if (!this.validateAllForms()) {
+    return;
+  }
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
@@ -1583,7 +1587,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       MenuMasterSid: currentMenuId,
       DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
       CustomerMasterSid: bookingFormValue.CustomerMasterSid,
-      CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
+      CustomerBranchSid: bookingFormValue.CustomerBranchSid || this.selectedCustomer?.CustomerBranchSid || null,
       CustomerName: bookingFormValue.CustomerName,
       CustomerAddress: bookingFormValue.CustomerAddress,
       SalesmanSid: bookingFormValue.SalesmanSid || null,
@@ -1756,6 +1760,83 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
   }
 
+  private validateAllForms(): boolean {
+  let isValid = true;
+  const errorMessages: string[] = [];
+
+  // Validate Booking Form
+  if (this.bookingForm.invalid) {
+    this.bookingForm.markAllAsTouched();
+    
+    Object.keys(this.bookingForm.controls).forEach(key => {
+      const control = this.bookingForm.get(key);
+      if (control?.errors) {
+        if (control.errors['required']) {
+          errorMessages.push(`${this.getFieldLabel(key)} is required`);
+        }
+      }
+    });
+    isValid = false;
+  }
+
+  // Validate Cargo Form
+  if (this.cargoForm.invalid) {
+    this.cargoForm.markAllAsTouched();
+    
+    Object.keys(this.cargoForm.controls).forEach(key => {
+      const control = this.cargoForm.get(key);
+      if (control?.errors) {
+        if (control.errors['required']) {
+          errorMessages.push(`${this.getFieldLabel(key)} is required`);
+        }
+      }
+    });
+    isValid = false;
+  }
+
+  // Validate CRO Form
+  if (this.selectedTab === 'CRO' && this.croForm.invalid) {
+    this.croForm.markAllAsTouched();
+    
+    Object.keys(this.croForm.controls).forEach(key => {
+      const control = this.croForm.get(key);
+      if (control?.errors) {
+        if (control.errors['required']) {
+          errorMessages.push(`${this.getFieldLabel(key)} is required`);
+        }
+      }
+    });
+    isValid = false;
+  }
+
+  // Validate Products in FormArray
+  if (this.bookingProducts.length > 0) {
+    this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
+      if (productGroup.invalid) {
+        productGroup.markAllAsTouched();
+        
+        Object.keys(productGroup.controls).forEach(key => {
+          const control = productGroup.get(key);
+          if (control?.errors) {
+            if (control.errors['required']) {
+              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
+            }
+          }
+        });
+        isValid = false;
+      }
+    });
+  }
+
+  // Show error messages if any
+  if (errorMessages.length > 0) {
+    const errorMessage = errorMessages.join(',');
+    this.appSettingService.showWarning(errorMessage, 'Validation Errors');
+  }
+
+  return isValid;
+}
+
   /**
     |--------------------------------------------------
     |   Section-5 : Helper Functions
@@ -1867,6 +1948,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   onCustomerChange(customer: any) {
     console.log(customer);
+    this.selectedCustomer = customer; 
     if (!customer) {
       this.b['CustomerName']?.setValue('');
       this.b['CustomerAddress']?.setValue(null);
@@ -1893,9 +1975,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   onConsigneeChange(consignee?: any) {
     if (!consignee) {
       this.filteredShipperList = [...this.shipperList];
+      this.b['Notify']?.setValue(null);
+      this.b['NotifyAddress']?.setValue('');
       return;
     }
     this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
+    this.b['Notify']?.setValue(consignee.CustomerName);
+    this.b['NotifyAddress']?.setValue(consignee.Address);
   }
 
   handleImportExport() {
@@ -1905,6 +1991,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.b['ShipperAddress']?.setValue('');
       this.b['ConsigneeName']?.setValue(null);
       this.b['ConsigneeAddress']?.setValue('');
+      this.b['Notify']?.setValue(null);
+      this.b['NotifyAddress']?.setValue('')
       this.onShipperChange();
       this.onConsigneeChange();
       return;
@@ -1953,6 +2041,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       if (!customerBranchSid) {
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
+        this.b['Notify']?.setValue(null); // Clear Notify
+        this.b['NotifyAddress']?.setValue('');
         this.onConsigneeChange();
         return;
       }
@@ -1963,11 +2053,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       if (consigneeExist && consigneeExistInFiltered) {
         this.b['ConsigneeName']?.setValue(consigneeExistInFiltered.CustomerName);
         this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.Address);
+        this.b['Notify']?.setValue(consigneeExistInFiltered.CustomerName);
+        this.b['NotifyAddress']?.setValue(consigneeExistInFiltered.Address);
         this.onConsigneeChange(consigneeExistInFiltered);
         this.onShipperChange();
       } else if (consigneeExist && !consigneeExistInFiltered) {
         this.b['ConsigneeName']?.setValue(consigneeExist.CustomerName);
         this.b['ConsigneeAddress']?.setValue(consigneeExist.Address);
+        this.b['Notify']?.setValue(consigneeExist.CustomerName);
+      this.b['NotifyAddress']?.setValue(consigneeExist.Address);
         this.b['ShipperName']?.setValue(null);
         this.b['ShipperAddress']?.setValue('');
         this.onConsigneeChange(consigneeExist);
@@ -1975,6 +2069,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       } else {
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
+        this.b['Notify']?.setValue(null); // Clear Notify
+        this.b['NotifyAddress']?.setValue('')
         this.onConsigneeChange();
       }
     }
@@ -2122,9 +2218,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         if (resp.status) {
           this.headerVesselList = resp.data.map(vslVoy =>({
               ...vslVoy , 
-              ETD : this.datePipe.transform(vslVoy.ETD), 
-              ETA : this.datePipe.transform(vslVoy.ETA),
-              CutOffDate: this.datePipe.transform(vslVoy.CutOffDate),
+              ETD : vslVoy.ETD ? new Date (vslVoy.ETD) : null,
+              ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
+              CutOffDate: vslVoy.CutOffDate ? new Date (vslVoy.CutOffDate) : null,
           }));
           console.log(this.headerVesselList);
            if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
@@ -3883,4 +3979,36 @@ printARAPReport() {
     // Implement print functionality
     window.print();
 }
+
+// Add this method to your component class
+getFieldLabel(fieldName: string): string {
+  const fieldLabels: { [key: string]: string } = {
+    // Booking Form Fields
+    'DepartmentMasterSid': 'Department',
+    'CustomerMasterSid': 'Customer',
+    'CustomerAddress': 'Customer Address',
+    'ShipperName': 'Shipper Name',
+    'ShipperAddress': 'Shipper Address',
+    'ConsigneeName': 'Consignee Name',
+    'ConsigneeAddress': 'Consignee Address',
+    'POL': 'Port of Loading',
+    'POD': 'Port of Discharge',
+    'IncoTerms': 'INCO Terms',
+    
+    // Cargo Form Fields
+    'ExternaPkg': 'External Package',
+    'ExternlQty': 'External Quantity',
+    'GrossWeight': 'Gross Weight',
+    'NetWeight': 'Net Weight',
+    'Volumetric': 'Volumetric Weight',
+    
+    // CRO Form Fields
+    'ReleaseOrderDate': 'Release Order Date',
+    'Transporter': 'Transporter',
+    'EmptyYard': 'Empty Yard'
+  };
+  
+  return fieldLabels[fieldName] || fieldName;
+}
+
 }

@@ -3188,39 +3188,59 @@ ${this.userData.userName}`;
   }
 
 
-  goForBookingCreation() {
-    const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
-    if(!customerHasBranch){
-      this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+  async goForBookingCreation() {
+  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
+  if (!customerHasBranch) {
+    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+    return;
+  }
+
+  try {
+    // Fetch full quote details with enquiry data using the new service method
+    const quoteResponse = await firstValueFrom(
+      this.leadService.getQuote(this.selectedItem.QuoteHeaderSid)
+    );
+
+    if (!quoteResponse) {
+      this.appSettingService.showError("Error loading quotation details");
       return;
     }
-    console.log(this.selectedItem, 'this.selectedItem');
-    let QuoteData = this.selectedItem;
 
-    // TODO : need to fix this after completion of Authorization
+    const QuoteData = quoteResponse.data;
+    console.log('Full Quotation Data with Enquiry:', QuoteData);
+
+    // TODO: need to fix this after completion of Authorization
     // const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
     //   route.quoteCarrier.some(carrier => carrier.ApprovalStatus === "A")
     // ) || {};
-    const approvedRoute = this.selectedItem.quoteRoute[0] || [];
+    const approvedRoute = QuoteData.quoteRoute?.[0] || [];
     const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
     const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
     const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
     const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
-    
-    
-    // TODO : need to fix this after completion of Authorization
+
+    // TODO: need to fix this after completion of Authorization
     // const approvedCarrier = (approvedRoute?.quoteCarrier || []).find(
-      //   carrier => carrier.ApprovalStatus === "A"
+    //   carrier => carrier.ApprovalStatus === "A"
     // ) || {};
     const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
-    
+
     const cargo = approvedRoute?.quoteCargo?.[0] || {};
     const containerTypeId = this.containerTypeList.find(type => type.ContainerCode === cargo.ContainerType)?.ContainerTypeMasterSid;
+
+    // Extract shipper and consignee from enquiry if available
+    const enquiryData = QuoteData.EnquiryHeader;
+    const enquiryOther = enquiryData?.enquiryOther?.[0];
+    const shipperName = enquiryOther?.ShipperName || "";
+    const shipperAddress = enquiryOther?.ShipperAddress || "";
+    const consigneeName = enquiryOther?.ConsigneeName || "";
+    const consigneeAddress = enquiryOther?.ConsigneeAddress || "";
+
 
     const data = {
       quotation: true,
       DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
-      IncoTerms : approvedRoute.ServiceLevel,
+      IncoTerms: approvedRoute.ServiceLevel,
       CustomerMasterSid: QuoteData.CustomerMasterSid || null,
       CustomerBranchSid: QuoteData.CustomerBranchSid || null,
       CustomerName: QuoteData.CustomerName || "",
@@ -3229,13 +3249,21 @@ ${this.userData.userName}`;
       FreightTerms: QuoteData.FreightPPCC || "",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
-      status : 'A',
+      status: 'A',
 
+      // Shipper and Consignee from Enquiry
+      ShipperName: shipperName,
+      ShipperAddress: shipperAddress,
+      ConsigneeName: consigneeName,
+      ConsigneeAddress: consigneeAddress,
+
+      // Port details
       POO: POO?.PortCode || null,
       POL: POL?.PortCode || null,
       POD: POD?.PortCode || null,
       FPD: FPD?.PortCode || null,
 
+      // Cargo details
       bookingCargo: cargo ? [
         {
           CargoType: cargo.CargoType,
@@ -3248,6 +3276,7 @@ ${this.userData.userName}`;
         }
       ] : [],
 
+      // Product details
       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
         ProductName: product.ProductName,
         ExternaPkg: product.ExternalPkg,
@@ -3265,11 +3294,12 @@ ${this.userData.userName}`;
         UomMasterSid: product.UomMasterSid,
       })),
 
+      // Rate details
       bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
         CompanyMasterSid: charge.CompanyMasterSid,
         BranchMasterSid: charge.BranchMasterSid,
         SerialNumber: index + 1,
-        ChargeMasterSid: charge.ChargeUomSid, 
+        ChargeMasterSid: charge.ChargeUomSid,
         ChargeDescription: charge.ChargeDisplayName,
         NoOfUnit: charge.Qty,
 
@@ -3292,17 +3322,24 @@ ${this.userData.userName}`;
         RevenueAmount: charge.RevenueAmount,
         RevenueLocalAmount: charge.RevenueLocalAmount,
         CustomerMasterSid: charge.RevenueCustomerMasterSid,
-        QuoteChargeSid : charge.QuoteChargeSid,
-        TariffDetailSid : charge.TariffDetailSid,
+        QuoteChargeSid: charge.QuoteChargeSid,
+        TariffDetailSid: charge.TariffDetailSid,
       }))
     };
+
+    console.log('Booking Data with Shipper/Consignee:', data);
 
     this.router.navigate(['operation/booking/entry'], {
       state: {
         dataFromQuotation: data
       }
     });
+
+  } catch (error) {
+    console.error('Error fetching quotation details:', error);
+    this.appSettingService.showError("Failed to load quotation details for booking");
   }
+}
 
   
 toggleLock() {
