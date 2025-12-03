@@ -5,6 +5,9 @@
     <div class="spinner-overlay">
       <div class="spinner"></div>
     </div>
+       <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
+            <i class="fas fa-download me-1"></i> Print
+        </button>
     <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
       <i class="fas fa-download me-1"></i> Download PDF
     </button>
@@ -20,7 +23,7 @@
 
 <div class="modal-body">
   <div id="printContent">
-    <div style="
+    <!-- <div style="
     width: 280mm;
     min-height: 405mm;
     margin: 10px auto !important;
@@ -265,7 +268,7 @@
             <div class="d-flex  mb-1 text-center">
               <div><strong>Freight Details, Charges etc :</strong></div>
               <span class="text-center" style="height: 70px;">
-                <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
+               
               </span>
             </div>
           </div>
@@ -279,12 +282,7 @@
         </div>
         <div class="row mb-0" style="padding: 0 10px;">
           <div class="col-md-6" style="border-bottom: 1px solid black; border-right: 1px solid black; ">
-            <!-- <div class="d-flex  mb-1 text-center">
-        <div><strong>Freight Details, Charges etc :</strong></div>
-        <span class="text-center">
-          {{ housejobData?.Others?.[0]?.PickupAddress }}
-        </span>
-      </div> -->
+       
           </div>
           <div class="col-md-6" style="border-bottom: 1px solid black; ">
             <div class="d-flex gap-1 mb-1 text-center">
@@ -304,7 +302,210 @@
           <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
         </div>
       </footer>
+    </div> -->
+
+   <div style="
+    width: 280mm;
+    min-height: 405mm;
+    margin: 10px auto !important;
+    background: #fff;
+    box-sizing: border-box;
+    position: relative;
+    color: #000;
+    page-break-after: always;
+  ">
+  <h5 style="margin: 0; font-weight: 700; padding-bottom: 8px;">Master Bill of Lading</h5>
+
+  <!-- ROW 1 -->
+  <div style="display: flex; padding: 0 10px; margin-bottom: 0; flex-wrap: wrap;">
+    <div style="flex: 0 0 50%; max-width: 50%; border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0;">
+      <div style="display:flex; margin-bottom:5px;">
+        <div style="width:150px; font-weight:700;">Shipper</div>
+        <div style="width:8px;">:</div>
+        <span style="min-height:100px; flex:1;">
+          {{masterJobData?.allShipments?.[0]?.ShipperName}} <br>
+          {{masterJobData?.allShipments?.[0]?.ShipperAddress}}
+        </span>
+      </div>
     </div>
+
+    <div style="flex: 0 0 50%; max-width: 50%; border-top:1px solid black; border-bottom:1px solid black; padding:0;">
+      <div style="display:flex; margin-bottom:5px; padding:0 8px; border-bottom:1px solid black;">
+        <div style="width:150px; font-weight:700;">MBL No</div>
+        <span style="flex:1;">: {{masterJobData.MBLNo}}</span>
+      </div>
+
+      <div style="display:flex; padding:0 8px;">
+        <div style="width:150px; font-weight:700;">Delivery Agent & Ref</div>
+        <span style="min-height:80px; flex:1;">: {{ getAgentName(masterJobData?.DestinationAgent) }} <br>
+          {{masterJobData.DestinationAgentAddress}}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
+    <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
+      <div style="display:flex; border-bottom:1px solid black; border-right:1px solid black; padding:5px;">
+        <strong style="width:150px;">Consignee</strong>
+        <div style="width:8px;">:</div>
+        <span style="min-height:100px; flex:1;">
+          {{ masterJobData?.allShipments?.[0]?.ConsigneeName }} <br>
+          {{ masterJobData?.allShipments?.[0]?.ConsigneeAddress }}
+        </span>
+      </div>
+
+      <div style="display:flex; border-bottom:1px solid black; border-right:1px solid black; padding:5px;">
+        <strong style="width:150px;">Notify Party</strong>
+        <div style="width:8px;">:</div>
+        <span style="min-height:100px; flex:1;">
+          {{masterJobData?.houseJob?.[0]?.Notify}} <br>
+          {{masterJobData?.houseJob?.[0]?.NotifyAddress}}
+        </span>
+      </div>
+    </div>
+
+    <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0px; border-bottom:1px solid black;">
+      <img src="assets/images/logos/xtreme-dark-icon.svg" style="max-height:80px; margin-bottom:5px;">
+      <div style="text-align:center;">
+        <h4 style="margin:0;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+        <h5 style="margin:0;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+        <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 }}</p>
+        <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 }}</p>
+        <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName }}</p>
+        <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode }}</p>
+        <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3 -->
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Place of Receipt</strong><br>
+    </div>
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Port of Loading</strong><br>{{ masterJobData?.POL }}
+    </div>
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Job No</strong><br>{{ masterJobData?.MasterJobNumber }}
+    </div>
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black;border-top: none; text-align:center; padding:5px;">
+      <strong>Job Ref</strong>
+    </div>
+  </div>
+
+  <!-- ROW 4 -->
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Vessel / Voyage No</strong><br>
+      {{ masterJobData?.voyages?.[0]?.VesselName }} / {{ masterJobData?.voyages?.[0]?.VoyageNo }}
+    </div>
+
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Port of Discharge</strong><br>{{ masterJobData?.POD }}
+    </div>
+
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+      <strong>Place of Delivery</strong>
+    </div>
+
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; text-align:center;border-top: none; padding:5px;">
+      <strong>No of Bill of Lading</strong><br>{{ masterJobData?.NoofOriginal }}
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div style="overflow-x:auto; margin: 0 10px;">
+    <table style="width:100%; border-collapse:collapse; border:1px solid black; margin:10px 0; font-size:11pt;">
+      <thead style="font-weight:700;">
+        <tr>
+          <th style="border:1px solid black; padding:2px 8px; font-weight: 700;">Container No / Seal No / Marks & No</th>
+          <th style="border:1px solid black; padding:2px 8px;font-weight: 700">No of Pkg / Description / Shipping Unit</th>
+          <th style="border:1px solid black; padding:2px 8px;font-weight: 700">Gross Weight</th>
+          <th style="border:1px solid black; padding:2px 8px;font-weight: 700">Volume</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let container of masterJobData?.containers">
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{container?.ContainerNumber}} / {{ container?.LineSeal }}
+          </td>
+
+          <td style="border:1px solid black; padding:2px 8px;">
+            {{ container?.NoOfPkg }} /
+            {{ container?.CommodityDescription }} /
+            {{ getPackageTypeName(masterJobData?.containers?.[0]?.PkgType) }}
+          </td>
+
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+            {{ container?.GrossWeight | number:'1.3-3' }}
+          </td>
+
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+            {{ container?.Volume | number:'1.3-3' }}
+          </td>
+        </tr>
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="2" style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">TOTAL</td>
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+            {{ totalGrossWeight() | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+            {{ totalVolume() | number:'1.3-3' }}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="position:absolute; bottom:2mm; left:0; right:0;  font-size:10pt;">
+
+    <div style="display:flex; padding:0 10px; ">
+      <div style="flex:2; border:1px solid black; padding:5px;border-left: none; border-right: none;">
+        <strong>Total Number of Containers SAY :</strong>
+        {{ masterJobData?.containers?.length || 0 }}
+      </div>
+
+      <div style="flex:1; border:1px solid black; padding:5px;border-right: none;">
+        <strong>OnBoard Date :</strong> {{ masterJobData?.others?.[0]?.SOBDate | formatDate }}
+      </div>
+    </div>
+
+    <div style="display:flex; padding:0 10px; ">
+      <div style="flex:1; border:1px solid black; padding:5px; min-height:70px;border-left: none; border-right: none; border-top: none;">
+        <strong>Freight Details, Charges etc :</strong>
+      </div>
+
+      <div style="flex:1; border:1px solid black; padding:5px; min-height:70px; border-right: none;border-top: none;">
+        <strong>Excess Value Declaration :</strong>
+      </div>
+    </div>
+
+    <div style="display:flex; padding:0 10px; ">
+      <div style="flex:1; border:1px solid black; padding:5px;border-left: none; border-right: none;border-top: none;"></div>
+
+      <div style="flex:1; border:1px solid black; padding:5px; border-right: none;border-top: none;">
+        <strong>Signed on behalf of the Carrier</strong>  
+        By {{ currentCompany?.companyName }}  
+        <div style="text-align:left;"><strong>As Agent For the Carrier</strong></div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; padding:0 10px;">
+      <div>Printed By: {{ userData.userName }}</div>
+      <div>This document is computer-generated and does not require a signature.</div>
+      <div>Printed On: {{ currentDate | formatDate }}</div>
+    </div>
+
+  </footer>
+</div>
 
 
   </div>

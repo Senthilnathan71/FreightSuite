@@ -13,7 +13,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
   standalone: true,
   imports: [CommonModule, CustomDatePipe],
   templateUrl: './cargo-manifest.component.html',
-  styles: ``
+  styles:``
 })
 export class CargoManifestComponent {
   userData: any;
@@ -220,195 +220,29 @@ export class CargoManifestComponent {
     }
   }
   
-printCargoManifest(): void {
-  this.spinner.show();
-  
-  // Get the print content element
-  const printContent = document.getElementById('printContent');
-  
-  if (!printContent) {
-    this.spinner.hide();
-    return;
+
+  printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
+
+  const popupWin = window.open('', '_blank', 'width=900,height=600');
+  if (popupWin) {
+    popupWin.document.open();
+    popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    popupWin.document.close();
   }
-  
-  // Create a temporary div for printing
-  const tempDiv = document.createElement('div');
-  tempDiv.id = 'temp-print-container';
-  tempDiv.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    z-index: 99999;
-    overflow: auto;
-    padding: 20px;
-  `;
-  
-  // Clone and append the print content
-  const clone = printContent.cloneNode(true) as HTMLElement;
-  tempDiv.appendChild(clone);
-  
-  // Add print-specific styles
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #temp-print-container .print-a41 {
-      width: 280mm;
-      min-height: 402mm;
-      margin: 10px;
-      padding: 2mm 5mm;
-      background: #fff;
-      border: 1px solid #000;
-      box-sizing: border-box;
-      position: relative;
-      color: #000;
-      page-break-after: always;
-    }
-    
-    #temp-print-container .company-header {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    
-    #temp-print-container .company-logo {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-    }
-    
-    #temp-print-container .company-logo img {
-      width: 50px;
-      height: 50px;
-      object-fit: contain;
-    }
-    
-    #temp-print-container .company-info {
-      font-size: 14px !important;
-      padding-left: 28%;
-      text-align: center;
-    }
-    
-    #temp-print-container h5, 
-    #temp-print-container h4, 
-    #temp-print-container h6 {
-      margin: 0;
-      padding: 0;
-      font-weight: 600;
-    }
-    
-    #temp-print-container p {
-      margin: 2px 0;
-      font-size: 12pt;
-    }
-    
-    #temp-print-container .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    
-    #temp-print-container .col-md-6 {
-      flex: 0 0 50%;
-      max-width: 50%;
-    }
-    
-    #temp-print-container .text-end {
-      text-align: right;
-    }
-    
-    #temp-print-container table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-      font-size: 14px;
-    }
-    
-    #temp-print-container .tablebordered {
-      border: 1px solid black;
-    }
-    
-    #temp-print-container .tablebordered thead th {
-      font-weight: 700 !important;
-    }
-    
-    #temp-print-container .tablebordered th,
-    #temp-print-container .tablebordered td {
-      border: 1px solid black;
-      padding: 2px 8px;
-      color: #000;
-      text-align: left;
-      vertical-align: middle;
-    }
-    
-    #temp-print-container .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-    }
-    
-    #temp-print-container footer {
-      position: absolute;
-      bottom: 2mm;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-size: 10pt;
-    }
-    
-    #temp-print-container table,
-    #temp-print-container tr,
-    #temp-print-container td,
-    #temp-print-container th {
-      page-break-inside: avoid;
-    }
-    
-    @media print {
-      @page {
-        size: A4;
-        margin: 10mm;
-      }
-      
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      
-      #temp-print-container {
-        position: static;
-        padding: 0;
-      }
-      
-      #temp-print-container .print-a41 {
-        margin: 10mm auto;
-        padding: 10mm;
-        border: none;
-        page-break-after: always;
-      }
-      
-      #temp-print-container .print-a41:last-child {
-        page-break-after: auto;
-      }
-    }
-  `;
-  
-  tempDiv.appendChild(style);
-  document.body.appendChild(tempDiv);
-  
-  // Trigger print
-  setTimeout(() => {
-    window.print();
-    
-    // Clean up after printing
-    setTimeout(() => {
-      if (document.body.contains(tempDiv)) {
-        document.body.removeChild(tempDiv);
-      }
-      this.spinner.hide();
-    }, 500);
-  }, 500);
 }
+
+
 }
 
 interface ContainerDetails {
