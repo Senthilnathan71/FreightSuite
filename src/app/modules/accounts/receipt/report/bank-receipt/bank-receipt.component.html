@@ -5,7 +5,7 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+          <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent', 380)" >
             <i class="fas fa-download me-1"></i> Print
         </button>
 
@@ -26,20 +26,7 @@
 
 <div class="modal-body">
     <div id="printContent" class="p-1">
-<div style="width:280mm;
-    height:390mm;
-    margin:0px auto;
-    padding:10px;
-    background:#fff;
-    border:1px solid #000;
-    box-sizing:border-box;
-    font-size:14px;
-    color:#000;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    page-break-after:always;
-">
+<div  id="printWrap" style="width:280mm; min-height:385mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always; ">
 
     <!-- Content Wrapper (ensures footer stays down) -->
     <div style="flex:1; display:flex; flex-direction:column;">
@@ -108,13 +95,13 @@
         </div>
 
         <!-- Footer -->
-        <footer style="text-align:center; font-size:10pt; padding:8px 0; margin-top:10px; ">
-            <div style="display:flex; justify-content:space-between; font-size:12px;">
-                <div>Printed By: {{userData.userName}}</div>
-                <span>This document is computer-generated and does not require a signature.</span>
-                <div>Printed On: {{ currentDate | formatDate }}</div>
-            </div>
-        </footer>
+        <footer style="margin-top:10px; text-align:center; font-size:10pt; padding:0.5rem;">
+        <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <div>Printed By: {{userData.userName}}</div>
+            <span>This document is computer-generated and does not require a signature.</span>
+            <div>Printed On: {{ currentDate | formatDate }}</div>
+        </div>
+    </footer>
 
 </div>
 

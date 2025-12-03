@@ -172,7 +172,7 @@ async downloadPDF() {
   }
 }
 
-
+// Print
 
   printDiv(divId: string): void {
   const printContents = document.getElementById(divId)?.innerHTML;
