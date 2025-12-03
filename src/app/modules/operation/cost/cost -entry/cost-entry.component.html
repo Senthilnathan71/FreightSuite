@@ -955,22 +955,24 @@
       {{ billingGST_VAT || '-' }} 
                  </div>
                </div>
-               <div class="col-md-3">
-    <label class="form-label fw-bold">GST Type</label>
-    <ng-select [(ngModel)]="selectedGSTType" (change)="onGSTTypeChange()" [clearable]="false">
-      <ng-option value="B2B">B2B </ng-option>
-      <ng-option value="B2C">B2C </ng-option>
-      <ng-option value="EXWP">EXWP</ng-option>
-      <ng-option value="EXWOP"> EXWOP</ng-option>
-    </ng-select>
-  </div>
+               
+               <!-- GST Type - Only show for Indian companies -->
+               <div class="col-md-3" *ngIf="isIndianCompany()">
+                 <label class="form-label fw-bold">GST Type</label>
+                 <ng-select [(ngModel)]="selectedGSTType" (change)="onGSTTypeChange()" [clearable]="false">
+                   <ng-option value="B2B">B2B </ng-option>
+                   <ng-option value="B2C">B2C </ng-option>
+                   <ng-option value="EXWP">EXWP</ng-option>
+                   <ng-option value="EXWOP"> EXWOP</ng-option>
+                 </ng-select>
+               </div>
 
-  <!-- Place of Supply -->
-  <div class="col-md-3">
-    <label class="form-label fw-bold">Place of Supply</label>
-    <input type="text" class="custom-input-field sm" [(ngModel)]="placeOfSupply" 
-           [disabled]="true" placeholder="Auto-calculated">
-  </div>
+               <!-- Place of Supply - Show for all companies -->
+               <div class="col-md-3">
+                 <label class="form-label fw-bold">Place of Supply</label>
+                 <input type="text" class="custom-input-field sm" [(ngModel)]="placeOfSupply" 
+                        [disabled]="true" placeholder="Auto-calculated">
+               </div>
            
             <div class="col-md-3">
               <div class="custom-form-group-select">
@@ -1015,13 +1017,6 @@
               </div>
           </div>
           </div>
-              <!-- Currency Display -->
-              <!-- <div class="col-md-4">
-                <label class="form-label fw-bold">Invoice Currency</label>
-                <div class="p-2 bg-info text-white rounded text-center">
-                  <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
-                </div>
-              </div> -->
       </div>
     </div>
 
@@ -1057,8 +1052,10 @@
             <th class="text-end bg-transparent text-light">Amount</th>
          
             <th class="text-end bg-transparent text-light">Local Amount</th>
-            <!-- <th width="200">Tax Group</th> -->
-            <th class="text-end bg-transparent text-light">Tax %</th>
+            <!-- Tax % column with dynamic label based on country -->
+            <th class="text-end bg-transparent text-light">
+              {{ isIndianCompany() ? 'GST %' : (isUAECompany() ? 'VAT %' : 'Tax %') }}
+            </th>
             <th class="text-end bg-transparent text-light">Tax Amount</th>
             <th class="text-end bg-transparent text-light">Total</th>
           </tr>
@@ -1101,30 +1098,19 @@
              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueLocalAmount : charge.CostLocalAmount) || 0 |
                 number:'1.2-2' }}
             </td>
-            <!-- <td>
-              <ng-select [items]="taxGroupList" bindLabel="TaxName" bindValue="TaxMasterSid"
-                [ngModel]="getSelectedTaxGroupSid(charge)" (ngModelChange)="onChargeTaxGroupChangeBySid(charge, $event)"
-                placeholder="Select Tax Group" [clearable]="true" appendTo="body">
-                <ng-template ng-label-tmp let-item="item">
-                  {{ item.TaxName }} ({{ item.TaxRate }}%)
-                </ng-template>
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.TaxName }}</strong>
-                    <small class="d-block text-muted">{{ item.TaxCode }} - {{ item.TaxRate }}% {{ item.TaxType
-                      }}</small>
-                  </div>
-                </ng-template>
-              </ng-select>
-            </td> -->
-            <td class="text-end">
-             {{ getChargeTaxPercentage(charge) }}
+            <!-- Tax Percentage column with dynamic display based on country -->
+            <td class="text-end" [ngClass]="{
+              'indian-tax-label': isIndianCompany(),
+              'uae-tax-label': isUAECompany(),
+              'other-tax-label': !isIndianCompany() && !isUAECompany()
+            }">
+              {{ getChargeTaxPercentage(charge) }}
             </td>
             <td class="text-end">
              {{ getChargeTaxAmount(charge) | number:'1.2-2' }}
             </td>
             <td class="text-end">
-              {{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}
+              {{ chargeSelectionTaxResult?.grandTotal | number:'1.2-2' }}
             </td>
           </tr>
           <tr *ngIf="!availableCharges?.length">
@@ -1138,7 +1124,8 @@
     <div class="card mt-1 border-info border-top-0 mb-1 " *ngIf="chargeSelectionTaxResult && selectedCharges.size > 0">
       <div class="card-header bg-info text-white">
         <h6 class="mb-0">
-          <i class="fas fa-calculator me-2"></i>Tax Summary
+          <i class="fas fa-calculator me-2"></i>
+          {{ isIndianCompany() ? 'GST' : (isUAECompany() ? 'VAT' : 'Tax') }} Summary
           <small class="float-end">{{ chargeSelectionTaxResult.type }} Calculation</small>
         </h6>
       </div>
@@ -1151,17 +1138,27 @@
                   <td><strong>Selected Charges:</strong></td>
                   <td class="text-end">{{ selectedCharges.size }} / {{ availableCharges.length }}</td>
                 </tr>
-                <tr *ngIf="chargeSelectionTaxResult.type === 'GST'">
+                
+                <!-- Tax Type Display based on country -->
+                <tr *ngIf="isIndianCompany() && chargeSelectionTaxResult.type === 'GST'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
                     <span class="badge bg-info">{{ chargeSelectionTaxResult.isSameState ? 'CGST + SGST (Same State)' :
                       'IGST (Inter-State)' }}</span>
                   </td>
                 </tr>
-                <tr *ngIf="chargeSelectionTaxResult.type === 'VAT'">
+                
+                <tr *ngIf="isUAECompany() && chargeSelectionTaxResult.type === 'VAT'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
                     <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.vatRate }}%)</span>
+                  </td>
+                </tr>
+                
+                <tr *ngIf="!isIndianCompany() && !isUAECompany()">
+                  <td><strong>Tax Type:</strong></td>
+                  <td class="text-end">
+                    <span class="badge bg-secondary">{{ chargeSelectionTaxResult.type || 'Standard Tax' }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -1174,8 +1171,8 @@
                 <strong>{{ chargeSelectionTaxResult.subtotal | number:'1.2-2' }}</strong>
               </div>
 
-              <!-- GST Details -->
-              <div *ngIf="chargeSelectionTaxResult.type === 'GST'">
+              <!-- GST Details (only for Indian companies) -->
+              <div *ngIf="isIndianCompany() && chargeSelectionTaxResult.type === 'GST'">
                 <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalCGST > 0">
                   <small>CGST:</small>
                   <small>{{ chargeSelectionTaxResult.totalCGST | number:'1.2-2' }}</small>
@@ -1190,8 +1187,8 @@
                 </div>
               </div>
 
-              <!-- VAT Details -->
-              <div *ngIf="chargeSelectionTaxResult.type === 'VAT'">
+              <!-- VAT Details (for UAE and other VAT countries) -->
+              <div *ngIf="(!isIndianCompany() || chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
                 <div class="d-flex justify-content-between mb-1">
                   <small>VAT ({{ chargeSelectionTaxResult.vatRate }}%):</small>
                   <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>

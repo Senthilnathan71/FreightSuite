@@ -260,6 +260,7 @@ get stateList(): any[] {
   voucherTypeModalRef?: NgbModalRef;
   billingPartyModalRef?: NgbModalRef;
   chargeSelectionModalRef?: NgbModalRef;
+  
 
   // Charge selection properties
   availableCharges: any[] = [];
@@ -275,6 +276,8 @@ get stateList(): any[] {
   billingPartyAddress: string = '';
   billingGST_VAT: string = '';
   taxGroupList: any[] = [];
+  currentCountry: Number;
+  currentCountryName:string;
   currentBranchstate:string;
   chargeTaxGroupMap: Map<number, any> = new Map(); // Map of BookingRatesSid to selected tax group
   /**
@@ -319,41 +322,70 @@ get stateList(): any[] {
   ) { this.initRateForm();}
 
   ngOnInit(): void {
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.currentBranchstate= this.currentBranch?.StateMasterSid;
-    console.log("CURRENT BRANCH STATE", this.currentBranch);
-    this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.isBooking = this.screenName === "Booking";
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    this.currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-
-    // Extract BookingHeaderSid from route parameter
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.routeParentSid = Number(params['id']);
-        console.log('ParentSid from route:', this.routeParentSid);
-      }
-    });
-
-    this.filterOption = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentCompany?.BranchMasterSid,
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.currentBranchstate = this.currentBranch?.StateMasterSid;
+  
+  // Get user data first
+  this.userData = this.appSettingService.getDecryptedUserProfile();
+  
+  // ✅ FIX: Follow the same pattern as OrganizationEntryComponent
+  if (this.currentCompany && this.userData?.userCompanyMaster) {
+    // Find the company record in user's company master list
+    const companyRecord = this.userData.userCompanyMaster.find(
+      (c: any) => c.CompanyMasterSid === this.currentCompany.CompanyMasterSid
+    );
+    // Update currentCompany with the full companyMaster object
+    this.currentCompany = companyRecord?.companyMaster || this.currentCompany;
+    
+    if (this.currentBranch && this.currentCompany?.userBranchMaster) {
+      const branchRecord = this.currentCompany.userBranchMaster.find(
+        (b: any) => b.BranchMasterSid === this.currentBranch.BranchMasterSid
+      );
+      this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
     }
-    // this.initRateForm();
-    this.loadRateLookups();
+    
+    // Now get the country information
+    this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
+    this.currentCountryName = this.currentCompany?.countryMaster?.countryName;
+  }
+  
+  console.log("CURRENT COUNTRY NAME", this.currentCountryName);
+  console.log("currentCountry", this.currentCountry);
+  
+  this.isBooking = this.screenName === "Booking";
+  this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  
+  // The line below is redundant since we already updated currentCompany above
+  // Remove or keep as fallback:
+  // this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
 
-    this.rateFormArray.valueChanges.subscribe(() => {
-    this.validateExchangeRates();
-  this.dataEmitter.emit(this.rateFormArray.getRawValue());
-  this.calculateProfit();
+  // Extract BookingHeaderSid from route parameter
+  this.route.params.subscribe(params => {
+    if (params['id']) {
+      this.routeParentSid = Number(params['id']);
+      console.log('ParentSid from route:', this.routeParentSid);
+    }
   });
 
-    // If dataItems was set before ngOnInit, process them now
-    if (this._dataItems && this._dataItems.length > 0) {
-      this.patchValues(this._dataItems);
-    }
+  this.filterOption = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
   }
+  
+  this.loadRateLookups();
+
+  this.rateFormArray.valueChanges.subscribe(() => {
+    this.validateExchangeRates();
+    this.dataEmitter.emit(this.rateFormArray.getRawValue());
+    this.calculateProfit();
+  });
+
+  // If dataItems was set before ngOnInit, process them now
+  if (this._dataItems && this._dataItems.length > 0) {
+    this.patchValues(this._dataItems);
+  }
+}
   ngOnChanges(){
     if(!this.dataItems){
       this.addRateRow()
@@ -2592,8 +2624,27 @@ private applyFallbackTax(
   console.log('Is Export:', isExport);
   return isExport;
 }
+// Add this method to check if company is in India
+isIndianCompany(): boolean {
+  const companyCountry = this.countryOfCompany?.toLowerCase() || 
+                        this.currentCompany?.countryMaster?.countryCode?.toLowerCase() ||
+                        this.currentCountryName?.toLowerCase() || '';
+  
+  return companyCountry === 'india' || companyCountry === 'in';
+}
 
-  getChargeTaxPercentage(charge: any): string {
+// Add this method to check if company is in UAE (or any specific country)
+isUAECompany(): boolean {
+  const companyCountry = this.countryOfCompany?.toLowerCase() || 
+                        this.currentCompany?.countryMaster?.countryCode?.toLowerCase() ||
+                        this.currentCountryName?.toLowerCase() || '';
+  
+  return companyCountry.includes('united arab emirates') || 
+         companyCountry === 'uae' || 
+         companyCountry === 'ae';
+}
+
+getChargeTaxPercentage(charge: any): string {
   // First check if there's a manually selected tax group
   const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.RateSid);
 
@@ -2609,11 +2660,12 @@ private applyFallbackTax(
       taxCode
     });
 
-    // Use the tax code/type from the tax group
-    if (taxCode === 'VAT' || taxType === 'VAT') {
-      return `VAT ${taxRate}%`;
-    } else {
-      // For GST, determine if IGST or CGST+SGST based on state
+    // Check company country for display logic
+    const isIndia = this.isIndianCompany();
+    const isUAE = this.isUAECompany();
+
+    if (isIndia) {
+      // For India - display as GST
       const isRevenue = this.currentVoucherTypeFilter === 'revenue';
       const customerCountry = this.getCustomerCountryFromCharge(charge, isRevenue);
       const isIndianCustomer = customerCountry && 
@@ -2634,6 +2686,16 @@ private applyFallbackTax(
         // International customer - show VAT if applicable
         return `VAT ${taxRate}%`;
       }
+    } else if (isUAE) {
+      // For UAE - display as VAT
+      return `VAT ${taxRate}%`;
+    } else {
+      // For other countries - use the tax code/type from the tax group
+      if (taxCode === 'VAT' || taxType === 'VAT') {
+        return `VAT ${taxRate}%`;
+      } else {
+        return `Tax ${taxRate}%`;
+      }
     }
   }
 
@@ -2649,21 +2711,37 @@ private applyFallbackTax(
 
   if (!lineItem) return '-';
 
-  if (this.chargeSelectionTaxResult.type === 'GST') {
+  // Display based on company country
+  const isIndia = this.isIndianCompany();
+  const isUAE = this.isUAECompany();
+
+  if (isIndia) {
     const gstItem = lineItem as any;
     if (gstItem.igstRate > 0) {
       return `IGST ${gstItem.igstRate}%`;
     } else if (gstItem.cgstRate > 0) {
       return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
     }
-  } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+  } else if (isUAE) {
     const vatItem = lineItem as any;
     return `VAT ${vatItem.vatRate}%`;
+  } else {
+    // Other countries
+    if (this.chargeSelectionTaxResult.type === 'GST') {
+      const gstItem = lineItem as any;
+      if (gstItem.igstRate > 0) {
+        return `IGST ${gstItem.igstRate}%`;
+      } else if (gstItem.cgstRate > 0) {
+        return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
+      }
+    } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+      const vatItem = lineItem as any;
+      return `VAT ${vatItem.vatRate}%`;
+    }
   }
 
   return '-';
 }
-
   getChargeTaxAmount(charge: any): number {
     const isBooking = this.screenName === "Booking";
     const notExist = !this.selectedCharges.has(charge.RateSid);
@@ -2746,8 +2824,10 @@ private applyFallbackTax(
         billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
         billingPartyAddress: this.billingPartyAddress,
         GST_VAT: this.billingGST_VAT, // Add GST-VAT to payload
-        gstType: this.selectedGSTType,
-        placeOfSupply: this.placeOfSupply, // Add Place of Supply
+         ...(this.isIndianCompany() && {
+      gstType: this.selectedGSTType,
+      placeOfSupply: this.placeOfSupply
+    }), // Add Place of Supply
       customerBranchSid: this.getCustomerBranchSid()
 
       },
@@ -2988,7 +3068,31 @@ private getCustomerBranchSid(): number | null {
 
   private determineGSTTypeAndPlaceOfSupply() {
   console.log('=== DETERMINING GST TYPE AND PLACE OF SUPPLY ===');
-  
+   const isIndia = this.isIndianCompany();
+   if (!isIndia) {
+    // For non-India companies, don't set GST Type
+    this.selectedGSTType = '';
+    console.log('Company is not in India. GST Type not applicable.');
+    
+    // Still determine place of supply for display
+    const companyState = this.getCompanyState();
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+    let billingPartyState = '';
+    
+    if (isRevenue) {
+      const customerBranch = this.availableCharges[0]?.customerBranch;
+      billingPartyState = customerBranch?.stateMaster?.stateName || 
+                         customerBranch?.StateName || '';
+    } else {
+      const agentBranch = this.availableCharges[0]?.AgentBranch;
+      billingPartyState = agentBranch?.stateMaster?.stateName || 
+                         agentBranch?.StateName || '';
+    }
+    
+    this.placeOfSupply = billingPartyState || companyState || '';
+    console.log('Place of Supply (non-India):', this.placeOfSupply);
+    return;
+  }
   // Get company state
   const companyState = this.getCompanyState();
   console.log('Company State:', companyState);

@@ -276,6 +276,7 @@ auditLogs: any[] = []; // Stores audit logs
   productForm !: FormGroup;
   countryOfCompany : string;
   masterJobContainers : any[] = [];
+  
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "Yard/CFS"
@@ -309,6 +310,12 @@ auditLogs: any[] = []; // Stores audit logs
   rateResult : any[] = [];
   bookingRateArr : any[] = [];
   currentFormValue : any;
+  isShipperFreeText: boolean = false;
+isConsigneeFreeText: boolean = false;
+isNotifyFreeText: boolean = false;
+isCarrierFreeText: boolean = false;
+isVesselFreeText: boolean = false;
+isVoyageFreeText: boolean = false;
   
   // Variable Declaration - Milestone Part
   resetTriggerMilestone : boolean;
@@ -515,6 +522,12 @@ auditLogs: any[] = []; // Stores audit logs
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
+      isShipperFreeText: [false],
+    isConsigneeFreeText: [false],
+    isNotifyFreeText: [false],
+    isCarrierFreeText: [false],
+    isVesselFreeText: [false],
+    isVoyageFreeText: [false],
 
       VesselName: [null],
       VoyageMasterSid: [null],
@@ -599,7 +612,39 @@ auditLogs: any[] = []; // Stores audit logs
     this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
   }
 }
-
+toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+  event.stopPropagation();
+  const value = this.b[flagCtrl]?.value;
+  this.b[flagCtrl]?.setValue(!value);
+  this.houseJobForm.get(mainCtrl)?.reset();
+}
+evaluateDropdownOrFreeText() {
+  let response = this.bookingData;
+  if (response?.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
+    this.houseJobForm.patchValue({ isShipperFreeText: true });
+  }
+  if (response?.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName)) {
+    this.houseJobForm.patchValue({ isConsigneeFreeText: true });
+  }
+  if (response?.Notify && !this.existsInList(this.notifyList, response.Notify)) {
+    this.houseJobForm.patchValue({ isNotifyFreeText: true });
+  }
+  if (response?.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
+    this.houseJobForm.patchValue({ isCarrierFreeText: true });
+  }
+  if (response?.VesselName && !this.existsInList(this.vesselList, response.VesselName)) {
+    this.houseJobForm.patchValue({ isVesselFreeText: true });
+  }
+  if (response?.VoyageNo && !this.existsInList(this.voyageList, response.VoyageNo)) {
+    this.houseJobForm.patchValue({ isVoyageFreeText: true });
+  }
+}
+existsInList(list: any[], value: any) {
+  if (list) {
+    return list.some(item => item.CustomerName === value);
+  }
+  return false;
+}
 
   onIncoChange(selectedInco: any): void {
     if (!selectedInco) {
@@ -1125,91 +1170,93 @@ loadHeaderLookups() {
   }
 
   patchValues(response: any) {
-    console.log(response);
-    this.bookingHeader = response;
-    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-    const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
-    const delivery = this.agentList.find(agent => agent.CustomerMasterSid === response.DestinationAgent);
-    const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
-    this.onDeptChange(selectedDepartment);
-    this.onCustomerChange(selectedCustomer);
-    this.handleDestAgentChange(delivery);
-    this.handleOriginAgentChange(origin);
-    this.houseJobForm.patchValue({
-      MasterJobSid : response.MasterJobSid,
-      BookingNo: response.BookingNo,
-      BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
-      DepartmentMasterSid: response.DepartmentMasterSid,
-      CustomerMasterSid: response.CustomerMasterSid,
-      CustomerBranchSid: response.CustomerBranchSid,
-      CustomerName: response.CustomerName,
-      CustomerAddress: response.CustomerAddress,
-      SalesmanSid: response.SalesmanSid,
-      ShipperName: response.ShipperName,
-      ShipperAddress: response.ShipperAddress,
-      ConsigneeName: response.ConsigneeName,
-      ConsigneeAddress: response.ConsigneeAddress,
-      Notify: response.Notify,
-      NotifyAddress: response.NotifyAddress,
-      DestinationAgent: response.DestinationAgent || null,
-      AgentName : response.AgentName || null,
-      AgentAddress: response.AgentAddress,
-      CarrierName: response.CarrierName,
-      QuotationHeaderSid: response.QuotationHeaderSid,
-      HBLNo: response.HBLNo,
-      MBLNo: response.MBLNo,
-      MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
-      status: response.status === "A" ? "Active" : "Suspended",
-
-      VesselName: response.VesselName,
-      VoyageMasterSid: response.VoyageMasterSid,
-      VoyageNo: response.VoyageNo,
-      ETA: response.ETA ? new Date(response.ETA) : null,
-      ETD: response.ETD ? new Date(response.ETD) : null,
-      POO: response.POO,
-      POL: response.POL,
-      POD: response.POD,
-      POLTerminal: response.POLTerminal,
-      PODTerminal: response.PODTerminal,
-      FPD: response.FPD,
-      MovementType: response.MovementType,
-      DoValid: response.DoValid ? new Date(response.DoValid) : '',
-      Coload: response.Coload === "Y" ? true : false,
-      ShipmentType: response.ShipmentType === "Y" ? true : false,
-      IncoTerms: response.IncoTerms,
-      InternalNote: response.InternalNote,
-      GeneralNote: response.GeneralNote,
-      NominatedBy: response.NominatedBy,
-      FreightTerms : response.FreightTerms,
-      JobType: response.JobType,
-      ShipmentNo: response.ShipmentNo
-    })
-    this.b['DepartmentMasterSid']?.disable();
-    this.b['CustomerMasterSid']?.disable();
-    this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
-    this.PODandFPODsame = response.POD === response.FPD;
-    this.minStartDate = response.ETA;
-
-    const cargoData = response.Cargo[0];
-    this.cargoForm.patchValue({
-      HouseJobCargoSid: cargoData?.HouseJobCargoSid,
-      CargoType: cargoData?.CargoType,
-      ContainerType: cargoData?.ContainerType,
-      NoofContainers: cargoData?.NoofContainers,
-      GrossWeight: cargoData?.GrossWeight,
-      NetWeight: cargoData?.NetWeight,
-      Volume: cargoData?.Volume,
-      Volumetric: cargoData?.Volumetric,
-      ChargeableWeight: cargoData?.ChargeableWeight,
-      NoOfPackage: cargoData?.NoOfPackage,
-      ShipmentTerms: cargoData?.ShipmentTerms,
-      CommodityDescription: cargoData?.CommodityDescription,
-      MarksAndNumber: cargoData?.MarksAndNumber,
-      MovementType: cargoData?.MovementType,
-      FreightTerms: cargoData?.FreightTerms,
-      ModeOfTransport : cargoData?.ModeOfTransport,
-      StuffingAt: cargoData?.StuffingAt
-    })
+  console.log('Response from backend:', response);
+  console.log('AgentName from backend:', response.AgentName);
+  console.log('AgentList:', this.agentList);
+  
+  this.bookingHeader = response;
+  const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+  const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
+  
+  // FIX: Better agent matching
+  let delivery = null;
+  if (response.AgentName) {
+    // First try exact match
+    delivery = this.agentList.find(agent => agent.CustomerName === response.AgentName);
+    
+    // If not found, try case-insensitive match
+    if (!delivery) {
+      delivery = this.agentList.find(agent => 
+        agent.CustomerName.toLowerCase() === response.AgentName.toLowerCase()
+      );
+    }
+    
+    // If still not found, try partial match
+    if (!delivery) {
+      delivery = this.agentList.find(agent => 
+        agent.CustomerName.toLowerCase().includes(response.AgentName.toLowerCase()) ||
+        response.AgentName.toLowerCase().includes(agent.CustomerName.toLowerCase())
+      );
+    }
+  }
+  
+  console.log('Found delivery agent:', delivery);
+  
+  const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
+  this.onDeptChange(selectedDepartment);
+  this.onCustomerChange(selectedCustomer);
+  this.handleDestAgentChange(delivery);
+  this.handleOriginAgentChange(origin);
+  
+  this.houseJobForm.patchValue({
+    MasterJobSid : response.MasterJobSid,
+    BookingNo: response.BookingNo,
+    BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
+    DepartmentMasterSid: response.DepartmentMasterSid,
+    CustomerMasterSid: response.CustomerMasterSid,
+    CustomerBranchSid: response.CustomerBranchSid,
+    CustomerName: response.CustomerName,
+    CustomerAddress: response.CustomerAddress,
+    SalesmanSid: response.SalesmanSid,
+    ShipperName: response.ShipperName,
+    ShipperAddress: response.ShipperAddress,
+    ConsigneeName: response.ConsigneeName,
+    ConsigneeAddress: response.ConsigneeAddress,
+    Notify: response.Notify,
+    NotifyAddress: response.NotifyAddress,
+    DestinationAgent: response.DestinationAgent || null,
+    AgentName : response.AgentName || null, 
+    AgentAddress: response.AgentAddress,
+    CarrierName: response.CarrierName,
+    QuotationHeaderSid: response.QuotationHeaderSid,
+    HBLNo: response.HBLNo,
+    MBLNo: response.MBLNo,
+    MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
+    status: response.status === "A" ? "Active" : "Suspended",
+   
+    VesselName: response.VesselName,
+    VoyageMasterSid: response.VoyageMasterSid,
+    VoyageNo: response.VoyageNo,
+    ETA: response.ETA ? new Date(response.ETA) : null,
+    ETD: response.ETD ? new Date(response.ETD) : null,
+    POO: response.POO,
+    POL: response.POL,
+    POD: response.POD,
+    POLTerminal: response.POLTerminal,
+    PODTerminal: response.PODTerminal,
+    FPD: response.FPD,
+    MovementType: response.MovementType,
+    DoValid: response.DoValid ? new Date(response.DoValid) : '',
+    Coload: response.Coload === "Y" ? true : false,
+    ShipmentType: response.ShipmentType === "Y" ? true : false,
+    IncoTerms: response.IncoTerms,
+    InternalNote: response.InternalNote,
+    GeneralNote: response.GeneralNote,
+    NominatedBy: response.NominatedBy,
+    FreightTerms : response.FreightTerms,
+    JobType: response.JobType,
+    ShipmentNo: response.ShipmentNo
+  })
     this.handleCFSOrYard();
     const otherData = response.Others[0];
     this.otherForm.patchValue({
@@ -1249,6 +1296,7 @@ loadHeaderLookups() {
       InternalNote: otherData?.InternalNote || '',
       GeneralNote: otherData?.GeneralNote || ''
     })
+     this.evaluateDropdownOrFreeText();
 
     this.bookingProducts.clear();
     const productsFromResponse = response.Products || [];
@@ -1463,6 +1511,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     Notify: houseJobFormValue.Notify || '',
     NotifyAddress: houseJobFormValue.NotifyAddress || '',
     DestinationAgent: houseJobFormValue.DestinationAgent,
+    AgentName: this.getAgentNameById(houseJobFormValue.AgentName) || houseJobFormValue.AgentName || null,
     AgentAddress: houseJobFormValue.AgentAddress || '',
     CarrierName: houseJobFormValue.CarrierName || null,
     QuotationHeaderSid: houseJobFormValue.QuotationHeaderSid || null,
@@ -1540,6 +1589,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       Depo: otherFormValue.Depo || '',
       ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
       SwitchBLAgent: otherFormValue?.SwitchBLAgent || null,
+      AgentName: otherFormValue?.AgentName || null,
       AgentAddress: otherFormValue?.AgentAddress || '',
       // FIXED: Correct field names
       SwitchBLShipper: otherFormValue?.SwitchBLShipper || null,
@@ -1597,9 +1647,13 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
           this.appSettingService.showSuccess('House Job created successfully!');
           this.HouseJobSid = resp.data.HouseJobSid;
           this.isEditMode = true;
-          
+          const HouseJobSid = resp.data?.houseJob?.HouseJobSid;
           // Navigate to the edit page or reload the form
-          this.router.navigate(['/operation/master-job/list']);
+          if (HouseJobSid) {
+            this.router.navigate(['/operation/house-job/entry', HouseJobSid]);
+          } else {
+            this.router.navigate(['/operation/house-job/list']);
+          }
           
           // Optionally reload the data to get the generated IDs
           this.loadHouseById(this.HouseJobSid);
@@ -1641,7 +1695,11 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
   */
 
   // Header Part Related
-
+private getAgentNameById(agentId: number): string {
+  if (!agentId || !this.agentList || this.agentList.length === 0) return '';
+  const agent = this.agentList.find(a => a.CustomerMasterSid === agentId);
+  return agent ? agent.CustomerName : '';
+}
  onDeptChange(department) {
   console.log('onDeptChange called with:', department);
   
@@ -3728,6 +3786,7 @@ volumeAmount(): number {
  
   
 }
+
 
 
 interface CustomerProfit {

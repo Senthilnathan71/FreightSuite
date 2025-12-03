@@ -319,36 +319,45 @@
                       }
                     </div>
                   </aside>
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
-                      <!-- <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="ShipperName" placeholder=""
-                        (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
-                        (clear)="onShipperChange()" appendTo="body">
-                        <ng-template ng-option-tmp let-item="item">
-                          <div>
-                            <strong>{{ item.CustomerName }}</strong><br>
-                            <small>{{ item.CustomerAddress1 }}</small>
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
-                      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
-                        (itemSelected)="setAddress('ShipperAddress',$event) ; onShipperChange($event)">
-                      </dofi-searchable-dropdown>
-                      <label for="text-input" class="input-label">Shipper <span class="text-danger">*</span></label>
-                      @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
-                      <div class="error-message">
-                        @if(houseJobForm.get('ShipperName')?.hasError('required')){
-                        <span>Required</span>
-                        }
-                      </div>
-                      }
-                    </div>
-                  </aside>
+                 <aside class="col-md-6 pe-0">
+  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+    [class.filled]="!!houseJobForm.get('ShipperName')?.value">
+    <!-- Dropdown mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
+      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
+        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+        [displayLabels]="customerLookupConfig.displayLabels"
+        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+        bindValue="CustomerName"
+        (itemSelected)="setAddress('ShipperAddress',$event); onShipperChange($event)"
+        style="width : 100%;">
+      </dofi-searchable-dropdown>
+
+      <!-- Swap icon -->
+      <button class="btn bi bi-calendar3 pe-0" type="button"
+        (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+
+    <!-- Manual text input mode -->
+    <div class="input-group" *ngIf="this.b['isShipperFreeText']?.value">
+      <input type="text" formControlName="ShipperName" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+    <label for="text-input" class="input-label">Shipper Name <span class="text-danger">*</span></label>
+    @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
+    <div class="error-message">
+      @if(houseJobForm.get('ShipperName')?.hasError('required')){
+      <span>Required</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
 
 
 
@@ -368,36 +377,45 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
-                      <!-- <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="ConsigneeName" placeholder=""
-                        (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
-                        (clear)="onShipperChange()" appendTo="body">
-                        <ng-template ng-option-tmp let-item="item">
-                          <div>
-                            <strong>{{ item.CustomerName }}</strong><br>
-                            <small>{{ item.CustomerAddress1 }}</small>
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
-                      <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
-                        (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)">
-                      </dofi-searchable-dropdown>
-                      <label for="text-input" class="input-label">Consignee <span class="text-danger">*</span></label>
-                      @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
-                      <div class="error-message">
-                        @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
-                        <span>Required</span>
-                        }
-                      </div>
-                      }
-                    </div>
-                  </aside>
+                  <aside class="col-md-6 pe-0">
+  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+    [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
+    <!-- Dropdown mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
+      <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName"
+        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+        [displayLabels]="customerLookupConfig.displayLabels"
+        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+        bindValue="CustomerName"
+        (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
+        style="width : 100%;">
+      </dofi-searchable-dropdown>
+
+      <!-- Swap icon -->
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+
+    <!-- Manual text input mode -->
+    <div class="input-group" *ngIf="this.b['isConsigneeFreeText']?.value">
+      <input type="text" formControlName="ConsigneeName" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+    <label for="text-input" class="input-label">Consignee Name <span class="text-danger">*</span></label>
+    @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
+    <div class="error-message">
+      @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
+      <span>Required</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
 
 
                   <aside class="col-md-6">
@@ -417,28 +435,38 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6" [formGroup]="otherForm">
-                    <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!otherForm.get('NotifyParty')?.value">
-                      <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="NotifyParty" placeholder=""
-                        (change)="setAddress('NotifyAddress',$event)" appendTo="body">
-                        <ng-template ng-option-tmp let-item="item">
-                          <div>
-                            <strong>{{ item.CustomerName }}</strong><br>
-                            <small>{{ item.CustomerAddress1 }}</small>
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
-                      <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
-                        (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
-                      </dofi-searchable-dropdown>
-                      <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
+                  <aside class="col-md-6 pe-0" [formGroup]="otherForm">
+  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+    [class.filled]="!!otherForm.get('NotifyParty')?.value">
+    <!-- Dropdown mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
+      <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
+        [displayFields]="customerLookupConfig.displayFields"
+        [displayLabels]="customerLookupConfig.displayLabels"
+        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+        bindValue="CustomerName"
+        (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)"
+        style="width : 100%;">
+      </dofi-searchable-dropdown>
+      
+      <!-- Swap icon -->
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('NotifyParty','isNotifyFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+
+    <!-- Manual text input mode -->
+    <div class="input-group" *ngIf="this.b['isNotifyFreeText']?.value">
+      <input type="text" formControlName="NotifyParty" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('NotifyParty','isNotifyFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+    <label for="text-input" class="input-label">Notify</label>
+  </div>
+</aside>
 
                   <aside class="col-md-6" [formGroup]="otherForm">
                     <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value">
@@ -486,21 +514,36 @@
                     </div>
                   </aside> -->
 
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('CarrierName')?.value">
-                      <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
-                      </ng-select> -->
-                      <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName">
-                      </dofi-searchable-dropdown>
-                      <label for="text-input" class="input-label">Carrier Name<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
+                <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+    [class.filled]="!!houseJobForm.get('CarrierName')?.value">
+    <!-- Dropdown mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
+      <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
+        [displayFields]="customerLookupConfig.displayFields"
+        [displayLabels]="customerLookupConfig.displayLabels"
+        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+        bindValue="CustomerName" style="width : 100%;">
+      </dofi-searchable-dropdown>
+
+      <!-- Swap icon -->
+      <button class="btn bi bi-calendar3 pe-0" type="button"
+        (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+
+    <!-- Manual text input mode -->
+    <div class="input-group" *ngIf="this.b['isCarrierFreeText']?.value">
+      <input type="text" formControlName="CarrierName" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3 pe-0" type="button"
+        (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+    <label for="text-input" class="input-label">Carrier</label>
+  </div>
+</aside>
 
 
                   <aside class="col-md-6">
@@ -563,7 +606,7 @@
                         [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerMasterSid">
+                        bindValue="CustomerName">
                       </dofi-searchable-dropdown>
 
                       <label for="text-input" class="input-label">Origin Agent <span

@@ -725,7 +725,7 @@
                     getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
                     <div class="error-message">
                       @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
-                      <span>Please enter a valid phone number (6-15 digits)</span>
+                      <span>Please enter a valid phone number </span>
                       }
                       @else if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('maxlength')) {
                       <span>Phone number too long (max 15 digits)</span>
