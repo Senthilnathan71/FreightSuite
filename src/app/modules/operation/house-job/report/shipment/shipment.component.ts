@@ -455,7 +455,26 @@ async downloadPDF() {
           }
         }
 
+ printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
 
+  const popupWin = window.open('', '_blank', 'width=900,height=600');
+  if (popupWin) {
+    popupWin.document.open();
+    popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    popupWin.document.close();
+  }
+}
 }
 
 

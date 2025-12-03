@@ -48,6 +48,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -176,6 +177,9 @@ export class QuotationEntryComponent implements OnInit {
   productList : any[] =[];
   productLookupConfig = ['ProductCode','ProductName'];
 
+  branchDetails: any;
+  currentBranchCityName: string | null;
+  currentBranchCityId: number;
   
   quotationForm !: FormGroup;
   today = this.calendar.getToday();
@@ -295,7 +299,8 @@ dataFromEnqPage:any;
     private datePipe : CustomDatePipe,
     public dropdownStore: DropdownStore,
     private pdfService: PdfDownloadService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private masterService: MasterService,
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -320,6 +325,12 @@ dataFromEnqPage:any;
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    console.log(this.branchDetails, "BRANCH DETAILS");
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadCityName();
     this.mps.init().subscribe();
     console.log('Current Company:', this.currentCompany);
   console.log('Current Branch:', this.currentBranch);
@@ -468,6 +479,29 @@ patchEnqPageValues(enqData: any) {
   }
 }
 
+    loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+ 
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+   
+      }
+    });
+  }
 private getSegmentTypeFromShipmentType(shipmentType: string): string {
   if (shipmentType?.includes('Air')) {
     return 'AIR';
@@ -3509,6 +3543,28 @@ navigateToEnquiry(): void {
     this.router.navigate(['crm/enquiry/entry', enquiryId]);
   } else if (this.enquiryNumber) {
     this.appSettingService.showInfo('Enquiry ID not available for navigation');
+  }
+}
+
+
+ printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
+
+  const popupWin = window.open('', '_blank', 'width=900,height=600');
+  if (popupWin) {
+    popupWin.document.open();
+    popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    popupWin.document.close();
   }
 }
 }
