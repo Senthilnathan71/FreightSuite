@@ -380,6 +380,15 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+   getQuote(id: number) {
+    return this.http.get<{ data: any }>(`ff-quotation/quote/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAllQuotes(CompanyMasterSid: number, BranchMasterSid: number) {
     return this.http.post<any>('ff-quotation',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {

@@ -128,7 +128,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="companyCode" >
+                  formControlName="companyCode" [textWithNumbers]="10">
                 <label for="text-input" class="input-label">Company Code <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -221,7 +221,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="addressLine1" rowspan="2" rows="1"></textarea>
+                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
                 <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -240,7 +240,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="webSite">
+                  formControlName="webSite" [textWithNumbers]="100">
                 <label for="text-input" class="input-label">Website </label>
 
                 <!--  Validation -->
@@ -397,7 +397,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="phoneNumber" [onlyNumbers]="20">
+                  formControlName="phoneNumber" [onlyNumbers]="10">
                 <label for="text-input" class="input-label">Phone Number </label>
 
                 <!--  Validation -->
@@ -407,7 +407,7 @@
                   <span>Only Digits are allowed</span>
                   }
                   @else if(companyForm.get('phoneNumber')?.hasError('maxlength')){
-                  <span>Max 20 Characters</span>
+                  <span>Max 10 Characters</span>
                   }
                 </div>
                 }
@@ -457,7 +457,7 @@
 
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
+                <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks" [textWithNumbers]="500"
                   rows="1"></textarea>
                 <label for="text-input" class="input-label">Remarks </label>
 
@@ -984,7 +984,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchCode" placeholder="" class="custom-input-field sm"
-                              formControlName="branchCode" >
+                              formControlName="branchCode" [textWithNumbers]="10">
                             <label for="branchCode" class="input-label">Branch Code <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.invalid){
@@ -1002,7 +1002,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine1" >
+                              formControlName="branchAddressLine1" [textWithNumbers]="500">
                             <label for="branchAddressLine1" class="input-label">Address <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchAddressLine1')?.touched &&
@@ -1022,7 +1022,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine2" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine2" >
+                              formControlName="branchAddressLine2" [textWithNumbers]="500">
                             <label for="branchAddressLine2" class="input-label">Address 2</label>
                             @if(branchForm.get('branchAddressLine2')?.touched &&
                             branchForm.get('branchAddressLine2')?.invalid){
@@ -1211,7 +1211,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchWebSite" placeholder="" class="custom-input-field sm"
-                              formControlName="branchWebSite" >
+                              formControlName="branchWebSite" [textWithNumbers]="100">
                             <label for="branchWebSite" class="input-label">Website</label>
                             @if(branchForm.get('branchWebSite')?.touched && branchForm.get('branchWebSite')?.invalid){
                             <div class="error-message">
@@ -1226,7 +1226,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchPhoneNumber" placeholder="" class="custom-input-field sm"
-                              formControlName="branchPhoneNumber" [onlyNumbers]="20">
+                              formControlName="branchPhoneNumber" [onlyNumbers]="10">
                             <label for="branchPhoneNumber" class="input-label">Phone Number</label>
                             @if(branchForm.get('branchPhoneNumber')?.touched &&
                             branchForm.get('branchPhoneNumber')?.invalid){
@@ -1235,7 +1235,7 @@
                               <span>Only digits are allowed</span>
                               }
                               @else if(branchForm.get('branchPhoneNumber')?.hasError('maxlength')){
-                              <span>Max 20 digits</span>
+                              <span>Max 10 digits</span>
                               }
                             </div>
                             }
@@ -1297,7 +1297,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchRemarks" placeholder="" class="custom-input-field sm"
-                              formControlName="branchRemarks" >
+                              formControlName="branchRemarks" [textWithNumbers]="500">
                             <label for="branchRemarks" class="input-label">Remarks</label>
                             @if(branchForm.get('branchRemarks')?.touched && branchForm.get('branchRemarks')?.invalid){
                             <div class="error-message">
@@ -2006,7 +2006,7 @@
           <!-- Bank Code -->
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode"
+              <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode" [textWithNumbers]="50"
                 >
               <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
@@ -2022,7 +2022,7 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="bankAddress" placeholder="" class="custom-input-field sm"
-                formControlName="BankAddress" >
+                formControlName="BankAddress" [textWithNumbers]="500">
               <label for="bankAddress" class="input-label">Bank Address</label>
               @if(branchBankForm.get('BankAddress')?.touched && branchBankForm.get('BankAddress')?.invalid){
               <div class="error-message">
@@ -2035,7 +2035,7 @@
           <!-- IFSC Code -->
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode"
+              <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode" [textWithNumbers]="20"
                 >
               <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
@@ -2095,7 +2095,7 @@
           <!-- Remarks -->
           <aside class="col-12 col-sm-6 col-md-4 ">
             <div class="custom-form-group">
-              <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks"
+              <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks" [textWithNumbers]="300"
                 class="custom-input-field sm"></textarea>
               <label for="bankRemarks" class="input-label">Remarks</label>
               @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){
