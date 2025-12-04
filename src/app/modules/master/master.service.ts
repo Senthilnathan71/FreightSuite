@@ -2377,16 +2377,16 @@ getFieldConfiguration() {
       })
     );
   }
-  getAllDoc() {
-    return this.http.get<{ data: any[] }>('ff-user/docs').pipe(
+  getAllDoc(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('ff-user/docs', {CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
       })
     );
   }
-  getAllCS() {
-    return this.http.get<{ data: any[] }>('ff-user/cs').pipe(
+  getAllCS(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('ff-user/cs',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2511,15 +2511,15 @@ getFieldConfiguration() {
     );
   }
 
+  getAllSalesmans(CompanyMasterSid: number) {
+      return this.http.post<{ data: any[] }>('ff-user/salesperson',{CompanyMasterSid}).pipe(
+        map((resp) => {
+          let response = resp.data;
+          return response;
+        })
+      )
+    }
 
-  getAllSalesperson() {
-    return this.http.get<{ data: any[] }>('customer-salesteam/salesperson').pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    );
-  }
   getAllSalesteam() {
     return this.http.get<{ data: any[] }>('customer-salesteam').pipe(
       map((resp) => {

@@ -535,7 +535,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   }
 
   loadSalesPersons() {
-    this.leadService.getAllSalesPerson().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.leadService.getAllSalesman(CompanyMasterSid).subscribe(
       (resp: any) => {
         this.salesPersons = resp;
       }

@@ -41,12 +41,12 @@ export class ReportComponent {
     forkJoin({
       departments: this.masterService.getAllDepartments(CompanyMasterSid),
       POD: this.masterService.getAllPorts(),
-      salesperson: this.masterService.getAllSalesperson(),
+      salesperson: this.masterService.getAllSalesmans(CompanyMasterSid),
       branch : this.masterService.getBranchesByCompanyId(CompanyMasterSid)
     }).subscribe(({ departments, POD, salesperson,branch }) => {
       this.departmentList = departments;
       this.PODList = POD.data;
-      this.SalesPersonList = salesperson.data;
+      this.SalesPersonList = salesperson;
       this.BranchList = branch;
     })
   }

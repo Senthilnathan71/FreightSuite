@@ -161,7 +161,7 @@ export class EnquiryEntryComponent implements OnInit {
     { id: 1, name: "FCL/FCL" },
     { id: 2, name: "FCL/LCL" },
     { id: 3, name: "LCL/FCL" },
-    { id: 4, name: "LCL,LCL" },
+    { id: 4, name: "LCL/LCL" },
     { id: 5, name: "LTL" },
     { id: 6, name: "FTL" },
     { id: 6, name: "FLT HH" }
@@ -421,7 +421,7 @@ export class EnquiryEntryComponent implements OnInit {
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts().pipe(catchError(() => of([]))),
-      salesman: this.leadService.getAllSalesman().pipe(catchError(() => of([]))),
+      salesman: this.leadService.getAllSalesman(CompanyMasterSid).pipe(catchError(() => of([]))),
     }).pipe(
       tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products, salesman }) => {
         this.departments = departments;
@@ -440,13 +440,14 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   initializeForm() {
+    const today = this.calendar.getToday();
     this.rateRequestForm = this.fb.group({
       LeadOrCustomer: [true],
       PreCustomerMasterSid: [null],
       CustomerMasterSid: [null],
       customerName: ['', Validators.required],
       enquiryNo: [''],
-      EnquiryDate: [''],
+      EnquiryDate: [today],
       shipmentDate: ['', Validators.required],
       DepartmentMasterSid: [''],
       Segment: [null, Validators.required],
@@ -522,6 +523,33 @@ export class EnquiryEntryComponent implements OnInit {
   //   preCustomerControl?.updateValueAndValidity();
   // }
 
+  // Add this method to find KG weight unit
+getWeightUnitSidByCode(code: string): number | null {
+  if (!this.weightUnitList || this.weightUnitList.length === 0) {
+    return null;
+  }
+  
+  const unit = this.weightUnitList.find(unit => 
+    unit.UOMCode?.toUpperCase() === code.toUpperCase()
+  );
+  
+  return unit ? unit.UOMMasterSid : null;
+}
+getDefaultWeightUnitSid(): number | null {
+  if (!this.weightUnitList || this.weightUnitList.length === 0) {
+    return null;
+  }
+  
+  // First try to find Kg (case-insensitive)
+  const kgUnit = this.weightUnitList.find(unit => 
+    unit.UOMCode?.toUpperCase() === 'KG'
+  );
+  
+  if (kgUnit) return kgUnit.UOMMasterSid;
+  
+  // If Kg not found, use the first available weight unit
+  return this.weightUnitList[0].UOMMasterSid;
+}
   toggleCustomerType(isCustomer: boolean, isPatching = false) {
     // Only reset if not patching existing record
     if (!isPatching) {
@@ -751,6 +779,7 @@ ${this.userData.userName}`;
 
 
   addCargo(routeIndex: number) {
+    const defaultWeightUnitSid = this.getDefaultWeightUnitSid();
     const cargoForm = this.fb.group({
       CargoType: [null, [Validators.required]],
       ProductName: [null],
@@ -758,7 +787,7 @@ ${this.userData.userName}`;
       PackageType: [null],
       PackageQty: [''],
       Qty: ['1'],
-      WeightUnitSid: [null],
+      WeightUnitSid: [defaultWeightUnitSid],
       GrossWeight: ['', [this.weightValidator]],
       NetWeight: [''],
       ShipmentTerms: [null],
@@ -919,6 +948,10 @@ ${this.userData.userName}`;
           if (f === 'Qty' || f === 'cbm') {
             ctrl.setValue('1');
           }
+          if (f === 'WeightUnitSid' && !ctrl.value) {
+          const defaultWeightUnitSid = this.getDefaultWeightUnitSid();
+          ctrl.setValue(defaultWeightUnitSid);
+        }
           ctrl.updateValueAndValidity();
         }
       });
@@ -1192,6 +1225,10 @@ ${this.userData.userName}`;
 
       // Loop through enquiryCargo and add cargo rows dynamically
       route.enquiryCargo.forEach((cargo) => {
+          let weightUnitSid = cargo.WeightUnitSid;
+  if (!weightUnitSid) {
+    weightUnitSid = this.getDefaultWeightUnitSid();
+  }
         cargoArray.push(
           this.fb.group({
             EnquiryCargoSid: [cargo.EnquiryCargoSid || null],
@@ -1201,7 +1238,7 @@ ${this.userData.userName}`;
             PackageType: [cargo.PackageType || ''],
             PackageQty: [cargo.PackageQty || ''],
             Qty: [cargo.Qty || '1'],
-            WeightUnitSid: [cargo.WeightUnitSid || null],
+            WeightUnitSid: [weightUnitSid],
             GrossWeight: [cargo.GrossWeight || ''],
             NetWeight: [cargo.NetWeight || ''],
             ShipmentTerms: [cargo.ShipmentTerms || null],
@@ -1247,7 +1284,8 @@ ${this.userData.userName}`;
     if (this.hasInvalidExcept('routes', this.rateRequestForm)) {
       this.rateRequestForm.markAllAsTouched();
       this.rateRequestForm.updateValueAndValidity();
-      this.appSettingsService.showWarning('Please fill all the required fields correctly');
+      const errorMessage = this.getValidationErrorMessage();
+      this.appSettingsService.showWarning(errorMessage);
       return;
     }
     let routeInvalid: boolean;
@@ -2078,5 +2116,43 @@ openFollowup() {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  getValidationErrorMessage(): string {
+  const form = this.rateRequestForm;
+  
+  // Check specific required fields first
+  if (form.get('shipmentDate')?.invalid) {
+    return 'Please enter Expected Shipment Date.';
+  }
+  
+  if (form.get('Segment')?.invalid) {
+    return 'Please select Department.';
+  }
+  
+  if (form.get('CustomerMasterSid')?.invalid && form.get('LeadOrCustomer')?.value === true) {
+    return 'Please select Customer.';
+  }
+  
+  if (form.get('PreCustomerMasterSid')?.invalid && form.get('LeadOrCustomer')?.value === false) {
+    return 'Please select Lead.';
+  }
+  
+  // Check routes
+  const routesArray = form.get('routes') as FormArray;
+  for (let i = 0; i < routesArray.length; i++) {
+    const route = routesArray.at(i) as FormGroup;
+    
+    if (route.get('POL')?.invalid) {
+      return `Please select POL for Route.`;
+    }
+    
+    if (route.get('POD')?.invalid) {
+      return `Please select POD for Route.`;
+    }
+  }
+  
+  // Default message
+  return 'Please fill all the required fields correctly.';
+}
 
 }

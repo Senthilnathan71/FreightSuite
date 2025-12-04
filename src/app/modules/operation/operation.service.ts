@@ -254,8 +254,8 @@ export class OperationService {
     )
   }
 
-  getAllSalesman() {
-    return this.http.get<{ data: any[] }>('ff-user/salesperson').pipe(
+  getAllSalesman(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('ff-user/salesperson',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

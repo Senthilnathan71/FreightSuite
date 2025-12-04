@@ -1079,7 +1079,7 @@ loadHeaderLookups() {
     carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
     vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
     incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
-    salesmans: this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
+    salesmans: this.operationService.getAllSalesman(CompanyMasterSid).pipe(catchError(err => of([]))),
     forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
     yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
     cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),

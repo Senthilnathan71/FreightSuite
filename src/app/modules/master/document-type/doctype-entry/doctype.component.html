@@ -288,7 +288,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('DocumentSeparator')?.value">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('DocumentSeparator')?.value !== null">
                                 <ng-select formControlName="DocumentSeparator" [items]="documentSeparators" bindLabel="separator"
                                     bindValue="value" placeholder="">
                                 </ng-select>

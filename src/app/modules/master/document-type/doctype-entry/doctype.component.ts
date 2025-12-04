@@ -60,6 +60,7 @@ subledgerList: any[] = [];
 currentCompany: any;
 currentBranch: any;
 	documentSeparators = [
+		{ separator: 'None', value: '~' },
 		{ separator: 'Slash ( / )', value : '/' },
 		{ separator: 'Hyphen ( - )', value : '-' },
 		{ separator: 'Colon ( : )', value : ':' },
@@ -457,7 +458,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			serial
 		].filter(Boolean);
 
-		const voucherNumber = parts.join(DocumentSeparator.value);
+		const separator = DocumentSeparator.value === '~' ? '' : DocumentSeparator.value;
+		const voucherNumber = parts.join(separator);
 		return voucherNumber;
 	}
 

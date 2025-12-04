@@ -264,7 +264,8 @@ export class FullcalendarComponent implements OnInit {
   }
 
   loadSalesPersons() {
-    this.leadService.getAllSalesPerson().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.leadService.getAllSalesman(CompanyMasterSid).subscribe(
       (resp: any) => {
         this.salesPersons = resp
       });
@@ -637,9 +638,10 @@ export class FullcalendarComponent implements OnInit {
 
 
   loadPreCustomerMeetingData(Id: any) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       preCustomerMeeting: this.leadService.getPreCustomerMeeting(Id),
-      salesPersons: this.leadService.getAllSalesPerson()
+      salesPersons: this.leadService.getAllSalesman(CompanyMasterSid)
     }).subscribe(({ preCustomerMeeting, salesPersons }) => {
       console.log(preCustomerMeeting, 'leadData');
       console.log('Salespersons:', salesPersons);

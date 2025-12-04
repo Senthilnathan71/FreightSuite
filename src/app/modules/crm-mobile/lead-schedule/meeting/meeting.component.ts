@@ -90,7 +90,8 @@ export class MeetingComponent {
 
   // Method to load the city data
   loadSalesPerson(): void {
-    this.leadService.getAllSalesPerson().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.leadService.getAllSalesman(CompanyMasterSid).subscribe(
       (resp: any) => {
         console.log(resp, 'SalesPerson')
         this.salesPersons = resp

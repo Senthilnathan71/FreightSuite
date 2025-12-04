@@ -340,7 +340,7 @@ export class InvoiceEntryComponent implements OnInit {
     const companyRaw = localStorage.getItem('selected-company');
     const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
     const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
-
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     Promise.all([
       firstValueFrom(this.operationService.getAllDebtorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
@@ -348,7 +348,7 @@ export class InvoiceEntryComponent implements OnInit {
       firstValueFrom(this.operationService.getAllHssac()),
       firstValueFrom(this.operationService.getAllUom()),
       firstValueFrom(this.operationService.getAllState()),
-      firstValueFrom(this.operationService.getAllSalesman()),
+      firstValueFrom(this.operationService.getAllSalesman(CompanyMasterSid)),
       firstValueFrom(this.masterService.getCityById(this.currentBranchCityId)),
     ]).then(([customers, currencies, charges, hssac, uom, states,salesman,userCity]) => {
       this.customerList = customers.data || [];

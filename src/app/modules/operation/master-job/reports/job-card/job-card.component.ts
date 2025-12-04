@@ -91,9 +91,10 @@ export class JobCardComponent {
   }
 
   getSalespersons(){
-    this.masterService.getAllSalesperson().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllSalesmans(CompanyMasterSid).subscribe(
       (resp)=>{
-        this.salemanList=resp.data;
+        this.salemanList=resp;
       }
     )
   }

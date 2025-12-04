@@ -92,17 +92,6 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
 
-
-  getAllSalesPerson() {
-    return this.http.get('user/salesperson').pipe(
-      map((resp: any) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
-
-
   createPreCustomerMeeting(payLoad: any) {
     return this.http.put("ff-pre-customer-meeting", payLoad).pipe(
       map((res: any) => {
@@ -719,8 +708,8 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  getAllSalesman() {
-    return this.http.get<{ data: any[] }>('ff-user/salesperson').pipe(
+  getAllSalesman(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('ff-user/salesperson',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

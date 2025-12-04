@@ -1338,7 +1338,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
-      salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
+      salesman: this.leadService.getAllSalesman(CompanyMasterSid).pipe(catchError(err => of([]))),
       masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
       chargeUnits : this.leadService.getUOMsByType('C').pipe(catchError(err => of([]))),
       packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
