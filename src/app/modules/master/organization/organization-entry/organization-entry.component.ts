@@ -2084,16 +2084,16 @@ loadCustomerData(customerId: number) {
     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       departments: this.masterService.getAllDepartments(companyMastersID),
-      salesman: this.masterService.getAllSalesperson(),
-      docs: this.masterService.getAllDoc(),
-      cs: this.masterService.getAllCS()
+      salesman: this.masterService.getAllSalesperson(companyMastersID),
+      docs: this.masterService.getAllDoc(companyMastersID),
+      cs: this.masterService.getAllCS(companyMastersID)
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe(
       ({ departments, salesman, docs, cs }) => {
         this.spDepartmentList = departments || [];
         this.departmentList = departments || []; // Also populate departmentList for email tab
-        this.salesPersonList = salesman?.data || [];
+        this.salesPersonList = salesman || [];
         this.allCS = cs?.data || [];
         this.allDocs = docs?.data || [];
 
