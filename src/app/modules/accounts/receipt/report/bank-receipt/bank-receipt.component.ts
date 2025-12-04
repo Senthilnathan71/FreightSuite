@@ -188,21 +188,12 @@ convertNumberToWords(num: number): string {
           }
         }
 
-printDiv(divId: string, printHeightMM: number = 380): void {
-  const printContent = document.getElementById(divId);
-  if (!printContent) return;
+printDiv(divId: string): void {
+  const printContents = document.getElementById(divId)?.innerHTML;
+  if (!printContents) return;
  
-  // Save original inline height
-  const originalHeight = printContent.style.height;
- 
-  // Convert mm to px
-  const printHeightPx = (printHeightMM * 96) / 25.4 + 'px';
- 
-  // Temporarily set height for print
-  printContent.style.height = printHeightPx;
- 
-  // Open print popup
   const popupWin = window.open('', '_blank', 'width=900,height=600');
+ 
   if (popupWin) {
     popupWin.document.open();
     popupWin.document.write(`
@@ -210,21 +201,18 @@ printDiv(divId: string, printHeightMM: number = 380): void {
         <head>
           <title>Print</title>
           <style>
-            body { margin:0; }
-            #printContent { height: ${printHeightPx}; width: 280mm; }
+            @page { size: A4 portrait;paddig:0 }
+            .print-wrapper { min-height: 390mm !important; height: 390mm !important; }
           </style>
         </head>
         <body onload="window.print(); window.close();">
-          ${printContent.innerHTML}
+          ${printContents}
         </body>
       </html>
     `);
     popupWin.document.close();
   }
- 
-  // Restore original height after print
-  printContent.style.height = originalHeight;
-}
+} 
  
         
 }

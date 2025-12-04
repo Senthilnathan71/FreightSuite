@@ -5,7 +5,7 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-          <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent', 380)" >
+          <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
             <i class="fas fa-print me-1"></i> Print
         </button>
 
@@ -27,7 +27,7 @@
 <div class="modal-body">
     <div id="printContent" class="p-1">
 
-<div id="printWrap" style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always;">
+<div class="print-wrapper" style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always;">
 
     <!-- Content Wrapper -->
     <div style="flex:1; display:flex; flex-direction:column;">
@@ -80,10 +80,10 @@
                 <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Amount</strong></th>
             </tr>
             <tr>
-                <td style="border:1px solid black; padding:4px;">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:center;">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
                 <td style="border:1px solid black; padding:4px; text-align:center;">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
-                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate}}</td>
-                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.Amount}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate | number:'1.2-2'}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}</td>
             </tr>
         </table>
 
