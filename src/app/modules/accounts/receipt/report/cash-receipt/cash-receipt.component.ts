@@ -7,6 +7,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-cash-receipt',
@@ -22,6 +23,9 @@ export class CashReceiptComponent {
   currentDate = new Date();
   currentUserCountry: string;
   currentUserCountryCode: string;
+  currentBranchCityName: string | null;
+   branchDetails: any;
+    currentBranchCityId: number;
   
   @Input() receiptPrintData: any;
   @Input() masterJobContainers: any[];
@@ -38,6 +42,8 @@ export class CashReceiptComponent {
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentUserCountryCode = this.currentCompany?.countryMaster?.countryCode || 'IN';
+     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+         this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     
     console.log("Current Country Code", this.currentUserCountryCode);
     console.log("Current Country", this.currentUserCountry);
@@ -50,6 +56,7 @@ export class CashReceiptComponent {
     private appSettingService: AppSettingsService,
      private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
+     private masterService: MasterService,
   ) {}
 
   getBankName(COAMasterSid: number) {
@@ -134,6 +141,30 @@ export class CashReceiptComponent {
   }
 
 
+  
+    loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+ 
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+   
+      }
+    });
+  }
   // pdf download
 
     async downloadPDF() {
@@ -152,6 +183,8 @@ export class CashReceiptComponent {
     this.spinner.hide();
   }
 }
+
+
 
 
     async generatePDFBlob(): Promise<Blob | null> {

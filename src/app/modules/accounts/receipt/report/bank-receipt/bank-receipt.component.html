@@ -6,7 +6,7 @@
             <div class="spinner"></div>
         </div>
           <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent', 380)" >
-            <i class="fas fa-download me-1"></i> Print
+            <i class="fas fa-print me-1"></i> Print
         </button>
 
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
@@ -26,11 +26,13 @@
 
 <div class="modal-body">
     <div id="printContent" class="p-1">
-<div  id="printWrap" style="width:280mm; min-height:385mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always; ">
 
-    <!-- Content Wrapper (ensures footer stays down) -->
+<div id="printWrap" style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always;">
+
+    <!-- Content Wrapper -->
     <div style="flex:1; display:flex; flex-direction:column;">
 
+        <!-- Header -->
         <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; flex-direction: column;">
@@ -51,52 +53,97 @@
             </div>
         </div>
 
-        <h5 style="text-align:center; padding:15px 0; font-weight:bold; border-top:1px solid black;">
-            Bank Receipt
-        </h5>
+        <h5 style="text-align:center; padding:15px 0; font-weight:bold; border-top:1px solid black;">Bank Receipt</h5>
 
-      <!-- Details -->
-            <div style="display:flex; flex-wrap:wrap; width:100%; padding:0 150px; margin-top:10px;">
-                <div style="width:50%; padding-bottom:6px;">
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Receipt No</div><div>: {{receiptPrintData?.VoucherNumber}}</div></div>
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Received From</div><div>: {{receiptPrintData?.PartyName}}</div></div>
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Bank Ref</div><div>: {{receiptPrintData?.InstrumentMode}} / {{receiptPrintData?.InstrumentNumber}} / {{receiptPrintData?.InstrumentDate | formatDate}}</div></div>
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Ex. Rate</div><div>: {{receiptPrintData?.ExchangeRate}}</div></div>
-                </div>
-
-                <div style="width:50%; padding-bottom:6px;">
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Receipt Date</div><div>: {{receiptPrintData?.VoucherDate | formatDate}}</div></div>
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Bank</div><div>: {{ getBankName(receiptPrintData?.BankCOA) }}</div></div>
-                    <div style="display:flex; margin-bottom:4px;"><div style="width:100px; font-weight:bold;">Currency</div><div>: {{receiptPrintData?.CurrencyCode}}</div></div>
-                </div>
+        <!-- Details -->
+        <div style="display:flex; flex-wrap:wrap; width:100%; padding:0 150px; margin-top:10px;">
+            <div style="width:50%; padding-bottom:6px;">
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Received From</strong></div><div>: {{receiptPrintData?.PartyName}}</div></div>
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Receipt No.</strong></div><div>: {{receiptPrintData?.VoucherNumber}}</div></div>
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Bank Ref</strong></div><div>: {{receiptPrintData?.InstrumentMode}} / {{receiptPrintData?.InstrumentNumber}} / {{receiptPrintData?.InstrumentDate | formatDate}}</div></div>
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Ex. Rate</strong></div><div>: {{receiptPrintData?.ExchangeRate}}</div></div>
             </div>
 
-            <!-- Table -->
-            <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
-                <tr>
-                    <th style="border:1px solid black; padding:4px; text-align:center;">Description</th>
-                    <th style="border:1px solid black; padding:4px; text-align:center;">Curr</th>
-                    <th style="border:1px solid black; padding:4px; text-align:center;">Ex.Rate</th>
-                    <th style="border:1px solid black; padding:4px; text-align:center;">Amount</th>
-                </tr>
-                <tr>
-                    <td style="border:1px solid black; padding:4px;">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:center;">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.Amount}}</td>
-                </tr>
-            </table>
-
-            <!-- Checked/Approved -->
-            <div style="margin-top:20px; display:flex; justify-content:space-between;">
-                <strong>Checked By</strong>
-                <strong>Approved By</strong>
+            <div style="width:50%; padding-bottom:6px;">
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Receipt Date</strong></div><div>: {{receiptPrintData?.VoucherDate | formatDate}}</div></div>
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Bank</strong></div><div>: {{ getBankName(receiptPrintData?.BankCOA) }}</div></div>
+                <div style="display:flex; margin-bottom:4px;"><div style="width:100px;"><strong>Currency</strong></div><div>: {{receiptPrintData?.CurrencyCode}}</div></div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer style="margin-top:10px; text-align:center; font-size:10pt; padding:0.5rem;">
-        <div style="display:flex; justify-content:space-between; font-size:12px;">
+        <!-- Table -->
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+            <tr>
+                <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Description</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Ex.Rate</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Amount</strong></th>
+            </tr>
+            <tr>
+                <td style="border:1px solid black; padding:4px;">{{receiptPrintData?.VoucherDetail?.[0]?.Narration}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:center;">{{receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.ExchangeRate}}</td>
+                <td style="border:1px solid black; padding:4px; text-align:right;">{{receiptPrintData?.VoucherDetail?.[0]?.Amount}}</td>
+            </tr>
+        </table>
+
+        <!-- Remittance section -->
+        <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0">
+
+            <h5 style="padding: 4px 0; font-weight:600;">Remittance Details</h5>
+
+            <table style="width:100%; border-collapse:collapse; border:1px solid black; font-size:14px;">
+                <tbody>
+                    <tr>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher No.</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher Type</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher Date</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr.</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr. Amt</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Local Amount</strong></th>
+                        <th style="border:1px solid black; padding:4px; text-align:center;"><strong>TDS Amount</strong></th>
+                    </tr>
+
+                    <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
+                        <td style="border:1px solid black; padding:4px;text-align:center;">{{ voucher?.VoucherNumber }}</td>
+                        <td style="border:1px solid black; padding:4px;text-align:center;">{{ voucher?.VoucherType }}</td>
+                        <td style="border:1px solid black; padding:4px;text-align:center;">{{ voucher?.VoucherDate | formatDate }}</td>
+                        <td style="border:1px solid black; padding:4px;text-align:center;">{{ voucher?.CurrencyCode }}</td>
+                        <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.OriginalCurrencyAmount | number:'1.2-2' }}</td>
+                        <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.OriginalLocalAmount | number:'1.2-2' }}</td>
+                        <td style="border:1px solid black; padding:4px; text-align:right;"></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="4" style="text-align:right; font-weight:bold; border:1px solid black; padding:4px;"><strong>Total</strong></td>
+                        <td style="border:1px solid black; padding:4px; text-align:right;font-weight:bold;"><strong>{{ getTotalOriginalCurrencyAmount() | number:'1.2-2' }}</strong></td>
+                        <td style="border:1px solid black; padding:4px; text-align:right;font-weight:bold;"><strong>{{ getTotalOriginalLocalAmount() | number:'1.2-2' }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+         <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px;">
+    <strong style="white-space:nowrap;">Amount in Words :  </strong>
+
+    <p style="margin:0; line-height:22px; word-break:break-word;">
+        {{ receiptPrintData?.VoucherDetail?.[0]?.CurrencyCode }}
+        {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only
+    </p>
+</div>
+
+
+        </div>
+
+        <!-- Checked By -->
+        <div style="margin-top:20px; display:flex; justify-content:space-between;">
+            <strong>Checked By</strong>
+            <strong>Approved By</strong>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="margin-top:10px; text-align:center; font-size:12px; padding:0.5rem;">
+        <div style="display:flex; justify-content:space-between;">
             <div>Printed By: {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div>Printed On: {{ currentDate | formatDate }}</div>
@@ -104,6 +151,7 @@
     </footer>
 
 </div>
+
 
 
     </div>

@@ -8,7 +8,7 @@
         <div class="spinner"></div>
       </div>
        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
-            <i class="fas fa-download me-1"></i> Print
+            <i class="fas fa-print me-1"></i> Print
         </button>
       <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
         <i class="fas fa-download me-1"></i> Download PDF
@@ -60,7 +60,7 @@
     <div style="border: 1px solid black; padding: 10px; border-radius: 5px;">
       <div style="display: flex; flex-direction: column; gap: 5px;">
         <div style="display: flex;"><strong style="width: 150px;">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
-        <div style="display: flex;"><strong style="width: 150px;">Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+        <div style="display: flex;"><strong style="width: 150px;">Voyage No.</strong>: {{housejobData?.VoyageNo}}</div>
         <div style="display: flex;"><strong style="width: 150px;">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
         <div style="display: flex;"><strong style="width: 150px;">Date</strong>: </div>
         <div style="display: flex;"><strong style="width: 150px;">Container No</strong>: {{ housejobData?.Products?.[0]?.ContainerNo }}</div>
@@ -78,9 +78,9 @@
     <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; ">
       <thead >
         <tr>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">HBL No.</th>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Marks and Numbers</th>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Goods Description</th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>HBL No.</strong></th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
         </tr>
       </thead>
       <tbody>
@@ -102,9 +102,9 @@
     <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; ">
       <thead >
         <tr>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">HBL No.</th>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Marks and Numbers</th>
-          <th style="border: 1px solid black; padding: 5px;font-weight: 700;">Goods Description</th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>BL No.</strong></th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
+          <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
         </tr>
       </thead>
       <tbody>

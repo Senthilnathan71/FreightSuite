@@ -6,7 +6,7 @@
             <div class="spinner"></div>
         </div>
          <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
-            <i class="fas fa-download me-1"></i> Print
+            <i class="fas fa-print me-1"></i> Print
         </button>
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
@@ -53,26 +53,26 @@
     <!-- Client/Shipper/Consignee/Forwarder Sections -->
     <div style="display:flex; margin-bottom:0; padding:0px;">
         <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-right:1px solid black;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:125px;"><strong>Client</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.CustomerName}}<br>{{masterJobData?.houseJob?.[0]?.CustomerAddress}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:125px;" class="ms-1"><strong>Client</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.CustomerName}}<br>{{masterJobData?.houseJob?.[0]?.CustomerAddress}}</div></div>
         </div>
         <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Shipper</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.ShipperName}}<br>{{masterJobData?.houseJob?.[0]?.ShipperAddress}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"class="ms-1"><strong>Shipper</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.ShipperName}}<br>{{masterJobData?.houseJob?.[0]?.ShipperAddress}}</div></div>
         </div>
     </div>
     <div style="display:flex; margin-bottom:0; padding:0px;">
         <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:none;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:123px;"><strong>Consignee</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.ConsigneeName}}<br>{{masterJobData?.houseJob?.[0]?.ConsigneeAddress}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:123px;"class="ms-1"><strong>Consignee</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.ConsigneeName}}<br>{{masterJobData?.houseJob?.[0]?.ConsigneeAddress}}</div></div>
         </div>
         <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none; border-top: none;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Forwarder</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.others?.[0]?.Forwarder}}<br>{{masterJobData?.houseJob?.[0]?.others?.[0]?.ForwarderAddress}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"class="ms-1"><strong>Forwarder</strong></div><div style="width:8px;">:</div><div style="min-height:100px;">{{masterJobData?.houseJob?.[0]?.others?.[0]?.Forwarder}}<br>{{masterJobData?.houseJob?.[0]?.others?.[0]?.ForwarderAddress}}</div></div>
         </div>
     </div>
 
     <!-- Job Details -->
     <div style="display:flex; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black; margin:0;">
         <div style="flex:0 0 50%; max-width:50%; padding:5px;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Job No</strong></div><div>: {{ masterJobData?.MasterJobNumber }}</div></div>
-            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>HBL No</strong></div><div>: {{masterJobData?.houseJob?.[0]?.HBLNo}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Job No.</strong></div><div>: {{ masterJobData?.MasterJobNumber }}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>HBL No.</strong></div><div>: {{masterJobData?.houseJob?.[0]?.HBLNo}}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Port of Loading</strong></div><div>: {{masterJobData?.POL}}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Port of Discharge</strong></div><div>: {{masterJobData?.POD}}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Final Destination</strong></div><div>: {{masterJobData?.FPD}}</div></div>
@@ -80,7 +80,7 @@
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Sales Person</strong></div><div>: {{getSalespersonName(masterJobData?.houseJob[0]?.SalesmanSid)}}</div></div>
         </div>
         <div style="flex:0 0 50%; max-width:50%; padding:5px;">
-            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>MBL No</strong></div><div>: {{masterJobData?.MBLNo}}</div></div>
+            <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>MBL No.</strong></div><div>: {{masterJobData?.MBLNo}}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>ETA</strong></div><div>: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>ETD</strong></div><div>: {{ masterJobData?.voyages?.[0]?.ETD | formatDate }}</div></div>
             <div style="display:flex; margin-bottom:1px;"><div style="width:120px;"><strong>Vessel / Voyage</strong></div><div>: {{ masterJobData?.voyages?.[0]?.VesselName ? (masterJobData?.voyages?.[0]?.VoyageNo ? masterJobData?.voyages?.[0]?.VesselName + ' / ' + masterJobData?.voyages?.[0]?.VoyageNo : masterJobData?.voyages?.[0]?.VesselName) : masterJobData?.voyages?.[0]?.VoyageNo || '' }}</div></div>
@@ -94,10 +94,10 @@
         <table style="width:100%; border-collapse:collapse; font-size:14px; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
             <thead style="background-color:#f8f9fa;">
                 <tr>
-                    <th style="border:1px solid black; padding:2px 8px; font-weight:700;">Container No</th>
+                    <th style="border:1px solid black; padding:2px 8px; font-weight:700;">Container No.</th>
                     <th style="border:1px solid black; padding:2px 8px; font-weight:700;">Type</th>
                     <th style="border:1px solid black; padding:2px 8px; font-weight:700;">Commodity Description</th>
-                    <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">No of Pkg</th>
+                    <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">No. of Pkg</th>
                     <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">Gross Weight</th>
                     <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">Volume</th>
                     <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">Net Weight</th>
