@@ -3615,3 +3615,7 @@ textarea:disabled {
 .aos-horizontal .digit-13,
 .aos-horizontal .digit-15   { flex: 0 0 4em; }
 .aos-horizontal .digit-14   { flex: 0 0 40px; }
+
+.no-bottom.ng-invalid.ng-touched {
+  border-bottom: 2px solid #D3D9E4 !important;
+}

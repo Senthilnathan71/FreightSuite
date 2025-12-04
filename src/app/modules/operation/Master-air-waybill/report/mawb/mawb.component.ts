@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-mawb',
@@ -21,6 +24,9 @@ export class MAWBComponent implements OnChanges {
   currentCurrency: number;
   currentCountryName: number;
   currentCurrencyCode: number;
+  branchDetails: any;
+  currentBranchCityName: string | null;
+  currentBranchCityId: number;
   @Input() masterAirWayData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -81,13 +87,49 @@ export class MAWBComponent implements OnChanges {
       console.log('Shipper Name:', this.masterAirWayData.houseJob[0].ShipperName);
       console.log('Shipper Address:', this.masterAirWayData.houseJob[0].ShipperAddress);
     }
+
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    console.log(this.branchDetails, "BRANCH DETAILS");
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadCityName();
+  }
+
+
+      loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+ 
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        console.log("City API response:", response);
+
+        if (response) {
+          const ourCity = response;
+
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+          console.log("Final City Name:", this.currentBranchCityName);
+        }
+
+        
+      },
+      error: (error) => {
+        console.error("Failed to load city:", error);
+       
+      }
+    });
   }
 
 
 
   constructor(
     private activeModal: NgbActiveModal,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private pdfService: PdfDownloadService,
+    private spinner: NgxSpinnerService,
+    private masterService: MasterService,
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
@@ -184,6 +226,43 @@ export class MAWBComponent implements OnChanges {
   }
 
 
+  printDiv(divId: string): void {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printContents}
+        </body>
+      </html>
+    `);
+      popupWin.document.close();
+    }
+  }
+
+    async downloadPDF() {
+  this.spinner.show();
+  try {
+   const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
+
+    
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      `MAWB_${BankPaymentNo}`,
+      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
+  }
+}
 
 
 }
