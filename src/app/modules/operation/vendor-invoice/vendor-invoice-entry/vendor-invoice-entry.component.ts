@@ -31,6 +31,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -48,7 +49,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NumberFormatPipe,
     CustomDatePipe,
     SearchableDropdown,
-    NgbDropdownModule
+    NgbDropdownModule,
+    DecimalPrecisionDirective
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],
@@ -176,10 +178,12 @@ gstTypes = [
   tdsConfig: any = null;
 currentUserState: string;
   currentFinancialYear : number;
-  currentCountry : number;
+  currentCountry : any;
   currentCurrency: number;
   currentUserCurrency : string;
-  currentUserCountry : string;
+  currentCountryID : any;
+  currencySettings: any;
+  currentCurrencyCode: string;
   // Country/Tax mode
   bookingModeCountry: string = 'india';
 
@@ -215,35 +219,49 @@ currentUserState: string;
   ) {}
 
   ngOnInit(): void {
-    const userProfile = this.appSettingService.getDecryptedUserProfile();
-    if (userProfile) {
-      this.userData = userProfile;
-    }
+  
+  this.initForm();
 
-    try {
+  
+  const userProfile = this.appSettingService.getDecryptedUserProfile();
+  if (userProfile) {
+    this.userData = userProfile;
+    this.currentCountry = this.userData?.countryMaster?.countryName;
+    this.currentCurrency = this.userData?.countryMaster?.CurrencyMasterSid;
+    this.currentCountryID = this.userData?.countryMaster?.CountryMasterSid;
+    const currencyMaster = this.userData?.countryMaster?.currencyMaster;
+    if (currencyMaster) {
+      this.currentUserCurrency = currencyMaster?.currencyCode;
+    } else {
+      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+      if (this.currentCompany?.currencyMaster) {
+        this.currentCurrency = this.currentCompany?.currencyMaster?.CurrencyMasterSid;
+        this.currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+      }
+    }
+  }
+console.log('currentCurrencyCode', this.currentCurrencyCode);
+  try {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-    this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
-    this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
-    this.currentCurrency=Number(this.currentCompany?.CurrencyMasterSid)
     this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
-    this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
 
-    console.log('=== INITIAL COMPANY DATA ===');
-    console.log('Current Company:', this.currentCompany);
-    console.log('Current Branch:', this.currentBranch);
-    console.log('Company State:', this.currentUserState);
-    console.log('Company Currency:', this.currentUserCurrency);
-    console.log('Current Country:', this.currentCountry);
-    console.log('Current Currency:', this.currentCurrency);
-    console.log('Current Financial Year:', this.currentFinancialYear);
+    this.currencySettings = this.companySettings.getCurrencySettings();
+
+    
+    this.vendorInvoiceForm.patchValue({
+      CurrencyCode: this.currentCompany?.currencyMaster?.currencyCode,
+      ExchangeRate: 1
+    });
+
+    // Disable exchange rate initially (same currency)
+    this.vendorInvoiceForm.get('ExchangeRate')?.disable();
 
     // Set country mode from company settings
     if (this.currentCompany?.CountryName) {
       this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
-      console.log('DEBUG - Booking mode country:', this.bookingModeCountry);
     }
   } catch (e) {
     console.error('Error loading company data:', e);
@@ -251,10 +269,8 @@ currentUserState: string;
     this.currentBranch = null;
   }
 
-    this.mps.init().subscribe();
-    this.initForm();
-    this.loadLookups();
-
+  this.mps.init().subscribe();
+  this.loadLookups();
     try {
       const decryptedProfileRaw = localStorage.getItem('user-profile');
       const decryptedProfile = decryptedProfileRaw ? this.appSettingService.decrypt(decryptedProfileRaw) : null;
@@ -285,9 +301,9 @@ currentUserState: string;
     });
 
     // Recalculate when currency/exchange rate changes
-    this.vendorInvoiceForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
-      this.recalculateAllRows();
-    });
+    this.vendorInvoiceForm.get('CurrencyCode')?.valueChanges.subscribe((currencyCode) => {
+    this.checkAndDisableExchangeRate();
+  });
 
     this.vendorInvoiceForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
@@ -1569,6 +1585,7 @@ getMasterJobNumber(jobSid: number): string {
           this.vendorInvoiceData = response.data;
           this.populateForm(this.vendorInvoiceData);
           this.setFormReadonly();
+          this.checkAndDisableExchangeRate();
         } else {
           this.appSettingService.showError('Vendor Invoice not found');
           this.router.navigate(['/operation/vendor-invoice/list']);
@@ -1582,7 +1599,25 @@ getMasterJobNumber(jobSid: number): string {
       }
     });
   }
-
+private setupCurrencyChangeListener(): void {
+  this.vendorInvoiceForm.get('CurrencyCode')?.valueChanges.subscribe((currencyCode) => {
+    if (currencyCode) {
+      const currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+      
+      // Only fetch exchange rate if different from company currency
+      if (currencyCode !== currentCurrencyCode) {
+        // Small delay to ensure user has selected the currency
+        setTimeout(() => {
+          this.fetchExchangeRate(currentCurrencyCode, currencyCode);
+        }, 300);
+      } else {
+        // Same currency - set to 1 and disable
+        this.vendorInvoiceForm.get('ExchangeRate')?.disable();
+        this.vendorInvoiceForm.get('ExchangeRate')?.setValue(1, { emitEvent: false });
+      }
+    }
+  });
+}
  setFormReadonly() {
   if (this.isViewMode || this.isPosted) {
     this.vendorInvoiceForm.disable();
@@ -2149,19 +2184,110 @@ get isDraft(): boolean {
   }
 
   onCurrencyChange(event: any): void {
-    console.log(event,'onCurrencyChange')
-    const currencySid = event?.CurrencyMasterSid || event;
-    if (!currencySid) return;
+  console.log('=== onCurrencyChange START ===');
 
-    const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
-    if (currency) {
+  // Ensure form is initialized
+  if (!this.vendorInvoiceForm) {
+    console.warn('Form not initialized yet');
+    return;
+  }
+
+  let selectedCurrency: any;
+
+  if (typeof event === 'object' && event !== null) {
+    selectedCurrency = event;
+  } else {
+    const currencySid = event;
+    selectedCurrency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
+  }
+
+  if (!selectedCurrency) {
+    console.warn('No currency selected or found');
+    return;
+  }
+
+  // If currency is different from company currency, fetch exchange rate
+  if (this.currentCurrency !== selectedCurrency.CurrencyMasterSid) {
+    this.fetchExchangeRate(this.currentCurrencyCode, selectedCurrency.currencyCode);
+  } else {
+    const exchangeRateControl = this.vendorInvoiceForm.get('ExchangeRate');
+    if (exchangeRateControl) {
+      exchangeRateControl.disable();
+    }
+    
+    this.vendorInvoiceForm.patchValue({
+      CurrencyCode: selectedCurrency.currencyCode,
+      ExchangeRate: 1
+    }, { emitEvent: false });
+  }
+
+  console.log('=== onCurrencyChange END ===');
+  this.recalculateAllRows();
+}
+
+// Add this new method to fetch exchange rate
+fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
+  const payload = {
+    fromCurrencyCode: fromCurrencyCode,
+    toCurrencyCode: toCurrencyCode,
+    segment: 'OPERATION' // You might want to make this configurable
+  };
+
+  this.operationService.getExchangeRate(payload).subscribe({
+    next: (response: any) => {
+      console.log('Exchange Rate API Response:', response);
+      
+      if (response.status && response.data) {
+        const exchangeRate = parseFloat(response.data);
+        this.vendorInvoiceForm.patchValue({
+          ExchangeRate: exchangeRate || 1
+        }, { emitEvent: false });
+        
+        this.appSettingService.showSuccess(`Exchange rate updated: ${exchangeRate}`);
+      } else {
+        this.appSettingService.showWarning('Using default exchange rate 1.0');
+        this.vendorInvoiceForm.patchValue({
+          ExchangeRate: 1
+        }, { emitEvent: false });
+      }
+      
+      this.recalculateAllRows();
+    },
+    error: (error) => {
+      console.error('Error fetching exchange rate:', error);
+      this.appSettingService.showError('Failed to fetch exchange rate, using 1.0');
       this.vendorInvoiceForm.patchValue({
-        CurrencyCode: currency.currencyCode,
-        ExchangeRate: currency.ExchangeRate || 1
-      });
+        ExchangeRate: 1
+      }, { emitEvent: false });
       this.recalculateAllRows();
     }
+  });
+}
+onExchangeRateFocus(): void {
+  const currencyCode = this.vendorInvoiceForm.get('CurrencyCode')?.value;
+  const currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+  
+  // Enable exchange rate field only when currency is different
+  if (currencyCode !== currentCurrencyCode) {
+    this.vendorInvoiceForm.get('ExchangeRate')?.enable();
   }
+}
+onExchangeRateBlur(): void {
+  // Re-disable if currency is same as company currency
+  this.checkAndDisableExchangeRate();
+}
+
+checkAndDisableExchangeRate(): void {
+  const currencyCode = this.vendorInvoiceForm.get('CurrencyCode')?.value;
+  const currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+  
+  if (currencyCode === currentCurrencyCode) {
+    this.vendorInvoiceForm.get('ExchangeRate')?.disable();
+    this.vendorInvoiceForm.get('ExchangeRate')?.setValue(1);
+  } else {
+    this.vendorInvoiceForm.get('ExchangeRate')?.enable();
+  }
+}
 
   onExchangeRateChange(): void {
     this.recalculateAllRows();

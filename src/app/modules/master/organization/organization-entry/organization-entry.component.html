@@ -251,19 +251,28 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm"
-                  formControlName="CustomerAddress1" [textWithNumbers]="300">
-                <label for="CustomerAddress1" class="input-label">Address1 <span class="text-danger">*</span></label>
-                @if (customerForm.get('CustomerAddress1')?.touched && customerForm.get('CustomerAddress1')?.invalid) {
-                <div class="error-message">
-                  @if (customerForm.get('CustomerAddress1')?.hasError('required')) { <span>Required</span> }
-                  @else if (customerForm.get('CustomerAddress1')?.hasError('maxlength')) { <span>Max 300 chars</span>
-                  }
-                </div>
-                }
-              </div>
-            </aside>
+  <div class="custom-form-group">
+    <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm"
+           formControlName="CustomerAddress1" [textWithNumbers]="300"
+           [class.is-invalid]="customerForm.get('CustomerAddress1')?.invalid && 
+                               customerForm.get('CustomerAddress1')?.touched">
+    <label for="CustomerAddress1" class="input-label">Address1 <span class="text-danger">*</span></label>
+    
+    <!-- Show error messages -->
+    @if (customerForm.get('CustomerAddress1')?.invalid && 
+         (customerForm.get('CustomerAddress1')?.touched || 
+          customerForm.get('CustomerAddress1')?.dirty)) {
+      <div class="error-message">
+        @if (customerForm.get('CustomerAddress1')?.hasError('required')) { 
+          <span><i class="fas fa-exclamation-circle me-1"></i> Address1 is required</span> 
+        }
+        @else if (customerForm.get('CustomerAddress1')?.hasError('maxlength')) { 
+          <span>Max 300 characters allowed</span> 
+        }
+      </div>
+    }
+  </div>
+</aside>
 
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -348,15 +357,14 @@
               </div>
             </aside>
 
-            <aside class="col-md-4 d-flex align-items-center">
-              <div class="form-check form-check-inline p-0">
-                <div class="form-check d-flex align-items-center">
-                  <input type="checkbox" formControlName="IsMSME" id="IsMSME" class="form-check-input sm">
-                  <label for="IsMSME" class="form-check-label sm">Is MSME</label>
-                </div>
-              </div>
-            </aside>
-
+            <aside class="col-md-4 d-flex align-items-center" *ngIf="isCurrentUserIndian">
+  <div class="form-check form-check-inline p-0">
+    <div class="form-check d-flex align-items-center">
+      <input type="checkbox" formControlName="IsMSME" id="IsMSME" class="form-check-input sm">
+      <label for="IsMSME" class="form-check-label sm">Is MSME</label>
+    </div>
+  </div>
+</aside>
             <ng-container *ngIf="isAirlineSelected">
   <aside class="col-md-4">
     <div class="custom-form-group">

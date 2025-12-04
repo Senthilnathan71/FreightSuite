@@ -41,6 +41,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 export class CurrencyExchangeEntryComponent implements OnInit {
   currencyExchangeForm!: FormGroup;
   isEditMode = false;
+  filteredToCurrencies: any[] = []; 
   CurrencyExchangeSid: number | null = null;
   statusList = ["Active", "Suspended"];
   companies: any[] = [];
@@ -104,9 +105,11 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     });
 
     // Automatically convert currency inputs to uppercase
+     // Automatically convert currency inputs to uppercase
     this.currencyExchangeForm.get('FromCurrency')?.valueChanges.subscribe(val => {
       if (val) {
         this.currencyExchangeForm.get('FromCurrency')?.setValue(val.toUpperCase(), { emitEvent: false });
+        this.filterToCurrencies(val); // Filter ToCurrencies when FromCurrency changes
       }
     });
 
@@ -122,6 +125,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.masterService.getAllCurrencies().subscribe({
       next: (currencies) => {
         this.currencies = currencies;
+        this.filteredToCurrencies = [...this.currencies]; 
         this.loading = false;
       },
       error: (err) => {
@@ -130,6 +134,23 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+  filterToCurrencies(selectedFromCurrency: string) {
+    if (!selectedFromCurrency) {
+      // If no FromCurrency selected, show all currencies
+      this.filteredToCurrencies = [...this.currencies];
+    } else {
+      // Filter out the selected FromCurrency from ToCurrency options
+      this.filteredToCurrencies = this.currencies.filter(
+        currency => currency.currencyCode !== selectedFromCurrency
+      );
+      
+      // If current ToCurrency is same as FromCurrency, reset it
+      const currentToCurrency = this.currencyExchangeForm.get('ToCurrency')?.value;
+      if (currentToCurrency === selectedFromCurrency) {
+        this.currencyExchangeForm.get('ToCurrency')?.setValue('');
+      }
+    }
   }
 
   loadCompaniesAndBranches() {
@@ -191,6 +212,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
           status: data.status === 'A' ? 'Active' : 'Suspended',
           RateFrom: data.RateFrom || ''
         });
+        const fromCurrency = data.FromCurrency;
+        if (fromCurrency) {
+          this.filterToCurrencies(fromCurrency);
+        }
         this.loading = false;
       },
       error: (err) => {
