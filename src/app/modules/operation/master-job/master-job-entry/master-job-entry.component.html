@@ -35,10 +35,10 @@
                             [disabled]="isLoading">Pre Alert</button>
                         <button class="text-dark" ngbDropdownItem (click)="reportcargomanifest()"
                             [disabled]="isLoading">Cargo Manifest</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportreleaseLetter()"
-                            [disabled]="isLoading">Release Letter</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportreleaseOrder()"
-                            [disabled]="isLoading">Release Order</button>
+                        <!-- <button class="text-dark" ngbDropdownItem (click)="reportreleaseLetter()"
+                            [disabled]="isLoading">Release Letter</button> -->
+                        <!-- <button class="text-dark" ngbDropdownItem (click)="reportreleaseOrder()"
+                            [disabled]="isLoading">Release Order</button> -->
                         <button class="text-dark" ngbDropdownItem (click)="reportjobCard()"
                             [disabled]="isLoading">Job Card</button>
                             <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
@@ -1507,7 +1507,7 @@
                 [dataItems]="customsDataArray"
                 [resetTrigger]="customsResetTrigger"
                 [formData]="currentCustomsFormValue"
-                (reloadParent)="loadMasterJobData($event)">
+                (dataEmitter)="handleCustomsChange($event)">
             </app-customs>
         </div>
 
@@ -2757,7 +2757,7 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()"
-                [disabled]="containerFormGroup.invalid">Save</button>
+                [disabled]="containerFormGroup.invalid">Add</button>
         </div>
     </ng-template>
 
@@ -2834,7 +2834,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info btn-sm">Save</button>
+            <button type="button" class="btn btn-info btn-sm">Add</button>
         </div>
     </ng-template>
 </div>

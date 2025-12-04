@@ -93,6 +93,13 @@ export class OperationService {
       })
     );
   }
+  deleteHouseJobProduct(id: number) {
+    return this.http.delete<{ data: any }>(`house-job/product/${id}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 
   deleteBookingConnection(id: number) {
     return this.http.delete<{ data: any }>(`ff-bookingff-booking/connection/${id}`).pipe(

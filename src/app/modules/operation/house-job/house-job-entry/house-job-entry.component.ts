@@ -53,6 +53,7 @@ import { CustomsComponent } from '../customs/customs.component';
 
 import { DeliveryNoteComponent } from '../report/delivery-note/delivery-note.component';
 import { HAWBComponent } from '../report/hawb/hawb.component';
+import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -133,6 +134,8 @@ export class HouseJobEntryComponent  implements OnInit {
   uploadResult: any = null;
   decimalAfterPrecision = 3;
   digitsAfterDecimal = 3;
+  isETDFreeText: boolean = false;
+isETAFreeText: boolean = false;
 boeDataArray: any[] = [];        // for BOE data
 resetTriggerBOE: boolean = false; // trigger flag for reset
 vehicleDataArray: any[] = [];        // for BOE data
@@ -618,6 +621,24 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   this.b[flagCtrl]?.setValue(!value);
   this.houseJobForm.get(mainCtrl)?.reset();
 }
+toggleDateInputType(field: 'ETD' | 'ETA'): void {
+  if (field === 'ETD') {
+    this.isETDFreeText = !this.isETDFreeText;
+    if (this.isETDFreeText) {
+      this.houseJobForm.get('ETD')?.enable();
+    } else {
+      this.houseJobForm.get('ETD')?.disable();
+    }
+  } else if (field === 'ETA') {
+    this.isETAFreeText = !this.isETAFreeText;
+    if (this.isETAFreeText) {
+      this.houseJobForm.get('ETA')?.enable();
+    } else {
+      this.houseJobForm.get('ETA')?.disable();
+    }
+  }
+}
+
 evaluateDropdownOrFreeText() {
   let response = this.bookingData;
   if (response?.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
@@ -637,6 +658,16 @@ evaluateDropdownOrFreeText() {
   }
   if (response?.VoyageNo && !this.existsInList(this.voyageList, response.VoyageNo)) {
     this.houseJobForm.patchValue({ isVoyageFreeText: true });
+  }
+  
+  // Check for manual date entries
+  if (response?.ETD && this.isEditMode) {
+    this.isETDFreeText = true;
+    this.houseJobForm.get('ETD')?.enable();
+  }
+  if (response?.ETA && this.isEditMode) {
+    this.isETAFreeText = true;
+    this.houseJobForm.get('ETA')?.enable();
   }
 }
 existsInList(list: any[], value: any) {
@@ -1256,7 +1287,8 @@ loadHeaderLookups() {
     FreightTerms : response.FreightTerms,
     JobType: response.JobType,
     ShipmentNo: response.ShipmentNo
-  })
+  });
+   this.evaluateDropdownOrFreeText();
     this.handleCFSOrYard();
     const otherData = response.Others[0];
     this.otherForm.patchValue({
@@ -2209,7 +2241,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const realIndex = this.bookingProducts.controls.indexOf(productToDelete);
 
     if (HouseJobProductSid) {
-      this.operationService.deleteBookingProduct(HouseJobProductSid).subscribe(
+      this.operationService.deleteHouseJobProduct(HouseJobProductSid).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.bookingProducts.removeAt(realIndex);
@@ -3005,7 +3037,7 @@ ${this.userData['userName']}`;
 
 
       reportMilestoneSummary() {
-        const modalRef = this.modalService.open(MilestoneComponent,{
+        const modalRef = this.modalService.open(MilestoneSummaryComponent,{
           size: 'xl',
           scrollable: true,
         })

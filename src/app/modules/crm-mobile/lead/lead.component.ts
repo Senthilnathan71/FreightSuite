@@ -263,7 +263,10 @@ MenuMasterSid:any
       ]],
       leadStatus: [LeadStatus.Discovery],
       PreferredContactMode: ['Email'],
-      LanguagePreferrence: [''],
+      LanguagePreferrence: ['', [
+  Validators.maxLength(100),
+  this.languagePrefValidator()
+]],
       ServiceOfInterest: [''],
       // PurchaseTimeline : [''],
       SpecificRequirements: [''],
@@ -280,6 +283,22 @@ MenuMasterSid:any
       }
     )
   }
+languagePrefValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value?.trim();
+    if (!value) return null;
+
+    // ALLOW: letters, space, comma
+    const pattern = /^[A-Za-z\s,]+$/;
+
+    if (!pattern.test(value)) {
+      return { invalidLanguage: true };
+    }
+
+    return null;
+  };
+}
+
 
   // Handle Form Submission
   onSubmit() {
