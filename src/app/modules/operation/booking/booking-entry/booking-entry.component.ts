@@ -1546,9 +1546,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         return;
       }
     }
-      if (!this.validateAllForms()) {
-    return;
-  }
          const cleanDate = (dateValue: any) => {
  
     if (!dateValue || dateValue.toString() === 'Invalid Date') {
@@ -1576,6 +1573,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   // Update the form state
  
   this.bookingForm.updateValueAndValidity();
+       if (!this.validateAllForms()) {
+    return;
+  }
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
