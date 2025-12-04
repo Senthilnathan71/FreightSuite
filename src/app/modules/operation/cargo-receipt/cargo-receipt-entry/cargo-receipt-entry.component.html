@@ -3,6 +3,11 @@
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
                 <h4 class="page-title mb-0">Cargo Receipt</h4>
+                @if(isEditMode){
+      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+        <i class="fas fs-6 fa-info-circle"></i>
+      </a>
+      }
             </div>
             <div class="col-md-8 pb-1">
                 <div

@@ -205,8 +205,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
   measurementUnitList =[
-    { id: 1, name: 'CM' },
-    { id: 2, name: 'M' },
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
     { id: 3, name: 'Inch'}
   ]
   auditLogs: any[] = []; // Stores audit logs
@@ -644,9 +644,9 @@ arapFilter = {
       VoyageMasterSid: [null],
       JobType: [{ value: '', disabled: false }],
       VoyageNo: [ null],
-      ETA: [ ''],
-      ETD: [''],
-      CutOffDate: [''],
+      ETA: [{value:'', disabled:true}],
+      ETD: [{value:'', disabled:true}],
+      CutOffDate: [{value:'', disabled:true}],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -741,7 +741,7 @@ arapFilter = {
       Length: [''],
       Width: [''],
       Height: [''],
-      UomMasterSid: [1],
+      UomMasterSid: [2],
       CargoRecDate: [null]
     });
     this.setupImmediateCBMCalculation();
@@ -957,7 +957,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
       Volumetric: [data?.Volumetric|| ''],
-      UomMasterSid: [data?.UomMasterSid || 1],
+      UomMasterSid: [data?.UomMasterSid || 2],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
@@ -1072,7 +1072,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   addProduct() {
     const formGroup = this.createBookingProductGroup();
-    formGroup.get('UomMasterSid')?.setValue(1, { emitEvent: true });
+    formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
     this.bookingProducts.push(formGroup);
   }
 

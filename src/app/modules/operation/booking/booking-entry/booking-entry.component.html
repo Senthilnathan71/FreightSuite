@@ -845,7 +845,11 @@
                     <aside class="col-md-6">
                       <div class="custom-form-group custom-form-group-select inputChnages"
                         [class.filled]="!!bookingForm.get('VesselName')?.value">
-
+                        @if(selectedDepartmentType === "AIR"){
+                          <input type="text" id="vessel-input" placeholder="" class="custom-input-field sm"
+        formControlName="VesselName">
+      <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
+                        }@else {
                         <!-- Dropdown Mode -->
                         <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
                           <dofi-searchable-dropdown
@@ -876,55 +880,22 @@
                         </div>
 
                         <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                      }
                       </div>
                     </aside>
 
                     <!-- Voyage No -->
                     <aside class="col-md-6">
-                      <div class="custom-form-group custom-form-group-select inputChnages"
-                        [class.filled]="!!bookingForm.get('VoyageNo')?.value">
-
-                        <!-- Dropdown Mode -->
-                        <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
-                          <ng-select
-                            [items]="voyageList"
-                            bindLabel="VoyageNo"
-                            bindValue="VoyageNo"
-                            class="ng-select"
-                            appendTo="body"
-                            formControlName="VoyageNo"
-                            placeholder=""
-                            (change)="onVoyageChange($event)"
-                            style="width: 100%;">
-                            <ng-template ng-option-tmp let-item="item">
-                              <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-                                {{ item.VoyageNo }}
-                              </div>
-                              <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
-                                <div style="flex: 1; text-align: left;">ETA: {{ item?.ETD | formatDate }}</div>
-                                <div style="flex: 1; text-align: right;">ETD: {{ item?.ETA | formatDate }}</div>
-                                <div style="flex: 1; text-align: right;">CutOffDate: {{ item?.PortCutoff | formatDate }}</div>
-                              </div>
-                            </ng-template>
-                          </ng-select>
-
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
-                            (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-                          </button>
+                        <div class="custom-form-group">
+                          @if(selectedDepartmentType === "AIR"){
+      <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
+        formControlName="VoyageNo">
+      <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
+    } @else {
+                          <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
+                          <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+    }
                         </div>
-
-                        <!-- Manual Text Input -->
-                        <div class="input-group" *ngIf="this.b['isVoyageFreeText']?.value">
-                          <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
-                            (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-                          </button>
-                        </div>
-
-                        <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                      </div>
                     </aside>
 
                   <div class="col-md-6">
@@ -936,7 +907,7 @@
                         <button class="btn  bi bi-calendar3 px-0" (click)="d5.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      <label for="shipmentDateExpected" class="input-label">ETD <span class="text-danger"></span>
+                      <label for="shipmentDateExpected" class="input-label">ETD
                       </label>
                     </div>
                   </div>
@@ -950,7 +921,7 @@
                         <button class="btn bi bi-calendar3 px-0" (click)="d4.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      <label for="shipmentDateExpected" class="input-label">ETA <span class="text-danger"></span>
+                      <label for="shipmentDateExpected" class="input-label">ETA
                       </label>
                     </div>
                   </div>
@@ -964,7 +935,7 @@
                         <button class="btn bi bi-calendar3 px-0" (click)="d9.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      <label for="" class="input-label">Port Cut off date <span class="text-danger"></span>
+                      <label for="" class="input-label">Port Cut off date
                       </label>
                     </div>
                   </div>

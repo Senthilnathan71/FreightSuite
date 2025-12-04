@@ -720,7 +720,7 @@ clearCustomerSearch(): void {
        CustBranchCode: [data?.Branch_Code || ''],
       Contact_Person: [data?.Contact_Person || ''],
       CustBranchZipPostCode: [data?.Zip_PostBox || '', [Validators.maxLength(10)]],
-      CustBranchPhone: [data?.ContactNo || '', [Validators.maxLength(10), this.phoneNumberValidator]],
+      CustBranchPhone: [data?.ContactNo || '', [Validators.maxLength(15), this.phoneNumberValidator]],
       CustBranchEmail: [data?.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
       CustBranchAddress: [data?.Address || '', [Validators.required]],
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
@@ -1466,13 +1466,13 @@ clearCustomerSearch(): void {
 
   // Add the missing validation methods
   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
-      return null;
-    }
-    const phoneRegex = /^[0-9]{6,15}$/;
-    const isValid = phoneRegex.test(control.value);
-    return isValid ? null : { invalidPhoneNumber: true };
+  if (!control.value) {
+    return null;
   }
+  const phoneRegex = /^(\+[0-9]{1,3})?[0-9]{6,15}$/;
+  const isValid = phoneRegex.test(control.value);
+  return isValid ? null : { invalidPhoneNumber: true };
+}
 
   gstValidator(control: AbstractControl): ValidationErrors | null {
     const gstin = control.value;
