@@ -23,7 +23,7 @@
 
 <div class="modal-body">
   <div id="printContent"class="p-1">
-   <div style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column;">
+   <div  style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
    <!-- Company Info -->
         <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
@@ -48,9 +48,9 @@
   <h5 style="text-align:center; font-weight:700; margin:0; padding:15px 0; border-top:1px solid black;">Commercial Invoice</h5>
 
   <!-- Section 1 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; margin-bottom:4px;">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
     <!-- HBL No -->
-    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box;">
+    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box; border-bottom: none;">
       <div style="display:flex; align-items:center;">
         <div style="width:120px;"><strong>HBL No.</strong></div>
         <div>: {{housejobData?.HBLNo}}</div>
@@ -58,7 +58,7 @@
     </div>
 
     <!-- Job No -->
-    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;">
+    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;border-bottom: none;border-left: none;">
       <div style="display:flex; align-items:center;">
         <div style="width:120px;"><strong>Job No.</strong></div>
         <div>: {{housejobData?.MBLNo}}</div>
@@ -66,7 +66,7 @@
     </div>
 
     <!-- To -->
-    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box;">
+    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box;border-bottom: none;">
       <div style="display:flex;">
         <div style="width:120px;"><strong>To</strong></div>
         <div style="width:8px;">:</div>
@@ -75,7 +75,7 @@
     </div>
 
     <!-- Shipper -->
-    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;">
+    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;border-bottom: none; border-left: none;">
       <div style="display:flex;">
         <div style="width:120px;"><strong>Shipper</strong></div>
         <div style="width:8px;">:</div>
@@ -85,7 +85,7 @@
   </div>
 
   <!-- Section 2 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; margin-bottom:4px;">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
     <!-- Consignee -->
     <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box;">
       <div style="display:flex;">
@@ -96,7 +96,7 @@
     </div>
 
     <!-- Notify -->
-    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;">
+    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box;border-left: none;">
       <div style="display:flex;">
         <div style="width:120px;"><strong>Notify</strong></div>
         <div style="width:8px;">:</div>
@@ -108,23 +108,23 @@
   </div>
 
   <!-- Section 3: Cargo Details -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; margin-bottom:4px;">
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; padding:4px; box-sizing:border-box; text-align:center; border-right: none;">
       <div><strong>Commodity Description</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</div>
     </div>
 
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
       <div><strong>Curr.</strong></div>
       <div>{{housejobData?.Others?.[0]?.CargoCurrency}}</div>
     </div>
 
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; padding:4px; box-sizing:border-box; text-align:center;border-left: none;">
       <div><strong>No of Pkgs</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
     </div>
 
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center; border-left: none;">
       <div><strong>Gross Wt.</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}}</div>
     </div>
@@ -132,19 +132,19 @@
 
   <!-- Section 4: More Cargo Details -->
   <div style="display:flex; padding:0 10px; margin-bottom:10px;">
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center; border-top: none;border-right: none;">
       <div><strong>Net Wt.</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.NetWeight | number:'1.3-3'}}</div>
     </div>
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;">
       <div><strong>Volume</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.Volume | number:'1.3-3'}}</div>
     </div>
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;border-left: none;">
       <div><strong>Good Value</strong></div>
       <div>{{housejobData?.Others?.[0]?.CargoValue}}</div>
     </div>
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;border-left: none;">
       <div><strong>Total Value</strong></div>
       <div></div>
     </div>
