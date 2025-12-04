@@ -644,9 +644,9 @@ arapFilter = {
       VoyageMasterSid: [null],
       JobType: [{ value: '', disabled: false }],
       VoyageNo: [ null],
-      ETA: [{value:'', disabled:true}],
-      ETD: [{value:'', disabled:true}],
-      CutOffDate: [{value:'', disabled:true}],
+      ETA: [null],
+      ETD: [null],
+      CutOffDate: [null],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1549,6 +1549,33 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       if (!this.validateAllForms()) {
     return;
   }
+         const cleanDate = (dateValue: any) => {
+ 
+    if (!dateValue || dateValue.toString() === 'Invalid Date') {
+ 
+      return null;
+ 
+    }
+ 
+    return dateValue;
+ 
+  };
+ 
+  
+ 
+  // Clean date fields
+ 
+  this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
+ 
+  this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
+ 
+  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+ 
+  
+ 
+  // Update the form state
+ 
+  this.bookingForm.updateValueAndValidity();
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
@@ -2109,9 +2136,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   handlePOLChange(selectedPort: any) {
     this.b['VesselName']?.setValue(null);
     this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    this.b['CutOffDate']?.setValue('');
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
+    this.b['CutOffDate']?.setValue(null);
     if (!selectedPort) {
       this.filteredPOD = [...this.filteredPorts];
       return;
@@ -2124,9 +2151,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   handlePODChange(selectedPort: any) {
     this.b['VesselName']?.setValue(null);
     this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    this.b['CutOffDate']?.setValue('');
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
+    this.b['CutOffDate']?.setValue(null);
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.b['FPD']?.setValue(null);
@@ -2153,9 +2180,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.bookingForm.patchValue({
         VoyageMasterSid : null,
         VoyageNo: null,
-        ETA: '',
-        ETD: '',
-        CutOffDate: ''
+        ETA: null,
+        ETD: null,
+        CutOffDate: null
       })
       return;
     }
@@ -2170,9 +2197,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   onVoyageChange(voyage: any) {
     if (!voyage) {
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
-      this.b['CutOffDate'].setValue('');
+      this.b['ETA'].setValue(null);
+      this.b['ETD'].setValue(null);
+      this.b['CutOffDate'].setValue(null);
       this.b['VoyageMasterSid']?.setValue('')
       return;
     }
