@@ -6,7 +6,7 @@
             <div class="spinner"></div>
         </div>
         <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
-            <i class="fas fa-download me-1"></i> Print
+            <i class="fas fa-print me-1"></i> Print
         </button>
 
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
@@ -24,7 +24,7 @@
 
 <div class="modal-body">
   <div id="printContent"class="p-1">
-   <div style="width:280mm; min-height:385mm; margin:10px auto; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative;">
+   <div style="width:280mm; min-height:400mm; margin:10px auto; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative;">
 
   <!-- Company Header -->
   <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:8px;">
@@ -45,10 +45,10 @@
   </div>
 
   <!-- Title -->
-  <h5 style="margin:16px 0; font-weight:600; text-align:center; padding-top:4px; border-top:1px solid black;">Delivery Order</h5>
+  <h5 style="margin:16px 0;  text-align:center; padding-top:4px; border-top:1px solid black;"><strong>Delivery Order</strong></h5>
 
   <!-- Release To / Details -->
-  <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:15%; padding-right:5%;">
+  <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:2%; padding-right:2%;">
     <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;">
       <strong>Release To </strong> <br>
       <div [innerHTML]="housejobData?.ConsigneeName ? (housejobData?.ConsigneeName + '<br>' + housejobData?.ConsigneeAddress) : housejobData?.Notify"></div>
@@ -74,7 +74,7 @@
   </div>
 
   <!-- Shipment Details -->
-  <h6 style="font-weight:600; margin:8px 0;">SHIPMENT DETAILS</h6>
+  <h6 style=" margin:8px 0;"><strong>SHIPMENT DETAILS</strong></h6>
   <div style="border-top:1px solid black; border-left:1px solid black; border-right:1px solid black; padding:8px 20px; margin-bottom:0;">
     <div style="display:flex; flex-wrap:wrap; margin-bottom:8px;">
       <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;">
@@ -142,10 +142,10 @@
       </thead>
       <tbody>
         <tr *ngFor="let container of masterJobContainers">
-          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ container?.ContainerNumber }}</td>
-          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ getContainerName(container.ContainerType) }}</td>
-          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ container?.LineSeal }}</td>
-          <td style="border:1px solid black;">{{ container?.NoOfPkg || 0 }} {{ getPkgTypeName(container?.PkgType) }}</td>
+          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;text-align:center;">{{ container?.ContainerNumber }}</td>
+          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;text-align:center;">{{ getContainerName(container.ContainerType) }}</td>
+          <td style="border:1px solid black; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;text-align:center;">{{ container?.LineSeal }}</td>
+          <td style="border:1px solid black; text-align:right;">{{ container?.NoOfPkg || 0 }} {{ getPkgTypeName(container?.PkgType) }}</td>
           <td style="border:1px solid black; text-align:right;">{{ container?.GrossWeight || 0 | number:'1.3-3' }}</td>
           <td style="border:1px solid black; text-align:right;">{{ container?.Volume || 0 | number:'1.3-3' }}</td>
         </tr>
@@ -164,10 +164,10 @@
       </thead>
       <tbody>
         <tr>
-          <td style="border:1px solid black;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
+          <td style="border:1px solid black;text-align:right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
           <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight || 0 | number:'1.3-3' }}</td>
           <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3' }}</td>
-          <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.cargo?.Volume || 0 | number:'1.3-3' }}</td>
+          <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume || 0 | number:'1.3-3' }}</td>
         </tr>
       </tbody>
     </table>
@@ -177,11 +177,11 @@
   <div style="border:1px solid black; padding:8px 20px; margin-bottom:8px;">
     <div style="display:flex; flex-wrap:wrap;">
       <div style="flex:0 0 50%; max-width:50%;">
-        <strong>Marks And Numbers </strong>
+        <strong style="width: 140px;">Marks And Numbers </strong>
         <span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</span>
       </div>
       <div style="flex:0 0 50%; max-width:50%;">
-        <strong>Goods Description </strong>
+        <strong style="width: 140px;">Goods Description </strong>
         <span>: {{ housejobData?.Cargo?.[0]?.CommodityDescription }}</span>
       </div>
     </div>
@@ -208,9 +208,9 @@
       </thead>
       <tbody>
         <tr *ngFor="let rate of housejobData?.costRevenueCharges">
-          <td style="border:1px solid black;">{{ rate.ChargeDescription }}</td>
-          <td style="border:1px solid black;">{{ getUnitCode(rate.ChargeUomSid) }}</td>
-          <td style="border:1px solid black;">{{ getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
+          <td style="border:1px solid black;text-align:center;">{{ rate.ChargeDescription }}</td>
+          <td style="border:1px solid black;text-align:center;">{{ getUnitCode(rate.ChargeUomSid) }}</td>
+          <td style="border:1px solid black;text-align:center;">{{ getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
           <td style="border:1px solid black; text-align:right;">{{ rate.RevenueRate | number:'1.2-2' }}</td>
           <td style="border:1px solid black; text-align:right;">{{ rate.RevenueAmount | number:'1.2-2' }}</td>
           <td style="border:1px solid black;">{{ getCurrencyCodeCost(rate.CostCurrencyMasterSid) }}</td>
@@ -218,17 +218,25 @@
           <td style="border:1px solid black; text-align:right;">{{ rate.CostAmount | number:'1.2-2' }}</td>
         </tr>
         <tr>
-          <td colspan="3" style="border:1px solid black; text-align:right; font-weight:600;"><strong>Total</strong></td>
-          <td style="border:1px solid black; text-align:right; font-weight:600;">{{ getTotalLocalRevenuAmount() | number:'1.2-2' }}</td>
-          <td style="border:1px solid black; text-align:right; font-weight:600;">{{ TotalLocalAmount() | number:'1.2-2' }}</td>
+          <td colspan="3" style="border:1px solid black; text-align:right;"><strong>Total</strong></td>
+          <td style="border:1px solid black; text-align:right; "><strong>{{ getTotalLocalRevenuAmount() | number:'1.2-2' }}</strong></td>
+          <td style="border:1px solid black; text-align:right; "><strong>{{ TotalLocalAmount() | number:'1.2-2' }}</strong></td>
           <td style="border:1px solid black;"></td>
-          <td style="border:1px solid black; text-align:right; font-weight:600;">{{ getCostAmount() | number:'1.2-2' }}</td>
-          <td style="border:1px solid black; text-align:right; font-weight:600;">{{ CostAmount() | number:'1.2-2' }}</td>
+          <td style="border:1px solid black; text-align:right; "><strong>{{ getCostAmount() | number:'1.2-2' }}</strong></td>
+          <td style="border:1px solid black; text-align:right; "><strong>{{ CostAmount() | number:'1.2-2' }}</strong></td>
         </tr>
       </tbody>
     </table>
   </div>
 
+ <!-- Footer -->
+  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;" class="mx-2">
+    <div style="display:flex; justify-content:space-between;">
+      <div>Printed By: {{userData.userName}}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div>Printed On: {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
 
 </div>
 

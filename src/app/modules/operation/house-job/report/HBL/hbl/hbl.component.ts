@@ -168,6 +168,7 @@ export class HblComponent {
             return null;
           }
         }
+        
       printDiv(divId: string): void {
   const printContents = document.getElementById(divId)?.innerHTML;
   if (!printContents) return;

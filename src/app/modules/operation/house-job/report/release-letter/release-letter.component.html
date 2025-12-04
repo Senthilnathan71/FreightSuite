@@ -6,7 +6,7 @@
             <div class="spinner"></div>
         </div>
         <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
-            <i class="fas fa-download me-1"></i> Print
+            <i class="fas fa-print me-1"></i> Print
         </button>
 
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
@@ -84,7 +84,7 @@
 
         <tbody>
             <tr>
-                <td style="border:1px solid black;padding:4px;">{{ housejobData?.Products?.[0]?.ExternaPkg }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:center;">{{ housejobData?.Products?.[0]?.ExternaPkg }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.2-2' }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number:'1.2-2' }}</td>
@@ -110,7 +110,7 @@
     <p style="font-weight:700;margin-bottom:25px;">{{ currentCompany?.companyName || 'Company Name' }}</p>
 
      <!-- Footer -->
-  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;">
+  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;" class="mx-2">
     <div style="display:flex; justify-content:space-between;">
       <div>Printed By: {{userData.userName}}</div>
       <span>This document is computer-generated and does not require a signature.</span>

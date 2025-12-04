@@ -16,31 +16,31 @@
 
   <!-- Report Cards Grid -->
   <div *ngIf="!loading && reports.length > 0" class="row">
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12 mb-3" *ngFor="let report of reports">
-      <div class="card report-card h-100" (click)="onSelectReport(report)" [attr.data-report-type]="report.ReportType">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12 mb-3" *ngFor="let report of reports" >
+      <div class="card report-card" (click)="onSelectReport(report)" [attr.data-report-type]="report.ReportType">
         <div class="card-body d-flex flex-column">
           <!-- Icon Circle with Gradient -->
-          <div class="text-center mb-3">
+          <div class="text-center mb-2">
             <div class="report-icon-circle" [attr.data-type]="report.ReportType">
               <i [class]="getReportIcon(report.ReportType)"></i>
             </div>
           </div>
 
           <!-- Report Title -->
-          <h6 class="card-title text-center mb-2 fw-bold">{{ report.ReportDisplayName }}</h6>
+           <h6 class="text-center mb-0 fw-bold">{{ report.ReportDisplayName }}</h6>
 
           <!-- Report Type & Format Badges -->
-          <div class="d-flex justify-content-center gap-1 mb-2">
-            <span class="badge badge-type" [attr.data-type]="report.ReportType">
+          <div class="d-flex justify-content-center gap-1 mb-0">
+            <!-- <span class="badge badge-type" [attr.data-type]="report.ReportType">
               {{ report.ReportType }}
-            </span>
+            </span> -->
             <span class="badge badge-format" [attr.data-format]="report.ReportFormat">
               {{ report.ReportFormat }}
             </span>
           </div>
 
           <!-- Report Details -->
-          <div class="report-details text-center mb-3">
+          <div class="report-details text-center mb-1">
             <small class="text-muted">
               <i class="mdi mdi-format-list-bulleted"></i>
               {{ report.ReportMasterDetail?.length || 0 }} Parameters
@@ -50,7 +50,7 @@
           <!-- Always Visible Action Button -->
           <div class="mt-auto">
             <button class="btn btn-sm btn-action w-100">
-              <i class="mdi mdi-chart-bar"></i> Open Report
+              <i class="mdi mdi-chart-bar"></i> Goto Report
             </button>
           </div>
         </div>
