@@ -184,7 +184,7 @@ export class EnquiryEntryComponent implements OnInit {
     { id: 2, name: 'Labelling' },
     { id: 3, name: "Choking" },
     { id: 4, name: "Fumigation" },
-    { id: 5, name: "Palletization" }
+    { id: 5, name: "Pallet" }
   ]
 
   selectedTab = 'Enquiry';

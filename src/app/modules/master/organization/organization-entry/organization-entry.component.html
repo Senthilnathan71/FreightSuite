@@ -7,7 +7,7 @@
           <div class="brand-icon">
             <i class="fas fa-briefcase"></i>
           </div>
-          <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Organization</h5>
+          <h5 class="page-title mb-0 text-info"> Organization</h5>
           @if (isEditMode) {
           <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showCustomerInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
@@ -719,16 +719,13 @@
                 <aside class="col-md-4">
                   <div class="custom-form-group">
                     <input type="tel" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
-                      [onlyNumbers]="10">
+                      [onlyNumbers]="15">
                     <label class="input-label">Phone</label>
                     @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
                     getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
                     <div class="error-message">
                       @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
                       <span>Please enter a valid phone number </span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('maxlength')) {
-                      <span>Phone number too long (max 15 digits)</span>
                       }
                     </div>
                     }

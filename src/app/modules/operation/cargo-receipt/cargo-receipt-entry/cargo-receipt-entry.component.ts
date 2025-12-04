@@ -146,6 +146,8 @@ export class CargoReceiptEntryComponent implements OnInit {
           return;
         }
 
+        this.bookingData = booking;
+
         // Patch main booking info
         this.cargoForm.patchValue({
           BookingNo: booking.BookingNo,

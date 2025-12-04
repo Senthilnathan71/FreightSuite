@@ -205,8 +205,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
   measurementUnitList =[
-    { id: 1, name: 'CM' },
-    { id: 2, name: 'M' },
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
     { id: 3, name: 'Inch'}
   ]
   auditLogs: any[] = []; // Stores audit logs
@@ -644,9 +644,9 @@ arapFilter = {
       VoyageMasterSid: [null],
       JobType: [{ value: '', disabled: false }],
       VoyageNo: [ null],
-      ETA: [ ''],
-      ETD: [''],
-      CutOffDate: [''],
+      ETA: [null],
+      ETD: [null],
+      CutOffDate: [null],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -741,7 +741,7 @@ arapFilter = {
       Length: [''],
       Width: [''],
       Height: [''],
-      UomMasterSid: [1],
+      UomMasterSid: [2],
       CargoRecDate: [null]
     });
     this.setupImmediateCBMCalculation();
@@ -957,7 +957,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
       Volumetric: [data?.Volumetric|| ''],
-      UomMasterSid: [data?.UomMasterSid || 1],
+      UomMasterSid: [data?.UomMasterSid || 2],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
@@ -1072,7 +1072,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   addProduct() {
     const formGroup = this.createBookingProductGroup();
-    formGroup.get('UomMasterSid')?.setValue(1, { emitEvent: true });
+    formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
     this.bookingProducts.push(formGroup);
   }
 
@@ -1546,7 +1546,34 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         return;
       }
     }
-      if (!this.validateAllForms()) {
+         const cleanDate = (dateValue: any) => {
+ 
+    if (!dateValue || dateValue.toString() === 'Invalid Date') {
+ 
+      return null;
+ 
+    }
+ 
+    return dateValue;
+ 
+  };
+ 
+  
+ 
+  // Clean date fields
+ 
+  this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
+ 
+  this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
+ 
+  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+ 
+  
+ 
+  // Update the form state
+ 
+  this.bookingForm.updateValueAndValidity();
+       if (!this.validateAllForms()) {
     return;
   }
     if (this.bookingForm.invalid) {
@@ -2109,9 +2136,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   handlePOLChange(selectedPort: any) {
     this.b['VesselName']?.setValue(null);
     this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    this.b['CutOffDate']?.setValue('');
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
+    this.b['CutOffDate']?.setValue(null);
     if (!selectedPort) {
       this.filteredPOD = [...this.filteredPorts];
       return;
@@ -2124,9 +2151,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   handlePODChange(selectedPort: any) {
     this.b['VesselName']?.setValue(null);
     this.b['VoyageNo']?.setValue(null);
-    this.b['ETA']?.setValue('');
-    this.b['ETD']?.setValue('');
-    this.b['CutOffDate']?.setValue('');
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
+    this.b['CutOffDate']?.setValue(null);
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.b['FPD']?.setValue(null);
@@ -2153,9 +2180,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.bookingForm.patchValue({
         VoyageMasterSid : null,
         VoyageNo: null,
-        ETA: '',
-        ETD: '',
-        CutOffDate: ''
+        ETA: null,
+        ETD: null,
+        CutOffDate: null
       })
       return;
     }
@@ -2170,9 +2197,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   onVoyageChange(voyage: any) {
     if (!voyage) {
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
-      this.b['CutOffDate'].setValue('');
+      this.b['ETA'].setValue(null);
+      this.b['ETD'].setValue(null);
+      this.b['CutOffDate'].setValue(null);
       this.b['VoyageMasterSid']?.setValue('')
       return;
     }
