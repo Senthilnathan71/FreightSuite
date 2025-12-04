@@ -293,6 +293,7 @@ arapFilter = {
     { id: 'FTL', name: 'FTL' },
     { id: 'FTL HH', name: 'FTL HH' }
   ];
+  @ViewChild(CustomsComponent) customsComponent!: CustomsComponent;
 
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
   @ViewChild('productModal') productModal!: TemplateRef<any>;
@@ -1662,6 +1663,7 @@ private autoPopulateVoyageData(vessel: any): void {
     };
 
     const formValue = this.masterJobForm.value;
+    const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
       VoyageMasterSid: formValue.VoyageMasterSid,
@@ -1711,6 +1713,7 @@ private autoPopulateVoyageData(vessel: any): void {
 
       // Add the others data as a separate object
       others: othersData,
+     houseJobCustoms: customsData,
       voyages: [voyageData],
 
       // Ensure other string fields don't exceed limits
@@ -1810,7 +1813,10 @@ private autoPopulateVoyageData(vessel: any): void {
   });
 }
   }
-
+handleCustomsChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
 
   onContainerSubmit(): void {
     if (this.containerFormGroup.valid) {

@@ -490,17 +490,25 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="languagePreferrence" placeholder="" class="custom-input-field sm"
-                                formControlName="LanguagePreferrence" [textWithNumbers]="100">
+                                formControlName="LanguagePreferrence" OnlyTextDirective >
                             <label for="languagePreferrence" class="input-label">Language Preference <span
                                     class="text-danger"></span></label>
                             @if(leadForm.get('LanguagePreferrence')?.touched &&
-                            leadForm.get('LanguagePreferrence')?.invalid){
-                            <div class="error-message">
-                                @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
-                                <span>Max 100 Chars</span>
-                                }
-                            </div>
-                            }
+    leadForm.get('LanguagePreferrence')?.invalid){
+
+    <div class="error-message">
+
+        @if(leadForm.get('LanguagePreferrence')?.hasError('invalidLanguage')){
+            <span>Only letters, spaces and commas allowed. Example: "Tamil, English"</span>
+        }
+
+        @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
+            <span>Max 100 characters allowed.</span>
+        }
+
+    </div>
+}
+
                         </div>
 
                     </aside>

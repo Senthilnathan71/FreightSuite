@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -15,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { finalize } from 'rxjs/operators';
 import { OperationService } from '../../operation.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -27,16 +27,15 @@ import { NgxSpinnerService } from 'ngx-spinner';
   templateUrl: './customs.component.html',
   styleUrls: ['./customs.component.scss'],
 })
-export class CustomsComponent implements OnChanges {
+export class CustomsComponent implements OnInit, OnChanges {
   @Input() formData: any;
   @Input() dataItems: any[] = [];
   @Input() resetTrigger = false;
   @Input() screenName: 'HouseJob' | 'MasterJob' = 'HouseJob';
 
-  @Output() reloadParent = new EventEmitter<any>();
-
+  @Output() dataEmitter = new EventEmitter<any>();
+  
   customsForm!: FormGroup;
-  selectedRecord: any = null;
   loading = false;
   houseJobSid: number | null = null;
   masterJobSid: number | null = null;
@@ -95,19 +94,10 @@ export class CustomsComponent implements OnChanges {
     private spinner: NgxSpinnerService
   ) {
     this.initForm();
-    this.loadPackageTypes();
   }
 
-  private loadPackageTypes() {
-    this.operationService.getUOMsByType('E').subscribe({
-      next: (resp) => {
-        this.packageTypeList = resp.data; // format: [{ UOMCode: "BOX", Description: "Box" }]
-      },
-      error: (err) => {
-        console.error('Failed to load package types:', err);
-        this.toastr.error('Failed to load package types.');
-      }
-    });
+  ngOnInit(): void {
+    this.loadPackageTypes();
   }
 
   private initForm() {
@@ -130,7 +120,7 @@ export class CustomsComponent implements OnChanges {
       NoOfPallets: ['', [Validators.pattern(/^\d{1,4}$/)]],
       SLACIndicator: ['', Validators.maxLength(1)],
 
-      ImporterCode: ['', [Validators.required, Validators.maxLength(5)]],
+      ImporterCode: ['null', [Validators.required, Validators.maxLength(5)]],
 
       SerialNumber: ['', [Validators.required, Validators.pattern(/^\d{1,6}$/)]],
       UsedOrNew: ['U', [Validators.required, Validators.maxLength(1)]],
@@ -144,7 +134,6 @@ export class CustomsComponent implements OnChanges {
 
       MinTemperature: ['', [Validators.pattern(/^\d{0,3}(\.\d{0,1})?$/)]],
       MaxTemperature: ['', [Validators.pattern(/^\d{0,3}(\.\d{0,1})?$/)]],
-
       RefTemperatureUnit: ['C', Validators.maxLength(1)],
 
       CreatedBy: [''],
@@ -163,63 +152,29 @@ export class CustomsComponent implements OnChanges {
         CreatedBy: this.formData.CreatedBy,
         UpdatedBy: this.formData.UpdatedBy,
       });
+      this.emitData();
     }
 
     if (changes['dataItems'] && Array.isArray(this.dataItems)) {
       if (this.dataItems.length > 0) {
-        this.selectedRecord = this.dataItems[0];
-        this.customsForm.patchValue(this.selectedRecord);
+        // Take only the first customs record (single form like Others tab)
+        this.customsForm.patchValue(this.dataItems[0]);
       } else {
-        this.resetChildForm();
+        this.resetForm();
       }
+      this.emitData();
     }
 
     if (changes['resetTrigger'] && this.resetTrigger) {
-      this.resetChildForm();
+      this.resetForm();
     }
   }
 
-  submitForm() {
-    if (this.customsForm.invalid) {
-      this.customsForm.markAllAsTouched();
-      this.toastr.warning('Please fill all required fields.');
-      return;
-    }
-
-    const payload = this.customsForm.value;
-    this.loading = true;
-
-    if (this.selectedRecord) {
-      this.operationService.updateCustomsById(this.selectedRecord.HouseJobCustomsSid, payload)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Customs updated successfully.');
-            this.reloadParent.emit(payload.HouseJobSid || payload.MasterJobSid);
-            this.resetChildForm();
-          },
-          error: (err) => {
-            this.toastr.error(err.error?.message || 'Failed to update customs.');
-          }
-        });
-    } else {
-      this.operationService.createCustoms(payload)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: () => {
-            this.toastr.success('Customs saved successfully.');
-            this.reloadParent.emit(payload.HouseJobSid || payload.MasterJobSid);
-            this.resetChildForm();
-          },
-          error: (err) => {
-            this.toastr.error(err.error?.message || 'Failed to save customs.');
-          }
-        });
-    }
+  onFormChange() {
+    this.emitData();
   }
 
-  resetChildForm() {
-    this.selectedRecord = null;
+  resetForm() {
     this.customsForm.reset({
       CompanyMasterSid: this.formData?.CompanyMasterSid,
       HouseJobSid: this.screenName === 'HouseJob' ? this.formData?.HouseJobSid : null,
@@ -233,30 +188,59 @@ export class CustomsComponent implements OnChanges {
       CreatedBy: this.formData?.CreatedBy,
       UpdatedBy: this.formData?.UpdatedBy,
     });
+    this.emitData();
   }
+
+  emitData() {
+    const data = {
+      dataItems: [this.customsForm.value], // Wrap in array for consistency
+      formData: this.formData
+    };
+    this.dataEmitter.emit(data);
+  }
+
   getCustomsData(): any[] {
-  if (this.customsForm.valid && this.customsForm.dirty) {
+    // Return an array with the single form value if form is valid and has data
     const formValue = this.customsForm.value;
     
-    // If we're editing an existing record
-    if (this.selectedRecord && this.selectedRecord.HouseJobCustomsSid) {
-      return [{
-        ...formValue,
-        HouseJobCustomsSid: this.selectedRecord.HouseJobCustomsSid,
-        UpdatedBy: this.formData?.UpdatedBy || this.formData?.CreatedBy
-      }];
-    } else {
-      // If creating a new record
-      return [{
-        ...formValue,
-        CreatedBy: this.formData?.CreatedBy || this.formData?.UpdatedBy
-      }];
+    // Check if any required field is filled
+    const hasData = formValue.LineCode || 
+                   formValue.VoyageAgentCode || 
+                   formValue.RotationNumber || 
+                   formValue.ManifestSequence;
+    
+    if (hasData) {
+      // If editing existing record
+      if (this.dataItems.length > 0 && this.dataItems[0]?.HouseJobCustomsSid) {
+        return [{
+          ...formValue,
+          HouseJobCustomsSid: this.dataItems[0].HouseJobCustomsSid,
+          UpdatedBy: this.formData?.UpdatedBy || this.formData?.CreatedBy
+        }];
+      } else {
+        // If creating new record
+        return [{
+          ...formValue,
+          CreatedBy: this.formData?.CreatedBy || this.formData?.UpdatedBy
+        }];
+      }
     }
+    
+    // Return empty array if no data
+    return [];
   }
-  
-  // Return existing data if form is not dirty
-  return this.dataItems || [];
-}
+
+  private loadPackageTypes() {
+    this.operationService.getUOMsByType('E').subscribe({
+      next: (resp) => {
+        this.packageTypeList = resp.data;
+      },
+      error: (err) => {
+        console.error('Failed to load package types:', err);
+        this.toastr.error('Failed to load package types.');
+      }
+    });
+  }
 
   generateEDIManifest() {
     if (this.screenName === 'HouseJob') {

@@ -16,7 +16,7 @@ export class TextWithNumbersDirective {
 
         // Allow navigation keys
         if (allowedKeys.includes(event.key)) return;
-
+        if (event.key ==='' || event.key === ' ' || event.key === '') return;
         // Allow only letters (A-Z, a-z) and numbers (0-9) - no special characters
         const regex = /^[a-zA-Z0-9]$/;
 
