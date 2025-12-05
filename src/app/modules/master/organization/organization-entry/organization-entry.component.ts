@@ -2084,7 +2084,7 @@ loadCustomerData(customerId: number) {
     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       departments: this.masterService.getAllDepartments(companyMastersID),
-      salesman: this.masterService.getAllSalesperson(companyMastersID),
+      salesman: this.masterService.getAllSalesmans(companyMastersID),
       docs: this.masterService.getAllDoc(companyMastersID),
       cs: this.masterService.getAllCS(companyMastersID)
     }).pipe(
