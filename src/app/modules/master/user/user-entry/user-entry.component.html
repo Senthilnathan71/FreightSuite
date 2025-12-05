@@ -1,274 +1,426 @@
 <div class="row compact-form">
-    <div class="col-12 ">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
-                <div class="d-flex align-items-center gap-2">
-                     <div class="brand-icon">
-                        <i class="fas fa-user"></i>
-
-                    </div>
-                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} User</h5>
-                @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
-                    <i class="fas fs-6 fa-info-circle"></i>
-                </a>
-                }
-             </div>
-            </div>
-            <div class="col-md-8 pb-1">
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
+  <div class="col-12">
+    <div
+      class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
+    >
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-user"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">
+            {{ isEditMode ? "Edit" : "Add" }} User
+          </h5>
+          @if(isEditMode){
+          <a
+            class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"
+            (click)="showInfo()"
+          >
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
+        </div>
+      </div>
+      <div class="col-md-8 pb-1">
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0"
+        >
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            *ngIf="isEditMode"
+            (click)="openAuditLogs(auditLogModal)"
+          >
             <i class="fas fa-history me-1"></i>Logs
           </button>
 
-
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="navigateBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="resetForm()">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]="(!mps.can('update') && isEditMode) || btnDisable || userForm.invalid">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                     <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
-          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-            <i class="fas fa-ellipsis-v"></i>
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateBack()"
+          >
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
           </button>
-          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-              <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark" (click)="openFollowup()">
-            <i class="fas fa-paperclip me-1"></i> Followup
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()"
+          >
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
           </button>
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onSubmit()"
+            [disabled]="!mps.can('update') && isEditMode"
+          >
+            <i class="fas fa-save me-1"></i>
+            Save
+          </button>
+          <div
+            *ngIf="mps.hasAtLeastOne() && isEditMode"
+            ngbDropdown
+            class="d-inline-block"
+          >
+            <button
+              type="button"
+              class="btn btn-light-secondary btn-sm has-arrow"
+              id="dropdownBasic1"
+              ngbDropdownToggle
+            >
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button
+                *ngIf="mps.has('edoc')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openEDoc()"
+              >
+                <i class="fas fa-file-alt me-1"></i> Edoc
+              </button>
+              <button
+                *ngIf="mps.has('terms_and_condition')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openTandC()"
+              >
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+              </button>
+              <button
+                *ngIf="mps.has('authority')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openAuthority()"
+              >
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+              </button>
+              <button
+                *ngIf="mps.has('email')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openEmail()"
+              >
+                <i class="fas fa-envelope me-1"></i> Email
+              </button>
+              <button
+                type="button"
+                appPreventMultiClick
+                ngbDropdownItem
+                class="text-dark"
+                (click)="openFollowup()"
+              >
+                <i class="fas fa-paperclip me-1"></i> Followup
+              </button>
+            </div>
           </div>
         </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-    <div class="col-md-12 " [formGroup]="userForm">
-        <div class="card mb-0">
-             <div class="card-body py-0">
-                <div class="row ">
-                      <!-- <div class="card-header-title d-flex align-items-center gap-2 ">
-                        <i class="fas fa-user fs-4"></i>
-                        <h5 class="card-titlename mb-0">User Information</h5>
-                    </div> -->
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="userName" [onlyText]="100">
-                            <label for="text-input" class="input-label">Name <span class="text-danger"></span></label>
-                            @if(userForm.get('userName')?.touched && userForm.get('userName')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('userName')?.hasError('required')){
-                                <div>Required</div>
-                                } @else if(userForm.get('userName')?.hasError('numberNotAllowed')){
-                                <div>Only Alphabets are allowed</div>
-                                } @else if(userForm.get('userName')?.hasError('maxlength')){
-                                <div>Max 100 Chars</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="designation" [onlyText]="20">
-                            <label for="text-input" class="input-label">Designation <span class="text-danger"></span></label>
-                            @if(userForm.get('designation')?.touched && userForm.get('designation')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('designation')?.hasError('required')){
-                                <div>Required</div>
-                                } @else if(userForm.get('designation')?.hasError('numberNotAllowed')){
-                                <div>Only Alphabets are allowed</div>
-                                } @else if(userForm.get('designation')?.hasError('maxlength')){
-                                <div>Max 20 Chars</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="userEmail">
-                            <label for="text-input" class="input-label">Email Id <span
-                                    class="text-danger"></span></label>
-                            @if((userForm.get('userEmail')?.touched ||userForm.get('userEmail')?.dirty ) &&
-                            userForm.get('userEmail')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('userEmail')?.hasError('required')){
-                                <div>Required</div>
-                                } @else if(userForm.get('userEmail')?.hasError('invalidEmail')){
-                                <div>Invalid email format</div>
-                                } @else if(userForm.get('userEmail')?.hasError('maxlength')){
-                                <div>Max 50 Chars</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+  </div>
+  <div class="col-md-12" [formGroup]="userForm">
+    <div class="card mb-0">
+      <div class="card-body py-0">
+        <div class="row">
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                placeholder=""
+                class="custom-input-field sm"
+                formControlName="userName"
+                [onlyText]="100"
+              />
+              <label for="text-input" class="input-label"
+                >Name <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('userName')?.touched &&
+              userForm.get('userName')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('userName')?.hasError('required')){
+                <div>Required</div>
+                } @else if(userForm.get('userName')?.hasError('numberNotAllowed')){
+                <div>Only Alphabets are allowed</div>
+                } @else if(userForm.get('userName')?.hasError('maxlength')){
+                <div>Max 100 Chars</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                placeholder=""
+                class="custom-input-field sm"
+                formControlName="designation"
+                [onlyText]="20"
+              />
+              <label for="text-input" class="input-label"
+                >Designation <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('designation')?.touched &&
+              userForm.get('designation')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('designation')?.hasError('required')){
+                <div>Required</div>
+                } @else if(userForm.get('designation')?.hasError('numberNotAllowed')){
+                <div>Only Alphabets are allowed</div>
+                } @else if(userForm.get('designation')?.hasError('maxlength')){
+                <div>Max 20 Chars</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                placeholder=""
+                class="custom-input-field sm"
+                formControlName="userEmail"
+              />
+              <label for="text-input" class="input-label"
+                >Email Id <span class="text-danger"></span
+              ></label>
+              @if((userForm.get('userEmail')?.touched
+              ||userForm.get('userEmail')?.dirty ) &&
+              userForm.get('userEmail')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('userEmail')?.hasError('required')){
+                <div>Required</div>
+                } @else if(userForm.get('userEmail')?.hasError('invalidEmail')){
+                <div>Invalid email format</div>
+                } @else if(userForm.get('userEmail')?.hasError('maxlength')){
+                <div>Max 50 Chars</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-                    @if(!isEditMode){
-                    <aside class="col-md-4">
-                        <div class="input-group my-2">
-                            <input type="password" formControlName="userPassword" class="form-control"
-                                placeholder="Password" #passwordInput />
-                            <span class="input-group-text password-toggle" style="background-color: transparent; border: none;"
-                                (mousedown)="togglePassword(passwordInput)" (mouseup)="resetPassword(passwordInput)"
-                                (mouseleave)="resetPassword(passwordInput)">
-                                @if(!passwordView){
-                                <i-feather class="feather-sm" name="eye"></i-feather>
-                                } @else {
-                                <i-feather class="feather-sm" name="eye-off"></i-feather>
-                                }
-                            </span>
-                            @if (userForm.get('userPassword')?.invalid && (userForm.get('userPassword')?.touched ||
-                            userForm.get('userPassword')?.dirty)) {
-                            <div class="error-message pe-4">
-                                @if(userForm.get('userPassword')?.hasError('required')) {
-                                <div>Required</div>
-                                } @else if (userForm.get('userPassword')?.hasError('minLength')) {
-                                <div>Password must be at least 4 characters</div>
-                                } @else if (userForm.get('userPassword')?.hasError('missingLetter')) {
-                                <div>Password must contain at least one letter</div>
-                                } @else if (userForm.get('userPassword')?.hasError('missingSpecialChar')) {
-                                <div>Password must contain at least one special character</div>
-                                } @else if (userForm.get('userPassword')?.hasError('missingNumber')) {
-                                <div>Password must contain at least one number</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-                    }
+          @if(!isEditMode){
+          <aside class="col-md-4">
+            <div class="input-group my-2">
+              <input
+                type="password"
+                formControlName="userPassword"
+                class="form-control"
+                placeholder="Password"
+                #passwordInput
+              />
+              <span
+                class="input-group-text password-toggle"
+                style="background-color: transparent; border: none"
+                (mousedown)="togglePassword(passwordInput)"
+                (mouseup)="resetPassword(passwordInput)"
+                (mouseleave)="resetPassword(passwordInput)"
+              >
+                @if(!passwordView){
+                <i-feather class="feather-sm" name="eye"></i-feather>
+                } @else {
+                <i-feather class="feather-sm" name="eye-off"></i-feather>
+                }
+              </span>
+              @if (userForm.get('userPassword')?.invalid &&
+              (userForm.get('userPassword')?.touched ||
+              userForm.get('userPassword')?.dirty)) {
+              <div class="error-message pe-4">
+                @if(userForm.get('userPassword')?.hasError('required')) {
+                <div>Required</div>
+                } @else if (userForm.get('userPassword')?.hasError('minLength'))
+                {
+                <div>Password must be at least 4 characters</div>
+                } @else if
+                (userForm.get('userPassword')?.hasError('missingLetter')) {
+                <div>Password must contain at least one letter</div>
+                } @else if
+                (userForm.get('userPassword')?.hasError('missingSpecialChar')) {
+                <div>Password must contain at least one special character</div>
+                } @else if
+                (userForm.get('userPassword')?.hasError('missingNumber')) {
+                <div>Password must contain at least one number</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          }
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('department')?.value?.length">
-                            <multi-select [control]="userForm.get('department')" [items]="departmentList"
-                                bindLabel="departmentName" bindValue="departmentName" placeholder=""
-                                (valueChange)="setDefaultDept()"></multi-select>
-                            <label for="" class="input-label">Dept <span class="text-danger"></span></label>
-                            @if(userForm.get('department')?.touched && userForm.get('department')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('department')?.hasError('required')){
-                                <div>Required</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+          <aside class="col-md-4">
+            <div
+              class="custom-form-group custom-form-group-select"
+              [class.filled]="!!userForm.get('department')?.value?.length"
+            >
+              <multi-select
+                [control]="userForm.get('department')"
+                [items]="departmentList"
+                bindLabel="departmentName"
+                bindValue="departmentName"
+                placeholder=""
+                (valueChange)="setDefaultDept()"
+              ></multi-select>
+              <label for="" class="input-label"
+                >Dept <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('department')?.touched &&
+              userForm.get('department')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('department')?.hasError('required')){
+                <div>Required</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm form-control"
-                                formControlName="DefaultDept" [textWithNumbers]="20" readonly style="background-color: white;cursor:not-allowed;">
-                            <label for="text-input" [ngClass]="{
-                                'input-label': true,
-                                'bg-transparent': !userForm.get('DefaultDept')?.value
-                              }">Default Dept <span class="text-danger"></span></label>
-                            @if(userForm.get('DefaultDept')?.touched && userForm.get('DefaultDept')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('DefaultDept')?.hasError('required')){
-                                <div>Required</div>
-                                } @else if(userForm.get('DefaultDept')?.hasError('maxlength')){
-                                <div>Max 20 Chars</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                placeholder=""
+                class="custom-input-field sm form-control"
+                formControlName="DefaultDept"
+                [textWithNumbers]="20"
+                readonly
+                style="background-color: white; cursor: not-allowed"
+              />
+              <label
+                for="text-input"
+                [ngClass]="{
+                  'input-label': true,
+                  'bg-transparent': !userForm.get('DefaultDept')?.value
+                }"
+                >Default Dept <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('DefaultDept')?.touched &&
+              userForm.get('DefaultDept')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('DefaultDept')?.hasError('required')){
+                <div>Required</div>
+                } @else if(userForm.get('DefaultDept')?.hasError('maxlength')){
+                <div>Max 20 Chars</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-                    <aside class="col-md-4 mt-1 mt-md-2">
-                        <div class=" form-check">
-                            <input type="checkbox" id="text-input" placeholder="" class="form-check-input focus-ring"
-                                formControlName="isSalesperson" (keydown.enter)="toggleCheckbox($event)">
-                            <label for="text-input" class="form-check-label">Is Salesman <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
+          <aside class="col-md-4 mt-1 mt-md-2">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                id="text-input"
+                placeholder=""
+                class="form-check-input focus-ring"
+                formControlName="isSalesperson"
+                (keydown.enter)="toggleCheckbox($event)"
+              />
+              <label for="text-input" class="form-check-label"
+                >Is Salesman <span class="text-danger"></span
+              ></label>
+            </div>
+          </aside>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('userTypeId')?.value">
-                            <ng-select formControlName="userTypeId" [items]="userTypeList" bindLabel="name"
-                                bindValue="UserTypeSid" placeholder="">
+          <aside class="col-md-4">
+            <div
+              class="custom-form-group custom-form-group-select"
+              [class.filled]="!!userForm.get('userTypeId')?.value"
+            >
+              <ng-select
+                formControlName="userTypeId"
+                [items]="userTypeList"
+                bindLabel="name"
+                bindValue="UserTypeSid"
+                placeholder=""
+              >
+              </ng-select>
+              <label for="" class="input-label"
+                >User Type <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('userTypeId')?.touched &&
+              userForm.get('userTypeId')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('userTypeId')?.hasError('required')){
+                <div>Required</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-                            </ng-select>
-                            <label for="" class="input-label">User Type <span class="text-danger"></span></label>
-                            @if(userForm.get('userTypeId')?.touched && userForm.get('userTypeId')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('userTypeId')?.hasError('required')){
-                                <div>Required</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                placeholder=""
+                class="custom-input-field sm"
+                formControlName="contactNumber"
+                [onlyNumbers]="20"
+              />
+              <label for="text-input" class="input-label"
+                >Mobile No <span class="text-danger"></span
+              ></label>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="contactNumber" [onlyNumbers]="20">
-                            <label for="text-input" class="input-label">Mobile No <span
-                                    class="text-danger"></span></label>
+              @if(userForm.get('contactNumber')?.touched &&
+              userForm.get('contactNumber')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('contactNumber')?.hasError('required')){
+                <div>Required</div>
+                } @else if(userForm.get('contactNumber')?.hasError('onlyNumbers')){
+                <div>Only Digits are allowed</div>
+                } @else if(userForm.get('contactNumber')?.hasError('maxlength')){
+                <div>Max 20 Chars</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-                            @if(userForm.get('contactNumber')?.touched && userForm.get('contactNumber')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('contactNumber')?.hasError('required')){
-                                <div>Required</div>
-                                } @else if(userForm.get('contactNumber')?.hasError('onlyNumbers')){
-                                <div>Only Digits are allowed</div>
-                                } @else if(userForm.get('contactNumber')?.hasError('maxlength')){
-                                <div>Max 20 Chars</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+          <aside class="col-md-4">
+            <div
+              class="custom-form-group custom-form-group-select"
+              [class.filled]="!!userForm.get('CountryMasterSid')?.value"
+            >
+              <dofi-searchable-dropdown
+                [items]="dropdownStore.countries()"
+                formControlName="CountryMasterSid"
+                placeholder=""
+                [displayFields]="countryLookupConfig.displayFields"
+                [displayLabels]="countryLookupConfig.displayLabels"
+                [labelFields]="countryLookupConfig.labelFields"
+                bindLabel="countryName"
+                bindValue="CountryMasterSid"
+              >
+              </dofi-searchable-dropdown>
+              <label for="" class="input-label"
+                >Country <span class="text-danger"></span
+              ></label>
+              @if(userForm.get('CountryMasterSid')?.touched &&
+              userForm.get('CountryMasterSid')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('CountryMasterSid')?.hasError('required')){
+                <div>Required</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
 
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('CountryMasterSid')?.value">
-                            <!-- <ng-select formControlName="CountryMasterSid" [items]="dropdownStore.countries()" bindLabel="countryName"
-                                bindValue="CountryMasterSid" placeholder="">
-
-                            </ng-select> -->
-                             <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
-                        [displayFields]="countryLookupConfig.displayFields"
-                        [displayLabels]="countryLookupConfig.displayLabels"
-                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
-                        bindValue="CountryMasterSid"
-                        >
-                      </dofi-searchable-dropdown>
-                            <label for="" class="input-label">Country <span class="text-danger"></span></label>
-                            @if(userForm.get('CountryMasterSid')?.touched && userForm.get('CountryMasterSid')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('CountryMasterSid')?.hasError('required')){
-                                <div>Required</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- <aside class="col-md-4">
+          <!-- <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="CompanyMasterSid" [items]="companyList" bindLabel="companyName"
                                 bindValue="CompanyMasterSid" placeholder="Select Company"
@@ -299,322 +451,297 @@
                             }
                         </div>
                     </aside> -->
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('roles')?.value?.length">
-                            <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName"
-                                bindValue="RoleMasterSid" placeholder=""></multi-select>
-                            <label for="" class="input-label">Role <span class="text-danger">*</span></label>
-                            @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('roles')?.hasError('required')){
-                                <div>Required</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
 
-                    @if(isEditMode){
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('status')?.value">
-                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    }
-
-                </div>
+          @if(isEditMode){
+          <aside class="col-md-4">
+            <div
+              class="custom-form-group custom-form-group-select"
+              [class.filled]="!!userForm.get('status')?.value"
+            >
+              <ng-select
+                formControlName="status"
+                [items]="modeOfStatus"
+                bindLabel="name"
+                bindValue="name"
+              >
+              </ng-select>
+              <label for="" class="input-label"
+                >Status <span class="text-danger"></span
+              ></label>
             </div>
+          </aside>
+          }
         </div>
-    </div>
-
-</div>
-
-<div class="mt-1 ">
-    <div class="card mb-0 border border-info position-relative">
-
-        <!-- Card Header -->
-        <div class="card-header bg-info rounded-top-1 d-flex align-items-center p-1">
-            <h6 class="font-bold mb-0 text-light">Company</h6>
-
-        </div>
-
-
-        <div class="px-2">
-            <div class="row">
-                <div class="col-md-5">
-                    <div class="custom-form-group custom-form-group-select">
-                        <multi-select [control]="userForm.get('companies')" [items]="companyList" bindLabel="companyName"
-                            bindValue="CompanyMasterSid" placeholder="Select Company"
-                            (valueChange)="addToSelectedCompany($event)"></multi-select>
-                        @if(userForm.get('companies')?.touched && userForm.get('companies')?.invalid){
-                        <div class="error-message">
-                            @if(userForm.get('companies')?.hasError('required')){
-                            <div>Required</div>
-                            }
-                        </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-
-
-<ng-container [formGroup]="userForm" >
-    <div formArrayName="userCompanies">
-        <ng-container *ngFor="let company of userCompanies.controls ; let companyIndex = index">
-            <div class="card mb-0 mt-1 border border-info position-relative " [formGroupName]="companyIndex">
-
-                <!-- Card Header -->
-                <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom p-0">
-                    <h6 class="font-bold mb-0 text-white text-start px-1">{{company.value.companyName}}  <small class="text-warning">{{isDefaultCompany(company.value.CompanyMasterSid) ? '[DEFAULT]' : ''}}</small></h6>
-                    <div>
-
-                        <div class="form-check ">
-        <input type="checkbox"
-               class="form-check-input"
-               name="defaultCompany"
-               [checked]="isDefaultCompany(company.value.CompanyMasterSid)"
-               (click)="toggleDefaultCompany(companyIndex, company.value.CompanyMasterSid, $event)">
-        <label class="form-check-label text-white small">Default</label>
       </div>
-                    </div>
-                    @if (userForm.get('userCompanies')?.hasError('noDefault') && (userForm.get('userCompanies')?.invalid)) {
-                    <small class="text-end text-danger">At least one branch must be marked as default.</small>
-                    }
-                    @else if((this.userBranches(companyIndex).dirty || this.userBranches(companyIndex).touched ) && this.userBranches(companyIndex).hasError('noAccess')){
-                        <small class="text-end text-danger">Atleast one branch must be marked with "Access".</small>
-                    } 
-                </div>
-
-
-                <div class="px-1">
-                    <div class="row align-items-center">
-                        <div class="table-responsive">
-                            <table class="table table-sm no-wrap align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" style="border-style: none;" width="10%">Sno.</th>
-                                        <th scope="col" style="border-style: none;" width="60%">Branch Name</th>
-                                        <th scope="col" style="border-style: none;" width="15%">Access</th>
-                                        <th scope="col" style="border-style: none;" width="15%">Default</th>
-                                        <!-- <th width="20%">Access</th>
-              <th width="20%">Default</th> -->
-                                    </tr>
-                                </thead>
-                                <tbody formArrayName="userBranches">
-                                    <ng-container
-                                        *ngFor="let branch of userBranches(companyIndex).controls ; let branchIndex = index">
-                                        <tr [formGroupName]="branchIndex">
-                                            <td style="border-style: none;">{{branchIndex + 1}}</td>
-                                            <td style="border-style: none;">{{branch.value.branchName}}</td>
-                                            <td style="border-style: none;">
-                                                <aside class="d-flex align-items-center">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" id="text-input" placeholder=""
-                                                            class="form-check-input focus-ring"
-                                                            (keydown.enter)="toggleBranchAccessCheckBox(companyIndex,branchIndex,branch.value.BranchMasterSid,$event)"
-                                                            (click)="toggleBranchAccessCheckBox(companyIndex,branchIndex,branch.value.BranchMasterSid,$event)"
-                                                            formControlName="GiveAccess">
-                                                    </div>
-                                                </aside>
-                                            </td>
-                                            <td style="border-style: none;">
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="text-input" placeholder=""
-                                                        class="form-check-input focus-ring"
-                                                        name="defaultBranch_{{company.value.CompanyMasterSid}}"
-                                                        [checked]="isDefaultBranch(branch.value.BranchMasterSid)"
-                                                        (keydown.enter)="toggleDefaultItems(companyIndex,branchIndex,company.value.CompanyMasterSid,branch.value.BranchMasterSid,$event)"
-                                                        (click)="toggleDefaultItems(companyIndex,branchIndex,company.value.CompanyMasterSid,branch.value.BranchMasterSid,$event)"
-                                                        >
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </ng-container>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </ng-container>
     </div>
-</ng-container>
-<!-- <div class="my-2">
-    <div class="card mb-0 border border-info position-relative"> -->
-
-        <!-- Card Header -->
-        <!-- <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
-            <h6 class="font-bold mb-0 text-light">ROLE</h6>
-
-        </div>
-
-
-        <div class="px-4 py-2">
-            <div class="row">
-                <aside class="col-md-5">
-                        <div class="custom-form-group custom-form-group-select">
-                            <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName"
-                                bindValue="RoleMasterSid" placeholder="Select Roles"></multi-select> -->
-                            <!-- <label for="" class="input-label">Role <span class="text-danger">*</span></label> -->
-                            <!-- @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
-                            <div class="error-message">
-                                @if(userForm.get('roles')?.hasError('required')){
-                                <div>Role is required</div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-            </div>
-        </div>
-
-    </div>
-</div> -->
-<!-- <div class="col-12" [formGroup]="userForm">
-    <div class="col-12" formArrayName="roles">
-        @for(role of roles.controls ; track role ; let roleIndex = $index){
-        <div class="mt-2" [formGroupName]="roleIndex">
-            <div class="card mb-0 border border-info position-relative">
-
-                Card Header
-                <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom">
-                    <h6 class="font-bold mb-0 text-info">{{role.value.UserRoleName}}</h6>
-                </div>
-
-
-                <div class="px-4">
-                    <div class="row align-items-center">
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="MenuMasterSid" [items]="menuList" bindLabel="MenuName"
-                                    bindValue="MenuMasterSid" placeholder="Select Menu">
-
-                                </ng-select>
-                                <label for="" class="input-label">Menu <span class="text-danger"></span></label>
-                                @if(userForm.get('MenuMasterSid')?.touched &&
-                                userForm.get('MenuMasterSid')?.invalid){
-                                <div class="error-message">
-                                    @if(userForm.get('MenuMasterSid')?.hasError('required')){
-                                    <div>Country is required</div>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-4 d-flex align-items-center justify-content-center my-3 my-md-0">
-                            <div class="ms-md-4 form-check">
-                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input focus-ring"
-                                    formControlName="GiveAccess" (keydown.enter)="toggleArrayCheckbox($event,roleIndex,'GiveAccess')">
-                                <label for="text-input" class="form-check-label">Give Access <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4 d-flex align-items-center justify-content-center my-3 my-md-0">
-                            <div class="ms-md-4 form-check" (keydown.enter)="toggleArrayCheckbox($event,roleIndex,'IsDefault')">
-                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input focus-ring"
-                                    formControlName="IsDefault">
-                                <label for="text-input" class="form-check-label">Is Default <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-        }
-    </div>
-</div> -->
-<!-- @if(isEditMode){
-<div class="col-12 mt-2">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-
-                    @if(hasPermission('Edoc')) {
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
-                        <i class="fas fa-file-alt me-1"></i> e-Doc
-                    </button>
-                    }
-                    @if(hasPermission('Terms and Condition')) {
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
-                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                    </button>
-                    }
-                    @if(hasPermission('Authority')) {
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                        <i class="fas fa-shield-alt me-1"></i> Authorize
-                    </button>
-                    }
-
-                    @if(hasPermission('Email')) {
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
-                        (click)="openEmail()">
-                        <i class="fas fa-envelope me-1"></i> Email
-                    </button>
-                    }
-
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
-} -->
 
+<div class="mt-1">
+  <div class="card mb-0 border border-info position-relative">
+    <!-- Card Header -->
+    <div
+      class="card-header bg-info rounded-top-1 d-flex align-items-center p-1"
+    >
+      <h6 class="font-bold mb-0 text-light">Company</h6>
+    </div>
+
+    <div class="px-2">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="custom-form-group custom-form-group-select">
+            <multi-select [control]="userForm.get('companies')" [items]="companyList" bindLabel="companyName"
+              bindValue="CompanyMasterSid" placeholder="Select Company"
+              (valueChange)="addToSelectedCompany($event)"></multi-select>
+            @if(userForm.get('companies')?.touched &&
+            userForm.get('companies')?.invalid){
+            <div class="error-message">
+              @if(userForm.get('companies')?.hasError('required')){
+              <div>Required</div>
+              }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container [formGroup]="userForm">
+  <div class="compact-form" formArrayName="userCompanyMaster">
+    <ng-container
+      *ngFor="
+        let company of userCompanyMaster.controls;
+        let companyIndex = index
+      "
+    >
+      <div
+        class="card mb-0 mt-1 border border-info position-relative"
+        [formGroupName]="companyIndex"
+      >
+        <!-- Card Header -->
+        <div
+          class="card-header row m-0 p-0 bg-primary text-white rounded-top-1"
+        >
+          <aside class="col-4 d-flex align-items-center">
+            <h6 class="font-bold mb-0 px-1">
+              {{ company.value.companyName }}
+              <small class="text-warning"
+                >{{ company.value.IsDefault ? "[DEFAULT]" : "" }}
+              </small>
+            </h6>
+          </aside>
+          <aside class="col-4 d-flex align-items-center justify-content-center">
+            <div
+              class="custom-form-group custom-form-group-select w-100"
+              [class.filled]="!!company.get('roles')?.value?.length"
+            >
+              <multi-select
+                class="w-100"
+                [control]="company.get('roles')"
+                [items]="roleDataForCompany[companyIndex]"
+                bindLabel="UserRoleName"
+                bindValue="RoleMasterSid"
+                placeholder="Select Role"
+                (valueChange)="addToSelectedRole(companyIndex,$event)"
+              ></multi-select>
+              @if(userRoleMaster(companyIndex)?.errors){
+              <div class="error-message">
+                @if(userRoleMaster(companyIndex)?.hasError('noAccess')){
+                <div>Required</div>
+                } 
+              <div *ngIf="userRoleMaster(companyIndex)?.errors?.['roleModuleError'] as errs">
+                <div class="text-danger mt-1" *ngFor="let err of errs">
+                  Conflict: Module <b>{{ err.module }}</b> is used by roles
+                  <b>{{ getConflictRoles(err.roles, companyIndex) }}</b>.
+                </div>
+              </div>
+
+              </div>
+              }
+            </div>
+          </aside>
+          <aside
+            class="col-4 d-flex align-items-center justify-content-end px-4"
+          >
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                name="defaultCompany"
+                formControlName="IsDefault"
+                (click)="toggleDefaultCompany(companyIndex, $event)"
+                (keydown.enter)="toggleDefaultCompany(companyIndex, $event)"
+              />
+              <label class="form-check-label text-white small">Default</label>
+              <div *ngIf="userCompanyMaster?.errors">
+                <div class="error-message">
+                  @if(userCompanyMaster?.hasError('atLeastOneDefaultCompany')){
+                  <div>At least one company must have 'Default' selected</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="px-1">
+          <div class="row align-items-center">
+            <div class="table-responsive">
+              <table class="table table-sm no-wrap align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col" style="border-style: none" width="10%">
+                      Sno.
+                    </th>
+                    <th scope="col" style="border-style: none" width="60%">
+                      Branch Name
+                    </th>
+                    <th scope="col" style="border-style: none" width="15%">
+                      Access
+                    </th>
+                    <th scope="col" style="border-style: none" width="15%">
+                      Default
+                    </th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="userBranchMaster">
+                  <ng-container
+                    *ngFor="
+                      let branch of userBranchMaster(companyIndex).controls;
+                      let branchIndex = index
+                    "
+                  >
+                    <tr [formGroupName]="branchIndex">
+                      <td style="border-style: none">{{ branchIndex + 1 }}</td>
+                      <td style="border-style: none">
+                        {{ branch.value.branchName }}
+                      </td>
+                      <td style="border-style: none">
+                        <aside class="d-flex align-items-center">
+                          <div class="form-check">
+                            <input
+                              type="checkbox"
+                              id="text-input"
+                              placeholder=""
+                              formControlName="GiveAccess"
+                              class="form-check-input focus-ring"
+                              (keydown.enter)="
+                                toggleBranchAccessCheckBox(
+                                  companyIndex,
+                                  branchIndex,
+                                  $event
+                                )
+                              "
+                              (click)="
+                                toggleBranchAccessCheckBox(
+                                  companyIndex,
+                                  branchIndex,
+                                  $event
+                                )
+                              "
+                            />
+                          </div>
+                        </aside>
+                      </td>
+                      <td style="border-style: none">
+                        <div class="form-check">
+                          <input
+                            type="checkbox"
+                            id="text-input"
+                            placeholder=""
+                            formControlName="IsDefault"
+                            class="form-check-input focus-ring"
+                            name="defaultBranch_{{
+                              company.value.CompanyMasterSid
+                            }}"
+                            (keydown.enter)="
+                              toggleBranchDefaultCheckbox(
+                                companyIndex,
+                                branchIndex,
+                                $event
+                              )
+                            "
+                            (click)="
+                              toggleBranchDefaultCheckbox(
+                                companyIndex,
+                                branchIndex,
+                                $event
+                              )
+                            "
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+              <div *ngIf="userBranchMaster(companyIndex)?.errors">
+                <div class="error-message">
+                  @if(userBranchMaster(companyIndex)?.hasError('noAccess')){
+                  <div>At least one branch must have 'Access' ticked.</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
 
 <ng-template #auditLogModal let-modal>
   <div class="modal-header bg-info text-white p-2">
     <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      aria-label="Close"
+      (click)="modal.dismiss()"
+    ></button>
   </div>
   <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table align-middle no-wrap table-bordered table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date : "medium" }}</td>
+            <td>{{ log.changedBy || "-" }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul>
+                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul>
+                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">
+              No audit logs found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">
+      Close
+    </button>
   </div>
 </ng-template>
