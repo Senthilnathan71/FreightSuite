@@ -31,6 +31,7 @@ export class NetworkEntryComponent {
   totalLengthOfCollection = 0;
   userData: any;
   currentCompany: any;
+  searchTerm = '';
   constructor(
     public dropdownStore: DropdownStore,    
     private fb: FormBuilder,
@@ -50,9 +51,7 @@ export class NetworkEntryComponent {
     { id: 'S', name: 'Suspend' },
   ];
 
-  ngOnInit(): void {
-    this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
-    
+  ngOnInit(): void {    
     this.appSettingsService.getUser().subscribe((user) => {
       if (user) this.userData = user;
     });
@@ -73,10 +72,8 @@ export class NetworkEntryComponent {
   }
 
   loadNetworks() {
-  const companySid = this.currentCompany?.CompanyMasterSid;
-  if (!companySid) return;
 
-  this.masterService.getAllNetworks(companySid).subscribe({
+  this.masterService.getAllNetwork().subscribe({
     next: (response: any) => {
       if (!response?.status) {
         this.appSettingsService.showError(response.message || "Failed to load networks");
@@ -127,7 +124,6 @@ export class NetworkEntryComponent {
 
   const payload = this.networkArray.getRawValue().map(x => ({
   ...x,
-  CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
   CreatedBy: this.userData?.userEmail || 'system',
   UpdatedBy: this.userData?.userEmail || 'system'
 }));

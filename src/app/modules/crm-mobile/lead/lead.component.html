@@ -454,20 +454,14 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="Phone" placeholder="" class="custom-input-field sm" formControlName="phone"
-                                maxlength="50">
+                                [onlyNumbers]="15">
                             <label for="Phone" class="input-label">
                                 Phone <span class="text-danger">*</span>
                             </label>
                             <div class="error-message"
                                 *ngIf="leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid">
-                                <span *ngIf="leadForm.get('phone')?.hasError('required')">
-                                    Required
-                                </span>
-                                <span *ngIf="leadForm.get('phone')?.hasError('pattern')">
-                                    Only digits, +, and spaces allowed
-                                </span>
                                 <span *ngIf="leadForm.get('phone')?.hasError('maxlength')">
-                                    Max 50 Characters
+                                    Enter a Valid Phone Number
                                 </span>
                             </div>
 
@@ -934,7 +928,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="Phone" placeholder="" class="custom-input-field sm"
-                                        formControlName="phone" [onlyNumbers]="50">
+                                        formControlName="phone" [onlyNumbers]="15">
                                     <label for="Phone" class="input-label">Phone <span
                                             class="text-danger">*</span></label>
                                 </div>

@@ -483,9 +483,13 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <input type="text" id="phone" placeholder=""
-                                                    class="custom-input-field sm" formControlName="ContactNumber">
+                                                    class="custom-input-field sm" formControlName="ContactNumber" [onlyNumbers]="15">
                                                 <label for="text-input" class="input-label">Phone <span
                                                         class="text-danger"></span></label>
+                                                        <div *ngIf="f['ContactNumber'].touched && f['ContactNumber'].invalid"
+                                                    class="error-message">
+                                                    Enter a Valid Phone Number
+                                                </div>
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">

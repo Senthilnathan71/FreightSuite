@@ -554,7 +554,7 @@ get currencyList(): any[] {
   return new Promise((resolve, reject) => {
     forkJoin({
       charges: this.masterServ.getAllCharges(CompanyMasterSid),
-      UOMs: this.masterServ.getAllUom(),
+      UOMs: this.masterServ.getUOMsByType('C'),
     }).subscribe({
       next: ({ charges, UOMs }) => {
         this.chargeList = charges;

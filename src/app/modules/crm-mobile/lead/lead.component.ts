@@ -54,7 +54,8 @@ import { FollowUpComponent } from '../../settings/follow-up/follow-up/follow-up.
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
     EdocComponent,
-    SearchableDropdown
+    SearchableDropdown,
+    OnlyNumbersDirective 
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -158,16 +159,18 @@ MenuMasterSid:any
   ) { 
     effect(()=> {
       const countryData = this.dropdownStore.countries();
-      const stateData = this.dropdownStore.states();
       const cityData = this.dropdownStore.cities();
       this.countryList = countryData;
-      this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
       this.cityList = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
     })
   }
 
   ngOnInit(): void {
 
+    const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const currentBranchInfo = this.appSettingService.getCurrentBranchInfo();
+    console.log("Current Company Info", currentCompanyInfo);
+    console.log("Current Branch Info", currentBranchInfo);
     this.loadAllFields()
     this.initForm();
     this.isMobile = this.appService.getDevice()
@@ -186,10 +189,6 @@ MenuMasterSid:any
     console.log("Current Company", this.currentCompany);
     console.log("Current Branch", this.currentBranch);
 
-    const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();
-    const currentBranchInfo = this.appSettingService.getCurrentBranchInfo();
-    console.log("Current Company Info", currentCompanyInfo);
-    console.log("Current Branch Info", currentBranchInfo);
 
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
@@ -256,11 +255,7 @@ MenuMasterSid:any
       CityMasterSid: [, [Validators.required]],
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
-      phone: ['', [
-        Validators.required,
-        Validators.pattern(/^[0-9+\s]+$/)
- // only digits, length 10-15 (edit as needed)
-      ]],
+      phone: ['',[Validators.maxLength(15), this.phoneNumberValidator]],
       leadStatus: [LeadStatus.Discovery],
       PreferredContactMode: ['Email'],
       LanguagePreferrence: ['', [
@@ -282,6 +277,15 @@ MenuMasterSid:any
         console.log(this.leadForm.get('email'));
       }
     )
+  }
+
+  phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+    const phoneRegex = /^(\+[0-9]{1,3})?[0-9]{6,15}$/;
+    const isValid = phoneRegex.test(control.value);
+    return isValid ? null : { invalidPhoneNumber: true };
   }
 languagePrefValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -443,6 +447,7 @@ languagePrefValidator(): ValidatorFn {
   }
 
   loadAllFields() {
+    const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();
     forkJoin({
       companies: this.leadService.getAllCompanies(),
       // countries: this.leadService.fetchAllCountries(),
@@ -451,7 +456,7 @@ languagePrefValidator(): ValidatorFn {
       // this.countryList = countries
     })
     this.dropdownStore.loadCountries().subscribe(() => {
-      this.dropdownStore.loadStates().subscribe();
+      this.leadService.getStateByCountryId({ CountryMasterSid: currentCompanyInfo?.CountryMasterSid });
     });
   }
 

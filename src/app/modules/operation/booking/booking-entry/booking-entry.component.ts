@@ -1543,43 +1543,30 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       const currentFormState = JSON.stringify(this.getCurrentFormState());
       if (this.initialFormValue === currentFormState) {
         this.appSettingService.showWarning('No changes are there to save.');
+        console.log("STOP 1 - No changes return");
         return;
       }
     }
          const cleanDate = (dateValue: any) => {
- 
     if (!dateValue || dateValue.toString() === 'Invalid Date') {
- 
       return null;
- 
     }
- 
     return dateValue;
- 
   };
- 
-  
- 
-  // Clean date fields
- 
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
- 
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
- 
   this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
- 
-  
- 
   // Update the form state
- 
   this.bookingForm.updateValueAndValidity();
        if (!this.validateAllForms()) {
+        console.log("STOP 2 - validateAllForms failed");
     return;
   }
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      console.log("STOP 3 - bookingForm invalid");
       return;
     }
 
@@ -1587,6 +1574,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.croForm.markAllAsTouched();
     this.croForm.updateValueAndValidity();
     this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
+    console.log("STOP 4 - CRO form invalid");
     return;
   }
 
@@ -1743,7 +1731,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       milestones: this.milestoneResult,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
-
+    console.log("rateResult:", this.rateResult);
     console.log('Submitted payload:', payload);
 
     if (this.isEditMode && this.BookingHeaderSid) {
@@ -1807,19 +1795,22 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   // Validate Cargo Form
-  if (this.cargoForm.invalid) {
-    this.cargoForm.markAllAsTouched();
-    
-    Object.keys(this.cargoForm.controls).forEach(key => {
-      const control = this.cargoForm.get(key);
-      if (control?.errors) {
-        if (control.errors['required']) {
-          errorMessages.push(`${this.getFieldLabel(key)} is required`);
-        }
+  // Validate Cargo Form ONLY when on Cargo tab
+if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
+  this.cargoForm.markAllAsTouched();
+
+  Object.keys(this.cargoForm.controls).forEach(key => {
+    const control = this.cargoForm.get(key);
+    if (control?.errors) {
+      if (control.errors['required']) {
+        errorMessages.push(`${this.getFieldLabel(key)} is required`);
       }
-    });
-    isValid = false;
-  }
+    }
+  });
+
+  isValid = false;
+}
+
 
   // Validate CRO Form
   if (this.selectedTab === 'CRO' && this.croForm.invalid) {
@@ -1837,23 +1828,29 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   // Validate Products in FormArray
-  if (this.bookingProducts.length > 0) {
-    this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
-      if (productGroup.invalid) {
-        productGroup.markAllAsTouched();
-        
-        Object.keys(productGroup.controls).forEach(key => {
-          const control = productGroup.get(key);
-          if (control?.errors) {
-            if (control.errors['required']) {
-              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
-            }
+// Validate Products ONLY when on the Products tab
+if (this.selectedTab === 'Products' && this.bookingProducts.length > 0) {
+  this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
+    if (productGroup.invalid) {
+      productGroup.markAllAsTouched();
+
+      Object.keys(productGroup.controls).forEach(key => {
+        const control = productGroup.get(key);
+
+        if (control?.errors) {
+          if (control.errors['required']) {
+            errorMessages.push(
+              `Product ${index + 1}: ${this.getFieldLabel(key)} is required`
+            );
           }
-        });
-        isValid = false;
-      }
-    });
-  }
+        }
+      });
+
+      isValid = false;
+    }
+  });
+}
+
 
   // Show error messages if any
   if (errorMessages.length > 0) {
@@ -1974,22 +1971,38 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
 
   onCustomerChange(customer: any) {
-    console.log(customer);
-    this.selectedCustomer = customer; 
-    if (!customer) {
-      this.b['CustomerName']?.setValue('');
-      this.b['CustomerAddress']?.setValue(null);
-      this.b['CustomerBranchSid']?.setValue(null);
-      this.customerBranchList = [];
-      this.handleImportExport();
-      return;
-    }
-    this.b['CustomerName']?.setValue(customer.CustomerName);
-    this.b['CustomerAddress']?.setValue(customer.Address);
-    this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
-    // this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+  console.log(customer);
+  
+  // Check if department is selected
+  if (!this.selectedDepartment) {
+    this.appSettingService.showWarning('Please select a department first before selecting a customer.');
+    
+    // Clear the customer selection
+    this.b['CustomerMasterSid']?.setValue(null);
+    this.selectedCustomer = null;
+    this.b['CustomerName']?.setValue('');
+    this.b['CustomerAddress']?.setValue(null);
+    this.b['CustomerBranchSid']?.setValue(null);
+    this.customerBranchList = [];
     this.handleImportExport();
+    return;
   }
+  
+  this.selectedCustomer = customer; 
+  if (!customer) {
+    this.b['CustomerName']?.setValue('');
+    this.b['CustomerAddress']?.setValue(null);
+    this.b['CustomerBranchSid']?.setValue(null);
+    this.customerBranchList = [];
+    this.handleImportExport();
+    return;
+  }
+  
+  this.b['CustomerName']?.setValue(customer.CustomerName);
+  this.b['CustomerAddress']?.setValue(customer.Address);
+  this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
+  this.handleImportExport();
+}
 
   onShipperChange(shipper?: any) {
     if (!shipper) {
@@ -2251,7 +2264,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           }));
           console.log(this.headerVesselList);
            if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
-          this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
           this.hasShownVesselWarning = true;
           }
         } else {

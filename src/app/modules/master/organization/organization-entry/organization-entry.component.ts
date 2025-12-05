@@ -3733,7 +3733,7 @@ private loadNetworks(): void {
     return;
   }
 
-  this.masterService.getAllNetworks(CompanyMasterSid).subscribe({
+  this.masterService.getAllNetworks().subscribe({
     next: (resp: any) => {
       if (resp && resp) {
         this.networkList = resp;

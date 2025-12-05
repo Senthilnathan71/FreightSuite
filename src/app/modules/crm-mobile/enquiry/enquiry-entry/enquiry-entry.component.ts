@@ -467,11 +467,20 @@ export class EnquiryEntryComponent implements OnInit {
       FreightPPCC: ['Prepaid'],
       routes: this.fb.array([]),
       ContactPerson:[''],
-      ContactNumber:['']
+      ContactNumber:['',[Validators.maxLength(15), this.phoneNumberValidator]]
     });
 
     this.addRoute();
     this.initOthersForm()
+  }
+
+   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+    const phoneRegex = /^(\+[0-9]{1,3})?[0-9]{6,15}$/;
+    const isValid = phoneRegex.test(control.value);
+    return isValid ? null : { invalidPhoneNumber: true };
   }
 
   subscribeToLeadCustomerToggle() {

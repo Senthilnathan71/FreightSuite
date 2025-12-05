@@ -4018,8 +4018,17 @@ createReportMaster(payload: any) {
 
 
 // Get All Networks
-getAllNetworks(CompanyMasterSid: number) {
-  return this.http.post<{ data: any }>('network-master', { CompanyMasterSid }).pipe(
+getAllNetworks() {
+  return this.http.get<{ data: any }>('network-master').pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+getAllNetwork() {
+  return this.http.get<{ data: any }>('network-master').pipe(
     map((resp: any) => {
       let response = resp;
       return response;
@@ -4076,8 +4085,8 @@ searchNetworkList(params: any) {
 }
 
 // Get Network by Type
-getNetworkByType(type: string, CompanyMasterSid: number) {
-  return this.http.post(`network-master/network-type?type=${type}`, { CompanyMasterSid }).pipe(
+getNetworkByType(type: string) {
+  return this.http.get(`network-master/network-type?type=${type}`).pipe(
     map((resp: any) => {
       let response = resp.data;
       return response;

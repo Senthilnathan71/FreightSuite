@@ -897,7 +897,7 @@
                             </aside>
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailUOMSid')?.value">
-                                    <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="">
+                                    <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="" bindValue="UOMMasterSid" bindLabel="UOMCode">
                                         <!-- <ng-option value="">Select UOM</ng-option> -->
                                         @for(uom of UOMList; track uom){
                                         <ng-option [value]="uom.UOMMasterSid">{{uom.UOMCode}}</ng-option>
