@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -25,7 +26,7 @@ export class BankReceiptComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
-
+  currency:any[] = [];
   @Input() receiptPrintData: any;
   @Input() masterJobContainers: any[];
   @Input() selectedFCLLCL: any;
@@ -72,12 +73,26 @@ export class BankReceiptComponent {
   }
 
 
+     loadCurrencyList(): void {
+    this.masterService.getAllCurrencies().subscribe({
+      next: (response: any) => {
+        this.currency = response|| [];
+        console.log('Currency List:', this.currency);
+      },
+      error: (error) => {
+        console.error('Failed to load currencies:', error);
+      }
+    });
+  }
+
+
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
+    private numberToWords: NumberToWordsService
   ) { }
 
   modalClose() {
@@ -105,30 +120,33 @@ getTotalOriginalLocalAmount(): number {
   }, 0);
 }
 
-convertNumberToWords(num: number): string {
-  if (!num) return 'Zero';
+  getAmountInWords(): string {
+    const total = this.getTotalOriginalLocalAmount();
+    if (!total) return '';
 
-  const ones = [
-    '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
-    'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-    'Seventeen', 'Eighteen', 'Nineteen'
-  ];
+    const rupees = Math.floor(total);
+    const paise = Math.round((total - rupees) * 100);
 
-  const tens = [
-    '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
-  ];
+    const rupeesInWords = this.numberToWords.convert(rupees);
+    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
 
-  function convert(num: number): string {
-    if (num < 20) return ones[num];
-    if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + ones[num % 10] : '');
-    if (num < 1000) return ones[Math.floor(num / 100)] + ' Hundred' + (num % 100 !== 0 ? ' ' + convert(num % 100) : '');
-    if (num < 1000000) return convert(Math.floor(num / 1000)) + ' Thousand' + (num % 1000 !== 0 ? ' ' + convert(num % 1000) : '');
-    if (num < 1000000000) return convert(Math.floor(num / 1000000)) + ' Million' + (num % 1000000 !== 0 ? ' ' + convert(num % 1000000) : '');
-    return convert(Math.floor(num / 1000000000)) + ' Billion' + (num % 1000000000 !== 0 ? ' ' + convert(num % 1000000000) : '');
+    // Get currency code safely from first voucher
+    const selectedCode = this.receiptPrintData?.voucherMatchings?.[0]?.CurrencyCode;
+    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+
+    // Find currency in the list
+    const selectedCurrency = this.currency?.find(
+      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+    );
+
+    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+    return paise > 0
+      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+      : `${rupeesInWords} ${currencyName} Only`;
   }
 
-  return convert(num);
-}
 
 
   async downloadPDF() {

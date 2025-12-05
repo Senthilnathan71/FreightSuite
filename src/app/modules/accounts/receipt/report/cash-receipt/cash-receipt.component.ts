@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -24,9 +25,9 @@ export class CashReceiptComponent {
   currentUserCountry: string;
   currentUserCountryCode: string;
   currentBranchCityName: string | null;
-   branchDetails: any;
-    currentBranchCityId: number;
-  
+  branchDetails: any;
+  currentBranchCityId: number;
+  currency: any[] = [];
   @Input() receiptPrintData: any;
   @Input() masterJobContainers: any[];
   @Input() selectedFCLLCL: any;
@@ -42,9 +43,10 @@ export class CashReceiptComponent {
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentUserCountryCode = this.currentCompany?.countryMaster?.countryCode || 'IN';
-     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
-         this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.loadCityName()
+    this.loadCurrencyList()
     console.log("Current Country Code", this.currentUserCountryCode);
     console.log("Current Country", this.currentUserCountry);
     console.log("CURRENT COMPANY", this.currentCompany);
@@ -54,10 +56,11 @@ export class CashReceiptComponent {
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
-     private pdfService: PdfDownloadService,
+    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
-     private masterService: MasterService,
-  ) {}
+    private masterService: MasterService,
+    private numberToWords: NumberToWordsService
+  ) { }
 
   getBankName(COAMasterSid: number) {
     const bank = this.bankTypedLedgers.find(
@@ -92,7 +95,7 @@ export class CashReceiptComponent {
   // Get GST No or PAN based on country code
   getTaxNumber(): string {
     if (!this.receiptPrintData) return '';
-    
+
     // For India - show GST No
     if (this.currentUserCountryCode === 'IN') {
       return this.receiptPrintData.GST_VAT || '';
@@ -115,34 +118,46 @@ export class CashReceiptComponent {
     return 'Tax No.';
   }
 
-  convertNumberToWords(num: number): string {
-    if (!num) return 'Zero';
+  getAmountInWords(): string {
+    const total = this.getTotalOriginalLocalAmount();
+    if (!total) return '';
 
-    const ones = [
-      '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
-      'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-      'Seventeen', 'Eighteen', 'Nineteen'
-    ];
+    const rupees = Math.floor(total);
+    const paise = Math.round((total - rupees) * 100);
 
-    const tens = [
-      '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
-    ];
+    const rupeesInWords = this.numberToWords.convert(rupees);
+    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
 
-    function convert(num: number): string {
-      if (num < 20) return ones[num];
-      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + ones[num % 10] : '');
-      if (num < 1000) return ones[Math.floor(num / 100)] + ' Hundred' + (num % 100 !== 0 ? ' ' + convert(num % 100) : '');
-      if (num < 1000000) return convert(Math.floor(num / 1000)) + ' Thousand' + (num % 1000 !== 0 ? ' ' + convert(num % 1000) : '');
-      if (num < 1000000000) return convert(Math.floor(num / 1000000)) + ' Million' + (num % 1000000 !== 0 ? ' ' + convert(num % 1000000) : '');
-      return convert(Math.floor(num / 1000000000)) + ' Billion' + (num % 1000000000 !== 0 ? ' ' + convert(num % 1000000000) : '');
-    }
+    // Get currency code safely from first voucher
+    const selectedCode = this.receiptPrintData?.voucherMatchings?.[0]?.CurrencyCode;
+    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
 
-    return convert(num);
+    // Find currency in the list
+    const selectedCurrency = this.currency?.find(
+      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+    );
+
+    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+    return paise > 0
+      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+      : `${rupeesInWords} ${currencyName} Only`;
   }
 
+    loadCurrencyList(): void {
+    this.masterService.getAllCurrencies().subscribe({
+      next: (response: any) => {
+        this.currency = response|| [];
+        console.log('Currency List:', this.currency);
+      },
+      error: (error) => {
+        console.error('Failed to load currencies:', error);
+      }
+    });
+  }
 
-  
-    loadCityName(): void {
+  loadCityName(): void {
     if (!this.currentBranchCityId) return;
 
 
@@ -157,86 +172,86 @@ export class CashReceiptComponent {
           console.log("Final City Name:", this.currentBranchCityName);
         }
 
- 
+
       },
       error: (error) => {
         console.error("Failed to load city:", error);
-   
+
       }
     });
   }
   // pdf download
 
-    async downloadPDF() {
-  this.spinner.show();
-  try {
-   const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
+  async downloadPDF() {
+    this.spinner.show();
+    try {
+      const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
 
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Cash_Receipt_${BankReceiptNo}`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Cash_Receipt_${BankReceiptNo}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
   }
-}
 
 
 
 
-    async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
-        }
+  async generatePDFBlob(): Promise<Blob | null> {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
+    }
 
-       // print
+    try {
+      const canvas = await html2canvas(printContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
 
-          printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
- 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('blob');
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+  }
+
+  // print
+
+  printDiv(divId: string): void {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
       <html>
         <head>
           <title>Print</title>
@@ -246,10 +261,10 @@ export class CashReceiptComponent {
         </body>
       </html>
     `);
-    popupWin.document.close();
+      popupWin.document.close();
+    }
   }
-}
- 
+
 
   modalClose() {
     this.activeModal.close();

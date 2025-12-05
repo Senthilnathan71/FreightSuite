@@ -24,27 +24,25 @@
   <div style="width: 280mm; min-height: 402mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
 
     <!-- Company Info -->
-    <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+     <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%; font-size: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; flex-direction: column;">
                 <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
                 <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+            <div style="flex: 1; text-align: center;  padding-right: 12%;">
                 <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                 <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine2 || '' }} ,  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
             </div>
         </div>
     </div>
 
-    <div style="height:1px; background-color:black; width:100%; margin:0.3rem 0;"></div>
+    <!-- <div style="height:1px; background-color:black; width:100%; margin:0.3rem 0;"></div> -->
 
-    <h5 style="text-align:center; font-weight:bold; padding-bottom:0.5rem; margin:0;">Cargo Manifest</h5>
+    <h5 style="text-align:center; font-weight:bold; padding:15px 0; margin:0; border-top: 1px solid black; font-size: 18px;">Cargo Manifest</h5>
 
     <!-- Job Info -->
     <div style="display:flex; flex-wrap:wrap; border:1px solid black; padding:0 1rem; margin-bottom:0;">
@@ -119,11 +117,11 @@
             </div>
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px; white-space:nowrap; font-weight:bold;">Carrier Ref</div>
-                <div style="margin:0;">: </div>
+                <div style="margin:0;">: {{masterJobData?.others?.[0]?.CarrierRef}}</div>
             </div>
             <div style="display:flex; margin:0.25rem 0;">
                 <div style="width:130px; white-space:nowrap; font-weight:bold;">Agents Ref</div>
-                <div style="margin:0;">: </div>
+                <div style="margin:0;">: {{masterJobData?.others?.[0]?.AgentRef}}</div>
             </div>
             <div style="display:flex; margin:0.25rem 0;">
                 <div style="width:130px; white-space:nowrap; font-weight:bold;">Package</div>
@@ -159,7 +157,7 @@
                     <td style="border:1px solid black; padding:2px 8px;">{{container.ContainerNumber}}</td>
                     <td style="border:1px solid black; padding:2px 8px;">{{container.LineSeal}}</td>
                     <td style="border:1px solid black; padding:2px 8px;">{{getContainerSize(container.ContainerType)}}</td>
-                    <td style="border:1px solid black; padding:2px 8px;">{{getTareWeight(container.ContainerType)}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{getTareWeight(container.ContainerType) | number:'1.3-3'}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{container.NoOfPkg || 0}} {{getPackageTypeName(masterJobData?.containers?.[0]?.PkgType)}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{container.GrossWeight | number:'1.3-3'}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{container.Volume | number:'1.3-3'}}</td>
@@ -193,20 +191,18 @@
   <div style="width:280mm; min-height:402mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
 
     <!-- Company Info -->
-  <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+   <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%; font-size: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; flex-direction: column;">
                 <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
                 <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+            <div style="flex: 1; text-align: center;  padding-right: 12%;">
                 <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                 <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine2 || '' }} ,  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
             </div>
         </div>
     </div>
