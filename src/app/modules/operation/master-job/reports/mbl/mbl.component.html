@@ -304,7 +304,7 @@
       </footer>
     </div> -->
 
-   <div style="
+   <div  style="
     width: 280mm;
     min-height: 405mm;
     margin: 10px auto !important;
@@ -314,10 +314,10 @@
     color: #000;
     page-break-after: always;
   ">
-  <h5 style="margin: 0; font-weight: 700; padding-bottom: 8px;">Master Bill of Lading</h5>
+  <h5 style="margin: 0; font-weight: 700; padding-bottom: 8px;padding-left: 10px;">Master Bill of Lading</h5>
 
   <!-- ROW 1 -->
-  <div style="display: flex; padding: 0 10px; margin-bottom: 0; flex-wrap: wrap;">
+  <div style="display: flex; padding: 0 10px; margin-bottom: 0; ">
     <div style="flex: 0 0 50%; max-width: 50%; border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0;">
       <div style="display:flex; margin-bottom:5px;">
         <div style="width:150px; font-weight:700;">Shipper</div>
@@ -345,7 +345,7 @@
   </div>
 
   <!-- ROW 2 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
+  <div style="display:flex;  padding:0 10px;">
     <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
       <div style="display:flex; border-bottom:1px solid black; border-right:1px solid black; padding:5px;">
         <strong style="width:150px;">Consignee</strong>
@@ -381,8 +381,8 @@
   </div>
 
   <!-- ROW 3 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+  <div style="display:flex;  padding:0 10px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;border-left: none;">
       <strong>Place of Receipt</strong><br>
     </div>
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
@@ -391,14 +391,14 @@
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
       <strong>Job No</strong><br>{{ masterJobData?.MasterJobNumber }}
     </div>
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black;border-top: none; text-align:center; padding:5px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black;border-top: none; text-align:center; padding:5px;border-right: none;">
       <strong>Job Ref</strong>
     </div>
   </div>
 
   <!-- ROW 4 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px;">
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+  <div style="display:flex;  padding:0 10px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px; border-left: none;">
       <strong>Vessel / Voyage No</strong><br>
       {{ masterJobData?.voyages?.[0]?.VesselName }} / {{ masterJobData?.voyages?.[0]?.VoyageNo }}
     </div>
@@ -411,7 +411,7 @@
       <strong>Place of Delivery</strong>
     </div>
 
-    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; text-align:center;border-top: none; padding:5px;">
+    <div style="flex:0 0 25%; max-width:25%; border:1px solid black; text-align:center;border-top: none; padding:5px;border-right: none;">
       <strong>No of Bill of Lading</strong><br>{{ masterJobData?.NoofOriginal }}
     </div>
   </div>
@@ -423,8 +423,8 @@
         <tr>
           <th style="border:1px solid black; padding:2px 8px; font-weight: 700;">Container No / Seal No / Marks & No</th>
           <th style="border:1px solid black; padding:2px 8px;font-weight: 700">No of Pkg / Description / Shipping Unit</th>
-          <th style="border:1px solid black; padding:2px 8px;font-weight: 700">Gross Weight</th>
-          <th style="border:1px solid black; padding:2px 8px;font-weight: 700">Volume</th>
+          <th style="border:1px solid black; padding:2px 8px;font-weight: 700 ; text-align: center;">Gross Weight</th>
+          <th style="border:1px solid black; padding:2px 8px;font-weight: 700; text-align: center;">Volume</th>
         </tr>
       </thead>
 
@@ -453,10 +453,10 @@
       <tfoot>
         <tr>
           <td colspan="2" style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">TOTAL</td>
-          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;font-weight:700;">
             {{ totalGrossWeight() | number:'1.3-3' }}
           </td>
-          <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+          <td style="border:1px solid black; padding:2px 8px; text-align:right;font-weight:700;">
             {{ totalVolume() | number:'1.3-3' }}
           </td>
         </tr>
