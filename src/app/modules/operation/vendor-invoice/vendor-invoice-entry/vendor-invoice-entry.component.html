@@ -27,7 +27,7 @@
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
             (click)="onFinalSave()" 
             [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'" >
-      <i class="fas fa-check-circle me-1"></i> Final
+      <i class="fas fa-check-circle me-1"></i> Post
     </button>
 
     <button *ngIf="isViewMode && isPosted" type="button" 
@@ -255,9 +255,12 @@
             <!-- Exchange Rate -->
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="number" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
-                  class="custom-input-field sm" (blur)="onExchangeRateChange()" step="0.01"
-                  [class.is-invalid]="isFieldInvalid('ExchangeRate')" />
+                <input type="Text" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
+                  class="custom-input-field sm"  (focus)="onExchangeRateFocus()"
+      (blur)="onExchangeRateBlur()"
+      (input)="onExchangeRateChange()"  step="0.01"
+                  [class.is-invalid]="isFieldInvalid('ExchangeRate')" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="5"
+                max="9999999.999"/>
                 <label for="ExchangeRate" class="input-label">
                   Ex. Rate <span class="text-danger">*</span>
                 </label>

@@ -144,6 +144,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   isCustomerSaved = false;
   showAdditionalTabs = false;
   isLoadingStates = false;
+  isCurrentUserIndian: boolean = false;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
     stateLookupConfig = DROPDOWN_CONFIGS.STATE;
     cityLookupConfig = DROPDOWN_CONFIGS.CITY;
@@ -405,10 +406,12 @@ onCountryChange(): void {
   cityList: any;
   countryList: any;
   status: any;
+  currentCountyID: any;
   CustomerBrEmailSid: any;
   // customerBranchResults: any;
   btnCustomerSaveDisabled: boolean = true;
   userData: any;
+  currentCounty: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
 
@@ -431,8 +434,28 @@ onCountryChange(): void {
   ngOnInit(): void {
     this.mps.init().subscribe();
     this.dropdownStore.loadCountries().subscribe(() => {
-      this.dropdownStore.loadStates().subscribe();
-    });
+
+  this.dropdownStore.loadStates().subscribe(() => {
+
+    // Auto-set country ONLY for NEW record
+    if (!this.isEditMode) {
+
+      const loginCountryId = this.userData?.countryMaster?.CountryMasterSid;
+
+      if (loginCountryId) {
+        console.log("Auto setting user country:", loginCountryId);
+
+        // Set country
+        this.customerForm.get('CountryMasterSid')?.setValue(loginCountryId);
+
+        // Load dependent states
+        this.getStatesByCountryId();
+      }
+    }
+
+  });
+
+});
     // ✅ Get current company & branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -443,6 +466,10 @@ onCountryChange(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
+      this.currentCounty = this.userData?.countryMaster?.countryName;
+      this.currentCountyID = this.userData?.countryMaster?.CountryMasterSid;
+      this.isCurrentUserIndian = this.isUserCountryIndia();
+      console.log('currentCountry', this.currentCounty);
       console.log('User Profile loaded:', this.userData);
       console.log('User Email:', this.userData?.userEmail || this.userData?.UserEmail);
       this.checkPermissions();
@@ -595,7 +622,14 @@ onCountryChange(): void {
   }
   this.selectedTab = tabName;
 }
-
+isUserCountryIndia(): boolean {
+  if (!this.userData?.countryMaster) {
+    return false;
+  }
+  
+  const countryName = this.userData.countryMaster.countryName || '';
+  return countryName.toLowerCase().includes('india');
+}
   // Toggle branch accordion
  toggleBranch(branchIndex: number) {
   const branchId = 'branch-' + branchIndex;
@@ -2050,16 +2084,16 @@ loadCustomerData(customerId: number) {
     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       departments: this.masterService.getAllDepartments(companyMastersID),
-      salesman: this.masterService.getAllSalesperson(),
-      docs: this.masterService.getAllDoc(),
-      cs: this.masterService.getAllCS()
+      salesman: this.masterService.getAllSalesperson(companyMastersID),
+      docs: this.masterService.getAllDoc(companyMastersID),
+      cs: this.masterService.getAllCS(companyMastersID)
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe(
       ({ departments, salesman, docs, cs }) => {
         this.spDepartmentList = departments || [];
         this.departmentList = departments || []; // Also populate departmentList for email tab
-        this.salesPersonList = salesman?.data || [];
+        this.salesPersonList = salesman || [];
         this.allCS = cs?.data || [];
         this.allDocs = docs?.data || [];
 
@@ -2542,6 +2576,26 @@ onPanAvailableChange(): void {
   // Add this method to your OrganizationEntryComponent class
   // Replace your existing onSubmit method with this comprehensive version
  async onSubmit() {
+    this.customerForm.markAllAsTouched();
+  
+  // Check if the form is valid
+  if (!this.customerForm.valid) {
+    // Get the first invalid field and show its error
+    const invalidField = this.getFirstInvalidField();
+    if (invalidField) {
+      this.appSettingService.showError(`Please fill in the required field: ${invalidField}`);
+    } else {
+      this.appSettingService.showError('Please fill all required fields');
+    }
+    this.btnDisable = false;
+    return;
+  }
+  const validation = this.validateAllForms();
+  if (!validation.isValid) {
+    this.appSettingService.showError(validation.errorMessage);
+    return;
+  }
+  
   this.btnDisable = true;
 
   try {
@@ -2560,6 +2614,26 @@ onPanAvailableChange(): void {
   } finally {
     this.btnDisable = false;
   }
+}
+// Helper method to get the first invalid field
+private getFirstInvalidField(): string {
+  const formControls = this.customerForm.controls;
+  
+  for (const key in formControls) {
+    if (formControls[key].invalid) {
+      // Map field names to user-friendly labels
+      const fieldMap: { [key: string]: string } = {
+        'CustomerName': 'Customer Name',
+        'CustomerAddress1': 'Address1',
+        'CountryMasterSid': 'Country',
+        'CustomerAddress2': 'Address2'
+      };
+      
+      return fieldMap[key] || key;
+    }
+  }
+  
+  return '';
 }
 
   // Add this missing validation method
@@ -3095,40 +3169,38 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
 }
   // Create customer with all data (same as before)
   private async createCustomerWithAllData(payload: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.masterService.createCustomer(payload).subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.CustomerMasterSid = resp.data.CustomerMasterSid;
-            this.isCustomerSaved = true;
-            this.showAdditionalTabs = true;
+  console.log('Create payload:', JSON.stringify(payload, null, 2));
+  
+  return new Promise((resolve, reject) => {
+    this.masterService.createCustomer(payload).subscribe({
+      next: (resp: any) => {
+        console.log('API Response:', resp);
+        
+        if (resp.status) {
+          this.CustomerMasterSid = resp.data.CustomerMasterSid;
+          this.isCustomerSaved = true;
+          this.showAdditionalTabs = true;
           
-          // Update tabs to show additional sections
-          this.tabs = [
-            { name: 'Party', icon: 'fas fa-address-card' },
-            { name: 'Branch', icon: 'fas fa-code-branch' },
-            { name: 'Salesman', icon: 'fas fa-flag-checkered' },
-            { name: 'Email', icon: 'fas fa-envelope' },
-            { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
-            { name: 'Milestone', icon: 'fas fa-rupee-sign' },
-          ];
-            this.appSettingService.showSuccess('Customer created successfully');
-            this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
-            resolve();
-          } else {
-            this.appSettingService.showError(resp.message);
-            reject(resp.message);
-          }
-        },
-        error: (error) => {
-          this.errorMessage = error.message;
-          console.error('Error creating customer:', error);
-          this.appSettingService.showError('Error creating customer');
-          reject(error);
+          this.appSettingService.showSuccess('Customer created successfully');
+          this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
+          resolve();
+        } else {
+          // Show the actual error message from API
+          const errorMsg = resp.message || 'Error creating customer';
+          console.error('API Error:', errorMsg);
+          this.appSettingService.showError(errorMsg);
+          reject(errorMsg);
         }
-      });
+      },
+      error: (error) => {
+        console.error('HTTP Error:', error);
+        const errorMsg = error.error?.message || error.message || 'Error creating customer';
+        this.appSettingService.showError(errorMsg);
+        reject(error);
+      }
     });
-  }
+  });
+}
   shouldShowTab(tabName: string): boolean {
   if (tabName === 'Party' || tabName === 'Branch') {
     return true; // Always show Party and Branch tabs
@@ -3631,6 +3703,28 @@ private updateMilestonesForBranch(branchIndex: number, isSuspended: boolean): vo
       }
     }
   });
+}
+private validateAllForms(): { isValid: boolean; errorMessage: string } {
+  // Validate main customer form
+  this.customerForm.markAllAsTouched();
+  
+  if (this.customerForm.invalid) {
+    return { 
+      isValid: false, 
+      errorMessage: 'Please fill all required fields in the Customer section.' 
+    };
+  }
+
+  // Validate all branches if they exist
+  const branchValidation = this.validateAllBranches();
+  if (!branchValidation.isValid) {
+    return { 
+      isValid: false, 
+      errorMessage: branchValidation.message  // Map 'message' to 'errorMessage'
+    };
+  }
+
+  return { isValid: true, errorMessage: '' };
 }
 private loadNetworks(): void {
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;

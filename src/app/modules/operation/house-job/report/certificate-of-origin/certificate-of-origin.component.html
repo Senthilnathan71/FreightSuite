@@ -6,7 +6,7 @@
       <div class="spinner"></div>
     </div>
      <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent', 380)" >
-            <i class="fas fa-print me-1"></i> Print
+             <i class="fas fa-print me-1"></i> Print
         </button>
     <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
       <i class="fas fa-download me-1"></i> Download PDF
@@ -23,7 +23,7 @@
 
 <div class="modal-body">
   <div id="printContent"class="p-1">
-<div style="width:280mm; min-height:400mm; margin:0 auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
+<div class="print-wrapper" style="width:280mm; min-height:400mm; margin:0 auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
   <!-- Company Info -->
  <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
@@ -71,32 +71,32 @@
   </div>
 
   <!-- Shipment Details -->
-  <h5 style="margin:10px 0 4px 0; font-weight:700;">Shipment Details</h5>
-  <div style="display:flex;  padding:0 10px; ">
-    <div style="flex:0 0 33.333%; max-width:33.333%; border:1px solid black; padding:4px; text-align:center;">
+  <h5 style="margin:10px 0 4px 0; font-weight:700;padding-left: 10px;">Shipment Details</h5>
+  <div style="display:flex; padding:0 15px; max-width: 95%; width: auto;">
+    <div style="flex:0 0 33%; width:30%; border:1px solid black; padding:4px; text-align:center;">
       <div style="font-weight:bold;"><strong>Date</strong></div>
       <span>{{ housejobData?.ETA | formatDate }}</span>
     </div>
-    <div style="flex:0 0 33.333%; max-width:33.333%; border-top:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 33%; width:30%; border-top:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
       <div style="font-weight:bold;"><strong>Vessel Name / Voyage No.</strong></div>
       <div style="padding-left:5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
     </div>
-    <div style="flex:0 0 33.333%; max-width:33.333%; border:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 33%; width:30%; border:1px solid black; padding:4px; text-align:center;">
       <div style="font-weight:bold;"><strong>Port of Discharge</strong></div>
       <span>{{ housejobData?.POD }}</span>
     </div>
   </div>
 
-  <div style="display:flex;  padding:0 10px; margin-bottom:10px;">
-    <div style="flex:0 0 33.333%; max-width:33.333%; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
+  <div style="display:flex;  padding:0 15px;  margin-bottom:10px;max-width: 95%; width: auto;">
+    <div style="flex:0 0 33%; width:30%; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;">
       <div style="font-weight:bold;"><strong>Place of Loading</strong></div>
       <span>{{ housejobData?.POL }}</span>
     </div>
-    <div style="flex:0 0 33.333%; max-width:33.333%; border-bottom:1px solid black; padding:4px; text-align:center;">
+    <div style="flex:0 0 33%; width:30%; border-bottom:1px solid black; padding:4px; text-align:center;">
       <div style="font-weight:bold;"><strong>Final Destination</strong></div>
       <span>{{ housejobData?.FPD }}</span>
     </div>
-    <div style="flex:0 0 33.333%; max-width:33.333%; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px;">
+    <div style="flex:0 0 33%; width:30%; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px;">
       <!-- Empty column -->
     </div>
   </div>

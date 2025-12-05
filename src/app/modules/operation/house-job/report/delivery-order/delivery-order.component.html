@@ -1,5 +1,5 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Delivery Note</h5>
+    <h5 class="modal-title text-white mb-0">Delivery Order</h5>
     <div class="d-flex gap-2 align-items-center">
 
         <div class="spinner-overlay">
@@ -24,7 +24,7 @@
 
 <div class="modal-body">
   <div id="printContent"class="p-1">
-   <div style="width:280mm; min-height:400mm; margin:10px auto; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative;">
+   <div   style="width:280mm; min-height:400mm; margin:10px auto; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative;">
 
   <!-- Company Header -->
   <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:8px;">
@@ -109,7 +109,7 @@
           <span>: {{ housejobData?.Others?.[0]?.ReleaseType }}</span>
         </div>
         <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;">
-          <strong style="width:140px;">Order Numbers / Reference</strong>
+          <strong style="width:140px;">Order No / Ref</strong>
           <span>: {{ housejobData?.Others?.[0]?.CustomerRefNo }}</span>
         </div>
       </div>
@@ -210,7 +210,7 @@
         <tr *ngFor="let rate of housejobData?.costRevenueCharges">
           <td style="border:1px solid black;text-align:center;">{{ rate.ChargeDescription }}</td>
           <td style="border:1px solid black;text-align:center;">{{ getUnitCode(rate.ChargeUomSid) }}</td>
-          <td style="border:1px solid black;text-align:center;">{{ getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
+          <td style="border:1px solid black;text-align:center; text-align: center;">{{ getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
           <td style="border:1px solid black; text-align:right;">{{ rate.RevenueRate | number:'1.2-2' }}</td>
           <td style="border:1px solid black; text-align:right;">{{ rate.RevenueAmount | number:'1.2-2' }}</td>
           <td style="border:1px solid black;">{{ getCurrencyCodeCost(rate.CostCurrencyMasterSid) }}</td>

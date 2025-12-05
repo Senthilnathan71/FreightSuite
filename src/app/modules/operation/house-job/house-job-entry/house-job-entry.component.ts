@@ -1288,6 +1288,29 @@ loadHeaderLookups() {
     JobType: response.JobType,
     ShipmentNo: response.ShipmentNo
   });
+   const cargoData = response.Cargo?.[0];
+  if (cargoData) {
+    console.log('Patching cargo form with HouseJobCargoSid:', cargoData.HouseJobCargoSid);
+    this.cargoForm.patchValue({
+      HouseJobCargoSid: cargoData.HouseJobCargoSid,  // This is the key fix
+      CargoType: cargoData.CargoType,
+      ContainerType: cargoData.ContainerType,
+      NoofContainers: cargoData.NoofContainers || 0,
+      GrossWeight: cargoData.GrossWeight || 0,
+      NetWeight: cargoData.NetWeight || 0,
+      Volume: cargoData.Volume || 0,
+      Volumetric: cargoData.Volumetric || 0,
+      ChargeableWeight: cargoData.ChargeableWeight || 0,
+      NoOfPackage: cargoData.NoOfPackage || 0,
+      ShipmentTerms: cargoData.ShipmentTerms,
+      MovementType: cargoData.MovementType,
+      FreightTerms: cargoData.FreightTerms,
+      CommodityDescription: cargoData.CommodityDescription,
+      MarksAndNumber: cargoData.MarksAndNumber,
+      ModeOfTransport: cargoData.ModeOfTransport,
+      StuffingAt: cargoData.StuffingAt || 'Dock'
+    });
+  }
    this.evaluateDropdownOrFreeText();
     this.handleCFSOrYard();
     const otherData = response.Others[0];
@@ -1506,6 +1529,7 @@ onCurrencyChange(event: any) {
   // Fix CargoCurrency extraction
   let cargoCurrencyValue = null;
 const rawCargoCurrency = otherFormValue.CargoCurrency;
+ const existingCargoId = this.housejobData?.Cargo?.[0]?.HouseJobCargoSid || null;
 
 console.log('CargoCurrency debug:', {
   rawValue: rawCargoCurrency,
