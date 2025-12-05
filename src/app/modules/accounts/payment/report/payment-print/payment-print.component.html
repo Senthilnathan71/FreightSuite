@@ -149,7 +149,7 @@
             <div style="display:flex; gap:4px;">
                 <strong>Amount in Words :</strong>
                 <div style="font-style:italic;">
-                    {{paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode}} {{convertNumberToWords(getTotalOriginalLocalAmount())}} only
+                   {{ getAmountInWords() }}
                 </div>
             </div>
         </div>

@@ -314,29 +314,29 @@
 
         <div  style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;">
 
-    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem;">
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-        </div>
-
-        <div style="font-size:14px; padding-left:28%; text-align:center;">
-            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-            <h5 style="margin:0; padding:0; font-weight:600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+  <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%; font-size: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+            <div style="flex: 1; text-align: center;  padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine2 || '' }} ,  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
         </div>
     </div>
 
-    <div style="height:1px; background-color:black; width:100%; margin:1rem 0;"></div>
+  
 
-    <h5 style="text-align:center; font-weight:700; margin-bottom:1rem;">CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</h5>
+    <h5 style="text-align:center; font-weight:700; padding:15px 0; border-top: 1px solid black;font-size: 18px;">CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</h5>
 
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.5rem; padding-left:5%; padding-right:5%;">
-        <div style="flex:0 0 50%; max-width:50%;" [innerHTML]="housejobData?.ConsigneeName ? (housejobData?.ConsigneeName + '<br>' + housejobData?.ConsigneeAddress) : housejobData?.Notify">
+        <div style="flex:0 0 50%; max-width:50%;" >
+            <div style="display:flex;"><span> {{housejobData?.CustomerName}}  <br> {{housejobData?.CustomerAddress}}  </span></div>
         </div>
 
         <div style="flex:0 0 50%; max-width:50%; margin-bottom:0.25rem;">
@@ -347,13 +347,13 @@
     </div>
 
     <div style="padding:2px 5%; border-top:1px solid black; border-left:1px solid black; border-right:1px solid black;">
-        <div style="display:flex; flex-wrap:wrap;">
+        <div style="display:flex;">
             <div style="flex:0 0 50%; max-width:50%;">
-                <h6 style="font-weight:600; margin:0;font-weight:700">Shipper</h6>
+                <h6 style=" margin:0;font-weight:700">Shipper</h6>
                 <div>{{housejobData?.ShipperName}} <br> {{housejobData?.ShipperAddress}}</div>
             </div>
             <div style="flex:0 0 50%; max-width:50%;">
-                <h6 style="font-weight:600; margin:0;font-weight:700">Consignee</h6>
+                <h6 style=" margin:0;font-weight:700">Consignee</h6>
                 <div>{{housejobData?.ConsigneeName}} <br> {{housejobData?.ConsigneeAddress}}</div>
             </div>
         </div>
@@ -376,68 +376,68 @@
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Release Type</div>
-                    <div>{{housejobData?.Others?.[0]?.ReleaseType}}</div>
+                    <div style="font-weight:700; width:180px;">Release Type</div>
+                    <div>: {{housejobData?.Others?.[0]?.ReleaseType}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Goods To be Cleared By</div>
-                    <div>{{housejobData?.Others?.[0]?.CHAName}}</div>
+                    <div style="font-weight:700; width:180px;">Goods To be Cleared By</div>
+                    <div>: {{housejobData?.Others?.[0]?.CHAName}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Ocean Bill of Lading</div>
-                    <div>{{housejobData?.MBLNo}}</div>
+                    <div style="font-weight:700; width:180px;">Ocean Bill of Lading</div>
+                    <div>: {{housejobData?.MBLNo}}</div>
                 </div>
             </div>
 
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Commodity</div>
-                    <div>{{housejobData?.Products?.[0]?.ProductName}}</div>
+                    <div style="font-weight:700; width:180px;">Commodity</div>
+                    <div>: {{housejobData?.Products?.[0]?.ProductName}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Order Numbers / Reference</div>
-                    <div>{{housejobData?.Others?.[0]?.CustomerRefNo}}</div>
+                    <div style="font-weight:700; width:180px;">Order No / Ref</div>
+                    <div>: {{housejobData?.Others?.[0]?.CustomerRefNo}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:600; width:180px;">Final Destination</div>
-                    <div>{{housejobData?.FPD}}</div>
+                    <div style="font-weight:700; width:180px;">Final Destination</div>
+                    <div>: {{housejobData?.FPD}}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div style="padding:2px; margin-bottom:0.25rem; border:1px solid black;">
-        <h6 style="font-weight:600; margin-bottom:0.5rem;">ROUTING INFORMATION</h6>
+    <div style="padding:2px 5%; margin-bottom:0.25rem; border:1px solid black;">
+        <h6 style="font-weight:700; margin-bottom:0.3rem;text-align: center;">ROUTING INFORMATION</h6>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Mode</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Mode</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Vessel</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Vessel</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.VesselName}}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Voyage</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Voyage</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.VoyageNo}}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Port of Loading</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Port of Loading</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.POL}}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Port of Discharge</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Port of Discharge</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.POD}}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">ETD</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">ETD</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.ETD | formatDate }}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">ETA</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">ETA</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.ETA | formatDate }}</div>
         </div>
         <div style="display:flex; flex-wrap:wrap;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:600;">Final Destination</div>
+            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Final Destination</div>
             <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.FPD}}</div>
         </div>
     </div>
@@ -483,7 +483,7 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border:1px solid black;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
+                <td style="border:1px solid black;text-align: right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
                 <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number: '1.3-3' }}</td>
                 <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number: '1.3-3' }}</td>
                 <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3'}}</td>

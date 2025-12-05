@@ -25,6 +25,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -168,6 +169,7 @@ export class CreditNoteEntryComponent {
         public mps: MenuPermissionService,
         private commonService: CommonService,
         private masterService: MasterService,
+        private numberToWords: NumberToWordsService
       ) {}
       ngOnInit(): void {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -2502,84 +2504,33 @@ private normalizeParty(raw: any) {
     return d.toLocaleDateString('en-GB'); // DD/MM/YYYY format
   }
 
-  getAmountInWords(): string {
-    const total = this.getGrandTotal();
-    const currency = this.creditNoteForm.get('CurrencyCode')?.value || '';
+getAmountInWords(): string {
+  const total = this.getGrandTotal();
 
-    // Use Indian numbering system for India, international for others
-    const isIndian = this.bookingModeCountry === 'india';
+  const rupees = Math.floor(total);
+  const paise = Math.round((total - rupees) * 100);
 
-    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const rupeesInWords = this.numberToWords.convert(rupees);
+  const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
 
-    const convertLessThanThousand = (n: number): string => {
-      if (n === 0) return '';
-      if (n < 10) return ones[n];
-      if (n < 20) return teens[n - 10];
-      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
-      return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' and ' + convertLessThanThousand(n % 100) : '');
-    };
+  const selectedCode = this.creditNoteForm.get('CurrencyCode')?.value;
 
-    const convertLessThanHundred = (n: number): string => {
-      if (n === 0) return '';
-      if (n < 10) return ones[n];
-      if (n < 20) return teens[n - 10];
-      return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
-    };
+  // Make sure the find works
+  const selectedCurrency = this.currencyList.find(
+    (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  );
 
-    // Indian numbering system (Lakhs and Crores)
-    const convertIndianNumber = (num: number): string => {
-      if (num === 0) return 'Zero';
+  const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+  const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+  console.log(currencyName,"Currency Unit");
+  console.log(subCurrencyName,"SunCurrency Unit");
 
-      const crore = Math.floor(num / 10000000);
-      const lakh = Math.floor((num % 10000000) / 100000);
-      const thousand = Math.floor((num % 100000) / 1000);
-      const remainder = Math.floor(num % 1000);
-
-      let result = '';
-
-      if (crore > 0) result += convertLessThanHundred(crore) + ' Crore ';
-      if (lakh > 0) result += convertLessThanHundred(lakh) + ' Lakh ';
-      if (thousand > 0) result += convertLessThanHundred(thousand) + ' Thousand ';
-      if (remainder > 0) result += convertLessThanThousand(remainder);
-
-      return result.trim();
-    };
-
-    // International numbering system (Billions and Millions)
-    const convertInternationalNumber = (num: number): string => {
-      if (num === 0) return 'Zero';
-
-      const billion = Math.floor(num / 1000000000);
-      const million = Math.floor((num % 1000000000) / 1000000);
-      const thousand = Math.floor((num % 1000000) / 1000);
-      const remainder = Math.floor(num % 1000);
-
-      let result = '';
-
-      if (billion > 0) result += convertLessThanThousand(billion) + ' Billion ';
-      if (million > 0) result += convertLessThanThousand(million) + ' Million ';
-      if (thousand > 0) result += convertLessThanThousand(thousand) + ' Thousand ';
-      if (remainder > 0) result += convertLessThanThousand(remainder);
-
-      return result.trim();
-    };
-
-    const integerPart = Math.floor(total);
-    const decimalPart = Math.round((total - integerPart) * 100);
-
-    let words = isIndian ? convertIndianNumber(integerPart) : convertInternationalNumber(integerPart);
-
-    if (decimalPart > 0) {
-      const decimalWords = isIndian
-        ? convertLessThanHundred(decimalPart) + ' Paise'
-        : convertLessThanHundred(decimalPart) + ' Cents';
-      words += ' and ' + decimalWords;
-    }
-
-    return `${currency} ${words} Only`;
+  if (paise > 0) {
+    return ` ${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`;
   }
+
+  return ` ${rupeesInWords} ${currencyName} Only`;
+}
 
   getCustomerName(CustomerMasterSid:number){
     if(!CustomerMasterSid || this.customerList.length === 0){

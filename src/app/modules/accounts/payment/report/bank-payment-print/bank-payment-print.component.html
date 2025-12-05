@@ -145,7 +145,7 @@
 
     <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;">
         <strong>Amount in Words :</strong>
-        <span style="font-style:italic;">{{paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode}} {{ convertNumberToWords(getTotalOriginalLocalAmount()) }} only</span>
+        <span style="font-style:italic;"> {{ getAmountInWords() }} </span>
     </div>
 
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
