@@ -41,6 +41,7 @@ import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-pay
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 
 /**
  * Payment Entry Component
@@ -294,6 +295,8 @@ export class PaymentEntryComponent implements OnInit {
       })
     })
     this.setupBillMatchingValidation()
+    this.paymentForm.setValidators(consistentExchangeRatesValidator());
+    this.paymentForm.updateValueAndValidity();
   }
 
   
@@ -552,7 +555,14 @@ export class PaymentEntryComponent implements OnInit {
       return;
     }
 
-
+    if (this.paymentForm.hasError('inconsistentExchangeRates')) {
+      const errorMsg = getExchangeRateErrorMessage(
+        this.paymentForm,
+        this.currencyList
+      );
+      this.appSettingService.showError(errorMsg);
+      return;
+    }
 
 
     const hasPartyDetail = detailItems.some(d => d.LedgerMasterSid === formValue.LedgerMasterSid);
@@ -964,6 +974,14 @@ export class PaymentEntryComponent implements OnInit {
       voucherTransaction: [data?.voucherTransaction || null],
       yearMaster: [data?.yearMaster || null],
     });
+    detailItem.get('CurrencyMasterSid')?.valueChanges.subscribe((val) => {
+      if (!val || this.currencyList.length === 0) {
+        detailItem.get('CurrencyCode')?.setValue('');
+        return;
+      } else {
+        detailItem.get('CurrencyCode')?.setValue(this.currencyList.find(c => c.CurrencyMasterSid === val)?.currencyCode);
+      }
+    });
     return detailItem;
   }
 
@@ -1044,6 +1062,7 @@ export class PaymentEntryComponent implements OnInit {
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
       DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      CurrencyCode : this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,
     }
@@ -1059,6 +1078,7 @@ export class PaymentEntryComponent implements OnInit {
       LedgerMasterSid: bankLedger.LedgerMasterSid,
       DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      CurrencyCode : this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,
     }

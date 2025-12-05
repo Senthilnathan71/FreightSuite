@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
@@ -43,6 +43,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 
 /**
  * Receipt Entry Component
@@ -293,6 +294,8 @@ export class ReceiptEntryComponent implements OnInit {
       })
     })
     this.setupBillMatchingValidation()
+    this.receiptForm.setValidators(consistentExchangeRatesValidator());
+    this.receiptForm.updateValueAndValidity();
   }
 
   
@@ -551,7 +554,14 @@ export class ReceiptEntryComponent implements OnInit {
       return;
     }
 
-
+    if (this.receiptForm.hasError('inconsistentExchangeRates')) {
+      const errorMsg = getExchangeRateErrorMessage(
+        this.receiptForm,
+        this.currencyList
+      );
+      this.appSettingService.showError(errorMsg);
+      return;
+    }
 
 
     const hasPartyDetail = detailItems.some(d => d.LedgerMasterSid === formValue.LedgerMasterSid);
@@ -960,6 +970,14 @@ export class ReceiptEntryComponent implements OnInit {
       voucherTransaction: [data?.voucherTransaction || null],
       yearMaster: [data?.yearMaster || null],
     });
+    detailItem.get('CurrencyMasterSid')?.valueChanges.subscribe((val) => {
+      if(!val || this.currencyList.length === 0){
+        detailItem.get('CurrencyCode')?.setValue('');
+        return;
+      } else {
+        detailItem.get('CurrencyCode')?.setValue(this.currencyList.find(c => c.CurrencyMasterSid === val)?.currencyCode);
+      }
+    });
     return detailItem;
   }
 
@@ -1040,6 +1058,7 @@ export class ReceiptEntryComponent implements OnInit {
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
       DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      CurrencyCode : this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,
     }
@@ -1055,6 +1074,7 @@ export class ReceiptEntryComponent implements OnInit {
       LedgerMasterSid: bankLedger.LedgerMasterSid,
       DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      CurrencyCode : this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,
     }

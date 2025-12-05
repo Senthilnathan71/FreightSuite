@@ -2430,6 +2430,15 @@ getFieldConfiguration() {
     );
   }
 
+  getRoleDetailsByCompanyId(payload) {
+    return this.http.post<{ data: any }>(`ff-user/role-details`, payload).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   deleteFfUserById(UserMasterSid: number) {
     return this.http.delete<{ data: any }>(`ff-user/delete/${UserMasterSid}`).pipe(
       map((resp) => {
