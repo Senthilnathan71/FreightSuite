@@ -2273,6 +2273,8 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
       console.log('Place of Supply:', placeOfSupplyState);
       console.log('Customer Country:', customerCountry);
       console.log('Selected Tax Group:', selectedTaxGroup);
+      console.log('Tax Rate from group:', selectedTaxGroup.TaxRate);
+      console.log('Tax Type from group:', selectedTaxGroup.TaxType);
 
       // Use the new tax ledger API
       const taxLedger = await this.getTaxLedgerForCharge(charge, isRevenue, placeOfSupplyState);
@@ -2289,47 +2291,41 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
         const taxData = taxLedger[0];
         console.log('Processing tax data:', taxData);
         
-        const taxRate = parseFloat(taxData.TaxRate || 0);
-        const taxCode = taxData.TaxCode || taxData.TaxType;
+        const taxRate = parseFloat(taxData.TaxRate || selectedTaxGroup.TaxRate || 0);
+        const taxTypeFromData = taxData.TaxType || selectedTaxGroup.TaxType;
         
-        console.log('Tax Rate from API:', taxRate);
-        console.log('Tax Code from API:', taxCode);
+        console.log('Final Tax Rate:', taxRate);
+        console.log('Final Tax Type:', taxTypeFromData);
 
-        // Determine tax application based on tax code and customer location
-        const isIndianCustomer = customerCountry && 
-                                (customerCountry.toLowerCase() === 'india' || 
-                                 customerCountry.toLowerCase() === 'in');
-        
-        const isSameState = companyState && placeOfSupplyState && 
-                           companyState.toLowerCase() === placeOfSupplyState.toLowerCase();
-
-        console.log('Tax Application Logic:', {
-          isIndianCustomer,
-          isSameState,
-          taxRate,
-          taxCode,
-          taxType: taxData.TaxType
-        });
-
-        // Apply tax based on tax code
-        if (taxCode === 'VAT') {
-          // Apply VAT for international customers or specific VAT charges
+        // IMPORTANT FIX: For UAE/VAT, apply the full rate, don't split it
+        if (taxTypeFromData === 'VAT' || this.isUAECompany()) {
+          // UAE or VAT countries - apply full VAT rate (5% for UAE)
           const vatAmount = (chargeAmount * taxRate) / 100;
-          lineItem.vatRate = taxRate;
+          lineItem.vatRate = taxRate; // Should be 5, not 2.5
           lineItem.vatAmount = vatAmount;
           lineItem.totalTaxAmount = vatAmount;
+          lineItem.cgstRate = 0;
+          lineItem.sgstRate = 0;
+          lineItem.igstRate = 0;
+          lineItem.cgstAmount = 0;
+          lineItem.sgstAmount = 0;
+          lineItem.igstAmount = 0;
           totalVAT += vatAmount;
           taxType = 'VAT';
-          console.log('VAT Applied:', { vatAmount, taxRate });
+          console.log('VAT Applied:', { vatAmount, taxRate, chargeAmount });
         } 
-        else if (taxCode === 'GST' || !taxCode) {
+        else if (taxTypeFromData === 'GST' || this.isIndianCompany()) {
           // GST logic - determine IGST vs CGST+SGST
+          const isIndianCustomer = customerCountry && 
+                                  (customerCountry.toLowerCase() === 'india' || 
+                                   customerCountry.toLowerCase() === 'in');
+          
+          const isSameState = companyState && placeOfSupplyState && 
+                             companyState.toLowerCase() === placeOfSupplyState.toLowerCase();
+
           if (isIndianCustomer) {
-            // CORRECTED LOGIC:
-            // Same state = CGST + SGST (Inter)
-            // Different state = IGST (Intra)
             if (isSameState) {
-              // Same state - Apply CGST + SGST (Inter)
+              // Same state - Apply CGST + SGST (split the rate)
               const halfRate = taxRate / 2;
               const cgstAmount = (chargeAmount * halfRate) / 100;
               const sgstAmount = (chargeAmount * halfRate) / 100;
@@ -2340,12 +2336,14 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
               lineItem.sgstAmount = sgstAmount;
               lineItem.igstAmount = 0;
               lineItem.totalTaxAmount = cgstAmount + sgstAmount;
+              lineItem.vatRate = 0;
+              lineItem.vatAmount = 0;
               totalCGST += cgstAmount;
               totalSGST += sgstAmount;
               taxType = 'GST';
-              console.log('CGST+SGST Applied for same state (Inter):', { cgstAmount, sgstAmount, halfRate });
+              console.log('CGST+SGST Applied for same state:', { cgstAmount, sgstAmount, halfRate });
             } else {
-              // Different state - Apply IGST (Intra)
+              // Different state - Apply IGST (full rate)
               const igstAmount = (chargeAmount * taxRate) / 100;
               lineItem.igstRate = taxRate;
               lineItem.cgstRate = 0;
@@ -2354,25 +2352,52 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
               lineItem.cgstAmount = 0;
               lineItem.sgstAmount = 0;
               lineItem.totalTaxAmount = igstAmount;
+              lineItem.vatRate = 0;
+              lineItem.vatAmount = 0;
               totalIGST += igstAmount;
               taxType = 'GST';
-              console.log('IGST Applied for different state (Intra):', { igstAmount, taxRate });
+              console.log('IGST Applied for different state:', { igstAmount, taxRate });
             }
           } else {
-            // International customer - apply VAT
-            const vatAmount = (chargeAmount * taxRate) / 100;
-            lineItem.vatRate = taxRate;
-            lineItem.vatAmount = vatAmount;
-            lineItem.totalTaxAmount = vatAmount;
-            totalVAT += vatAmount;
-            taxType = 'VAT';
-            console.log('VAT Applied for international customer:', vatAmount);
+            // International customer for Indian company - might be Export
+            // For export from India, IGST is usually 0% or specific rate
+            const igstAmount = (chargeAmount * taxRate) / 100;
+            lineItem.igstRate = taxRate;
+            lineItem.cgstRate = 0;
+            lineItem.sgstRate = 0;
+            lineItem.igstAmount = igstAmount;
+            lineItem.cgstAmount = 0;
+            lineItem.sgstAmount = 0;
+            lineItem.totalTaxAmount = igstAmount;
+            lineItem.vatRate = 0;
+            lineItem.vatAmount = 0;
+            totalIGST += igstAmount;
+            taxType = 'GST';
+            console.log('IGST for export:', { igstAmount, taxRate });
           }
         }
       } else {
         console.log('No tax ledger data, using fallback');
-        // Fallback to selected tax group logic
-        this.applyFallbackTax(selectedTaxGroup, lineItem, chargeAmount, totalCGST, totalSGST, totalIGST, totalVAT);
+        // Fallback - check if UAE company
+        if (this.isUAECompany() || selectedTaxGroup.TaxType === 'VAT') {
+          // Apply full VAT rate for UAE
+          const vatAmount = (chargeAmount * parseFloat(selectedTaxGroup.TaxRate)) / 100;
+          lineItem.vatRate = parseFloat(selectedTaxGroup.TaxRate);
+          lineItem.vatAmount = vatAmount;
+          lineItem.totalTaxAmount = vatAmount;
+          lineItem.cgstRate = 0;
+          lineItem.sgstRate = 0;
+          lineItem.igstRate = 0;
+          lineItem.cgstAmount = 0;
+          lineItem.sgstAmount = 0;
+          lineItem.igstAmount = 0;
+          totalVAT += vatAmount;
+          taxType = 'VAT';
+          console.log('Fallback VAT Applied:', { vatAmount, rate: selectedTaxGroup.TaxRate });
+        } else {
+          // Fallback to selected tax group logic for GST
+          this.applyFallbackTax(selectedTaxGroup, lineItem, chargeAmount, totalCGST, totalSGST, totalIGST, totalVAT);
+        }
       }
 
       lineItems.push(lineItem);
@@ -2387,7 +2412,8 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
         cgstRate: 0,
         sgstRate: 0,
         igstRate: 0,
-        vatRate: 0
+        vatRate: 0,
+        vatAmount: 0
       });
     }
   }
@@ -2436,15 +2462,32 @@ private applyFallbackTax(
   const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
   const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
 
-  console.log('Using fallback tax calculation:', { taxRate, isGSTType });
+  console.log('Using fallback tax calculation:', { taxRate, isGSTType, taxType: selectedTaxGroup.TaxType });
 
-  if (isGSTType) {
+  // CHECK: If UAE company or VAT type, apply full VAT rate
+  if (this.isUAECompany() || selectedTaxGroup.TaxType === 'VAT') {
+    // Apply full VAT rate (5% for UAE, not split)
+    const vatAmount = (chargeAmount * taxRate) / 100;
+    lineItem.vatRate = taxRate; // Should be 5%
+    lineItem.vatAmount = vatAmount;
+    lineItem.totalTaxAmount = vatAmount;
+    lineItem.cgstRate = 0;
+    lineItem.sgstRate = 0;
+    lineItem.igstRate = 0;
+    lineItem.cgstAmount = 0;
+    lineItem.sgstAmount = 0;
+    lineItem.igstAmount = 0;
+    totalVAT += vatAmount;
+    console.log('Fallback VAT (full rate):', { vatAmount, taxRate });
+  } 
+  else if (isGSTType) {
+    // GST logic
     const companyState = this.getCompanyState();
     const placeOfSupplyState = this.placeOfSupply;
     const isInterState = companyState !== placeOfSupplyState;
 
     if (isInterState) {
-      // IGST
+      // IGST - full rate
       const igstAmount = (chargeAmount * taxRate) / 100;
       lineItem.igstRate = taxRate;
       lineItem.cgstRate = 0;
@@ -2453,9 +2496,11 @@ private applyFallbackTax(
       lineItem.cgstAmount = 0;
       lineItem.sgstAmount = 0;
       lineItem.totalTaxAmount = igstAmount;
+      lineItem.vatRate = 0;
+      lineItem.vatAmount = 0;
       totalIGST += igstAmount;
     } else {
-      // CGST + SGST
+      // CGST + SGST - split rate
       const halfRate = taxRate / 2;
       const cgstAmount = (chargeAmount * halfRate) / 100;
       const sgstAmount = (chargeAmount * halfRate) / 100;
@@ -2466,15 +2511,23 @@ private applyFallbackTax(
       lineItem.sgstAmount = sgstAmount;
       lineItem.igstAmount = 0;
       lineItem.totalTaxAmount = cgstAmount + sgstAmount;
+      lineItem.vatRate = 0;
+      lineItem.vatAmount = 0;
       totalCGST += cgstAmount;
       totalSGST += sgstAmount;
     }
   } else if (selectedTaxGroup.TaxType === 'VAT') {
-    // VAT calculation
+    // VAT calculation - full rate
     const vatAmount = (chargeAmount * taxRate) / 100;
-    lineItem.vatRate = taxRate;
+    lineItem.vatRate = taxRate; // Full rate
     lineItem.vatAmount = vatAmount;
     lineItem.totalTaxAmount = vatAmount;
+    lineItem.cgstRate = 0;
+    lineItem.sgstRate = 0;
+    lineItem.igstRate = 0;
+    lineItem.cgstAmount = 0;
+    lineItem.sgstAmount = 0;
+    lineItem.igstAmount = 0;
     totalVAT += vatAmount;
   }
 }
@@ -2763,7 +2816,10 @@ getChargeTaxPercentage(charge: any): string {
   }
   try {
     const selectedChargeData = this.availableCharges.filter(c => this.selectedCharges.has(c.RateSid));
-
+console.log('=== DEBUG: Selected Charges for Voucher ===');
+    console.log('Selected charges count:', selectedChargeData.length);
+    console.log('Is UAE Company:', this.isUAECompany());
+    console.log('Tax Result:', this.chargeSelectionTaxResult);
     // Close modal
     this.chargeSelectionModalRef?.close();
 

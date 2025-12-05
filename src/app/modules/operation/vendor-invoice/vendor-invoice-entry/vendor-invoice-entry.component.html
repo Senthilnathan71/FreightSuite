@@ -208,7 +208,7 @@
            
 <!-- GST Type -->
 <aside class="col-md-2">
-  <div class="custom-form-group">
+  <div class="custom-form-group" >
     <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
     <label class="input-label">GST Type</label>
   </div>
@@ -235,22 +235,25 @@
 </aside>
 
             <!-- Currency -->
-            <aside class="col-md-2">
-              <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!vendorInvoiceForm.get('CurrencyCode')?.value">
-                <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
-                  formControlName="CurrencyCode" (change)="onCurrencyChange($event)"
-                  [class.is-invalid]="isFieldInvalid('CurrencyCode')" appendTo="body" class="ng-select"
-                  placeholder="Select Currency">
-                  <!-- <ng-template ng-option-tmp let-item="item">
-                    {{ item.CurrencyCode }} - {{ item.CurrencyName }}
-                  </ng-template> -->
-                </ng-select>
-                <label for="CurrencyCode" class="input-label">
-                  Currency <span class="text-danger">*</span>
-                </label>
-              </div>
-            </aside>
+<aside class="col-md-2">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!vendorInvoiceForm.get('CurrencyMasterSid')?.value">
+    <dofi-searchable-dropdown 
+      [items]="currencyList" 
+      formControlName="CurrencyMasterSid" 
+      placeholder=""
+      [displayFields]="CurrencyLookupConfig.displayFields"
+      [displayLabels]="CurrencyLookupConfig.displayLabels"
+      [labelFields]="CurrencyLookupConfig.labelFields" 
+      bindLabel="currencyCode"
+      bindValue="CurrencyMasterSid"
+      (itemSelected)="onCurrencyChange($event)">
+    </dofi-searchable-dropdown>
+    <label for="CurrencyMasterSid" class="input-label">
+      Currency <span class="text-danger">*</span>
+    </label>
+  </div>
+</aside>
 
             <!-- Exchange Rate -->
             <aside class="col-md-2">
@@ -486,12 +489,17 @@
 
               <!-- Currency -->
               <td>
-                <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
-                  [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                  [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'" 
-                  (itemSelected)="onDetailChange(i,'CurrencyCode')">
-                </dofi-searchable-dropdown>
-              </td>
+  <dofi-searchable-dropdown 
+    [items]="currencyList" 
+    formControlName="CurrencyMasterSid" 
+    [placeholder]="''"
+    [displayFields]="CurrencyLookupConfig.displayFields" 
+    [displayLabels]="CurrencyLookupConfig.displayLabels"
+    [labelFields]="CurrencyLookupConfig.labelFields" 
+    [bindValue]="'CurrencyMasterSid'"
+    (itemSelected)="onDetailChange(i,'CurrencyMasterSid')">
+  </dofi-searchable-dropdown>
+</td>
 
               <!-- Rate -->
               <td>
