@@ -241,6 +241,8 @@ currentUserState: string;
     }
   }
 console.log('currentCurrencyCode', this.currentCurrencyCode);
+console.log('currentcurrencyID',this.currentCountryID);
+console.log('currentCountry',this.currentCountry);
   try {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -322,7 +324,7 @@ console.log('currentCurrencyCode', this.currentCurrencyCode);
       PlaceOfSupply: [{ value: '', disabled: true }],
       PostedOn: [{ value: null, disabled: true }],
       CustomerBranchSid: [null],
-      CurrencyCode: ['', Validators.required],
+      CurrencyMasterSid:[null,Validators.required],
       ExchangeRate: [1, [Validators.required, Validators.min(0)]],
       BillNo: ['', Validators.required],
       BillDate: [null, Validators.required],
@@ -379,7 +381,7 @@ console.log('currentCurrencyCode', this.currentCurrencyCode);
     ChargeUOMSid: [data?.ChargeUOMSid || null],
     NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
     DrCr: [data?.DrCr || 'D', Validators.required],
-    CurrencyCode: [data?.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value || null],
+    CurrencyMasterSid: [data?.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.value || null],
     Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
     ExchangeRate: [data?.ExchangeRate || this.vendorInvoiceForm.get('ExchangeRate')?.value || 1],
     Amount: [data?.Amount || 0],
@@ -410,7 +412,7 @@ getDepartmentName(departmentSid: number): string {
   return department?.DepartmentName || department?.departmentName || '-';
 }
 onDetailChange(index: number, field?: string) {
-  if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyCode'].includes(field || '')) {
+  if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyMasterSid'].includes(field || '')) {
     this.recalcRow(index);
   } else if (field === 'ChargeMasterSid') {
     const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
@@ -561,9 +563,9 @@ recalculateAllRows() {
     if (exRateCtrl && (exRateCtrl.value === null || exRateCtrl.value === undefined)) {
       exRateCtrl.setValue(this.vendorInvoiceForm.get('ExchangeRate')?.value || 1);
     }
-    const currCtrl = this.details.at(i).get('CurrencyCode');
+    const currCtrl = this.details.at(i).get('CurrencyMasterSid');
     if (currCtrl && !currCtrl.value) {
-      currCtrl.setValue(this.vendorInvoiceForm.get('CurrencyCode')?.value || null);
+      currCtrl.setValue(this.vendorInvoiceForm.get('CurrencyMasterSid')?.value || null);
     }
     this.recalcRow(i);
   }
@@ -1429,7 +1431,8 @@ addSelectedCosts() {
       ChargeDescription: cost.ChargeDescription,
       NumberOfUnit: cost.NumberOfUnit || 1,
       Rate: cost.Rate || cost.CostAmount || 0,
-      CurrencyCode: cost.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value,
+      CurrencyMasterSid: cost.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.value,
+      CurrencyCode: cost.CurrencyCode || this.vendorInvoiceForm.get('CurrencyMasterSid')?.value,
       ExchangeRate: cost.CostExchangeRate || cost.ExchangeRate || 1,
       MasterJobSid: cost.MasterJobSid,
       HouseJobSid: cost.HouseJobSid,
@@ -1600,15 +1603,15 @@ getMasterJobNumber(jobSid: number): string {
     });
   }
 private setupCurrencyChangeListener(): void {
-  this.vendorInvoiceForm.get('CurrencyCode')?.valueChanges.subscribe((currencyCode) => {
-    if (currencyCode) {
-      const currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+  this.vendorInvoiceForm.get('CurrencyMasterSid')?.valueChanges.subscribe((CurrencyMasterSid) => {
+    if (CurrencyMasterSid) {
+      const currentCurrencyCode = this.currentCompany?.currencyMaster?.CurrencyMasterSid;
       
       // Only fetch exchange rate if different from company currency
-      if (currencyCode !== currentCurrencyCode) {
+      if (CurrencyMasterSid !== currentCurrencyCode) {
         // Small delay to ensure user has selected the currency
         setTimeout(() => {
-          this.fetchExchangeRate(currentCurrencyCode, currencyCode);
+          this.fetchExchangeRate(currentCurrencyCode, CurrencyMasterSid);
         }, 300);
       } else {
         // Same currency - set to 1 and disable
@@ -1670,6 +1673,7 @@ private setupCurrencyChangeListener(): void {
       GSTNo: data.GST_VAT,
       PlaceOfSupply: data.PlaceOfSupply,
       PostedOn: data.PostDate ? this.formatDateForDisplay(data.PostDate) : null,
+      CurrencyMasterSid: data.CurrencyMasterSid || currency.CurrencyMasterSid,
       CurrencyCode: data.CurrencyCode || currency.currencyCode,
       ExchangeRate: data.ExchangeRate || 1,
       BillNo: data.DocumentNumber,
@@ -1733,6 +1737,7 @@ private setupCurrencyChangeListener(): void {
           ChargeUOMSid: detail.ChargeUOMSid,
           NumberOfUnit: detail.NumberOfUnit,
           DrCr: detail.DrCr,
+          CurrencyMasterSid: detail.CurrencyMasterSid,
           CurrencyCode: detail.CurrencyCode,
           ExchangeRate: detail.ExchangeRate,
           Rate: detail.Rate,
@@ -1839,6 +1844,8 @@ private setupCurrencyChangeListener(): void {
 
  preparePayload(): any {
   const formValue = this.vendorInvoiceForm.getRawValue();
+  const selectedCurrency = this.currencyList.find(c => c.CurrencyMasterSid === formValue.CurrencyMasterSid);
+  const currencyCode = selectedCurrency?.currencyCode || '';
 
   const payload: any = {
     VoucherHeaderSid: this.headerId,
@@ -1850,8 +1857,8 @@ private setupCurrencyChangeListener(): void {
     CustomerBranchSid: formValue.CustomerBranchSid,
     GSTNo: formValue.GSTNo,
     PlaceOfSupply: formValue.PlaceOfSupply,
-    CurrencyCode: formValue.CurrencyCode,
-    CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === formValue.CurrencyCode)?.CurrencyMasterSid,
+    CurrencyMasterSid: formValue.CurrencyMasterSid,
+    CurrencyCode: currencyCode,
     ExchangeRate: formValue.ExchangeRate,
     BillNo: formValue.BillNo,
     BillDate: this.fromNgbDate(formValue.BillDate),
@@ -1872,37 +1879,40 @@ private setupCurrencyChangeListener(): void {
   };
 
   // Add details with CostRevenueChargesSid
-  payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
-    Sno: index + 1,
-    VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
-    ChargeMasterSid: detail.ChargeMasterSid,
-    ChargeDescription: detail.ChargeDescription,
-    HSSACMasterSid: detail.HSSACMasterSid,
-    ChargeUOMSid: detail.ChargeUOMSid,
-    NumberOfUnit: detail.NumberOfUnit,
-    Rate: detail.Rate,
-    Amount: detail.Amount,
-    TaxableAmount: detail.TaxableAmount,
-    TaxPercentage1: detail.TaxPercentage1 || 0,
-    TaxAmount1: detail.TaxAmount1 || 0,
-    TaxPercentage2: detail.TaxPercentage2 || 0,
-    TaxAmount2: detail.TaxAmount2 || 0,
-    TaxPercentageIGST: detail.TaxPercentageIGST || 0,
-    TaxAmountIGST: detail.TaxAmountIGST || 0,
-    LocalAmount: detail.LocalAmount,
-    CurrencyCode: detail.CurrencyCode,
-    CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === detail.CurrencyCode)?.CurrencyMasterSid,
-    ExchangeRate: detail.ExchangeRate,
-    DrCr: detail.DrCr,
-    LedgerMasterSid: detail.LedgerMasterSid,
-    MasterJobSid: detail.MasterJobSid,
-    HouseJobSid: detail.HouseJobSid,
-    DepartmentMasterSid: detail.DepartmentMasterSid,
-    Remarks: detail.Remarks
-  }));
+  payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => {
+    // Find currency code for each detail's CurrencyMasterSid
+    const detailCurrency = this.currencyList.find(c => c.CurrencyMasterSid === detail.CurrencyMasterSid);
+    const detailCurrencyCode = detailCurrency?.currencyCode || '';
 
-  // Add TDS
-  // payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
+    return {
+      Sno: index + 1,
+      VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
+      ChargeMasterSid: detail.ChargeMasterSid,
+      ChargeDescription: detail.ChargeDescription,
+      HSSACMasterSid: detail.HSSACMasterSid,
+      ChargeUOMSid: detail.ChargeUOMSid,
+      NumberOfUnit: detail.NumberOfUnit,
+      Rate: detail.Rate,
+      Amount: detail.Amount,
+      TaxableAmount: detail.TaxableAmount,
+      TaxPercentage1: detail.TaxPercentage1 || 0,
+      TaxAmount1: detail.TaxAmount1 || 0,
+      TaxPercentage2: detail.TaxPercentage2 || 0,
+      TaxAmount2: detail.TaxAmount2 || 0,
+      TaxPercentageIGST: detail.TaxPercentageIGST || 0,
+      TaxAmountIGST: detail.TaxAmountIGST || 0,
+      LocalAmount: detail.LocalAmount,
+      CurrencyMasterSid: detail.CurrencyMasterSid,
+      CurrencyCode: detailCurrencyCode, // Auto-populated from detail's CurrencyMasterSid
+      ExchangeRate: detail.ExchangeRate,
+      DrCr: detail.DrCr,
+      LedgerMasterSid: detail.LedgerMasterSid,
+      MasterJobSid: detail.MasterJobSid,
+      HouseJobSid: detail.HouseJobSid,
+      DepartmentMasterSid: detail.DepartmentMasterSid,
+      Remarks: detail.Remarks
+    };
+  });
 
   // Add others
   payload.VoucherOthers = {
@@ -2186,7 +2196,6 @@ get isDraft(): boolean {
   onCurrencyChange(event: any): void {
   console.log('=== onCurrencyChange START ===');
 
-  // Ensure form is initialized
   if (!this.vendorInvoiceForm) {
     console.warn('Form not initialized yet');
     return;
@@ -2206,9 +2215,16 @@ get isDraft(): boolean {
     return;
   }
 
+  // Update CurrencyMasterSid in the form
+  this.vendorInvoiceForm.patchValue({
+    CurrencyMasterSid: selectedCurrency.CurrencyMasterSid
+  }, { emitEvent: false });
+
   // If currency is different from company currency, fetch exchange rate
   if (this.currentCurrency !== selectedCurrency.CurrencyMasterSid) {
-    this.fetchExchangeRate(this.currentCurrencyCode, selectedCurrency.currencyCode);
+    // Get currency code from selected currency for API call
+    const selectedCurrencyCode = selectedCurrency.currencyCode;
+    this.fetchExchangeRate(this.currentCurrencyCode, selectedCurrencyCode);
   } else {
     const exchangeRateControl = this.vendorInvoiceForm.get('ExchangeRate');
     if (exchangeRateControl) {
@@ -2216,7 +2232,6 @@ get isDraft(): boolean {
     }
     
     this.vendorInvoiceForm.patchValue({
-      CurrencyCode: selectedCurrency.currencyCode,
       ExchangeRate: 1
     }, { emitEvent: false });
   }
@@ -2224,7 +2239,6 @@ get isDraft(): boolean {
   console.log('=== onCurrencyChange END ===');
   this.recalculateAllRows();
 }
-
 // Add this new method to fetch exchange rate
 fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
   const payload = {
@@ -2278,10 +2292,9 @@ onExchangeRateBlur(): void {
 }
 
 checkAndDisableExchangeRate(): void {
-  const currencyCode = this.vendorInvoiceForm.get('CurrencyCode')?.value;
-  const currentCurrencyCode = this.currentCompany?.currencyMaster?.currencyCode;
+  const currencyMasterSid = this.vendorInvoiceForm.get('CurrencyMasterSid')?.value;
   
-  if (currencyCode === currentCurrencyCode) {
+  if (currencyMasterSid === this.currentCurrency) {
     this.vendorInvoiceForm.get('ExchangeRate')?.disable();
     this.vendorInvoiceForm.get('ExchangeRate')?.setValue(1);
   } else {
@@ -2524,6 +2537,12 @@ openEmail() {
   modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
   modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
 }
+getCurrencyCode(currencyMasterSid: number): string {
+  if (!currencyMasterSid) return '';
+  const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencyMasterSid);
+  return currency?.currencyCode || '';
+}
+
 
 
 }

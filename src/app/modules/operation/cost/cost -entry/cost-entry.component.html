@@ -419,7 +419,7 @@
                     <input *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid" type="text"
                       [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''" class="custom-input-field sm" readonly>
                     <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
-                      [routerLink]="['/operation/invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
+                      [routerLink]="['/operation/vendor-invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
                       class="voucher-number-link" title="View Vendor Invoice">
                       {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
                     </a>
