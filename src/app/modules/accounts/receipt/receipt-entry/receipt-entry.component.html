@@ -71,7 +71,7 @@
 
      <!-- Button Section -->
 
-            <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-0'">
+            <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
                 <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
 
                  <div class="col-md-4">
@@ -136,14 +136,14 @@
         <div class="row">
             <div [ngClass]="{'col-md-12': receiptForm.get('CashOrBank')?.value,'col-md-8 pe-md-0': !receiptForm.get('CashOrBank')?.value}">
                 <div class="card h-100 mb-0">
-                    <div class="card-body pb-0">
+                    <div class="card-body pb-1">
                         <div class="row">
                             <!-- Receipt No. -->
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="VoucherNumber">
-                                <label for="text-input" class="input-label"><span>Receipt No.</span></label>
+                                <label for="text-input" class="input-label" style="font-size: 14px;"><span>Receipt No.</span></label>
                             </div>
                          </aside>
 
@@ -158,7 +158,7 @@
                                 <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Receipt Date</label>
+                            <label class="input-label" style="font-size: 14px;">Receipt Date</label>
                         </div>
                     </aside>
 
@@ -168,7 +168,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="Narration">
-                            <label for="text-input" class="input-label">Narration <span
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Narration <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
@@ -180,7 +180,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="Remarks">
-                            <label for="text-input" class="input-label">Remarks <span
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Remarks <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
@@ -195,7 +195,7 @@
                                 (keydown.enter)="toggleCashOrBank($event)" (click)="toggleCashOrBank($event)">
                                 <!-- <label for="" class="form-check-label sm">Cash or Bank <span
                                         class="text-danger"></span></label> -->
-                                <label class="form-check-label sm" for="paymentMode">
+                                <label class="form-check-label sm" for="paymentMode" style="font-size: 14px;">
                                  Payment : <b class="text-warning">
                                         {{ receiptForm.get('CashOrBank')?.value ? 'Cash' : 'Bank' }}
                                     </b>
@@ -213,7 +213,7 @@
                                     [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid"
                                 >
                                 </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label">Cash <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label"  style="font-size: 14px;">Cash <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 
@@ -225,7 +225,7 @@
                                     [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
                                     [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
                                 </dofi-searchable-dropdown>
-                                <label for="text-input" class="input-label">Bank<span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label" style="font-size: 14px;">Bank<span class="text-danger">*</span></label>
                             </div>
                         </aside>
 
@@ -240,7 +240,7 @@
                                 [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
                                 (itemSelected)="onCurrencyChange($event)">
                             </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label">Currency <span
+                            <label for="text-input" class="input-label"  style="font-size: 14px;">Currency <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
@@ -250,7 +250,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="ExchangeRate">
-                            <label for="text-input" class="input-label">Ex Rate <span
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Ex Rate <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
@@ -266,7 +266,7 @@
                                 [labelFields]="CustomerLookupConfig.labelFields" bindLabel="CustomerName"
                                 bindValue="CustomerBranchSid" (itemSelected)="onPartyChange($event)">
                             </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Party <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 
@@ -276,7 +276,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="BankPartyName">
-                            <label for="text-input" class="input-label">Received From</label>
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Received From</label>
                         </div>
                     </aside>
 
@@ -286,7 +286,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="PartyAddress">
-                            <label for="text-input" class="input-label">Address</label>
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Address</label>
                         </div>
                     </aside>
 
@@ -297,7 +297,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="GST_VAT">
-                            <label for="text-input" class="input-label">{{(currentUserCountry === 'india' ? 'GST No.' :
+                            <label for="text-input" class="input-label" style="font-size: 14px;">{{(currentUserCountry === 'india' ? 'GST No.' :
                                 (currentUserCountry ? 'VAT No.' : 'GST No./VAT No.'))}}</label>
                         </div>
                         </aside>
@@ -316,10 +316,10 @@
                         <div class="row">
                             <!-- Inst No. -->
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="InstrumentNumber">
-                            <label for="text-input" class="input-label">Inst No. <span
+                                <div class="custom-form-group" >
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"style="width: 200px;"
+                                formControlName="InstrumentNumber" >
+                            <label for="text-input" class="input-label"style="font-size: 14px;">Inst No. <span
                                     class="text-danger">*</span></label>
                              </div>
                             </aside>
@@ -333,9 +333,10 @@
                                 [items]="paymentModes" bindLabel="label" 
                                 bindValue="value"
                                 formControlName="InstrumentMode"
+                                 style="width: 200px;"
                             >
                             </ng-select>
-                            <label for="text-input" class="input-label">Inst Mode <span
+                            <label for="text-input" class="input-label"style="font-size: 14px;">Inst Mode <span
                                     class="text-danger">*</span></label>
                               </div>
                         </aside>
@@ -351,13 +352,14 @@
                                     #d2="ngbDatepicker" formControlName="InstrumentDate"
                                     (click)="d2.toggle()" 
                                     (keydown.arrowDown)="d2.open()" readonly 
+                                    style="width: 150px;"
                                 />
                                 <button 
                                     class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button"
                                 >
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Inst Date <span class="text-danger">*</span>
+                            <label class="input-label"style="font-size: 14px;">Inst Date <span class="text-danger">*</span>
                             </label>
 
                         </div>
@@ -368,12 +370,12 @@
                       <aside class="col-md-6">
                         <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker style="font-size: 14px; width:130px"
                                     #d3="ngbDatepicker" formControlName="ClearanceDate" (click)="d3.toggle()" (keydown.arrowDown)="d3.open()" readonly/>
                                 <button class="btn  bi bi-calendar3 " (click)="d3.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Clearance Date</label>
+                            <label class="input-label"style="font-size: 14px;">Clearance Date</label>
                         </div>
                     </aside>
 
@@ -393,7 +395,7 @@
                 <div class="pill-icon">
                     <i [class]="tab.icon"></i>
                 </div>
-                <span class="pill-label">{{ tab.name }}</span>
+                <span class="pill-label"style="font-size: 14px;">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
             <div class="text-end">
@@ -446,21 +448,21 @@
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                     <thead>
                         <tr class="bg-info text-center">
-                            <th class="bg-transparent text-light" width="3%"></th>
-                            <th class="bg-transparent text-light">Ledger Name <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Subledger <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Curr. <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Ex. Rate <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Curr. Amt <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Local Amt <span class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light">Narration</th>
-                            <th class="bg-transparent text-light">Cost Center</th>
-                            <th class="bg-transparent text-light">Profit Center</th>
-                            <th class="bg-transparent text-light">Dept</th>
-                            <th class="bg-transparent text-light">Charge</th>
-                            <th class="bg-transparent text-light">Master</th>
-                            <th class="bg-transparent text-light">House</th>
+                            <th class="bg-transparent text-light" width="3%" style="font-size: 14px;"></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Ledger Name <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Subledger <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Dr/Cr <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Curr. <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Ex. Rate <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Curr. Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Local Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Narration</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Cost Center</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Profit Center</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Dept</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Charge</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Master</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">House</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="detailItems">
@@ -489,7 +491,7 @@
                                     >
                                     </ng-select>
                                 </td>
-                                <td class="dofi-min-w-150">
+                                <td class="dofi-min-w-150" >
                                    <ng-select 
                                     [items]="ledgerList[i]" 
                                     bindLabel="SubledgerName" 
@@ -498,7 +500,7 @@
                                     appendTo="body"
                                     ></ng-select>
                                 </td>
-                                <td class="dofi-min-w-40">
+                                <td class="" >
                                     <ng-select 
                                         class="ng-select"
                                         [items]="CrDr"
@@ -508,7 +510,7 @@
                                         appendTo="body"
                                     ></ng-select>
                                 </td>
-                                <td class="dofi-min-w-50">
+                                <td class="dofi-min-w-50 text-center" >
                                     <dofi-searchable-dropdown 
                                         [items]="currencyList" 
                                         formControlName="CurrencyMasterSid" 
@@ -520,7 +522,7 @@
                                         (itemSelected)="onCurrencyChangeForEachRow($event,i)">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td class="dofi-min-w-70">
+                                <td class="dofi-min-w-70 ">
                                     <input 
                                         type="text" 
                                         formControlName="ExchangeRate"
@@ -530,7 +532,7 @@
                                         [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
                                     />
                                 </td>
-                                <td class="dofi-min-w-90">
+                                <td class="dofi-min-w-125">
                                     <input 
                                         type="text" 
                                         formControlName="Amount"
@@ -540,7 +542,7 @@
                                          [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
                                     />
                                 </td>
-                                <td class="dofi-min-w-90">
+                                <td class="dofi-min-w-125">
                                     <input 
                                         type="text" 
                                         formControlName="LocalAmount"
@@ -551,12 +553,13 @@
                                         readonly
                                     />
                                 </td>
-                                <td class="dofi-min-w-320">
+                                <td  >
                                     <input 
                                         type="text" 
                                         formControlName="Narration" 
                                         class="custom-input-field sm"
                                         [textWithNumbers]="200"
+                                        style="width: 280px;"
                                     />
                                 </td>
                                 <td class="dofi-min-w-100">
@@ -645,25 +648,25 @@
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                     <thead>
                         <tr class="bg-info  text-center">
-                            <th class="bg-transparent text-light">Voucher No</th>
-                            <th class="bg-transparent text-light">Voucher Type</th>
-                            <th class="bg-transparent text-light">Voucher Date</th>
-                            <th class="bg-transparent text-light"> Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex. Rate</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Voucher No.</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Type</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Voucher Date</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;"> Dr/Cr</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Curr.</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Ex. Rate</th>
                             <!-- @if(!isEditMode){ -->
-                            <th class="bg-transparent text-light">Curr. Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Curr. Amt</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Local Amt</th>
                             @if(!isPosted){
-                            <th class="bg-transparent text-light">OS Curr. Amt</th>
-                            <th class="bg-transparent text-light">OS Local Amt</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">OS Curr. Amt</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">OS Local Amt</th>
                             }
                             <!-- } -->
-                            <th class="bg-warning text-light">Curr.</th>
-                            <th class="bg-warning text-light">Ex. Rate</th>
-                            <th class="bg-warning text-light">Curr Amt</th>
-                            <th class="bg-warning text-light">Local Amt</th>
-                            <th class="bg-warning text-light">TDS Amt</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">Curr.</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">Ex. Rate</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">Curr Amt</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">Local Amt</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">TDS Amt</th>
                             @if(!isPosted){
                             <th class="bg-warning text-light">Balance</th>
                             }
@@ -675,7 +678,7 @@
 
                             <!-- Voucher No -->
                             <td>
-                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" />
+                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" />
                             </td>
 
                             <!-- Voucher Type -->
@@ -687,7 +690,7 @@
                             <td>
                                 <div class="custom-form-group custom-form-group-select-date mt-0">
                                     <div class="input-group">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d4="ngbDatepicker"
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d4="ngbDatepicker"style="width:100px"
                                             (click)="d4.toggle()" formControlName="voucherDate" container="body" />
                                         <!-- <button class="btn btn-sm" type="button" (click)="d4.toggle()">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -697,30 +700,30 @@
                             </td>
 
                             <!-- Dr / Cr -->
-                            <td>
-                                <input type="text" formControlName="drCr" class="custom-input-field sm" />
+                            <td >
+                                <input type="text" formControlName="drCr" class="custom-input-field sm" style="width: 30px;" />
                             </td>
 
                             <!-- Currency -->
-                            <td>
-                                <input type="text" formControlName="curr" class="custom-input-field sm" />
+                            <td >
+                                <input type="text" formControlName="curr" class="custom-input-field sm" style="width: 50px;" />
                             </td>
 
                             <!-- ExRate -->
-                            <td>
-                                <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision
+                            <td >
+                                <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision style="width: 75px;"
                                     [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('curr')?.value)" />
                             </td>
                             <!-- @if(!isEditMode){ -->
                             <!-- Current Amount -->
                             <td>
-                                <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision style="width:100px"
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
 
                             <!-- Local Amount -->
                             <td>
-                                <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision  style="width:100px"
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
                             
@@ -740,7 +743,7 @@
                             }
 
                             <!-- Match Curr -->
-                            <td class="dofi-min-w-80">
+                            <td class="dofi-min-w-50">
                                 <dofi-searchable-dropdown 
                                     [items]="currencyList" formControlName="matchCurr" 
                                     [placeholder]="''"
@@ -760,6 +763,7 @@
                                     [DecimalPrecisionBefore]="4" 
                                     [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('matchCurr')?.value)"
                                     (input) = "calculateLocalAmountForMatchRow(i)"
+                                    style="width: 70px;"
                                 />
                             </td>
 
