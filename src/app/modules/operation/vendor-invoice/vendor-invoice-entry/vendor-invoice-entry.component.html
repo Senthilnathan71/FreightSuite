@@ -1,4 +1,3 @@
-<!-- vendor-invoice-entry.component.html -->
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
@@ -10,32 +9,29 @@
         <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
           'Create Vendor Invoice') }}</h5>
       </div>
-      
+
       <div class="col-md-8 pb-1">
         <div
           class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-             <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170" (click)="openSearchCostsModal()">
-              <i class="fas fa-search me-2"></i>Search Pending Costs
-            </button>
-             
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-        (click)="openVendorInvoiceUploadModal()" 
-        [disabled]="isViewMode">
-  <i class="fas fa-upload me-1"></i> Upload
-</button>
- <button  type="button" 
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-            (click)="onFinalSave()" 
-            [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'" >
-      <i class="fas fa-check-circle me-1"></i> Post
-    </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170"
+            (click)="openSearchCostsModal()">
+            <i class="fas fa-search me-2"></i>Search Pending Costs
+          </button>
 
-    <button *ngIf="isViewMode && isPosted" type="button" 
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-            disabled>
-      <i class="fas fa-check-circle me-1"></i> Posted
-    </button>
-    
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="openVendorInvoiceUploadModal()" [disabled]="isViewMode">
+            <i class="fas fa-upload me-1"></i> Upload
+          </button>
+          <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
+            [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'">
+            <i class="fas fa-check-circle me-1"></i> Post
+          </button>
+
+          <button *ngIf="isViewMode && isPosted" type="button"
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled>
+            <i class="fas fa-check-circle me-1"></i> Posted
+          </button>
+
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
@@ -49,21 +45,22 @@
             (click)="onSubmit()" [disabled]="vendorInvoiceForm.invalid || isSaving">
             <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
           </button>
-           <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
-          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-            <i class="fas fa-ellipsis-v"></i>
-          </button>
-          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -134,23 +131,17 @@
               </div>
             </aside>
 
-           <aside class="col-md-2">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorInvoiceForm.get('PartyName')?.value">
-    <dofi-searchable-dropdown 
-      [items]="vendorList" 
-      formControlName="PartyName"
-      placeholder="" 
-      [displayFields]="customerLookupConfig.displayFields"
-      [displayLabels]="customerLookupConfig.displayLabels"
-      [labelFields]="customerLookupConfig.labelFields" 
-      bindLabel="CustomerName"
-      bindValue="CustomerName" 
-      (itemSelected)="onVendorChange($event)">
-    </dofi-searchable-dropdown>
-    <label class="input-label">Vendor <span class="text-danger"></span></label>
-  </div>
-</aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!vendorInvoiceForm.get('PartyName')?.value">
+                <dofi-searchable-dropdown [items]="vendorList" formControlName="PartyName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
+                  [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                  bindLabel="CustomerName" bindValue="CustomerName" (itemSelected)="onVendorChange($event)">
+                </dofi-searchable-dropdown>
+                <label class="input-label">Vendor <span class="text-danger"></span></label>
+              </div>
+            </aside>
 
             <!-- Vendor Name (readonly) -->
             <!-- <aside class="col-md-3">
@@ -168,32 +159,27 @@
 
             <!-- Vendor Address (readonly) -->
             <!-- Vendor Branch Selection -->
-<aside class="col-md-2">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorInvoiceForm.get('CustomerBranchSid')?.value">
-    <ng-select 
-  [items]="vendorBranchList"
-  bindLabel="Address"
-  bindValue="CustomerBranchSid"
-  formControlName="CustomerBranchSid"
-  (change)="onVendorBranchChange($event)"
-  [appendTo]="'body'">
-  <ng-template ng-option-tmp let-item="item">
-    <div>
-      <strong>{{ item.CustomerName }}</strong><br>
-      <small>{{ item.Address }}</small>
-    </div>
-  </ng-template>
-</ng-select>
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!vendorInvoiceForm.get('CustomerBranchSid')?.value">
+                <ng-select [items]="vendorBranchList" bindLabel="Address" bindValue="CustomerBranchSid"
+                  formControlName="CustomerBranchSid" (change)="onVendorBranchChange($event)" [appendTo]="'body'">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div>
+                      <strong>{{ item.CustomerName }}</strong><br>
+                      <small>{{ item.Address }}</small>
+                    </div>
+                  </ng-template>
+                </ng-select>
 
-<!-- Display selected address below the dropdown -->
-<!-- <div *ngIf="vendorInvoiceForm.get('PartyAddress').value">
+                <!-- Display selected address below the dropdown -->
+                <!-- <div *ngIf="vendorInvoiceForm.get('PartyAddress').value">
   <label>Vendor Address:</label>
   <div>{{ vendorInvoiceForm.get('PartyAddress').value }}</div>
 </div> -->
-<label class="input-label">Vendor Address <span class="text-danger"></span></label>
-  </div>
-</aside>
+                <label class="input-label">Vendor Address <span class="text-danger"></span></label>
+              </div>
+            </aside>
 
 
             <!-- GST No (readonly) -->
@@ -202,39 +188,40 @@
               <div class="custom-form-group">
                 <input type="text" id="GSTNo" formControlName="GSTNo" placeholder="" class="custom-input-field sm"
                   readonly />
-                <label for="GSTNo" class="input-label">GST No.</label>
+                <label class="input-label" *ngIf="currentUserCountry === 'india'">GST No</label>
+                <label class="input-label" *ngIf="currentUserCountry !== 'india'">VAT No</label>
               </div>
             </aside>
-           
-<!-- GST Type -->
-<aside class="col-md-2">
-  <div class="custom-form-group" >
-    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
-    <label class="input-label">GST Type</label>
-  </div>
-</aside>
 
-           <!-- Add this temporarily for debugging -->
-<aside class="col-md-2">
-  <div class="custom-form-group">
-    <input type="text" formControlName="PlaceOfSupply" placeholder="" 
-      class="custom-input-field sm" readonly />
-    <label class="input-label">Place of Supply</label>
-  </div>
-  
-</aside>
-<!-- Invoice Type with auto-determination -->
-<aside class="col-md-2">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
-    <ng-select [items]="gstTypes" bindLabel="name" bindValue="id" 
-      formControlName="InvoiceType" [readonly]="true">
-    </ng-select>
-    <label class="input-label">Invoice Type</label>
-  </div>
-</aside>
+            <!-- GST Type -->
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
+                <label class="input-label">GST Type</label>
+              </div>
+            </aside>
 
-            <!-- Currency -->
+            <!-- Add this temporarily for debugging -->
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="PlaceOfSupply" placeholder="" class="custom-input-field sm"
+                  readonly />
+                <label class="input-label">Place of Supply</label>
+              </div>
+
+            </aside>
+            <!-- Invoice Type with auto-determination -->
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
+                <ng-select [items]="gstTypes" bindLabel="name" bindValue="id" formControlName="InvoiceType"
+                  [readonly]="true">
+                </ng-select>
+                <label class="input-label">Invoice Type</label>
+              </div>
+            </aside>
+
+           <!-- Currency Dropdown -->
 <aside class="col-md-2">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorInvoiceForm.get('CurrencyMasterSid')?.value">
@@ -245,9 +232,8 @@
       [displayFields]="CurrencyLookupConfig.displayFields"
       [displayLabels]="CurrencyLookupConfig.displayLabels"
       [labelFields]="CurrencyLookupConfig.labelFields" 
-      bindLabel="currencyCode"
-      bindValue="CurrencyMasterSid"
-      (itemSelected)="onCurrencyChange($event)">
+      [bindValue]="'CurrencyMasterSid'"
+      (itemSelected)="onHeaderCurrencyChange($event)">
     </dofi-searchable-dropdown>
     <label for="CurrencyMasterSid" class="input-label">
       Currency <span class="text-danger">*</span>
@@ -255,21 +241,23 @@
   </div>
 </aside>
 
-            <!-- Exchange Rate -->
-            <aside class="col-md-2">
-              <div class="custom-form-group">
-                <input type="Text" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
-                  class="custom-input-field sm"  (focus)="onExchangeRateFocus()"
-      (blur)="onExchangeRateBlur()"
-      (input)="onExchangeRateChange()"  step="0.01"
-                  [class.is-invalid]="isFieldInvalid('ExchangeRate')" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="5"
-                max="9999999.999"/>
-                <label for="ExchangeRate" class="input-label">
-                  Ex. Rate <span class="text-danger">*</span>
-                </label>
-              </div>
-            </aside>
-
+          <!-- Exchange Rate -->
+<aside class="col-md-2">
+  <div class="custom-form-group">
+    <input 
+      type="number" 
+      id="ExchangeRate" 
+      formControlName="ExchangeRate" 
+      placeholder=""
+      class="custom-input-field sm" 
+      step="0.0001"
+      [class.is-invalid]="isFieldInvalid('ExchangeRate')"
+      [attr.disabled]="vendorInvoiceForm.get('ExchangeRate')?.disabled ? '' : null">
+    <label for="ExchangeRate" class="input-label">
+      Ex. Rate <span class="text-danger">*</span>
+    </label>
+  </div>
+</aside>
 
             <!-- Bill Amount (readonly calculated) -->
             <aside class="col-md-2">
@@ -335,7 +323,7 @@
               </div>
             </aside>
 
-        
+
 
             <!-- Remarks -->
             <aside class="col-md-2">
@@ -349,7 +337,7 @@
             <!-- Status -->
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!vendorInvoiceForm.get('Status')?.value">
+                [class.filled]="!!vendorInvoiceForm.get('Status')?.value">
                 <ng-select [items]="statusList" bindLabel="name" bindValue="value" formControlName="Status"
                   appendTo="body" class="ng-select">
                 </ng-select>
@@ -366,134 +354,183 @@
               <i class="fas fa-plus me-2"></i>Add Row
             </button>
           </div> -->
-         
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <h5 class="mb-0"> Vendor Invoice Line Items</h5>
-              <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button" [disabled]="vendorInvoiceData?.PostStatus=== 'P'">
-                <i class="fas fa-plus me-1"></i>Add Charge
-              </button>
-            </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h5 class="mb-0"></h5>
+            <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button"
+              [disabled]="vendorInvoiceData?.PostStatus=== 'P'">
+              <i class="fas fa-plus me-1"></i>Add Charge
+            </button>
+          </div>
 
           <!-- Detail Grid -->
-        <!-- Details Grid -->
-<div class="row bg-white rounded shadow-sm mx-auto">
-  <div class="col-12 px-0">
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover table-sm mb-0 text-center">
-        <thead class="table-header-booking">
-          <tr class="align-middle bg-info">
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px; border-top-left-radius: 10px;"></th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
-            <!-- India GST Columns -->
-            <ng-container *ngIf="isIndiaGST">
-              <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
-            </ng-container>
-            <!-- VAT Column for non-India countries -->
-            <ng-container *ngIf="isVATMode">
-              <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
-            </ng-container>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
-             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
-          </tr>
-          <tr class="align-middle bg-info">
-            <!-- India GST Sub-headers -->
-            <ng-container *ngIf="isIndiaGST">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-            <!-- VAT Sub-headers -->
-            <ng-container *ngIf="isVATMode">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-          </tr>
-        </thead>
-        <tbody formArrayName="voucherDetails">
-          <ng-container *ngFor="let row of details.controls; let i = index">
-            <tr [formGroupName]="i">
-              <!-- Delete Button -->
-              <td>
-                <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
-                  <i class="fas fa-trash text-danger"></i>
-                </button>
-              </td>
-              <td>
-                <span style="font-weight: 600; color: black;">
-                  {{ i + 1 }}
-                </span>
-                </td>
+          <!-- Details Grid -->
+          <div class="row bg-white rounded shadow-sm mx-auto">
+            <div class="col-12 px-0">
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover table-sm mb-0 text-center">
+                  <!-- Replace the entire table header section with this: -->
+                  <thead class="table-header-booking">
+                    <tr class="align-middle bg-info">
+                      <th rowspan="2" class="text-center bg-transparent text-light"
+                        style="min-width: 30px; border-top-left-radius: 10px;"></th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">
+                        Description</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable
+                        Amt</th>
 
-              <!-- Charge -->
-              <td>
-                <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid" [placeholder]="''"
-                  [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
-                  [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'" 
-                  (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
-                </dofi-searchable-dropdown>
-              </td>
+                      <!-- Dynamic Tax Headers Based on Country and GST Type -->
+                      <ng-container *ngIf="currentUserCountry === 'india'">
+                        <!-- India GST Logic -->
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'CGST+SGST'">
+                          <!-- CGST+SGST for same state -->
+                          <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                          <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                        </ng-container>
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'IGST'">
+                          <!-- IGST for different state -->
+                          <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
+                        </ng-container>
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'B2C'">
+                          <!-- B2C - CGST only -->
+                          <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'EXWP' || vendorInvoiceForm.get('GSTType')?.value === 'EXWOP'">
+                          <!-- Export - No Tax Headers -->
+                        </ng-container>
+                      </ng-container>
 
-              <!-- Description -->
-              <td>
-                <input class="custom-input-field sm" formControlName="ChargeDescription" readonly>
-              </td>
+                      <!-- Non-India VAT Logic -->
+                      <ng-container *ngIf="currentUserCountry !== 'india'">
+                        <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
+                      </ng-container>
 
-              <!-- HSN/SAC -->
-              <td>
-                <!-- <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local
+                        Amount</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party
+                        Amount</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.
+                      </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light"
+                        style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
+                    </tr>
+
+                    <!-- Second Header Row for Tax Sub-headers -->
+                    <tr class="align-middle bg-info">
+                      <ng-container *ngIf="currentUserCountry === 'india'">
+                        <!-- India GST Sub-headers -->
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'CGST+SGST'">
+                          <!-- CGST+SGST sub-headers -->
+                          <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                          <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                          <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                          <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                        </ng-container>
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'IGST'">
+                          <!-- IGST sub-headers -->
+                          <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                          <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                        </ng-container>
+                        <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'B2C'">
+                          <!-- B2C sub-headers -->
+                          <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                          <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                        </ng-container>
+                      </ng-container>
+
+                      <!-- Non-India VAT Sub-headers -->
+                      <ng-container *ngIf="currentUserCountry !== 'india'">
+                        <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                        <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                      </ng-container>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="voucherDetails">
+                    <ng-container *ngFor="let row of details.controls; let i = index">
+                      <tr [formGroupName]="i">
+                        <!-- Delete Button -->
+                        <td>
+                          <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+                        <td>
+                          <span style="font-weight: 600; color: black;">
+                            {{ i + 1 }}
+                          </span>
+                        </td>
+
+                        <!-- Charge -->
+                        <td>
+                          <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid"
+                            [placeholder]="''" [displayFields]="chargeLookupConfig.displayFields"
+                            [displayLabels]="chargeLookupConfig.displayLabels"
+                            [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'"
+                            (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
+                          </dofi-searchable-dropdown>
+                        </td>
+
+                        <!-- Description -->
+                        <td>
+                          <input class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                        </td>
+
+                        <!-- HSN/SAC -->
+                        <td>
+                          <!-- <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
                   [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
                   [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
                 </dofi-searchable-dropdown> -->
-                <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
-                  placeholder="" formControlName="HSSACMasterSid" appendTo="body">
-                </ng-select>
-              </td>
+                          <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid" placeholder=""
+                            formControlName="HSSACMasterSid" appendTo="body">
+                          </ng-select>
+                        </td>
 
-              <!-- Unit -->
-              <td>
-                <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid"
-                  placeholder="" formControlName="ChargeUOMSid" appendTo="body">
-                </ng-select>
-              </td>
+                        <!-- Unit -->
+                        <td>
+                          <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid" placeholder=""
+                            formControlName="ChargeUOMSid" appendTo="body">
+                          </ng-select>
+                        </td>
 
-              <!-- No of Unit -->
-              <td>
-                <input type="number" min="0" class="custom-input-field sm"
-                  formControlName="NumberOfUnit" (input)="onDetailChange(i, 'NumberOfUnit')">
-              </td>
+                        <!-- No of Unit -->
+                        <td>
+                          <input type="number" min="0" class="custom-input-field sm" formControlName="NumberOfUnit"
+                            (input)="onDetailChange(i, 'NumberOfUnit')">
+                        </td>
 
-              <!-- Dr/Cr -->
-              <td>
-                <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
-                  bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
-              </td>
+                        <!-- Dr/Cr -->
+                        <td>
+                          <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]" bindLabel="name" bindValue="id"
+                            formControlName="DrCr" appendTo="body"></ng-select>
+                        </td>
 
-              <!-- Currency -->
-              <td>
+                        <!-- Currency -->
+                        <!-- Currency in Details Table -->
+<td>
   <dofi-searchable-dropdown 
     [items]="currencyList" 
-    formControlName="CurrencyMasterSid" 
-    [placeholder]="''"
-    [displayFields]="CurrencyLookupConfig.displayFields" 
+    formControlName="CurrencyMasterSid"
+    placeholder=""
+    [displayFields]="CurrencyLookupConfig.displayFields"
     [displayLabels]="CurrencyLookupConfig.displayLabels"
     [labelFields]="CurrencyLookupConfig.labelFields" 
     [bindValue]="'CurrencyMasterSid'"
@@ -501,196 +538,226 @@
   </dofi-searchable-dropdown>
 </td>
 
-              <!-- Rate -->
-              <td>
-                <input type="number" step="0.01" class="custom-input-field sm"
-                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-              </td>
+                        <!-- Rate -->
+                        <td>
+                          <input type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
+                            (input)="onDetailChange(i, 'Rate')">
+                        </td>
 
-              <!-- Exchange Rate -->
-              <td>
-                <input type="number" step="0.0001" class="custom-input-field sm"
-                  formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-              </td>
+                        <!-- Exchange Rate -->
+                        <td>
+                          <input type="number" step="0.0001" class="custom-input-field sm"
+                            formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
+                        </td>
 
-              <!-- Amount -->
-              <td>
-                <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- Amount -->
+                        <td>
+                          <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat
+                            }}</span>
+                        </td>
 
-              <!-- Taxable Amount -->
-              <td>
-                <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- Taxable Amount -->
+                        <td>
+                          <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value |
+                            numberFormat }}</span>
+                        </td>
 
-              <!-- India GST Columns -->
-              <ng-container *ngIf="isIndiaGST">
-                <!-- CGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" " style="font-weight: 600; color: black;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- CGST Amount -->
-                <td>
-                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-                </td>
+                        <!-- India GST Columns -->
+                        <ng-container *ngIf="currentUserCountry === 'india'">
+                          <!-- CGST+SGST Scenario -->
+                          <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'CGST+SGST'">
+                            <!-- CGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex">
+                                  <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                                    (input)="onDetailChange(i, 'TaxPercentage1')"  readonly> 
+                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                </div>
+                              </div>
+                            </td>
+                            <!-- CGST Amount -->
+                            <td>
+                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                                numberFormat }}</span>
+                            </td>
+                            <!-- SGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex gap-1">
+                                  <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
+                                    (input)="onDetailChange(i, 'TaxPercentage2')" readonly>
+                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                </div>
+                              </div>
+                            </td>
+                            <!-- SGST Amount -->
+                            <td>
+                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value |
+                                numberFormat }}</span>
+                            </td>
+                          </ng-container>
 
-                <!-- SGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex gap-1">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
-                        (input)="onDetailChange(i, 'TaxPercentage2')">
-                      <span class="" style="font-weight: 600; color: black;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- SGST Amount -->
-                <td>
-                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
-                </td>
+                          <!-- IGST Scenario -->
+                          <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'IGST'">
+                            <!-- IGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex gap-1">
+                                  <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                                    (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
+                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                </div>
+                              </div>
+                            </td>
+                            <!-- IGST Amount -->
+                            <td>
+                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                                numberFormat }}</span>
+                            </td>
+                          </ng-container>
 
-                <!-- IGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex gap-1">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
-                        (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                      <span class="" style="font-weight: 600; color: black;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- IGST Amount -->
-                <td>
-                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
-                </td>
-              </ng-container>
+                          <!-- B2C Scenario -->
+                          <ng-container *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'B2C'">
+                            <!-- CGST Rate (for B2C) -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex">
+                                  <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                                    (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
+                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                </div>
+                              </div>
+                            </td>
+                            <!-- CGST Amount (for B2C) -->
+                            <td>
+                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                                numberFormat }}</span>
+                            </td>
+                          </ng-container>
 
-              <!-- VAT Columns for non-India countries -->
-              <ng-container *ngIf="isVATMode">
-                <!-- VAT % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" " style="font-weight: 600; color: black;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- VAT Amount -->
-                <td>
-                  <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-                </td>
-              </ng-container>
+                          <!-- Export (No Tax Columns) -->
+                          <ng-container
+                            *ngIf="vendorInvoiceForm.get('GSTType')?.value === 'EXWP' || vendorInvoiceForm.get('GSTType')?.value === 'EXWOP'">
+                            <!-- No tax columns for export -->
+                          </ng-container>
+                        </ng-container>
 
-              <!-- Local Amount -->
-              <td>
-                <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- Non-India VAT Columns -->
+                        <ng-container *ngIf="currentUserCountry !== 'india'">
+                          <!-- VAT Rate -->
+                          <td>
+                            <div class="input-group input-group-sm">
+                              <div class="d-flex">
+                                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                                  (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
+                                <span class="" style="font-weight: 600; color: black;">%</span>
+                              </div>
+                            </div>
+                          </td>
+                          <!-- VAT Amount -->
+                          <td>
+                            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat
+                              }}</span>
+                          </td>
+                        </ng-container>
 
-              <!-- Party Amount -->
-              <td>
-                <span style="font-weight: 600; color: black;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- Local Amount -->
+                        <td>
+                          <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat
+                            }}</span>
+                        </td>
 
-              <!-- MasterJobSid column -->
-<td style="min-width:200px;">
-  <dofi-searchable-dropdown 
-    [items]="masterJobList" 
-    formControlName="MasterJobSid" 
-    [placeholder]="''"
-    [displayFields]="masterJobLookupConfig.displayFields" 
-    [displayLabels]="masterJobLookupConfig.displayLabels"
-    [labelFields]="masterJobLookupConfig.labelFields" 
-    [bindValue]="'MasterJobSid'"
-    appendTo="body">
-  </dofi-searchable-dropdown>
-</td>
+                        <!-- Party Amount -->
+                        <td>
+                          <span style="font-weight: 600; color: black;">{{ row.get('PartyAmount')?.value | numberFormat
+                            }}</span>
+                        </td>
 
-              <!-- HouseJobSid -->
-              <td style="min-width:200px;">
-                <ng-select [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []" bindLabel="displayLabel"
-                  bindValue="HouseJobSid" formControlName="HouseJobSid" placeholder="" [clearable]="true"
-                  [searchable]="true" appendTo="body">
-                  <ng-template ng-option-tmp let-item="item">
+                        <!-- MasterJobSid column -->
+                        <td style="min-width:200px;">
+                          <dofi-searchable-dropdown [items]="masterJobList" formControlName="MasterJobSid"
+                            [placeholder]="''" [displayFields]="masterJobLookupConfig.displayFields"
+                            [displayLabels]="masterJobLookupConfig.displayLabels"
+                            [labelFields]="masterJobLookupConfig.labelFields" [bindValue]="'MasterJobSid'"
+                            appendTo="body">
+                          </dofi-searchable-dropdown>
+                        </td>
+
+                        <!-- HouseJobSid -->
+                        <td style="min-width:200px;">
+                          <ng-select [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
+                            bindLabel="displayLabel" bindValue="HouseJobSid" formControlName="HouseJobSid"
+                            placeholder="" [clearable]="true" [searchable]="true" appendTo="body">
+                            <ng-template ng-option-tmp let-item="item">
+                              <div>
+                                <strong style="font-weight: 600; color: black;">{{ item.HouseJobNumber }}</strong>
+                              </div>
+                            </ng-template>
+                            <ng-template ng-label-tmp let-item="item">
+                              {{ item.HouseJobNumber }}
+                            </ng-template>
+                          </ng-select>
+                        </td>
+                        <!-- Department Column -->
+                        <td style="min-width:200px;">
+                          <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="departmentList"
+                            formControlName="DepartmentMasterSid" [placeholder]="''"
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" [bindValue]="'DepartmentMasterSid'"
+                            appendTo="body">
+                          </dofi-searchable-dropdown>
+                          <span *ngIf="isEditMode">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totals Section -->
+          <div class="row mt-1">
+            <div class="col-md-4"></div>
+            <div class="col-md-8">
+
+              <div class="row">
+                <aside class="col-md-4">
+                  <div class="d-flex align-items-center gap-2">
                     <div>
-                      <strong style="font-weight: 600; color: black;">{{ item.HouseJobNumber }}</strong>
+                      <strong style="font-weight: 700; color: black;">Currency Amount : </strong>
                     </div>
-                  </ng-template>
-                  <ng-template ng-label-tmp let-item="item">
-                    {{ item.HouseJobNumber }}
-                  </ng-template>
-                </ng-select>
-              </td>
-               <!-- Department Column -->
-<td style="min-width:200px;">
-  <dofi-searchable-dropdown 
-    *ngIf="!isEditMode"
-    [items]="departmentList" 
-    formControlName="DepartmentMasterSid" 
-    [placeholder]="''"
-    [displayFields]="departmentLookupConfig.displayFields" 
-    [displayLabels]="departmentLookupConfig.displayLabels"
-    [labelFields]="departmentLookupConfig.labelFields" 
-    [bindValue]="'DepartmentMasterSid'"
-    appendTo="body">
-  </dofi-searchable-dropdown>
-  <span *ngIf="isEditMode">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span>
-</td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+                    <div style="font-weight: 600; color: black;">
+                      {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+                    </div>
+                  </div>
 
-<!-- Totals Section -->
-<div class="row mt-1">
-  <div class="col-md-4"></div>
-  <div class="col-md-8">
- 
-        <div class="row">
-        <aside class="col-md-4">
-          <div class="d-flex align-items-center gap-2">
-                <div>
-            <strong style="font-weight: 700; color: black;">Currency Amount : </strong>
-          </div>
-          <div style="font-weight: 600; color: black;">
-            {{ getTotalCurrencyAmount() | number:'1.2-2' }}
-          </div>
-          </div>
-      
-        </aside>
-         <aside class="col-md-4">
-          <div class="d-flex align-items-center gap-2">
-                <div>
-            <strong style="font-weight: 700; color: black;">Tax Amount : </strong>
-          </div>
-          <div style="font-weight: 600; color: black;">
-            {{ getTotalTaxAmount() | number:'1.2-2' }}
-          </div>
-          </div>
-      
-        </aside>
-         <aside class="col-md-4">
-          <div class="d-flex align-items-center gap-2">
-                <div>
-            <strong style="font-weight: 700; color: black;">Total Amount :</strong>
-          </div>
-          <div>
-            <strong style="font-weight: 600; color: black;">{{ getGrandTotal() | number:'1.2-2' }}</strong>
-          </div>
-          </div>
-      
-        </aside>
-        <!-- <table class="table table-sm table-borderless mb-0 w-100 align-middle" style="table-layout: fixed;">
+                </aside>
+                <aside class="col-md-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <div>
+                      <strong style="font-weight: 700; color: black;">Tax Amount : </strong>
+                    </div>
+                    <div style="font-weight: 600; color: black;">
+                      {{ getTotalTaxAmount() | number:'1.2-2' }}
+                    </div>
+                  </div>
+
+                </aside>
+                <aside class="col-md-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <div>
+                      <strong style="font-weight: 700; color: black;">Total Amount :</strong>
+                    </div>
+                    <div>
+                      <strong style="font-weight: 600; color: black;">{{ getGrandTotal() | number:'1.2-2' }}</strong>
+                    </div>
+                  </div>
+
+                </aside>
+                <!-- <table class="table table-sm table-borderless mb-0 w-100 align-middle" style="table-layout: fixed;">
           <tbody>
             <tr>
               <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
@@ -721,10 +788,10 @@
             </tr>
           </tbody>
         </table> -->
-      </div>
-     
-  </div>
-</div>
+              </div>
+
+            </div>
+          </div>
 
           <!-- TDS Section -->
           <!-- <div class="row bg-white rounded shadow-sm mx-auto mt-1" formGroupName="voucherTDS">
@@ -801,7 +868,8 @@
 <ng-template #searchCostsModal let-modal>
   <div class="modal-header modalHeaderpart">
     <h5 class="modal-title">Search and Select Pending Costs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeSearchCostsModal()"></button>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+      (click)="closeSearchCostsModal()"></button>
   </div>
   <div class="modal-body">
     <!-- Search Criteria -->
@@ -818,21 +886,19 @@
           </ng-select>
           <!-- <label class="input-label">Search By</label> -->
         </div>
-       
+
       </div>
       <div class="col-md-4">
         <div class="custom-form-group">
           <!-- <label class="form-label">Search Value</label> -->
-        <input type="text" class="custom-input-field sm" [(ngModel)]="searchValue"
-          placeholder="Enter search value" />
+          <input type="text" class="custom-input-field sm" [(ngModel)]="searchValue" placeholder="Enter search value" />
         </div>
-        
+
       </div>
       <div class="col-md-1">
-        
-        <button type="button" class="btn btn-info btn-sm" 
-                (click)="searchPendingCostsAction()"
-                [disabled]="searchResultsLoading" style="margin-top: 10px;">
+
+        <button type="button" class="btn btn-info btn-sm" (click)="searchPendingCostsAction()"
+          [disabled]="searchResultsLoading" style="margin-top: 10px;">
           <i class="fas fa-search me-1"></i>
           Search
         </button>
@@ -849,30 +915,26 @@
         <div class="row compact-form">
           <div class="col-md-6">
             <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="searchVendors" 
-              bindLabel="VendorName" 
-              [(ngModel)]="selectedVendorForCosts"
-              (change)="onVendorSelectForCosts($event)"
-              placeholder="Select vendor for all costs"
-              appendTo="body">
-              <ng-template ng-option-tmp let-item="item">
-                <div>
-                  <strong>{{ item.VendorName }}</strong>
-                  <br>
-                  <small class="text-muted">{{ item.VendorAddress }}</small>
-                </div>
-              </ng-template>
-            </ng-select>
-            <!-- <label class="input-label">Vendor</label> -->
+              <ng-select [items]="searchVendors" bindLabel="VendorName" [(ngModel)]="selectedVendorForCosts"
+                (change)="onVendorSelectForCosts($event)" placeholder="Select vendor for all costs" appendTo="body">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.VendorName }}</strong>
+                    <br>
+                    <small class="text-muted">{{ item.VendorAddress }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <!-- <label class="input-label">Vendor</label> -->
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
 
     <!-- Main Form Auto-population Info -->
-   <div *ngIf="selectedVendorForCosts" class="card mb-1">
+    <div *ngIf="selectedVendorForCosts" class="card mb-1">
       <div class="card-header bg-success text-white">
         <h6 class="mb-0">Vendor Information (Auto-populated in Main Form)</h6>
       </div>
@@ -880,34 +942,34 @@
         <div class="row compact-form">
           <div class="col-md-3">
             <div class="custom-form-group">
-            <!-- <label class="input-label">Vendor Name</label> -->
-            <div class="form-control form-control-sm bg-light">
-              {{ vendorInvoiceForm.get('PartyName')?.value || 'Not populated' }}
-            </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-             <div class="custom-form-group">
-            <!-- <label class="form-label fw-bold">Vendor Address</label> -->
-            <div class="form-control form-control-sm bg-light">
-              {{ vendorInvoiceForm.get('PartyAddress')?.value || 'Not populated' }}
-            </div>
+              <!-- <label class="input-label">Vendor Name</label> -->
+              <div class="form-control form-control-sm bg-light">
+                {{ vendorInvoiceForm.get('PartyName')?.value || 'Not populated' }}
+              </div>
             </div>
           </div>
           <div class="col-md-3">
             <div class="custom-form-group">
-            <!-- <label class="form-label fw-bold">GST No</label> -->
-            <div class="form-control form-control-sm bg-light">
-              {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
-            </div>
+              <!-- <label class="form-label fw-bold">Vendor Address</label> -->
+              <div class="form-control form-control-sm bg-light">
+                {{ vendorInvoiceForm.get('PartyAddress')?.value || 'Not populated' }}
+              </div>
             </div>
           </div>
           <div class="col-md-3">
             <div class="custom-form-group">
-            <!-- <label class="form-label fw-bold">Place of Supply</label> -->
-            <div class="form-control form-control-sm bg-light">
-              {{ vendorInvoiceForm.get('PlaceOfSupply')?.value || 'Not available' }}
+              <!-- <label class="form-label fw-bold">GST No</label> -->
+              <div class="form-control form-control-sm bg-light">
+                {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
+              </div>
             </div>
+          </div>
+          <div class="col-md-3">
+            <div class="custom-form-group">
+              <!-- <label class="form-label fw-bold">Place of Supply</label> -->
+              <div class="form-control form-control-sm bg-light">
+                {{ vendorInvoiceForm.get('PlaceOfSupply')?.value || 'Not available' }}
+              </div>
             </div>
           </div>
         </div>
@@ -922,9 +984,8 @@
           <small class="text-muted ms-2">Select costs to add to vendor invoice</small>
         </h6>
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" 
-                 (change)="toggleSelectAll($event)" 
-                 [checked]="isAllSelected()" />
+          <input class="form-check-input" type="checkbox" (change)="toggleSelectAll($event)"
+            [checked]="isAllSelected()" />
           <label class="form-check-label small fw-bold">Select All</label>
         </div>
       </div>
@@ -934,7 +995,7 @@
             <thead class="table-light sticky-top">
               <tr class="bg-info">
                 <th style="width: 40px;" class="sticky-top"></th>
-                
+
                 <th class="sticky-top">Vendor</th>
                 <th class="sticky-top">Charge Code</th>
                 <th class="sticky-top">Description</th>
@@ -948,12 +1009,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let cost of allPendingCosts; let i = index" 
-                  [class.table-warning]="cost.selected">
+              <tr *ngFor="let cost of allPendingCosts; let i = index" [class.table-warning]="cost.selected">
                 <td class="text-center">
                   <input type="checkbox" [(ngModel)]="cost.selected" />
                 </td>
-               
+
                 <td>
                   <div>
                     <strong>{{ cost.VendorName }}</strong>
@@ -978,8 +1038,8 @@
     </div>
 
     <!-- No Results Message -->
-    <div *ngIf="!searchResultsLoading && searchPerformed && allPendingCosts.length === 0" 
-         class="alert alert-info text-center">
+    <div *ngIf="!searchResultsLoading && searchPerformed && allPendingCosts.length === 0"
+      class="alert alert-info text-center">
       <i class="fas fa-info-circle me-2"></i>No pending costs found for the selected criteria.
     </div>
 
@@ -991,12 +1051,11 @@
       <p class="mt-2 text-muted">Searching pending costs...</p>
     </div>
   </div>
-  
+
   <div class="modal-footer py-1">
     <button type="button" class="btn btn-secondary" (click)="closeSearchCostsModal()">Close</button>
-    <button type="button" class="btn btn-info btn-sm" 
-            (click)="addSelectedCosts()"
-            [disabled]="getSelectedCosts().length === 0">
+    <button type="button" class="btn btn-info btn-sm" (click)="addSelectedCosts()"
+      [disabled]="getSelectedCosts().length === 0">
       <i class="fas fa-plus me-1"></i>
       Add Selected Costs ({{ getSelectedCosts().length }})
     </button>
