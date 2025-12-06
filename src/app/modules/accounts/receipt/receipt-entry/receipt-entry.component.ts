@@ -84,6 +84,8 @@ export class ReceiptEntryComponent implements OnInit {
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
+  totalDebits : number = 0;
+  totalCredits : number = 0;
   currentUserCountry: string;
   selectedTab = 'Detail';
   isSaving = false;
@@ -292,7 +294,12 @@ export class ReceiptEntryComponent implements OnInit {
       this.receiptForm.get(ctrl)?.valueChanges.subscribe(() => {
         this.updateDetailNarration();
       })
-    })
+    });
+    ["detailItems",'voucherMatchings'].forEach(ctrl => {
+      this.receiptForm.get(ctrl)?.valueChanges.subscribe(() => {
+        this.validateAmount();
+      })
+    });
     this.setupBillMatchingValidation()
     this.receiptForm.setValidators(consistentExchangeRatesValidator());
     this.receiptForm.updateValueAndValidity();
@@ -581,6 +588,11 @@ export class ReceiptEntryComponent implements OnInit {
 
     const totalCredit = detailItems.filter(d => d.DrCr === 'C')
       .reduce((sum, d) => sum + Number(d.LocalAmount || 0), 0);
+
+    if(this.totalDebits === 0 && this.totalCredits === 0){
+      this.appSettingService.showError('Please add at least one debit or credit amount');
+      return;
+    }
 
 
     if (totalDebit !== totalCredit) {
@@ -1181,7 +1193,11 @@ export class ReceiptEntryComponent implements OnInit {
       (resp: any) => {
         const row = this.detailItems.at(detailIndex) as FormGroup;
         const currencyCode = this.currencyList.find(c => c.CurrencyMasterSid === currencySid)?.currencyCode;
-        row.get('ExchangeRate')?.setValue(this.getFormattedExchangeRate(Number(resp) || 1, currencySid).toFixed(this.getExchangeRateDecimalPlaces(currencyCode)));
+        row.get('ExchangeRate')?.setValue(this.currencyFormatService.formatExchangeRate({
+          value : Number(resp || 1),
+          currencyCode
+        }));
+        
       }
     )
   }
@@ -1987,6 +2003,27 @@ export class ReceiptEntryComponent implements OnInit {
       console.log('No invalid controls found.');
     }
   }
+
+  validateAmount() {
+    let totalCredits = 0;
+    let totalDebits = 0;
+    (this.detailItems.getRawValue() || []).forEach( vd => {
+      console.log(vd)
+      if(vd.DrCr === 'Cr'){
+        totalCredits += Number(vd.matchCurrAmt) || 0;
+      } else {
+        totalDebits += Number(vd.matchCurrAmt) || 0;
+      }
+    })
+    this.totalCredits = totalCredits || 0;
+    this.totalDebits = totalDebits || 0;
+
+    console.log("TOTAL CALCULATION", {
+      CreditAmt: this.totalCredits,
+      DebitAmt: this.totalDebits,
+    });
+  }
+
 
   private setupBillMatchingValidation(): void {
     this.voucherMatchings.valueChanges

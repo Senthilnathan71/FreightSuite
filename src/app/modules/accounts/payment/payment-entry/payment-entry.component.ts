@@ -1185,7 +1185,10 @@ export class PaymentEntryComponent implements OnInit {
       (resp: any) => {
         const row = this.detailItems.at(detailIndex) as FormGroup;
         const currencyCode = this.currencyList.find(c => c.CurrencyMasterSid === currencySid)?.currencyCode;
-        row.get('ExchangeRate')?.setValue(this.getFormattedExchangeRate(Number(resp) || 1, currencySid).toFixed(this.getExchangeRateDecimalPlaces(currencyCode)));
+        row.get('ExchangeRate')?.setValue(this.currencyFormatService.formatExchangeRate({
+          value : Number(resp || 1),
+          currencyCode
+        }));
       }
     )
   }
