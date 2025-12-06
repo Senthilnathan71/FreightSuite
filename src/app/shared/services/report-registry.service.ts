@@ -315,6 +315,37 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn('Ageing Report component not yet created:', error);
     }
+
+     // Outstanding Report
+    try {
+      const { OutstandingReportComponent } = await import(
+        '../components/reports/outstanding-report/outstanding-report.component'
+      );
+
+      this.registerReport({
+        id: 'outstanding-report',
+        title: 'Oustanding Report',
+        component: OutstandingReportComponent,
+        filenameTemplate: 'Outstanding_Report_{LedgerName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Outstanding Report - Ledger: {LedgerName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Outstanding Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn('Outstanding Report component not yet created:', error);
+    }
   }
 
   /**

@@ -1,0 +1,119 @@
+<div class="print-a4">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Customer Outstanding as on {{ params?.ToDate | formatDate }}
+    </h4>
+
+    <!-- Header Fields -->
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
+                    <p class="ms-1">: {{ fullData?.branchesInvolved }}</p>
+                </div>
+        
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">Subledger </strong>
+                    <p class="ms-1">: {{ fullData?.subledgerName }}</p>
+                </div>
+            </div>
+        
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">Ledger </strong>
+                    <p class="ms-1"> : {{ fullData?.ledgerName }}</p>
+                </div>
+        
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
+                    <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+                </div>
+            </div>
+        
+        
+        
+        </div>
+       
+    
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Voucher Date</th>
+                        <th class="bg-transparent text-light text-center">Voucher Type</th>
+                        <th class="bg-transparent text-light text-center">Voucher No</th>
+                        <th class="bg-transparent text-light">Master</th>
+                        <th class="bg-transparent text-light">House</th>
+                        <th class="bg-transparent text-light">HBL No</th>
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light">Description</th>
+                        <th class="bg-transparent text-light">Salesperson</th>
+                        <th class="bg-transparent text-light">Dr/Cr</th>
+                        <th class="bg-transparent text-light">Cur</th>
+                        <th class="bg-transparent text-light">Amt</th>
+                        <th class="bg-transparent text-light">Local Amt</th>
+                        <th class="bg-transparent text-light">O/S Currency Amt</th>
+                        <th class="bg-transparent text-light">O/S Local Amt</th>
+                        <th class="bg-transparent text-light">Cumultive</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let item of fullData?.transactions">
+                        <td>{{item?.voucherDate | formatDate}}</td>
+                        <td>{{item?.voucherType}}</td>
+                        <td>{{item?.voucherNumber}}</td>
+                        <td>{{item?.MasterJobNumber}}</td>
+                        <td></td>
+                        <td>{{item?.HouseJobNumber}}</td>
+                        <td>{{item?.deptname}}</td>
+                        <td>{{item?.chargeDescription}}</td>
+                        <td>{{getSalesmanById(item?.salesmanSid)}}</td>
+                        <td>{{item?.drCr}}</td>
+                        <td>{{item?.currencyCode}}</td>
+                        <td style="text-align: right;">{{item?.originalLocalAmount}}</td>
+                        <td style="text-align: right;">{{item?.originalCurrencyAmount}}</td>
+                        <td style="text-align: right;">{{item?.outstandingCurrencyAmount}}</td>
+                        <td style="text-align: right;">{{item?.outstandingLocalAmount}}</td>
+                        <td style="text-align: right;">{{item?.outstandingLocalAmount}}</td>
+                    </tr>
+                    <tr class="fw-bold bg-light">
+                        <td colspan="11" class="text-end">TOTAL :</td>
+                        <!-- Total Amount (originalLocalAmount) -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') }}</td>
+
+                        <!-- Total Local Amount (originalCurrencyAmount) -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') }}</td>
+
+                        <!-- Total O/S Currency -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') }}</td>
+
+                        <!-- Total O/S Local -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingLocalAmount') }}</td>
+
+                        <!-- Cumulative Total (same as total outstanding local) -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingLocalAmount') }}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <!-- <div class="pt-2">
+                Note:
+                <ul>
+                    <li>Credit Days and Credit Limit are taken from Customer Credit Request. If multiple branches exist,
+                        then branch with the highest credit limit is considered.</li>
+                    <li>Advance amounts are not included in the ageing buckets; they are recorded under On Account.</li>
+                </ul>
+            </div> -->
+        </div>
+    </div>
+</div>

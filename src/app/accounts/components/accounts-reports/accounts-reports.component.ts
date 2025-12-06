@@ -145,9 +145,9 @@ export class AccountsReportsComponent implements OnInit {
 
     console.log('Opening report with payload:', this.reportParameters);
 
-    if (this.selectedReport.ReportName === 'ageing-report') {
+    if (this.selectedReport.ReportName) {
       this.reportService.openReportModal(
-        'ageing-report',
+        this.selectedReport.ReportName,
         undefined,
         this.reportParameters,
       );

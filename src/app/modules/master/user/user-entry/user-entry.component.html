@@ -565,24 +565,30 @@
           <aside
             class="col-4 d-flex align-items-center justify-content-end px-4"
           >
-            <div class="form-check">
+         <div class="form-check">
+          <div class="d-flex justify-content-end align-items-center gap-1">
               <input
-                type="checkbox"
-                class="form-check-input"
-                name="defaultCompany"
-                formControlName="IsDefault"
-                (click)="toggleDefaultCompany(companyIndex, $event)"
-                (keydown.enter)="toggleDefaultCompany(companyIndex, $event)"
-              />
-              <label class="form-check-label text-white small">Default</label>
-              <div *ngIf="userCompanyMaster?.errors">
-                <div class="error-message">
-                  @if(userCompanyMaster?.hasError('atLeastOneDefaultCompany')){
-                  <div>At least one company must have 'Default' selected</div>
-                  }
-                </div>
-              </div>
-            </div>
+    type="checkbox"
+    class="form-check-input"
+    name="defaultCompany"
+    formControlName="IsDefault"
+    (click)="toggleDefaultCompany(companyIndex, $event)"
+    (keydown.enter)="toggleDefaultCompany(companyIndex, $event)"
+  />
+
+  <label class="form-check-label text-white small">Default</label>
+          </div>
+
+
+  <!-- Error shown directly below the checkbox -->
+  <div
+    *ngIf="userCompanyMaster?.hasError('atLeastOneDefaultCompany')"
+    style="color: red; font-size: 12px;"
+  >
+    At least one company must have 'Default' selected
+  </div>
+</div>
+
           </aside>
         </div>
 
@@ -592,16 +598,16 @@
               <table class="table table-sm no-wrap align-middle mb-0">
                 <thead>
                   <tr>
-                    <th scope="col" style="border-style: none" width="10%">
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="10%">
                       Sno.
                     </th>
-                    <th scope="col" style="border-style: none" width="60%">
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="60%">
                       Branch Name
                     </th>
-                    <th scope="col" style="border-style: none" width="15%">
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="15%">
                       Access
                     </th>
-                    <th scope="col" style="border-style: none" width="15%">
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="15%">
                       Default
                     </th>
                   </tr>
@@ -678,7 +684,7 @@
                 </tbody>
               </table>
               <div *ngIf="userBranchMaster(companyIndex)?.errors">
-                <div class="error-message">
+                <div style="color: red; font-size: 12px;text-align: right;">
                   @if(userBranchMaster(companyIndex)?.hasError('noAccess')){
                   <div>At least one branch must have 'Access' ticked.</div>
                   }
