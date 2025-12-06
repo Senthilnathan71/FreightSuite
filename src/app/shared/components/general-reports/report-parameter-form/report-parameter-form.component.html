@@ -11,16 +11,17 @@
           'col-12': parameters.length === 1
         }"
       >
-
-        <div 
-          class="custom-form-group" 
-          [class.custom-form-group-select]="
-          param.ParameterFieldType === 'DROPDOWN' || 
-          param.ParameterFieldType === 'DROPDOWN M' ||
-          param.ParameterFieldType === 'DATE' " 
-          [class.filled]="!!parameterForm.get(param.ParameterName)?.value"
-        >
-
+          <div 
+            class="custom-form-group" 
+            [class.custom-form-group-select]="
+              param.ParameterFieldType === 'DROPDOWN' || 
+              param.ParameterFieldType === 'DROPDOWN M'
+            "
+            [class.custom-form-group-select-date]="
+              param.ParameterFieldType === 'DATE'
+            "
+            [class.filled]="!!parameterForm.get(param.ParameterName)?.value"
+          >
           <!-- CHECKBOX -->
           <div class="form-check mt-3" *ngIf="param.ParameterFieldType === 'CHECKBOX'">
             <input 
@@ -41,7 +42,7 @@
           </div>
 
           <!-- DATE (NgbDatepicker) -->
-          <div *ngIf="param.ParameterFieldType === 'DATE'" class="position-relative">
+          <div *ngIf="param.ParameterFieldType === 'DATE'" class="input-group">
             <input
               ngbDatepicker
               class="form-control sm"
@@ -52,12 +53,14 @@
               [class.is-invalid]="hasError(param.ParameterName)"
               #dp="ngbDatepicker"
               (click)="dp.toggle()"
+              placeholder="dd-mm-yyyy"
             />
 
             <!-- Calendar icon -->
-            <i
+               <i-feather name="calendar" class="feather-sm"  (click)="dp.toggle()"></i-feather>
+            <!-- <i
               class="mdi mdi-calendar-month-outline calendar-icon"
-              (click)="dp.toggle()"
+             
               style="
                 position: absolute;
                 right: 12px;
@@ -67,7 +70,7 @@
                 font-size: 18px;
                 color: #6c757d;
               "
-            ></i>
+            ></i> -->
           </div>
 
           <!-- NUMBER -->
@@ -150,7 +153,7 @@
           </label>
 
           <!-- ERROR MESSAGE -->
-          <div *ngIf="hasError(param.ParameterName)" class="invalid-feedback d-block">
+          <div *ngIf="hasError(param.ParameterName)" class="error-message">
             {{ getErrorMessage(param.ParameterName) }}
           </div>
 
@@ -167,7 +170,7 @@
     </div>
 
     <!-- FORM ACTIONS -->
-    <div class="form-actions mt-4 pt-3">
+    <div class="form-actions">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <small class="text-muted">
@@ -178,7 +181,7 @@
         <div>
           <button
             type="button"
-            class="btn btn-secondary mr-2"
+            class="btn btn-secondary btn-sm mr-2"
             (click)="resetForm()"
             [disabled]="loading"
           >
@@ -187,7 +190,7 @@
 
           <button
             type="submit"
-            class="btn btn-primary"
+            class="btn btn-info btn-sm ms-1"
             [disabled]="!isFormValid() || loading"
           >
             <span *ngIf="!loading">

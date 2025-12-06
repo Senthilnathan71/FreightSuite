@@ -9,6 +9,7 @@ import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStr
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { toNgbDateStruct } from 'src/app/common/helper';
+import { FeatherModule } from 'angular-feather';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -29,7 +30,8 @@ export interface ReportParameter {
     ReactiveFormsModule, 
     NgSelectModule,
     MultiSelectComponent, 
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    FeatherModule
   ],
   templateUrl: './report-parameter-form.component.html',
   styleUrls: ['./report-parameter-form.component.scss'],
