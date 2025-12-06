@@ -11,8 +11,9 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { FormsModule } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { DocumentSearchResult } from './document-search.interface';
 
 declare var $: any;
 
@@ -70,7 +71,14 @@ branchList: any[] = [];
   @ViewChild('searchMenuInput') searchMenuInput!: ElementRef<HTMLInputElement>;
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
 
-  docSearchResults: any[] = [];
+  // Document Search Related Variables
+  docSearchResults: DocumentSearchResult[] = [];
+  isSearchingDocs = false;
+  docSearchError = '';
+  private docSearchSubject = new Subject<string>();
+  @ViewChild('docSearchInput') docSearchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('docSearchDropdown') docSearchDropdown!: NgbDropdown;
+  docActiveIndex = -1;
 
   constructor(
     private router: Router,
@@ -173,6 +181,9 @@ ngOnInit(): void {
   } else {
     console.warn('No user company data found in user profile');
   }
+
+  // Setup document search subscription
+  this.setupDocumentSearchSubscription();
 }
 
 
@@ -545,13 +556,118 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   // ------------ END OF MENU SEARCH RELATED FUNCTION ----------------- \\
 
-  searchDocuments(text) {
+  // ===== DOCUMENT SEARCH RELATED FUNCTIONS ===== \\
 
+  private setupDocumentSearchSubscription(): void {
+    this.docSearchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.unsubscribe$),
+      switchMap(searchTerm => {
+        if (!searchTerm || searchTerm.length < 3) {
+          this.isSearchingDocs = false;
+          return of([]);
+        }
+
+        this.isSearchingDocs = true;
+        this.docSearchError = '';
+
+        const companyData = this.getCompanyBranchIds();
+        if (!companyData.CompanyMasterSid || !companyData.BranchMasterSid) {
+          this.docSearchError = 'Please select a company and branch';
+          this.isSearchingDocs = false;
+          return of([]);
+        }
+
+        return this.verticalNavService.searchDocuments({
+          search: searchTerm,
+          CompanyMasterSid: companyData.CompanyMasterSid,
+          BranchMasterSid: companyData.BranchMasterSid,
+          limit: 10
+        }).pipe(
+          catchError(error => {
+            console.error('Document search error:', error);
+            this.docSearchError = 'Search failed. Please try again.';
+            return of([]);
+          })
+        );
+      })
+    ).subscribe(results => {
+      this.docSearchResults = results;
+      this.isSearchingDocs = false;
+      this.docActiveIndex = -1;
+      this.cdr.detectChanges();
+    });
   }
 
-  openDocument(text) {
+  private getCompanyBranchIds(): { CompanyMasterSid: number | null, BranchMasterSid: number | null } {
+    try {
+      const encryptedCompany = localStorage.getItem('selected-company');
+      const encryptedBranch = localStorage.getItem('selected-branch');
+      const company = encryptedCompany ? this.appSettingsService.decrypt(encryptedCompany) : null;
+      const branch = encryptedBranch ? this.appSettingsService.decrypt(encryptedBranch) : null;
 
+      return {
+        CompanyMasterSid: company?.CompanyMasterSid || null,
+        BranchMasterSid: branch?.BranchMasterSid || null
+      };
+    } catch (error) {
+      console.error('Error getting company/branch IDs:', error);
+      return { CompanyMasterSid: null, BranchMasterSid: null };
+    }
   }
+
+  searchDocuments(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const searchTerm = input.value.trim();
+    this.docSearchSubject.next(searchTerm);
+  }
+
+  onDocSearchKeyDown(event: KeyboardEvent): void {
+    const max = this.docSearchResults.length - 1;
+    if (event.key === 'ArrowDown') {
+      this.docActiveIndex = this.docActiveIndex < max ? this.docActiveIndex + 1 : 0;
+      event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      this.docActiveIndex = this.docActiveIndex > 0 ? this.docActiveIndex - 1 : max;
+      event.preventDefault();
+    } else if (event.key === 'Enter' && this.docActiveIndex !== -1) {
+      const item = this.docSearchResults[this.docActiveIndex];
+      this.navigateToDocument(item);
+    } else if (event.key === 'Escape') {
+      this.clearDocSearch();
+    }
+  }
+
+  navigateToDocument(result: DocumentSearchResult): void {
+    this.clearDocSearch();
+    this.router.navigate([result.path]);
+  }
+
+  clearDocSearch(): void {
+    if (this.docSearchInput) {
+      this.docSearchInput.nativeElement.value = '';
+      this.docSearchInput.nativeElement.blur();
+    }
+    this.docSearchResults = [];
+    this.docActiveIndex = -1;
+    this.isSearchingDocs = false;
+    this.docSearchError = '';
+    if (this.docSearchDropdown) {
+      this.docSearchDropdown.close();
+    }
+  }
+
+  onDocSearchBlur(event: Event): void {
+    // Delay to allow click events on dropdown items to fire first
+    setTimeout(() => {
+      if (this.docSearchDropdown) {
+        this.docSearchDropdown.close();
+      }
+    }, 200);
+  }
+
+  // ------------ END OF DOCUMENT SEARCH RELATED FUNCTION ----------------- \\
 
 
   // This is for Notifications

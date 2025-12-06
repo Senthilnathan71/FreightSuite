@@ -228,22 +228,68 @@
   <li class="nav-item">
     <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #docSearchDropdown="ngbDropdown" [autoClose]="outside">
-        <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Document"
-          style="border-radius: 20px;" (click)="$event.stopPropagation(); docSearchDropdown.open()"
-          (input)="searchDocuments($event)" name="search" ngbDropdownToggle>
+        <input
+          type="text"
+          #docSearchInput
+          class="form-control ps-3 pe-5 border border-info"
+          placeholder="Search Document"
+          style="border-radius: 20px; min-width: 200px;"
+          (click)="$event.stopPropagation(); docSearchDropdown.open()"
+          (input)="searchDocuments($event)"
+          (keydown)="onDocSearchKeyDown($event)"
+          (blur)="onDocSearchBlur($event)"
+          name="docSearch"
+          ngbDropdownToggle>
         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
-        <div class="dropdown-menu w-100" style="max-height: 230px;" ngbDropdownMenu>
-          <div *ngIf="docSearchResults.length > 0; else noDocResults">
-            <a *ngFor="let result of docSearchResults" class="dropdown-item custom-dropdown-item" href="#" [routerLink]="result.path">
-              {{ result.title }}
-            </a>
+        <div class="dropdown-menu w-100" style="max-height: 350px; min-width: 300px; overflow-y: auto;" ngbDropdownMenu>
+          <!-- Loading State -->
+          <div *ngIf="isSearchingDocs" class="dropdown-item text-center py-3">
+            <span class="spinner-border spinner-border-sm text-info me-2" role="status"></span>
+            <span class="text-muted">Searching...</span>
           </div>
-          <ng-template #noDocResults>
-            <div class="dropdown-item text-black">
-              No documents found
+
+          <!-- Error State -->
+          <div *ngIf="docSearchError && !isSearchingDocs" class="dropdown-item text-danger py-2">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ docSearchError }}
+          </div>
+
+          <!-- Results -->
+          <ng-container *ngIf="!isSearchingDocs && !docSearchError">
+            <div *ngIf="docSearchResults.length > 0; else noDocResults">
+              <a
+                *ngFor="let result of docSearchResults; let i = index"
+                class="dropdown-item custom-dropdown-item d-flex align-items-center py-2"
+                [class.active]="i === docActiveIndex"
+                [class.bg-light]="i === docActiveIndex"
+                href="javascript:void(0)"
+                (mousedown)="navigateToDocument(result)">
+                <span class="badge me-2"
+                  [ngClass]="{
+                    'bg-primary': result.documentType === 'BOOKING',
+                    'bg-dark': result.documentType === 'MASTER_JOB',
+                    'bg-info': result.documentType === 'HOUSE_JOB',
+                    'bg-success': result.documentType === 'ENQUIRY',
+                    'bg-warning text-dark': result.documentType === 'QUOTATION',
+                    'bg-secondary': result.documentType !== 'BOOKING' && result.documentType !== 'MASTER_JOB' && result.documentType !== 'HOUSE_JOB' && result.documentType !== 'ENQUIRY' && result.documentType !== 'QUOTATION'
+                  }"
+                  style="min-width: 85px; font-size: 0.75rem;">
+                  {{ result.displayType }}
+                </span>
+                <span class="text-truncate" style="font-size: 0.9rem;">{{ result.documentNumber }}</span>
+              </a>
             </div>
-          </ng-template>
+            <ng-template #noDocResults>
+              <div class="dropdown-item text-muted py-3 text-center">
+                <span *ngIf="docSearchInput?.value?.length >= 3">
+                  <i class="fas fa-search me-2"></i>No documents found
+                </span>
+                <span *ngIf="!docSearchInput?.value || docSearchInput?.value?.length < 3">
+                  <i class="fas fa-info-circle me-2"></i>Type at least 3 characters to search
+                </span>
+              </div>
+            </ng-template>
+          </ng-container>
         </div>
       </div>
     </div>
