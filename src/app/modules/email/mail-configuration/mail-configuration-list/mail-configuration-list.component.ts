@@ -92,7 +92,8 @@ export class MailConfigurationListComponent extends BaseListComponent implements
           filterable: true,
           visible: true,
           dataType: 'number',
-          width: '80px'
+          width: '80px',
+
         },
         {
           key: 'MailName',

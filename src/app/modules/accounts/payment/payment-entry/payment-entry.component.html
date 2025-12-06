@@ -353,7 +353,7 @@
                             <!-- Instt Number -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="" placeholder="" class="custom-input-field sm"
+                                    <input type="text" id="" placeholder="" class="custom-input-field sm"style="width: 200px;"
                                         formControlName="InstrumentNumber">
                                     <label class="input-label" for="text-input"style="font-size: 14px;">Inst No. <span
                                             class="text-danger">*</span></label>
@@ -365,7 +365,7 @@
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!r['InstrumentMode']?.value">
 
-                                    <ng-select class="ng-select" [items]="paymentModes" bindLabel="label"
+                                    <ng-select class="ng-select" [items]="paymentModes" bindLabel="label" style="width: 200px;"
                                         bindValue="value" formControlName="InstrumentMode">
                                     </ng-select>
 
@@ -378,7 +378,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select filled">
                                     <div class="input-group">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
+                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker style="width: 150px;"
                                             #d2="ngbDatepicker" formControlName="InstrumentDate" (click)="d2.toggle()"
                                             (keydown.arrowDown)="d2.open()" readonly />
                                         <button class="btn bi bi-calendar3" (click)="d2.toggle()">
@@ -393,7 +393,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select filled">
                                     <div class="input-group">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
+                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker style="width: 150px;"
                                             #d3="ngbDatepicker" formControlName="ClearanceDate" (click)="d3.toggle()"
                                             (keydown.arrowDown)="d3.open()" readonly />
                                         <button class="btn bi bi-calendar3" (click)="d3.toggle()">

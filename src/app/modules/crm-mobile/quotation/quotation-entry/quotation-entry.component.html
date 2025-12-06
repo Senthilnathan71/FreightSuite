@@ -2892,37 +2892,36 @@
         </section>
       </div> -->
 
+      <!-- Print -->
 
    <div style="width:280mm; min-height:400mm; margin:0 auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
   
   <section style="flex: 1; display: flex; flex-direction: column;">
     <!-- Company Header -->
- <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; flex-direction: column;">
-                    <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                </div>
-                <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                </div>
+    <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;"class="fs-4">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+            <div style="flex: 1; text-align: center;  padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine2 || '' }} ,  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
             </div>
         </div>
+    </div>
 
     
 
     <!-- Title -->
-    <div style="text-align: center; font-weight: bold; padding: 1rem 0 ;border-top: 1px solid black;">
-    <h4>
+    <div style="text-align: center; font-weight: bold; padding: 1rem 0 ;border-top: 1px solid black;margin:1px 0;">
+    <h2>
       {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
-    </h4>  
+    </h2>  
     </div>
 
     <!-- Customer Info -->

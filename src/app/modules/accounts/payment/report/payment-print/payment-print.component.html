@@ -130,7 +130,7 @@
                     <td style="border:1px solid black; padding:4px;">{{voucher?.VoucherType}}</td>
                     <td style="border:1px solid black; padding:4px;">{{voucher?.VoucherDate | formatDate}}</td>
                     <td style="border:1px solid black; padding:4px;">{{voucher?.CurrencyCode}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.ExchangeRate}}</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.ExchangeRate | number:'1.2-2'}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
                 </tr>

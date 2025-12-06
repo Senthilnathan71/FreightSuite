@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -25,7 +26,7 @@ export class DeliveryOrderComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
-
+  currency:any[] = [];
   @Input() housejobData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -45,6 +46,7 @@ export class DeliveryOrderComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.loadCurrencyList();
   }
 
     loadCityName(): void {
@@ -71,12 +73,25 @@ export class DeliveryOrderComponent {
     });
   }
 
+
+       loadCurrencyList(): void {
+    this.masterService.getAllCurrencies().subscribe({
+      next: (response: any) => {
+        this.currency = response|| [];
+        console.log('Currency List:', this.currency);
+      },
+      error: (error) => {
+        console.error('Failed to load currencies:', error);
+      }
+    });
+  }
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
       private masterService: MasterService,
         private pdfService: PdfDownloadService,
           private spinner: NgxSpinnerService,
+              private numberToWords: NumberToWordsService
   ) { }
 
   getUnitCode(ChargeUomSid: number) {
@@ -194,6 +209,34 @@ async downloadPDF() {
     popupWin.document.close();
   }
 }
+
+getAmountInWords(): string {
+    const total = this.TotalLocalAmount();
+    if (!total) return '';
+
+    const rupees = Math.floor(total);
+    const paise = Math.round((total - rupees) * 100);
+
+    const rupeesInWords = this.numberToWords.convert(rupees);
+    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+
+    // Get currency code safely from first voucher
+    const selectedCode = this.housejobData?.voucherMatchings?.[0]?.CurrencyCode;
+    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+
+    // Find currency in the list
+    const selectedCurrency = this.currency?.find(
+      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+    );
+
+    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+    return paise > 0
+      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+      : `${rupeesInWords} ${currencyName} Only`;
+  }
+
 
     async generatePDFBlob(): Promise<Blob | null> {
           const printContent = document.getElementById('printContent');
