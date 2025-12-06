@@ -522,16 +522,16 @@
                             <td>
                                 <div *ngIf="!isEditMode" class="input-group input-group-sm">
                                     <div class="d-flex gap-1">
-                                        <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
-                                            (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                                        <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                                            (input)="onDetailChange(i, 'TaxPercentage1')">
                                         <span class="" style="font-weight: 600; color: black;">%</span>
                                     </div>
                                 </div>
-                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
+                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                             </td>
                             <!-- IGST Amount -->
                             <td>
-                                <span style="font-weight: 600; color: black;">{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
+                                <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
                         

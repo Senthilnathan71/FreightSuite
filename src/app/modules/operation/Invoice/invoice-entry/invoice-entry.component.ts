@@ -1090,14 +1090,8 @@ onGSTTypeChange() {
     for (const det of detailsFromResp) {
       // Tax logic: If TaxPercentage2 is 0/null, then TaxPercentage1 is IGST
       // Otherwise TaxPercentage1 is CGST and TaxPercentage2 is SGST
-      const taxPerc2 = det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0;
-      const taxAmt2 = det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0;
-      const taxPerc1 = det.TaxPercentage1 != null ? Number(det.TaxPercentage1) : 0;
-      const taxAmt1 = det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0;
-
-      const isIGST = taxPerc2 === 0 && taxAmt2 === 0 && (taxPerc1 > 0 || taxAmt1 > 0);
-
-      console.log('DEBUG - Loading detail row:', {
+      const gstType = header.GSTType || this.invoiceForm.get('GSTType')?.value;
+            console.log('DEBUG - Loading detail row:', {
         ChargeDescription: det.ChargeDescription,
         HSSACMasterSid: det.HSSACMasterSid,
         availableKeys: Object.keys(det)
@@ -1118,12 +1112,13 @@ onGSTTypeChange() {
         Amount: det.Amount,
         TaxableAmount: det.TaxableAmount,
         // If IGST (Tax2 is 0), clear CGST/SGST and populate IGST
-        TaxPercentage1: isIGST ? 0 : taxPerc1,
-        TaxAmount1: isIGST ? 0 : taxAmt1,
-        TaxPercentage2: isIGST ? 0 : taxPerc2,
-        TaxAmount2: isIGST ? 0 : taxAmt2,
-        TaxPercentageIGST: isIGST ? taxPerc1 : 0,
-        TaxAmountIGST: isIGST ? taxAmt1 : 0,
+         TaxPercentage1: det.TaxPercentage1 != null ? Number(det.TaxPercentage1) : 0,
+      TaxAmount1: det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0,
+      TaxPercentage2: det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0,
+      TaxAmount2: det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0,
+      
+      
+      
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1185,8 +1180,6 @@ onGSTTypeChange() {
       TaxAmount1: [data?.TaxAmount1 || 0],
       TaxPercentage2: [data?.TaxPercentage2 || 0],
       TaxAmount2: [data?.TaxAmount2 || 0],
-      TaxPercentageIGST: [data?.TaxPercentageIGST || 0],
-      TaxAmountIGST: [data?.TaxAmountIGST || 0],
       LocalAmount: [data?.LocalAmount || 0],
       PartyAmount: [data?.PartyAmount || 0],
       MasterJobSid: [data?.MasterJobSid || null],
@@ -1212,7 +1205,7 @@ onGSTTypeChange() {
   }
 
   onDetailChange(index: number, field?: string) {
-  if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyCode'].includes(field || '')) {
+  if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2',  'CurrencyCode'].includes(field || '')) {
     this.recalcRow(index);
   } else if (field === 'ChargeMasterSid') {
     const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
@@ -1385,19 +1378,17 @@ onGSTTypeChange() {
   console.log('SGST Amount:', sgstAmt);
   console.log('IGST Amount:', igstAmt);
   console.log('VAT Amount:', vatAmt);
-
+ console.log('Setting tax values for GST Type:', gstType);
   // Update row values
   row.get('Amount')?.setValue(this.round(amount));
   row.get('TaxableAmount')?.setValue(this.round(taxableAmount));
-  
+  console.log('Setting tax values for GST Type:', gstType);
   // Clear all tax fields first
   row.get('TaxPercentage1')?.setValue(0);
   row.get('TaxAmount1')?.setValue(0);
   row.get('TaxPercentage2')?.setValue(0);
   row.get('TaxAmount2')?.setValue(0);
-  row.get('TaxPercentageIGST')?.setValue(0);
-  row.get('TaxAmountIGST')?.setValue(0);
-  
+ 
   // Set values based on GST type
   console.log('Setting tax values for GST Type:', gstType);
   
@@ -1413,11 +1404,13 @@ onGSTTypeChange() {
     row.get('TaxPercentage2')?.setValue(this.round(sgstRate));
     row.get('TaxAmount2')?.setValue(this.round(sgstAmt));
     console.log('Setting CGST+SGST values');
-  } else if (gstType === 'IGST') {
-    // IGST
-    row.get('TaxPercentageIGST')?.setValue(this.round(igstRate));
-    row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
-    console.log('Setting IGST values');
+  }else if (gstType === 'IGST' || gstType === 'B2C') {
+    // IGST or B2C - use TaxPercentage1 and TaxAmount1 only
+    const rate = gstType === 'IGST' ? igstRate : cgstRate;
+    const amount = gstType === 'IGST' ? igstAmt : cgstAmt;
+    row.get('TaxPercentage1')?.setValue(this.round(rate));
+    row.get('TaxAmount1')?.setValue(this.round(amount));
+    console.log(`Setting ${gstType} values - Rate:`, rate, 'Amount:', amount);
   } else if (gstType === 'B2C') {
     // B2C
     row.get('TaxPercentage1')?.setValue(this.round(cgstRate));
@@ -1426,9 +1419,11 @@ onGSTTypeChange() {
   } else {
     // Default based on country
     if (this.isIndiaGST) {
-      row.get('TaxPercentageIGST')?.setValue(this.round(igstRate));
-      row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
+      // India default - use TaxPercentage1 and TaxAmount1
+      row.get('TaxPercentage1')?.setValue(this.round(igstRate));
+      row.get('TaxAmount1')?.setValue(this.round(igstAmt));
     } else {
+      // Non-India default (VAT)
       row.get('TaxPercentage1')?.setValue(this.round(vatRate));
       row.get('TaxAmount1')?.setValue(this.round(vatAmt));
     }
@@ -1577,7 +1572,7 @@ private applyFallbackTax(
   for (let i = 0; i < this.details.length; i++) {
     const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
     const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-    const igstAmt = Number(this.details.at(i).get('TaxAmountIGST')?.value || 0);
+    const igstAmt = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
     total += taxAmt1 + taxAmt2 + igstAmt;
   }
   return this.round(total);
@@ -1811,12 +1806,10 @@ private applyFallbackTax(
         ExchangeRate: d.ExchangeRate != null ? Number(d.ExchangeRate) : (raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1),
         Amount: d.Amount != null ? Number(d.Amount) : 0,
         TaxableAmount: d.TaxableAmount != null ? Number(d.TaxableAmount) : (d.Amount != null ? Number(d.Amount) : 0),
-        TaxPercentage1: d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
-        TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
-        TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
-        TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-        TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
-        TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
+          TaxPercentage1: d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
+    TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
+    TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
+    TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
         PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
@@ -1971,8 +1964,6 @@ private applyFallbackTax(
         TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
         TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
         TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-        TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
-        TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
         PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
@@ -2570,7 +2561,7 @@ private applyFallbackTax(
   const taxable = Number(detail.TaxableAmount || 0);
   const cgst = Number(detail.TaxAmount1 || 0);
   const sgst = Number(detail.TaxAmount2 || 0);
-  const igst = Number(detail.TaxAmountIGST || 0);
+  const igst = Number(detail.TaxAmount1 || 0);
 
   return taxable + cgst + sgst + igst;
 }
@@ -3093,7 +3084,7 @@ getTaxPercentageForDisplay(detail: any): {
     return {
       cgstRate: 0,
       sgstRate: 0,
-      igstRate: detail.TaxPercentageIGST || 0,
+      igstRate: detail.TaxPercentage1 || 0,
       vatRate: 0
     };
   } else if (gstType === 'B2C') {
@@ -3115,7 +3106,7 @@ getTaxPercentageForDisplay(detail: any): {
   return {
     cgstRate: detail.TaxPercentage1 || 0,
     sgstRate: detail.TaxPercentage2 || 0,
-    igstRate: detail.TaxPercentageIGST || 0,
+    igstRate: detail.TaxPercentage1 || 0,
     vatRate: detail.TaxPercentage1 || 0
   };
 }
@@ -3138,7 +3129,7 @@ getTaxAmountForDisplay(detail: any): {
     return {
       cgstAmt: 0,
       sgstAmt: 0,
-      igstAmt: detail.TaxAmountIGST || 0,
+      igstAmt: detail.TaxAmount1|| 0,
       vatAmt: 0
     };
   } else if (gstType === 'B2C') {
