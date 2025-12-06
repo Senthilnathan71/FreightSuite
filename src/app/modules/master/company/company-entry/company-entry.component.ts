@@ -1419,78 +1419,90 @@ openFollowup() {
   formatTimezoneOnBlur(event: FocusEvent) {
   const input = event.target as HTMLInputElement;
   let value = input.value.trim();
-  
+
   if (!value) {
     this.branchForm.get('branchTimeZone').setErrors({ required: true });
     return;
   }
 
+  // If user entered proper HH:MM format → handle directly
+  const fullMatch = /^([+-]?)(\d{1,2}):(\d{2})$/.exec(value);
+  if (fullMatch) {
+    let sign = fullMatch[1] || '+';
+    let hours = fullMatch[2].padStart(2, '0');
+    let minutes = fullMatch[3];
+
+    const minutesNum = parseInt(minutes, 10);
+    if (minutesNum > 59) {
+      this.branchForm.get('branchTimeZone').setErrors({
+        pattern: true,
+        message: 'Minutes must be between 00 and 59'
+      });
+      return;
+    }
+
+    const formatted = `${sign}${hours}:${minutes}`;
+    input.value = formatted;
+    this.branchForm.get('branchTimeZone').setValue(formatted);
+
+    // Final range validation
+    this.validateTimezoneRange(formatted);
+    return;
+  }
+
+  // ---------- RAW INPUT MODE ----------
   // Ensure value starts with + or -
   if (!['+', '-'].includes(value[0])) {
     value = '+' + value;
   }
 
-  // Remove any existing colon
+  // Remove colon (raw parsing)
   value = value.replace(':', '');
 
-  // Extract sign and numbers
   const sign = value[0];
-  const numbers = value.substring(1).replace(/\D/g, ''); // Keep only digits
+  const numbers = value.substring(1).replace(/\D/g, '');
 
   if (numbers.length === 0) {
     this.branchForm.get('branchTimeZone').setErrors({ pattern: true });
     return;
   }
 
-  // Parse hours and minutes
   let hours = '00';
   let minutes = '00';
-  
+
   if (numbers.length === 1) {
-    // Single digit: e.g., +4 becomes +04:00
-    hours = numbers.padStart(2, '0');
+    hours = numbers.padStart(2, '0'); // +4 → +04:00
   } else if (numbers.length === 2) {
-    // Two digits: e.g., +04 becomes +04:00
-    hours = numbers;
+    hours = numbers;                 // +04 → +04:00
   } else if (numbers.length === 3) {
-    // Three digits: e.g., +430 becomes +04:30
-    hours = numbers.substring(0, 2);
-    minutes = (numbers.substring(2) + '0').substring(0, 2); // Pad to 2 digits
+    hours = numbers.substring(0, 2); // +430 → +04:30
+    minutes = numbers.substring(2).padEnd(2, '0');
   } else {
-    // Four or more digits: e.g., +0430 becomes +04:30
-    hours = numbers.substring(0, 2);
+    hours = numbers.substring(0, 2); // +0430 → +04:30
     minutes = numbers.substring(2, 4);
   }
 
-  // Ensure hours are 2 digits
   hours = hours.padStart(2, '0');
-  
-  // Ensure minutes are 2 digits and valid
   minutes = minutes.padStart(2, '0');
-  
-  // Check if minutes are valid (0-59)
+
   const minutesNum = parseInt(minutes, 10);
   if (minutesNum > 59) {
-    // Don't auto-correct, show error instead
-    this.branchForm.get('branchTimeZone').setErrors({ 
+    this.branchForm.get('branchTimeZone').setErrors({
       pattern: true,
       message: 'Minutes must be between 00 and 59'
     });
     return;
   }
 
-  // Final formatted value (before range validation)
   const formattedValue = `${sign}${hours}:${minutes}`;
-  
-  // Update the input value (display only)
+
   input.value = formattedValue;
-  
-  // Set the form control value but DON'T auto-correct invalid ranges
   this.branchForm.get('branchTimeZone').setValue(formattedValue);
-  
-  // Now validate the range - this will set errors if out of range
+
+  // Final range check
   this.validateTimezoneRange(formattedValue);
 }
+
 
 
 	validateTimezoneRange(value: string) {

@@ -791,8 +791,8 @@ getHouseJobARAPData(HouseJobSid: number) {
       })
     )
   }
-  getAllInvoice() {
-    return this.http.get<{ data: any[] }>('credit-note/invoice').pipe(
+  getAllInvoice(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('credit-note/invoice', {CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

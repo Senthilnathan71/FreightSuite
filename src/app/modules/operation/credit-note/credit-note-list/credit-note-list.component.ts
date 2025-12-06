@@ -119,7 +119,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   loadInvoices() {
-    this.operationService.getAllInvoice().subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.operationService.getAllInvoice(CompanyMasterSid).subscribe({
       next: (resp: any) => {
         this.invoiceList = resp?.data || resp || [];
         this.loadCreditNotes();
