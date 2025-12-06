@@ -22,6 +22,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { BookingRateDetails, TaxCalculationService } from '../../services/tax-calculation.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-cost-entry',
@@ -319,6 +320,7 @@ get stateList(): any[] {
     private companySettings: CompanySettingsManagerService,
     private masterService: MasterService,
     private router : Router,
+    private toaster: ToastrService
   ) { this.initRateForm();}
 
   ngOnInit(): void {
@@ -2915,7 +2917,7 @@ console.log('=== DEBUG: Selected Charges for Voucher ===');
     if (result?.status) {
       const voucherNumber = result.data?.voucherHeader?.VoucherNumber || 'N/A';
       const voucherHeaderSid = result.data?.voucherHeader?.VoucherHeaderSid;
-
+      this.toaster.clear();
       this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
 
       await this.reloadParent.emit(this.routeParentSid);

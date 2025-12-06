@@ -389,7 +389,7 @@
     </div>
 
         <div class="nav-pills-container mt-1">
-        <div class="nav-pills">
+        <div class="nav-pills w-100">
             <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
                 (click)="selectTab(tab.name)">
                 <div class="pill-icon">
@@ -398,10 +398,20 @@
                 <span class="pill-label"style="font-size: 14px;">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
-            <div class="text-end">
-                <span class="error-message fw-bold" *ngIf="matchingError">
-                    {{ matchingError }}
+            <div class="d-flex gap-2 w-100 justify-content-end">
+                <span>
+                    <span class="badge bg-success">
+                        Sum of Credits : <b>{{totalCredits | number:'1.2-2'}}</b>
+                    </span>  
                 </span>
+                <span>
+                    <span class="badge bg-danger">
+                        Sum of Debits : <b>{{totalDebits | number:'1.2-2'}}</b>
+                    </span> 
+                </span>
+                <!-- <span class="error-message fw-bold" *ngIf="matchingError">
+                    {{ matchingError }}
+                </span> -->
             </div>
         </div>
     </div>
