@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable } from 'rxjs';
+import { DocumentSearchPayload, DocumentSearchResult } from './document-search.interface';
 
 @Injectable({ providedIn: 'root' })
 export class VerticalNavService {
@@ -50,6 +51,15 @@ export class VerticalNavService {
                 return response;
             })
         )
+    }
+
+    searchDocuments(payload: DocumentSearchPayload): Observable<DocumentSearchResult[]> {
+        return this.http.post<{ data: DocumentSearchResult[], status: boolean, message: string }>(
+            'global-search/documents',
+            payload
+        ).pipe(
+            map((resp) => resp.data || [])
+        );
     }
 
 }
