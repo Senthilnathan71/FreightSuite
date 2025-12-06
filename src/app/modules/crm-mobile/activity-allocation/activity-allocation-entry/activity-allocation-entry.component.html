@@ -1,0 +1,488 @@
+<div class="modern-workload-workspace">
+
+  <header class="professional-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Activity Allocation</h1>
+          <div class="header-meta">
+            <span class="meta-item">
+              <i class="fas fa-user"></i>
+              <strong>{{ userName || 'User' }}</strong>
+            </span>
+            <span class="meta-divider">•</span>
+            <span class="meta-item">
+              <i class="fas fa-layer-group"></i>
+              Stage: <strong>{{ stage }}</strong>
+            </span>
+            <span class="meta-divider">•</span>
+            <span class="meta-item">
+              <i class="fas fa-filter"></i>
+              Mode: <strong>{{ mode }}</strong>
+            </span>
+            <span *ngIf="lastRefreshed" class="meta-divider">•</span>
+            <span *ngIf="lastRefreshed" class="meta-item">
+              <i class="fas fa-clock"></i>
+              Updated: {{ lastRefreshed | date: 'dd-MMM-yyyy HH:mm' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button
+          type="button"
+          class="btn-header btn-back"
+          (click)="goBack()">
+          <i class="fas fa-arrow-left me-1"></i>
+          Back to Summary
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="action-section">
+    <div class="action-card">
+      <div class="action-row-unified">
+        
+        <div class="search-group-compact">
+          <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              #searchBox
+              type="text"
+              class="search-input"
+              placeholder="Search by user or activity type..."
+              [(ngModel)]="filterValue"
+              (keyup.enter)="onSearchClick()" />
+            <button
+              *ngIf="filterValue"
+              type="button"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="action-buttons-middle">
+          <button
+            type="button"
+            class="btn-action btn-export"
+            [disabled]="isExporting || !rows?.length"
+            (click)="onExportClick()">
+            <i class="fas fa-file-export"></i>
+            <span *ngIf="!isExporting">Export</span>
+            <span *ngIf="isExporting">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Exporting...
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="btn-action btn-reset"
+            (click)="onResetClick()">
+            <i class="fas fa-sync-alt"></i>
+            Reset
+          </button>
+        </div>
+
+        <div class="bulk-controls-right" *ngIf="!isLoading">
+          <div class="bulk-allocate-group">
+            <span class="bulk-label">Bulk allocate to:</span>
+            <ng-select
+              class="bulk-user-select"
+              [items]="allocateUsers"
+              bindLabel="userName"
+              bindValue="userSid"
+              [(ngModel)]="bulkSelectedUserSid"
+              placeholder="Select user"
+              [clearable]="true">
+            </ng-select>
+          </div>
+
+          <button
+            type="button"
+            class="btn-bulk-action btn-allocate"
+            (click)="onBulkAllocate()"
+            [disabled]="
+              isBulkAllocating ||
+              !selectedActivityIds?.size ||
+              !bulkSelectedUserSid
+            ">
+            <i class="fas fa-user-plus"></i>
+            <span *ngIf="!isBulkAllocating">
+              Allocate ({{ selectedActivityIds?.size || 0 }})
+            </span>
+            <span *ngIf="isBulkAllocating">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Allocating...
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="btn-bulk-action btn-export-selected"
+            (click)="exportSelected()"
+            [disabled]="!selectedActivityIds?.size || isExporting">
+            <i class="fas fa-file-export"></i>
+            Export Selected
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="kpi-cards-section" *ngIf="rows?.length">
+    <div class="metrics-container">
+      <div class="metric-card metric-primary">
+        <div class="metric-icon">
+          <i class="fas fa-user-tag"></i>
+        </div>
+        <div class="metric-details">
+          <div class="metric-label">Assigned User</div>
+          <div class="metric-value-text">
+            {{ userName || 'User' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card metric-info">
+        <div class="metric-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="metric-details">
+          <div class="metric-label">Total Activities</div>
+          <div class="metric-value">
+            {{ rows.length }}
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card metric-success">
+        <div class="metric-icon">
+          <i class="fas fa-check-square"></i>
+        </div>
+        <div class="metric-details">
+          <div class="metric-label">Selected</div>
+          <div class="metric-value">
+            {{ selectedActivityIds?.size || 0 }}
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card metric-warning">
+        <div class="metric-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="metric-details">
+          <div class="metric-label">Overdue</div>
+          <div class="metric-value">
+            {{ getOverdueCount() }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="alert-container" *ngIf="error || successMessage">
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = null">&times;</button>
+    </div>
+    <div class="alert alert-success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage = null">&times;</button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner-border text-primary mb-3" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h5>Loading Work Load Details...</h5>
+    <p class="text-muted">This may take a few seconds for large activity lists.</p>
+    <div class="progress-bar-container">
+      <div class="progress-bar-animated"></div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="!isLoading && !sortedAndFilteredRows?.length"
+    class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-inbox"></i>
+    </div>
+    <h5>No Records Found</h5>
+    <p>
+      No {{ mode }} {{ stage }} activities for
+      <strong>{{ userName || 'this user' }}</strong>.
+    </p>
+    <button
+      type="button"
+      class="btn-action btn-search"
+      (click)="goBack()">
+      <i class="fas fa-arrow-left me-1"></i>
+      Back to Summary
+    </button>
+  </div>
+
+  <div
+    class="stats-above-table"
+    *ngIf="!isLoading && sortedAndFilteredRows?.length">
+    <h5 class="table-title">
+      <i class="fas fa-table"></i>
+      Work Load Details
+    </h5>
+
+    <div class="stats-badges">
+      <div class="stat-badge stat-info">
+        <i class="fas fa-list"></i>
+        <span class="stat-value">{{ sortedAndFilteredRows?.length || 0 }}</span>
+        <span class="stat-label">In View</span>
+      </div>
+      <div class="stat-badge stat-success">
+        <i class="fas fa-check-circle"></i>
+        <span class="stat-value">{{ getProcessedCount() }}</span>
+        <span class="stat-label">Processed</span>
+      </div>
+      <div class="stat-badge stat-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <span class="stat-value">{{ getOverdueCount() }}</span>
+        <span class="stat-label">Overdue</span>
+      </div>
+    </div>
+  </div>
+
+  <section
+    class="data-table-section"
+    *ngIf="!isLoading && sortedAndFilteredRows?.length">
+
+    <div class="table-container">
+      <div class="table-responsive">
+        <table class="professional-table">
+          <thead>
+            <tr>
+              <th class="col-checkbox">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [checked]="allSelected"
+                  [indeterminate]="isPartiallySelected"
+                  (change)="toggleSelectAll($event)" />
+              </th>
+              <th
+                class="sortable"
+                [class.active]="sortColumn === 'quotationNo'"
+                (click)="sortBy('quotationNo')">
+                <div class="th-content">
+                  <span>Quotation No</span>
+                  <i [class]="getSortIconClass('quotationNo')"></i>
+                </div>
+              </th>
+              <th
+                class="sortable"
+                [class.active]="sortColumn === 'bookingNo'"
+                (click)="sortBy('bookingNo')">
+                <div class="th-content">
+                  <span>Booking No</span>
+                  <i [class]="getSortIconClass('bookingNo')"></i>
+                </div>
+              </th>
+              <th
+                class="sortable"
+                [class.active]="sortColumn === 'customerName'"
+                (click)="sortBy('customerName')">
+                <div class="th-content">
+                  <span>Customer</span>
+                  <i [class]="getSortIconClass('customerName')"></i>
+                </div>
+              </th>
+              <th
+                class="sortable"
+                [class.active]="sortColumn === 'salesPersonName'"
+                (click)="sortBy('salesPersonName')">
+                <div class="th-content">
+                  <span>Sales Person</span>
+                  <i [class]="getSortIconClass('salesPersonName')"></i>
+                </div>
+              </th>
+              <th *ngIf="visibleColumns?.customerService">
+                Customer Service
+              </th>
+              <th *ngIf="visibleColumns?.documentation">
+                Documentation
+              </th>
+              <th
+                class="sortable"
+                [class.active]="sortColumn === 'etd'"
+                (click)="sortBy('etd')">
+                <div class="th-content">
+                  <span>ETD</span>
+                  <i [class]="getSortIconClass('etd')"></i>
+                </div>
+              </th>
+              <th>ETD Status</th>
+              <th class="col-actions">Allocate</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              *ngFor="let row of sortedAndFilteredRows"
+              [class.row-selected]="selectedActivityIds?.has(row.activityId)"
+              [class.row-processed]="row.status === 'Processed'"
+              [class.row-overdue]="isOverdue(row)">
+              <td class="col-checkbox">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [checked]="selectedActivityIds?.has(row.activityId)"
+                  (change)="toggleRowSelection(row, $event)" />
+              </td>
+              <td>{{ row.quotationNo || '—' }}</td>
+              <td>
+                <span
+                  class="badge-custom"
+                  [ngClass]="getBookingStatusClass(row)">
+                  <i
+                    class="fas"
+                    [ngClass]="{
+                      'fa-check-circle': isBookingCreated(row),
+                      'fa-exclamation-triangle': !isBookingCreated(row)
+                    }"></i>
+                  {{ getBookingStatusLabel(row) }}
+                </span>
+              </td>
+              <td>{{ row.customerName || '—' }}</td>
+              <td>{{ row.salesPersonName || '—' }}</td>
+              <td *ngIf="visibleColumns?.customerService">
+                {{ row.customerServiceName || '—' }}
+              </td>
+              <td *ngIf="visibleColumns?.documentation">
+                {{ row.documentationName || '—' }}
+              </td>
+              <td>{{ row.etd | date: 'dd-MMM-yyyy' }}</td>
+              <td>
+                <span
+                  class="badge-status"
+                  [ngClass]="getEtdBadgeClass(row)">
+                  <i [class]="getEtdIconClass(row)"></i>
+                  {{ getEtdLabel(row) }}
+                </span>
+              </td>
+              <td class="col-actions">
+                <div class="action-buttons-group">
+                  <button
+                    type="button"
+                    class="btn-action-icon btn-view"
+                    title="View details"
+                    (click)="openDetailModal(row)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <div class="btn-group">
+                    <select
+                      class="form-select form-select-sm allocate-select"
+                      [(ngModel)]="selectedUserByActivityId[row.activityId]">
+                      <option [ngValue]="null">Select User</option>
+                      <option *ngFor="let u of allocateUsers" [ngValue]="u.userSid">
+                        {{ u.userName }}
+                      </option>
+                    </select>
+                    <button
+                      type="button"
+                      class="btn-allocate"
+                      [disabled]="
+                        !selectedUserByActivityId[row.activityId] ||
+                        row.status === 'Processed'
+                      "
+                      (click)="onAllocate(row)">
+                      <i class="fas fa-user-plus" *ngIf="row.status !== 'Processed'"></i>
+                      <i class="fas fa-check" *ngIf="row.status === 'Processed'"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div
+    #detailModal
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            Activity Details
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+          </button>
+        </div>
+        <div class="modal-body" *ngIf="selectedRowForDetail">
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <strong>Quotation No:</strong> {{ selectedRowForDetail.quotationNo || 'N/A' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Booking No:</strong> {{ selectedRowForDetail.bookingNo || 'N/A' }}
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <strong>Customer:</strong> {{ selectedRowForDetail.customerName || 'N/A' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Sales Person:</strong> {{ selectedRowForDetail.salesPersonName || 'N/A' }}
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <strong>Customer Service:</strong> {{ selectedRowForDetail.customerServiceName || 'N/A' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Documentation:</strong> {{ selectedRowForDetail.documentationName || 'N/A' }}
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <strong>ETD:</strong> {{ selectedRowForDetail.etd | date:'dd-MMM-yyyy' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Status:</strong> {{ selectedRowForDetail.status || 'Pending' }}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="copyAllDetails()">
+            <i class="fas fa-copy me-1"></i>
+            Copy Details
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

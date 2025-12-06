@@ -1,0 +1,363 @@
+<div class="activity-allocation-page">
+
+  <div class="page-header">
+    <h4 class="page-title">
+      Activity Allocation
+    </h4>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filters-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search by user or activity type..."
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchTextChange()" />
+        <button
+          *ngIf="searchText"
+          class="btn-clear"
+          type="button"
+          (click)="searchText = ''; onSearchTextChange()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="status-filter">
+        <label class="status-label">Mode:</label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="mode"
+          (ngModelChange)="onModeChange($event)">
+          <option value="Pending">Pending</option>
+          <option value="Processed">Processed</option>
+          <option value="All">All</option>
+        </select>
+      </div>
+
+      <div class="filters-actions">
+        <button
+          type="button"
+          class="btn-action btn-primary"
+          [disabled]="!displayRows.length"
+          (click)="onReportClick()">
+          <i class="fas fa-file-export"></i>
+          Export
+        </button>
+
+        <button
+          type="button"
+          class="btn-action btn-secondary"
+          (click)="onResetClick()">
+          <i class="fas fa-sync-alt"></i>
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+<div class="kpi-section" *ngIf="!isLoading && displayRows.length">
+  <div class="row g-3">
+
+    <div class="col-lg-3 col-md-6">
+      <div class="kpi-card kpi-border kpi-users">
+        <div class="kpi-icon-inline">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-value">
+            {{ getTotalUsers() }}
+          </div>
+          <div class="kpi-label">
+            TOTAL USERS
+          </div>
+          <div class="kpi-sub">
+            in current view: {{ getUsersInCurrentMode() }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="kpi-card kpi-border kpi-activities">
+        <div class="kpi-icon-inline">
+          <i class="fas fa-list-ul"></i>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-value">
+            {{ getTotalActivitiesInMode() }}
+          </div>
+          <div class="kpi-label">
+            ACTIVITIES
+          </div>
+          <div class="kpi-sub">
+            Mode: {{ mode }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="kpi-card kpi-border kpi-processed">
+        <div class="kpi-icon-inline">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-value">
+            {{ getTotalProcessed() }}
+          </div>
+          <div class="kpi-label">
+            PROCESSED
+          </div>
+          <div class="kpi-sub">
+            Shown when mode is "Processed"
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="kpi-card kpi-border kpi-total">
+        <div class="kpi-icon-inline">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-value">
+            {{ getGrandTotal() }}
+          </div>
+          <div class="kpi-label">
+            TOTAL IN VIEW
+          </div>
+          <div class="kpi-sub">
+            Includes all activities in current filter
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+    <i class="fas fa-exclamation-circle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-content">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h5 class="mb-2">Loading Resource Summary...</h5>
+      <p class="text-muted">Please wait, this should take 2-3 seconds</p>
+      <div class="progress-bar-container">
+        <div class="progress-bar-animated"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card" *ngIf="!isLoading && displayRows.length">
+    <div class="table-card-header">
+      <div class="table-title">
+        <i class="fas fa-table me-2"></i>
+        Resource Summary
+      </div>
+      <div class="table-info">
+        Showing {{ displayRows.length }} user{{ displayRows.length !== 1 ? 's' : '' }}
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th class="col-user" (click)="changeSort('userName')">
+              <div class="th-content">
+                <span>User</span>
+                <i class="fas" [ngClass]="getSortIcon('userName')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('rateRequestCount')">
+              <div class="th-content">
+                <span>Rate Request</span>
+                <i class="fas" [ngClass]="getSortIcon('rateRequestCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('quotationCount')">
+              <div class="th-content">
+                <span>Quotation</span>
+                <i class="fas" [ngClass]="getSortIcon('quotationCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('bookingCount')">
+              <div class="th-content">
+                <span>Booking</span>
+                <i class="fas" [ngClass]="getSortIcon('bookingCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('loadPlanCount')">
+              <div class="th-content">
+                <span>Load Plan</span>
+                <i class="fas" [ngClass]="getSortIcon('loadPlanCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('masterJobCount')">
+              <div class="th-content">
+                <span>Master Job</span>
+                <i class="fas" [ngClass]="getSortIcon('masterJobCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('jobCount')">
+              <div class="th-content">
+                <span>Job</span>
+                <i class="fas" [ngClass]="getSortIcon('jobCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('blCount')">
+              <div class="th-content">
+                <span>BL</span>
+                <i class="fas" [ngClass]="getSortIcon('blCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('siCount')">
+              <div class="th-content">
+                <span>SI</span>
+                <i class="fas" [ngClass]="getSortIcon('siCount')"></i>
+              </div>
+            </th>
+            <th class="col-count" (click)="changeSort('invoiceCount')">
+              <div class="th-content">
+                <span>Invoice</span>
+                <i class="fas" [ngClass]="getSortIcon('invoiceCount')"></i>
+              </div>
+            </th>
+            <th class="col-total" (click)="changeSort('total')">
+              <div class="th-content">
+                <strong>Total</strong>
+                <i class="fas" [ngClass]="getSortIcon('total')"></i>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let row of displayRows">
+            <td class="col-user user-cell-clickable" (click)="openUserWorkload(row)">
+              <strong>{{ row.userName }}</strong>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.rateRequestCount > 0"
+                class="count-badge badge-primary"
+                (click)="$event.stopPropagation(); openWorkload('RateRequest', row)">
+                {{ row.rateRequestCount }}
+              </span>
+              <span *ngIf="!row.rateRequestCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.quotationCount > 0"
+                class="count-badge badge-info"
+                (click)="$event.stopPropagation(); openWorkload('Quotation', row)">
+                {{ row.quotationCount }}
+              </span>
+              <span *ngIf="!row.quotationCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.bookingCount > 0"
+                class="count-badge badge-warning"
+                (click)="$event.stopPropagation(); openWorkload('Booking', row)">
+                {{ row.bookingCount }}
+              </span>
+              <span *ngIf="!row.bookingCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.loadPlanCount > 0"
+                class="count-badge badge-success"
+                (click)="$event.stopPropagation(); openWorkload('LoadPlan', row)">
+                {{ row.loadPlanCount }}
+              </span>
+              <span *ngIf="!row.loadPlanCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.masterJobCount > 0"
+                class="count-badge badge-purple"
+                (click)="$event.stopPropagation(); openWorkload('MasterJob', row)">
+                {{ row.masterJobCount }}
+              </span>
+              <span *ngIf="!row.masterJobCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.jobCount > 0"
+                class="count-badge badge-teal"
+                (click)="$event.stopPropagation(); openWorkload('Job', row)">
+                {{ row.jobCount }}
+              </span>
+              <span *ngIf="!row.jobCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.blCount > 0"
+                class="count-badge badge-orange"
+                (click)="$event.stopPropagation(); openWorkload('BL', row)">
+                {{ row.blCount }}
+              </span>
+              <span *ngIf="!row.blCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.siCount > 0"
+                class="count-badge badge-pink"
+                (click)="$event.stopPropagation(); openWorkload('SI', row)">
+                {{ row.siCount }}
+              </span>
+              <span *ngIf="!row.siCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.invoiceCount > 0"
+                class="count-badge badge-danger"
+                (click)="$event.stopPropagation(); openWorkload('Invoice', row)">
+                {{ row.invoiceCount }}
+              </span>
+              <span *ngIf="!row.invoiceCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-total">
+              <strong class="total-count">{{ getTotal(row) }}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !displayRows.length" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-inbox"></i>
+    </div>
+    <h5>No Records Found</h5>
+    <p>No activities found for current filter. Try adjusting filters or search.</p>
+    <button class="btn-action btn-primary" (click)="onResetClick()">
+      <i class="fas fa-sync-alt"></i>
+      Reset Filters
+    </button>
+  </div>
+
+</div>

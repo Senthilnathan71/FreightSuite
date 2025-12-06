@@ -1383,6 +1383,35 @@ createReverseVoucher(payload: any) {
       map((resp: any) => {
         return resp;
       })
-    )
+    );
   }
+  getActivityAllocationDashboard() {
+  return this.http.get<any>('activity-allocation/metrics');
+}
+
+getActivityAllocationResourceSummary(
+  mode: 'pending' | 'processed' | 'all',
+) {
+  return this.http.get<any>(
+    `activity-allocation/resource-summary?mode=${mode}`,
+  );
+}
+
+getActivityAllocationWorkload(page: number, pageSize: number) {
+  return this.http.get<any>(
+    `activity-allocation/workload-details?mode=pending&page=${page}&pageSize=${pageSize}`,
+  );
+}
+
+searchActivityAllocationWorkload(
+  query: string,
+  page: number,
+  pageSize: number,
+) {
+  return this.http.get<any>(
+    `activity-allocation/workload-details?mode=pending&search=${encodeURIComponent(
+      query,
+    )}&page=${page}&pageSize=${pageSize}`,
+  );
+}
 }
