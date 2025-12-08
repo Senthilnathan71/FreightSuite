@@ -26,103 +26,113 @@
     <div id="printContent" class="p-1">
       <div  style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; justify-content:flex-start; page-break-after:always; position: relative;">
 
-    <!-- Company Info -->
-    <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; flex-direction: column;">
-                    <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                        style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                </div>
-
-                <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                    <p style="margin:2px 0;">{{ currentBranch?.addressLine1 }}</p>
-                    <p style="margin:2px 0;">{{ currentBranch?.addressLine2 }}</p>
-                    <p style="margin:2px 0;">{{ currentBranchCityName }}</p>
-                    <p style="margin:2px 0;">{{ currentBranch?.postalCode }}</p>
-                    <p style="margin:2px 0;">{{ currentBranch?.phoneNumber }}</p>
-                </div>
-            </div>
+    <!-- Company Header -->
+<div style="display: flex; flex-direction: column; width: 100%;  font-weight: 800;" class=" p-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; flex-direction: column;">
+          <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+     alt="Company Logo" 
+     style="
+        width:50px; 
+        height:50px; 
+        object-fit:contain; 
+        margin-bottom:0.5rem;
+        visibility: visible !important;
+        display: block !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+     ">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
         </div>
+
+        <div style="flex: 1; text-align: center; padding-right: 12%;">
+            <h2 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h2>
+            <h4 style="margin: 0;"><strong>{{ currentBranch?.branchName || 'Company Branch' }}</strong></h4>
+            <p style="margin: 2px 0; font-size: 15px;"><strong>{{ currentBranch?.addressLine1 || '' }}</strong></p>
+            <p style="margin: 2px 0; font-size: 15px;"><strong>   {{ currentBranch?.addressLine2 || '' }} ,  
+                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
+                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</strong></p>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+        </div>
+    </div>
+</div>
 
  
 
     <!-- Cash Receipt Section -->
     <section style="display:flex; flex-direction:column;  border-top: 1px solid black;">
-        <h5 style="text-align:center; margin:5px auto 12px auto; font-weight:600;">Cash Receipt</h5>
+        <h3 style="text-align:center; margin:5px auto 12px auto; font-weight:600;"><strong></strong></h3>
 
-        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;">
+        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;"class="fs-4">
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Receipt No.</strong></div>
+                    <div style="width:120px; white-space:nowrap;"><strong>Receipt No.</strong></div>
                     <div>: {{receiptPrintData?.VoucherNumber}}</div>
                 </div>
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Received From</strong></div>
+                    <div style="width:120px; white-space:nowrap;"><strong>Received From</strong></div>
                     <div>: {{receiptPrintData?.PartyName}}</div>
                 </div>
             </div>
 
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Receipt Date</strong></div>
+                    <div style="width:120px; white-space:nowrap;"><strong>Receipt Date</strong></div>
                     <div>: {{receiptPrintData?.VoucherDate | formatDate}}</div>
                 </div>
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Currency</strong></div>
+                    <div style="width:120px; white-space:nowrap;"><strong>Currency</strong></div>
                     <div>: {{receiptPrintData?.CurrencyCode}}</div>
                 </div>
             </div>
         </div>
 
         <!-- Voucher Table -->
-        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; ">
             <tbody>
                 <tr>
-                    <th style="width:60%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Description</strong></th>
-                    <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Curr.</strong></th>
+                    <th style="width:60%; border:1px solid black; padding:2px 8px; text-align:center; border-left: none; "><strong>Description</strong></th>
+                    <th style="width:5%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Curr.</strong></th>
                     <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Ex.Rate</strong></th>
-                    <th style="width:20%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Amount</strong></th>
+                    <th style="width:20%; border:1px solid black; padding:2px 8px; text-align:center; border-right:none;"><strong>Amount</strong></th>
                 </tr>
                 <tr>
-                    <td style="width:60%; border:1px solid black; padding:2px 8px;text-align:center;">{{receiptPrintData?.Narration}}</td>
+                    <td style="width:60%; border:1px solid black; padding:2px 8px;text-align:start;border-left:none;">{{receiptPrintData?.Narration}}</td>
                     <td style="width:10%; border:1px solid black; padding:2px 8px;">{{receiptPrintData?.CurrencyCode}}</td>
                     <td style="width:10%; border:1px solid black; padding:2px 8px; text-align:right;">{{receiptPrintData?.ExchangeRate | number:'1.2-2'}}</td>
-                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.2-2'}}</td>
+                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;border-right:none">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.3-3'}}</td>
                 </tr>
             </tbody>
         </table>
 
-        <h5 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="padding:4px 0; text-decoration:underline; font-weight:600;">Remittance Details</h5>
+        <h5 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="padding:4px 0; text-decoration:underline;" class="mb-0"><strong>Remittance Details</strong></h5>
 
         <!-- Remittance Table -->
-        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; ">
             <tbody>
                 <tr>
-                    <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Voucher No.</strong></th>
+                    <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; border-left:none"><strong>Voucher No.</strong></th>
                     <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Voucher Type</strong></th>
                     <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Voucher Date</strong></th>
                     <th style="width:7%; border:1px solid black; padding:2px 8px; text-align:center;"><strong>Curr.</strong></th>
                     <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center;"><strong>Curr. Amt</strong></th>
                     <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Local Amount</strong></th>
-                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>TDS Amount</strong></th>
+                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; border-right:none "><strong>TDS Amount</strong></th>
                 </tr>
                 <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
-                    <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherNumber}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align:center;border-left:none">{{voucher?.VoucherNumber}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherType}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherDate | formatDate}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.CurrencyCode}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"></td>
                 </tr>
                 <tr>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;" colspan="4"><strong>Total</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-left:none" colspan="4"><strong>Total</strong></td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong></td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"></td>
                 </tr>
             </tbody>
         </table>

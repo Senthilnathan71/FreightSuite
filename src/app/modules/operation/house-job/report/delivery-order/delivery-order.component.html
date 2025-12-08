@@ -24,6 +24,7 @@
 
 <div class="modal-body">
   <div id="printContent"class="p-1 ">
+
    <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
   <!-- Company Header -->
@@ -58,7 +59,7 @@
   <div style="display:flex; flex-wrap:wrap; margin-bottom:2px; padding-left:2%; padding-right:2%; margin-top: 10px;" class="ms-2 fs-4">
     <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;">
       <strong>Release To </strong> <br>
-      <div>{{ housejobData?.CustomerName }} <br> {{ housejobData?.CustomerAddress }}</div>
+      <div class="mt-2">{{ housejobData?.CustomerName }} <br> {{ housejobData?.CustomerAddress }}</div>
     </div>
     <div style="flex:0 0 50%; max-width:50%;">
       <div style="display:flex; margin-bottom:4px;">
@@ -83,36 +84,43 @@
 <!-- Shipment Details -->
 <h5 style="margin:8px 0; margin-left:25px;"><strong>SHIPMENT DETAILS</strong></h5>
 
-<div style="border-top:1px solid black; padding:8px 20px; margin-bottom:0; margin-top: 8px;" class="fs-4">
-  <div style="display:flex; flex-wrap:wrap; margin-bottom:8px;">
+<!-- Shipper & Consignee -->
+<div style="border-top:1px solid black; padding:0px 25px 20px 25px; margin-bottom:10px; margin-top:2px;" 
+     class="fs-4 pt-2">
+
+  <div style="display:flex; flex-wrap:wrap; margin-top:10px;">
     <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;">
-      <strong>Shipper </strong><br>
-      <span class="mt-2">{{ housejobData?.ShipperName }} <br> {{ housejobData?.ShipperAddress }}</span>
+      <strong>Shipper</strong><br>
+      <span>{{ housejobData?.ShipperName }}<br>{{ housejobData?.ShipperAddress }}</span>
     </div>
+
     <div style="flex:0 0 50%; max-width:50%;">
-      <strong>Consignee </strong><br>
-      <span>{{ housejobData?.ConsigneeName }} <br> {{ housejobData?.ConsigneeAddress }}</span>
+      <strong>Consignee</strong><br>
+      <span>{{ housejobData?.ConsigneeName }}<br>{{ housejobData?.ConsigneeAddress }}</span>
     </div>
   </div>
+
 </div>
 
 
-  <!-- Notify & Goods Available -->
-<div style="display:flex;  border-top:1px solid black; padding:10px 20px;"class="fs-4">
 
-  <!-- Left Column -->
-  <div style="flex:1; padding-right:20px;">
+<!-- Notify & Goods Available -->
+<div style="display:flex; border-top:1px solid black; padding:0px 25px 20px 25px;" 
+     class="fs-4 pt-2">
+
+  <div style="flex:1; padding-right:20px; margin-top:10px;">
     <strong style="display:block; margin-bottom:4px;">Notify Party</strong>
-    <span style="display:block;">{{ housejobData?.Others?.[0]?.NotifyParty }}</span>
+    <span>{{ housejobData?.Others?.[0]?.NotifyParty }}</span>
   </div>
 
-  <!-- Right Column -->
-  <div style="flex:1;padding-right:20px;">
+  <div style="flex:1; padding-right:20px; margin-top:10px;">
     <strong style="display:block; margin-bottom:4px;">Goods Available At</strong>
-    <span style="display:block;">{{ housejobData?.Others?.[0]?.YardCFS }}</span>
+    <span>{{ housejobData?.Others?.[0]?.YardCFS }}</span>
   </div>
 
 </div>
+
+
 
 
   <!-- Other Shipment Info -->
@@ -284,7 +292,7 @@
     </table>
   </div>
 
-         <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;" class="">
+         <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;" class="fs-4">
     <strong style="white-space:nowrap;min-width:150px;">Amount in Words   </strong>
 
     <p style="margin:0; line-height:22px; word-break:break-word;">
@@ -292,10 +300,23 @@
     </p>
 </div>
 
+<div style="width:100%; text-align:right; display:block; margin-top:10px;">
+  <h5 style="margin:0; padding:0;">
+    FOR <strong>
+      {{ currentCompany?.companyName || 'Company Name' }} 
+      ({{ currentBranch?.branchName || 'Company Branch' }}) 
+      (AS AGENTS ONLY)
+    </strong>
+  </h5>
+</div>
+
 
 
  <!-- Footer -->
- <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0 20px;"class="fs-4">
+ <footer style=" margin-top:auto;
+  text-align:center;
+  font-size:10pt;
+  padding:10px 20px;"class="fs-4">
   <div style="display:flex; justify-content:space-between; align-items:center;">
     
     <div style="text-align:left;">
@@ -312,6 +333,7 @@
 
   </div>
 </footer>
+
 
 
 </div>
