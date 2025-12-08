@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { BookingListComponent } from './booking/booking-list/booking-list.component';
 import { BookingEntryComponent } from './booking/booking-entry/booking-entry.component';
 import { MasterJobEntryComponent } from './master-job/master-job-entry/master-job-entry.component';
+import { UnsavedChangesGuard } from '../../core/guards/unsaved-changes.guard';
 import { ReportComponent } from './report/report/report.component';
 import { MasterJobListComponent } from './master-job/master-job-list/master-job-list.component';
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
@@ -75,6 +76,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'master-job/entry',
         component: MasterJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Master Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
@@ -83,6 +85,7 @@ export const OperationRoutes: Routes = [
        {
         path: 'master-job/entry/:id',
         component: MasterJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Master Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],

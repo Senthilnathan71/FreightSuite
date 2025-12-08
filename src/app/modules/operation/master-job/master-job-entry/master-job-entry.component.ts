@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation, HostListener } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbDatepickerModule,
@@ -59,6 +59,7 @@ import { MblComponent } from '../reports/mbl/mbl.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -105,7 +106,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     DatePipe
   ],
 })
-export class MasterJobEntryComponent implements OnInit, OnDestroy {
+export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
 
   private destroy$ = new Subject<void>();
@@ -218,9 +219,16 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   arapData: any[] = [];
 arapLoading = false;
 arapFilter = {
-  voucherType: 'all', 
+  voucherType: 'all',
   status: 'all' // 'all', 'unpaid', 'partial', 'paid'
 };
+
+  // Dirty tracking for unsaved changes detection
+  isDirty = false;
+  private initialConnectionsCount = 0;
+  private initialContainersCount = 0;
+  private initialContainerActivitiesCount = 0;
+  private formSaved = false;
 
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -378,6 +386,209 @@ arapFilter = {
       });
 
   }
+
+  // ===== UNSAVED CHANGES DETECTION ===== //
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (this.formSaved) {
+      return false;
+    }
+
+    // Check if main form is dirty
+    if (this.masterJobForm?.dirty) {
+      return true;
+    }
+
+    // Check if containers changed
+    if (this.masterJobContainers?.length !== this.initialContainersCount) {
+      return true;
+    }
+
+    // Check if connections changed
+    if (this.connectionResult?.length !== this.initialConnectionsCount) {
+      return true;
+    }
+
+    // Check if container activities changed
+    if (this.containerActivityData?.length !== this.initialContainerActivitiesCount) {
+      return true;
+    }
+
+    // Check custom dirty flag
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.masterJobForm.invalid) {
+        this.toastr.error('Please fill all required fields');
+        this.masterJobForm.markAllAsTouched();
+        resolve(false);
+        return;
+      }
+
+      // Call the existing submit logic
+      this.saveAndResolve(resolve);
+    });
+  }
+
+  private saveAndResolve(resolve: (value: boolean) => void): void {
+    this.isLoading = true;
+
+    const getPortCode = (portSid: any): string => {
+      if (!portSid && portSid !== 0) return '';
+      const port = this.portList.find(p => p.PortMasterSid === portSid);
+      return port ? port.PortCode : portSid?.toString().substring(0, 100);
+    };
+
+    const formValue = this.masterJobForm.value;
+    const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
+    const voyageData = {
+      MasterJobVoyageSid: formValue.MasterJobVoyageSid,
+      VoyageMasterSid: formValue.VoyageMasterSid,
+      VesselName: formValue.VesselName,
+      VoyageNo: formValue.VoyageNo,
+      ETD: this.formatDate(formValue.ETD),
+      ETA: this.formatDate(formValue.ETA),
+      ATA: this.formatDate(formValue.ATA),
+      ATD: this.formatDate(formValue.ATD),
+      DestinationATA: this.formatDate(formValue.DestinationATA),
+      CarrierSid: formValue.CarrierMasterSid,
+      CarrierName: formValue.CarrierName,
+    };
+
+    const othersData = {
+      MasterJobOthersSid: formValue.MasterJobOthersSid || null,
+      Yard: formValue.Yard,
+      YardAddress: formValue.YardAddress,
+      Transporter: formValue.Transporter,
+      HandlingInformation: formValue.HandlingInformation,
+      InternalNote: formValue.InternalNote,
+      CFS: formValue.CFS,
+      CFSAddress: formValue.CFSAddress,
+      StuffingStartDate: formValue.StuffingStartDate,
+      StuffingEndDate: formValue.StuffingEndDate,
+      CurrencyCode: formValue.CurrencyCode || '',
+      SellExchangeRate: formValue.SellExchangeRate,
+      AgentExchangeRate: formValue.AgentExchangeRate,
+      Coload: formValue.Coload ? 'Y' : 'N',
+      CoLoader: formValue.CoLoader,
+      ExportDoNo: formValue.ExportDoNo,
+      CarrierRef: formValue.CarrierRef,
+      AgentRef: formValue.AgentRef,
+      ExportDoDate: formValue.ExportDoDate,
+      SOBDate: formValue.SOBDate,
+    };
+
+    const formData: any = {
+      ...formValue,
+      POO: getPortCode(formValue.POO),
+      POL: getPortCode(formValue.POL),
+      POD: getPortCode(formValue.POD),
+      FPD: getPortCode(formValue.FPD),
+      others: othersData,
+      houseJobCustoms: customsData,
+      voyages: [voyageData],
+      DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
+      POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
+      PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
+      CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
+      MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
+      Status: formValue.Status === 'Active' ? 'A' : 'S',
+      masterJobConnection: this.connectionResult,
+      costRevenueCharges: this.rateResult,
+      masterJobContainers: this.formatContainerData(),
+      MasterJobDate: this.formatDate(formValue.MasterJobDate),
+      MBLDate: this.formatDate(formValue.MBLDate),
+      DGBookingDate: this.formatDate(formValue.DGBookingDate),
+      DGApprovedDate: this.formatDate(formValue.DGApprovedDate),
+      ETA: this.formatDate(formValue.ETA),
+      ETD: this.formatDate(formValue.ETD),
+      ATA: this.formatDate(formValue.ATA),
+      ATD: this.formatDate(formValue.ATD),
+      DestinationATA: this.formatDate(formValue.DestinationATA),
+      Haz: formValue.Haz ? 'Y' : 'N',
+      CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+    };
+
+    const allShipments = (this.attachedBookings.getRawValue() || [])
+      .filter(ship => !ship.MasterJobSid)
+      .map(shipment => ({
+        BookingHeaderSid: shipment.BookingHeaderSid,
+        HBLNo: shipment.HBLNo,
+      }));
+    formData['shipmentList'] = [...allShipments];
+
+    if (this.isEditMode && this.masterJobSid) {
+      formData.MasterJobSid = this.masterJobSid;
+      this.operationService.updateMasterJob(formData).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          if (response.status) {
+            this.toastr.success('Master Job updated successfully');
+            this.resetDirtyState();
+            this.formSaved = true;
+            resolve(true);
+          } else {
+            this.toastr.error(response.message || 'Failed to update Master Job');
+            resolve(false);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.toastr.error('Failed to update Master Job');
+          resolve(false);
+        }
+      });
+    } else {
+      this.operationService.createMasterJob(formData).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          if (response.status) {
+            this.toastr.success('Master Job created successfully');
+            this.resetDirtyState();
+            this.formSaved = true;
+            resolve(true);
+          } else {
+            this.toastr.error(response.message || 'Failed to create Master Job');
+            resolve(false);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.toastr.error('Failed to create Master Job');
+          resolve(false);
+        }
+      });
+    }
+  }
+
+  private resetDirtyState(): void {
+    this.isDirty = false;
+    this.formSaved = false;
+    this.masterJobForm?.markAsPristine();
+    this.initialContainersCount = this.masterJobContainers?.length || 0;
+    this.initialConnectionsCount = this.connectionResult?.length || 0;
+    this.initialContainerActivitiesCount = this.containerActivityData?.length || 0;
+  }
+
+  private markAsDirty(): void {
+    this.isDirty = true;
+    this.formSaved = false;
+  }
+
+  // ===== END UNSAVED CHANGES DETECTION ===== //
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -936,6 +1147,9 @@ private containerNumberValidator(): ValidatorFn {
       
       this.isLoading = false;
       this.spinner.hide();
+
+      // Reset dirty state after data is fully loaded
+      this.resetDirtyState();
     },
     error: (error) => {
       this.toastr.error('Failed to load master job data');
@@ -1769,6 +1983,7 @@ private autoPopulateVoyageData(vessel: any): void {
           this.isLoading = false;
           if (response.status) {
             this.toastr.success('Master Job updated successfully');
+            this.resetDirtyState();
             this.loadMasterJobData(this.masterJobSid);
           } else {
             this.toastr.error(response.message || 'Failed to update Master Job');
@@ -1786,16 +2001,15 @@ private autoPopulateVoyageData(vessel: any): void {
       this.isLoading = false;
       if (response.status) {
         this.toastr.success('Master Job created successfully');
-        
+        this.resetDirtyState();
+
         // ✅ CORRECT PATH: response.data.newMasterJob.MasterJobSid
         const masterJobSid = response.data?.newMasterJob?.MasterJobSid;
-        
-       
-        
+
         if (masterJobSid) {
           // Navigate to entry page with the new ID
           this.router.navigate(['/operation/master-job/entry', masterJobSid]);
-          
+
           // OPTIONAL: Clear any cached loading plan data
           this.operationService.clearLoadingPlanData();
         } else {
@@ -1838,6 +2052,7 @@ handleCustomsChange(event: any) {
       }
 
       this.currentContainerModal.close();
+      this.markAsDirty();
 
     } else {
       this.toastr.error('Please fill all required container fields');
@@ -2008,6 +2223,7 @@ handleCustomsChange(event: any) {
     console.log('Connections changed:', allConnections);
     if (allConnections && allConnections.length >= 0) {
       this.connectionResult = [...allConnections];
+      this.markAsDirty();
     }
   }
 
@@ -2061,6 +2277,7 @@ handleCustomsChange(event: any) {
   handleRateChange(allRates: any[]) {
     if (allRates && allRates.length > 0) {
       this.rateResult = [...allRates];
+      this.markAsDirty();
     }
   }
 
@@ -2209,6 +2426,7 @@ handleCustomsChange(event: any) {
 
     console.log('Updated containerActivityData:', this.containerActivityData);
     console.log('Updated form array length:', containerActivitiesFormArray.length);
+    this.markAsDirty();
   }
 
   // Customs component sync method
