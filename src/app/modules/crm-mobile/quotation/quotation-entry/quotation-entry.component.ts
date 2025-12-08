@@ -459,6 +459,16 @@ patchEnqPageValues(enqData: any) {
     const lastAddedQuote = this.quoteRoutes.length - 1;
     this.addQuoteCarrier(lastAddedQuote);
 
+    console.log("TESTING",this.quotationForm.getRawValue())
+    
+    this.addQuoteProduct(lastAddedQuote,{
+      Sno : 1,
+      ProductSid : null,
+      ProductName : route?.ProductName,
+      PackageType : null,  // ask sir
+      CargoDescription : null, // ask sir
+    })
+
     // Handle additional logic
     // this.addQuoteCharge(routeIndex);
     // this.handleValidationOnDept(routeIndex,segment);
@@ -1090,7 +1100,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   // Quote Product
 
   quoteProducts(routeIndex: number): FormArray {
-    return this.quoteRoutes.at(routeIndex).get('quoteProducts') as FormArray;
+    return this.quoteRoutes.at(routeIndex)?.get('quoteProducts') as FormArray;
   }
 
   addQuoteProduct(routeIndex: number, data?: any) {

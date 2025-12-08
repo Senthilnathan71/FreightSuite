@@ -765,7 +765,7 @@
 
 
 
-                      <!-- <div class="col-12 px-2">
+                      <div class="col-12 px-2">
                         <div class="d-flex justify-content-end">
                           <button class="btn btn-sm btn-info mb-1" (click)="addQuoteProduct(routeIndex)">
                             <i class="fas fa-plus me-1"></i> Add Product
@@ -829,10 +829,10 @@
                                   </button>
                                 </td>
                                 <td>
-                                  <dofi-searchable-dropdown [items]="productList" formControlName="ProductSid"
+                                  <dofi-searchable-dropdown [items]="productList" formControlName="ProductName"
                                     [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
                                     [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']"
-                                    [bindValue]="'ProductMasterSId'"
+                                    [bindValue]="'ProductName'"
                                     (itemSelected)="onProductChange($event,routeIndex,productIndex)"
                                     style="padding: 0;">
                                   </dofi-searchable-dropdown>
@@ -938,7 +938,7 @@
                           </table>
                         </div>
                         
-                      </div> -->
+                      </div>
 
 
                       <div class="col-12" formArrayName="quoteCarriers">

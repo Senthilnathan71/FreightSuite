@@ -1523,7 +1523,8 @@ ${this.userData.userName}`;
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           Qty: cargo.Qty,
-          ServiceLevel: response.IncoTerms
+          ServiceLevel: response.IncoTerms,
+          ProductName : cargo.ProductName,
         };
       });
     });
