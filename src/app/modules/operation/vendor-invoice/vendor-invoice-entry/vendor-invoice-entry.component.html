@@ -872,37 +872,69 @@
       (click)="closeSearchCostsModal()"></button>
   </div>
   <div class="modal-body">
-    <!-- Search Criteria -->
-    <div class="row g-3 mb-1 compact-form ">
-      <aside class="col-md-1"></aside>
-      <div class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select class="ng-select" [(ngModel)]="searchType" aria-placeholder="Search By">
-            <ng-option value="Master Job">Master Job</ng-option>
-            <ng-option value="House Job">House Job</ng-option>
-            <ng-option value="MBL No">MBL No</ng-option>
-            <ng-option value="HBL No">HBL No</ng-option>
-            <ng-option value="Container No">Container No</ng-option>
-          </ng-select>
-          <!-- <label class="input-label">Search By</label> -->
+   <!-- Search Criteria -->
+<div class="row g-3 mb-1 compact-form">
+  <aside class="col-md-1"></aside>
+  
+  <div class="col-md-4">
+    <div class="custom-form-group custom-form-group-select">
+      <ng-select class="ng-select" [(ngModel)]="searchType" (change)="onSearchTypeChange($event)" aria-placeholder="Search By">
+        <ng-option value="Master Job">Master Job</ng-option>
+        <ng-option value="House Job">House Job</ng-option>
+        <ng-option value="MBL No">MBL No</ng-option>
+        <ng-option value="HBL No">HBL No</ng-option>
+        <ng-option value="Vendor Name">Vendor Name</ng-option>
+        <ng-option value="Container No">Container No</ng-option>
+      </ng-select>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+        <!-- Input field for non-Vendor Name searches -->
+        <div *ngIf="searchType !== 'Vendor Name'" class="custom-form-group">
+          <input type="text" class="custom-input-field sm" [(ngModel)]="searchValue" 
+            [placeholder]="getSearchPlaceholder()" />
         </div>
-
+        
+        <!-- Vendor selection for Vendor Name search -->
+        <div *ngIf="searchType === 'Vendor Name'" class="custom-form-group">
+          <dofi-searchable-dropdown [items]="vendorList" placeholder="Select Vendor"
+            [displayFields]="customerLookupConfig.displayFields"
+            [displayLabels]="customerLookupConfig.displayLabels" 
+            [labelFields]="customerLookupConfig.labelFields"
+            bindLabel="CustomerName" bindValue="CustomerMasterSid" 
+            (itemSelected)="onVendorSearchSelect($event)">
+          </dofi-searchable-dropdown>
+        </div>
       </div>
-      <div class="col-md-4">
+      
+      <!-- Vendor Branch Selection (only for Vendor Name search) -->
+      <div *ngIf="searchType === 'Vendor Name'" class="col-md-3">
         <div class="custom-form-group">
-          <!-- <label class="form-label">Search Value</label> -->
-          <input type="text" class="custom-input-field sm" [(ngModel)]="searchValue" placeholder="Enter search value" />
+          <ng-select [items]="vendorBranchList" bindLabel="Address" 
+            [(ngModel)]="selectedVendorBranchForSearch"
+            (change)="onVendorBranchSearchSelect($event)" 
+            placeholder="Select Vendor Branch" appendTo="body">
+            <ng-template ng-option-tmp let-item="item">
+              <div>
+                <strong>{{ item.Address || item.CustomerAddress1 || 'Branch' }}</strong>
+                <br>
+                <small class="text-muted">GST: {{ item.GSTNo || 'Not available' }}</small>
+              </div>
+            </ng-template>
+          </ng-select>
         </div>
-
       </div>
+      
       <div class="col-md-1">
-
         <button type="button" class="btn btn-info btn-sm" (click)="searchPendingCostsAction()"
-          [disabled]="searchResultsLoading" style="margin-top: 10px;">
+          [disabled]="searchResultsLoading || (searchType === 'Vendor Name' && !selectedVendorForSearch)" 
+          style="margin-top: 10px;">
           <i class="fas fa-search me-1"></i>
           Search
         </button>
       </div>
+      
       <aside class="col-md-1"></aside>
     </div>
 
@@ -998,6 +1030,7 @@
 
                 <th class="sticky-top">Vendor</th>
                 <th class="sticky-top">Charge Code</th>
+                <th class="sticky-top">HS Code</th>
                 <th class="sticky-top">Description</th>
                 <th class="sticky-top">Job No</th>
                 <th class="sticky-top">MBL No</th>
@@ -1022,6 +1055,7 @@
                   </div>
                 </td>
                 <td>{{ cost.ChargeCode || '-' }}</td>
+                <td>{{ cost.HSSACCode || cost.HSNCode || '-' }}</td>
                 <td>{{ cost.ChargeDescription }}</td>
                 <td>{{ cost.JobNo || cost.MasterJobNumber || '-' }}</td>
                 <td>{{ cost.MBLNo || '-' }}</td>
