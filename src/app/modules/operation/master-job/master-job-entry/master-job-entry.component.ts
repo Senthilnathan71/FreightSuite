@@ -1148,8 +1148,8 @@ private containerNumberValidator(): ValidatorFn {
       this.isLoading = false;
       this.spinner.hide();
 
-      // Reset dirty state after data is fully loaded
-      this.resetDirtyState();
+      // Reset dirty state after all async operations complete (including loadCustomsData)
+      setTimeout(() => this.resetDirtyState(), 100);
     },
     error: (error) => {
       this.toastr.error('Failed to load master job data');
