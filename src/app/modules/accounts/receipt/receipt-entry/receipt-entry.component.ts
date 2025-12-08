@@ -300,7 +300,7 @@ export class ReceiptEntryComponent implements OnInit {
         this.validateAmount();
       })
     });
-    this.setupBillMatchingValidation()
+    // this.setupBillMatchingValidation()
     this.receiptForm.setValidators(consistentExchangeRatesValidator());
     this.receiptForm.updateValueAndValidity();
   }
@@ -571,32 +571,33 @@ export class ReceiptEntryComponent implements OnInit {
     }
 
 
-    const hasPartyDetail = detailItems.some(d => d.LedgerMasterSid === formValue.LedgerMasterSid);
-    if (formValue.LedgerMasterSid && !hasPartyDetail) {
-      this.appSettingService.showError('Please add a party detail for the alloted ledger');
+    const partyDetail = detailItems.find(d => d.LedgerMasterSid === formValue.PartyMasterSid);
+    if (formValue.PartyMasterSid && !partyDetail) {
+      this.appSettingService.showError('Please add a party detail for the alloted ledger.');
       return;
     }
 
     const hasBankDetail = detailItems.some(d => d.COAMasterSid === formValue.BankCOA);
     if (formValue.BankCOA && !hasBankDetail) {
-      this.appSettingService.showError('Please add a bank detail for the alloted COA');
-      return;
-    }
-
-    const totalDebit = detailItems.filter(d => d.DrCr === 'D')
-      .reduce((sum, d) => sum + Number(d.LocalAmount || 0), 0);
-
-    const totalCredit = detailItems.filter(d => d.DrCr === 'C')
-      .reduce((sum, d) => sum + Number(d.LocalAmount || 0), 0);
-
-    if(this.totalDebits === 0 && this.totalCredits === 0){
-      this.appSettingService.showError('Please add at least one debit or credit amount');
+      this.appSettingService.showError('Please add a bank detail for the alloted COA.');
       return;
     }
 
 
-    if (totalDebit !== totalCredit) {
-      this.appSettingService.showError('Please make sure the sum of debit amounts and credit amounts are equal');
+
+    if(this.totalDebits === 0 || this.totalCredits === 0){
+      this.appSettingService.showError('Please add at least one debit or credit amount.');
+      return;
+    }
+
+
+    if (this.totalDebits !== this.totalCredits) {
+      this.appSettingService.showError('Please make sure the sum of debit amounts and credit amounts are equal.');
+      return;
+    }
+
+    if(this.getTotalMatchCurrAmt() > partyDetail.Amount){
+      this.appSettingService.showError('Please make sure the matching amount does not exceed the party amount.');
       return;
     }
 
@@ -1435,13 +1436,34 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   getTotalMatchCurrAmt() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('matchCurrAmt')?.value || 0), 0).toFixed(2);
+    const totalMatchCurrAmt = this.voucherMatchings.controls
+      .reduce((total, control) => {
+        if(control.get('drCr')?.value === "Dr"){
+          return total + Number(control.get('matchCurrAmt')?.value || 0)
+        }
+        return total - Number(control.get('matchCurrAmt')?.value || 0)
+      }, 0);
+      return Number(totalMatchCurrAmt).toFixed(2);
+  }
+  
+  getPartyDetailAmount(){
+    const partyDetail = this.detailItems.getRawValue().find(d => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
+    const amount = Number(partyDetail?.Amount || 0);
+    return amount.toFixed(2);
+  }
+
+  validatePartyMatchingAmount(): boolean {
+    return Number(this.getTotalMatchCurrAmt()) > Number(this.getPartyDetailAmount());
   }
 
   getTotalMatchLocalAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('matchLocalAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if(control.get('drCr')?.value === "Dr"){
+          return total + Number(control.get('matchCurrAmt')?.value || 0)
+        }
+        return total - Number(control.get('matchCurrAmt')?.value || 0)
+      }, 0).toFixed(2);
   }
 
   getTotalTdsAmt() {
@@ -2009,10 +2031,10 @@ export class ReceiptEntryComponent implements OnInit {
     let totalDebits = 0;
     (this.detailItems.getRawValue() || []).forEach( vd => {
       console.log(vd)
-      if(vd.DrCr === 'Cr'){
-        totalCredits += Number(vd.matchCurrAmt) || 0;
+      if(vd.DrCr === 'C'){
+        totalCredits += Number(vd.Amount) || 0;
       } else {
-        totalDebits += Number(vd.matchCurrAmt) || 0;
+        totalDebits += Number(vd.Amount) || 0;
       }
     })
     this.totalCredits = totalCredits || 0;
@@ -2025,45 +2047,45 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
 
-  private setupBillMatchingValidation(): void {
-    this.voucherMatchings.valueChanges
-      .subscribe(() => this.validateTotalMatchingAmount());
-    this.detailItems.valueChanges
-      .subscribe(() => this.validateTotalMatchingAmount());
-  }
+  // private setupBillMatchingValidation(): void {
+  //   this.voucherMatchings.valueChanges
+  //     .subscribe(() => this.validateTotalMatchingAmount());
+  //   this.detailItems.valueChanges
+  //     .subscribe(() => this.validateTotalMatchingAmount());
+  // }
 
-  private validateTotalMatchingAmount(): void {
-    // Find party detail (D) row: usually first or with party LedgerMasterSid
-    console.log("Validating");
-    const detailItems = this.detailItems.getRawValue();
-    const partyDetail = detailItems.find((d: any) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
-    if(!partyDetail) {
-      this.matchingError = null;
-      return;
-    }
-    const partyAmount = Number(partyDetail?.Amount ?? 0);
-    console.log("party info",{
-      partyDetail,
-      partyAmount
-    })
+  // private validateTotalMatchingAmount(): void {
+  //   // Find party detail (D) row: usually first or with party LedgerMasterSid
+  //   console.log("Validating");
+  //   const detailItems = this.detailItems.getRawValue();
+  //   const partyDetail = detailItems.find((d: any) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
+  //   if(!partyDetail) {
+  //     this.matchingError = null;
+  //     return;
+  //   }
+  //   const partyAmount = Number(partyDetail?.Amount ?? 0);
+  //   console.log("party info",{
+  //     partyDetail,
+  //     partyAmount
+  //   })
 
-    // Calculate sum of all matching amounts
-    const totalBillMatchingAmount = this.voucherMatchings.controls
-      .reduce((sum, c) => sum + Number(c.get('matchCurrAmt')?.value ?? 0), 0);
+  //   // Calculate sum of all matching amounts
+  //   const totalBillMatchingAmount = this.voucherMatchings.controls
+  //     .reduce((sum, c) => sum + Number(c.get('matchCurrAmt')?.value ?? 0), 0);
 
-    console.log("totalBillMatchingAmount",totalBillMatchingAmount);
-    console.log(totalBillMatchingAmount > partyAmount);
-    if (totalBillMatchingAmount > partyAmount) {
-       this.matchingError = 'Total bill matching amount cannot be greater than party detail amount.';
-    } else {
-      if (this.matchingError) {
-        // Remove the custom error if present and condition is not met
-         this.matchingError = null;
-      }
-    }
-    console.log("FINAL DECISION",this.matchingError);
-    this.receiptForm.updateValueAndValidity();
-  }
+  //   console.log("totalBillMatchingAmount",totalBillMatchingAmount);
+  //   console.log(totalBillMatchingAmount > partyAmount);
+  //   if (totalBillMatchingAmount > partyAmount) {
+  //      this.matchingError = 'Total bill matching amount cannot be greater than party detail amount.';
+  //   } else {
+  //     if (this.matchingError) {
+  //       // Remove the custom error if present and condition is not met
+  //        this.matchingError = null;
+  //     }
+  //   }
+  //   console.log("FINAL DECISION",this.matchingError);
+  //   this.receiptForm.updateValueAndValidity();
+  // }
 
   showInfo() {
     if (!this.receiptData) return;
