@@ -1499,6 +1499,7 @@ ${this.userData.userName}`;
 
     const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
 
+
     let selectedFCLLCL;
     if (dept?.departmentType === "Sea") {
       selectedFCLLCL = dept?.FCLLCL;
@@ -1511,6 +1512,36 @@ ${this.userData.userName}`;
         const containerTypeCode = this.containerTypes.find(
           con => con.ContainerName === cargo.ContainerType
         )?.ContainerCode || null;
+        let packageTypeId = null;
+    
+    if (cargo.PackageType) {
+      
+      // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
+      if (typeof cargo.PackageType === 'string') {
+        // First try to find by UOMCode (this is likely what you need)
+        const packageTypeByCode = this.packageTypes.find(uom => 
+          uom.UOMCode === cargo.PackageType
+        );
+        
+        // If not found by code, try by name
+        const packageTypeByName = this.packageTypes.find(uom => 
+          uom.UOMName === cargo.PackageType
+        );
+        
+        // Use whichever is found
+        const foundPackageType = packageTypeByCode || packageTypeByName;
+        
+        if (foundPackageType) {
+          packageTypeId = foundPackageType.UOMMasterSid;
+          console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
+        } else {
+          console.warn(`No package type found for: "${cargo.PackageType}"`);
+          console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
+        }
+      }
+    } 
+    
+    console.log('Final PackageType ID:', packageTypeId);
         return {
           PORSid: route.PORSid,
           POLSid: route.POLSid,
@@ -1522,8 +1553,10 @@ ${this.userData.userName}`;
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
-          Qty: cargo.Qty,
-          ServiceLevel: response.IncoTerms
+          PackageQty: cargo.PackageQty,
+          PackageType: packageTypeId,
+          ServiceLevel: response.IncoTerms,
+          ProductName : cargo.ProductName,
         };
       });
     });

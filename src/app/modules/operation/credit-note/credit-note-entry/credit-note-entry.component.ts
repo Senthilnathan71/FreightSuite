@@ -26,6 +26,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
+import { TaxCalculationService } from '../../services/tax-calculation.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -167,6 +168,7 @@ export class CreditNoteEntryComponent {
         private spinner: NgxSpinnerService,
         private companySettings: CompanySettingsManagerService,
         public mps: MenuPermissionService,
+        private taxCalculationService: TaxCalculationService,
         private commonService: CommonService,
         private masterService: MasterService,
         private numberToWords: NumberToWordsService
@@ -704,10 +706,8 @@ private patchInvoiceData(invoiceData: any) {
           LocalAmount: transaction.LocalAmount || detail.LocalAmount,
           TaxAmount1: transaction.TaxAmount1 || detail.TaxAmount1,
           TaxAmount2: transaction.TaxAmount2 || detail.TaxAmount2,
-          TaxAmountIGST: transaction.TaxAmountIGST || detail.TaxAmountIGST,
           TaxPercentage1: transaction.TaxPercentage1 || detail.TaxPercentage1,
           TaxPercentage2: transaction.TaxPercentage2 || detail.TaxPercentage2,
-          TaxPercentageIGST: transaction.TaxPercentageIGST || detail.TaxPercentageIGST,
         };
       });
   }
@@ -732,7 +732,6 @@ private patchInvoiceData(invoiceData: any) {
     const taxableAmount = detail.TaxableAmount ? (Number(detail.TaxableAmount)) : 0;
     const taxAmount1 = detail.TaxAmount1 ? (Number(detail.TaxAmount1)) : 0;
     const taxAmount2 = detail.TaxAmount2 ? (Number(detail.TaxAmount2)) : 0;
-    const taxAmountIGST = detail.TaxAmountIGST ?(Number(detail.TaxAmountIGST)) : 0;
     const localAmount = detail.LocalAmount ? (Number(detail.LocalAmount)) : 0;
     const partyAmount = detail.PartyAmount ? (Number(detail.PartyAmount)) : 0;
 
@@ -741,17 +740,12 @@ private patchInvoiceData(invoiceData: any) {
   
     const taxPercentage2 = detail.TaxPercentage2 !== undefined ? Number(detail.TaxPercentage2) : 
                         detail.taxPercentage2 !== undefined ? Number(detail.taxPercentage2) : 0;
-  
-    const taxPercentageIGST = detail.TaxPercentageIGST !== undefined ? Number(detail.TaxPercentageIGST) : 
-                           detail.taxPercentageIGST !== undefined ? Number(detail.taxPercentageIGST) : 0;
 
     console.log('DEBUG - Tax percentages for detail:', {
       taxPercentage1,
       taxPercentage2,
-      taxPercentageIGST,
       taxAmount1,
       taxAmount2,
-      taxAmountIGST,
       chargeDescription: detail.ChargeDescription
     });
 
@@ -774,8 +768,7 @@ private patchInvoiceData(invoiceData: any) {
       TaxAmount1: 0,
       TaxPercentage2: 0,
       TaxAmount2: 0,
-      TaxPercentageIGST: 0,
-      TaxAmountIGST: 0
+     
     };
 
     if (this.currentUserCountry !== 'india') {
@@ -785,8 +778,7 @@ private patchInvoiceData(invoiceData: any) {
         TaxAmount1: taxAmount1,
         TaxPercentage2: 0,
         TaxAmount2: 0,
-        TaxPercentageIGST: 0,
-        TaxAmountIGST: 0
+        
       };
     } else {
       // India GST - map based on GST type
@@ -797,18 +789,16 @@ private patchInvoiceData(invoiceData: any) {
           TaxAmount1: taxAmount1,
           TaxPercentage2: taxPercentage2,
           TaxAmount2: taxAmount2,
-          TaxPercentageIGST: 0,
-          TaxAmountIGST: 0
+          
         };
       } else if (gstType === 'IGST') {
         // IGST mode - single IGST tax
         mappedTaxValues = {
-          TaxPercentage1: 0,
-          TaxAmount1: 0,
+          TaxPercentage1: taxPercentage1,
+          TaxAmount1: taxAmount1,
           TaxPercentage2: 0,
           TaxAmount2: 0,
-          TaxPercentageIGST: taxPercentageIGST || taxPercentage1, // Use whichever has value
-          TaxAmountIGST: taxAmountIGST || taxAmount1
+        
         };
       } else if (gstType === 'B2C') {
         // B2C mode - only CGST
@@ -817,8 +807,7 @@ private patchInvoiceData(invoiceData: any) {
           TaxAmount1: taxAmount1,
           TaxPercentage2: 0,
           TaxAmount2: 0,
-          TaxPercentageIGST: 0,
-          TaxAmountIGST: 0
+          
         };
       } else {
         // Default: preserve all values as they are
@@ -827,8 +816,7 @@ private patchInvoiceData(invoiceData: any) {
           TaxAmount1: taxAmount1,
           TaxPercentage2: taxPercentage2,
           TaxAmount2: taxAmount2,
-          TaxPercentageIGST: taxPercentageIGST,
-          TaxAmountIGST: taxAmountIGST
+          
         };
       }
     }
@@ -851,8 +839,7 @@ private patchInvoiceData(invoiceData: any) {
       TaxAmount1: mappedTaxValues.TaxAmount1,
       TaxPercentage2: mappedTaxValues.TaxPercentage2,
       TaxAmount2: mappedTaxValues.TaxAmount2,
-      TaxPercentageIGST: mappedTaxValues.TaxPercentageIGST,
-      TaxAmountIGST: mappedTaxValues.TaxAmountIGST,
+      
       LocalAmount: localAmount,
       PartyAmount: partyAmount,
       MasterJobSid: detail.MasterJobSid,
@@ -953,8 +940,6 @@ onFinalSave() {
             TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
             TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
             TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-            TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
-            TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
             LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
             PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
             MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
@@ -1141,6 +1126,10 @@ onFinalSave() {
       throw error;
     }
   }
+  onGSTTypeChange() {
+  console.log('GST Type changed to:', this.creditNoteForm.get('GSTType')?.value);
+  this.recalculateAllRows();
+}
   async loadMasterJobs() {
     try {
       const companyRaw = localStorage.getItem('selected-company');
@@ -1535,8 +1524,7 @@ private getCustomerCountryCode(customer: any): string {
     const taxAmt1 = det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0;
     const taxPerc2 = det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0;
     const taxAmt2 = det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0;
-    const taxPercIGST = det.TaxPercentageIGST != null ? Number(det.TaxPercentageIGST) : 0;
-    const taxAmtIGST = det.TaxAmountIGST != null ? Number(det.TaxAmountIGST) : 0;
+   
 
     // Get GSTType to determine how to map tax values
     const gstType = header.GSTType || det.GSTType || '';
@@ -1563,8 +1551,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // This contains VAT amount
         TaxPercentage2: 0,
         TaxAmount2: 0,
-        TaxPercentageIGST: 0,
-        TaxAmountIGST: 0,
+        
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1590,8 +1577,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // CGST amount
         TaxPercentage2: taxPerc2, // SGST rate
         TaxAmount2: taxAmt2,      // SGST amount
-        TaxPercentageIGST: 0,
-        TaxAmountIGST: 0,
+       
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1613,12 +1599,11 @@ private getCustomerCountryCode(customer: any): string {
         ExchangeRate: det.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value,
         Amount: det.Amount,
         TaxableAmount: det.TaxableAmount,
-        TaxPercentage1: 0,
-        TaxAmount1: 0,
+        TaxPercentage1: taxPerc1,
+        TaxAmount1: taxAmt1,
         TaxPercentage2: 0,
         TaxAmount2: 0,
-        TaxPercentageIGST: taxPerc1 > 0 ? taxPerc1 : taxPercIGST, // Use whichever has value
-        TaxAmountIGST: taxAmt1 > 0 ? taxAmt1 : taxAmtIGST,       // Use whichever has value
+              
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1644,8 +1629,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // CGST amount for B2C
         TaxPercentage2: 0,
         TaxAmount2: 0,
-        TaxPercentageIGST: 0,
-        TaxAmountIGST: 0,
+      
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1671,8 +1655,6 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,
         TaxPercentage2: taxPerc2,
         TaxAmount2: taxAmt2,
-        TaxPercentageIGST: taxPercIGST,
-        TaxAmountIGST: taxAmtIGST,
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1737,8 +1719,7 @@ private getCustomerCountryCode(customer: any): string {
       TaxAmount1: [{value:data?.TaxAmount1 || 0, disabled: true}],
       TaxPercentage2: [{value:data?.TaxPercentage2 || 0, disabled: true}],
       TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
-      TaxPercentageIGST: [{value: data?.TaxPercentageIGST || 0, disabled: true}],
-      TaxAmountIGST: [{value:data?.TaxAmountIGST || 0, disabled: true}],
+      
       LocalAmount: [data?.LocalAmount || 0],
       PartyAmount: [data?.PartyAmount || 0],
       MasterJobSid: [data?.MasterJobSid || null],
@@ -1762,7 +1743,7 @@ getDepartmentName(departmentSid: number): string {
   }
 
   onDetailChange(index: number, field?: string) {
-    if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'TaxPercentageIGST', 'CurrencyCode'].includes(field || '')) {
+    if (['NumberOfUnit', 'Rate', 'ExchangeRate', 'TaxPercentage1', 'TaxPercentage2', 'CurrencyCode'].includes(field || '')) {
       this.recalcRow(index);
     } else if (field === 'ChargeMasterSid') {
       const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
@@ -1825,24 +1806,21 @@ getDepartmentName(departmentSid: number): string {
   // Store current tax rates before clearing
   const currentTaxPercentage1 = Number(row.get('TaxPercentage1')?.value || 0);
   const currentTaxPercentage2 = Number(row.get('TaxPercentage2')?.value || 0);
-  const currentTaxPercentageIGST = Number(row.get('TaxPercentageIGST')?.value || 0);
   
   console.log('Current Tax Rates:', {
     taxPercentage1: currentTaxPercentage1,
     taxPercentage2: currentTaxPercentage2,
-    taxPercentageIGST: currentTaxPercentageIGST
   });
 
   // Only fetch new tax rates if charge changed or not already set
   let cgstRate = currentTaxPercentage1;
   let sgstRate = currentTaxPercentage2;
-  let igstRate = currentTaxPercentageIGST;
   let vatRate = currentTaxPercentage1; // VAT uses TaxPercentage1
   
   const chargeSid = row.get('ChargeMasterSid')?.value;
   
   // If we have a charge but no tax rates yet, fetch them
-  if (chargeSid && (cgstRate === 0 && sgstRate === 0 && igstRate === 0 && vatRate === 0)) {
+  if (chargeSid && (cgstRate === 0 && sgstRate === 0  && vatRate === 0)) {
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
     if (charge) {
       const taxLedger = await this.getTaxLedgerForCharge(charge, placeOfSupply);
@@ -1859,7 +1837,7 @@ getDepartmentName(departmentSid: number): string {
               sgstRate = parseFloat(tax.TaxRate || 0);
               break;
             case 'IGST':
-              igstRate = parseFloat(tax.TaxRate || 0);
+              cgstRate = parseFloat(tax.TaxRate || 0);
               break;
             case 'VAT':
               vatRate = parseFloat(tax.TaxRate || 0);
@@ -1882,11 +1860,11 @@ getDepartmentName(departmentSid: number): string {
             cgstRate = defaultTaxRate / 2;
             sgstRate = defaultTaxRate / 2;
           } else if (gstType === 'IGST') {
-            igstRate = defaultTaxRate;
+            cgstRate = defaultTaxRate;
           } else if (gstType === 'B2C') {
             cgstRate = defaultTaxRate;
           } else {
-            igstRate = defaultTaxRate;
+            cgstRate = defaultTaxRate;
           }
         }
       }
@@ -1894,12 +1872,11 @@ getDepartmentName(departmentSid: number): string {
   }
 
   // Calculate tax amounts based on current rates
-  let cgstAmt = 0, sgstAmt = 0, igstAmt = 0, vatAmt = 0;
+  let cgstAmt = 0, sgstAmt = 0, vatAmt = 0;
   
   console.log('Using Tax Rates:', {
     cgstRate,
     sgstRate,
-    igstRate,
     vatRate,
     gstType,
     taxableAmount
@@ -1926,10 +1903,10 @@ getDepartmentName(departmentSid: number): string {
         sgstRate
       });
     } else if (gstType === 'IGST') {
-      igstAmt = (taxableAmount * igstRate) / 100;
+      cgstAmt = (taxableAmount * cgstRate) / 100;
       console.log('IGST Calculation:', {
-        igstAmt,
-        igstRate
+        cgstAmt,
+        cgstRate
       });
     } else if (gstType === 'B2C') {
       cgstAmt = (taxableAmount * cgstRate) / 100;
@@ -1942,10 +1919,10 @@ getDepartmentName(departmentSid: number): string {
       console.log('Export - No tax applied');
     } else {
       // Default to IGST
-      igstAmt = (taxableAmount * igstRate) / 100;
+      cgstAmt = (taxableAmount * cgstRate) / 100;
       console.log('Default IGST Calculation:', {
-        igstAmt,
-        igstRate
+        cgstAmt,
+        cgstRate
       });
     }
   }
@@ -1953,7 +1930,7 @@ getDepartmentName(departmentSid: number): string {
   console.log('=== FINAL CALCULATED AMOUNTS ===');
   console.log('CGST Amount:', cgstAmt);
   console.log('SGST Amount:', sgstAmt);
-  console.log('IGST Amount:', igstAmt);
+  console.log('IGST Amount:', cgstAmt);
   console.log('VAT Amount:', vatAmt);
 
   // Update row values - DO NOT CLEAR RATES
@@ -1977,8 +1954,8 @@ getDepartmentName(departmentSid: number): string {
       row.get('TaxAmount2')?.setValue(this.round(sgstAmt));
       console.log('Setting CGST+SGST');
     } else if (gstType === 'IGST') {
-      row.get('TaxPercentageIGST')?.setValue(this.round(igstRate));
-      row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
+      row.get('TaxPercentage1')?.setValue(this.round(cgstRate));
+      row.get('TaxAmount1')?.setValue(this.round(cgstAmt));
       console.log('Setting IGST');
     } else if (gstType === 'B2C') {
       row.get('TaxPercentage1')?.setValue(this.round(cgstRate));
@@ -1986,8 +1963,8 @@ getDepartmentName(departmentSid: number): string {
       console.log('Setting B2C');
     } else {
       // Default
-      row.get('TaxPercentageIGST')?.setValue(this.round(igstRate));
-      row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
+      row.get('TaxPercentage1')?.setValue(this.round(cgstRate));
+      row.get('TaxAmount1')?.setValue(this.round(cgstAmt));
       console.log('Setting default GST');
     }
   }
@@ -2413,8 +2390,7 @@ calculateTotalLocalAmount(): number {
     for (let i = 0; i < this.details.length; i++) {
       const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
       const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-      const igstAmt = Number(this.details.at(i).get('TaxAmountIGST')?.value || 0);
-      total += taxAmt1 + taxAmt2 + igstAmt;
+      total += taxAmt1 + taxAmt2 ;
     }
     return this.round(total);
   }
@@ -2658,8 +2634,6 @@ private normalizeParty(raw: any) {
         TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
         TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
         TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-        TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
-        TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
         PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
@@ -3115,9 +3089,8 @@ getAmountInWords(): string {
     const taxable = Number(detail.get('TaxableAmount')?.value || 0);
     const cgst = Number(detail.get('TaxAmount1')?.value || 0);
     const sgst = Number(detail.get('TaxAmount2')?.value || 0);
-    const igst = Number(detail.get('TaxAmountIGST')?.value || 0);
 
-    return taxable + cgst + sgst + igst;
+    return taxable + cgst + sgst ;
   }
 
   showInfo() {
@@ -3295,7 +3268,6 @@ getTaxDisplayConfig(): {
 getTaxPercentageForDisplay(detail: any): {
   cgstRate: number;
   sgstRate: number;
-  igstRate: number;
   vatRate: number;
 } {
   const gstType = this.creditNoteForm.get('GSTType')?.value;
@@ -3304,28 +3276,24 @@ getTaxPercentageForDisplay(detail: any): {
     return {
       cgstRate: detail.TaxPercentage1 || 0,
       sgstRate: detail.TaxPercentage2 || 0,
-      igstRate: 0,
       vatRate: 0
     };
   } else if (gstType === 'IGST') {
     return {
-      cgstRate: 0,
+      cgstRate: detail.TaxPercentage1 || 0,
       sgstRate: 0,
-      igstRate: detail.TaxPercentageIGST || 0,
       vatRate: 0
     };
   } else if (gstType === 'B2C') {
     return {
       cgstRate: detail.TaxPercentage1 || 0,
       sgstRate: 0,
-      igstRate: 0,
       vatRate: 0
     };
   } else if (gstType === 'VAT') {
     return {
       cgstRate: 0,
       sgstRate: 0,
-      igstRate: 0,
       vatRate: detail.TaxPercentage1 || 0
     };
   }
@@ -3333,7 +3301,6 @@ getTaxPercentageForDisplay(detail: any): {
   return {
     cgstRate: detail.TaxPercentage1 || 0,
     sgstRate: detail.TaxPercentage2 || 0,
-    igstRate: detail.TaxPercentageIGST || 0,
     vatRate: detail.TaxPercentage1 || 0
   };
 }
@@ -3341,7 +3308,6 @@ getTaxPercentageForDisplay(detail: any): {
 getTaxAmountForDisplay(detail: any): {
   cgstAmt: number;
   sgstAmt: number;
-  igstAmt: number;
   vatAmt: number;
 } {
   const gstType = this.creditNoteForm.get('GSTType')?.value;
@@ -3350,28 +3316,24 @@ getTaxAmountForDisplay(detail: any): {
     return {
       cgstAmt: detail.TaxAmount1 || 0,
       sgstAmt: detail.TaxAmount2 || 0,
-      igstAmt: 0,
       vatAmt: 0
     };
   } else if (gstType === 'IGST') {
     return {
-      cgstAmt: 0,
+      cgstAmt: detail.TaxAmount1 || 0,
       sgstAmt: 0,
-      igstAmt: detail.TaxAmountIGST || 0,
       vatAmt: 0
     };
   } else if (gstType === 'B2C') {
     return {
       cgstAmt: detail.TaxAmount1 || 0,
       sgstAmt: 0,
-      igstAmt: 0,
       vatAmt: 0
     };
   } else if (gstType === 'VAT') {
     return {
       cgstAmt: 0,
       sgstAmt: 0,
-      igstAmt: 0,
       vatAmt: detail.TaxAmount1 || 0
     };
   }
@@ -3379,7 +3341,6 @@ getTaxAmountForDisplay(detail: any): {
   return {
     cgstAmt: detail.TaxAmount1 || 0,
     sgstAmt: detail.TaxAmount2 || 0,
-    igstAmt: detail.TaxAmountIGST || 0,
     vatAmt: detail.TaxAmount1 || 0
   };
 }
@@ -3388,6 +3349,18 @@ shouldShowGSTTypeField(): boolean {
   return this.currentUserCountry === 'india';
 }
 
+calculateTotalColspan(): number {
+  const config = this.getTaxDisplayConfig();
+  let baseColumns = 8; // S.No, Particulars, HSN/SAC, Curr, No of Unit, Rate, ROE, Taxable Value
+  
+  // Add tax columns based on what's visible
+  if (config.showCGST) baseColumns += 2; // CGST % + CGST Amt
+  if (config.showSGST) baseColumns += 2; // SGST % + SGST Amt
+  if (config.showIGST) baseColumns += 2; // IGST % + IGST Amt
+  if (config.showVAT) baseColumns += 2;  // VAT % + VAT Amt
+  
+  return baseColumns;
+}
 
   getPkgWtVol() {
     const data = this.creditNoteData?.masterJob;

@@ -829,10 +829,10 @@
                                   </button>
                                 </td>
                                 <td>
-                                  <dofi-searchable-dropdown [items]="productList" formControlName="ProductSid"
+                                  <dofi-searchable-dropdown [items]="productList" formControlName="ProductName"
                                     [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
                                     [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']"
-                                    [bindValue]="'ProductMasterSId'"
+                                    [bindValue]="'ProductName'"
                                     (itemSelected)="onProductChange($event,routeIndex,productIndex)"
                                     style="padding: 0;">
                                   </dofi-searchable-dropdown>
