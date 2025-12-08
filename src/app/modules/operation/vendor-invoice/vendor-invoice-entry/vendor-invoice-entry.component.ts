@@ -61,6 +61,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   vendorInvoiceData: any;
+  selectedVendor: any = null;
 
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
@@ -89,6 +90,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   searchVendors: any[] = [];
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
+  selectedVendorBranchForSearch: any = null;
 
 
   CurrencyLookupConfig = {
@@ -157,11 +159,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
     { id: 'EXWP', name: 'EXWP - Export With Payment of Tax' },
     { id: 'EXWOP', name: 'EXWOP - Export Without Payment of Tax' },
   ];
-
+selectedVendorForSearch: any = null;
   searchTypes = [
-    { id: 'Customer', name: 'Customer' },
+   
     { id: 'Master Job', name: 'Master Job' },
     { id: 'House Job', name: 'House Job' },
+    { id: 'Vendor Name', name: 'Vendor Name' },
     { id: 'MBL No', name: 'MBL No' },
     { id: 'HBL No', name: 'HBL No' },
     { id: 'Container No', name: 'Container No' }
@@ -963,7 +966,7 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
 
 
   // Vendor selection
- onVendorChange(selected: any) {
+onVendorChange(selected: any) {
   const vendorMasterSid = (typeof selected === 'object' && selected !== null)
     ? (selected.CustomerMasterSid ?? selected)
     : selected;
@@ -973,8 +976,8 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
     this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
     this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null);
-    this.vendorInvoiceForm.get('CustomerMasterSid')?.setValue(null); // Clear CustomerMasterSid
-    this.vendorInvoiceForm.get('COAMasterSid')?.setValue(null); // Clear COAMasterSid
+    this.vendorInvoiceForm.get('CustomerMasterSid')?.setValue(null);
+    this.vendorInvoiceForm.get('COAMasterSid')?.setValue(null);
     this.vendorInvoiceForm.get('GSTNo')?.setValue('');
     this.vendorInvoiceForm.get('PartyName')?.setValue('');
     this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
@@ -983,7 +986,7 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     if (this.isIndiaGST) {
       this.vendorInvoiceForm.get('InvoiceType')?.setValue('B2B');
     } else {
-      this.vendorInvoiceForm.get('InvoiceType')?.setValue('VAT'); // For non-India
+      this.vendorInvoiceForm.get('InvoiceType')?.setValue('VAT');
     }
     
     this.vendorInvoiceForm.get('GSTType')?.setValue('');
@@ -994,6 +997,9 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
   if (vendor) {
     console.log('Selected Vendor:', vendor);
     
+    // Store vendor reference for later use in payload
+    this.selectedVendor = vendor; // Add this property
+    
     // Set PartyName to vendor name
     this.vendorInvoiceForm.get('PartyName')?.setValue(vendor.CustomerName || '');
     
@@ -1001,13 +1007,13 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     this.vendorInvoiceForm.get('CustomerMasterSid')?.setValue(vendorMasterSid);
     console.log('Set CustomerMasterSid:', vendorMasterSid);
 
-    // Set PartyMasterSid from vendor's SubledgerMasterSid
+    // Set PartyMasterSid from vendor's SubledgerMasterSid in form (for reference)
     if (vendor.SubledgerMasterSid) {
       this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
       console.log('Set PartyMasterSid from SubledgerMasterSid:', vendor.SubledgerMasterSid);
     }
 
-    // IMPORTANT: Set COAMasterSid from vendor's COAMappedId
+    // IMPORTANT: Set COAMasterSid from vendor's COAMappedId in form (for reference)
     if (vendor.COAMappedId) {
       this.vendorInvoiceForm.get('COAMasterSid')?.setValue(Number(vendor.COAMappedId));
       console.log('Set COAMasterSid from COAMappedId:', vendor.COAMappedId);
@@ -1019,7 +1025,7 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     const countryCode = this.getCustomerCountryCode(vendor);
     console.log('Vendor Country Code:', countryCode);
 
-    // FIX: Set Invoice Type based on country
+    // Set Invoice Type based on country
     if (this.isIndiaGST) {
       if (countryCode === 'IN' && vendor.GSTNo) {
         this.vendorInvoiceForm.get('InvoiceType')?.setValue('B2B');
@@ -1448,12 +1454,22 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
 
   this.searchResultsLoading = true;
 
-  const payload = {
+  // Prepare payload with vendor branch information
+  const payload: any = {
     searchType: this.searchType,
     searchValue: this.searchValue.trim(),
     companyMasterSid: this.currentCompany?.CompanyMasterSid,
     branchMasterSid: this.currentBranch?.BranchMasterSid
   };
+
+  // Add vendor SID and branch SID if vendor is selected
+  if (this.selectedVendorForSearch) {
+    payload.vendorSid = this.selectedVendorForSearch.CustomerMasterSid;
+    // If vendor branch is selected, include it
+    if (this.selectedVendorBranchForSearch) {
+      payload.vendorBranchSid = this.selectedVendorBranchForSearch.CustomerBranchSid;
+    }
+  }
 
   this.operationService.searchPendingCosts(payload).subscribe({
     next: (response) => {
@@ -1462,6 +1478,36 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
 
       if (response.status && response.data) {
         this.allPendingCosts = response.data.items || response.data;
+        this.autoSetHssacForPendingCosts();
+        
+        // Auto-populate vendor branch information from search
+        if (this.selectedVendorForSearch && this.allPendingCosts.length > 0) {
+          // Auto-select the vendor branch if available
+          if (!this.selectedVendorBranchForSearch) {
+            // Find the most common branch in the results
+            const branchCounts = new Map();
+            this.allPendingCosts.forEach(cost => {
+              if (cost.CostAgentBranchSid) {
+                branchCounts.set(cost.CostAgentBranchSid, 
+                  (branchCounts.get(cost.CostAgentBranchSid) || 0) + 1);
+              }
+            });
+            
+            if (branchCounts.size > 0) {
+              const mostCommonBranch = Array.from(branchCounts.entries())
+                .sort((a, b) => b[1] - a[1])[0][0];
+              
+              // Find the branch object
+              const vendorBranches = this.vendorBranchList.filter(
+                b => b.CustomerMasterSid === this.selectedVendorForSearch.CustomerMasterSid
+              );
+              
+              this.selectedVendorBranchForSearch = vendorBranches.find(
+                b => b.CustomerBranchSid === mostCommonBranch
+              );
+            }
+          }
+        }
 
         if (this.allPendingCosts.length > 0) {
           // Extract unique vendors for selection
@@ -1489,11 +1535,13 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
           this.appSettingService.showInfo('No pending costs found');
           this.allPendingCosts = [];
           this.searchVendors = [];
+          this.selectedVendorBranchForSearch = null;
         }
       } else {
         this.appSettingService.showError(response.message || 'No pending costs found');
         this.allPendingCosts = [];
         this.searchVendors = [];
+        this.selectedVendorBranchForSearch = null;
       }
     },
     error: (error) => {
@@ -1504,6 +1552,59 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     }
   });
 }
+
+private autoSetHssacForPendingCosts(): void {
+  this.allPendingCosts.forEach(cost => {
+    if (cost.ChargeMasterSid) {
+      const charge = this.chargeList.find((c: any) => c.ChargeMasterSid === cost.ChargeMasterSid);
+      
+      if (charge) {
+        // Try to get HSSAC code from different possible fields in charge
+        const hsnCode = charge.HSNCode || charge.HSNSAC || charge.SACCode;
+        
+        if (hsnCode) {
+          // Find matching HSSAC from hssacList using HSNCode
+          const matchingHssac = this.hssacList.find(h =>
+            h.HSSACCode === hsnCode || 
+            h.HSNCode === hsnCode ||
+            h.SACCode === hsnCode
+          );
+          
+          if (matchingHssac) {
+            cost.HSSACMasterSid = matchingHssac.HSSACMasterSid;
+            cost.HSSACCode = matchingHssac.HSSACCode;
+            cost.HSNCode = matchingHssac.HSSACCode; // For display
+          }
+        }
+        
+        // Also try from ChargeTaxMaster if available
+        if (!cost.HSSACMasterSid && Array.isArray(charge.ChargeTaxMaster) && charge.ChargeTaxMaster.length > 0) {
+          const firstTax = charge.ChargeTaxMaster[0];
+          const taxHsnCode = firstTax?.HSNCode || firstTax?.HSNSAC;
+          
+          if (taxHsnCode) {
+            const matchingHssac = this.hssacList.find(h =>
+              h.HSSACCode === taxHsnCode || 
+              h.HSNCode === taxHsnCode
+            );
+            
+            if (matchingHssac) {
+              cost.HSSACMasterSid = matchingHssac.HSSACMasterSid;
+              cost.HSSACCode = matchingHssac.HSSACCode;
+              cost.HSNCode = matchingHssac.HSSACCode;
+            }
+          }
+        }
+      }
+    }
+    
+    // If still no HSSAC code, set default or leave empty
+    if (!cost.HSSACCode) {
+      cost.HSSACCode = '-';
+    }
+  });
+}
+
   // Extract unique vendors from costs
   private extractVendorsFromCosts(costs: any[]) {
     const vendorMap = new Map();
@@ -1516,7 +1617,9 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
             VendorName: cost.VendorName,
             VendorAddress: cost.VendorAddress || '',
             CustomerName: cost.CustomerName || cost.VendorName,
-            Address: cost.Address || cost.VendorAddress || ''
+            Address: cost.Address || cost.VendorAddress || '',
+            HSSACCode: cost.HSSACCode || '',
+            HSSACMasterSid: cost.HSSACMasterSid || null,
           });
         }
       }
@@ -1640,6 +1743,12 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     return;
   }
 
+  // Check if vendor branch is selected (required for vendor name search)
+  if (this.searchType === 'Vendor Name' && !this.selectedVendorBranchForSearch) {
+    this.appSettingService.showWarning('Please select a vendor branch for the vendor costs');
+    return;
+  }
+
   // Store job information from the first selected cost
   const firstCost = selectedCostItems[0];
   
@@ -1662,7 +1771,11 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
   if (!this.selectedVendorForCosts && firstCost) {
     const vendor = this.searchVendors.find(v => v.VendorSid === firstCost.VendorSid);
     if (vendor) {
-      this.onVendorSelectForCosts(vendor);
+      const fullVendor = this.vendorList.find(v => v.CustomerMasterSid === vendor.VendorSid);
+      if (fullVendor) {
+        this.selectedVendor = fullVendor;
+        this.onVendorSelectForCosts(vendor);
+      }
     }
   }
 
@@ -1676,10 +1789,13 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
       CurrencyMasterSid: cost.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.value,
       CurrencyCode: cost.CurrencyCode || this.vendorInvoiceForm.get('CurrencyMasterSid')?.value,
       ExchangeRate: cost.CostExchangeRate || cost.ExchangeRate || 1,
-      MasterJobSid: cost.MasterJobSid,  // Include MasterJobSid in detail
-      HouseJobSid: cost.HouseJobSid,    // Include HouseJobSid in detail
+      MasterJobSid: cost.MasterJobSid,
+      HouseJobSid: cost.HouseJobSid,
       HSSACMasterSid: cost.HSSACMasterSid,
+      HSSACCode: cost.HSSACCode || cost.HSNCode,
       ChargeUOMSid: cost.ChargeUOMSid,
+      // Include the CostAgentBranchSid for updating
+      CostAgentBranchSid: this.selectedVendorBranchForSearch?.CustomerBranchSid || cost.CostAgentBranchSid
     });
 
     this.details.push(detailRow);
@@ -2088,13 +2204,27 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
   const formValue = this.vendorInvoiceForm.getRawValue();
   const selectedCurrency = this.currencyList.find(c => c.CurrencyMasterSid === formValue.CurrencyMasterSid);
   const currencyCode = selectedCurrency?.currencyCode || '';
-
+  const isPatching = this.details.controls.some(row => 
+    row.get('CostRevenueChargesSid')?.value
+  );
+  
+  const patchedIds: number[] = [];
+  const patchCostData: any[] = []; // Store cost data to update
+  
+  const vendor = this.vendorList.find(v => 
+    v.CustomerMasterSid === formValue.CustomerMasterSid || 
+    v.CustomerName === formValue.PartyName
+  );
+  
+  const partyMasterSid = vendor?.SubledgerMasterSid || null;
+  const coaMasterSid = vendor?.COAMappedId || null;
+  
   const payload: any = {
     VoucherHeaderSid: this.headerId,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     CustomerMasterSid: formValue.CustomerMasterSid,
-    PartyMasterSid: formValue.PartyMasterSid,
+    PartyMasterSid: partyMasterSid,
     PartyName: formValue.PartyName,
     PartyAddress: formValue.PartyAddress,
     CustomerBranchSid: formValue.CustomerBranchSid,
@@ -2112,21 +2242,32 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     InvoiceType: formValue.InvoiceType,
     GSTType: formValue.GSTType,
     Narration: formValue.Narration,
-    // CRITICAL: Include job IDs in header
     MasterJobSid: formValue.MasterJobSid,
     HouseJobSid: formValue.HouseJobSid,
     VoucherDate: this.fromNgbDate(formValue.VoucherDate),
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
     Status: formValue.Status,
-    COAMasterSid: formValue.COAMasterSid,
+    COAMasterSid: coaMasterSid, 
     CreatedBy: this.currUserEmail || 'System',
-    UpdatedBy: this.currUserEmail || 'System'
+    UpdatedBy: this.currUserEmail || 'System',
+    isPatching: isPatching
   };
 
   // Add details with CostRevenueChargesSid and job IDs
   payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => {
     const detailCurrency = this.currencyList.find(c => c.CurrencyMasterSid === detail.CurrencyMasterSid);
     const detailCurrencyCode = detailCurrency?.currencyCode || '';
+    const costRevenueChargesSid = detail.CostRevenueChargesSid;
+    
+    if (costRevenueChargesSid) {
+      patchedIds.push(costRevenueChargesSid);
+      
+      // Store cost data for updating CostAgentBranchSid
+      patchCostData.push({
+        CostRevenueChargesSid: costRevenueChargesSid,
+        CostAgentBranchSid: formValue.CustomerBranchSid || detail.CostAgentBranchSid
+      });
+    }
 
     return {
       Sno: index + 1,
@@ -2151,21 +2292,34 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
       ExchangeRate: detail.ExchangeRate,
       DrCr: detail.DrCr,
       LedgerMasterSid: detail.LedgerMasterSid,
-      COAMasterSid: detail.COAMasterSid,
-      // Include job IDs in each detail row too
+      COAMasterSid: detail.COAMasterSid || coaMasterSid,
       MasterJobSid: detail.MasterJobSid,
       HouseJobSid: detail.HouseJobSid,
       DepartmentMasterSid: detail.DepartmentMasterSid,
-      Remarks: detail.Remarks
+      Remarks: detail.Remarks,
+      CostRevenueChargesSid: costRevenueChargesSid || null
     };
   });
+  
+  if (patchedIds.length > 0) {
+    payload.patchedIds = patchedIds;
+  }
+  
+  // Add cost data for updating CostAgentBranchSid
+  if (patchCostData.length > 0) {
+    payload.patchCostData = patchCostData;
+  }
 
   // Add others
   payload.VoucherOthers = {
     ...formValue.voucherOthers,
     Remarks: formValue.Remarks || ''
   };
-
+  
+  console.log('=== PAYLOAD DEBUG ===');
+  console.log('Patch Cost Data:', patchCostData);
+  console.log('Full Payload:', payload);
+  
   return payload;
 }
   //   prepareVoucherTDSPayload(details: any[]): any[] {
@@ -3246,5 +3400,48 @@ private updateDetailCurrencies(currencyMasterSid: number, currencyCode: string):
     return baseColumns;
   }
   
+// Add this method to handle search type change
+onSearchTypeChange(event: any): void {
+  // Reset search value when type changes
+  this.searchValue = '';
+  this.selectedVendorForSearch = null;
+}
 
+// Add this method to get placeholder text
+getSearchPlaceholder(): string {
+  switch (this.searchType) {
+    case 'Master Job': return 'Enter Master Job Number';
+    case 'House Job': return 'Enter House Job Number';
+    case 'MBL No': return 'Enter MBL Number';
+    case 'HBL No': return 'Enter HBL Number';
+    case 'Container No': return 'Enter Container Number';
+    default: return 'Enter search value';
+  }
+}
+
+// Add this method to handle vendor selection in search
+onVendorSearchSelect(vendor: any): void {
+  if (vendor) {
+    this.selectedVendorForSearch = vendor;
+    this.searchValue = vendor.CustomerName || vendor.customerName || '';
+    
+    // Clear previous branch selection
+    this.selectedVendorBranchForSearch = null;
+    
+    // Load vendor branches for selection
+    this.getVendorBranchByVendor(vendor.CustomerMasterSid, (branches) => {
+      // If there's only one branch, auto-select it
+      if (branches.length === 1) {
+        this.selectedVendorBranchForSearch = branches[0];
+      }
+    });
+  } else {
+    this.selectedVendorForSearch = null;
+    this.selectedVendorBranchForSearch = null;
+    this.searchValue = '';
+  }
+}
+onVendorBranchSearchSelect(branch: any): void {
+  this.selectedVendorBranchForSearch = branch;
+}
 }
