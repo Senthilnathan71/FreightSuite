@@ -6,14 +6,13 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 
 @Component({
-  selector: 'app-outstanding-report',
+  selector: 'app-statement-report',
   standalone: true,
   imports: [CustomDatePipe, CommonModule],
-  templateUrl: './outstanding-report.component.html',
+  templateUrl: './statement-report.component.html',
   styles: ``
 })
-export class OutstandingReportComponent {
-
+export class StatementReportComponent {
 
   currentCompany: any;
   currentBranch: any;
@@ -35,9 +34,8 @@ export class OutstandingReportComponent {
     this.loadSalesPerson();
   }
 
-
-
   get fullData(): any {
+    console.log(this.data, "DATA")
     return this.data || {};
   }
 
@@ -51,7 +49,6 @@ export class OutstandingReportComponent {
 
   getTotal(data: any[], field: string): number {
     if (!data) return 0;
-
     return data.reduce((sum, item) => {
       const value = Number(item[field]) || 0;
       return sum + value;
@@ -82,8 +79,7 @@ export class OutstandingReportComponent {
     return sub.SubledgerMasterSid;
   }
 
-
-    getCumulative(transactions: any[], index: number): number {
+  getCumulative(transactions: any[], index: number): number {
     let total = 0;
 
     for (let i = 0; i <= index; i++) {
@@ -99,4 +95,5 @@ export class OutstandingReportComponent {
 
     return total;
   }
+
 }

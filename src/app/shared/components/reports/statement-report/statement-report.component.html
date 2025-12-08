@@ -4,7 +4,7 @@
     </h3>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Customer Outstanding as on {{ params?.ToDate | formatDate }}
+        Customer Statement as on {{ params?.FromDate | formatDate }}
     </h4>
 
 
@@ -13,7 +13,10 @@
 
         <div style="display: flex; justify-content:space-between;">
             <div>
-                
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
+                    <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
+                </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
                     <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
@@ -22,11 +25,12 @@
                     <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
                     <p class="ms-1">: {{ fullData?.branchesInvolved }}</p>
                 </div>
-        
+
+
             </div>
-        
+
             <div>
-                
+
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 100px;">Subledger </strong>
                     <p class="ms-1">: {{ fullData?.subledgerName }}</p>
@@ -35,14 +39,15 @@
                     <strong style="margin-bottom: 4px;width: 100px;">Ledger </strong>
                     <p class="ms-1"> : {{ fullData?.ledgerName }}</p>
                 </div>
-        
+
+
             </div>
-        
-        
-        
+
+
+
         </div>
-       
-    
+
+
 
         <!-- Table -->
         <div class="table-responsive">
@@ -69,9 +74,9 @@
                 </thead>
 
                 <tbody>
-                    <tr *ngFor="let item of fullData?.transactions;let i = index">
+                    <tr *ngFor="let item of fullData?.transactions; let i = index">
                         <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
-                        <td >{{item?.voucherType}}</td>
+                        <td>{{item?.voucherType}}</td>
                         <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td>{{item?.MasterJobNumber}}</td>
                         <td></td>
@@ -85,26 +90,35 @@
                         <td style="text-align: right;">{{item?.originalCurrencyAmount | number:'1.2-2'}}</td>
                         <td style="text-align: right;">{{item?.outstandingCurrencyAmount | number:'1.2-2'}}</td>
                         <td style="text-align: right;">{{item?.outstandingLocalAmount | number:'1.2-2'}}</td>
-                         <td style="text-align: right;">
+
+                        <!-- CUMULATIVE -->
+                        <td style="text-align: right;">
                             {{ getCumulative(fullData?.transactions, i) | number:'1.2-2'}}
                         </td>
                     </tr>
+
                     <tr class="fw-bold bg-light">
                         <td colspan="11" class="text-end">TOTAL :</td>
                         <!-- Total Amount (originalLocalAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') | number:'1.2-2' }}
+                        </td>
 
                         <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') | number:'1.2-2' }}
+                        </td>
 
                         <!-- Total O/S Currency -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'
+                            }}</td>
 
                         <!-- Total O/S Local -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingLocalAmount') | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingLocalAmount') | number:'1.2-2'}}
+                        </td>
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;">{{ getCumulative(fullData?.transactions, fullData?.transactions?.length - 1) | number:'1.2-2' }}</td>
+                        <td style="text-align: right;">{{ getCumulative(fullData?.transactions, fullData?.transactions?.length - 1) | number:'1.2-2' }}
+
+                        </td>
                     </tr>
 
                 </tbody>

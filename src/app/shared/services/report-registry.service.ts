@@ -346,6 +346,37 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn('Outstanding Report component not yet created:', error);
     }
+
+    // Statement Report
+     try {
+      const { StatementReportComponent } = await import(
+        '../components/reports/statement-report/statement-report.component'
+      );
+
+      this.registerReport({
+        id: 'statement-ledger-report',
+        title: 'Statment Ledger Report',
+        component: StatementReportComponent,
+        filenameTemplate: 'Statemnt_Ledger_Report_{LedgerName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Statment Ledger Report - Ledger: {LedgerName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Statment Ledger Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn('Statment Ledger Report component not yet created:', error);
+    }
   }
 
   /**

@@ -7,13 +7,15 @@
 
   <div class="header-actions" *ngIf="!loading && !error">
      <button
-      type="button"
-      class="btn btn-sm btn-light me-2"
-      title="Download PDF"
-    >
-    <i class="fas fa-file-excel me-1"></i>
-     Excel
-    </button>
+  type="button"
+  class="btn btn-sm btn-light me-2"
+  (click)="downloadExcel()"
+  title="Download Excel"
+  [disabled]="loading || error || !reportData"
+>
+  <i class="fas fa-file-excel me-1"></i>
+  Excel
+</button>
     <button
       type="button"
       class="btn btn-sm btn-light me-2"

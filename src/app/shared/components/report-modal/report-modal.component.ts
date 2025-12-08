@@ -15,6 +15,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { ReportService, REPORT_DATA } from '../../services/report.service';
 import { ReportConfig } from '../../services/report-registry.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ExcelExportService } from '../../excel-report-service';
 
 /**
  * Generic Report Modal Component
@@ -102,7 +103,9 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     private reportService: ReportService,
     private spinner: NgxSpinnerService,
     private appSettingsService: AppSettingsService,
-    private injector: Injector
+    private injector: Injector,
+    private excelReportService: ExcelExportService,
+    private appSettingService: AppSettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -268,6 +271,8 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  
   /**
    * Print action
    */
@@ -295,4 +300,207 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+
+ downloadExcel(): void {
+  try {
+    console.log('Download Excel clicked');
+    this.spinner.show();
+    
+    // Check if the dynamic component is loaded
+    if (!this.componentRef || !this.componentRef.instance) {
+      console.error('Dynamic report component not loaded');
+      this.spinner.hide();
+      this.appSettingService.showError('Report component not loaded yet');
+      return;
+    }
+    
+    console.log('Dynamic component instance:', this.componentRef.instance);
+    
+    // Try to get Excel data from the dynamic component
+    // Check for common method names that might exist in report components
+    let excelData: any = null;
+    let dynamicHeaders: Array<{key: string, label: string}> = [];
+    let dataToExport: any[] = [];
+    
+    // Method 1: Component has getExcelData() method
+    if (typeof this.componentRef.instance.getExcelData === 'function') {
+      excelData = this.componentRef.instance.getExcelData();
+      console.log('Got data from getExcelData():', excelData);
+    }
+    
+    // Method 2: Component has getTableData() method (common pattern)
+    else if (typeof this.componentRef.instance.getTableData === 'function') {
+      dataToExport = this.componentRef.instance.getTableData();
+      console.log('Got data from getTableData(), length:', dataToExport?.length);
+    }
+    
+    // Method 3: Component has tableData property
+    else if (this.componentRef.instance.tableData && Array.isArray(this.componentRef.instance.tableData)) {
+      dataToExport = this.componentRef.instance.tableData;
+      console.log('Got data from tableData property, length:', dataToExport?.length);
+    }
+    
+    // Method 4: Component has items/data property (check common structures)
+    else if (this.componentRef.instance.items && Array.isArray(this.componentRef.instance.items)) {
+      dataToExport = this.componentRef.instance.items;
+      console.log('Got data from items property, length:', dataToExport?.length);
+    }
+    else if (this.componentRef.instance.data && Array.isArray(this.componentRef.instance.data)) {
+      dataToExport = this.componentRef.instance.data;
+      console.log('Got data from data property, length:', dataToExport?.length);
+    }
+    
+    // Method 5: Try to extract from HTML table in the component
+    else {
+      console.log('Trying to extract data from component DOM...');
+      dataToExport = this.extractDataFromComponentDOM();
+    }
+    
+    // Process the data based on what we got
+    if (excelData && excelData.data && excelData.headers) {
+      // If component returned complete Excel config
+      dataToExport = excelData.data;
+      dynamicHeaders = excelData.headers;
+    }
+    else if (dataToExport && dataToExport.length > 0) {
+      // If we got raw data, create headers from it
+      const firstItem = dataToExport[0];
+      if (firstItem && typeof firstItem === 'object') {
+        dynamicHeaders = Object.keys(firstItem).map(key => ({
+          key: key,
+          label: this.formatLabel(key)
+        }));
+      }
+    }
+    
+    // Check if we have valid data
+    if (!dataToExport || !Array.isArray(dataToExport) || dataToExport.length === 0) {
+      console.error('No exportable data found in component');
+      console.log('Component properties:', Object.keys(this.componentRef.instance));
+      this.spinner.hide();
+      this.appSettingService.showError('No table data found in report for Excel export');
+      return;
+    }
+    
+    if (!dynamicHeaders || dynamicHeaders.length === 0) {
+      console.error('No headers generated');
+      this.spinner.hide();
+      this.appSettingService.showError('Could not determine column headers');
+      return;
+    }
+    
+    console.log('Exporting data:', {
+      rowCount: dataToExport.length,
+      headers: dynamicHeaders,
+      firstRow: dataToExport[0]
+    });
+    
+    // Get company name
+    const encryptedCompany = localStorage.getItem('selected-company');
+    const companyName = encryptedCompany 
+      ? this.appSettingService.decrypt(encryptedCompany)?.companyName || 'Company'
+      : 'Company';
+    
+    // Generate filename with current date
+    const reportTitle = this.reportConfig?.title || 'Report';
+    const safeTitle = reportTitle.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.getTime();
+    const filename = `${safeTitle}-${dateStr}-${timeStr}`;
+    
+    // Export to Excel
+    this.excelReportService.exportAsExcel({
+      data: dataToExport,
+      headers: dynamicHeaders,
+      fileName: filename,
+      title: companyName
+    });
+    
+    console.log('Excel export completed successfully');
+    this.spinner.hide();
+    
+  } catch (error: any) {
+    console.error('Error in downloadExcel:', error);
+    console.error('Error stack:', error.stack);
+    this.spinner.hide();
+    this.appSettingService.showError(`Failed to generate Excel: ${error.message}`);
+  }
+}
+
+/**
+ * Extract data from component DOM by looking for table elements
+ * This is a fallback method if the component doesn't expose data directly
+ */
+private extractDataFromComponentDOM(): any[] {
+  try {
+    // Get the component's root element
+    const componentElement = this.componentRef?.location?.nativeElement;
+    if (!componentElement) {
+      console.error('Component element not found');
+      return [];
+    }
+    
+    // Look for tables in the component
+    const tables = componentElement.querySelectorAll('table');
+    console.log('Found tables in component:', tables.length);
+    
+    if (tables.length === 0) {
+      return [];
+    }
+    
+    // Use the first table (assuming it's the main data table)
+    const table = tables[0];
+    const rows = table.querySelectorAll('tr');
+    const data: any[] = [];
+    
+    // Extract table headers
+    const headerCells = rows[0]?.querySelectorAll('th, td');
+    const headers: string[] = [];
+    
+    if (headerCells && headerCells.length > 0) {
+      headerCells.forEach(cell => {
+        headers.push(cell.textContent?.trim() || `Column${headers.length + 1}`);
+      });
+    }
+    
+    // Extract table data rows (skip header row if it exists)
+    const startRow = headers.length > 0 ? 1 : 0;
+    
+    for (let i = startRow; i < rows.length; i++) {
+      const cells = rows[i].querySelectorAll('td');
+      const rowData: any = {};
+      
+      cells.forEach((cell, index) => {
+        const header = headers[index] || `Column${index + 1}`;
+        rowData[header] = cell.textContent?.trim() || '';
+      });
+      
+      if (Object.keys(rowData).length > 0) {
+        data.push(rowData);
+      }
+    }
+    
+    console.log('Extracted data from DOM:', {
+      headers: headers,
+      rowCount: data.length,
+      sample: data[0]
+    });
+    
+    return data;
+    
+  } catch (error) {
+    console.error('Error extracting data from DOM:', error);
+    return [];
+  }
+}
+
+private formatLabel(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
+
 }
