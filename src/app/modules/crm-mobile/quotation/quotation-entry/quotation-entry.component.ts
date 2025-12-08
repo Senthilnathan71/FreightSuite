@@ -467,6 +467,11 @@ patchEnqPageValues(enqData: any) {
       ProductName : route?.ProductName,
       PackageType : null,  // ask sir
       CargoDescription : null, // ask sir
+      GrossWeight: route?.GrossWeight,
+      NetWeight: route?.NetWeight,
+      Volume: route?.Volume || route?.CBM,
+      ExternalPkg:route?.PackageType,
+      ExternalQty: route?.PackageQty,
     })
 
     // Handle additional logic
@@ -1107,8 +1112,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     const productForm = this.fb.group({
       QuoteProductSid : [data?.QuoteProductSid || null],
       Sno : [data?.Sno || null],
-      ProductSid : [data?.ProductSid || null , [Validators.required]],
-      ProductName : [data?.ProductName || '' , [Validators.required]],
+      ProductSid : [data?.ProductSid || null ],
+      ProductName : [data?.ProductName || '' ],
       PackageType : [data?.PackageType || null ],
       CargoDescription : [data?.CargoDescription || ''],
       ExternalPkg : [data?.ExternalPkg || null ],
