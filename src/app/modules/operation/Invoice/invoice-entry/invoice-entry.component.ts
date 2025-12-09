@@ -1116,7 +1116,8 @@ onGSTTypeChange() {
       TaxAmount1: det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0,
       TaxPercentage2: det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0,
       TaxAmount2: det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0,
-      
+        LedgerMasterSid : det.LedgerMasterSid || null,
+        COAMasterSid : det.COAMasterSid || null,
       
       
         LocalAmount: det.LocalAmount,
@@ -1795,6 +1796,8 @@ private applyFallbackTax(
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
+        LedgerMasterSid : d.LedgerMasterSid ? Number(d.LedgerMasterSid) : null,
+        COAMasterSid : d.COAMasterSid ? Number(d.COAMasterSid) : null,
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
         DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
@@ -2088,7 +2091,7 @@ private applyFallbackTax(
           countryName: currentCountryName,
           TaxCategory: 'Inter',
           EffectiveFrom: new Date().toISOString(),
-          TaxType: 'Output'
+          TaxType: 'Input'
         }
       };
 

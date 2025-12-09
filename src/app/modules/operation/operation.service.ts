@@ -182,6 +182,14 @@ export class OperationService {
     );
   }
 
+  createVoucher(payload: any) {
+    return this.http.post<{ status: boolean; message: string | string[]; data: any }>('voucher/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   getAllDebtorWithCOAMapped(payload: any) {
     return this.http.post<{ data: any }>('subledgermaster/mapped-debtors', payload).pipe(
       map((resp: any) => {
@@ -198,6 +206,14 @@ export class OperationService {
   }
   getAllMappedChargeDebtors(payload) {
     return this.http.post<{ data: any }>('subledgermaster/mapped-charge-debtors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getLedgerDetails(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/find-subledger-id', payload).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1351,7 +1367,7 @@ getHouseJobARAPData(HouseJobSid: number) {
   TaxCategory: 'Intra' | 'Inter';
   CountryMasterSid: number;
 }) {
-  return this.http.post<{ data: any }>('subledgermaster/tax-group', payload).pipe(
+  return this.http.post<{ data: any[] }>('subledgermaster/tax-group', payload).pipe(
     map((resp: any) => {
       return resp;
     })

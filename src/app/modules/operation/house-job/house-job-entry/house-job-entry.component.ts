@@ -2408,7 +2408,8 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.houseJobForm.get('DepartmentMasterSid')?.value;
     const departmentName = this.selectedDepartment?.departmentName;
-    const MasterJobNumber = this.houseJobForm.get('HouseNo')?.value;
+    const MasterJobNumber = this.housejobData?.masterJob?.MasterJobNumber || this.houseJobForm.get('MBLNo')?.value;
+    const MasterJobSid = this.houseJobForm.get("MasterJobSid")?.value;
     const MBLNo = this.houseJobForm.get('MBLNo')?.value;
     const HBLNo = this.b['HBLNo']?.value;
     const selectedPOO = this.houseJobForm.get('POO')?.value; // PortMasterSid
@@ -2432,6 +2433,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       CompanyMasterSid,
       DepartmentMasterSid,
       MasterJobNumber,
+      MasterJobSid,
       ParentSid: this.HouseJobSid,
       MBLNo,
       HBLNo,

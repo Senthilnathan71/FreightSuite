@@ -2087,6 +2087,7 @@ private autoSetHssacForPendingCosts(): void {
       data.VoucherDetail.forEach((detail: any, index: number) => {
         console.log(`Processing detail ${index}:`, detail);
         const row = this.createDetailGroup({
+          VoucherDetailSid : detail.VoucherDetailSid,
           Sno: detail.Sno,
           LedgerMasterSid: detail.LedgerMasterSid,
           ChargeMasterSid: detail.ChargeMasterSid,

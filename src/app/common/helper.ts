@@ -102,3 +102,14 @@ export function toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     day: date.getDate()
   };
 }
+
+export function toNumber(value: any): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  
+  return parseFloat(value.toString()) || 0;
+}
