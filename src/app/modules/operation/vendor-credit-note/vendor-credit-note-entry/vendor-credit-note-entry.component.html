@@ -25,7 +25,7 @@
 </button> -->
  <button  type="button" 
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-            (click)="onFinalSave()" [disabled]="vendorCreditNoteData?.PostStatus=== 'P'" 
+            (click)="onFinalSave()" [disabled]="vendorCreditNoteData?.PostStatus=== 'P'" *ngIf="isEditMode"
             >
       <i class="fas fa-check-circle me-1"></i> Final
     </button>
@@ -214,17 +214,19 @@
 
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="text" id="GSTNo" formControlName="GSTNo" placeholder="" class="custom-input-field sm"
+                <input type="text"  formControlName="GSTNo" placeholder="" class="custom-input-field sm"
                   readonly />
-                <label for="GSTNo" class="input-label">GST No.</label>
+                  <label class="input-label" *ngIf="currentUserCountry === 'india'">GST No</label>
+    <label class="input-label" *ngIf="currentUserCountry !== 'india'">VAT No</label>
               </div>
             </aside>
            
 <!-- GST Type -->
 <aside class="col-md-2">
   <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" id="GSTType">
-    <label class="input-label" for="GSTType">GST Type</label>
+    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" >
+    <label class="input-label" *ngIf="currentUserCountry === 'india'">GST Type</label>
+    <label class="input-label" *ngIf="currentUserCountry !== 'india'">Tax Type</label>
   </div>
 </aside>
 
@@ -417,16 +419,30 @@
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
-            <!-- India GST Columns -->
-            <ng-container *ngIf="isIndiaGST">
-              <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
+            <ng-container *ngIf="currentUserCountry === 'india'">
+            <!-- India GST Logic -->
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
+                <!-- CGST+SGST for same state -->
+                <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
             </ng-container>
-            <!-- VAT Column for non-India countries -->
-            <ng-container *ngIf="isVATMode">
-              <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
+                <!-- IGST for different state -->
+                <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
             </ng-container>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
+                <!-- B2C - CGST only -->
+                <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+            </ng-container>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'EXWP' || vendorCreditNoteForm.get('GSTType')?.value === 'EXWOP'">
+                <!-- Export - No Tax Headers -->
+            </ng-container>
+        </ng-container>
+        
+        <!-- Non-India VAT Logic -->
+        <ng-container *ngIf="currentUserCountry !== 'india'">
+            <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
+        </ng-container>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
@@ -434,21 +450,33 @@
              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
           </tr>
           <tr class="align-middle bg-info">
+        <ng-container *ngIf="currentUserCountry === 'india'">
             <!-- India GST Sub-headers -->
-            <ng-container *ngIf="isIndiaGST">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
+                <!-- CGST+SGST sub-headers -->
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
             </ng-container>
-            <!-- VAT Sub-headers -->
-            <ng-container *ngIf="isVATMode">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
+                <!-- IGST sub-headers -->
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
             </ng-container>
-          </tr>
+            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
+                <!-- B2C sub-headers -->
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+            </ng-container>
+        </ng-container>
+        
+        <!-- Non-India VAT Sub-headers -->
+        <ng-container *ngIf="currentUserCountry !== 'india'">
+            <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+            <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+        </ng-container>
+    </tr>
         </thead>
         <tbody formArrayName="voucherDetails">
           <ng-container *ngFor="let row of details.controls; let i = index">
@@ -516,11 +544,21 @@
 
               <!-- Rate -->
               <td>
-                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
                                   formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
                                 <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('Rate')?.value | numberFormat }}</span>
-                                
-              </td>
+                                <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
+    <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
+      Credit note rate cannot exceed original invoice rate
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['required']">
+      Rate is required
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['min']">
+      Rate must be greater than or equal to 0
+    </div>
+  </div>
+                              </td>
 
               <!-- Exchange Rate -->
               <td>
@@ -539,70 +577,103 @@
               </td>
 
               <!-- India GST Columns -->
-              <ng-container *ngIf="isIndiaGST">
-                <!-- CGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+              <ng-container *ngIf="currentUserCountry === 'india'">
+    <!-- CGST+SGST Scenario -->
+    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
+        <!-- CGST Rate -->
+        <td>
+            <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                <div class="d-flex">
+                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" "  style="color: black; font-weight: 600;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- CGST Amount -->
-                <td>
-                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-                </td>
-
-                <!-- SGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex gap-1">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
+                    <span class="" style="font-weight: 600; color: black;">%</span>
+                </div>
+            </div>
+            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+        </td>
+        <!-- CGST Amount -->
+        <td>
+            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+        </td>
+        <!-- SGST Rate -->
+        <td>
+            <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                <div class="d-flex gap-1">
+                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                         (input)="onDetailChange(i, 'TaxPercentage2')">
-                      <span class=""  style="color: black; font-weight: 600;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- SGST Amount -->
-                <td>
-                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
-                </td>
-
-                <!-- IGST % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex gap-1">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
-                        (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                      <span class=""  style="color: black; font-weight: 600;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- IGST Amount -->
-                <td>
-                  <span>{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
-                </td>
-              </ng-container>
-
-              <!-- VAT Columns for non-India countries -->
-              <ng-container *ngIf="isVATMode">
-                <!-- VAT % -->
-                <td>
-                  <div class="input-group input-group-sm">
-                    <div class="d-flex">
-                      <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                    <span class="" style="font-weight: 600; color: black;">%</span>
+                </div>
+            </div>
+            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
+        </td>
+        <!-- SGST Amount -->
+        <td>
+            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
+        </td>
+    </ng-container>
+    
+    <!-- IGST Scenario -->
+    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
+        <!-- IGST Rate -->
+        <td>
+            <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                <div class="d-flex gap-1">
+                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                         (input)="onDetailChange(i, 'TaxPercentage1')">
-                      <span class=" "  style="color: black; font-weight: 600;">%</span>
-                    </div>
-                  </div>
-                </td>
-                <!-- VAT Amount -->
-                <td>
-                  <span  style="color: black; font-weight: 600;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-                </td>
-              </ng-container>
+                    <span class="" style="font-weight: 600; color: black;">%</span>
+                </div>
+            </div>
+            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+        </td>
+        <!-- IGST Amount -->
+        <td>
+            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+        </td>
+    </ng-container>
+    
+    <!-- B2C Scenario -->
+    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
+        <!-- CGST Rate (for B2C) -->
+        <td>
+            <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                <div class="d-flex">
+                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                        (input)="onDetailChange(i, 'TaxPercentage1')">
+                    <span class="" style="font-weight: 600; color: black;">%</span>
+                </div>
+            </div>
+            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+        </td>
+        <!-- CGST Amount (for B2C) -->
+        <td>
+            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+        </td>
+    </ng-container>
+    
+    <!-- Export (No Tax Columns) -->
+    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'EXWP' || vendorCreditNoteForm.get('GSTType')?.value === 'EXWOP'">
+        <!-- No tax columns for export -->
+    </ng-container>
+</ng-container>
+
+<!-- Non-India VAT Columns -->
+<ng-container *ngIf="currentUserCountry !== 'india'">
+    <!-- VAT Rate -->
+    <td>
+        <div *ngIf="!isEditMode" class="input-group input-group-sm">
+            <div class="d-flex">
+                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
+                    (input)="onDetailChange(i, 'TaxPercentage1')">
+                <span class="" style="font-weight: 600; color: black;">%</span>
+            </div>
+        </div>
+        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+    </td>
+    <!-- VAT Amount -->
+    <td>
+        <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+    </td>
+</ng-container>
 
               <!-- Local Amount -->
               <td>

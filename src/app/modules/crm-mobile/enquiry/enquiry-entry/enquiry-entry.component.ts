@@ -1554,9 +1554,12 @@ ${this.userData.userName}`;
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           PackageQty: cargo.PackageQty,
-          PackageType: packageTypeId,
+          PackageType: cargo.PackageType,
           ServiceLevel: response.IncoTerms,
           ProductName : cargo.ProductName,
+          length: cargo.length,
+          width: cargo.width,
+          height: cargo.height,
         };
       });
     });

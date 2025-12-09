@@ -1510,6 +1510,19 @@ onCurrencyChange(event: any) {
   }
   
   const houseJobFormValue = this.houseJobForm.getRawValue();
+  const exportImportType = this.selectedDepartment?.ExportImport;
+  const hblNo = houseJobFormValue.HBLNo;
+  if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
+    this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    
+    // Focus on HBLNo field
+    const hblNoElement = document.querySelector('[formControlName="HBLNo"]');
+    if (hblNoElement) {
+      (hblNoElement as HTMLElement).focus();
+    }
+    
+    return;
+  }
   const cargoFormValue = this.cargoForm.getRawValue();
   const otherFormValue = this.otherForm.getRawValue();
   const detailFormValue = this.detailForm.getRawValue();
@@ -1776,7 +1789,9 @@ private getAgentNameById(agentId: number): string {
     this.b['MovementType'].setValue(null);
     this.b['JobType'].setValue('');
     this.handleImportExport();
-    this.handleCFSOrYard()
+    this.handleCFSOrYard();
+    this.b['HBLNo']?.enable();
+    this.b['HBLNo']?.setValue('');
     return;
   }
   
@@ -1794,9 +1809,10 @@ private getAgentNameById(agentId: number): string {
     sid: department.DepartmentMasterSid,
     name: department.departmentName,
     type: this.selectedDepartmentType,
-    fcllcl: this.selectedFCLLCL
+    fcllcl: this.selectedFCLLCL,
+    exportImport: department.ExportImport
   });
-  
+  this.handleHBLNoField(department.ExportImport);
   // Rest of the method remains the same...
   this.autoSetJobType(department);
   
@@ -1825,6 +1841,33 @@ private getAgentNameById(agentId: number): string {
   this.handleCFSOrYard();
   this.onRouteChange();
   this.handleImportExport();
+}
+private handleHBLNoField(exportImport: string): void {
+  const hblNoControl = this.houseJobForm.get('HBLNo');
+  
+  if (!hblNoControl) {
+    console.warn('HBLNo control not found');
+    return;
+  }
+  
+  if (exportImport === 'Export') {
+    // For Export departments: disable HBLNo field (will be auto-generated)
+    hblNoControl.disable();
+    hblNoControl.setValue('');
+    hblNoControl.clearValidators();
+  } else if (exportImport === 'Import') {
+    // For Import departments: enable HBLNo field for manual entry
+    hblNoControl.enable();
+    hblNoControl.setValidators([Validators.required]);
+    console.log('HBLNo field enabled and required for Import department');
+  } else {
+    // For other department types: enable but not required
+    hblNoControl.enable();
+    hblNoControl.clearValidators();
+    console.log('HBLNo field enabled (optional) for other department types');
+  }
+  
+  hblNoControl.updateValueAndValidity();
 }
   private autoSetJobType(department: any): void {
   if (!department) {

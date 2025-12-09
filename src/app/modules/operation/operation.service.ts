@@ -875,10 +875,10 @@ getHouseJobARAPData(HouseJobSid: number) {
       })
     )
   }
-  getAllVendorInvoice() {
-    return this.http.get<{ status: boolean; data: any[] }>('vendor-credit-note/vendor-invoice').pipe(
+  getAllVendorInvoice(CompanyMasterSid: number) {
+    return this.http.post<{ status: boolean; data: any[] }>('vendor-credit-note/vendor-invoice',{CompanyMasterSid}).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )

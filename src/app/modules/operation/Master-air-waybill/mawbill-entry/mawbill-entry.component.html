@@ -253,23 +253,16 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
-                                            <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-                                                [textWithNumbers]="20" placeholder="" >
-                                            <label class="input-label">MAWB </label>
-                                            @if(masterJobForm.get('MBLNo')?.touched &&
-                                            masterJobForm.get('MBLNo')?.invalid){
-                                            <div class="error-message">
-                                                @if(masterJobForm.get('MBLNo')?.hasError('required')){
-                                                <span>Required</span>
-                                                }
-                                                @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
-                                                <span>Max 20 chars</span>
-                                                }
-                                            </div>
-                                            }
-                                        </div>
-                                    </aside>
+                                    <div class="custom-form-group">
+                                    <input type="text" class="custom-input-field sm"
+                                    formControlName="MBLNo"placeholder="">
+                                    <label class="input-label">
+                                        MAWB
+                                        <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'" 
+                                        class="text-danger">*</span>
+                                    </label>
+</div>
+</aside>
                                     <div class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">

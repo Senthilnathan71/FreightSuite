@@ -247,7 +247,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
  
   
     loadVendorInvoices() {
-    this.operationService.getAllVendorInvoice().subscribe({
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid
+    this.operationService.getAllVendorInvoice(CompanyMasterSid).subscribe({
       next: (resp: any) => {
         this.vendorInvoiceList = resp?.data || resp || [];
         // Now load credit notes after invoices are loaded

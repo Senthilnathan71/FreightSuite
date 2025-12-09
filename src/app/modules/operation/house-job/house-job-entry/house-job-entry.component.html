@@ -105,7 +105,7 @@
 
     <div class="quick-form-grid pb-1" [class.expanded]="isQuickFormExpanded">
 
-      <div class="smart-field-group">
+      <!-- <div class="smart-field-group">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
             formControlName="HBLNo">
@@ -114,7 +114,30 @@
             'bg-transparent': !b['HBLNo']?.getRawValue()
            }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}} <span class="text-danger">*</span></label>
         </div>
-      </div>
+      </div> -->
+      <div class="smart-field-group">
+  <div class="custom-form-group">
+    <input 
+      type="text" 
+      id="text-input" 
+      placeholder="" 
+      class="form-control custom-input-field sm"
+      formControlName="HBLNo"
+      [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
+      [ngClass]="{
+        'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
+                      (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)
+      }"
+     >
+    <label 
+      for="text-input" [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['HBLNo']?.getRawValue()
+           }">
+      {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+    </label>
+  </div>
+</div>
 
       <div class="smart-field-group">
         <div class="custom-form-group">

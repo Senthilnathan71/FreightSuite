@@ -117,6 +117,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   currentBranch: any;
   MenuMasterSid: any;
   filterOption: any;
+  formSubmitted = false;
   isEditContainer = false;
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
@@ -998,7 +999,9 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       this.masterJobForm.get('ETA')?.setValue('');
       this.masterJobForm.get('ETD')?.setValue('');
       this.masterJobForm.get('MovementType')?.setValue(null);
-      this.masterJobForm.get('MBLNo')?.enable(); 
+        this.masterJobForm.get('MBLNo')?.enable();
+        this.masterJobForm.get('MBLNo')?.clearValidators();
+        this.masterJobForm.get('MBLNo')?.updateValueAndValidity();
       return;
     }
     
@@ -1009,17 +1012,37 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       this.isAirDepartment = this.selectedDepartmentType === "AIR";
       const mblNoControl = this.masterJobForm.get('MBLNo');
       if (this.isAirDepartment) {
-      // For Air department, disable MBLNo field and clear it
-      mblNoControl?.disable();
-       if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
-      mblNoControl?.setValue('');
-    }
-      mblNoControl?.clearValidators();
-      
+        const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
+        const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
+        
+        if (isAirExport) {
+            // Air Export - disable MBLNo (auto-allocated), optional
+            mblNoControl?.disable();
+            mblNoControl?.clearValidators();
+            if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
+                mblNoControl?.setValue('');
+            }
+        } else if (isAirImport) {
+            // Air Import - enable MBLNo, REQUIRED field
+            mblNoControl?.enable();
+            mblNoControl?.setValidators([
+                Validators.required, // Add required validator for Air Import
+                Validators.maxLength(50)
+            ]);
+            mblNoControl?.updateValueAndValidity();
+        } else {
+            // For Air without ExportImport specified, default to Export behavior
+            mblNoControl?.disable();
+            mblNoControl?.clearValidators();
+            if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
+                mblNoControl?.setValue('');
+            }
+        }
     } else {
-      // For other departments, enable MBLNo field
-      mblNoControl?.enable();
-      // Don't add validators here as MBLNo is optional
+        // For non-Air departments, MBLNo is optional
+        mblNoControl?.enable();
+        mblNoControl?.clearValidators();
+        mblNoControl?.setValidators([Validators.maxLength(50)]);
     }
     
     mblNoControl?.updateValueAndValidity();
@@ -1171,10 +1194,6 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
           originalETD: vslVoy.ETD,
           originalETA: vslVoy.ETA
         }));
-        
-        if (this.headerVesselList.length === 0) {
-          this.toastr.warning("No Airline has been scheduled for the requested route.");
-        }
       } else {
         this.toastr.error("Error loading Vessel");
       }
@@ -1356,9 +1375,29 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   onSubmit(): void {
+     this.formSubmitted = true;
+     // First check form validity
+    this.masterJobForm.markAllAsTouched();
+    
+    // Check specific validation for Air Import
+    const isAirImport = (
+        this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+        this.selectedDepartment?.ExportImport?.toUpperCase() === 'IMPORT'
+    );
+    
+    const mblNoValue = this.masterJobForm.get('MBLNo')?.value;
+    
+    if (isAirImport && (!mblNoValue || mblNoValue.trim() === '')) {
+        this.toastr.warning('Please enter MAWB number for Air Import', 'MAWB Required');
+        // Highlight the MBLNo field
+        this.masterJobForm.get('MBLNo')?.markAsTouched();
+        this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
+        return;
+    }
+    
+    // Check general form validity
     if (this.masterJobForm.invalid) {
         this.toastr.error('Please fill all required fields');
-        this.masterJobForm.markAllAsTouched();
         return;
     }
 
@@ -1371,6 +1410,10 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
     };
 
     const formValue = this.masterJobForm.getRawValue();
+        const isAirExport = (
+        this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+        this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
+    );
 
     // Create the others object from form values
     const othersData = {
@@ -1404,7 +1447,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         
         // Add the others data as a separate object
         others: othersData,
-         MBLNo: this.isAirDepartment ? undefined : formValue.MBLNo,
+        MBLNo: isAirExport ? (formValue.MBLNo || '') : formValue.MBLNo,
         // Ensure other string fields don't exceed limits
         DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
         POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
@@ -1472,7 +1515,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             error: (error) => {
                 this.isLoading = false;
                 if (error.error?.message?.includes('No free MAWB stock available')) {
-                    this.toastr.error(
+                    this.toastr.warning(
                         'No free MAWB stock available for Air department.'
                     );
                 } else {
@@ -1482,16 +1525,21 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             }
         });
     } else {
-        this.operationService.createMasterJob(formData).subscribe({
+         this.operationService.createMasterJob(formData).subscribe({
             next: (response: any) => {
                 this.isLoading = false;
                 if (response.status) {
-                   if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
-                        this.toastr.success(
-                            `Master Job created successfully. MAWB: ${response.newMasterJob.MBLNo}`,
-                            'Success',
-                            { timeOut: 5000 }
-                        );
+                    if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
+                        const deptType = this.selectedDepartment?.ExportImport?.toUpperCase();
+                        let successMessage = 'Master Job created successfully';
+                        
+                        if (deptType === 'EXPORT') {
+                            successMessage = `Master Job created successfully. MAWB Allocated: ${response.newMasterJob.MBLNo}`;
+                        } else if (deptType === 'IMPORT') {
+                            successMessage = `Master Job created successfully. MAWB: ${response.newMasterJob.MBLNo}`;
+                        }
+                        
+                        this.toastr.success(successMessage, 'Success', { timeOut: 5000 });
                     } else {
                         this.toastr.success('Master Job created successfully');
                     }
@@ -1502,10 +1550,22 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             },
             error: (error) => {
                 this.isLoading = false;
-                 if (error.error?.message?.includes('No free MAWB stock available')) {
-                    this.toastr.error(
-                        'No free MAWB stock available for Air department'
+                if (error.error?.message?.includes('No free MAWB stock available')) {
+                    // Check if this is Air Export or Air Import
+                    const isAirExport = (
+                        this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+                        this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
                     );
+                    
+                    if (isAirExport) {
+                        this.toastr.warning(
+                            'No free MAWB stock available for Air Export department. Please contact administrator.',
+                            'MAWB Stock Unavailable',
+                            { timeOut: 6000 }
+                        );
+                    } else {
+                        this.toastr.warning('No free MAWB available');
+                    }
                 } else {
                     this.toastr.error('Failed to create Master Job');
                 }
@@ -1576,6 +1636,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   onReset(): void {
+    this.formSubmitted = false;
     this.masterJobForm.reset({
       BLReleaseType: 'Original',
       NoofOriginal: 3,

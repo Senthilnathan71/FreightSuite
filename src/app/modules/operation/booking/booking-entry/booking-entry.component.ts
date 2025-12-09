@@ -964,6 +964,20 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     this.setupProductFormImmediateCalculation(productForm);
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
 
+      if (data) {
+    setTimeout(() => {
+      // Force calculation for existing dimensions
+      const length = productForm.get('Length')?.value;
+      const width = productForm.get('Width')?.value;
+      const height = productForm.get('Height')?.value;
+      const uom = productForm.get('UomMasterSid')?.value;
+      
+      // Manually call the calculation methods
+      if (length || width || height) {
+        productForm.get('ExternlQty')?.updateValueAndValidity({ emitEvent: true });
+      }
+    }, 0);
+  }
     if (data?.CargoRecDate) {
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
         productForm.get(field)?.disable();
@@ -1297,7 +1311,18 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport: cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
-    })
+    });
+    setTimeout(() => {
+  // Manually trigger the chargeable weight calculation
+  const grossWeight = this.cargoForm.get('GrossWeight')?.value;
+  const netWeight = this.cargoForm.get('NetWeight')?.value;
+  const volume = this.cargoForm.get('Volume')?.value;
+  const volumetric = this.cargoForm.get('Volumetric')?.value;
+  
+  if (grossWeight || netWeight || volume || volumetric) {
+    this.calculateChargeableWeight();
+  }
+}, 100);
     console.log("Patched Cargo", this.cargoForm.value);
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
     if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
@@ -1471,7 +1496,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         Volumetric: data?.Volumetric,
         UomMasterSid: data?.UomMasterSid,
         CargoRecDate: data?.CargoRecDate
-      })
+      });
+          setTimeout(() => {
+      // Trigger value change events to activate calculations
+      this.productForm.get('ExternlQty')?.updateValueAndValidity({ emitEvent: true });
+      this.productForm.get('Length')?.updateValueAndValidity({ emitEvent: true });
+      this.productForm.get('Width')?.updateValueAndValidity({ emitEvent: true });
+      this.productForm.get('Height')?.updateValueAndValidity({ emitEvent: true });
+      this.productForm.get('UomMasterSid')?.updateValueAndValidity({ emitEvent: true });
+    }, 100);
       const productItem = this.slicedProductArr[productIndex];
       this.currentProductIndex = this.bookingProducts.controls.indexOf(productItem);
       this.productEditMode = true;
