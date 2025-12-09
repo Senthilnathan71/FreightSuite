@@ -206,6 +206,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   customsResetTrigger = false;
   currentCustomsFormValue: any = null;
   pdfModel: any
+
+  // EDI Manifest validation modal properties
+  showValidationModal = false;
+  validationErrors: any[] = [];
+  groupedErrors: { [key: string]: any[] } = {};
   // Shipment related variable declarations
   attachedBookings: FormArray;
   slicedAttachedBookings: any[] = [];
@@ -3497,9 +3502,61 @@ loadHSSACLookups() {
       },
       error: (error) => {
         this.spinner.hide();
-        this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+        this.handleEDIValidationError(error);
       }
     });
+  }
+
+  /**
+   * Handle EDI Manifest validation errors from backend
+   */
+  private handleEDIValidationError(error: any) {
+    // Check if this is a validation error with field list
+    if (error.error?.errors && Array.isArray(error.error.errors)) {
+      this.validationErrors = error.error.errors;
+      this.groupEDIErrorsByRecordType();
+      this.showValidationModal = true;
+    } else {
+      // Generic error
+      this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+    }
+  }
+
+  /**
+   * Group validation errors by record type for display
+   */
+  private groupEDIErrorsByRecordType() {
+    this.groupedErrors = {};
+    const recordTypeLabels: { [key: string]: string } = {
+      'VOY': 'Voyage Details (VOY)',
+      'BOL': 'Bill of Lading (BOL)',
+      'CON': 'Consignment Details (CON)',
+      'CTR': 'Container Details (CTR)'
+    };
+
+    for (const error of this.validationErrors) {
+      const label = recordTypeLabels[error.recordType] || error.recordType;
+      if (!this.groupedErrors[label]) {
+        this.groupedErrors[label] = [];
+      }
+      this.groupedErrors[label].push(error);
+    }
+  }
+
+  /**
+   * Close validation modal
+   */
+  closeValidationModal() {
+    this.showValidationModal = false;
+    this.validationErrors = [];
+    this.groupedErrors = {};
+  }
+
+  /**
+   * Get grouped error keys for template iteration
+   */
+  getGroupedErrorKeys(): string[] {
+    return Object.keys(this.groupedErrors);
   }
 
   getFormattedPort(code:string){

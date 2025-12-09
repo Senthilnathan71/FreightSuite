@@ -7,6 +7,8 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import {
   FormsModule,
@@ -19,6 +21,15 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { OperationService } from '../../operation.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
+
+// Interface for validation errors from backend
+interface MandatoryFieldError {
+  recordType: 'VOY' | 'BOL' | 'CON' | 'CTR';
+  fieldRef: string;
+  fieldName: string;
+  houseJobSid?: number;
+  hblNo?: string;
+}
 
 @Component({
   selector: 'app-customs',
@@ -39,6 +50,11 @@ export class CustomsComponent implements OnInit, OnChanges {
   loading = false;
   houseJobSid: number | null = null;
   masterJobSid: number | null = null;
+
+  // Validation modal properties
+  showValidationModal = false;
+  validationErrors: MandatoryFieldError[] = [];
+  groupedErrors: { [key: string]: MandatoryFieldError[] } = {};
 
   // Importer Codes
   importerCodeList = [
@@ -243,6 +259,23 @@ export class CustomsComponent implements OnInit, OnChanges {
   }
 
   generateEDIManifest() {
+    // Basic frontend validation first
+    const customsData = this.customsForm.value;
+    const basicErrors: string[] = [];
+
+    if (!customsData.LineCode) basicErrors.push('Line Code');
+    if (!customsData.VoyageAgentCode) basicErrors.push('Voyage Agent Code');
+    if (!customsData.ManifestSequence) basicErrors.push('Manifest Sequence');
+    if (!customsData.SerialNumber) basicErrors.push('Serial Number');
+    if (!customsData.UNHSCode) basicErrors.push('HS Code (UNHSCode)');
+    if (!customsData.PackageTypeCode) basicErrors.push('Package Type Code');
+    if (!customsData.ImporterCode || customsData.ImporterCode === 'null') basicErrors.push('Importer Code');
+
+    if (basicErrors.length > 0) {
+      this.toastr.warning(`Please fill the following Customs fields: ${basicErrors.join(', ')}`);
+      return;
+    }
+
     if (this.screenName === 'HouseJob') {
       if (!this.houseJobSid) {
         this.toastr.error('House Job ID not found');
@@ -257,7 +290,7 @@ export class CustomsComponent implements OnInit, OnChanges {
         },
         error: (error) => {
           this.spinner.hide();
-          this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+          this.handleValidationError(error);
         }
       });
     } else {
@@ -274,10 +307,62 @@ export class CustomsComponent implements OnInit, OnChanges {
         },
         error: (error) => {
           this.spinner.hide();
-          this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+          this.handleValidationError(error);
         }
       });
     }
+  }
+
+  /**
+   * Handle validation errors from backend
+   */
+  private handleValidationError(error: any) {
+    // Check if this is a validation error with field list
+    if (error.error?.errors && Array.isArray(error.error.errors)) {
+      this.validationErrors = error.error.errors;
+      this.groupErrorsByRecordType();
+      this.showValidationModal = true;
+    } else {
+      // Generic error
+      this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+    }
+  }
+
+  /**
+   * Group validation errors by record type for display
+   */
+  private groupErrorsByRecordType() {
+    this.groupedErrors = {};
+    const recordTypeLabels: { [key: string]: string } = {
+      'VOY': 'Voyage Details (VOY)',
+      'BOL': 'Bill of Lading (BOL)',
+      'CON': 'Consignment Details (CON)',
+      'CTR': 'Container Details (CTR)'
+    };
+
+    for (const error of this.validationErrors) {
+      const label = recordTypeLabels[error.recordType] || error.recordType;
+      if (!this.groupedErrors[label]) {
+        this.groupedErrors[label] = [];
+      }
+      this.groupedErrors[label].push(error);
+    }
+  }
+
+  /**
+   * Close validation modal
+   */
+  closeValidationModal() {
+    this.showValidationModal = false;
+    this.validationErrors = [];
+    this.groupedErrors = {};
+  }
+
+  /**
+   * Get grouped error keys for template iteration
+   */
+  getGroupedErrorKeys(): string[] {
+    return Object.keys(this.groupedErrors);
   }
 
   private downloadEDIFile(content: string, filename: string) {
