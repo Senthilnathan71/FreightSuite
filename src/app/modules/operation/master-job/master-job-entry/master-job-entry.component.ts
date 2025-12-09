@@ -234,6 +234,10 @@ arapFilter = {
   private initialContainersCount = 0;
   private initialContainerActivitiesCount = 0;
   private formSaved = false;
+  isVesselFreeText: boolean = false;
+  isVoyageFreeText: boolean = false;
+  isETDFreeText: boolean = false;
+  isETAFreeText: boolean = false;
 
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -243,6 +247,7 @@ arapFilter = {
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Customs', icon: 'fas fa-passport' },
+    
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
@@ -782,7 +787,8 @@ arapFilter = {
       CommodityDescription: [''],
       MarksandNumber: [''],
       Status: ['Active', Validators.required],
-
+      isVesselFreeText: [false],
+      isVoyageFreeText: [false],
       // Voyage fields
       MasterJobVoyageSid: [null],
       VoyageMasterSid: [null],
@@ -963,12 +969,17 @@ private containerNumberValidator(): ValidatorFn {
   const containerControl = this.containerFormGroup.get('ContainerNumber');
   if (!containerControl?.value) return;
 
+  // Convert to uppercase and remove all non-alphanumeric characters
   let containerNumber = containerControl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  
+  // Set the formatted value back to the control
+  containerControl.setValue(containerNumber, { emitEvent: false });
   
   // Basic format validation: 4 letters + 6 digits + 1 check digit
   const containerRegex = /^[A-Z]{4}\d{6}\d?$/;
   
-  if (containerNumber.length === 10) {
+  // If we have 10 characters (4 letters + 6 digits), calculate check digit
+  if (containerNumber.length === 10 && containerRegex.test(containerNumber + '0')) {
     // Calculate check digit and append it
     const validation = this.validateContainerNumber(containerNumber + '0'); // Temporary append
     if (validation.checkDigit !== undefined) {
@@ -977,22 +988,93 @@ private containerNumberValidator(): ValidatorFn {
     }
   }
 
-  // Validate the complete container number
+  // Validate the complete container number (should be 11 characters now)
   if (containerNumber.length === 11) {
     const validation = this.validateContainerNumber(containerNumber);
     
     if (!validation.isValid) {
       containerControl.setErrors({ 'invalidContainerNumber': true });
-      this.toastr.error('Invalid container number. Check digit verification failed.');
+      this.toastr.error(`Invalid container number. Expected check digit: ${validation.checkDigit}`);
     } else {
       containerControl.setErrors(null);
+      // Show success message
+      setTimeout(() => {
+        // This will trigger the success message in the template
+        containerControl?.updateValueAndValidity({ onlySelf: true });
+      }, 0);
     }
-  } else {
+  } else if (containerNumber.length > 0) {
     containerControl.setErrors({ 'invalidFormat': true });
     this.toastr.error('Container number must be 11 characters: 4 letters + 6 digits + 1 check digit');
   }
 }
+onContainerNumberInput(event: any): void {
+  const input = event.target.value;
+  // Auto-convert to uppercase as user types
+  const upperValue = input.toUpperCase();
+  if (input !== upperValue) {
+    event.target.value = upperValue;
+    this.containerFormGroup.get('ContainerNumber')?.setValue(upperValue);
+  }
+  
+  // Limit to 11 characters
+  if (input.length > 11) {
+    event.target.value = input.substring(0, 11);
+    this.containerFormGroup.get('ContainerNumber')?.setValue(input.substring(0, 11));
+  }
+}
+toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+  event.stopPropagation();
+  const value = this.f[flagCtrl]?.value;
+  this.f[flagCtrl]?.setValue(!value);
+  this.masterJobForm.get(mainCtrl)?.reset();
+}
 
+toggleDateInputType(field: 'ETD' | 'ETA'): void {
+  if (field === 'ETD') {
+    this.isETDFreeText = !this.isETDFreeText;
+    if (this.isETDFreeText) {
+      this.masterJobForm.get('ETD')?.enable();
+    } else {
+      this.masterJobForm.get('ETD')?.disable();
+    }
+  } else if (field === 'ETA') {
+    this.isETAFreeText = !this.isETAFreeText;
+    if (this.isETAFreeText) {
+      this.masterJobForm.get('ETA')?.enable();
+    } else {
+      this.masterJobForm.get('ETA')?.disable();
+    }
+  }
+}
+
+// Add this method to evaluate dropdown or free text in edit mode:
+evaluateDropdownOrFreeText() {
+  let response = this.masterJobData;
+  if (response?.VesselName && !this.existsInList(this.vesselList, response.VesselName)) {
+    this.masterJobForm.patchValue({ isVesselFreeText: true });
+  }
+  if (response?.VoyageNo && !this.existsInList(this.voyageList, response.VoyageNo)) {
+    this.masterJobForm.patchValue({ isVoyageFreeText: true });
+  }
+  
+  // Check for manual date entries
+  if (response?.ETD && this.isEditMode) {
+    this.isETDFreeText = true;
+    this.masterJobForm.get('ETD')?.enable();
+  }
+  if (response?.ETA && this.isEditMode) {
+    this.isETAFreeText = true;
+    this.masterJobForm.get('ETA')?.enable();
+  }
+}
+
+existsInList(list: any[], value: any) {
+  if (list) {
+    return list.some(item => item.CustomerName === value);
+  }
+  return false;
+}
   addContainer(container?: any): void {
   const containerGroup = this.fb.group({
     MasterJobContainerSid: [container?.MasterJobContainerSid || null],
@@ -1111,6 +1193,18 @@ private containerNumberValidator(): ValidatorFn {
         this.masterJobData = data;
         console.log("Master Job Data", this.masterJobData);
         this.patchFormValues(data);
+          const aggregatedTotals = data.aggregatedTotals;
+                
+                this.patchFormValues({
+                    ...data,
+                    // Use aggregated totals instead of individual values
+                    NoOfPkg: aggregatedTotals?.NoOfPkg || data.NoOfPkg,
+                    GrossWeight: aggregatedTotals?.GrossWeight || data.GrossWeight,
+                    NetWeight: aggregatedTotals?.NetWeight || data.NetWeight,
+                    ChargeableWeight: aggregatedTotals?.ChargeableWeight || data.ChargeableWeight,
+                    Volume: aggregatedTotals?.Volume || data.Volume,
+                    WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
+                }); 
         this.loadCustomsData();
       }
       
@@ -1166,6 +1260,8 @@ private containerNumberValidator(): ValidatorFn {
 
 
   patchFormValues(data: any) {
+       console.log('DEBUG: Data received for patching:', data);
+    console.log('DEBUG: MovementType value:', data.MovementType);
     // Helper to find port SID by port code (if stored as code in data)
     const findPortSidByCode = (portCodeOrSid: any): number | null => {
       if (!portCodeOrSid && portCodeOrSid !== 0) return null;
@@ -1226,7 +1322,7 @@ private containerNumberValidator(): ValidatorFn {
       CarrierName: data.CarrierName || '',
       CutOffDate: data.CutOffDate ? new Date(data.CutOffDate) : null,
     });
-
+       this.evaluateDropdownOrFreeText();
     if (data.others && data.others.length > 0) {
       const othersData = data.others[0];
 
@@ -1275,6 +1371,7 @@ private containerNumberValidator(): ValidatorFn {
           ExportDoNo: othersData.ExportDoNo || '',
           CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
+         
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
@@ -1449,9 +1546,9 @@ private containerNumberValidator(): ValidatorFn {
   //   return packageType ? packageType.UOMName : 'Unknown';
   // }
   getPackageTypeName(pkgTypeSid: number): string {
-    if (!pkgTypeSid) return 'Unknown';
+    if (!pkgTypeSid) return '';
     const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
-    return packageType ? packageType.UOMName : 'Unknown';
+    return packageType ? packageType.UOMName : '';
   }
 
   setAddress(controlName: string, item: any) {
@@ -1609,6 +1706,11 @@ handlePODChange(selectedPort: any) {
     return;
   }
 
+  // Add this check: Don't search vessels if manual entry is enabled
+  if (this.f['isVesselFreeText']?.value || this.f['isVoyageFreeText']?.value) {
+    return;
+  }
+
   this.isLoadingVessels = true;
   this.lastVesselSearchParams = { ...params };
 
@@ -1635,8 +1737,11 @@ handlePODChange(selectedPort: any) {
           originalPortCutoff: vslVoy.PortCutoff
         }));
 
-        if (this.headerVesselList.length === 0) {
-          this.toastr.warning("No Vessel/Voyage has been scheduled for the requested route.");
+        // Only show warning if vessel list is empty AND manual entry is NOT enabled
+        if (this.headerVesselList.length === 0 && 
+            !this.f['isVesselFreeText']?.value && 
+            !this.f['isVoyageFreeText']?.value) {
+          
         }
       } else {
         this.toastr.error("Error loading Vessel");
@@ -2068,7 +2173,7 @@ handleCustomsChange(event: any) {
   // Helper methods
   getContainerTypeName(ContainerTypeMasterSid: number): string {
     const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
-    return containerType ? containerType.ContainerName : 'Unknown';
+    return containerType ? containerType.ContainerName : '';
   }
 
   formatContainerData(): any[] {
@@ -3168,7 +3273,7 @@ handleCustomsChange(event: any) {
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
-      const chargeName = charge ? charge.chargeName : "Unknown";
+      const chargeName = charge ? charge.chargeName : "";
 
       let existing = this.profitSummary.find(p => p.chargeName === chargeName);
 
@@ -3223,7 +3328,7 @@ handleCustomsChange(event: any) {
     // --- COST SUMMARY ---
     data.forEach(item => {
       const costAmt = parseFloat(item.CostLocalAmount) || 0;
-      const customerName = item.costCustomerMaster?.CustomerName || "Unknown";
+      const customerName = item.costCustomerMaster?.CustomerName || "";
       const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
 
       const prevData = costHmap.get(customerId);
@@ -3242,7 +3347,7 @@ handleCustomsChange(event: any) {
     // --- REVENUE SUMMARY ---
     data.forEach(item => {
       const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
-      const customerName = item.revenueCustomerMaster?.CustomerName || "Unknown";
+      const customerName = item.revenueCustomerMaster?.CustomerName || "";
       const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
 
       const prevData = revenueHmap.get(customerId);
@@ -3551,6 +3656,49 @@ loadHSSACLookups() {
     this.validationErrors = [];
     this.groupedErrors = {};
   }
+  // Add these methods to your component class
+
+getHouseJobGrossWeight(shipment: any): string {
+    if (!shipment.houseJob || !shipment.houseJob.cargo || shipment.houseJob.cargo.length === 0) {
+        return '0';
+    }
+    
+    // Sum up GrossWeight from all cargo items
+    const total = shipment.houseJob.cargo.reduce((sum: number, cargo: any) => {
+        const weight = parseFloat(cargo.GrossWeight) || 0;
+        return sum + weight;
+    }, 0);
+    
+    return total.toString();
+}
+
+getHouseJobVolume(shipment: any): string {
+    if (!shipment.houseJob || !shipment.houseJob.cargo || shipment.houseJob.cargo.length === 0) {
+        return '0';
+    }
+    
+    // Sum up Volume from all cargo items
+    const total = shipment.houseJob.cargo.reduce((sum: number, cargo: any) => {
+        const volume = parseFloat(cargo.Volume) || 0;
+        return sum + volume;
+    }, 0);
+    
+    return total.toString();
+}
+
+getHouseJobTotalPackages(shipment: any): string {
+    if (!shipment.houseJob || !shipment.houseJob.cargo || shipment.houseJob.cargo.length === 0) {
+        return '0';
+    }
+    
+    // Sum up NoOfPackage from all cargo items
+    const total = shipment.houseJob.cargo.reduce((sum: number, cargo: any) => {
+        const packages = parseInt(cargo.NoOfPackage) || 0;
+        return sum + packages;
+    }, 0);
+    
+    return total.toString();
+}
 
   /**
    * Get grouped error keys for template iteration
@@ -3601,6 +3749,11 @@ loadHSSACLookups() {
       centered: true,
     })
     }
+
+
+    navigateToMasterJob() {
+    this.router.navigate(['operation/master-job/entry']);
+  }
 }
 
 
