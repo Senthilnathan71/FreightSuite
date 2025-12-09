@@ -168,7 +168,6 @@ export class CreditNoteEntryComponent {
         private spinner: NgxSpinnerService,
         private companySettings: CompanySettingsManagerService,
         public mps: MenuPermissionService,
-        private taxCalculationService: TaxCalculationService,
         private commonService: CommonService,
         private masterService: MasterService,
         private numberToWords: NumberToWordsService
@@ -1284,7 +1283,6 @@ onCustomerMasterChange(selected: any) {
     
     this.creditNoteForm.get('GSTType')?.setValue('');
     return;// Clear PartyName
-    return;
   }
 
   // Find the customer

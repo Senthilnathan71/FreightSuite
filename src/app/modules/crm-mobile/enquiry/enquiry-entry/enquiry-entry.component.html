@@ -1241,7 +1241,7 @@
                                                                 </ng-select>
                                                             </td>
                                                             <td>
-                                                                <input type="text" formControlName="Qty"
+                                                                <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="5"
                                                                     [DecimalPrecisionAfter]="0" appendTo="body">
@@ -1337,11 +1337,14 @@
                                                                 <label class="form-label mb-0">Product <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
-                                                                style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                                <label class="form-label mb-0">Chargable Weight <span
+                                                                <label for="" class="form-label mb-0">Package Type <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light " style="width: 90px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Qty <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
@@ -1400,12 +1403,20 @@
                                                                         [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                                 </ng-select>
                                                             </td>
-
-
                                                             <td>
-                                                                <input type="text" formControlName="ChargeableWeight"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                <ng-select formControlName="PackageType"
+                                                                    class="ng-select" appendTo="body" placeholder=""
+                                                                    [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
+                                                                    <ng-option *ngFor="let item of packageTypes"
+                                                                        [value]="item.UOMCode">
+                                                                        {{ item.UOMName }}
+                                                                    </ng-option>
+                                                                </ng-select>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="PackageQty"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    [onlyNumbers]="5" appendTo="body">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
@@ -1932,6 +1943,7 @@
                         <td style="border: 1px solid #000; padding: 4px;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '' }}</td>
                         @if(selectedFCLLCL === "AIR"){
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ChargeableWeight || '' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageQty || '' | number:'1.2-2' }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.length || '' }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.width || '' }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.height || '' }}</td>

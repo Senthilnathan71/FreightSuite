@@ -460,18 +460,50 @@ patchEnqPageValues(enqData: any) {
     this.addQuoteCarrier(lastAddedQuote);
 
     console.log("TESTING",this.quotationForm.getRawValue())
+    let packageTypeId = null;
+    if (route?.PackageType) {
+      
+      // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
+      if (typeof route?.PackageType === 'string') {
+        // First try to find by UOMCode (this is likely what you need)
+        const packageTypeByCode = this.packageTypes.find(uom => 
+          uom.UOMCode === route?.PackageType
+        );
+        
+        // If not found by code, try by name
+        const packageTypeByName = this.packageTypes.find(uom => 
+          uom.UOMName === route?.PackageType
+        );
+        
+        // Use whichever is found
+        const foundPackageType = packageTypeByCode || packageTypeByName;
+        
+        if (foundPackageType) {
+          packageTypeId = foundPackageType.UOMMasterSid;
+          console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
+        } else {
+          console.warn(`No package type found for: "${route?.PackageType}"`);
+          console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
+        }
+      }
+    } 
     
     this.addQuoteProduct(lastAddedQuote,{
       Sno : 1,
       ProductSid : null,
       ProductName : route?.ProductName,
-      PackageType : null,  // ask sir
-      CargoDescription : null, // ask sir
+      PackageType : route?.PackageType, 
+      CargoDescription : null, 
       GrossWeight: route?.GrossWeight,
       NetWeight: route?.NetWeight,
+      ChargeableWeight: route?.ChargeableWeight,
       Volume: route?.Volume || route?.CBM,
-      ExternalPkg:route?.PackageType,
+      ExternalPkg:packageTypeId,
       ExternalQty: route?.PackageQty,
+      Length: route?.length,
+      Width: route?.width,
+      Height: route?.height,
+      ProductUnit: packageTypeId,
     })
 
     // Handle additional logic
@@ -3328,7 +3360,7 @@ ${this.userData.userName}`;
       // Product details
       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
         ProductName: product.ProductName,
-        ExternaPkg: product.ExternalPkg,
+        ExternaPkg: product.PackageType,
         ExternlQty: product.ExternalQty,
         GrossWeight: product.GrossWeight,
         NetWeight: product.NetWeight,
