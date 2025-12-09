@@ -377,6 +377,68 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn('Statment Ledger Report component not yet created:', error);
     }
+
+    // Trail_Balance Report
+     try {
+      const { TrailBalanceComponent } = await import(
+        '../components/reports/trail-balance/trail-balance.component'
+      );
+
+      this.registerReport({
+        id: 'trial-balance',
+        title: 'Trail Balance',
+        component: TrailBalanceComponent,
+        filenameTemplate: 'Trail_Balance_Report_{GroupName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/trial-balance/report',
+        emailSubjectTemplate: 'Trail_Balance Report - Ledger: {GroupName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Trail Balance Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn('Trail Balance Report component not yet created:', error);
+    }
+
+      // Balance_Sheet Report
+     try {
+      const { BalanceSheetsComponent } = await import(
+        '../components/reports/balance-sheets/balance-sheets.component'
+      );
+
+      this.registerReport({
+        id: 'balance-sheet',
+        title: 'Balance Sheet',
+        component: BalanceSheetsComponent,
+        filenameTemplate: 'Balance_Sheet_Report_{GroupName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Balance_Sheet_Report - Ledger: {GroupName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Balance Sheet Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn(' Balance Sheet Report component not yet created:', error);
+    }
   }
 
   /**
