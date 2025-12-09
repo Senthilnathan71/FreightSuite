@@ -1110,7 +1110,7 @@
              {{ getChargeTaxAmount(charge) | number:'1.2-2' }}
             </td>
             <td class="text-end">
-              {{ chargeSelectionTaxResult?.grandTotal | number:'1.2-2' }}
+              {{ getChargeTaxTotal(charge) | number:'1.2-2' }}
             </td>
           </tr>
           <tr *ngIf="!availableCharges?.length">
@@ -1126,7 +1126,7 @@
         <h6 class="mb-0">
           <i class="fas fa-calculator me-2"></i>
           {{ isIndianCompany() ? 'GST' : (isUAECompany() ? 'VAT' : 'Tax') }} Summary
-          <small class="float-end">{{ chargeSelectionTaxResult.type }} Calculation</small>
+          <small class="float-end">{{ isIndianCompany() ? 'GST' : (isUAECompany() ? 'VAT' : 'Tax') }} Calculation</small>
         </h6>
       </div>
       <div class="card-body p-1">
@@ -1151,7 +1151,7 @@
                 <tr *ngIf="isUAECompany() && chargeSelectionTaxResult.type === 'VAT'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
-                    <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.vatRate }}%)</span>
+                    <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%)</span>
                   </td>
                 </tr>
                 
@@ -1190,7 +1190,7 @@
               <!-- VAT Details (for UAE and other VAT countries) -->
               <div *ngIf="(!isIndianCompany() || chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
                 <div class="d-flex justify-content-between mb-1">
-                  <small>VAT ({{ chargeSelectionTaxResult.vatRate }}%):</small>
+                  <small>VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%):</small>
                   <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
                 </div>
               </div>
