@@ -765,8 +765,8 @@ onHeaderCurrencyChange(selectedCurrency: any): void {
     for (let i = 0; i < this.details.length; i++) {
       const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
       const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-      const igstAmt = Number(this.details.at(i).get('TaxAmountIGST')?.value || 0);
-      total += taxAmt1 + taxAmt2 + igstAmt;
+     
+      total += taxAmt1 + taxAmt2 ;
     }
     return this.round(total);
   }

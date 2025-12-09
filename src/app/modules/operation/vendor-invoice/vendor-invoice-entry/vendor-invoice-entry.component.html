@@ -22,15 +22,17 @@
             (click)="openVendorInvoiceUploadModal()" [disabled]="isViewMode">
             <i class="fas fa-upload me-1"></i> Upload
           </button>
+          <div class="action-group"  *ngIf="isEditMode"> 
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
             [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'">
             <i class="fas fa-check-circle me-1"></i> Post
           </button>
+          </div>
 
-          <button *ngIf="isViewMode && isPosted" type="button"
+          <!-- <button *ngIf="isViewMode && isPosted" type="button"
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled>
             <i class="fas fa-check-circle me-1"></i> Posted
-          </button>
+          </button> -->
 
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
