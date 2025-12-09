@@ -1,0 +1,305 @@
+<!-- CFS Outturn Report -->
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center">
+    <h5 class="modal-title mb-0 text-white">CFS Outturn Report</h5>
+
+    <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+            <i class="fas fa-download me-1"></i> Print
+        </button>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i> Send Email
+        </button>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal()"></button>
+    </div>
+</div>
+
+<div class="modal-body">
+    <div class="p-1">
+        <div id="printContent">
+            <!-- Single unified structure for both cases -->
+            <div *ngFor="let containerNo of containerList; let containerIndex = index"
+                 style="width:280mm; min-height:400mm; margin:10px; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after: always;"
+                 [ngClass]="{'page-break': containerIndex < containerList.length - 1}">
+                
+                <!-- Header Section -->
+                <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px; font-weight: 800;"
+                    class="p-4">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; flex-direction: column;">
+                            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                style="
+                                width:50px; 
+                                height:50px; 
+                                object-fit:contain; 
+                                margin-bottom:0.5rem;
+                                visibility: visible !important;
+                                display: block !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;">
+                            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
+                            </h4>
+                        </div>
+
+                        <div style="flex: 1; text-align: center; padding-right: 12%;">
+                            <h3 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
+                            </h3>
+                            <h5 style="margin: 0;"><strong>{{ currentBranch?.branchName || 'Company Branch' }}</strong>
+                            </h5>
+                            <p style="margin: 2px 0; font-size: 15px;"><strong>{{ currentBranch?.addressLine1 || ''
+                                    }}</strong></p>
+                            <p style="margin: 2px 0; font-size: 15px;"><strong> {{ currentBranch?.addressLine2 || '' }}
+                                    ,
+                                    {{ currentBranchCityName || currentBranch?.cityMaster?.cityName ||
+                                    currentCompany?.City || '' }}
+                                    - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</strong></p>
+                            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber ||
+                                currentBranch?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Title -->
+                <h3 style="text-align: center; padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px;">
+                    <strong>CFS Outturn Report</strong>
+                </h3>
+
+                <!-- Container Details -->
+                <div style="display: flex; flex-wrap: nowrap; margin-top: 1rem; padding: 10px;">
+                    <!-- Left Column -->
+                    <div style="width:50%;">
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Container No.</div>
+                            <div>: {{ containerNo !== 'No Container Data' ? containerNo : '' }}</div>
+                        </div>
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Consol No.</div>
+                            <div>: {{ housejobData?.ConsolNo || '' }}</div>
+                        </div>
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Vessel/Voyage</div>
+                            <div>: {{ housejobData?.VesselName || '' }} {{ housejobData?.VoyageNo || '' }} </div>
+                        </div>
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Agent</div>
+                            <div>: {{ getAgentName(masterJobData?.DestinationAgent) || '' }}<br>{{ masterJobData?.DestinationAgentAddress || '' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div style="width:50%;">
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Shed</div>
+                            <div>: {{ housejobData?.masterJobData?.Others?.[0]?.YardCFS || '' }} </div>
+                        </div>
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Seal</div>
+                            <div>: {{ masterJobData?.containers?.[0]?.LineSeal || '' }} </div>
+                        </div>
+                        <div style="display:flex; margin-bottom:4px;">
+                            <div style="width:150px; font-weight:bold;">Remarks</div>
+                            <div>: {{ housejobData?.Remarks || 'No remarks available' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Table - Unified for both cases -->
+                <div style="margin-top: 1rem;">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>HBL No./Shipment No.</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>SHIPPER / CONSIGNEE / MANIFESTED MARKS NOS / SHIPMENT REMARKS</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Landed Marks NOS</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Manifest Outturn</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Weight</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>CBM</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Surplus Short</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Damaged</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Damaged Remarks</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Warehouse Location</strong>
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        <strong>Job Type</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <!-- When we have actual container data -->
+                                <ng-container *ngIf="hasContainerData()">
+                                    <!-- Loop through products for this container -->
+                                    <tr *ngFor="let product of getProductsForContainer(containerNo)">
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.HBLNo || '' }} <br>
+                                            {{ housejobData?.ShipmentNo || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:left;">
+                                            <strong>Shipper:</strong> {{ housejobData?.ShipperName || '' }} <br>
+                                            <strong>Consignee:</strong> {{ housejobData?.ConsigneeName || '' }} <br>
+                                            <strong>Product:</strong> {{ product.ProductName || '' }} <br>
+                                            <strong>Shipping Bill:</strong> {{ product.ShippingBillNo || '' }} <br>
+                                            <strong>Shipment Remarks:</strong> {{ housejobData?.Remarks || 'No remarks' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.Cargo?.[0]?.MarksAndNumber || product.MarksAndNumber || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ (product.ExternaPkg || '') + (product.ExternlQty ? ': ' + product.ExternlQty : '') || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                            {{ product.GrossWeight || 0 }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                            {{ product.Volume || housejobData?.Cargo?.[0]?.Volume || 0 }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:left;">
+                                            
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.Others?.[0]?.YardCFS || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.JobType || '' }}
+                                        </td>
+                                    </tr>
+                                </ng-container>
+
+                                <!-- When no container data -->
+                                <ng-container *ngIf="!hasContainerData()">
+                                    <!-- Empty Row -->
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.HBLNo || '' }} <br>
+                                            {{ housejobData?.ShipmentNo || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:left;">
+                                            <strong>Shipper:</strong> {{ housejobData?.ShipperName || '' }} <br>
+                                            <strong>Consignee:</strong> {{ housejobData?.ConsigneeName || '' }} <br>
+                                            <strong>Product:</strong> No products available <br>
+                                            <strong>Shipping Bill:</strong>  <br>
+                                            <strong>Shipment Remarks:</strong> {{ housejobData?.Remarks || 'No remarks' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.Cargo?.[0]?.MarksAndNumber || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                            0
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                            0
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            -
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            -
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:left;">
+                                            -
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.Others?.[0]?.YardCFS || '' }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                            {{ housejobData?.JobType || '' }}
+                                        </td>
+                                    </tr>
+                                </ng-container>
+
+                                <!-- Totals Row -->
+                                <tr style="font-weight: bold;">
+                                    <td colspan="4" style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                        <ng-container *ngIf="hasContainerData()">
+                                            Total for Container {{ containerNo }}:
+                                        </ng-container>
+                                        <ng-container *ngIf="!hasContainerData()">
+                                            No Container Data Available:
+                                        </ng-container>
+                                    </td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                        {{ getTotalWeight(containerNo) }}
+                                    </td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align:right;">
+                                        {{ getTotalVolume(containerNo) }}
+                                    </td>
+                                    <td colspan="5" style="border: 1px solid #000; padding: 6px; text-align:center;">
+                                        Total Products: {{ getTotalProductsForContainer(containerNo) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer style="position: absolute; bottom: 2mm; left: 0; right: 0; text-align: center; font-size: 10pt; padding: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                        <div>Printed By: {{ userData.userName }}</div>
+                        <span>This document is computer-generated and does not require a signature.</span>
+                        <div>Printed On: {{ currentDate | formatDate }}</div>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 11px;">
+                        <ng-container *ngIf="hasContainerData()">
+                            Page {{ containerIndex + 1 }} of {{ containerList.length }} | Container: {{ containerNo }}
+                        </ng-container>
+                        <ng-container *ngIf="!hasContainerData()">
+                            No container data available for this shipment
+                        </ng-container>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+</div>

@@ -54,6 +54,7 @@ import { CustomsComponent } from '../customs/customs.component';
 import { DeliveryNoteComponent } from '../report/delivery-note/delivery-note.component';
 import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
+import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3065,6 +3066,18 @@ ${this.userData['userName']}`;
           size: 'xl',
           scrollable: true,
         })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+        modalRef.componentInstance.agentList = this.agentList || [];
+      }
+
+      
+      reportCFS() {
+        const modalRef = this.modalService.open(CFSOutturnComponent,{
+          size: 'xl',
+          scrollable: true,
+        })
+       modalRef.componentInstance.masterJobData = this.masterJobData || [];
         modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
         modalRef.componentInstance.agentList = this.agentList || [];

@@ -312,29 +312,38 @@
 
         </div> -->
 
-        <div  style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;">
 
-  <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%; font-size: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;">
-                <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-            </div>
-            <div style="flex: 1; text-align: center;  padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine2 || '' }} ,  {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
+   <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
+
+  <!-- Company Header -->
+<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; flex-direction: column;">
+            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+        </div>
+
+        <div style="flex: 1; text-align: center; padding-right: 12%;">
+            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin: 2px 0; font-size: 15px;">
+                {{ currentBranch?.addressLine2 || '' }} ,  
+                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
+                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+            </p>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
         </div>
     </div>
+</div>
 
   
 
     <h5 style="text-align:center; font-weight:700; padding:15px 0; border-top: 1px solid black;font-size: 18px;">CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</h5>
 
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.5rem; padding-left:5%; padding-right:5%;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.5rem; padding-left:5%; padding-right:5%;" class="fs-4">
         <div style="flex:0 0 50%; max-width:50%;" >
             <div style="display:flex;"><span> {{housejobData?.CustomerName}}  <br> {{housejobData?.CustomerAddress}}  </span></div>
         </div>
@@ -346,7 +355,7 @@
         </div>
     </div>
 
-    <div style="padding:2px 5%; border-top:1px solid black; border-left:1px solid black; border-right:1px solid black;">
+    <div style="padding:2px 5%; border-top:1px solid black; border-left:none; border-right:none;">
         <div style="display:flex;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <h6 style=" margin:0;font-weight:700">Shipper</h6>
@@ -359,7 +368,7 @@
         </div>
     </div>
 
-    <div style="padding:2px 5%; border-top:1px solid black; border-left:1px solid black; border-right:1px solid black;">
+    <div style="padding:2px 5%; border-top:1px solid black;  border-left:none; border-right:none;">
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="font-weight:700;">Notify Party</div>
@@ -372,7 +381,7 @@
         </div>
     </div>
 
-    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem; border:1px solid black;">
+    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;">
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
@@ -406,39 +415,50 @@
         </div>
     </div>
 
-    <div style="padding:2px 5%; margin-bottom:0.25rem; border:1px solid black;">
-        <h6 style="font-weight:700; margin-bottom:0.3rem;text-align: center;">ROUTING INFORMATION</h6>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Mode</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Vessel</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.VesselName}}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Voyage</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.VoyageNo}}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Port of Loading</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.POL}}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Port of Discharge</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.POD}}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">ETD</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.ETD | formatDate }}</div>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:0.25rem;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">ETA</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{ housejobData?.ETA | formatDate }}</div>
-        </div>
+
+    <h5>Routing Information</h5>
+ 
+    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;">
         <div style="display:flex; flex-wrap:wrap;">
-            <div style="flex:0 0 50%; max-width:50%; font-weight:700;">Final Destination</div>
-            <div style="flex:0 0 50%; max-width:50%;">: {{housejobData?.FPD}}</div>
+            <div style="flex:0 0 50%; max-width:50%;">
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Mode</div>
+                    <div>: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }}</div>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Vessel</div>
+                    <div>: {{housejobData?.VesselName}}</div>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Voyage</div>
+                    <div>:{{housejobData?.VoyageNo}}</div>
+                </div>
+                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Final Destination</div>
+                    <div>: {{ housejobData?.ETA | formatDate }}</div>
+                </div>
+            </div>
+
+            <div style="flex:0 0 50%; max-width:50%;">
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Port of Loading</div>
+                    <div>: {{housejobData?.POL}}</div>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">Port of Discharge</div>
+                    <div>: {{housejobData?.POD}}</div>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">ETD</div>
+                    <div>: {{ housejobData?.ETD | formatDate }}</div>
+                </div>
+                  <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
+                    <div style="font-weight:700; width:180px;">ETA</div>
+                    <div>: {{ housejobData?.ETA | formatDate }}</div>
+                </div>
+                   
+                
+            </div>
         </div>
     </div>
 
@@ -449,7 +469,7 @@
     <table style="width:100%; table-layout:fixed; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Container</th>
+                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black; border-left:none">Container</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Container Type</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Seal</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Package Type</th>
@@ -475,10 +495,10 @@
     <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
-                <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;">No of Packages</th>
+                <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;border-left:none">No of Packages</th>
                 <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;">Volume</th>
                 <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;">Gross Weight</th>
-                <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;">Net Weight</th>
+                <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;border-right:none;">Net Weight</th>
             </tr>
         </thead>
         <tbody>
@@ -497,13 +517,13 @@
     <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Charge Description</th>
+                <th style="text-align:center; font-weight:700; border:1px solid black;border-left:none">Charge Description</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Curr</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Unit</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Ex.Rate</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Local Amt</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Per Unit</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Amt</th>
+                <th style="text-align:center; font-weight:700; border:1px solid black;border-left:none">Amt</th>
             </tr>
         </thead>
         <tbody>
