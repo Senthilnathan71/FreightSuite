@@ -90,6 +90,7 @@ export interface PdfConfig {
   imageQuality?: number;
   imageFormat?: 'PNG' | 'JPEG';
   compress?: boolean;
+  orientation?: 'portrait' | 'landscape';
 }
 
 /**
@@ -476,7 +477,8 @@ export class ReportService {
           this.appSettingsService.showError('Error generating PDF');
           this.spinner.hide();
           throw error;
-        }
+        },
+        config?.orientation || 'portrait'
       );
     } catch (error) {
       this.spinner.hide();

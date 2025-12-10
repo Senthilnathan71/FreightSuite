@@ -2852,7 +2852,7 @@ ${this.userData.userName}`;
   onCustomerApprovalStatusChange(routeIndex:number,carrierIndex:number,status: any) {
     console.log(status);
     this.quoteRoutes.controls.forEach((route: FormGroup, rIndex: number) => {
-      const carrierArr = this.quoteCarriers(routeIndex);
+      const carrierArr = this.quoteCarriers(rIndex);
       carrierArr.controls.forEach((carrier: FormGroup,cIndex:number) => {
         if (status.value === "Approved") {
           if (routeIndex === rIndex && carrierIndex === cIndex) {

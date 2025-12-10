@@ -1,4 +1,4 @@
-<div class="print-a4">
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
 
   <!-- Header Line -->
   <!-- <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div> -->

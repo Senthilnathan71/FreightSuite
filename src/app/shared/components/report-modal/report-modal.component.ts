@@ -225,7 +225,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
       );
 
       // Download PDF
-      await this.reportService.downloadPDF(this.printElementId, filename);
+      await this.reportService.downloadPDF(this.printElementId, filename,{ orientation : this.reportConfig?.pdfOrientation || 'portrait'});
 
       this.spinner.hide();
     } catch (error) {

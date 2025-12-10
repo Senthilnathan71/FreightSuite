@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 
 @Component({
@@ -18,10 +19,12 @@ export class AgeingReportComponent implements OnInit{
 
   currentCompany : any;
   currentBranch : any;
+  orientation : 'portrait' | 'landscape' = 'portrait';
 
   constructor(
     @Inject(REPORT_DATA) public data: any,
-    private appSettingsService : AppSettingsService
+    private appSettingsService : AppSettingsService,
+    private reportRegistryService : ReportRegistryService
   ) { 
     console.log('Ageing Report Data:', this.data);
   }
@@ -47,6 +50,7 @@ export class AgeingReportComponent implements OnInit{
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
+    this.orientation = this.reportRegistryService.getReportConfig('ageing-report').pdfOrientation;
   }
 
   trackByCurrencyCode(index: number, group: any): string {
