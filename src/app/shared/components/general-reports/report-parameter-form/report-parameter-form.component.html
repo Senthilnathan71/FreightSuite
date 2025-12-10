@@ -105,11 +105,15 @@
             [formControlName]="param.ParameterName"
             [clearable]="!isFieldRequired(param.ParameterName)"
             [loading]="isDropdownLoading(param.ParameterName)"
+            [disabled]="isDropdownDisabled(param.ParameterName)"
+            [placeholder]="isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : ''"
           >
 
             <ng-template ng-notfound-tmp>
               <div class="text-center py-2">
-                <small class="text-muted">No options available</small>
+                <small class="text-muted">
+                  {{ isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : 'No options available' }}
+                </small>
               </div>
             </ng-template>
           </ng-select>
@@ -136,11 +140,15 @@
             bindValue="value"
             [formControlName]="param.ParameterName"
             [class.is-invalid]="hasError(param.ParameterName)"
+            [disabled]="isDropdownDisabled(param.ParameterName)"
+            [placeholder]="isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : ''"
           >
 
             <ng-template ng-notfound-tmp>
               <div class="text-center py-2">
-                <small class="text-muted">No options available</small>
+                <small class="text-muted">
+                  {{ isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : 'No options available' }}
+                </small>
               </div>
             </ng-template>
           </ng-select>

@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ReportService } from '../../../services/report.service';
-import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { finalize, distinctUntilChanged, debounceTime } from 'rxjs/operators';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -20,6 +21,7 @@ export interface ReportParameter {
   DefaultValue ?: any;
   ValidationRules ?: string;
   Status: string;
+  DependsOnParameter?: string;  // Parent parameter name for cascading dropdowns
 }
 
 @Component({
@@ -40,7 +42,7 @@ export interface ReportParameter {
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
   ],
 })
-export class ReportParameterFormComponent implements OnInit, OnChanges {
+export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() parameters: ReportParameter[] = [];
   @Input() loading: boolean = false;
   @Input() module: 'accounts' | 'operation' = 'accounts';
@@ -53,6 +55,11 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
   loadingDropdowns: Map<string, boolean> = new Map();
   minDates = new Map<string, NgbDateStruct>();
   maxDates = new Map<string, NgbDateStruct>();
+
+  // Cascading dropdown support
+  disabledDropdowns: Map<string, boolean> = new Map();
+  private parameterDependencies: Map<string, string[]> = new Map(); // parent -> children[]
+  private subscriptions: Subscription = new Subscription();
 
   readonly FIELD_TYPES = {
     TEXT: 'TEXT',
@@ -84,6 +91,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
    /**
    * Build dynamic form
    */
@@ -91,6 +102,13 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     const group: any = {};
 
     const today = new Date();
+
+    // Reset maps
+    this.parameterDependencies.clear();
+    this.disabledDropdowns.clear();
+
+    // Build dependency map first
+    this.buildDependencyMap();
 
     this.parameters.forEach(param => {
       console.log(param);
@@ -103,7 +121,13 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
 
       if (param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN ||
           param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M) {
-        if(param.DropDownValue){
+
+        // Check if this is a dependent dropdown
+        if (param.DependsOnParameter) {
+          // Start disabled until parent is selected
+          this.disabledDropdowns.set(param.ParameterName, true);
+          this.dropdownData.set(param.ParameterName, []);
+        } else if(param.DropDownValue){
           this.dropdownData.set(param.ParameterName, param.DropDownValue);
         } else {
           this.loadDynamicDropdown(param);
@@ -112,6 +136,134 @@ export class ReportParameterFormComponent implements OnInit, OnChanges {
     });
 
     this.parameterForm = this.fb.group(group);
+
+    // Setup cascading listeners after form is built
+    this.setupCascadingListeners();
+  }
+
+  /**
+   * Build a map of parent -> children dependencies
+   */
+  private buildDependencyMap(): void {
+    this.parameters.forEach(param => {
+      if (param.DependsOnParameter) {
+        const children = this.parameterDependencies.get(param.DependsOnParameter) || [];
+        children.push(param.ParameterName);
+        this.parameterDependencies.set(param.DependsOnParameter, children);
+      }
+    });
+  }
+
+  /**
+   * Setup valueChanges listeners for parent dropdowns
+   */
+  private setupCascadingListeners(): void {
+    // Clear existing subscriptions
+    this.subscriptions.unsubscribe();
+    this.subscriptions = new Subscription();
+
+    this.parameterDependencies.forEach((children, parentName) => {
+      const parentControl = this.parameterForm.get(parentName);
+      if (parentControl) {
+        const sub = parentControl.valueChanges.pipe(
+          distinctUntilChanged(),
+          debounceTime(100)
+        ).subscribe(parentValue => {
+          this.onParentValueChange(parentName, parentValue, children);
+        });
+        this.subscriptions.add(sub);
+      }
+    });
+  }
+
+  /**
+   * Handle parent dropdown value change
+   */
+  private onParentValueChange(parentName: string, parentValue: any, childrenNames: string[]): void {
+    childrenNames.forEach(childName => {
+      const childControl = this.parameterForm.get(childName);
+      const childParam = this.parameters.find(p => p.ParameterName === childName);
+
+      if (!childControl || !childParam) return;
+
+      // Clear child value
+      childControl.setValue(null);
+      this.dropdownData.set(childName, []);
+
+      if (parentValue === null || parentValue === undefined || parentValue === '') {
+        // Parent cleared - disable child
+        this.disabledDropdowns.set(childName, true);
+      } else {
+        // Parent has value - enable and reload child dropdown
+        this.disabledDropdowns.set(childName, false);
+        this.loadDynamicDropdownWithContext(childParam, parentName, parentValue);
+      }
+    });
+  }
+
+  /**
+   * Load dynamic dropdown with parent context for cascading
+   */
+  private loadDynamicDropdownWithContext(param: ReportParameter, parentName: string, parentValue: any): void {
+    this.loadingDropdowns.set(param.ParameterName, true);
+
+    // Build context with parent value
+    const context: any = { companyId: this.companyId };
+    context[parentName] = parentValue;
+
+    // Also include any other parent values in the chain (for multi-level cascading)
+    this.addParentValuesToContext(param, context);
+
+    this.reportService.executeParameterQuery(
+      this.module,
+      param.ReportMasterDetailSid,
+      context
+    ).pipe(
+      finalize(() => this.loadingDropdowns.set(param.ParameterName, false))
+    ).subscribe({
+      next: (options) => {
+        this.dropdownData.set(param.ParameterName, options);
+      },
+      error: (error) => {
+        console.error(`Failed to load options for ${param.ParameterName}:`, error);
+        this.dropdownData.set(param.ParameterName, []);
+      }
+    });
+  }
+
+  /**
+   * Recursively add all parent values to context for multi-level cascading
+   */
+  private addParentValuesToContext(param: ReportParameter, context: any): void {
+    if (param.DependsOnParameter) {
+      const parentParam = this.parameters.find(p => p.ParameterName === param.DependsOnParameter);
+      if (parentParam) {
+        const parentValue = this.parameterForm.get(param.DependsOnParameter)?.value;
+        if (parentValue !== null && parentValue !== undefined) {
+          context[param.DependsOnParameter] = parentValue;
+        }
+        // Recurse for multi-level dependencies
+        this.addParentValuesToContext(parentParam, context);
+      }
+    }
+  }
+
+  /**
+   * Check if a dropdown should be disabled (for cascading)
+   */
+  isDropdownDisabled(paramName: string): boolean {
+    return this.disabledDropdowns.get(paramName) || false;
+  }
+
+  /**
+   * Get the label of the parent parameter for placeholder text
+   */
+  getParentLabel(paramName: string): string {
+    const param = this.parameters.find(p => p.ParameterName === paramName);
+    if (param?.DependsOnParameter) {
+      return this.getParameterLabel(param.DependsOnParameter);
+    }
+    return '';
   }
 
     /**
