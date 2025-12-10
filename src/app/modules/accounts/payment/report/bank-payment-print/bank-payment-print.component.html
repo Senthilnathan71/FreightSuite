@@ -27,44 +27,53 @@
 
 <div style="width:280mm; min-height:400mm; margin:10px; padding:5mm; border:1px solid #000; box-sizing:border-box; position: relative; color: #000;">
 
-    <!-- Company Info -->
-      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem;">
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <!-- Company Info -->
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; flex-direction: column;">
+            <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
         </div>
 
-        <div style="font-size:14px; padding-left:28%; text-align:center;">
-            <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-            <h5 style="margin:0; padding:0; font-weight:600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-            <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+        <div style="flex: 1; text-align: center; padding-right: 12%;">
+            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin: 2px 0; font-size: 15px;">
+                {{ currentBranch?.addressLine2 || '' }} ,  
+                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
+                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+            </p>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
         </div>
     </div>
+</div>
 
    
 
     <!-- Bank Payment -->
-    <h4 style="text-align:center; padding:10px 0; font-weight:700; border-top: 1px solid black;">Bank Payment</h4>
+    <h3 style="text-align:center; padding:10px 0; font-weight:800; border-top: 1px solid black;">Bank Payment</h3>
 
     <!-- Details Row -->
-    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;">
+    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;"  class="fs-4">
         
         <!-- Left -->
         <div style="width:50%;">
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Payment No.</div>
+                <div style="width:150px; font-weight:bold;"><strong>Payment No.</strong></div>
                 <div>: {{paymentDataPrint?.VoucherNumber}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Payment Date</div>
+                <div style="width:150px; font-weight:bold;"><strong>Payment Date</strong></div>
                 <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Paid To</div>
+                <div style="width:150px; font-weight:bold;"><strong>Paid To</strong></div>
                 <div>: {{paymentDataPrint?.PartyName}}</div>
             </div>
         </div>
@@ -72,32 +81,32 @@
         <!-- Right -->
         <div style="width:50%;">
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Bank</div>
+                <div style="width:150px; font-weight:bold;"><strong>Bank</strong></div>
                 <div>: {{getBankName(paymentDataPrint?.BankCOA)}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Bank Ref</div>
+                <div style="width:150px; font-weight:bold;"><strong>Bank Ref</strong></div>
                 <div>: {{paymentDataPrint?.InstrumentMode}} / {{paymentDataPrint?.InstrumentNumber}} / {{paymentDataPrint?.InstrumentDate | formatDate}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Currency</div>
+                <div style="width:150px; font-weight:bold;"><strong>Currency</strong></div>
                 <div>: {{paymentDataPrint?.CurrencyCode}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;">Ex. Rate</div>
+                <div style="width:150px; font-weight:bold;"><strong>Ex. Rate</strong></div>
                 <div>: {{paymentDataPrint?.ExchangeRate}}</div>
             </div>
         </div>
     </div>
 
     <!-- Table -->
-    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;"  class="fs-4">
         <tr>
-            <th style="border:1px solid black; width:50%;  text-align:center;font-weight:700;">Description</th>
-            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;">MBL/HBL Ref</th>
-            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;">Curr.</th>
-            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;">Ex.Rate</th>
-            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;">Amount</th>
+            <th style="border:1px solid black; width:50%;  text-align:center;font-weight:700;"><strong>Description</strong></th>
+            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;"><strong>MBL/HBL Ref</strong></th>
+            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;"><strong>Curr.</strong></th>
+            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;"><strong>Ex.Rate</strong></th>
+            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;"><strong>Amount</strong></th>
         </tr>
         <tr>
             <td style="border:1px solid black;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
@@ -112,18 +121,18 @@
         </tr>
     </table>
 
-    <h5 style="text-decoration:underline; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0">Remittance Details</h5>
+    <h5 style="text-decoration:underline; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h5>
 
     <!-- Matching Table -->
-    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; border:1px solid black; font-size:14px;">
+    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; border:1px solid black; font-size:14px;" class="fs-4">
         <tr>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Voucher No</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Voucher Type</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Voucher Date</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Curr.</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Ex. Rate</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Curr. Amt</th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;">Local Amount</th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher No.</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Type</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Date</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Curr.</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Ex. Rate</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Curr. Amt</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Local Amount</strong></th>
         </tr>
 
         <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
@@ -137,25 +146,25 @@
         </tr>
 
         <tr>
-            <td colspan="5" style="border:1px solid black; text-align:right; font-weight:bold;">Total</td>
+            <td colspan="5" style="border:1px solid black; text-align:right; font-weight:bold;"><strong>Total</strong></td>
             <td style="border:1px solid black; text-align:right;"><strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong></td>
             <td style="border:1px solid black; text-align:right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
         </tr>
     </table>
 
-    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;">
+    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;" class="fs-4">
         <strong>Amount in Words :</strong>
         <span style="font-style:italic;"> {{ getAmountInWords() }} </span>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+    <div style="display:flex; justify-content:space-between; margin-top:20px;" class="fs-4">
         <strong>Checked By :</strong>
         <strong>Approved By :</strong>
     </div>
 
     
   <!-- Footer -->
-  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;padding: 0 10px;">
+  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;padding: 0 10px;" class="fs-4">
     <div style="display:flex; justify-content:space-between;">
       <div>Printed By: {{userData.userName}}</div>
       <span>This document is computer-generated and does not require a signature.</span>

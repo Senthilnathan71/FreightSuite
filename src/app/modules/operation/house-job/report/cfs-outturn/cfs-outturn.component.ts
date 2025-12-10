@@ -37,6 +37,10 @@ export class CFSOutturnComponent implements OnInit {
   groupedProducts: { [containerNo: string]: any[] } = {};
   containerList: string[] = [];
 
+  
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -143,6 +147,60 @@ export class CFSOutturnComponent implements OnInit {
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || "";
   }
 
+getTotalManifest(containerNo: string) {
+  const products = this.getProductsForContainer(containerNo);
+  return products.reduce((sum, p) => {
+    return sum + (Number(p.Manifest) || Number(this.housejobData?.Cargo?.[0]?.NoOfPackage) || 0);
+  }, 0);
+}
+
+getTotalOutturn(containerNo: string) {
+  const products = this.getProductsForContainer(containerNo);
+  return products.reduce((sum, p) => {
+    return sum + (Number(p.ExternlQty) || 0);
+  }, 0);
+}
+
+getSurplus(product: any): number {
+  const manifest = Number(this.housejobData?.Cargo?.[0]?.NoOfPackage || 0);
+  const received = Number(product?.ReceivedQty || 0);
+  return manifest + received;
+}
+
+getTotalSurplus(containerNo: string): number {
+  const products = this.getProductsForContainer(containerNo);
+
+  return products.reduce((acc, p) => {
+    const manifest = Number(this.housejobData?.Cargo?.[0]?.NoOfPackage || 0);
+    const received = Number(p?.ReceivedQty || 0);
+
+    return acc + (manifest + received);
+  }, 0);
+}
+
+
+getShort(product: any): number {
+  const manifest = Number(this.housejobData?.Cargo?.[0]?.NoOfPackage || 0);
+  const received = Number(product?.ReceivedQty || 0);
+  return manifest - received;
+}
+
+getTotalShort(containerNo: string): number {
+  const products = this.getProductsForContainer(containerNo);
+
+  return products.reduce((acc, p) => {
+    const manifest = Number(this.housejobData?.Cargo?.[0]?.NoOfPackage || 0);
+    const received = Number(p?.ReceivedQty || 0);
+
+    return acc + (manifest - received);
+  }, 0);
+}
+
+
+
+
+
+
   getAgentName(AgentSid: number) {
     if (!AgentSid || this.agentList.length === 0) return '';
     const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
@@ -155,21 +213,12 @@ export class CFSOutturnComponent implements OnInit {
     return agent ? agent.Address : '';
   }
 
-  async downloadPDF() {
-    this.spinner.show();
-    try {
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-      );
-    } finally {
-      this.spinner.hide();
-    }
-  }
 
-  printDiv(divId: string): void {
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;
     if (!printContents) return;
 
@@ -179,14 +228,7 @@ export class CFSOutturnComponent implements OnInit {
       popupWin.document.write(`
         <html>
           <head>
-            <title>Print CFS Outturn Report</title>
-            <style>
-              @media print {
-                .page-break {
-                  page-break-after: always;
-                }
-              }
-            </style>
+            <title>Print</title>
           </head>
           <body onload="window.print(); window.close();">
             ${printContents}
@@ -195,7 +237,30 @@ export class CFSOutturnComponent implements OnInit {
       `);
       popupWin.document.close();
     }
-  }
+  }, 50); // small timeout so Angular updates DOM
+}
+
+  
+
+  async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
+}
+
 
   modal() {
     this.activeModal.close();

@@ -316,12 +316,16 @@
    <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
   <!-- Company Header -->
-<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-4">
+<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-0">
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-4">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; flex-direction: column;">
-            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+            <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
         </div>
 
@@ -337,6 +341,7 @@
             <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
         </div>
     </div>
+</div>
 </div>
 
   
@@ -355,33 +360,33 @@
         </div>
     </div>
 
-    <div style="padding:2px 5%; border-top:1px solid black; border-left:none; border-right:none;">
+    <div style="padding:10px 5%; border-top:1px solid black; border-left:none; border-right:none;" class="pb-5">
         <div style="display:flex;">
-            <div style="flex:0 0 50%; max-width:50%;">
-                <h6 style=" margin:0;font-weight:700">Shipper</h6>
+            <div style="flex:0 0 50%; max-width:50%;"  >
+                <h6 style=" margin:0;font-weight:700"class="mb-2">Shipper</h6>
                 <div>{{housejobData?.ShipperName}} <br> {{housejobData?.ShipperAddress}}</div>
             </div>
-            <div style="flex:0 0 50%; max-width:50%;">
-                <h6 style=" margin:0;font-weight:700">Consignee</h6>
+            <div style="flex:0 0 50%; max-width:50%;" >
+                <h6 style=" margin:0;font-weight:700" class="mb-2">Consignee</h6>
                 <div>{{housejobData?.ConsigneeName}} <br> {{housejobData?.ConsigneeAddress}}</div>
             </div>
         </div>
     </div>
 
-    <div style="padding:2px 5%; border-top:1px solid black;  border-left:none; border-right:none;">
+    <div style="padding:10px 5%; border-top:1px solid black;  border-left:none; border-right:none;"  class="pb-5">
         <div style="display:flex; flex-wrap:wrap;">
-            <div style="flex:0 0 50%; max-width:50%;">
-                <div style="font-weight:700;">Notify Party</div>
+            <div style="flex:0 0 50%; max-width:50%;" >
+                <div style="font-weight:700;"class="mb-2">Notify Party</div>
                 <div>{{housejobData?.Others?.[0]?.NotifyParty}} <br> {{housejobData?.Others?.[0]?.NotifyPartyAddress}}</div>
             </div>
             <div style="flex:0 0 50%; max-width:50%;">
-                <div style="font-weight:700;">Goods Available At</div>
+                <div style="font-weight:700;" class="mb-2">Goods Available At</div>
                 <div>{{housejobData?.Others?.[0]?.YardCFS}}</div>
             </div>
         </div>
     </div>
 
-    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;">
+    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;" class="pb-3 pt-2">
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
@@ -466,15 +471,15 @@
 
     <!-- FCL Table -->
     @if(selectedFCLLCL === "FCL"){
-    <table style="width:100%; table-layout:fixed; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
+    <table style="width:100%; table-layout:fixed;  border-collapse:collapse; margin-bottom:0.25rem;" class="mt-4">
         <thead>
             <tr>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black; border-left:none">Container</th>
+                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Container</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Container Type</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Seal</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Package Type</th>
                 <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Gross Weight</th>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Volume</th>
+                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Volume</th>
             </tr>
         </thead>
         <tbody>
@@ -514,16 +519,16 @@
 
     <!-- Charges Table -->
     @if(withOrWithoutCharge){
-    <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
+    <table style="width:100%;  border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
-                <th style="text-align:center; font-weight:700; border:1px solid black;border-left:none">Charge Description</th>
+                <th style="text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Charge Description</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Curr</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Unit</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Ex.Rate</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Local Amt</th>
                 <th style="text-align:center; font-weight:700; border:1px solid black;">Per Unit</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;border-left:none">Amt</th>
+                <th style="text-align:center; font-weight:700;  border-top: 1px solid black; border-bottom: 1px solid black; border-right:none">Amt</th>
             </tr>
         </thead>
         <tbody>
