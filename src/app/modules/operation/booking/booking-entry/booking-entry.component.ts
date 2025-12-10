@@ -190,6 +190,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   filteredYardCFSList: any[] = [];
   currentYardCFSType: 'yard' | 'cfs' | null = null;
   vesselList: any[] = [];
+  airlineList: any[] = [];
   headerVesselList: any[] = [];
   voyageList: any[] = [];
   portList: any[] = [];
@@ -1137,7 +1138,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       notify: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['notify'] }).pipe(catchError(err => of([]))),
       agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['vendor', 'transporter', 'agent'] }).pipe(catchError(err => of([]))),
       carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
-
+      airline: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['airLine'] }).pipe(catchError(err => of([]))),
       vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
       incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
       salesmans: this.operationService.getAllSalesman(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -1146,14 +1147,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
       cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),
 
-    }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
+    }).pipe(tap(({ shippers, consignees, notify, carriers,airline, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
       this.shipperList = shippers.data;
       this.filteredShipperList = shippers.data;
       this.consigneeList = consignees.data;
       this.filteredConsigneeList = consignees.data;
       this.notifyList = notify.data;
       this.carrierList = carriers.data;
-
+      this.airlineList = airline.data;
       this.cfslist = cfs.data;
       this.vesselList = vessels.data;
       this.incoList = incos.data;

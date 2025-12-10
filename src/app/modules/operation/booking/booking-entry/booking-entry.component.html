@@ -846,9 +846,23 @@
                       <div class="custom-form-group custom-form-group-select inputChnages"
                         [class.filled]="!!bookingForm.get('VesselName')?.value">
                         @if(selectedDepartmentType === "AIR"){
-                          <input type="text" id="vessel-input" placeholder="" class="custom-input-field sm"
-        formControlName="VesselName">
-      <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
+                          <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                            <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="VesselName" placeholder="" appendTo="body" style="width: 85%">
+              </ng-select>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                          </div>
+                          <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
+      <label for="text-input" class="input-label">Flight Name <span class="text-danger"></span></label>
                         }@else {
                         <!-- Dropdown Mode -->
                         <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
@@ -890,7 +904,7 @@
                           @if(selectedDepartmentType === "AIR"){
       <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
         formControlName="VoyageNo">
-      <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
+      <label for="text-input" class="input-label">Flight Number<span class="text-danger"></span></label>
     } @else {
                           <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
                           <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
