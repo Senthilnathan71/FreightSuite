@@ -964,9 +964,13 @@
                                                 (click)="openContainerModal(containerModal, container.value, i)" ngbTooltip="View">
                                                 <i class="fas fa-eye text-info"></i>
                                             </button>
-                                            <button class="action-icon delete" (click)="removeContainer(i)" ngbTooltip="Delete">
-                                                <i class="fas fa-trash text-danger"></i>
-                                            </button>
+                                           <button class="action-icon delete" 
+        (click)="removeContainer(i)" 
+        ngbTooltip="Delete"
+        [disabled]="isDeletingContainer === i">
+  <i class="fas fa-trash text-danger"></i>
+  <span *ngIf="isDeletingContainer === i" class="spinner-border spinner-border-sm ms-1"></span>
+</button>
                                         </div>
                                     </td>
                                     <td>{{ getContainerTypeName(container.value.ContainerType) }}</td>

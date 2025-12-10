@@ -211,6 +211,13 @@ export class OperationService {
       })
     );
   }
+  getAllMappedChargeCreditors(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-charge-creditors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
 
   getLedgerDetails(payload) {
     return this.http.post<{ data: any }>('subledgermaster/find-subledger-id', payload).pipe(
