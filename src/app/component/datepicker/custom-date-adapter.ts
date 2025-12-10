@@ -48,13 +48,13 @@ import { NgbDateAdapter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 @Injectable()
 export class CustomDateAdapter extends NgbDateAdapter<Date> {
   fromModel(date: any): NgbDateStruct | null {
-    console.log('🔵 CustomDateAdapter.fromModel called with:', date, 'Type:', typeof date);
+    // console.log('🔵 CustomDateAdapter.fromModel called with:', date, 'Type:', typeof date);
 
     if (!date) return null;
 
     // ✅ If it's already an NgbDateStruct, return it as-is
     if (this.isNgbDateStruct(date)) {
-      console.log('✅ Already NgbDateStruct:', date);
+      // console.log('✅ Already NgbDateStruct:', date);
       return date;
     }
 
@@ -68,7 +68,7 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
           month: parseInt(dateMatch[2], 10),
           day: parseInt(dateMatch[3], 10),
         };
-        console.log('✅ Parsed string to NgbDateStruct:', result);
+        // console.log('✅ Parsed string to NgbDateStruct:', result);
         return result;
       }
 
@@ -83,7 +83,7 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
         month: parsed.getUTCMonth() + 1,
         day: parsed.getUTCDate(),
       };
-      console.log('✅ Parsed string via Date to NgbDateStruct:', result);
+      // console.log('✅ Parsed string via Date to NgbDateStruct:', result);
       return result;
     }
 
@@ -94,7 +94,7 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
         month: date.getUTCMonth() + 1,
         day: date.getUTCDate(),
       };
-      console.log('✅ Converted Date to NgbDateStruct:', result);
+      // console.log('✅ Converted Date to NgbDateStruct:', result);
       return result;
     }
 
@@ -104,12 +104,12 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
   }
 
   toModel(date: NgbDateStruct | null): Date | null {
-    console.log('🟢 CustomDateAdapter.toModel called with:', date);
+    // console.log('🟢 CustomDateAdapter.toModel called with:', date);
     if (!date) return null;
     
     // Return UTC date to avoid timezone issues
     const result = new Date(Date.UTC(date.year, date.month - 1, date.day));
-    console.log('✅ Converted NgbDateStruct to Date:', result);
+    // console.log('✅ Converted NgbDateStruct to Date:', result);
     return result;
   }
 

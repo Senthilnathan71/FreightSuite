@@ -9,6 +9,7 @@ export interface PdfOptions {
   imageQuality?: number;
   imageFormat?: 'PNG' | 'JPEG';
   compress?: boolean;
+  orientation?: 'portrait' | 'landscape';
   onSuccess?: () => void;
   onError?: (error: any) => void;
 }
@@ -34,7 +35,8 @@ export class PdfDownloadService {
       imageFormat = 'JPEG',
       compress = true,
       onSuccess,
-      onError
+      onError,
+      orientation = 'portrait'
     } = options;
 
     return new Promise((resolve, reject) => {
@@ -61,15 +63,23 @@ export class PdfDownloadService {
           });
 
           // A4 dimensions in mm
-          const imgWidth = 210;
-          const pageHeight = 297;
+          let pageWidth = 210;
+          let pageHeight = 297;
+
+          // Swap for landscape orientation
+          if (orientation === 'landscape') {
+            [pageWidth, pageHeight] = [pageHeight, pageWidth];
+          }
+
+          // Image dimensions inside PDF
+          const imgWidth = pageWidth;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
           let heightLeft = imgHeight;
           let position = 0;
 
           // Initialize jsPDF with compression
           const pdf = new jsPDF({
-            orientation: 'p',
+            orientation: orientation,
             unit: 'mm',
             format: 'a4',
             compress: compress,
@@ -115,7 +125,8 @@ export class PdfDownloadService {
     elementId: string, 
     filename: string, 
     onSuccess?: () => void, 
-    onError?: (error: any) => void
+    onError?: (error: any) => void,
+    orientation : 'portrait' | 'landscape' = 'portrait'
   ): Promise<void> {
     return this.downloadPDF({
       elementId,
@@ -124,6 +135,7 @@ export class PdfDownloadService {
       imageQuality: 0.75,
       imageFormat: 'JPEG',
       compress: true,
+      orientation,
       onSuccess,
       onError
     });

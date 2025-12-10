@@ -309,7 +309,7 @@ export class ReportRegistryService {
           </div>
         `,
         modalSize: 'xl',
-        pdfOrientation: 'portrait'
+        pdfOrientation: 'landscape'
       });
 
     } catch (error) {
