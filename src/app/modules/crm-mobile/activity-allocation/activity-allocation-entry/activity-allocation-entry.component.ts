@@ -4,7 +4,8 @@ import {
   OnInit,
   ViewChild,
   ElementRef,
-  HostListener
+  HostListener,
+  AfterViewInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -13,11 +14,13 @@ import {
   Stage,
   SummaryMode,
   WorkloadRow,
-  AllocateUser
+  AllocateUser,
 } from '../activity-allocation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import Swal from 'sweetalert2';
 import * as bootstrap from 'bootstrap';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-activity-allocation-entry',
@@ -27,15 +30,23 @@ import * as bootstrap from 'bootstrap';
     trigger('slideDown', [
       transition(':enter', [
         style({ height: 0, opacity: 0 }),
-        animate('300ms ease-out', style({ height: '*', opacity: 1 }))
+        animate('300ms ease-out', style({ height: '*', opacity: 1 })),
       ]),
       transition(':leave', [
-        animate('300ms ease-in', style({ height: 0, opacity: 0 }))
-      ])
-    ])
-  ]
+        animate('300ms ease-in', style({ height: 0, opacity: 0 })),
+      ]),
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('400ms ease-out', style({ opacity: 1 })),
+      ]),
+    ]),
+  ],
 })
-export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
+export class ActivityAllocationEntryComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   userSid = 0;
   userName = '';
   stage: Stage = 'RateRequest' as Stage;
@@ -43,6 +54,11 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
 
   rows: WorkloadRow[] = [];
   allocateUsers: AllocateUser[] = [];
+
+  page = 1;
+  pageSize = 100;
+  total = 0;
+  totalPages = 1;
 
   filterValue = '';
   isLoading = false;
@@ -65,18 +81,24 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     etdStatus: '',
     status: '',
     customer: '',
-    salesPerson: ''
+    salesPerson: '',
   };
 
   visibleColumns = {
     customerService: true,
-    documentation: true
+    documentation: true,
   };
 
   selectedRowForDetail: WorkloadRow | null = null;
 
+  allocatingRowIds = new Set<number>();
+
   private successTimeout: any;
+  private errorTimeout: any;
   private modalInstance: bootstrap.Modal | null = null;
+  private previousFocusElement: HTMLElement | null = null;
+  private searchDebounceTimeout: any;
+  private destroy$ = new Subject<void>();
 
   @ViewChild('searchBox') searchBoxRef!: ElementRef<HTMLInputElement>;
   @ViewChild('detailModal') detailModalRef!: ElementRef;
@@ -85,19 +107,24 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private activityService: ActivityAllocationService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
   ) {}
 
   ngOnInit(): void {
     this.loadColumnPreferences();
-    
-    this.route.queryParams.subscribe(params => {
-      this.userSid = Number(params['userSid'] || 0);
-      this.userName = params['userName'] || '';
-      this.stage = (params['stage'] as Stage) || ('RateRequest' as Stage);
-      this.mode = (params['mode'] as SummaryMode) || ('Pending' as SummaryMode);
-      this.loadData();
-    });
+
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.userSid = Number(params['userSid'] || 0);
+        this.userName = params['userName'] || '';
+        this.stage = (params['stage'] as Stage) || ('RateRequest' as Stage);
+        this.mode = (params['mode'] as SummaryMode) || ('Pending' as SummaryMode);
+        this.page = 1;
+        this.pageSize = 100;
+
+        this.loadData();
+      });
 
     setTimeout(() => {
       this.showKeyboardHints = true;
@@ -105,20 +132,47 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
         this.showKeyboardHints = false;
       }, 10000);
     }, 2000);
+
+    document.addEventListener('keydown', this.onGlobalKeydown);
+  }
+
+  ngAfterViewInit(): void {
+    if (this.searchBoxRef?.nativeElement) {
+      this.searchBoxRef.nativeElement.focus();
+      this.searchBoxRef.nativeElement.select();
+    }
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     if (this.successTimeout) {
       clearTimeout(this.successTimeout);
+    }
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    if (this.searchDebounceTimeout) {
+      clearTimeout(this.searchDebounceTimeout);
     }
     if (this.modalInstance) {
       this.modalInstance.dispose();
     }
+    document.removeEventListener('keydown', this.onGlobalKeydown);
   }
+
+  onGlobalKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.modalInstance) {
+      this.modalInstance.hide();
+    }
+  };
 
   private loadData(): void {
     if (!this.userSid) {
       this.rows = [];
+      this.total = 0;
+      this.totalPages = 1;
       return;
     }
 
@@ -130,11 +184,22 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     this.lastRefreshed = null;
 
     this.activityService
-      .getWorkloadDetails(this.userSid, this.stage, this.mode)
+      .getWorkloadDetails(
+        this.userSid,
+        this.stage,
+        this.mode,
+        this.page,
+        this.pageSize,
+      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           this.rows = res.data || [];
           this.allocateUsers = res.availableUsers || [];
+          this.total = res.total || 0;
+          this.page = res.page || this.page;
+          this.pageSize = res.limit || this.pageSize;
+          this.totalPages = res.totalPages || 1;
 
           if (!this.userName && this.rows.length > 0) {
             this.userName = this.rows[0].userName || this.userName;
@@ -148,17 +213,87 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: err => {
-          console.error('Error loading workload details', err);
+          console.error('❌ [Entry] Error loading workload details', err);
           this.rows = [];
           this.allocateUsers = [];
-          this.error =
-            err?.error?.message || 'Failed to load workload details';
+          this.total = 0;
+          this.totalPages = 1;
+          this.handleApiError(err, 'Failed to load workload details');
           this.isLoading = false;
-          this.appSettingService.showError(
-            'Failed to load Activity Allocation workload details.'
-          );
-        }
+        },
       });
+  }
+
+  private handleApiError(err: any, defaultMessage: string): void {
+    let errorMessage = defaultMessage;
+
+    if (!navigator.onLine) {
+      errorMessage = 'No internet connection. Please check your network.';
+    } else if (err?.status === 403) {
+      errorMessage = "You don't have permission to perform this action.";
+    } else if (err?.status === 408 || err?.name === 'TimeoutError') {
+      errorMessage = 'Request timed out. Please try again.';
+    } else if (err?.status === 500) {
+      errorMessage = 'Server error. Please try again later.';
+    } else if (err?.error?.message) {
+      errorMessage = err.error.message;
+    }
+
+    this.error = errorMessage;
+    this.appSettingService.showError(errorMessage);
+    this.autoHideError();
+  }
+
+  
+  get showingFrom(): number {
+    if (!this.total) return 0;
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get showingTo(): number {
+    if (!this.total) return 0;
+    return Math.min(this.page * this.pageSize, this.total);
+  }
+
+  canGoPrev(): boolean {
+    return this.page > 1;
+  }
+
+  canGoNext(): boolean {
+    return this.page < this.totalPages;
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.page = page;
+    this.smoothScrollToTop();
+    this.loadData();
+  }
+
+  nextPage(): void {
+    if (this.canGoNext()) {
+      this.page++;
+      this.smoothScrollToTop();
+      this.loadData();
+    }
+  }
+
+  prevPage(): void {
+    if (this.canGoPrev()) {
+      this.page--;
+      this.smoothScrollToTop();
+      this.loadData();
+    }
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize = Number(newSize) || 100;
+    this.page = 1;
+    this.loadData();
+  }
+
+  private smoothScrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   onRetry(): void {
@@ -166,9 +301,16 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   }
 
   onSearchClick(): void {
+    
   }
 
   onSearchInput(): void {
+    if (this.searchDebounceTimeout) {
+      clearTimeout(this.searchDebounceTimeout);
+    }
+    this.searchDebounceTimeout = setTimeout(() => {
+      this.filterValue = this.filterValue;
+    }, 300);
   }
 
   clearSearch(): void {
@@ -180,6 +322,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   }
 
   applyAdvancedFilters(): void {
+    
   }
 
   hasAdvancedFilters(): boolean {
@@ -201,8 +344,11 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
       etdStatus: '',
       status: '',
       customer: '',
-      salesPerson: ''
+      salesPerson: '',
     };
+    this.page = 1;
+    this.pageSize = 100;
+    this.loadData();
   }
 
   onExportClick(): void {
@@ -224,18 +370,20 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
         ETD: r.etd ? new Date(r.etd).toISOString().slice(0, 10) : '',
         Status: r.status || '',
         BookingStatus: this.getBookingStatusLabel(r),
-        EtdLabel: this.getEtdLabel(r)
+        EtdLabel: this.getEtdLabel(r),
       }));
 
       console.table(exportRows);
       this.appSettingService.showSuccess(
-        `Exported ${exportRows.length} activities successfully.`
+        `✓ Exported ${exportRows.length} activities successfully.`,
       );
     } catch (e) {
       console.error('Export error', e);
       this.appSettingService.showError('Failed to export activities.');
     } finally {
-      this.isExporting = false;
+      setTimeout(() => {
+        this.isExporting = false;
+      }, 800);
     }
   }
 
@@ -245,19 +393,24 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.isExporting = true;
     const selectedRows = this.sortedAndFilteredRows.filter(r =>
-      this.selectedActivityIds.has(r.activityId)
+      this.selectedActivityIds.has(r.activityId),
     );
 
     console.log('Exporting selected rows:', selectedRows);
     this.appSettingService.showSuccess(
-      `Exported ${selectedRows.length} selected activities.`
+      `✓ Exported ${selectedRows.length} selected activities.`,
     );
+
+    setTimeout(() => {
+      this.isExporting = false;
+    }, 800);
   }
 
   exportSingleRow(row: WorkloadRow): void {
     console.log('Exporting single row:', row);
-    this.appSettingService.showSuccess('Row exported successfully.');
+    this.appSettingService.showSuccess('✓ Row exported successfully.');
   }
 
   printSelected(): void {
@@ -270,8 +423,29 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['crm/activity-allocation'], {
-      queryParams: { refresh: 1, mode: this.mode }
+    if (this.selectedActivityIds.size > 0) {
+      Swal.fire({
+        title: 'Discard selections?',
+        text: 'You have selected activities. Going back will clear these selections.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, discard and go back',
+        cancelButtonText: 'Stay here',
+      }).then(res => {
+        if (res.isConfirmed) {
+          this.selectedActivityIds.clear();
+          this.router.navigate(['/crm/activity-allocation'], {
+            queryParams: { mode: this.mode },
+            state: { returnFromDetail: true },
+          });
+        }
+      });
+      return;
+    }
+
+    this.router.navigate(['/crm/activity-allocation'], {
+      queryParams: { mode: this.mode },
+      state: { returnFromDetail: true },
     });
   }
 
@@ -292,7 +466,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   get sortedAndFilteredRows(): WorkloadRow[] {
     if (!this.rows.length) return [];
 
-    const term = this.filterValue?.toLowerCase() || '';
+    const term = this.filterValue?.toLowerCase().trim() || '';
     let data = this.rows;
 
     if (term) {
@@ -302,10 +476,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
         const c = (r.customerName || '').toLowerCase();
         const s = (r.salesPersonName || '').toLowerCase();
         return (
-          q.includes(term) ||
-          b.includes(term) ||
-          c.includes(term) ||
-          s.includes(term)
+          q.includes(term) || b.includes(term) || c.includes(term) || s.includes(term)
         );
       });
     }
@@ -315,12 +486,14 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     }
 
     if (this.advancedFilters.customer) {
-      data = data.filter(r => r.customerName === this.advancedFilters.customer);
+      data = data.filter(
+        r => r.customerName === this.advancedFilters.customer,
+      );
     }
 
     if (this.advancedFilters.salesPerson) {
       data = data.filter(
-        r => r.salesPersonName === this.advancedFilters.salesPerson
+        r => r.salesPersonName === this.advancedFilters.salesPerson,
       );
     }
 
@@ -364,7 +537,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
 
   private getEtdFilterStatus(row: WorkloadRow): string {
     if (!row.etd) return '';
-    
+
     const etdDate = new Date(row.etd);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -397,7 +570,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     return (
       this.sortedAndFilteredRows.length > 0 &&
       this.sortedAndFilteredRows.every(r =>
-        this.selectedActivityIds.has(r.activityId)
+        this.selectedActivityIds.has(r.activityId),
       )
     );
   }
@@ -407,6 +580,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   }
 
   toggleRowSelection(row: WorkloadRow, event: Event): void {
+    event.stopPropagation();
     const checked = (event.target as HTMLInputElement).checked;
     if (checked) this.selectedActivityIds.add(row.activityId);
     else this.selectedActivityIds.delete(row.activityId);
@@ -421,6 +595,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
   }
 
   toggleSelectAll(event: Event): void {
+    event.stopPropagation();
     const checked = (event.target as HTMLInputElement).checked;
     this.selectedActivityIds.clear();
     if (checked) {
@@ -434,12 +609,22 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     this.toggleRowSelectionByRow(row);
   }
 
+  getActivityText(count: number): string {
+    return count === 1 ? 'activity' : 'activities';
+  }
+
+  getSelectedUserName(): string {
+    return this.userName || 'Admin';
+  }
+
+  
   async onAllocate(row: WorkloadRow): Promise<void> {
     this.successMessage = null;
     this.error = null;
-    clearTimeout(this.successTimeout);
+    if (this.successTimeout) clearTimeout(this.successTimeout);
 
-    const selectedUserSid = this.selectedUserByActivityId[row.activityId] ?? null;
+    const selectedUserSid =
+      this.selectedUserByActivityId[row.activityId] ?? null;
     if (!selectedUserSid) {
       const msg = 'Please select a user before allocating.';
       this.error = msg;
@@ -448,7 +633,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     }
 
     const targetUser = this.allocateUsers.find(
-      u => u.userSid === selectedUserSid
+      u => u.userSid === selectedUserSid,
     );
 
     const result = await Swal.fire({
@@ -467,59 +652,63 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
       confirmButtonText: 'Yes, Allocate',
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#0056b3',
-      cancelButtonColor: '#6c757d'
+      cancelButtonColor: '#6c757d',
     });
 
     if (!result.isConfirmed) return;
 
-    this.activityService.allocate(row.activityId, selectedUserSid).subscribe({
-      next: res => {
-        if (!res.success) {
-          const msg = res.message || 'Failed to allocate activity.';
-          this.error = msg;
-          this.appSettingService.showError(msg);
-          return;
-        }
+    this.allocatingRowIds.add(row.activityId);
 
-        if (this.mode === 'Pending') {
-          this.rows = this.rows.filter(r => r.activityId !== row.activityId);
-          this.selectedActivityIds.delete(row.activityId);
-        } else {
-          row.status = 'Processed';
-        }
+    this.activityService
+      .allocate(row.activityId, selectedUserSid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.allocatingRowIds.delete(row.activityId);
 
-        this.successMessage =
-          res.message || 'Activity allocated successfully.';
-        this.appSettingService.showSuccess(this.successMessage);
-        this.successTimeout = setTimeout(
-          () => (this.successMessage = null),
-          4000
-        );
-        this.lastRefreshed = new Date();
-      },
-      error: err => {
-        console.error('Error allocating activity', err);
-        let msg = 'Failed to allocate activity.';
-        if (err.status === 400) msg = err.error?.message || 'Invalid request.';
-        else if (err.status === 401)
-          msg = 'Unauthorized - please login again.';
-        else if (err.status === 500)
-          msg = 'Server error - please try again.';
-        this.error = msg;
-        this.appSettingService.showError(msg);
-      }
-    });
+          if (!res.success) {
+            this.handleApiError(res, 'Failed to allocate activity.');
+            return;
+          }
+
+          if (this.mode === 'Pending') {
+            this.rows = this.rows.filter(r => r.activityId !== row.activityId);
+            this.selectedActivityIds.delete(row.activityId);
+            this.total = Math.max(this.total - 1, 0);
+          } else {
+            row.status = 'Processed';
+          }
+
+          this.successMessage =
+            res.message || '✓ Activity allocated successfully.';
+          this.appSettingService.showSuccess(
+            `✓ Allocated activity to ${targetUser?.userName || 'user'} successfully.`,
+          );
+          this.successTimeout = setTimeout(
+            () => (this.successMessage = null),
+            3000,
+          );
+          this.lastRefreshed = new Date();
+        },
+        error: err => {
+          this.allocatingRowIds.delete(row.activityId);
+          console.error('Error allocating activity', err);
+          this.handleApiError(err, 'Failed to allocate activity. Please try again.');
+        },
+      });
   }
 
+ 
   async onBulkAllocate(): Promise<void> {
     this.successMessage = null;
     this.error = null;
-    clearTimeout(this.successTimeout);
+    if (this.successTimeout) clearTimeout(this.successTimeout);
 
     if (!this.bulkSelectedUserSid) {
       const msg = 'Please select a user for bulk allocation.';
       this.error = msg;
       this.appSettingService.showWarning(msg);
+      this.autoHideError();
       return;
     }
 
@@ -527,37 +716,49 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
       const msg = 'Please select at least one activity to allocate.';
       this.error = msg;
       this.appSettingService.showWarning(msg);
+      this.autoHideError();
       return;
     }
 
     const rowsToAllocate = this.sortedAndFilteredRows.filter(r =>
-      this.selectedActivityIds.has(r.activityId)
+      this.selectedActivityIds.has(r.activityId),
     );
+    if (!rowsToAllocate.length) {
+      const msg = 'No activities to allocate.';
+      this.error = msg;
+      this.appSettingService.showWarning(msg);
+      this.autoHideError();
+      return;
+    }
+
     const targetUser = this.allocateUsers.find(
-      u => u.userSid === this.bulkSelectedUserSid
+      u => u.userSid === this.bulkSelectedUserSid,
     );
+
+    const count = rowsToAllocate.length;
+    const activityText = this.getActivityText(count);
+    const fromUser = this.getSelectedUserName();
+    const toUser = targetUser?.userName || 'Unknown User';
 
     const result = await Swal.fire({
       title: 'Confirm Bulk Allocation',
       html: `
-        <p>You are about to allocate <strong>${
-          rowsToAllocate.length
-        }</strong> activities to</p>
-        <p class="text-primary fs-5">
-          <strong>${targetUser?.userName || 'Unknown User'}</strong>
-        </p>
-        <p class="text-muted small">This action cannot be undone.</p>
+        <div style="text-align: left; margin: 1rem 0;">
+          <p style="margin-bottom: 0.75rem;">
+            You are about to allocate <strong>${count}</strong> ${activityText} 
+            from <strong>${fromUser}</strong> to <strong class="text-primary">${toUser}</strong>.
+          </p>
+        </div>
       `,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, Allocate All',
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#0056b3',
-      cancelButtonColor: '#6c757d'
+      cancelButtonColor: '#6c757d',
     });
 
     if (!result.isConfirmed) return;
-    if (!rowsToAllocate.length) return;
 
     this.isBulkAllocating = true;
     let completed = 0;
@@ -566,6 +767,7 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     rowsToAllocate.forEach(row => {
       this.activityService
         .allocate(row.activityId, this.bulkSelectedUserSid as number)
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: res => {
             if (!res.success) {
@@ -573,16 +775,17 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
             } else {
               if (this.mode === 'Pending') {
                 this.rows = this.rows.filter(
-                  r => r.activityId !== row.activityId
+                  r => r.activityId !== row.activityId,
                 );
               } else {
                 row.status = 'Processed';
               }
               this.selectedActivityIds.delete(row.activityId);
+              this.total = Math.max(this.total - 1, 0);
             }
             completed++;
             if (completed === rowsToAllocate.length) {
-              this.finishBulk(failures, rowsToAllocate.length);
+              this.finishBulk(failures, rowsToAllocate.length, toUser);
             }
           },
           error: err => {
@@ -590,29 +793,32 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
             failures++;
             completed++;
             if (completed === rowsToAllocate.length) {
-              this.finishBulk(failures, rowsToAllocate.length);
+              this.finishBulk(failures, rowsToAllocate.length, toUser);
             }
-          }
+          },
         });
     });
   }
 
-  private finishBulk(failures: number, total: number): void {
+  private finishBulk(failures: number, total: number, toUser: string): void {
     this.isBulkAllocating = false;
 
     if (failures === 0) {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
-        text: `${total} activities allocated successfully`,
-        timer: 2000,
-        showConfirmButton: false
+        text: `✓ Allocated ${total} ${this.getActivityText(total)} to ${toUser} successfully`,
+        timer: 3000,
+        showConfirmButton: false,
       });
+      this.appSettingService.showSuccess(
+        `✓ Allocated ${total} ${this.getActivityText(total)} to ${toUser} successfully.`,
+      );
     } else {
       Swal.fire({
         icon: 'error',
         title: 'Partial Failure',
-        text: `${total - failures} succeeded, ${failures} failed`
+        text: `${total - failures} succeeded, ${failures} failed`,
       });
     }
 
@@ -621,13 +827,20 @@ export class ActivityAllocationEntryComponent implements OnInit, OnDestroy {
     this.lastRefreshed = new Date();
   }
 
+  isAllocating(row: WorkloadRow): boolean {
+    return this.allocatingRowIds.has(row.activityId);
+  }
+
   openDetailModal(row: WorkloadRow): void {
     this.selectedRowForDetail = row;
-    
+
     if (!this.modalInstance && this.detailModalRef) {
-      this.modalInstance = new bootstrap.Modal(this.detailModalRef.nativeElement);
+      this.modalInstance = new bootstrap.Modal(
+        this.detailModalRef.nativeElement,
+      );
     }
-    
+
+    this.previousFocusElement = document.activeElement as HTMLElement;
     this.modalInstance?.show();
   }
 
@@ -646,14 +859,14 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
     `.trim();
 
     navigator.clipboard.writeText(details).then(() => {
-      this.appSettingService.showSuccess('Details copied to clipboard!');
+      this.appSettingService.showSuccess('✓ Details copied to clipboard!');
     });
   }
 
   copyQuotationNumber(row: WorkloadRow): void {
     if (row.quotationNo) {
       navigator.clipboard.writeText(row.quotationNo).then(() => {
-        this.appSettingService.showSuccess('Quotation number copied!');
+        this.appSettingService.showSuccess('✓ Quotation number copied!');
       });
     }
   }
@@ -669,6 +882,8 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
     this.appSettingService.showInfo('Activity history feature coming soon!');
   }
 
+  
+
   getProcessedCount(): number {
     return this.rows.filter(r => r.status === 'Processed').length;
   }
@@ -677,15 +892,29 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
     return this.rows.filter(r => this.isOverdue(r)).length;
   }
 
+  
+  get inProgressCount(): number {
+    
+    return this.rows.filter(
+      r => r.status !== 'Processed' && !this.isOverdue(r),
+    ).length;
+  }
+
+  get completionPercent(): number {
+    if (!this.total) return 0;
+    const completed = this.getProcessedCount();
+    return (completed / this.total) * 100;
+  }
+
   isOverdue(row: WorkloadRow): boolean {
     if (!row.etd || row.status === 'Processed') return false;
-    
+
     try {
       const etdDate = new Date(row.etd);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       etdDate.setHours(0, 0, 0, 0);
-      
+
       return etdDate < today;
     } catch {
       return false;
@@ -744,7 +973,7 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
         'badge-danger': 'fas fa-exclamation-circle',
         'badge-warning': 'fas fa-exclamation-triangle',
         'badge-success': 'fas fa-check-circle',
-        'badge-unknown': 'fas fa-question-circle'
+        'badge-unknown': 'fas fa-question-circle',
       }[badgeClass] || 'fas fa-info-circle'
     );
   }
@@ -764,24 +993,33 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
   loadColumnPreferences(): void {
     const saved = localStorage.getItem('workload-column-visibility');
     if (saved) {
-      this.visibleColumns = JSON.parse(saved);
+      try {
+        this.visibleColumns = JSON.parse(saved);
+      } catch {
+        
+      }
     }
   }
 
   saveColumnPreferences(): void {
     localStorage.setItem(
       'workload-column-visibility',
-      JSON.stringify(this.visibleColumns)
+      JSON.stringify(this.visibleColumns),
     );
   }
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
     const target = event.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT'
+    ) {
       if (event.key === 'Escape') {
         (target as HTMLInputElement).blur();
-        this.selectedActivityIds.clear();
+        this.clearSearch();
       }
       return;
     }
@@ -814,7 +1052,6 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
           break;
       }
     } else if (event.key === 'Escape') {
-      this.selectedActivityIds.clear();
       this.clearSearch();
     }
   }
@@ -835,5 +1072,29 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
       this.searchBoxRef.nativeElement.focus();
       this.searchBoxRef.nativeElement.select();
     }
+  }
+
+  getStatusLabel(row: WorkloadRow | null | undefined): string {
+    if (!row || !row.status) return 'N/A';
+    return row.status;
+  }
+
+  getStatusBadgeClass(row: WorkloadRow | null | undefined): string {
+    if (!row || !row.status) return 'badge-secondary';
+    return row.status === 'Processed' ? 'badge-success' : 'badge-warning';
+  }
+
+  getStatusIconClass(row: WorkloadRow | null | undefined): string {
+    if (!row || !row.status) return 'fas fa-question-circle';
+    return row.status === 'Processed'
+      ? 'fas fa-check-circle'
+      : 'fas fa-hourglass-half';
+  }
+
+  private autoHideError(): void {
+    if (this.errorTimeout) clearTimeout(this.errorTimeout);
+    this.errorTimeout = setTimeout(() => {
+      this.error = null;
+    }, 6000);
   }
 }

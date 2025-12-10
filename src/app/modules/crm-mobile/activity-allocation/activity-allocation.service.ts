@@ -56,6 +56,10 @@ export interface AllocateUser {
 export interface WorkloadDetailResponse {
   data: WorkloadRow[];
   availableUsers: AllocateUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface AllocateApiResponse {
@@ -80,10 +84,9 @@ export class ActivityAllocationService {
   getResourceSummary(mode: SummaryMode): Observable<ResourceSummaryRow[]> {
     const params = new HttpParams().set('mode', mode);
     return this.http
-      .get<ResponseData<ResourceSummaryRow[]>>(
-        `${this.baseUrl}/summary`,
-        { params },
-      )
+      .get<ResponseData<ResourceSummaryRow[]>>(`${this.baseUrl}/summary`, {
+        params,
+      })
       .pipe(
         map(res => {
           if (!res.data || !Array.isArray(res.data)) {
@@ -103,11 +106,23 @@ export class ActivityAllocationService {
     userSid: number,
     stage: Stage,
     mode: SummaryMode,
+    page: number = 1,
+    limit: number = 100,
   ): Observable<WorkloadDetailResponse> {
     const params = new HttpParams()
-      .set('userSid', userSid)
+      .set('userSid', String(userSid))
       .set('stage', stage)
-      .set('mode', mode);
+      .set('mode', mode)
+      .set('page', String(page))
+      .set('limit', String(limit));
+
+    console.log('🔍 [FE Service] getWorkloadDetails params:', {
+      userSid,
+      stage,
+      mode,
+      page,
+      limit,
+    });
 
     return this.http
       .get<ResponseData<WorkloadDetailResponse>>(
@@ -115,12 +130,20 @@ export class ActivityAllocationService {
         { params },
       )
       .pipe(
-        map(res => ({
-          data: res.data?.data || [],
-          availableUsers: res.data?.availableUsers || [],
-        })),
+        map(res => {
+          console.log('✅ [FE Service] workload-details raw response:', res);
+          const d: any = res.data || {};
+          return {
+            data: d.data || [],
+            availableUsers: d.availableUsers || [],
+            total: d.total ?? 0,
+            page: d.page ?? page,
+            limit: d.limit ?? limit,
+            totalPages: d.totalPages ?? 1,
+          };
+        }),
         catchError(err => {
-          console.error('Error fetching workload details:', err);
+          console.error('❌ [FE Service] Error fetching workload details:', err);
           return throwError(() => err);
         }),
       );

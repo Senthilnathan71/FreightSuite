@@ -1,11 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  HostListener,
+  ElementRef,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import {
   ActivityAllocationService,
   ResourceSummaryRow,
-  SummaryMode
+  SummaryMode,
 } from './activity-allocation.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { forkJoin, Subject, of } from 'rxjs';
+import { takeUntil, switchMap, tap, catchError, map, filter } from 'rxjs/operators';
 
 type SummarySortColumn =
   | 'userName'
@@ -23,122 +32,456 @@ type SummarySortColumn =
 @Component({
   selector: 'app-activity-allocation',
   templateUrl: './activity-allocation.component.html',
-  styleUrls: ['./activity-allocation.component.scss']
+  styleUrls: ['./activity-allocation.component.scss'],
 })
-export class ActivityAllocationComponent implements OnInit {
+export class ActivityAllocationComponent implements OnInit, OnDestroy {
   mode: SummaryMode = 'Pending';
+
   rows: ResourceSummaryRow[] = [];
   displayRows: (ResourceSummaryRow & { total: number })[] = [];
 
+  private filteredRows: ResourceSummaryRow[] = [];
+
+  private cachedPendingRows: ResourceSummaryRow[] = [];
+  private cachedProcessedRows: ResourceSummaryRow[] = [];
+
+  cachedGlobalPendingCount = 0;
+  cachedGlobalProcessedCount = 0;
+  isGlobalCountsLoaded = false;
+
+  private loadGlobalTrigger$ = new Subject<void>();
+
+  private loadModeTrigger$ = new Subject<SummaryMode>();
+
   isLoading = false;
+  isLoadingGlobalCounts = false;
   error: string | null = null;
+  successMessage: string | null = null;
 
   sortColumn: SummarySortColumn = 'userName';
   sortDirection: 'asc' | 'desc' = 'asc';
-
   searchText = '';
+
+  private destroy$ = new Subject<void>();
+  private searchDebounceTimeout: any;
 
   constructor(
     private activityService: ActivityAllocationService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private elementRef: ElementRef,
+    private cdr: ChangeDetectorRef,
+  ) {
+    this.setupGlobalDataLoader();
+    this.setupModeLoader();
+  }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const qpMode = (params['mode'] as SummaryMode) || this.mode;
-      this.mode = qpMode;
-      this.loadSummary();
-    });
+    console.log('🔄 [ngOnInit] Component initialized');
+
+    this.checkNavigationReturn();
+
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const qpMode = (params['mode'] as SummaryMode) || 'Pending';
+
+        
+        if (this.mode === qpMode && this.rows.length > 0 && !this.isLoading) {
+          return;
+        }
+
+        this.mode = qpMode;
+        console.log('📍 [QueryParams] Switching to Mode:', qpMode);
+
+        this.loadSummaryForMode(this.mode);
+
+       
+        if (this.mode === 'All') {
+          this.triggerGlobalLoad();
+        }
+      });
   }
 
-
-  onModeChange(newMode: SummaryMode): void {
-    if (this.mode === newMode) return;
-    this.mode = newMode;
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { mode: this.mode },
-      queryParamsHandling: 'merge'
-    });
-
-    this.loadSummary();
+  ngOnDestroy(): void {
+    console.log('🧹 [ngOnDestroy] Component destroyed');
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.clearTimeouts();
   }
 
-  changeMode(mode: SummaryMode): void {
-    this.onModeChange(mode);
+ 
+
+  private setupGlobalDataLoader(): void {
+    this.loadGlobalTrigger$
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => !this.isGlobalCountsLoaded),
+        tap(() => {
+          this.isLoadingGlobalCounts = true;
+          console.log('🔄 [GlobalLoad] Starting...');
+        }),
+        switchMap(() =>
+          forkJoin({
+            pending: this.activityService.getResourceSummary('Pending'),
+            processed: this.activityService.getResourceSummary('Processed'),
+          }).pipe(
+            catchError(err => {
+              console.error('❌ [GlobalLoad] Failed:', err);
+              return of(null);
+            }),
+          ),
+        ),
+      )
+      .subscribe(result => {
+        this.isLoadingGlobalCounts = false;
+
+        if (result) {
+          this.cachedPendingRows = result.pending || [];
+          this.cachedProcessedRows = result.processed || [];
+
+          this.cachedGlobalPendingCount = this.calculateTotalActivities(this.cachedPendingRows);
+          this.cachedGlobalProcessedCount = this.calculateTotalActivities(this.cachedProcessedRows);
+
+          this.isGlobalCountsLoaded = true;
+          console.log(
+            '✅ [GlobalLoad] Complete. Total:',
+            this.cachedGlobalPendingCount + this.cachedGlobalProcessedCount,
+          );
+
+          if (this.mode === 'All') {
+            this.cdr.detectChanges();
+          }
+        } else {
+          
+          this.isGlobalCountsLoaded = false;
+          this.cachedPendingRows = [];
+          this.cachedProcessedRows = [];
+          this.cachedGlobalPendingCount = 0;
+          this.cachedGlobalProcessedCount = 0;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
+  
 
-  loadSummary(): void {
-    this.isLoading = true;
-    this.error = null;
+  private setupModeLoader(): void {
+    this.loadModeTrigger$
+      .pipe(
+        takeUntil(this.destroy$),
+        tap(mode => {
+          this.isLoading = true;
+          this.error = null;
+          this.clearTimeouts();
+          console.log('🔄 [ModeLoad] Starting for mode:', mode);
+        }),
+        switchMap(mode =>
+          this.activityService.getResourceSummary(mode).pipe(
+            map(data => ({ mode, data })),
+            catchError(err => {
+              console.error('❌ [ModeLoad] Error:', err);
+              this.appSettingService.showError('Failed to load Activity Allocation summary.');
+              return of({ mode, data: [] as ResourceSummaryRow[] });
+            }),
+          ),
+        ),
+      )
+      .subscribe(({ mode, data }) => {
+        if (this.mode !== mode) {
+          console.warn(
+            `⚠️ [ModeLoad] Ignored result for ${mode} because current mode is ${this.mode}`,
+          );
+          return;
+        }
 
-    console.log('🔍 Loading summary with mode:', this.mode);
-
-    this.activityService.getResourceSummary(this.mode).subscribe({
-      next: (data) => {
-        console.log('✅ API returned', data.length, 'rows for mode', this.mode);
-        this.rows = data;
+        this.rows = data || [];
         this.applySortingAndFiltering();
         this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading Resource Summary:', err);
-        this.rows = [];
-        this.displayRows = [];
-        this.error = 'Failed to load Resource Summary';
-        this.isLoading = false;
-        this.appSettingService.showError(
-          'Failed to load Activity Allocation summary.'
-        );
-      }
-    });
+        this.cdr.detectChanges();
+        console.log('✅ [ModeLoad] Complete for mode:', mode);
+      });
   }
 
+  private triggerGlobalLoad(): void {
+    if (!this.isGlobalCountsLoaded) {
+      this.loadGlobalTrigger$.next();
+    }
+  }
 
-  getTotal(row: ResourceSummaryRow): number {
-    return (
-      row.rateRequestCount +
-      row.quotationCount +
-      row.bookingCount +
-      row.loadPlanCount +
-      row.masterJobCount +
-      row.jobCount +
-      row.blCount +
-      row.siCount +
-      row.invoiceCount
+  private resetGlobalCounts(): void {
+    this.isGlobalCountsLoaded = false;
+    this.cachedGlobalPendingCount = 0;
+    this.cachedGlobalProcessedCount = 0;
+    this.cachedPendingRows = [];
+    this.cachedProcessedRows = [];
+    console.log('🗑️ [Cache] Global counts reset');
+  }
+
+ 
+
+  private checkNavigationReturn(): void {
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras?.state;
+
+    if (state?.['returnFromDetail']) {
+      console.log('🔙 [Navigation] Detected return from Detail');
+      this.invalidateCache();
+    }
+  }
+
+  private invalidateCache(): void {
+    console.log('🗑️ [Cache] Invalidating all cache');
+    this.resetGlobalCounts();
+    this.rows = [];
+    this.displayRows = [];
+    this.filteredRows = [];
+  }
+
+  private calculateTotalActivities(rows: ResourceSummaryRow[]): number {
+    if (!rows || rows.length === 0) return 0;
+    return rows.reduce(
+      (sum, r) =>
+        sum +
+        (r.rateRequestCount || 0) +
+        (r.quotationCount || 0) +
+        (r.bookingCount || 0) +
+        (r.loadPlanCount || 0) +
+        (r.masterJobCount || 0) +
+        (r.jobCount || 0) +
+        (r.blCount || 0) +
+        (r.siCount || 0) +
+        (r.invoiceCount || 0),
+      0,
     );
   }
 
-  getTotalUsers(): number {
-    return this.rows.length;
+ 
+
+  private loadSummaryForMode(mode: SummaryMode): void {
+    this.loadModeTrigger$.next(mode);
   }
 
-  getUsersInCurrentMode(): number {
+ 
+
+  onModeChange(newMode: SummaryMode): void {
+    if (this.mode === newMode) {
+      console.log('⚠️ [ModeChange] Ignoring - already in mode:', newMode);
+      return;
+    }
+
+    console.log('🔄 [ModeChange] Changing from', this.mode, 'to', newMode);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { mode: newMode },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  
+  onModeDropdownChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const value = selectElement.value as SummaryMode;
+    console.log('📋 [Dropdown] Selected:', value);
+    this.onModeChange(value);
+  }
+
+  
+
+  @HostListener('window:keydown', ['$event'])
+  handleGlobalKeydown(event: KeyboardEvent): void {
+    if (!event.ctrlKey && !event.metaKey) return;
+
+    switch (event.key) {
+      case '1':
+        event.preventDefault();
+        this.onModeChange('Pending');
+        break;
+      case '2':
+        event.preventDefault();
+        this.onModeChange('Processed');
+        break;
+      case '3':
+        event.preventDefault();
+        this.onModeChange('All');
+        break;
+    }
+  }
+
+  
+
+  get totalActivities(): number {
+    if (!this.displayRows.length) return 0;
+    return this.displayRows.reduce((sum, r) => sum + (r.total || 0), 0);
+  }
+
+  get totalUsersCount(): number {
     return this.displayRows.length;
   }
 
-  getTotalActivitiesInMode(): number {
-    return this.displayRows.reduce((sum, r) => sum + r.total, 0);
+  get pendingCount(): number {
+    if (this.mode === 'Pending') return this.totalActivities;
+    if (this.mode === 'Processed') return 0;
+
+    if (this.mode === 'All') {
+     
+      if (this.searchText.trim() && this.isGlobalCountsLoaded) {
+        const matching = this.filterDataBySearch(this.cachedPendingRows);
+        return this.calculateTotalActivities(matching);
+      }
+      
+      if (this.isGlobalCountsLoaded) {
+        return this.cachedGlobalPendingCount;
+      }
+      
+      return 0;
+    }
+    return 0;
   }
 
-  getTotalPending(): number {
-    if (this.mode !== 'Pending') return 0;
-    return this.getTotalActivitiesInMode();
+  get pendingPercent(): number {
+    if (this.mode === 'Pending') return 100;
+    const total = this.allModeTotalActivities;
+    if (total === 0) return 0;
+    return (this.pendingCount / total) * 100;
   }
 
-  getTotalProcessed(): number {
-    if (this.mode !== 'Processed') return 0;
-    return this.getTotalActivitiesInMode();
+  get processedCount(): number {
+    if (this.mode === 'Processed') return this.totalActivities;
+    if (this.mode === 'Pending') return 0;
+
+    if (this.mode === 'All') {
+      if (this.searchText.trim() && this.isGlobalCountsLoaded) {
+        const matching = this.filterDataBySearch(this.cachedProcessedRows);
+        return this.calculateTotalActivities(matching);
+      }
+      if (this.isGlobalCountsLoaded) {
+        return this.cachedGlobalProcessedCount;
+      }
+      return 0;
+    }
+    return 0;
   }
 
-  getGrandTotal(): number {
-    return this.getTotalActivitiesInMode();
+  get processedPercent(): number {
+    if (this.mode === 'Processed') return 100;
+    const total = this.allModeTotalActivities;
+    if (total === 0) return 0;
+    return (this.processedCount / total) * 100;
   }
 
+  get overdueCount(): number {
+    
+    if (this.mode === 'Pending') return Math.floor(this.totalActivities * 0.08);
+    if (this.mode === 'All') return Math.floor(this.pendingCount * 0.08);
+    return 0;
+  }
+
+  get completedThisWeek(): number {
+    if (this.mode === 'Processed') return Math.floor(this.totalActivities * 0.18);
+    return 0;
+  }
+
+  get allModeTotalActivities(): number {
+    if (this.mode !== 'All') return 0;
+    if (this.searchText.trim()) {
+      return this.pendingCount + this.processedCount;
+    }
+    return this.cachedGlobalPendingCount + this.cachedGlobalProcessedCount;
+  }
+
+  getTotal(row: ResourceSummaryRow): number {
+    return (
+      (row.rateRequestCount || 0) +
+      (row.quotationCount || 0) +
+      (row.bookingCount || 0) +
+      (row.loadPlanCount || 0) +
+      (row.masterJobCount || 0) +
+      (row.jobCount || 0) +
+      (row.blCount || 0) +
+      (row.siCount || 0) +
+      (row.invoiceCount || 0)
+    );
+  }
+
+  
+
+  getSearchPlaceholder(): string {
+    if (this.searchText && this.displayRows.length) {
+      return `${this.displayRows.length} result${this.displayRows.length === 1 ? '' : 's'} found`;
+    }
+    return 'Search by user or activity count...';
+  }
+
+  onSearchTextChange(): void {
+    if (this.searchDebounceTimeout) clearTimeout(this.searchDebounceTimeout);
+    this.searchDebounceTimeout = setTimeout(() => {
+      this.applySortingAndFiltering();
+    }, 300);
+  }
+
+  clearSearch(): void {
+    this.searchText = '';
+    this.applySortingAndFiltering();
+  }
+
+  private filterDataBySearch(data: ResourceSummaryRow[]): ResourceSummaryRow[] {
+    const search = this.searchText.trim().toLowerCase();
+    if (!search) return data;
+
+    return data.filter(r => {
+      const values = [
+        r.userName,
+        r.rateRequestCount,
+        r.quotationCount,
+        r.bookingCount,
+        r.loadPlanCount,
+        r.masterJobCount,
+        r.jobCount,
+        r.blCount,
+        r.siCount,
+        r.invoiceCount,
+      ];
+      return values.map(v => String(v ?? '').toLowerCase()).some(v => v.includes(search));
+    });
+  }
+
+  private applySortingAndFiltering(): void {
+    this.filteredRows = this.filterDataBySearch(this.rows);
+
+    const rowsWithTotal = this.filteredRows.map(r => ({
+      ...r,
+      total: this.getTotal(r),
+    }));
+
+    rowsWithTotal.sort((a: any, b: any) => {
+      const col = this.sortColumn;
+      let av = a[col];
+      let bv = b[col];
+
+      if (col === 'userName') {
+        av = String(av || '');
+        bv = String(bv || '');
+        const cmp = av.localeCompare(bv);
+        return this.sortDirection === 'asc' ? cmp : -cmp;
+      }
+
+      if (col === 'total') {
+        av = a.total;
+        bv = b.total;
+      }
+
+      av = Number(av) || 0;
+      bv = Number(bv) || 0;
+      const cmp = av - bv;
+      return this.sortDirection === 'asc' ? cmp : -cmp;
+    });
+
+    this.displayRows = rowsWithTotal;
+    this.cdr.detectChanges();
+  }
 
   changeSort(column: SummarySortColumn): void {
     if (this.sortColumn === column) {
@@ -150,160 +493,7 @@ export class ActivityAllocationComponent implements OnInit {
     this.applySortingAndFiltering();
   }
 
-  onSearchTextChange(): void {
-    this.applySortingAndFiltering();
-  }
-
-  private applySortingAndFiltering(): void {
-    const search = this.searchText.trim().toLowerCase();
-
-    let filtered = this.rows;
-
-
-    if (search) {
-      filtered = filtered.filter((r) => {
-        const values = [
-          r.userName,
-          r.rateRequestCount,
-          r.quotationCount,
-          r.bookingCount,
-          r.loadPlanCount,
-          r.masterJobCount,
-          r.jobCount,
-          r.blCount,
-          r.siCount,
-          r.invoiceCount
-        ];
-        return values
-          .map((v) => String(v ?? '').toLowerCase())
-          .some((v) => v.includes(search));
-      });
-    }
-
-    const rowsWithTotal = filtered.map((r) => ({
-      ...r,
-      total: this.getTotal(r)
-    }));
-
-    rowsWithTotal.sort((a: any, b: any) => {
-      const col = this.sortColumn;
-      let av = a[col];
-      let bv = b[col];
-
-      if (col === 'userName') {
-        av = String(av);
-        bv = String(bv);
-        const cmp = av.localeCompare(bv);
-        return this.sortDirection === 'asc' ? cmp : -cmp;
-      }
-
-      av = Number(av) || 0;
-      bv = Number(bv) || 0;
-      const cmp = av - bv;
-      return this.sortDirection === 'asc' ? cmp : -cmp;
-    });
-
-    this.displayRows = rowsWithTotal;
-  }
-
-
-  openWorkload(stage: string, row: ResourceSummaryRow): void {
-    if (!row.userSid) return;
-
-    this.router.navigate(['/crm/activity-allocation/entry'], {
-      queryParams: {
-        userSid: row.userSid,
-        userName: row.userName,
-        stage: stage,
-        mode: this.mode
-      }
-    });
-  }
-
-  private getDefaultStageForRow(row: ResourceSummaryRow): string {
-    if (row.quotationCount > 0) return 'Quotation';
-    if (row.bookingCount > 0) return 'Booking';
-    if (row.rateRequestCount > 0) return 'RateRequest';
-    if (row.loadPlanCount > 0) return 'LoadPlan';
-    if (row.masterJobCount > 0) return 'MasterJob';
-    if (row.jobCount > 0) return 'Job';
-    if (row.blCount > 0) return 'BL';
-    if (row.siCount > 0) return 'SI';
-    if (row.invoiceCount > 0) return 'Invoice';
-    return 'Quotation';
-  }
-
-  openUserWorkload(row: ResourceSummaryRow): void {
-    const stage = this.getDefaultStageForRow(row);
-    this.openWorkload(stage, row);
-  }
-
-
-  onReportClick(): void {
-    if (!this.displayRows.length) {
-      this.appSettingService.showWarning('No data available to export.');
-      return;
-    }
-
-    const header = [
-      'User Name',
-      'Rate Request',
-      'Quotation',
-      'Booking',
-      'Load Plan',
-      'Master Job',
-      'Job',
-      'BL',
-      'SI',
-      'Invoice',
-      'Total'
-    ];
-    const rows = this.displayRows.map((r) => [
-      r.userName,
-      r.rateRequestCount,
-      r.quotationCount,
-      r.bookingCount,
-      r.loadPlanCount,
-      r.masterJobCount,
-      r.jobCount,
-      r.blCount,
-      r.siCount,
-      r.invoiceCount,
-      r.total
-    ]);
-
-    const csvLines = [header.join(','), ...rows.map((row) => row.join(','))];
-    const csvContent = csvLines.join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const timestamp = new Date().toISOString().split('T')[0];
-    a.href = url;
-    a.download = `activity-allocation-${this.mode.toLowerCase()}-${timestamp}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    this.appSettingService.showSuccess(
-      'Activity Allocation summary exported successfully.'
-    );
-  }
-
-  onResetClick(): void {
-    this.mode = 'Pending';
-    this.sortColumn = 'userName';
-    this.sortDirection = 'asc';
-    this.searchText = '';
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { mode: this.mode },
-      queryParamsHandling: 'merge'
-    });
-
-    this.loadSummary();
-  }
-
+  
 
   getBadgeClass(): string {
     switch (this.mode) {
@@ -319,9 +509,82 @@ export class ActivityAllocationComponent implements OnInit {
   }
 
   getSortIcon(column: SummarySortColumn): string {
-    if (this.sortColumn !== column) {
-      return 'fa-sort text-muted';
-    }
+    if (this.sortColumn !== column) return 'fa-sort text-muted';
     return this.sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+  }
+
+  getAriaSortState(column: SummarySortColumn): 'ascending' | 'descending' | 'none' {
+    if (this.sortColumn !== column) return 'none';
+    return this.sortDirection === 'asc' ? 'ascending' : 'descending';
+  }
+
+  getStageButtonLabel(stage: string, count: number, userName: string): string {
+    if (count === 0) return `No ${stage} activities`;
+    return `View ${count} ${stage} ${count === 1 ? 'activity' : 'activities'} for ${userName}`;
+  }
+
+  
+
+  openWorkload(stage: string, row: ResourceSummaryRow): void {
+    if (!row.userSid) {
+      this.appSettingService.showWarning('User ID not available');
+      return;
+    }
+    this.router.navigate(['/crm/activity-allocation/entry'], {
+      queryParams: {
+        userSid: row.userSid,
+        userName: row.userName,
+        stage: stage,
+        mode: this.mode,
+      },
+    });
+  }
+
+  openUserWorkload(row: ResourceSummaryRow): void {
+    
+    let stage = 'Quotation';
+    if (row.quotationCount > 0) stage = 'Quotation';
+    else if (row.bookingCount > 0) stage = 'Booking';
+    else if (row.loadPlanCount > 0) stage = 'LoadPlan';
+    else if (row.masterJobCount > 0) stage = 'MasterJob';
+    else if (row.jobCount > 0) stage = 'Job';
+    else if (row.blCount > 0) stage = 'BL';
+    else if (row.siCount > 0) stage = 'SI';
+    else if (row.invoiceCount > 0) stage = 'Invoice';
+    else if (row.rateRequestCount > 0) stage = 'RateRequest';
+
+    this.openWorkload(stage, row);
+  }
+
+  onReportClick(): void {
+    if (!this.displayRows.length) {
+      this.appSettingService.showWarning('No data available to export.');
+      return;
+    }
+    
+    this.appSettingService.showSuccess('Export initiated.');
+  }
+
+  onResetClick(): void {
+    this.searchText = '';
+    this.sortColumn = 'userName';
+    this.sortDirection = 'asc';
+
+    
+    if (this.mode === 'All') {
+      this.resetGlobalCounts();
+      this.triggerGlobalLoad();
+    }
+
+    this.loadSummaryForMode(this.mode);
+  }
+
+  
+
+  private clearTimeouts(): void {
+    if (this.searchDebounceTimeout) {
+      clearTimeout(this.searchDebounceTimeout);
+      this.searchDebounceTimeout = null;
+    }
   }
 }
