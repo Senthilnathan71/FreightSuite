@@ -1,0 +1,516 @@
+<div
+  id="main-content"
+  class="activity-allocation-page"
+  aria-label="Activity allocation summary dashboard"
+>
+  <header class="page-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="page-title mb-1">
+        <i class="fas fa-tasks me-2 text-primary" aria-hidden="true"></i>
+        Activity Allocation
+      </h1>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <span
+        class="badge"
+        [ngClass]="getBadgeClass()"
+        role="status"
+        [attr.aria-label]="'Current filter: ' + mode"
+      >
+        <i class="fas fa-filter me-1" aria-hidden="true"></i> {{ mode }}
+      </span>
+    </div>
+  </header>
+
+
+  <section class="filters-bar mb-3" aria-label="Search and filter controls">
+    <div class="filters-row d-flex flex-wrap gap-3 align-items-center">
+      
+      <div class="search-box flex-grow-1">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input
+          type="text"
+          class="form-control"
+          [placeholder]="getSearchPlaceholder()"
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchTextChange()"
+          aria-label="Search users or activity counts"
+        />
+        <button
+          *ngIf="searchText"
+          class="btn-clear"
+          type="button"
+          (click)="clearSearch()"
+          aria-label="Clear search"
+        >
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      
+      <div class="status-filter d-flex align-items-center gap-2">
+        <label for="modeSelect" class="status-label mb-0 text-muted small">Filter:</label>
+        <select
+          id="modeSelect"
+          class="form-select form-select-sm"
+          [(ngModel)]="mode"
+          (change)="onModeDropdownChange($event)"
+          aria-label="Filter by status"
+        >
+          <option [ngValue]="'Pending'">Pending</option>
+          <option [ngValue]="'Processed'">Processed</option>
+          <option [ngValue]="'All'">All</option>
+        </select>
+      </div>
+
+     
+      <div class="filters-actions d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          [disabled]="!displayRows.length"
+          (click)="onReportClick()"
+        >
+          <i class="fas fa-file-export me-1" aria-hidden="true"></i> Export
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="onResetClick()"
+        >
+          <i class="fas fa-sync-alt me-1" aria-hidden="true"></i> Reset
+        </button>
+      </div>
+    </div>
+  </section>
+
+  
+  <div class="alert-container" *ngIf="error">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+    </div>
+  </div>
+
+ 
+  <section class="kpi-section mb-3" *ngIf="!isLoading">
+    
+    <div class="row g-3" *ngIf="mode === 'Pending'">
+      <div class="col-lg-3 col-md-6">
+        <div
+          class="kpi-card kpi-border kpi-primary interactive"
+          (click)="onModeChange('All')"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="onModeChange('All')"
+          (keydown.space)="onModeChange('All')"
+        >
+          <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">TOTAL ACTIVITIES</div>
+            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-sublabel">Pending view</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-warning">
+          <div class="kpi-icon-inline"><i class="fas fa-hourglass-half"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">PENDING</div>
+            <div class="kpi-value">{{ pendingCount }}</div>
+            <div class="kpi-sublabel">100% of view</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-danger">
+          <div class="kpi-icon-inline"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">OVERDUE</div>
+            <div class="kpi-value">{{ overdueCount }}</div>
+            <div class="kpi-sublabel">Past deadline</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-info">
+          <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">USERS</div>
+            <div class="kpi-value">{{ totalUsersCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="row g-3" *ngIf="mode === 'Processed'">
+      <div class="col-lg-3 col-md-6">
+        <div
+          class="kpi-card kpi-border kpi-primary interactive"
+          (click)="onModeChange('All')"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="onModeChange('All')"
+          (keydown.space)="onModeChange('All')"
+        >
+          <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">TOTAL ACTIVITIES</div>
+            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-sublabel">Processed view</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-success">
+          <div class="kpi-icon-inline"><i class="fas fa-check-circle"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">PROCESSED</div>
+            <div class="kpi-value">{{ processedCount }}</div>
+            <div class="kpi-sublabel">100% of view</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-info">
+          <div class="kpi-icon-inline"><i class="fas fa-calendar-week"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">THIS WEEK</div>
+            <div class="kpi-value">{{ completedThisWeek }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="kpi-card kpi-border kpi-info">
+          <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">USERS</div>
+            <div class="kpi-value">{{ totalUsersCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="row g-3" *ngIf="mode === 'All'">
+      <div class="col-lg col-md-6">
+        <div class="kpi-card kpi-border kpi-primary">
+          <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">TOTAL</div>
+            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-sublabel">All activities</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg col-md-6">
+        <div
+          class="kpi-card kpi-border kpi-warning interactive"
+          (click)="onModeChange('Pending')"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="onModeChange('Pending')"
+          (keydown.space)="onModeChange('Pending')"
+        >
+          <div class="kpi-icon-inline"><i class="fas fa-hourglass-half"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">PENDING</div>
+            <div class="kpi-value">
+              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
+                {{ pendingCount }}
+              </ng-container>
+            </div>
+            <div class="kpi-sublabel">
+              <ng-container *ngIf="!isLoadingGlobalCounts">
+                {{ pendingPercent | number:'1.0-0' }}% of view
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg col-md-6">
+        <div
+          class="kpi-card kpi-border kpi-success interactive"
+          (click)="onModeChange('Processed')"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="onModeChange('Processed')"
+          (keydown.space)="onModeChange('Processed')"
+        >
+          <div class="kpi-icon-inline"><i class="fas fa-check-circle"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">PROCESSED</div>
+            <div class="kpi-value">
+              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
+                {{ processedCount }}
+              </ng-container>
+            </div>
+            <div class="kpi-sublabel">
+              <ng-container *ngIf="!isLoadingGlobalCounts">
+                {{ processedPercent | number:'1.0-0' }}% of view
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg col-md-6">
+        <div class="kpi-card kpi-border kpi-danger">
+          <div class="kpi-icon-inline"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">OVERDUE</div>
+            <div class="kpi-value">
+              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
+                {{ overdueCount }}
+              </ng-container>
+            </div>
+            <div class="kpi-sublabel">Past deadline</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg col-md-6">
+        <div class="kpi-card kpi-border kpi-info">
+          <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">USERS</div>
+            <div class="kpi-value">{{ totalUsersCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #kpiLoading>
+      <div class="spinner-border spinner-border-sm text-secondary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </ng-template>
+  </section>
+
+ 
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-content">
+      <div class="spinner-border text-primary mb-3"></div>
+      <h5 class="mb-2">Loading Resource Summary...</h5>
+      <p class="text-muted">Please wait...</p>
+    </div>
+  </div>
+
+  
+  <section class="table-card" *ngIf="!isLoading && displayRows.length">
+    <div class="table-card-header d-flex justify-content-between align-items-center">
+      <div class="table-title"><i class="fas fa-table me-2"></i> Resource Summary</div>
+      <div class="table-info text-muted small">Showing {{ displayRows.length }} users</div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th class="col-user" (click)="changeSort('userName')">
+              <div class="th-content">
+                <span>User</span>
+                <i class="fas" [ngClass]="getSortIcon('userName')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('rateRequestCount')">
+              <div class="th-content">
+                <span><i class="fas fa-comments me-1 text-primary"></i>Rate Request</span>
+                <i class="fas" [ngClass]="getSortIcon('rateRequestCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('quotationCount')">
+              <div class="th-content">
+                <span><i class="fas fa-file-alt me-1 text-info"></i>Quotation</span>
+                <i class="fas" [ngClass]="getSortIcon('quotationCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('bookingCount')">
+              <div class="th-content">
+                <span><i class="fas fa-ship me-1 text-warning"></i>Booking</span>
+                <i class="fas" [ngClass]="getSortIcon('bookingCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('loadPlanCount')">
+              <div class="th-content">
+                <span><i class="fas fa-boxes me-1 text-success"></i>Load Plan</span>
+                <i class="fas" [ngClass]="getSortIcon('loadPlanCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('masterJobCount')">
+              <div class="th-content">
+                <span><i class="fas fa-layer-group me-1 text-purple"></i>Master Job</span>
+                <i class="fas" [ngClass]="getSortIcon('masterJobCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('jobCount')">
+              <div class="th-content">
+                <span><i class="fas fa-briefcase me-1 text-teal"></i>Job</span>
+                <i class="fas" [ngClass]="getSortIcon('jobCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('blCount')">
+              <div class="th-content">
+                <span><i class="fas fa-file-contract me-1 text-orange"></i>BL</span>
+                <i class="fas" [ngClass]="getSortIcon('blCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('siCount')">
+              <div class="th-content">
+                <span><i class="fas fa-file-signature me-1 text-pink"></i>SI</span>
+                <i class="fas" [ngClass]="getSortIcon('siCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-count" (click)="changeSort('invoiceCount')">
+              <div class="th-content">
+                <span><i class="fas fa-file-invoice-dollar me-1 text-danger"></i>Invoice</span>
+                <i class="fas" [ngClass]="getSortIcon('invoiceCount')"></i>
+              </div>
+            </th>
+
+            <th class="col-total" (click)="changeSort('total')">
+              <div class="th-content">
+                <strong>Total</strong>
+                <i class="fas" [ngClass]="getSortIcon('total')"></i>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of displayRows" class="summary-row">
+            <td class="col-user user-cell-clickable" (click)="openUserWorkload(row)">
+              <strong>{{ row.userName }}</strong>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.rateRequestCount > 0"
+                class="count-badge badge-primary"
+                (click)="$event.stopPropagation(); openWorkload('RateRequest', row)"
+              >
+                {{ row.rateRequestCount }}
+              </span>
+              <span *ngIf="!row.rateRequestCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.quotationCount > 0"
+                class="count-badge badge-info"
+                (click)="$event.stopPropagation(); openWorkload('Quotation', row)"
+              >
+                {{ row.quotationCount }}
+              </span>
+              <span *ngIf="!row.quotationCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.bookingCount > 0"
+                class="count-badge badge-warning"
+                (click)="$event.stopPropagation(); openWorkload('Booking', row)"
+              >
+                {{ row.bookingCount }}
+              </span>
+              <span *ngIf="!row.bookingCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.loadPlanCount > 0"
+                class="count-badge badge-success"
+                (click)="$event.stopPropagation(); openWorkload('LoadPlan', row)"
+              >
+                {{ row.loadPlanCount }}
+              </span>
+              <span *ngIf="!row.loadPlanCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.masterJobCount > 0"
+                class="count-badge badge-purple"
+                (click)="$event.stopPropagation(); openWorkload('MasterJob', row)"
+              >
+                {{ row.masterJobCount }}
+              </span>
+              <span *ngIf="!row.masterJobCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.jobCount > 0"
+                class="count-badge badge-teal"
+                (click)="$event.stopPropagation(); openWorkload('Job', row)"
+              >
+                {{ row.jobCount }}
+              </span>
+              <span *ngIf="!row.jobCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.blCount > 0"
+                class="count-badge badge-orange"
+                (click)="$event.stopPropagation(); openWorkload('BL', row)"
+              >
+                {{ row.blCount }}
+              </span>
+              <span *ngIf="!row.blCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.siCount > 0"
+                class="count-badge badge-pink"
+                (click)="$event.stopPropagation(); openWorkload('SI', row)"
+              >
+                {{ row.siCount }}
+              </span>
+              <span *ngIf="!row.siCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-count">
+              <span
+                *ngIf="row.invoiceCount > 0"
+                class="count-badge badge-danger"
+                (click)="$event.stopPropagation(); openWorkload('Invoice', row)"
+              >
+                {{ row.invoiceCount }}
+              </span>
+              <span *ngIf="!row.invoiceCount" class="count-badge badge-empty">0</span>
+            </td>
+
+            <td class="col-total">
+              <strong class="total-count">{{ getTotal(row) }}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+ 
+  <div *ngIf="!isLoading && !displayRows.length" class="empty-state">
+    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+    <h5>No Records Found</h5>
+    <p>No activities found for current filter.</p>
+    <button class="btn btn-sm btn-primary" (click)="onResetClick()">
+      <i class="fas fa-sync-alt me-1"></i> Reset Filters
+    </button>
+  </div>
+</div>
