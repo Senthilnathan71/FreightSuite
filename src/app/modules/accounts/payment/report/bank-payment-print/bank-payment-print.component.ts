@@ -47,6 +47,11 @@ export class BankPaymentPrintComponent {
     private spinner: NgxSpinnerService,
     private numberToWords: NumberToWordsService
   ) { }
+
+  
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+  
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -160,10 +165,46 @@ export class BankPaymentPrintComponent {
 
 
 
+  
+
+  // print
+
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
+}
+
+  
+
   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
     this.spinner.show();
-    try {
-      const BankPaymentNo = this.paymentDataPrint?.VoucherNumber || 'Receipt';
+     try {
+      const BankPaymentNo = this.paymentDataPrint?.VoucherNumber || '';
 
 
       await this.pdfService.downloadBalancedPDF(
@@ -172,33 +213,11 @@ export class BankPaymentPrintComponent {
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
-    } finally {
+    }finally {
       this.spinner.hide();
     }
-  }
-
-  // print
-
-  printDiv(divId: string): void {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
-
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-      popupWin.document.close();
-    }
-  }
+  }, 50);
+}
 
   async generatePDFBlob(): Promise<Blob | null> {
     const printContent = document.getElementById('printContent');
