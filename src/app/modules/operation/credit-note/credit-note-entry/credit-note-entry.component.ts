@@ -293,6 +293,7 @@ export class CreditNoteEntryComponent {
         CustomerMasterSid: [{value: null, disabled: true}],
         PartyMasterSid: [{value: null, disabled: true}],
         PartyName: [{value: null, disabled: true}],
+        COAMasterSid : [null],
         PartyAddress: [{ value: '', disabled: true }, Validators.required],
         CustomerBranchSid: [{value: null, disabled: true}],
         DocumentNumber: [{ value: '', disabled: true }],
@@ -838,7 +839,7 @@ private patchInvoiceData(invoiceData: any) {
       TaxAmount1: mappedTaxValues.TaxAmount1,
       TaxPercentage2: mappedTaxValues.TaxPercentage2,
       TaxAmount2: mappedTaxValues.TaxAmount2,
-      
+      COAMasterSid : detail.COAMasterSid || null,
       LocalAmount: localAmount,
       PartyAmount: partyAmount,
       MasterJobSid: detail.MasterJobSid,
@@ -1466,6 +1467,7 @@ private getCustomerCountryCode(customer: any): string {
     VoucherDate: this.toNgbDate(header.VoucherDate),
     CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
     PartyMasterSid: header.PartyMasterSid || null,
+    COAMasterSid : header.COAMasterSid || null,
     PartyName: header.PartyName || '',
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',
@@ -1549,7 +1551,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // This contains VAT amount
         TaxPercentage2: 0,
         TaxAmount2: 0,
-        
+        COAMasterSid : det.COAMasterSid || null,
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1575,7 +1577,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // CGST amount
         TaxPercentage2: taxPerc2, // SGST rate
         TaxAmount2: taxAmt2,      // SGST amount
-       
+        COAMasterSid: det.COAMasterSid,
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1601,7 +1603,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,
         TaxPercentage2: 0,
         TaxAmount2: 0,
-              
+        COAMasterSid: det.COAMasterSid,     
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1627,7 +1629,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,      // CGST amount for B2C
         TaxPercentage2: 0,
         TaxAmount2: 0,
-      
+        COAMasterSid: det.COAMasterSid,
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1653,6 +1655,7 @@ private getCustomerCountryCode(customer: any): string {
         TaxAmount1: taxAmt1,
         TaxPercentage2: taxPerc2,
         TaxAmount2: taxAmt2,
+        COAMasterSid: det.COAMasterSid,
         LocalAmount: det.LocalAmount,
         PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
@@ -1717,7 +1720,7 @@ private getCustomerCountryCode(customer: any): string {
       TaxAmount1: [{value:data?.TaxAmount1 || 0, disabled: true}],
       TaxPercentage2: [{value:data?.TaxPercentage2 || 0, disabled: true}],
       TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
-      
+      COAMasterSid: [data?.COAMasterSid || null],
       LocalAmount: [data?.LocalAmount || 0],
       PartyAmount: [data?.PartyAmount || 0],
       MasterJobSid: [data?.MasterJobSid || null],
@@ -1756,12 +1759,15 @@ getDepartmentName(departmentSid: number): string {
         }
 
         const chargeUomId = selectedCharge.ChargeUOMSid ?? selectedCharge.UOM ?? selectedCharge.UOMMasterSid ?? null;
-
+        const ledgerMasterSid = selectedCharge.SubledgerMasterSid || null;
+      const coaMasterSid = selectedCharge.DrCOAMappedId || null;
         this.details.at(index).patchValue({
           ChargeDescription: description,
           HSSACMasterSid: hssacId || null,
           ChargeUOMSid: chargeUomId || null,
-          Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0
+          Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0,
+          LedgerMasterSid: ledgerMasterSid,
+        COAMasterSid: coaMasterSid
         });
 
         this.recalcRow(index);
@@ -2618,6 +2624,8 @@ private normalizeParty(raw: any) {
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
+        LedgerMasterSid : d.LedgerMasterSid ? Number(d.LedgerMasterSid) : null,
+        COAMasterSid : d.COAMasterSid ? Number(d.COAMasterSid) : null,
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
         DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,

@@ -505,7 +505,7 @@ isVoyageFreeText: boolean = false;
       MasterJobSid : [null],
       BookingNo: [{ value: '', disabled: true }],
       BookingDateTime: [{ value: '', disabled: true }],
-      DepartmentMasterSid: [null, [Validators.required]],
+      DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
       CustomerName: [''],
@@ -523,6 +523,7 @@ isVoyageFreeText: boolean = false;
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
+      HBLDate: [null],
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
@@ -533,17 +534,17 @@ isVoyageFreeText: boolean = false;
     isVesselFreeText: [false],
     isVoyageFreeText: [false],
 
-      VesselName: [null],
-      VoyageMasterSid: [null],
-      VoyageNo: [null],
+      VesselName: [{ value: null, disabled: true }],
+      VoyageMasterSid: [{ value: null, disabled: true }],
+      VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: '', disabled: true }],
       ETD: [{ value: '', disabled: true }],
-      POO: [null],
-      POL: [null, [Validators.required]],
-      POD: [null, [Validators.required]],
+      POO: [{ value: null, disabled: true }],
+      POL: [{ value: null, disabled: true }, [Validators.required]],
+      POD: [{ value: null, disabled: true }, [Validators.required]],
       POLTerminal: [''],
       PODTerminal: [''],
-      FPD: [null],
+      FPD: [{ value: null, disabled: true }],
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
       FreightTerms : [null],
@@ -554,7 +555,7 @@ isVoyageFreeText: boolean = false;
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-      ShipmentNo: [{value : '',disabled : true}]
+      ShipmentNo: ['',[Validators.required]]
     })
     this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
@@ -579,6 +580,7 @@ isVoyageFreeText: boolean = false;
       FreightTerms: [null],
       CommodityDescription:[],
       MarksAndNumber:[],
+      LandedMarksandNumber:[],
       ModeOfTransport : [null],
       StuffingAt: ['Dock']
     })
@@ -716,12 +718,11 @@ existsInList(list: any[], value: any) {
 
   // Product Form Initialization
   initProductForm() {
-    const isIndianCompany = this.countryOfCompany === 'india';
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
       ProductName: [null],
-      ShippingBillNo: ['',isIndianCompany ? [Validators.required] : []],
-      ShippingBillDate: [null,isIndianCompany ? [Validators.required] : []],
+      ShippingBillNo: [''],
+      ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
@@ -738,6 +739,9 @@ existsInList(list: any[], value: any) {
       HSCode: [''],
       UomMasterSid: [null],
       CargoRecDate : [null],
+      ReceivedQty:[''],
+      DamageQty:[''],
+      DamageRemarks: [''],
       ContainerNo : [''],
       MarksAndNumbers : [''],
       DeliveredQty: [null],
@@ -942,6 +946,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       HSCode : [data?.HSCode || ''],
       UomMasterSid : [data?.UomMasterSid || null],
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
+      ReceivedQty: [data?.ReceivedQty || ''],
+      DamageQty: [data?.DamageQty || ''],
+      DamageRemarks: [data?.DamageRemarks || ''],
       ContainerNo : [data?.ContainerNo || ''],
       MarksAndNumbers : [data?.MarksAndNumbers || ''],
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
@@ -1269,6 +1276,7 @@ loadHeaderLookups() {
     VesselName: response.VesselName,
     VoyageMasterSid: response.VoyageMasterSid,
     VoyageNo: response.VoyageNo,
+    HBLDate: response.HBLDate ? new Date(response.HBLDate) : null,
     ETA: response.ETA ? new Date(response.ETA) : null,
     ETD: response.ETD ? new Date(response.ETD) : null,
     POO: response.POO,
@@ -1308,6 +1316,7 @@ loadHeaderLookups() {
       FreightTerms: cargoData.FreightTerms,
       CommodityDescription: cargoData.CommodityDescription,
       MarksAndNumber: cargoData.MarksAndNumber,
+      LandedMarksandNumber: cargoData.LandedMarksandNumber,
       ModeOfTransport: cargoData.ModeOfTransport,
       StuffingAt: cargoData.StuffingAt || 'Dock'
     });
@@ -1399,7 +1408,7 @@ loadHeaderLookups() {
         HouseJobProductSid: data?.HouseJobProductSid,
         ProductName: data?.ProductName,
         ShippingBillNo: data?.ShippingBillNo,
-        ShippingBillDate: new Date(data?.ShippingBillDate),
+        ShippingBillDate: data?.ShippingBillDate,
         ExternaPkg: data?.ExternaPkg,
         ExternlQty: data?.ExternlQty,
         GrossWeight: data?.GrossWeight,
@@ -1416,6 +1425,9 @@ loadHeaderLookups() {
         HSCode: data?.HSCode,
         UomMasterSid: data?.UomMasterSid,
         CargoRecDate : data?.CargoRecDate,
+        ReceivedQty: data?.ReceivedQty,
+        DamageQty: data?.DamageQty,
+        DamageRemarks: data?.DamageRemarks,
         ContainerNo : data?.ContainerNo,
         MarksAndNumbers : data?.MarksAndNumbers,
         DeliveryDate: data?.DeliveryDate,
@@ -1592,6 +1604,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     VesselName: houseJobFormValue.VesselName || null,
     VoyageMasterSid: houseJobFormValue.VoyageMasterSid || null,
     VoyageNo: houseJobFormValue.VoyageNo || null,
+    HBLDate: houseJobFormValue.HBLDate ? new Date(houseJobFormValue.HBLDate) : null,
     ETA: houseJobFormValue.ETA ? new Date(houseJobFormValue.ETA) : null,
     ETD: houseJobFormValue.ETD ? new Date(houseJobFormValue.ETD) : null,
     POO: houseJobFormValue.POO || null,
@@ -1626,6 +1639,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       ShipmentTerms: cargoFormValue.ShipmentTerms || null,
       CommodityDescription: cargoFormValue.CommodityDescription || null,
       MarksAndNumber: cargoFormValue.MarksAndNumber || null,
+      LandedMarksandNumber: cargoFormValue.LandedMarksandNumber || null,
       MovementType: cargoFormValue.MovementType || null,
       FreightTerms: cargoFormValue.FreightTerms || null,
       ModeOfTransport: cargoFormValue.ModeOfTransport || null,
@@ -1678,7 +1692,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       HouseJobProductSid: product.HouseJobProductSid || null,
       ProductName: product.ProductName || '',
       ShippingBillNo: product.ShippingBillNo || '',
-      ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
+      ShippingBillDate: product.ShippingBillDate,
       ExternaPkg: product.ExternaPkg || null,
       ExternlQty: String(product.ExternlQty),
       GrossWeight: parseFloat(product.GrossWeight) || 0,
@@ -1695,6 +1709,9 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       UomMasterSid: product.UomMasterSid,
       HSCode: product.HSCode,
       CargoRecDate: product.CargoRecDate,
+      DamageQty: product.DamageQty,
+      ReceivedQty: product.ReceivedQty,
+      DamageRemarks: product.DamageRemarks,
       ContainerNo: product.ContainerNo,
       MarksAndNumbers: product.MarksAndNumbers,
       DeliveryDate: product.DeliveryDate,
@@ -2197,9 +2214,7 @@ private handleHBLNoField(exportImport: string): void {
         }));
         console.log('Vessel list loaded:', this.headerVesselList.length, 'vessels');
         
-        if (this.headerVesselList.length === 0) {
-          this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.");
-        }
+        
       } else {
         this.appSettingService.showError("Error loading Vessel");
       }
@@ -2471,13 +2486,16 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const NoofContainers = this.cargoForm.get('NoofContainers')?.value;
     const Volume = this.cargoForm.get('Volume')?.value;
     const ChargeableWeight = this.cargoForm.get('ChargeableWeight')?.value
-
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
       MasterJobNumber,
       MasterJobSid,
       ParentSid: this.HouseJobSid,
+      CustomerMasterSid,
+      CustomerBranchSid,
       MBLNo,
       HBLNo,
       departmentName,
@@ -2805,6 +2823,9 @@ ${this.userData['userName']}`;
       NetWeight: product.value.NetWeight || '',
       Volume: product.value.Volume || '',
       CargoRecDate: this.datePipe.transform(product.value.CargoRecDate) || '',
+      ReceivedQty: product.value.ReceivedQty || '',
+      DamageQty: product.value.DamageQty || '',
+      DamageRemarks: product.value.DamageRemarks || '',
       DeliveryDate: this.datePipe.transform(product.value.DeliveryDate) || '',
       DeliveredQty: product.value.DeliveredQty || ''
     }));

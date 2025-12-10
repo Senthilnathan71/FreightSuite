@@ -2185,9 +2185,38 @@ handleEdocChange(event: any) {
     }
   }
 
-  navigateTohouseJob() {
-    this.router.navigate(['operation/house-job/entry']);
+  navigateToHouseJobCreation(): void {
+  if (!this.masterJobSid) {
+    this.toastr.error('Please save the master airway first before creating house airway');
+    return;
   }
+
+  // Get the current master job data
+  const masterJobData = {
+    MasterJobSid: this.masterJobSid,
+    DepartmentMasterSid: this.masterJobForm.get('DepartmentMasterSid')?.value,
+    MBLNo: this.masterJobForm.get('MBLNo')?.value,
+    MBLDate: this.masterJobForm.get('MBLDate')?.value,
+    VesselName: this.masterJobForm.get('VesselName')?.value,
+    VoyageNo: this.masterJobForm.get('VoyageNo')?.value,
+    POL: this.masterJobForm.get('POL')?.value,
+    POD: this.masterJobForm.get('POD')?.value,
+    FPD: this.masterJobForm.get('FPD')?.value,
+    ETA: this.masterJobForm.get('ETA')?.value,
+    ETD: this.masterJobForm.get('ETD')?.value,
+    CarrierName: this.masterJobForm.get('CarrierName')?.value,
+    // Get port codes instead of SIDs
+    POLCode: this.getPortCode(this.masterJobForm.get('POL')?.value),
+    PODCode: this.getPortCode(this.masterJobForm.get('POD')?.value),
+    FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value)
+  };
+
+  // Navigate to house job entry with master job data as query parameters
+  this.router.navigate(['/operation/house-job/entry'], {
+    queryParams: masterJobData,
+    state: { masterJobData: masterJobData } // Pass as state for larger data
+  });
+}
 
   openAttachModal(){
     const requiredFields = ['DepartmentMasterSid','POL','POD'];

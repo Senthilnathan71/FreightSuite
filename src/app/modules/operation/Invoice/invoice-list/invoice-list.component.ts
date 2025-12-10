@@ -156,6 +156,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
+        PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -275,6 +276,15 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         {
         key: 'HouseNumber',
         label: 'House No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+      {
+        key: 'PostStatusLabel',
+        label: 'Post Status',
         sortable: true,
         filterable: true,
         visible: true,

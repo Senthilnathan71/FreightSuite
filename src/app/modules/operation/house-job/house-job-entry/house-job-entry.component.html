@@ -116,6 +116,23 @@
         </div>
       </div> -->
       <div class="smart-field-group">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
+          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+            class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
+            appendTo="body">
+          </ng-select>
+          <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+          @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
+          <div class="error-message">
+            @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
+            <span>Required</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      <div class="smart-field-group">
   <div class="custom-form-group">
     <input 
       type="text" 
@@ -139,6 +156,21 @@
   </div>
 </div>
 
+<div class="smart-field-group">
+        <div class=" custom-form-group custom-form-group-select-date"
+          [class.filled]="!!houseJobForm.get('HBLDate')?.value">
+          <div class="input-group ">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+              (click)="d1.toggle()" formControlName="HBLDate" [minDate]="minDate"
+              (keydown.arrowDown)="d1.open()" container="body" />
+            <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather></button>
+          </div>
+          <label for="" class="input-label">HBL Date <span class="text-danger">*</span>
+          </label>
+
+        </div>
+      </div>
       <div class="smart-field-group">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -163,33 +195,7 @@
 
         </div>
       </div> -->
-      <div class="smart-field-group">
-        <div class="custom-form-group custom-form-group-select"
-          [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
-          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-            class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
-            appendTo="body">
-          </ng-select>
-          <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
-          @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
-          <div class="error-message">
-            @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
-            <span>Required</span>
-            }
-          </div>
-          }
-        </div>
-      </div>
-
-      <div class="smart-field-group">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!houseJobForm.get('JobType')?.value">
-              <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
-                formControlName="JobType" appendTo="body">
-              </ng-select>
-              <label for="" class="input-label">Job Type <span class="text-danger"></span></label>
-            </div>
-          </div>
+      
 
       <div class="smart-field-group">
         <aside>
@@ -201,6 +207,15 @@
           </div>
         </aside>
       </div>
+      <div class="smart-field-group">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!houseJobForm.get('JobType')?.value">
+              <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="JobType" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Job Type <span class="text-danger"></span></label>
+            </div>
+          </div>
       <div class="smart-field-group">
         <aside>
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('status')?.value">
@@ -905,7 +920,7 @@
   <div class="custom-form-group custom-form-group-select-date inputChnages"  [class.filled]="!!houseJobForm.get('ETD')?.value">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETDFreeText">
-      <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
+      <input class="form-control" placeholder="" name="dp" formControlName="ETD"
         container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
         (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" readonly />
       <button class="btn bi bi-calendar3 px-0" (click)="d5.toggle()" type="button">
@@ -919,7 +934,7 @@
 
     <!-- Manual Date Input -->
     <div class="input-group" *ngIf="isETDFreeText">
-      <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
+      <input class="form-control" placeholder="" name="dp" formControlName="ETD"
         container="body" ngbDatepicker #d5Manual="ngbDatepicker"
         (keydown.arrowDown)="d5Manual.open()" (click)="d5Manual.toggle()" />
       <button class="btn bi bi-calendar3 px-0" (click)="d5Manual.toggle()" type="button">
@@ -1474,6 +1489,14 @@
               <label for="text-input" class="input-label">Marks And Number<span class="text-danger"></span></label>
             </div>
           </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('LandedMarksandNumber')?.value">
+              <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
+                formControlName="LandedMarksandNumber" placeholder="" appendTo="body">
+              <label for="text-input" class="input-label">Landed Marks And Number<span class="text-danger"></span></label>
+            </div>
+          </aside>
         </div>
       </div>
       <div>
@@ -1517,7 +1540,9 @@
                 <th>Gross Weight</th>
                 <th>Net Wt</th>
                 <th>Cargo Received Date</th>
+                <th>Received Qty</th>
                 <th>Container No.</th>
+                <th>Damaged Qty</th>
                 <th>Delivery Date</th>
                 <th>Delivered Qty</th>
               </tr>
@@ -1553,7 +1578,9 @@
                 <td>{{product.value.GrossWeight}}</td>
                 <td>{{product.value.NetWeight}}</td>
                 <td>{{product.value.CargoRecDate | formatDate}}</td>
+                <td>{{product.value.ReceivedQty}}</td>
                 <td>{{product.value.ContainerNo}}</td>
+                <td>{{product.value.DamageQty}}</td>
                 <td>{{product.value.DeliveryDate | formatDate}}</td>
                 <td>{{product.value.DeliveredQty}}</td>
               </tr>
@@ -2471,6 +2498,7 @@
           <label for="text-input" class="input-label">Volumetric <span class="text-danger"></span></label>
         </div>
       </aside>
+      }
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
@@ -2479,7 +2507,6 @@
           <label for="text-input" class="input-label">Volume <span class="text-danger"></span></label>
         </div>
       </aside>
-      }
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
@@ -2533,39 +2560,46 @@
           </label>
         </div>
       </div>
-
-      <aside class="col-md-4 d-flex align-items-center">
-        <div class="form-check form-check-inline p-0">
-          <div class="form-check d-flex align-items-center">
-            <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
-            <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
-          </div>
-        </div>
-      </aside>
-      @if(productForm.get('IsHaz')?.value){
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ImcoClass')?.value">
-          <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
-            placeholder="Select IMCO">
-          </ng-select>
-
-          <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
-        </div>
-      </aside>
-      <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                formControlName="ReceivedQty" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0"
+                >
+              <label for="text-input" class="input-label">Cargo Received Qty<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((productForm.get('ReceivedQty')?.touched || productForm.get('ReceivedQty')?.dirty) &&
+              productForm.get('ReceivedQty')?.invalid) {
+              <div class="error-message">
+                @if (productForm.get('ReceivedQty')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 5 digits Number Only</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                formControlName="DamageQty" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0"
+                >
+              <label for="text-input" class="input-label">Damaged Qty<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((productForm.get('DamageQty')?.touched || productForm.get('DamageQty')?.dirty) &&
+              productForm.get('DamageQty')?.invalid) {
+              <div class="error-message">
+                @if (productForm.get('DamageQty')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 5 digits Number Only</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
         <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="UnNo"
-            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
-          <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="DamageRemarks">
+          <label for="text-input" class="input-label">Damage Remarks <span class="text-danger"></span></label>
         </div>
       </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PkgGroup">
-          <label for="text-input" class="input-label">Pkg Group <span class="text-danger"></span></label>
-        </div>
-      </aside>
-      }
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('ContainerNo')?.value">
@@ -2598,16 +2632,48 @@
                 >
               <label for="text-input" class="input-label">Delivered Qty<span class="text-danger"></span></label>
               <!-- Validation Messages -->
-              @if ((cargoForm.get('DeliveredQty')?.touched || cargoForm.get('DeliveredQty')?.dirty) &&
-              cargoForm.get('DeliveredQty')?.invalid) {
+              @if ((productForm.get('DeliveredQty')?.touched || productForm.get('DeliveredQty')?.dirty) &&
+              productForm.get('DeliveredQty')?.invalid) {
               <div class="error-message">
-                @if (cargoForm.get('DeliveredQty')?.errors?.['decimalPrecision']) {
+                @if (productForm.get('DeliveredQty')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 3 digits Number Only</small>
                 }
               </div>
               }
             </div>
           </aside>
+          <aside class="col-md-4 d-flex align-items-center">
+        <div class="form-check form-check-inline p-0">
+          <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
+            <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
+          </div>
+        </div>
+      </aside>
+      @if(productForm.get('IsHaz')?.value){
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ImcoClass')?.value">
+          <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
+            placeholder="Select IMCO">
+          </ng-select>
+
+          <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="UnNo"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+          <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PkgGroup">
+          <label for="text-input" class="input-label">Pkg Group <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      }
     </div>
   </div>
   <div class="modal-footer">
