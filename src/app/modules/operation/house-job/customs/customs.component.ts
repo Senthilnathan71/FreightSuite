@@ -55,6 +55,7 @@ export class CustomsComponent implements OnInit, OnChanges {
   showValidationModal = false;
   validationErrors: MandatoryFieldError[] = [];
   groupedErrors: { [key: string]: MandatoryFieldError[] } = {};
+  groupedByHBL: { [hblNo: string]: { [recordType: string]: MandatoryFieldError[] } } = {};
 
   // Importer Codes
   importerCodeList = [
@@ -259,20 +260,37 @@ export class CustomsComponent implements OnInit, OnChanges {
   }
 
   generateEDIManifest() {
-    // Basic frontend validation first
+    // Basic frontend validation - show in modal instead of toast
     const customsData = this.customsForm.value;
-    const basicErrors: string[] = [];
+    const basicErrors: MandatoryFieldError[] = [];
 
-    if (!customsData.LineCode) basicErrors.push('Line Code');
-    if (!customsData.VoyageAgentCode) basicErrors.push('Voyage Agent Code');
-    if (!customsData.ManifestSequence) basicErrors.push('Manifest Sequence');
-    if (!customsData.SerialNumber) basicErrors.push('Serial Number');
-    if (!customsData.UNHSCode) basicErrors.push('HS Code (UNHSCode)');
-    if (!customsData.PackageTypeCode) basicErrors.push('Package Type Code');
-    if (!customsData.ImporterCode || customsData.ImporterCode === 'null') basicErrors.push('Importer Code');
+    if (!customsData.LineCode) {
+      basicErrors.push({ recordType: 'VOY', fieldRef: '1.1', fieldName: 'Line Code' });
+    }
+    if (!customsData.VoyageAgentCode) {
+      basicErrors.push({ recordType: 'VOY', fieldRef: '1.2', fieldName: 'Voyage Agent Code' });
+    }
+    if (!customsData.ManifestSequence) {
+      basicErrors.push({ recordType: 'VOY', fieldRef: '1.10', fieldName: 'Manifest Sequence' });
+    }
+    if (!customsData.SerialNumber) {
+      basicErrors.push({ recordType: 'CON', fieldRef: '3.1', fieldName: 'Serial Number' });
+    }
+    if (!customsData.UNHSCode) {
+      basicErrors.push({ recordType: 'CON', fieldRef: '3.5', fieldName: 'HS Code (Commodity Code)' });
+    }
+    if (!customsData.PackageTypeCode) {
+      basicErrors.push({ recordType: 'BOL', fieldRef: '2.46', fieldName: 'Package Type Code' });
+    }
+    if (!customsData.ImporterCode || customsData.ImporterCode === 'null') {
+      basicErrors.push({ recordType: 'BOL', fieldRef: '2.29', fieldName: 'Importer Code (Consignee Code)' });
+    }
 
     if (basicErrors.length > 0) {
-      this.toastr.warning(`Please fill the following Customs fields: ${basicErrors.join(', ')}`);
+      // Show in modal instead of toast
+      this.validationErrors = basicErrors;
+      this.groupErrorsByHBL();
+      this.showValidationModal = true;
       return;
     }
 
@@ -320,7 +338,7 @@ export class CustomsComponent implements OnInit, OnChanges {
     // Check if this is a validation error with field list
     if (error.error?.errors && Array.isArray(error.error.errors)) {
       this.validationErrors = error.error.errors;
-      this.groupErrorsByRecordType();
+      this.groupErrorsByHBL();
       this.showValidationModal = true;
     } else {
       // Generic error
@@ -329,24 +347,55 @@ export class CustomsComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Group validation errors by record type for display
+   * Group validation errors by HBL number first, then by record type for user-friendly display
    */
-  private groupErrorsByRecordType() {
-    this.groupedErrors = {};
+  private groupErrorsByHBL() {
+    this.groupedByHBL = {};
     const recordTypeLabels: { [key: string]: string } = {
-      'VOY': 'Voyage Details (VOY)',
-      'BOL': 'Bill of Lading (BOL)',
-      'CON': 'Consignment Details (CON)',
-      'CTR': 'Container Details (CTR)'
+      'VOY': 'Voyage Details',
+      'BOL': 'Bill of Lading',
+      'CON': 'Consignment Details',
+      'CTR': 'Container Details'
     };
 
     for (const error of this.validationErrors) {
-      const label = recordTypeLabels[error.recordType] || error.recordType;
-      if (!this.groupedErrors[label]) {
-        this.groupedErrors[label] = [];
+      // Use 'Common' for errors without HBL (like VOY record)
+      const hblKey = error.hblNo || 'Common Fields';
+      const recordLabel = recordTypeLabels[error.recordType] || error.recordType;
+
+      if (!this.groupedByHBL[hblKey]) {
+        this.groupedByHBL[hblKey] = {};
       }
-      this.groupedErrors[label].push(error);
+      if (!this.groupedByHBL[hblKey][recordLabel]) {
+        this.groupedByHBL[hblKey][recordLabel] = [];
+      }
+      this.groupedByHBL[hblKey][recordLabel].push(error);
     }
+  }
+
+  /**
+   * Get HBL keys for template iteration (Common Fields first, then HBL numbers)
+   */
+  getHBLKeys(): string[] {
+    const keys = Object.keys(this.groupedByHBL);
+    // Sort to put 'Common Fields' first
+    return keys.sort((a, b) => {
+      if (a === 'Common Fields') return -1;
+      if (b === 'Common Fields') return 1;
+      return a.localeCompare(b);
+    });
+  }
+
+  /**
+   * Get record type keys for a specific HBL
+   */
+  getRecordTypeKeys(hblNo: string): string[] {
+    if (!this.groupedByHBL[hblNo]) return [];
+    // Sort by record type order: VOY, BOL, CON, CTR
+    const order = ['Voyage Details', 'Bill of Lading', 'Consignment Details', 'Container Details'];
+    return Object.keys(this.groupedByHBL[hblNo]).sort((a, b) => {
+      return order.indexOf(a) - order.indexOf(b);
+    });
   }
 
   /**
@@ -356,6 +405,7 @@ export class CustomsComponent implements OnInit, OnChanges {
     this.showValidationModal = false;
     this.validationErrors = [];
     this.groupedErrors = {};
+    this.groupedByHBL = {};
   }
 
   /**

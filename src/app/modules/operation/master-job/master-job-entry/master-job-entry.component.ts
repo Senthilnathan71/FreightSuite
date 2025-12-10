@@ -211,6 +211,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   showValidationModal = false;
   validationErrors: any[] = [];
   groupedErrors: { [key: string]: any[] } = {};
+  groupedByHBL: { [hblNo: string]: { [recordType: string]: any[] } } = {};
   // Shipment related variable declarations
   attachedBookings: FormArray;
   slicedAttachedBookings: any[] = [];
@@ -3619,7 +3620,7 @@ loadHSSACLookups() {
     // Check if this is a validation error with field list
     if (error.error?.errors && Array.isArray(error.error.errors)) {
       this.validationErrors = error.error.errors;
-      this.groupEDIErrorsByRecordType();
+      this.groupEDIErrorsByHBL();
       this.showValidationModal = true;
     } else {
       // Generic error
@@ -3628,24 +3629,55 @@ loadHSSACLookups() {
   }
 
   /**
-   * Group validation errors by record type for display
+   * Group validation errors by HBL number first, then by record type for user-friendly display
    */
-  private groupEDIErrorsByRecordType() {
-    this.groupedErrors = {};
+  private groupEDIErrorsByHBL() {
+    this.groupedByHBL = {};
     const recordTypeLabels: { [key: string]: string } = {
-      'VOY': 'Voyage Details (VOY)',
-      'BOL': 'Bill of Lading (BOL)',
-      'CON': 'Consignment Details (CON)',
-      'CTR': 'Container Details (CTR)'
+      'VOY': 'Voyage Details',
+      'BOL': 'Bill of Lading',
+      'CON': 'Consignment Details',
+      'CTR': 'Container Details'
     };
 
     for (const error of this.validationErrors) {
-      const label = recordTypeLabels[error.recordType] || error.recordType;
-      if (!this.groupedErrors[label]) {
-        this.groupedErrors[label] = [];
+      // Use 'Common' for errors without HBL (like VOY record)
+      const hblKey = error.hblNo || 'Common Fields';
+      const recordLabel = recordTypeLabels[error.recordType] || error.recordType;
+
+      if (!this.groupedByHBL[hblKey]) {
+        this.groupedByHBL[hblKey] = {};
       }
-      this.groupedErrors[label].push(error);
+      if (!this.groupedByHBL[hblKey][recordLabel]) {
+        this.groupedByHBL[hblKey][recordLabel] = [];
+      }
+      this.groupedByHBL[hblKey][recordLabel].push(error);
     }
+  }
+
+  /**
+   * Get HBL keys for template iteration (Common Fields first, then HBL numbers)
+   */
+  getHBLKeys(): string[] {
+    const keys = Object.keys(this.groupedByHBL);
+    // Sort to put 'Common Fields' first
+    return keys.sort((a, b) => {
+      if (a === 'Common Fields') return -1;
+      if (b === 'Common Fields') return 1;
+      return a.localeCompare(b);
+    });
+  }
+
+  /**
+   * Get record type keys for a specific HBL
+   */
+  getRecordTypeKeys(hblNo: string): string[] {
+    if (!this.groupedByHBL[hblNo]) return [];
+    // Sort by record type order: VOY, BOL, CON, CTR
+    const order = ['Voyage Details', 'Bill of Lading', 'Consignment Details', 'Container Details'];
+    return Object.keys(this.groupedByHBL[hblNo]).sort((a, b) => {
+      return order.indexOf(a) - order.indexOf(b);
+    });
   }
 
   /**
@@ -3655,6 +3687,7 @@ loadHSSACLookups() {
     this.showValidationModal = false;
     this.validationErrors = [];
     this.groupedErrors = {};
+    this.groupedByHBL = {};
   }
   // Add these methods to your component class
 
