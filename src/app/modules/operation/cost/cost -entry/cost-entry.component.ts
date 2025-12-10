@@ -2780,13 +2780,47 @@ getChargeTaxPercentage(charge: any): string {
       // ❗ HEADER PAYLOAD
       // ----------------------------
       console.log("parentFormValue",this.parentFormValue)
+      let narration = '';
+      if (this.screenName === 'Booking') {
+  // Booking: "Booking No. XXXX, Dt. XXXX"
+  const bookingNo = this.parentFormValue?.BookingNumber || 'N/A';
+  const bookingDate = this.parentFormValue?.BookingDate || new Date().toLocaleDateString();
+  narration = `Booking No. ${bookingNo}, Dt. ${bookingDate}`;
+} else if (this.screenName === 'MasterJob') {
+  // Master Job only (no house job)
+  const mblNo = this.parentFormValue?.MBLNo || 'N/A';
+  const mblDate = this.parentFormValue?.MBLDate || new Date().toLocaleDateString();
+  const masterJobNo = this.parentFormValue?.MasterJobNumber || 'N/A';
+  
+  // Determine if Air or Sea based on segment
+  const segment = this.parentFormValue?.Segment || '';
+  const mblPrefix = segment === 'AIR' ? 'MAWB' : 'MBL';
+  
+  narration = `Voucher from Master Job – ${mblPrefix} No. ${mblNo}, Master Job No. ${masterJobNo}, Dt. ${mblDate}`;
+} else if (this.screenName === 'HouseJob') {
+  // Master Job + House Job
+  const hblNo = this.parentFormValue?.HBLNo || 'N/A';
+  const hblDate = this.parentFormValue?.HBLDate || new Date().toLocaleDateString();
+  const mblNo = this.parentFormValue?.MBLNo || 'N/A';
+  const masterJobNo = this.parentFormValue?.MasterJobNumber || 'N/A';
+  
+  // Determine if Air or Sea based on segment
+  const segment = this.parentFormValue?.Segment || '';
+  const hblPrefix = segment === 'AIR' ? 'HAWB' : 'HBL';
+  const mblPrefix = segment === 'AIR' ? 'MAWB' : 'MBL';
+  
+  narration = `Voucher from House Job – ${hblPrefix} No. ${hblNo}, ${mblPrefix} No. ${mblNo}, Master Job No. ${masterJobNo}, Dt. ${hblDate}`;
+} else {
+  // Default narration
+  narration = `Voucher generated from ${this.screenName} ${this.ParentSid}`.substring(0, 250);
+}
       const headerDetails = {
         CreatedBy: currUserEmail,
         Status: 'A',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
         BranchMasterSid: this.currentBranch?.BranchMasterSid ?? null,
         VoucherTypeName: this.selectedVoucherType,
-        Narration: (`Voucher generated from ${this.screenName} ${this.ParentSid}`).substring(0, 250),
+        Narration: narration,
         PartyMasterSid: PartyLedgerMasterSid,
         PartyName: this.billingPartyDetails?.CustomerName ?? '',
         PartyAddress: this.billingPartyBranchDetails?.Address ?? '',
@@ -2897,7 +2931,7 @@ getChargeTaxPercentage(charge: any): string {
           ExchangeRate: Number(isRevenue ? chargeInfo.RevenueExchangeRate : chargeInfo.CostExchangeRate),
           Rate: Number(isRevenue ? chargeInfo.RevenueRate : chargeInfo.CostRate),
           NumberOfUnit: Number(isRevenue ? chargeInfo.RevenueNumberOfUnit : chargeInfo.CostNumberOfUnit),
-          Narration: `Voucher generated from ${this.screenName} RateSid: ${RateSid}`.substring(0, 250),
+          Narration:  narration.substring(0, 250),
           DrCr: isRevenue ? chargeInfo.RevenueDrCr : chargeInfo.CostDrCr,
           TaxableAmount: Number(isRevenue ? chargeInfo.RevenueAmount : chargeInfo.CostAmount),
           TaxPercentage1: taxPercentage1,

@@ -339,7 +339,7 @@ get isVATMode(): boolean {
     Promise.all([
       firstValueFrom(this.operationService.getAllDebtorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
-      firstValueFrom(this.operationService.getAllMappedChargeDebtors(filterOption)),
+      firstValueFrom(this.operationService.getAllMappedChargeCreditors(filterOption)),
       firstValueFrom(this.operationService.getAllHssac()),
       firstValueFrom(this.operationService.getAllUom()),
       firstValueFrom(this.operationService.getAllState()),
@@ -1573,8 +1573,8 @@ private applyFallbackTax(
   for (let i = 0; i < this.details.length; i++) {
     const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
     const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-    const igstAmt = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
-    total += taxAmt1 + taxAmt2 + igstAmt;
+    // const igstAmt = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
+    total += taxAmt1 + taxAmt2;
   }
   return this.round(total);
 }
@@ -1754,6 +1754,7 @@ private applyFallbackTax(
     this.recalculateAllRows();
 
     const raw = this.invoiceForm.getRawValue();
+    const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
     const userEmailFromSettings = (this.appSettingService as any).userSettingSource?.value?.['userEmail'] || null;
     const createdByValue = userEmailFromSettings || this.currUserEmail || null;
@@ -1816,7 +1817,8 @@ private applyFallbackTax(
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
         PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
-        HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
+        HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
+        YearMasterSid : YearMasterSid,
       };
       console.log(`DEBUG - Saving detail row ${index + 1}: HSSACMasterSid =`, detail.HSSACMasterSid, ', Charge =', detail.ChargeDescription);
       return detail;
@@ -1858,6 +1860,7 @@ private applyFallbackTax(
       Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
       status: (raw.status != null ? raw.status : 'A'),
       VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
+      YearMasterSid : YearMasterSid
     };
 
     if (voucherOthersCandidate) {
@@ -1945,8 +1948,10 @@ private applyFallbackTax(
     const partyMasterSid = rawPartyControl != null && rawPartyControl !== ''
       ? Number(rawPartyControl)
       : (normalizedParty.PartyMasterSid != null ? Number(normalizedParty.PartyMasterSid) : null);
+  const headerCOAMasterSid = raw.COAMasterSid ? Number(raw.COAMasterSid) : null;
 
     const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
+      const detailCOAMasterSid = d.COAMasterSid ? Number(d.COAMasterSid) : headerCOAMasterSid;
       const detail = {
         VoucherDetailSid: d.VoucherDetailSid,
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
@@ -1970,7 +1975,8 @@ private applyFallbackTax(
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
         PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
-        HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
+        HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
+        COAMasterSid: detailCOAMasterSid,
       };
       return detail;
     });
@@ -2010,6 +2016,7 @@ private applyFallbackTax(
       Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
       status: (raw.status != null ? raw.status : 'A'),
       VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
+       
 
     };
 

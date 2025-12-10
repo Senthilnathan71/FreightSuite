@@ -374,7 +374,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     const { action, row } = event;
     switch (action) {
       case 'view':
-        this.viewVendorInvoice(row);
+        this.editVendorInvoice(row);
         break;
       case 'delete':
         this.deleteVendorInvoice(row);

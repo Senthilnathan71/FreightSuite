@@ -2169,10 +2169,22 @@ private autoSetHssacForPendingCosts(): void {
           this.spinner.hide();
           if (response.status) {
             this.appSettingService.showSuccess('Vendor Invoice updated successfully');
-            this.router.navigate(['/operation/vendor-invoice/list']);
+            const id = response.data?.VoucherHeaderSid?.VoucherHeaderSid || 
+                     response.data?.VoucherHeaderSid || 
+                     response.data?.voucherHeaderSid || 
+                     this.headerId;
+          
+          if (id) {
+            // Navigate to the entry page with the ID
+            this.router.navigate(['/operation/vendor-invoice/entry', id]);
           } else {
-            this.appSettingService.showError('Failed to update Vendor Invoice');
+            // Fallback to list if no ID found
+            this.router.navigate(['/operation/vendor-invoice/list']);
           }
+        } else {
+          this.appSettingService.showError('Failed to update Vendor Invoice');
+          this.router.navigate(['/operation/vendor-invoice/list']);
+        }
         },
         error: (error) => {
           this.spinner.hide();
@@ -2211,7 +2223,7 @@ private autoSetHssacForPendingCosts(): void {
   
   const patchedIds: number[] = [];
   const patchCostData: any[] = []; // Store cost data to update
-  
+  const YearMasterSid = Number(localStorage.getItem('current-year-id'));
   const vendor = this.vendorList.find(v => 
     v.CustomerMasterSid === formValue.CustomerMasterSid || 
     v.CustomerName === formValue.PartyName
@@ -2249,6 +2261,7 @@ private autoSetHssacForPendingCosts(): void {
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
     Status: formValue.Status,
     COAMasterSid: coaMasterSid, 
+    YearMasterSid : YearMasterSid,
     CreatedBy: this.currUserEmail || 'System',
     UpdatedBy: this.currUserEmail || 'System',
     isPatching: isPatching
@@ -2432,7 +2445,7 @@ private autoSetHssacForPendingCosts(): void {
       const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
       const currentCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
       const currentUserEmail = this.userData?.userEmail;
-
+      
 
 
       if (!currentCompany || !currentBranch || !currentFinancialYear || !currentCountry || !currentCurrency) {

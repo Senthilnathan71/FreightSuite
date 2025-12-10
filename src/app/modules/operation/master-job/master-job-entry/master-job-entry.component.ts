@@ -60,6 +60,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { toNumber } from 'src/app/common/helper';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -139,6 +140,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
   currentContainerModal: any;
+  isDeletingContainer: number | null = null;
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
@@ -862,8 +864,8 @@ arapFilter = {
   private grossNetWeightValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const containerGroup = control as FormGroup;
-    const grossWeight = containerGroup.get('GrossWeight')?.value;
-    const netWeight = containerGroup.get('NetWeight')?.value;
+    const grossWeight = toNumber(containerGroup.get('GrossWeight')?.value);
+    const netWeight =  toNumber(containerGroup.get('NetWeight')?.value);
     
     if (grossWeight !== null && netWeight !== null && grossWeight < netWeight) {
       return { grossLessThanNet: true };
@@ -2271,9 +2273,43 @@ handleCustomsChange(event: any) {
     });
   }
 
-  removeContainer(index: number): void {
-    this.masterJobContainers.removeAt(index);
+ removeContainer(index: number): void {
+  const containerControl = this.masterJobContainers.at(index);
+  const containerSid = containerControl.value.MasterJobContainerSid;
+  const containerNumber = containerControl.value.ContainerNumber;
+
+  if (confirm(`Are you sure you want to delete container ${containerNumber}?`)) {
+    if (containerSid && this.isEditMode) {
+      this.isDeletingContainer = index;
+      this.spinner.show();
+      
+      this.operationService.softDeleteMasterJobContainer(containerSid).subscribe({
+        next: (response: any) => {
+          this.spinner.hide();
+          this.isDeletingContainer = null;
+          
+          if (response.status || response.success) {
+            this.masterJobContainers.removeAt(index);
+            this.markAsDirty();
+            this.toastr.success(`Container ${containerNumber} deleted successfully`);
+          } else {
+            this.toastr.error(response.message || 'Failed to delete container');
+          }
+        },
+        error: (error) => {
+          this.spinner.hide();
+          this.isDeletingContainer = null;
+          console.error('Error deleting container:', error);
+          this.toastr.error('Failed to delete container');
+        }
+      });
+    } else {
+      this.masterJobContainers.removeAt(index);
+      this.markAsDirty();
+      this.toastr.info(`Container ${containerNumber || 'new container'} removed`);
+    }
   }
+}
 
   syncFormValueWithConnectionComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
