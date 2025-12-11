@@ -765,14 +765,34 @@ existsInList(list: any[], value: any) {
       ReceivedQty:[''],
       DamageQty:[''],
       DamageRemarks: [''],
-      ContainerNo : [''],
+      MasterJobContainerSid: [null], 
+      ContainerNo: ['', { disabled: true }], 
       MarksAndNumbers : [''],
       DeliveredQty: [null],
       DeliveryDate: [null]
     });
+      this.productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
+    this.onContainerSelectionChange(containerSid);
+  });
     this.setupImmediateCBMCalculation();
     this.setupImmediateVolumetricCalculation(this.productForm)
   }
+  onContainerSelectionChange(containerSid: number | null): void {
+  if (!containerSid) {
+    this.productForm.get('ContainerNo')?.setValue('');
+    return;
+  }
+  
+  const selectedContainer = this.masterJobContainers.find(
+    container => container.MasterJobContainerSid === containerSid
+  );
+  
+  if (selectedContainer) {
+    this.productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber);
+  } else {
+    this.productForm.get('ContainerNo')?.setValue('');
+  }
+}
 
   private setupImmediateCBMCalculation() {
   const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
@@ -972,12 +992,16 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ReceivedQty: [data?.ReceivedQty || ''],
       DamageQty: [data?.DamageQty || ''],
       DamageRemarks: [data?.DamageRemarks || ''],
-      ContainerNo : [data?.ContainerNo || ''],
+      MasterJobContainerSid: [data?.MasterJobContainerSid || null],
+      ContainerNo :[{value: data?.ContainerNo || '', disabled: false}],
       MarksAndNumbers : [data?.MarksAndNumbers || ''],
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
       DeliveredQty: [data?.DeliveredQty || null]
 
     });
+     productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
+    this.onFormArrayContainerChange(containerSid, productForm);
+  });
     this.setupProductFormImmediateCalculation(productForm);
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
     return productForm;
@@ -992,7 +1016,22 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     });
   });
 }
-
+onFormArrayContainerChange(containerSid: number | null, productForm: FormGroup): void {
+  if (!containerSid) {
+    productForm.get('ContainerNo')?.setValue('');
+    return;
+  }
+  
+  const selectedContainer = this.masterJobContainers.find(
+    container => container.MasterJobContainerSid === containerSid
+  );
+  
+  if (selectedContainer) {
+    productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber);
+  } else {
+    productForm.get('ContainerNo')?.setValue('');
+  }
+}
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
@@ -1452,6 +1491,7 @@ loadHeaderLookups() {
         DamageQty: data?.DamageQty,
         DamageRemarks: data?.DamageRemarks,
         ContainerNo : data?.ContainerNo,
+        MasterJobContainerSid: data?.MasterJobContainerSid,
         MarksAndNumbers : data?.MarksAndNumbers,
         DeliveryDate: data?.DeliveryDate,
         DeliveredQty: data?.DeliveredQty,
@@ -1735,6 +1775,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       DamageQty: product.DamageQty,
       ReceivedQty: product.ReceivedQty,
       DamageRemarks: product.DamageRemarks,
+      MasterJobContainerSid: product.MasterJobContainerSid || null,
       ContainerNo: product.ContainerNo,
       MarksAndNumbers: product.MarksAndNumbers,
       DeliveryDate: product.DeliveryDate,
