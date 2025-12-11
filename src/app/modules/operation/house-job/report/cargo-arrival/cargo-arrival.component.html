@@ -316,8 +316,8 @@
    <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
   <!-- Company Header -->
-<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-0">
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-4">
+<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-0">
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-3">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; flex-direction: column;">
             <!-- Print logo -->
@@ -346,9 +346,9 @@
 
   
 
-    <h5 style="text-align:center; font-weight:700; padding:15px 0; border-top: 1px solid black;font-size: 18px;">CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</h5>
+    <h5 style="text-align:center; font-weight:800; padding:15px 0; border-top: 1px solid black;font-size: 18px;">CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</h5>
 
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.5rem; padding-left:5%; padding-right:5%;" class="fs-4">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.5rem; padding-left:5%; padding-right:5%;" class="fs-3">
         <div style="flex:0 0 50%; max-width:50%;" >
             <div style="display:flex;"><span> {{housejobData?.CustomerName}}  <br> {{housejobData?.CustomerAddress}}  </span></div>
         </div>
@@ -356,64 +356,64 @@
         <div style="flex:0 0 50%; max-width:50%; margin-bottom:0.25rem;">
             <div style="display:flex;"><strong style="width:180px;">HBL</strong><span>: {{housejobData?.HBLNo}}</span></div>
             <div style="display:flex;"><strong style="width:180px;">HBL Date</strong><span>: {{housejobData?.HBLDate | formatDate}}</span></div>
-            <div style="display:flex;"><strong style="width:180px;">Booking No</strong><span>: {{housejobData?.BookingNo}}</span></div>
+            <div style="display:flex;"><strong style="width:180px;">Booking No.</strong><span>: {{housejobData?.BookingNo}}</span></div>
         </div>
     </div>
 
-    <div style="padding:10px 5%; border-top:1px solid black; border-left:none; border-right:none;" class="pb-5">
+    <div style="padding:10px 5%; border-top:1px solid black; border-left:none; border-right:none;" class="pb-4 fs-3">
         <div style="display:flex;">
             <div style="flex:0 0 50%; max-width:50%;"  >
-                <h6 style=" margin:0;font-weight:700"class="mb-2">Shipper</h6>
+                <h6 style=" margin:0;"class="mb-2"><strong>Shipper</strong></h6>
                 <div>{{housejobData?.ShipperName}} <br> {{housejobData?.ShipperAddress}}</div>
             </div>
             <div style="flex:0 0 50%; max-width:50%;" >
-                <h6 style=" margin:0;font-weight:700" class="mb-2">Consignee</h6>
+                <h6 style=" margin:0;" class="mb-2"><strong>Consignee</strong></h6>
                 <div>{{housejobData?.ConsigneeName}} <br> {{housejobData?.ConsigneeAddress}}</div>
             </div>
         </div>
     </div>
 
-    <div style="padding:10px 5%; border-top:1px solid black;  border-left:none; border-right:none;"  class="pb-5">
+    <div style="padding:10px 5%; border-top:1px solid black;  border-left:none; border-right:none;"  class="pb-4 fs-3">
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;" >
-                <div style="font-weight:700;"class="mb-2">Notify Party</div>
+                <div class="mb-2"><strong>Notify Party</strong></div>
                 <div>{{housejobData?.Others?.[0]?.NotifyParty}} <br> {{housejobData?.Others?.[0]?.NotifyPartyAddress}}</div>
             </div>
             <div style="flex:0 0 50%; max-width:50%;">
-                <div style="font-weight:700;" class="mb-2">Goods Available At</div>
+                <div  class="mb-2"><strong>Goods Available At</strong></div>
                 <div>{{housejobData?.Others?.[0]?.YardCFS}}</div>
             </div>
         </div>
     </div>
 
-    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;" class="pb-3 pt-2">
+    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;" class="pb-3 pt-2 fs-3">
         <div style="display:flex; flex-wrap:wrap;">
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Release Type</div>
+                    <div style=" width:180px;"><strong>Release Type</strong></div>
                     <div>: {{housejobData?.Others?.[0]?.ReleaseType}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Goods To be Cleared By</div>
+                    <div style=" width:180px;"><strong>Goods To be Cleared By</strong></div>
                     <div>: {{housejobData?.Others?.[0]?.CHAName}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Ocean Bill of Lading</div>
+                    <div style=" width:180px;"><strong>Ocean Bill of Lading</strong></div>
                     <div>: {{housejobData?.MBLNo}}</div>
                 </div>
             </div>
 
-            <div style="flex:0 0 50%; max-width:50%;">
+            <div style="flex:0 0 50%; max-width:50%;" class="fs-3">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Commodity</div>
+                    <div style="font-weight:700; width:180px;"><strong>Commodity</strong></div>
                     <div>: {{housejobData?.Products?.[0]?.ProductName}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Order No / Ref</div>
+                    <div style="font-weight:700; width:180px;"><strong>Order No. / Ref</strong></div>
                     <div>: {{housejobData?.Others?.[0]?.CustomerRefNo}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Final Destination</div>
+                    <div style="font-weight:700; width:180px;"><strong>Final Destination</strong></div>
                     <div>: {{housejobData?.FPD}}</div>
                 </div>
             </div>
@@ -421,44 +421,44 @@
     </div>
 
 
-    <h5>Routing Information</h5>
+    <h5 class="text-center"style="margin:0; padding:4px 0;">Routing Information</h5>
  
-    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;">
-        <div style="display:flex; flex-wrap:wrap;">
+    <div style="padding-left:5%; padding-right:5%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;" class="fs-3">
+        <div style="display:flex; flex-wrap:wrap;" class="mt-2">
             <div style="flex:0 0 50%; max-width:50%;">
-                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Mode</div>
+                <div style="display:flex; align-items:center; ">
+                    <div style=" width:180px;"><strong>Mode</strong></div>
                     <div>: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }}</div>
                 </div>
-                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Vessel</div>
+                <div style="display:flex; align-items:center; ">
+                    <div style=" width:180px;"><strong>Vessel</strong></div>
                     <div>: {{housejobData?.VesselName}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Voyage</div>
+                    <div style=" width:180px;"><strong>Voyage</strong></div>
                     <div>:{{housejobData?.VoyageNo}}</div>
                 </div>
                  <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Final Destination</div>
-                    <div>: {{ housejobData?.ETA | formatDate }}</div>
+                    <div style=" width:180px;"><strong>Final Destination</strong></div>
+                    <div>: {{housejobData.FPD}}</div>
                 </div>
             </div>
 
-            <div style="flex:0 0 50%; max-width:50%;">
+            <div style="flex:0 0 50%; max-width:50%;" class="fs-3 mt-1">
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Port of Loading</div>
+                    <div style=" width:180px;"><strong>Port of Loading</strong></div>
                     <div>: {{housejobData?.POL}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">Port of Discharge</div>
+                    <div style=" width:180px;"><strong>Port of Discharge</strong></div>
                     <div>: {{housejobData?.POD}}</div>
                 </div>
                 <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">ETD</div>
+                    <div style=" width:180px;"><strong>ETD</strong></div>
                     <div>: {{ housejobData?.ETD | formatDate }}</div>
                 </div>
                   <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
-                    <div style="font-weight:700; width:180px;">ETA</div>
+                    <div style=" width:180px;"><strong>ETA</strong></div>
                     <div>: {{ housejobData?.ETA | formatDate }}</div>
                 </div>
                    
@@ -471,23 +471,23 @@
 
     <!-- FCL Table -->
     @if(selectedFCLLCL === "FCL"){
-    <table style="width:100%; table-layout:fixed;  border-collapse:collapse; margin-bottom:0.25rem;" class="mt-4">
+    <table style="width:100%; table-layout:fixed; border: 1px solid black;   margin-bottom:0.25rem;" class="mt-4">
         <thead>
             <tr>
-                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Container</th>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Container Type</th>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Seal</th>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Package Type</th>
-                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;">Gross Weight</th>
-                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Volume</th>
+                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left: none; border-left:none"><strong>Container</strong></th>
+                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;"><strong>Container Type</strong></th>
+                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;"><strong>Seal</strong></th>
+                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;"><strong>Package Type</strong></th>
+                <th style="width:20%; text-align:center; font-weight:700; border:1px solid black;"><strong>Gross Weight</strong></th>
+                <th style="width:20%; text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none"><strong>Volume</strong></th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let container of masterJobContainers">
-                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black;">{{ container?.ContainerNumber }}</td>
-                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black;">{{ getContainerName(container.ContainerType) }}</td>
-                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black;">{{ container?.LineSeal }}</td>
-                <td style="width:20%; border:1px solid black;">{{ container?.NoOfPkg || 0 }}</td>
+                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black; border-left:none; text-align: center;">{{ container?.ContainerNumber }}</td>
+                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black; text-align: center;">{{ getContainerName(container.ContainerType) }}</td>
+                <td style="width:20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid black; text-align: center;">{{ container?.LineSeal }}</td>
+                <td style="width:20%; border:1px solid black;  text-align: right;">{{ container?.NoOfPkg || 0 }}</td>
                 <td style="width:20%; border:1px solid black; text-align:right;">{{ container?.GrossWeight || 0 | number:'1.3-3'}}</td>
                 <td style="width:20%; border:1px solid black; text-align:right;">{{ container?.Volume || 0 | number:'1.3-3'}}</td>
             </tr>
@@ -497,7 +497,7 @@
 
     <!-- LCL Table -->
     @if(selectedFCLLCL === "LCL"){
-    <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
+    <table style="width:100%; border: 1px solid black;  margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
                 <th style="width:15%; text-align:center; font-weight:700; border:1px solid black;border-left:none">No of Packages</th>
@@ -508,10 +508,10 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border:1px solid black;text-align: right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
+                <td style="border:1px solid black;text-align: right;border-left:none">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
                 <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number: '1.3-3' }}</td>
                 <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number: '1.3-3' }}</td>
-                <td style="border:1px solid black; text-align:right;">{{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3'}}</td>
+                <td style="border:1px solid black; text-align:right;border-right:none;">{{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3'}}</td>
             </tr>
         </tbody>
     </table>
@@ -519,16 +519,16 @@
 
     <!-- Charges Table -->
     @if(withOrWithoutCharge){
-    <table style="width:100%;  border-collapse:collapse; margin-bottom:0.25rem;" class="mt-2">
+    <table style="width:100%; border-collapse: collapse; border: 1px solid black; margin-bottom:0.25rem;" class="mt-2">
         <thead>
             <tr>
-                <th style="text-align:center; font-weight:700; border-top: 1px solid black; border-bottom: 1px solid black; border-left:none">Charge Description</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Curr</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Unit</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Ex.Rate</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Local Amt</th>
-                <th style="text-align:center; font-weight:700; border:1px solid black;">Per Unit</th>
-                <th style="text-align:center; font-weight:700;  border-top: 1px solid black; border-bottom: 1px solid black; border-right:none">Amt</th>
+                <th style="text-align:center;  border-top: 1px solid black; border-bottom: 1px solid black; border-left:none"><strong>Charge Description</strong></th>
+                <th style="text-align:center;  border:1px solid black;"><strong>Curr.</strong></th>
+                <th style="text-align:center;  border:1px solid black;"><strong>Unit</strong></th>
+                <th style="text-align:center;  border:1px solid black;"><strong>Ex.Rate</strong></th>
+                <th style="text-align:center;  border:1px solid black;"><strong>Local Amt</strong></th>
+                <th style="text-align:center;  border:1px solid black;"><strong>Per Unit</strong></th>
+                <th style="text-align:center;   border-top: 1px solid black; border-bottom: 1px solid black; border-right:none"><strong>Amt</strong></th>
             </tr>
         </thead>
         <tbody>
@@ -542,10 +542,10 @@
                 <td style="border:1px solid black; text-align:right;">{{rate.RevenueAmount | number: '1.2-2'}}</td>
             </tr>
             <tr style="font-weight:700;">
-                <td colspan="4" style="border:1px solid black; text-align:right;">Total</td>
+                <td colspan="4" style="border:1px solid black; text-align:right;border-left:none">Total</td>
                 <td style="border:1px solid black; text-align:right;">{{ getTotalLocalAmount() | number: '1.2-2'}}</td>
                 <td style="border:1px solid black; text-align:right;">{{getTotalPerUnit() | number: '1.2-2'}}</td>
-                <td style="border:1px solid black; text-align:right;">{{ getTotalAmount() | number: '1.2-2' }}</td>
+                <td style="border:1px solid black; text-align:right;border-right:none">{{ getTotalAmount() | number: '1.2-2' }}</td>
             </tr>
         </tbody>
     </table>

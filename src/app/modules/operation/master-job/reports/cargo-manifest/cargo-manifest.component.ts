@@ -40,6 +40,9 @@ export class CargoManifestComponent {
     private pdfService: PdfDownloadService,
   ) { }
 
+   showPrintLogo: boolean = false;
+    showPdfLogo: boolean = true;
+
   ngOnInit() {
     this.userData = this.appSettingsService.getDecryptedUserProfile();
 
@@ -204,42 +207,50 @@ export class CargoManifestComponent {
   }
 
 
-  async downloadPDF() {
-    this.spinner.show();
-    try {
-      const quotationNumber = this.masterJobData?.MasterJobNumber;
 
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Cargo_manifest_${quotationNumber}`,
+        `Cargo_manifest_${this.masterJobData?.MasterJobNumber || 'Report'}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
     } finally {
       this.spinner.hide();
     }
-  }
+  }, 50);
+}
   
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
 }
 
 

@@ -37,7 +37,8 @@ export class ReleaseLetterComponent {
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
   ) { }
-
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
   ngOnInit() {
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(
@@ -115,23 +116,29 @@ get totalVolume(): number {
     return packageType ? packageType.UOMName : 'Unknown';
   }
 
-    
-async downloadPDF() {
-  this.spinner.show();
-  try {
-   const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Release_Letter${this.housejobData?.ShipmentNo || 'Report'}`,
+        () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
+}
 
     
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Release_Letter`,
-      () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
-}
+
+
+
 
     async generatePDFBlob(): Promise<Blob | null> {
           const printContent = document.getElementById('printContent');
@@ -176,26 +183,34 @@ async downloadPDF() {
 
 // Print
 
-  printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
- 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+      
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
+
+
 
   modalClose() {
     this.activeModal.close();

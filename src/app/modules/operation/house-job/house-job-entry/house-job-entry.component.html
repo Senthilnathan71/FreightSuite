@@ -100,170 +100,149 @@
     </div>
   </div>
 
-  <!-- Smart Quick Form -->
-  <div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
+ <!-- Smart Quick Form -->
+<div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
 
-    <div class="quick-form-grid pb-1" [class.expanded]="isQuickFormExpanded">
+  <div class="row g-3 pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
 
-      <!-- <div class="smart-field-group">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="HBLNo">
-          <label for="text-input" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}} <span class="text-danger">*</span></label>
-        </div>
-      </div> -->
-      <div class="smart-field-group">
-        <div class="custom-form-group custom-form-group-select"
-          [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
-          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-            class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
-            appendTo="body">
-          </ng-select>
-          <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
-          @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
-          <div class="error-message">
-            @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
-            <span>Required</span>
-            }
-          </div>
+    <!-- Department -->
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+      <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
+        <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+          class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
+          appendTo="body">
+        </ng-select>
+        <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+        @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
+        <div class="error-message">
+          @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
+          <span>Required</span>
           }
         </div>
+        }
       </div>
-      <div class="smart-field-group">
-  <div class="custom-form-group">
-    <input 
-      type="text" 
-      id="text-input" 
-      placeholder="" 
-      class="form-control custom-input-field sm"
-      formControlName="HBLNo"
-      [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
-      [ngClass]="{
-        'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
-                      (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)
-      }"
-     >
-    <label 
-      for="text-input" [ngClass]="{
+    </div>
+
+    <!-- HBL No -->
+    <div class="col-md-3 ">
+      <div class="custom-form-group">
+        <input 
+          type="text" 
+          id="hbl-input" 
+          placeholder="" 
+          class="form-control custom-input-field sm"
+          formControlName="HBLNo"
+          [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
+          [ngClass]="{
+            'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
+                          (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)
+          }">
+        <label 
+          for="hbl-input" 
+          [ngClass]="{
             'input-label': true,
             'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">
-      {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
-    </label>
+          }">
+          {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+        </label>
+      </div>
+    </div>
+
+    <!-- HBL Date -->
+    <div class="col-md-3">
+      <div class="custom-form-group custom-form-group-select-date"
+        [class.filled]="!!houseJobForm.get('HBLDate')?.value">
+        <div class="input-group">
+          <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+            (click)="d1.toggle()" formControlName="HBLDate" [minDate]="minDate"
+            (keydown.arrowDown)="d1.open()" container="body" />
+          <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+            <i-feather name="calendar" class="feather-sm"></i-feather>
+          </button>
+        </div>
+        <label for="" class="input-label">HBL Date <span class="text-danger">*</span></label>
+      </div>
+    </div>
+
+    <!-- Booking No -->
+    <div class="col-md-3">
+      <div class="custom-form-group">
+        <input type="text" id="booking-input" placeholder="" class="form-control custom-input-field sm"
+          formControlName="BookingNo">
+        <label for="booking-input" 
+          [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['BookingNo']?.getRawValue()
+          }">Booking No <span class="text-danger">*</span></label>
+      </div>
+    </div>
+
+    <!-- Shipment No -->
+    <div class="col-md-3">
+      <div class="custom-form-group">
+        <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
+          formControlName="ShipmentNo">
+        <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger">*</span></label>
+      </div>
+    </div>
+
+    <!-- Job Type -->
+    <div class="col-md-3">
+      <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!houseJobForm.get('JobType')?.value">
+        <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+          formControlName="JobType" appendTo="body">
+        </ng-select>
+        <label for="" class="input-label">Job Type</label>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-3">
+      <div class="custom-form-group custom-form-group-select" 
+        [class.filled]="!!houseJobForm.get('status')?.value">
+        @if(isEditMode){
+        <ng-select name="status" class="ng-select" formControlName="status" id="status-input" appendTo="body">
+          <ng-option value="Active">Active</ng-option>
+          <ng-option value="Suspended">Suspended</ng-option>
+        </ng-select>
+        } @else {
+        <input type="text" name="status" class="form-control custom-input-field sm" value="Active" 
+          id="status-input" disabled>
+        }
+        <label for="status-input" 
+          [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['status']?.value
+          }">Status</label>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Expandable Fields -->
+  <div class="row g-3 mt-2" *ngIf="isQuickFormExpanded">
+    <div class="col-md-3">
+      <label class="smart-label">Shipment No.</label>
+      <div class="smart-input-wrapper">
+        <input type="text" class="smart-input" placeholder="Enter shipment number">
+        <div class="input-status status-pending">DRAFT</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <label class="smart-label">Status</label>
+      <div class="smart-select-wrapper">
+        <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="smart-select"
+          placeholder="Select status">
+        </ng-select>
+        <div class="select-icon"><i class="fas fa-info-circle"></i></div>
+      </div>
+    </div>
+  </div>
+
 </div>
-
-<div class="smart-field-group">
-        <div class=" custom-form-group custom-form-group-select-date"
-          [class.filled]="!!houseJobForm.get('HBLDate')?.value">
-          <div class="input-group ">
-            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-              (click)="d1.toggle()" formControlName="HBLDate" [minDate]="minDate"
-              (keydown.arrowDown)="d1.open()" container="body" />
-            <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
-              <i-feather name="calendar" class="feather-sm"></i-feather></button>
-          </div>
-          <label for="" class="input-label">HBL Date <span class="text-danger">*</span>
-          </label>
-
-        </div>
-      </div>
-      <div class="smart-field-group">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="BookingNo">
-          <label for="text-input" [ngClass]="{
-          'input-label': true,
-          'bg-transparent': !b['BookingNo']?.getRawValue()
-           }">Booking No <span class="text-danger">*</span></label>
-        </div>
-      </div>
-      <!-- <div class="smart-field-group">
-        <div class=" custom-form-group custom-form-group-select">
-          <div class="input-group ">
-            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-              (click)="d1.toggle()" formControlName="BookingDateTime" [minDate]="minDate"
-              (keydown.arrowDown)="d1.open()" container="body" />
-            <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
-              <i-feather name="calendar" class="feather-sm"></i-feather></button>
-          </div>
-          <label for="" class="input-label">Booking Date <span class="text-danger">*</span>
-          </label>
-
-        </div>
-      </div> -->
-      
-
-      <div class="smart-field-group">
-        <aside>
-          <div class="custom-form-group">
-            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-              formControlName="ShipmentNo">
-            <label for="text-input" class="input-label">Shipment No <span class="text-danger">*</span></label>
-
-          </div>
-        </aside>
-      </div>
-      <div class="smart-field-group">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!houseJobForm.get('JobType')?.value">
-              <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
-                formControlName="JobType" appendTo="body">
-              </ng-select>
-              <label for="" class="input-label">Job Type <span class="text-danger"></span></label>
-            </div>
-          </div>
-      <div class="smart-field-group">
-        <aside>
-          <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('status')?.value">
-            @if(isEditMode){
-            <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body">
-              <ng-option value="Active">Active</ng-option>
-              <ng-option value="Suspended">Suspended</ng-option>
-            </ng-select>
-            } @else {
-            <input type="text" name="status" class="form-control custom-input-field sm" value="Active" id="text-input"
-              disabled>
-            }
-            <label for="text-input" [ngClass]="{
-              'input-label': true,
-              'bg-transparent': !b['status']?.value
-            }">Status <span class="text-danger"></span></label>
-          </div>
-        </aside>
-      </div>
-    </div>
-
-    <div class="quick-form-grid d-none" [class.expanded]="isQuickFormExpanded">
-
-
-
-
-      <!-- Expandable Fields -->
-      <div class="expandable-fields" *ngIf="isQuickFormExpanded">
-        <div class="smart-field-group">
-          <label class="smart-label">Shipment No.</label>
-          <div class="smart-input-wrapper">
-            <input type="text" class="smart-input" placeholder="Enter shipment number">
-            <div class="input-status status-pending">DRAFT</div>
-          </div>
-        </div>
-
-        <div class="smart-field-group">
-          <label class="smart-label">Status</label>
-          <div class="smart-select-wrapper">
-            <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="smart-select"
-              placeholder="Select status">
-            </ng-select>
-            <div class="select-icon"><i class="fas fa-info-circle"></i></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Modern Navigation Pills -->
   <div class="nav-pills-container">
@@ -2602,9 +2581,9 @@
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select"
-          [class.filled]="!!productForm.get('ContainerNo')?.value">
+          [class.filled]="!!productForm.get('MasterJobContainerSid')?.value">
           <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber"
-            bindValue="ContainerNumber" formControlName="ContainerNo">
+            bindValue="MasterJobContainerSid" formControlName="MasterJobContainerSid">
           </ng-select>
           <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
 
