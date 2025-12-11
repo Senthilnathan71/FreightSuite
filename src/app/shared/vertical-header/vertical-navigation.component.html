@@ -198,14 +198,25 @@
   
   <li class="nav-item">
   <div class="d-flex gap-3">
-    <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
-      <input type="text"  #searchMenuInput class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu" name="search"
-        style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (blur)="onInputBlur($event)" (keydown)="onKeyDown($event)"
-        ngbDropdownToggle />
+    <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown" [autoClose]="outside">
+      <input 
+        type="text" 
+        #searchMenuInput 
+        class="form-control ps-3 pe-5 border border-info" 
+        placeholder="Search Menu" 
+        name="search"
+        style="border-radius: 20px; min-width: 200px;" 
+        (click)="$event.stopPropagation(); menuSearchDropdown.open ; getMenusFromSideBar()" 
+        (input)="searchMenus($event)" 
+        (keydown)="onMenuSearchKeyDown($event)"
+        (blur)="onMenuSearchBlur($event)" 
+        name="menuSearch"
+        ngbDropdownToggle 
+      />
       <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
-      <div class="dropdown-menu w-100" style="max-height: 230px; overflow-y: auto;" ngbDropdownMenu>
-        <ng-container *ngIf="menuSearchResults.length > 0; else noMenuResults">
+      <div class="dropdown-menu w-100" style="max-height: 350px; min-width:300px; overflow-y: auto;" ngbDropdownMenu>
+        <!-- <ng-container *ngIf="menuSearchResults.length > 0; else noMenuResults">
           <button
             *ngFor="let result of menuSearchResults; let i = index"
             class="dropdown-item custom-dropdown-item"
@@ -218,7 +229,42 @@
         </ng-container>
         <ng-template #noMenuResults>
           <div class="dropdown-item text-black">No results found</div>
-        </ng-template>
+        </ng-template> -->
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoadingMenu" class="dropdown-item text-center py-3">
+            <span class="spinner-border spinner-border-sm text-info me-2" role="status"></span>
+            <span class="text-muted">Loading...</span>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="menuSearchError && !isLoadingMenu" class="dropdown-item text-danger py-2">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ menuSearchError }}
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!isLoadingMenu && !menuSearchError">
+          <div *ngIf="menuSearchResults.length > 0; else noMenuResults">
+              <a
+                *ngFor="let result of menuSearchResults; let i = index"
+                class="dropdown-item custom-dropdown-item d-flex align-items-center py-2"
+                [class.active]="i === menuActiveIndex"
+                [class.bg-light]="i === menuActiveIndex"
+                href="javascript:void(0)"
+                (mousedown)="navigateToMenu(result)">
+                <i [ngClass]="[result.icon]">
+                  <span class="text-truncate mx-2" style="font-size: 0.9rem;">{{ result.title }}</span>
+                </i>
+              </a>
+          </div>
+          <ng-template #noMenuResults>
+              <div class="dropdown-item text-muted py-3 text-center">
+                <span>
+                  <i class="fas fa-search me-2"></i>No Menu found
+                </span>
+              </div>
+            </ng-template>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/service/app.service';
 import {SettingsService} from 'src/app/modules/settings/settings.service'
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 
 @Component({
@@ -23,12 +24,15 @@ export class VerticalSidebarComponent implements OnInit {
   showSubMenu = '';
   public sidebarnavItems: RouteInfo[] = [];
   path = '';
+  currentCompany : any;
+  userData : any;
 
   isMobile: boolean = false;
 
   constructor(
     private menuServise: VerticalSidebarService, 
     private settingsService:SettingsService,
+    private appSettingService : AppSettingsService,
     private router: Router, private appService:AppService) {
   }
 
@@ -36,7 +40,8 @@ export class VerticalSidebarComponent implements OnInit {
   ngOnInit() {
 
     this.isMobile = this.appService.getDevice()
-
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
     this.getModules();
 
     // Subscribe to menu state
@@ -57,10 +62,55 @@ export class VerticalSidebarComponent implements OnInit {
   }
 
   getModules() {
-    this.settingsService.getAllModules().subscribe((resp) => {
-      console.log(resp.data, 'respOfMenu');
-      this.menuServise.updateMenuItems(resp.data || []);
-    });
+    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+    const isAdmin = this.userData?.userTypeId === 1;
+
+    let userCompanyId: number | undefined = undefined;
+    let userCompanyEntry : any;
+
+    // Non-admin users must have a companyId and mapped userCompanyEntry
+    if (!isAdmin) {
+      if (!currentCompanyId) {
+        console.error("❌ Current CompanyMasterSid not found for non-admin user");
+        return;
+      }
+
+      userCompanyEntry = (this.userData?.userCompanyMaster || [])
+        .find(c => c.CompanyMasterSid === currentCompanyId);
+      console.log("Fetch Modules", {
+        userData :this.userData,
+        currentCompanyId,
+      });
+
+      if(!userCompanyEntry){
+        console.error("❌ UserCompanyMasterSid not found for current company (non-admin)");
+        return;
+      }
+
+      userCompanyId = userCompanyEntry?.UserCompanyMasterSid;
+
+      if (!userCompanyId) {
+        console.error("❌ UserCompanyMasterSid not found for current company (non-admin)");
+        return;
+      }
+    }
+
+    // Debug log
+    console.group("🔍 Module Fetch Debug");
+    console.table([{
+      isAdmin,
+      currentCompanyId: currentCompanyId || "N/A (Admin)",
+      userCompanyId: userCompanyId || "N/A (Admin)",
+      roleInvolved: userCompanyEntry
+    }]);
+    console.groupEnd();
+
+    // Admin calls endpoint without params
+    this.settingsService.getAllModules(isAdmin ? undefined : userCompanyId)
+      .subscribe((resp) => {
+        console.log("📌 Modules Response:", resp.data);
+        this.menuServise.updateMenuItems(resp.data || []);
+      });
   }
   
 

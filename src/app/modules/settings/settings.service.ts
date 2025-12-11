@@ -114,13 +114,17 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
-  getAllModules() {
-      return this.http.get<{ data: RouteInfo[] }>('module/navigation-list').pipe(
-        map(resp => {
-          return resp;
-        })
-      );
-    }
+   getAllModules(UserCompanyMasterSid?: number) {
+     const params: any = {};
+     if (UserCompanyMasterSid) {
+       params.UserCompanyMasterSid = UserCompanyMasterSid;
+     }
+     return this.http.get<{ data: RouteInfo[] }>('module/navigation-list', { params }).pipe(
+       map(resp => {
+         return resp;
+       })
+     );
+   }
 
 
   

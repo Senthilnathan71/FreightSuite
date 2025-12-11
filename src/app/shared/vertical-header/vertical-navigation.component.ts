@@ -11,9 +11,11 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { FormsModule } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, take } from 'rxjs';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { DocumentSearchResult } from './document-search.interface';
+import { VerticalSidebarService } from '../vertical-sidebar/vertical-sidebar.service';
+import { RouteInfo } from '../vertical-sidebar/vertical-sidebar.metadata';
 
 declare var $: any;
 
@@ -62,14 +64,16 @@ branchList: any[] = [];
   selectedYearId: number | null = null;
   private unsubscribe$ = new Subject<void>();
 
+
   // Menu Search Related Variable Declaration
-  activeIndex = -1;
-  allMenus :any[] = [];
-  menuSearchResults: any[] = [];
-  menusLoaded = false;
-  @ViewChildren('menuItem') menuItems!: QueryList<ElementRef>;
+  menuSearchResults : any[] = [];
+  allMenus : any[] = [];
+  isLoadingMenu = false ;
+  menuSearchError = '';
+  private menuSearchSubject = new Subject<string>();
   @ViewChild('searchMenuInput') searchMenuInput!: ElementRef<HTMLInputElement>;
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
+  menuActiveIndex = -1;
 
   // Document Search Related Variables
   docSearchResults: DocumentSearchResult[] = [];
@@ -88,7 +92,8 @@ branchList: any[] = [];
     private modalService: NgbModal,
     private cdr: ChangeDetectorRef,
     private companySettingsManager: CompanySettingsManagerService,
-    private masterService : MasterService
+    private masterService : MasterService,
+    private verticalSidebarService : VerticalSidebarService
   ) {
     // translate.setDefaultLang('en');
   }
@@ -97,7 +102,7 @@ ngOnInit(): void {
   console.log('Decrypted userData:', this.userData);
   let storedCompany = null;
   let storedBranch = null;
-
+  this.getMenusFromSideBar();
 
   try {
     const encryptedCompany = localStorage.getItem('selected-company');
@@ -410,127 +415,230 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   // ===== MENU SEARCH RELATED FUNCTIONS ===== \\
 
   // Triggered on input click
-  onSearchClick() {
-    this.activeIndex = -1;
+  // onSearchClick() {
+  //   this.activeIndex = -1;
 
-    if (this.menusLoaded) {
-      this.menuSearchDropdown.open();
-    } else {
-      this.fetchAllMenus(() => {
-        this.menusLoaded = true;
-        this.menuSearchResults = [...this.allMenus];
-        this.menuSearchDropdown.open();
-      });
-    }
-  }
+  //   if (this.menusLoaded) {
+  //     this.menuSearchDropdown.open();
+  //   } else {
+  //     this.fetchAllMenus(() => {
+  //       this.menusLoaded = true;
+  //       this.menuSearchResults = [...this.allMenus];
+  //       this.menuSearchDropdown.open();
+  //     });
+  //   }
+  // }
 
   // Fetch all menus and call callback after loading
-  fetchAllMenus(callback: () => void) {
-    this.verticalNavService.getAllMenus().subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.allMenus = resp.data;
-          callback();
-        } else {
-          this.appSettingsService.showError('Error loading menus');
-        }
-      },
-      error: () => {
-        this.appSettingsService.showError('Failed to fetch menus');
-      }
-    });
-  }
+  // fetchAllMenus(callback: () => void) {
+  //   this.verticalNavService.getAllMenus().subscribe({
+  //     next: (resp: any) => {
+  //       if (resp.status) {
+  //         this.allMenus = resp.data;
+  //         callback();
+  //       } else {
+  //         this.appSettingsService.showError('Error loading menus');
+  //       }
+  //     },
+  //     error: () => {
+  //       this.appSettingsService.showError('Failed to fetch menus');
+  //     }
+  //   });
+  // }
 
 
   //  on every keystroke filtering done here
-  searchMenu(event) {
-    const searchText = event.target.value;
-    if(!searchText || this.allMenus.length === 0){
-      this.menuSearchResults = [...this.allMenus];
-      this.activeIndex = -1;
-      return;
-    }
-    this.menuSearchResults = this.allMenus.filter((menu:any) => menu.MenuName.toLowerCase().includes(searchText.toLowerCase()));
-    this.activeIndex = -1;
-  }
+  // searchMenu(event) {
+  //   const searchText = event.target.value;
+  //   if(!searchText || this.allMenus.length === 0){
+  //     this.menuSearchResults = [...this.allMenus];
+  //     this.activeIndex = -1;
+  //     return;
+  //   }
+  //   this.menuSearchResults = this.allMenus.filter((menu:any) => menu.MenuName.toLowerCase().includes(searchText.toLowerCase()));
+  //   this.activeIndex = -1;
+  // }
 
   // For arrow key navigation 
-  onKeyDown(event: KeyboardEvent) {
-    const max = this.menuSearchResults.length - 1;
-    if (event.key === 'ArrowDown') {
-      this.activeIndex = this.activeIndex < max ? this.activeIndex + 1 : 0;
-      this.scrollToActive();
-      event.preventDefault();
-    } else if (event.key === 'ArrowUp') {
-      this.activeIndex = this.activeIndex > 0 ? this.activeIndex - 1 : max;
-      this.scrollToActive();
-      event.preventDefault();
-    } else if (event.key === 'Enter' && this.activeIndex !== -1) {
-      const item = this.menuSearchResults[this.activeIndex];
-      this.addToRecent(item);
-      this.router.navigate([item.path]);
-      this.clearSearch();
-    }
-  }
+  // onKeyDown(event: KeyboardEvent) {
+  //   const max = this.menuSearchResults.length - 1;
+  //   if (event.key === 'ArrowDown') {
+  //     this.activeIndex = this.activeIndex < max ? this.activeIndex + 1 : 0;
+  //     this.scrollToActive();
+  //     event.preventDefault();
+  //   } else if (event.key === 'ArrowUp') {
+  //     this.activeIndex = this.activeIndex > 0 ? this.activeIndex - 1 : max;
+  //     this.scrollToActive();
+  //     event.preventDefault();
+  //   } else if (event.key === 'Enter' && this.activeIndex !== -1) {
+  //     const item = this.menuSearchResults[this.activeIndex];
+  //     this.addToRecent(item);
+  //     this.router.navigate([item.path]);
+  //     this.clearSearch();
+  //   }
+  // }
 
   //  On click event
-  onClickEvent(event,menu){
-    event.preventDefault();
-    event.stopPropagation();
-    this.addToRecent(menu);
-    this.router.navigate([menu.path]);
-    this.clearSearch();
-  }
+  // onClickEvent(event,menu){
+  //   event.preventDefault();
+  //   event.stopPropagation();
+  //   this.addToRecent(menu);
+  //   this.router.navigate([menu.path]);
+  //   this.clearSearch();
+  // }
   
 
-  resetMenuSearch(event: Event) {
-    if (event instanceof KeyboardEvent) {
-      return;
-    }
-    const element = (event.target) as HTMLInputElement;
-    element.value = '';
-    this.menuSearchResults = [...this.allMenus];
-    this.activeIndex = -1;
-    this.menuSearchDropdown.close();
-  }
+  // resetMenuSearch(event: Event) {
+  //   if (event instanceof KeyboardEvent) {
+  //     return;
+  //   }
+  //   const element = (event.target) as HTMLInputElement;
+  //   element.value = '';
+  //   this.menuSearchResults = [...this.allMenus];
+  //   this.activeIndex = -1;
+  //   this.menuSearchDropdown.close();
+  // }
 
-  clearSearch() {
-    if(this.searchMenuInput){
-      this.searchMenuInput.nativeElement.value = '';
-      this.searchMenuInput.nativeElement.blur();
-    }
-    this.menuSearchResults = [...this.allMenus];
-    this.activeIndex = -1;
-    this.menuSearchDropdown.close();
-  }
+  // clearSearch() {
+  //   if(this.searchMenuInput){
+  //     this.searchMenuInput.nativeElement.value = '';
+  //     this.searchMenuInput.nativeElement.blur();
+  //   }
+  //   this.menuSearchResults = [...this.allMenus];
+  //   this.activeIndex = -1;
+  //   this.menuSearchDropdown.close();
+  // }
 
-  onInputBlur(event: Event) {
-    setTimeout(() => {
-        this.clearSearch();
-    }, 150);
-  }
+  // onInputBlur(event: Event) {
+  //   setTimeout(() => {
+  //       this.clearSearch();
+  //   }, 150);
+  // }
 
 
   
   // auto scroll dropdown if arrow reaches end of menu list
-  private scrollToActive() {
-    const items = this.menuItems?.toArray();
-    if (items && this.activeIndex >= 0 && items[this.activeIndex]) {
-      items[this.activeIndex].nativeElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
+  // private scrollToActive() {
+  //   const items = this.menuItems?.toArray();
+  //   if (items && this.activeIndex >= 0 && items[this.activeIndex]) {
+  //     items[this.activeIndex].nativeElement.scrollIntoView({
+  //       behavior: 'smooth',
+  //       block: 'nearest',
+  //     });
+  //   }
+  // }
+
+  //  Add selected Menu to Recent List
+
+
+  getMenusFromSideBar() {
+    this.isLoadingMenu = true;
+
+    this.verticalSidebarService.items$
+      .subscribe(items => {
+        if (!items || !Array.isArray(items)) {
+          this.allMenus = [];
+          this.isLoadingMenu = false;
+          return;
+        }
+
+        const leafNodes: RouteInfo[] = [];
+
+        const collectLeaves = (nodes: RouteInfo[] | undefined) => {
+          if (!nodes || nodes.length === 0) return;
+
+          for (const node of nodes) {
+            const children = node.submenu || [];
+            const isLeaf = children.length === 0;
+
+            // Collect only leaves that have extralink === false
+            if (isLeaf) {
+                leafNodes.push(node);
+            } else {
+              // not a leaf -> traverse children
+              collectLeaves(children);
+            }
+          }
+        };
+
+        collectLeaves(items);
+
+        this.allMenus = leafNodes;
+        this.menuSearchResults = [...this.allMenus];
+        console.log('menu fetch results (leaf, extralink=false):', this.allMenus);
+        this.isLoadingMenu = false;
+      }, err => {
+        console.error('Error reading sidebar items', err);
+        this.menuSearchResults = [];
+        this.isLoadingMenu = false;
       });
+  }
+
+  searchMenus(event : Event) : void {
+    const input = event.target as HTMLInputElement;
+    const searchTerm = input.value.trim();
+    console.log("searching",{
+      searchTerm ,
+      menus : this.allMenus
+    })
+    this.menuSearchSubject.next(searchTerm);
+    this.menuSearchResults = this.allMenus.filter((menu:any) => menu.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  }
+
+  onMenuSearchKeyDown(event: KeyboardEvent) {
+    const max = this.menuSearchResults.length - 1;
+    if (event.key === 'ArrowDown') {
+      this.menuActiveIndex = this.menuActiveIndex < max ? this.menuActiveIndex + 1 : 0;
+      event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      this.menuActiveIndex = this.menuActiveIndex > 0 ? this.menuActiveIndex - 1 : max;
+      event.preventDefault();
+    } else if (event.key === 'Enter' && this.menuActiveIndex !== -1) {
+      const item = this.menuSearchResults[this.menuActiveIndex];
+      this.addToRecent(item);
+      this.router.navigate([item.path]);
+      this.clearMenuSearch();
     }
   }
 
-  //  Add selected Menu to Recent List
-  addToRecent(menu){
+  navigateToMenu(item){
+    this.addToRecent(item);
+    this.clearMenuSearch();
+    this.router.navigate([item.path]);
+  }
+
+  clearMenuSearch() {
+    if(this.searchMenuInput){
+      this.searchMenuInput.nativeElement.value = '';
+      this.searchMenuInput.nativeElement.blur();
+    }
+    this.menuSearchResults = [];
+    this.menuActiveIndex = -1;
+    this.isLoadingMenu = false;
+    this.menuSearchError = '';
+    if(this.menuSearchDropdown){
+      this.menuSearchDropdown.close();
+    }
+  }
+
+  onMenuSearchBlur(event: Event): void {
+    setTimeout(() => {
+      if (this.menuSearchDropdown) {
+        this.searchMenuInput.nativeElement.value = '';
+        this.menuSearchDropdown.close();
+      }
+    }, 200);
+  }
+
+    addToRecent(menu){
     const newlyVisited = {
-      MenuMasterSid : menu.MenuMasterSid,
+      MenuMasterSid : menu.MenuMasterSid || menu.id,
       path: menu.path,
-      screenName: menu.MenuName,
+      screenName: menu.MenuName || menu.title,
       createdOn: new Date()
     };
+
+    console.log("Newly visited",newlyVisited)
 
     let recentlyVisited = JSON.parse(localStorage.getItem('recentlyVisited')) || [];
     const existingIndex = recentlyVisited.findIndex(item => item.path === newlyVisited.path);
@@ -546,13 +654,9 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     }
 
     localStorage.setItem('recentlyVisited', JSON.stringify(recentlyVisited));
-    localStorage.setItem('currentMenuId',menu.MenuMasterSid);
+    localStorage.setItem('currentMenuId',newlyVisited.MenuMasterSid);
   }
-
-  handleRecentClick(item){
-    localStorage.setItem('currentMenuId',item.MenuMasterSid);
-    this.router.navigate([`${item.path}`])
-  }
+ 
 
   // ------------ END OF MENU SEARCH RELATED FUNCTION ----------------- \\
 
@@ -669,6 +773,14 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   // ------------ END OF DOCUMENT SEARCH RELATED FUNCTION ----------------- \\
 
+  // ------------- RECENT ACTIVITY RELATED FUNCTIONS ------------------ \\
+
+    handleRecentClick(item){
+    localStorage.setItem('currentMenuId',item.MenuMasterSid);
+    this.router.navigate([`${item.path}`])
+  }
+
+  // ------------ END OF RECENT ACTIVITY RELATED FUNCTION ----------------- \\
 
   // This is for Notifications
   notifications: notifications[] = [

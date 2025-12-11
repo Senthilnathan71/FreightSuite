@@ -73,11 +73,11 @@ export class MenuPermissionService {
 
     const companyId = this.getCompanyId();
     const menuId = this.getMenuId();
-    const roleId = this.getRoleId();
+    const roleIds = this.getRoleIds();
 
-    console.log('[MPS] IDs:', { companyId, menuId, roleId });
+    console.log('[MPS] IDs:', { companyId, menuId, roleIds });
 
-    if (!companyId || !menuId || !roleId) {
+    if (!companyId || !menuId || !roleIds || roleIds.length === 0) {
       console.warn('[MPS] Missing IDs → clearing permissions');
       this.currentKey = null;
       this.permissionSubject.next(null);
@@ -85,7 +85,7 @@ export class MenuPermissionService {
       return of(null);
     }
 
-    const key = this.buildKey(companyId, menuId, roleId);
+    const key = this.buildKey(companyId, menuId, roleIds);
     this.currentKey = key;
 
     console.log('%c[MPS] Built key: ' + key, 'color: #03A9F4');
@@ -103,26 +103,23 @@ export class MenuPermissionService {
       return this.inFlight.get(key)!;
     }
 
-
     const payload = {
       CompanyMasterSid: companyId,
       MenuMasterSid: menuId,
-      RoleMasterSid: roleId
+      Roles: roleIds
     };
     console.log('%c[MPS] 🔥 API request triggered', 'color: #E91E63', payload);
 
     const request$ = this.http.post<PermissionApiResponse>(this.API_URL, payload).pipe(
-
-      tap(() => console.log('%c[MPS] 🌐 API responded', 'color: cyan')),
-
+      // ⭐ Transform ONLY on success
       map(res => {
+        console.log('%c[MPS] 🌐 API responded', 'color: cyan');
         console.log('%c[MPS] Raw API Response:', 'color: #9C27B0', res);
         return this.transform(res);
       }),
 
       tap(perms => {
         console.log('%c[MPS] Transformed permissions:', 'color: #4CAF50', perms);
-
         this.cache.set(key, perms);
         console.log('%c[MPS] ✔ Cached permissions for key: ' + key, 'color: #8BC34A');
 
@@ -133,15 +130,22 @@ export class MenuPermissionService {
         }
       }),
 
+      // ⭐ Catch AFTER transform (guaranteed PermissionSet)
       catchError(err => {
         console.error('%c[MPS] ❌ API ERROR:', 'color: red', err);
+        console.error('Status:', err.status, 'Response:', err.error);
+
         const fallback: PermissionSet = {
           mainPermissions: { insert: false, update: false, delete: false, view: false },
           otherPermissions: {}
         };
+
         this.cache.set(key, fallback);
-        this.permissionSubject.next(fallback);
-        this.loadedSubject.next(true);
+        if (this.currentKey === key) {
+          this.permissionSubject.next(fallback);
+          this.loadedSubject.next(true);
+        }
+
         return of(fallback);
       }),
 
@@ -156,6 +160,7 @@ export class MenuPermissionService {
     this.inFlight.set(key, request$);
     return request$;
   }
+
 
 
   /**
@@ -215,7 +220,7 @@ export class MenuPermissionService {
   // ---------------------------
 
   private transform(res: PermissionApiResponse): PermissionSet {
-    const raw = res.data.MenuPermissions;
+    const raw = res.data?.MenuPermissions;
 
     const mainPermissions: MainPermissions = {
       insert: this.toBool(raw[this.MAIN_KEYS.INSERT]),
@@ -250,8 +255,8 @@ export class MenuPermissionService {
     return v === 'istrue' || v === 'true' || v === 'y' || v === '1';
   }
 
-  private buildKey(companyId: number, menuId: number, roleId: number): string {
-    return `${companyId}_${menuId}_${roleId}`;
+  private buildKey(companyId: number, menuId: number, roleIds: number[]): string {
+    return `${companyId}_${menuId}_${roleIds.sort((a, b) => a - b).join(',')}`;
   }
 
   private getCompanyId(): number | null {
@@ -264,13 +269,56 @@ export class MenuPermissionService {
     return id ? Number(id) : null;
   }
 
-  getRoleId(): number | null {
+  getRoleIds(): number[] | null {
     try {
-      const data = this.appSettingsService.getDecryptedUserProfile();
-      if (!data) return null;
-      return Number(data?.userRoleMaster?.[0]?.RoleMasterSid) ?? null;
-    } catch {
+      console.log('🔍 getRoleId(): Starting role resolution process');
+
+      const userData = this.appSettingsService.getDecryptedUserProfile();
+      console.log('📋 userData:', userData);
+
+      const currentCompany = this.appSettingsService.getCurrentCompanyInfo();
+      console.log('🏢 currentCompany:', currentCompany);
+
+      const currentCompanyId = currentCompany?.CompanyMasterSid;
+      console.log('🆔 currentCompanyId:', currentCompanyId);
+
+      if (!currentCompanyId) {
+        console.warn('⚠️  No currentCompanyId found - cannot resolve role');
+        return null;
+      }
+
+      console.log('🔎 Searching userCompanyMaster for CompanyMasterSid:', currentCompanyId);
+      const userCompanyEntries = userData?.userCompanyMaster || [];
+      console.log('📂 Available userCompanyMaster entries:', userCompanyEntries.length);
+
+      const userCompanyEntry = userCompanyEntries.find(c => c.CompanyMasterSid === currentCompanyId);
+      console.log('✅ Found matching userCompanyEntry:', userCompanyEntry);
+
+      if (!userCompanyEntry) {
+        console.warn('❌ No userCompanyEntry found for current company');
+        return null;
+      }
+
+      const userRoles = (userCompanyEntry.userRoleMaster || []).map(r => {
+        const roleId = r.RoleMasterSid;
+        console.log('🎭 Processing role:', r, '-> RoleMasterSid:', roleId);
+        return roleId;
+      }).filter(Boolean);
+
+      console.log('🔢 Extracted userRoles:', userRoles);
+
+      if (!userRoles || userRoles.length === 0) {
+        console.warn('⚠️  No valid roles found for current company');
+        return null;
+      }
+
+      console.log('🎯 Resolved roleIds:', userRoles);
+      return userRoles || [];
+
+    } catch (error) {
+      console.error('💥 getRoleId() failed with error:', error);
       return null;
     }
   }
+
 }
