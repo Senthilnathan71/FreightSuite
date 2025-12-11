@@ -98,6 +98,17 @@
                     </span>
                 </button>
             </div>
+            <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          
+          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+         
+        </div>
+      </div>
 
 
 
@@ -841,9 +852,9 @@
                                     <th>POD</th>
                                     <th>PP/CC</th>
                                     <th>Job Type</th>
-                                    <th>Gross Wt</th>
+                                    <!-- <th>Gross Wt</th>
                                     <th>CBM</th>
-                                    <th>Total Pkg</th>
+                                    <th>Total Pkg</th> -->
                                     </tr>
                                     </thead>
                                     
@@ -892,10 +903,11 @@
                                         <span>N/A</span>
                                         }
                                     </td>
-                                       <td>{{getHouseJobGrossWeight(shipment)}}</td>
-                    <td>{{getHouseJobVolume(shipment)}}</td>
-                    <td>{{getHouseJobTotalPackages(shipment)}}</td>
-                                    
+                                    <td>{{shipment.JobType}}</td>
+                                       <!-- <td>{{shipment?.Cargo?.[0]?.GrossWeight}}</td>
+                    <td>{{masterJobData?.housejob?.Cargo?.[0]?.Volume}}</td>
+                    <td>{{shipment.NoOfPackage}}</td>
+                                     -->
                                 </tr>
                                 }
                             </tbody>
@@ -2720,10 +2732,19 @@
                     </aside>
 
                     <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" formControlName="ChargeableWeight" class="custom-input-field sm"
+                             DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+                                step="0.001" min="0" placeholder="">
+                            <label class="input-label">Chargeable Weight</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
   <div class="custom-form-group">
     <input type="text" formControlName="GrossWeight" class="custom-input-field sm"
            DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
-           step="0.001" min="0" placeholder="">
+           step="0.001" min="0" placeholder="" >
     <label class="input-label">Gross Weight</label>
     
     <!-- Add error message for gross weight -->
@@ -2760,14 +2781,7 @@
     </div>
   </div>
 </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" formControlName="ChargeableWeight" class="custom-input-field sm"
-                             DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
-                                step="0.001" min="0" placeholder="">
-                            <label class="input-label">Chargeable Weight</label>
-                        </div>
-                    </aside>
+                    
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">

@@ -61,6 +61,9 @@ import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { toNumber } from 'src/app/common/helper';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -170,6 +173,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   forwarderList: any[] = [];
   cfsList: any[] = [];
   yardList: any[] = [];
+  TandCList: any[] = [];
   decimalAfterPrecision = 3;
   chargeList: any[] = [];
   filteredDestinationAgents: any[] = [];
@@ -230,6 +234,7 @@ arapFilter = {
   voucherType: 'all',
   status: 'all' // 'all', 'unpaid', 'partial', 'paid'
 };
+currentMenuId: any;
 
   // Dirty tracking for unsaved changes detection
   isDirty = false;
@@ -328,6 +333,8 @@ arapFilter = {
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private fb: FormBuilder,
+    private masterService: MasterService,
+    private appSettingService: AppSettingsService,
     private operationService: OperationService,
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
@@ -337,7 +344,8 @@ arapFilter = {
     private commonService: CommonService,
     private reportService: ReportService,
     private datePipe: DatePipe,
-    private exportExcelService: ExcelExportService
+    private exportExcelService: ExcelExportService,
+    public mps: MenuPermissionService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -351,6 +359,7 @@ arapFilter = {
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
     const storedMenuId = localStorage.getItem('currentMenuId');
+    this.mps.init().subscribe();
     console.log('📋 localStorage currentMenuId:', storedMenuId);
 
     this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
@@ -855,10 +864,11 @@ arapFilter = {
     CommodityDescription: ['', Validators.maxLength(500)],
     PkgType: [null],
     NoOfPkg: [0, [Validators.min(0)]],
-    GrossWeight: [0, [Validators.min(0)]],
-    NetWeight: [0, [Validators.min(0)]],
+      GrossWeight: [{ value: 0, disabled: true }],
+    NetWeight: [{ value: 0, disabled: true }],
+    Volume: [{ value: 0, disabled: true }],
     ChargeableWeight: [0, [Validators.min(0)]],
-    Volume: [0, [Validators.min(0)]],
+    
     IsSoc: [false]
   }, { validators: this.grossNetWeightValidator() });
 }
@@ -3803,6 +3813,27 @@ getHouseJobTotalPackages(shipment: any): string {
       </div>
     `;
   }
+  openTandC(){
+    this.currentMenuId=Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+      if(resp.status) {
+        this.TandCList = resp.data;
+        const modelRef = this.modalService.open(TermsAndConditionsComponent,{
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+        modelRef.componentInstance.terms = this.TandCList;
+        modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+      } else {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+      }
+  },(error)=>{
+    this.appSettingService.showError('Error loading Terms and Conditions',error);
+  });
+}
 
   openConnectionModal(content: any) {
     this.modalService.open(content, {

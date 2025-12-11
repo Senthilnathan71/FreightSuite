@@ -21,6 +21,7 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { MasterJobUploadModalComponent } from '../components/master-job-upload-modal/master-job-upload-modal.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-master-job-list',
   standalone: true,
@@ -56,27 +57,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   currentCompany: any;
   currentBranch: any;
   headerActions: HeaderAction[] = [];
+  tableConfig: TableConfig;
   modalDropdownItems: DropdownMenuItem[] = [];
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-       
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: '',
-    emptyMessage: 'No master job found',
-    dragAndDrop: true
-  };
 
   tableLoading = false;
 
@@ -100,6 +82,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -116,6 +99,10 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     // this.searchMasterJob();
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+this.initializeTableConfig();
+    this.initializeHeaderActions();
+    })
     // this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
@@ -177,6 +164,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
+         disabled: !this.mps.can('insert')
         
       },
       {
@@ -324,8 +312,9 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      // {
+   this.tableConfig = {
+    columns: [
+       // {
       //   key: 'BookingNo',
       //   label: 'Booking No',
       //   sortable: true,
@@ -429,7 +418,27 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         dataType: 'string',
         cellClass: 'status-column'
       }
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        state: !this.mps.can('view')
+       
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No master job found',
+    dragAndDrop: true
+  };
+
   }
 
   // Table event handlers
