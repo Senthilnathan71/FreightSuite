@@ -1239,7 +1239,7 @@ onGSTTypeChange() {
 
       // Auto-set LedgerMasterSid and COAMasterSid
       const ledgerMasterSid = selectedCharge.SubledgerMasterSid || null;
-      const coaMasterSid = selectedCharge.DrCOAMappedId || null;
+      const coaMasterSid = selectedCharge.CrCOAMasterSid || null;
 
       this.details.at(index).patchValue({
         ChargeDescription: description,
@@ -2703,7 +2703,7 @@ private async getTaxLedgerForCharge(
     const currentCountry = Number(this.currentCompany?.CountryMasterSid);
     
     // Determine Input/Output - INVOICE = OUTPUT (selling goods/services)
-    const inputOrOutput: 'Input' | 'Output' = 'Output'; 
+    const inputOrOutput: 'Input' | 'Output' = 'Input'; 
     
     const companyState = this.getCompanyState();
     const customerCountry = this.getCustomerCountryFromCharge(charge);
