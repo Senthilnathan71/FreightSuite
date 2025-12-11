@@ -1,0 +1,127 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Customer Shipment Summary as on {{ params?.FromMBLDt | formatDate }}
+    </h4>
+
+
+    <!-- Header Fields -->
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
+                    <p class="ms-1">: {{ params?.FromMBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
+                    <p class="ms-1">: {{ params?.ToMBLDt | formatDate }}</p>
+                </div>
+            </div>
+
+            <div>
+              <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 100px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                    
+                        <th class="bg-transparent text-light text-center">Master No</th>
+                        <th class="bg-transparent text-light">Master Date</th>
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light">MBL No</th>
+                        <th class="bg-transparent text-light">Vessel / Flight Name</th>
+                        <th class="bg-transparent text-light">Voyage / Flight No</th>
+                        <th class="bg-transparent text-light">ETD</th>
+                        <th class="bg-transparent text-light">ETA</th>
+                        <th class="bg-transparent text-light">Origin Port</th>
+                        <th class="bg-transparent text-light">Origin Port Name</th>
+                        <th class="bg-transparent text-light">Load Port</th>
+                        <th class="bg-transparent text-light">Load Port Name</th>
+                        <th class="bg-transparent text-light">Discharge Port</th>
+                        <th class="bg-transparent text-light">Discharge Port Name</th>
+                        <th class="bg-transparent text-light">Destination Port</th>
+                        <th class="bg-transparent text-light">Destination Port Name</th>
+                        <th class="bg-transparent text-light">Type</th>
+                        <th class="bg-transparent text-light">Sending Agent</th>
+                        <th class="bg-transparent text-light">Receiving Agent</th>
+                        <th class="bg-transparent text-light">Carrier</th>
+                        <th class="bg-transparent text-light">TEU</th>
+                        <th class="bg-transparent text-light">Transhipment Shipments</th>
+                        <th class="bg-transparent text-light">Local Shipments</th>
+                        <th class="bg-transparent text-light">Total Shipments</th>
+                        <th class="bg-transparent text-light">Weight</th>
+                        <th class="bg-transparent text-light">Volume</th>
+                        <th class="bg-transparent text-light">Chargeable</th>
+                        <th class="bg-transparent text-light">No of Container</th>
+                        <th class="bg-transparent text-light">20'</th>
+                        <th class="bg-transparent text-light">40'</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC</th>
+                        <th class="bg-transparent text-light">Shipper</th>
+                        <th class="bg-transparent text-light">Container No List</th>
+                        <th class="bg-transparent text-light">Consol Status</th>
+                        <th class="bg-transparent text-light">T/S Shipment Volume</th>
+                        <th class="bg-transparent text-light">Local Shipment Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+                 
+                        <td class="text-center">{{ item.masterNo || '' }}</td>
+                        <td>{{ item.masterDate | date:'yyyy-MM-dd' }}</td>
+                        <td>{{ item.department || '' }}</td>
+                        <td>{{ item.mblNo || '' }}</td>
+                        <td>{{ item.vesselName || '' }}</td>
+                        <td>{{ item.voyageNo || '' }}</td>
+                        <td>{{ item.etd | date:'yyyy-MM-dd' || '' }}</td>
+                        <td>{{ item.eta | date:'yyyy-MM-dd' || '' }}</td>
+                        <td>{{ item.originPort || '' }}</td>
+                        <td>{{ item.originPortName || '' }}</td>
+                        <td>{{ item.loadPort || '' }}</td>
+                        <td>{{ item.loadPortName || '' }}</td>
+                        <td>{{ item.dischargePort || '' }}</td>
+                        <td>{{ item.dischargePortName || '' }}</td>
+                        <td>{{ item.destinationPort || '' }}</td>
+                        <td>{{ item.destinationPortName || '' }}</td>
+                        <td>{{ item.type || '' }}</td>
+                        <td>{{ item.sendingAgent || '' }}</td>
+                        <td>{{ item.receivingAgent || '' }}</td>
+                        <td>{{ item.carrier || '' }}</td>
+                        <td>{{ item.totalNoOfTEU || '' }}</td>
+                        <td>{{ item.transhipmentShipment || '' }}</td>
+                        <td>{{ item.localShipment || '' }}</td>
+                        <td>{{ item.totalShipment || '' }}</td>
+                        <td>{{ item.weight || '' }}</td>
+                        <td>{{ item.volume || '' }}</td>
+                        <td>{{ item.chargeable || '' }}</td>
+                        <td>{{ item.noOfContainers || '' }}</td>
+                        <td>{{ item.numberOfTwentyFt || '' }}</td>
+                        <td>{{ item.numberOfFourtyFt || '' }}</td>
+                        <td>{{ item.numberofFurtyFive || '' }}</td>
+                        <td>{{ item.shipper || '' }}</td>
+                        <td>{{ item.containerNoList || '' }}</td>
+                        <td>{{ item.consolStatus || '' }}</td>
+                        <td>{{ item.transhipmentVol | number:'1.2-2' }}</td>
+                        <td>{{ item.localShipmentVol | number:'1.2-2' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>

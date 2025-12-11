@@ -1804,53 +1804,61 @@ export class ReceiptEntryComponent implements OnInit {
 
 
 
-  toggleCashOrBank(event: any) {
-    const element = event.target as HTMLInputElement;
-    const ctrl = this.receiptForm.get('CashOrBank');
-    if (event instanceof KeyboardEvent && event.key === 'Enter') {
-      element.checked = !element.checked;
-      console.log("KEYBOARD EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
-    }
-    else if (event instanceof PointerEvent) {
-      console.log("POINTER EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
-    }
-    ctrl.setValue(element.checked);
-    this.r['BankCOA']?.setValue(null);
-
-    const mode = this.receiptForm.get('InstrumentMode');
-    const number = this.receiptForm.get('InstrumentNumber');
-    const date = this.receiptForm.get('InstrumentDate');
-
-    // Reset values
-    this.receiptForm.patchValue({
-      InstrumentMode: null,
-      InstrumentNumber: '',
-      InstrumentDate: null,
-      ClearanceDate: null
+toggleCashOrBank(event: any) {
+  const element = event.target as HTMLInputElement;
+  const ctrl = this.receiptForm.get('CashOrBank');
+  if (event instanceof KeyboardEvent && event.key === 'Enter') {
+    element.checked = !element.checked;
+    console.log("KEYBOARD EVENT TRIGGERED", {
+      isCheckBoxTicked: element.checked,
+      prevValue: ctrl.value,
+      newValue: !ctrl.value
     });
-
-    if (element.checked) {
-      mode?.clearValidators();
-      number?.clearValidators();
-      date?.clearValidators();
-    } else {
-      mode?.setValidators([Validators.required]);
-      number?.setValidators([Validators.required]);
-      date?.setValidators([Validators.required]);
-    }
-
-    mode?.updateValueAndValidity();
-    number?.updateValueAndValidity();
-    date?.updateValueAndValidity();
+  } else if (event instanceof PointerEvent) {
+    console.log("POINTER EVENT TRIGGERED", {
+      isCheckBoxTicked: element.checked,
+      prevValue: ctrl.value,
+      newValue: !ctrl.value
+    });
   }
+
+  // Set the checkbox value in the form control
+  ctrl.setValue(element.checked);
+
+  // Reset the BankCOA field whenever the checkbox is toggled
+  this.r['BankCOA']?.setValue(null);
+
+  // Reset the other form values for the instrument section
+  this.receiptForm.patchValue({
+    InstrumentMode: null,
+    InstrumentNumber: '',
+    InstrumentDate: null,
+    ClearanceDate: null
+  });
+
+  const mode = this.receiptForm.get('InstrumentMode');
+  const number = this.receiptForm.get('InstrumentNumber');
+  const date = this.receiptForm.get('InstrumentDate');
+
+  // Conditionally clear/set validators based on the checkbox
+  if (element.checked) {
+    // If "Cash" is checked, clear validators for instrument fields
+    mode?.clearValidators();
+    number?.clearValidators();
+    date?.clearValidators();
+  } else {
+    // If "Bank" is unchecked, set validators for instrument fields
+    mode?.setValidators([Validators.required]);
+    number?.setValidators([Validators.required]);
+    date?.setValidators([Validators.required]);
+  }
+
+  // Update the validity of the form controls
+  mode?.updateValueAndValidity();
+  number?.updateValueAndValidity();
+  date?.updateValueAndValidity();
+}
+
 
  
 

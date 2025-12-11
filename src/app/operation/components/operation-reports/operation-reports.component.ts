@@ -13,6 +13,7 @@ import { ReportParameterFormComponent } from '../../../shared/components/general
 import { ReportViewerComponent } from '../../../shared/components/general-reports/report-viewer/report-viewer.component';
 import { ReportExportActionsComponent } from '../../../shared/components/general-reports/report-export-actions/report-export-actions.component';
 import { ReportEmailDialogComponent, EmailReportData } from '../../../shared/components/general-reports/report-email-dialog/report-email-dialog.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-operation-reports',
@@ -40,15 +41,21 @@ export class OperationReportsComponent implements OnInit {
   exportingReport = false;
 
   // Company ID (should come from auth service or session)
+  currentCompany : any;
   companyId = 1; // TODO: Get from auth service
 
   constructor(
     private reportService: ReportService,
     private exportService: ReportExportService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private appSettingService: AppSettingsService
   ) {}
 
   ngOnInit(): void {
+     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    if(this.currentCompany){
+      this.companyId = this.currentCompany?.CompanyMasterSid;
+    }
     this.loadAvailableReports();
   }
 
@@ -90,38 +97,38 @@ export class OperationReportsComponent implements OnInit {
   /**
    * Handle parameter form submission
    */
-  onGenerateReport(parameters: any): void {
-    if (!this.selectedReport) {
-      return;
-    }
-
-    // Store parameters for export/email operations
-    this.reportParameters = {
-      ...parameters,
-      companyId: this.companyId
-    };
-
-    this.generatingReport = true;
-    this.reportService.generateReport('operation', this.selectedReport.ReportName, this.reportParameters)
-      .pipe(finalize(() => this.generatingReport = false))
-      .subscribe({
-        next: (response: ReportGenerateResponse) => {
-          if (response.success && response.data) {
-            this.reportData = response.data;
-            if (response.data.length === 0) {
-              alert('No data found for the selected parameters.');
-            }
-          } else {
-            alert('Failed to generate report. Please try again.');
-          }
-        },
-        error: (error) => {
-          console.error('Error generating report:', error);
-          const errorMessage = error.error?.message || 'Failed to generate report. Please try again.';
-          alert(errorMessage);
-        }
-      });
+/**
+ * Handle parameter form submission
+ */
+onGenerateReport(parameters: any): void {
+  if (!this.selectedReport) {
+    return;
   }
+
+  // Store parameters for export/email operations
+  this.reportParameters = {
+    ...parameters,
+    companyId: this.companyId
+  };
+
+  console.log('Opening report with payload:', this.reportParameters);
+
+  if (this.selectedReport.ReportName) {
+    this.reportService.openReportModal(
+      this.selectedReport.ReportName,
+      undefined,
+      this.reportParameters,
+    );
+  } else {
+    this.appSettingService.showError('Invalid Report Name.');
+  }
+}
+
+
+// Utility function to handle alerts
+private handleAlert(message: string): void {
+  alert(message);
+}
 
   /**
    * Handle export action
