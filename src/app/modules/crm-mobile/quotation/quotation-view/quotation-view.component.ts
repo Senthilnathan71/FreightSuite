@@ -68,6 +68,26 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   enquiryPaginationConfig: PaginationConfig;
   quotationPaginationConfig: PaginationConfig;
 
+  quotationHeaderActions : any[] = [];
+
+  initializeQuotationHeaderActions() {
+    this.quotationHeaderActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        disabled: !this.mps.can('insert')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.quotationManager.totalRecords === 0
+      },
+      { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' }
+    ]
+  }
+
   constructor(
     public mps : MenuPermissionService,
     private leadService: LeadService,
@@ -85,17 +105,19 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     this.currentCompany = storedCompany ? this.appSettings.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettings.decrypt(storedBranch) : null;
-
+    // Initialize Managers
+    this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
+    this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
+    this.initializeQuotationHeaderActions();
+    
     this.isMobile = this.appService.getDevice();
     this.userData = this.appSettings.getDecryptedUserProfile();
     this.initializeTableConfigs();
     this.mps.init().subscribe(()=>{
       this.initializeTableConfigs();
+      this.initializeQuotationHeaderActions();
     });
 
-    // Initialize Managers
-    this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
-    this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
 
     this.loadAllFields();
 
@@ -260,23 +282,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     ];
   }
 
-  get quotationHeaderActions(): HeaderAction[] {
-    return [
-      { 
-        label: 'Create', 
-        icon: 'fas fa-plus', 
-        action: 'create',
-        disabled: !this.mps.can('insert')
-      },
-      {
-        label: 'Report',
-        icon: 'fas fa-file-alt',
-        action: 'report',
-        disabled: this.quotationManager.totalRecords === 0
-      },
-      { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' }
-    ];
-  }
+
 
 
   // --- Enquiry Methods ---
