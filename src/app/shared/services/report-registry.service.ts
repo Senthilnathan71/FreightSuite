@@ -439,6 +439,41 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn(' Balance Sheet Report component not yet created:', error);
     }
+
+// ======================================================
+    // operation report
+
+    // shipment-summary
+
+    try {
+      const { ShipmentSummaryReportComponent } = await import(
+        '../components/reports/shipment-summary-report/shipment-summary-report.component'
+      );
+
+      this.registerReport({
+        id: 'shipment-summary',
+        title: 'Shipment Summary Report',
+        component: ShipmentSummaryReportComponent,
+        filenameTemplate: 'Shipment_Summary_Report{GroupName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Shipment_Summary_Report - Ledger: {GroupName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Shipment_Summary_Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Balance Sheet Report component not yet created:', error);
+    }
   }
 
   /**

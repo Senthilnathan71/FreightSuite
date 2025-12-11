@@ -96,13 +96,13 @@
                         <tr class="bg-secondary text-white fw-bold" *ngIf="data?.grandTotal">
                             <td colspan="3" class="text-end">Grand Total</td>
                             <td></td>
-                            <td>{{data.grandTotal.TotalOpeningDebit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.TotalOpeningCredit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.TotalCurrentDebit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.TotalCurrentCredit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.TotalClosingDebit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.TotalClosingCredit | number:'1.2-2'}}</td>
-                            <td>{{data.grandTotal.Difference | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalOpeningDebit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalOpeningCredit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalCurrentDebit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalCurrentCredit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalClosingDebit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.TotalClosingCredit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{data.grandTotal.Difference | number:'1.2-2'}}</td>
                         </tr>
 
                     </tbody>

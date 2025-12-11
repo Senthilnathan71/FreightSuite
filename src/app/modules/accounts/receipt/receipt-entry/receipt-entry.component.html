@@ -204,30 +204,28 @@
                         </div>
                     </aside>
 
-                    <!-- Cash -->
-
-                      <aside class="col-md-3" *ngIf="receiptForm.get('CashOrBank')?.value">
+                        <!-- Cash -->
+                        <aside class="col-md-3" *ngIf="receiptForm.get('CashOrBank')?.value">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
-                                <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
-                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
-                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid"
-                                >
-                                </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label"  style="font-size: 14px;">Cash <span class="text-danger">*</span></label>
+                            <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
+                            [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                            [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
+                            </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Cash <span class="text-danger">*</span></label>
                         </div>
-                    </aside>
-
-                    <!-- Bank -->
-
-                        <aside class="col-md-3">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
-                                <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
-                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
-                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
-                                </dofi-searchable-dropdown>
-                                <label for="text-input" class="input-label" style="font-size: 14px;">Bank<span class="text-danger">*</span></label>
-                            </div>
                         </aside>
+
+                        <!-- Bank -->
+                        <aside class="col-md-3" *ngIf="!receiptForm.get('CashOrBank')?.value">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
+                            <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
+                            [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                            [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
+                            </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label" style="font-size: 14px;">Bank <span class="text-danger">*</span></label>
+                        </div>
+                        </aside>
+
 
                     <!-- Currency -->
 
