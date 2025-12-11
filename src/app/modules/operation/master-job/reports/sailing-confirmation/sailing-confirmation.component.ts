@@ -24,12 +24,17 @@ export class SailingConfirmationComponent {
   currentBranchCityId: number;
   currentDate = new Date();
   branchDetails: any;
+  @Input() housejobData: any;
   @Input() masterJobData: any;
   @Input() containerTypeList: any[] = [];
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] = [];
   @Input() agentList: any[] = [];
   @Input() yardList: any[] = [];
+
+    showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
    constructor(
      private appSettingsService: AppSettingsService,
      private activeModal: NgbActiveModal,
@@ -48,8 +53,10 @@ export class SailingConfirmationComponent {
     this.currentBranch = this.appSettingsService.decrypt(
       localStorage.getItem('selected-branch')
     );
+    console.log('houseJobData',this.housejobData);
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     console.log(this.branchDetails, "BRANCH DETAILS");
+
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -91,40 +98,52 @@ export class SailingConfirmationComponent {
     this.activeModal.close();
   }
 
-    async downloadPDF() {
-    this.spinner.show();
-    try {
-      const quotationNumber = this.masterJobData?.MasterJobNumber;
+  
 
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Sailing_Confirmation`,
+        `Sailing_Confirmation${this.masterJobData?.MasterJobNumber || 'Report'}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
     } finally {
       this.spinner.hide();
     }
-  }
+  }, 50);
+}
 
-      printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+   
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
+
 }
 }
