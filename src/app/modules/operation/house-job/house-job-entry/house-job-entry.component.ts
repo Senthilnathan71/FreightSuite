@@ -157,6 +157,21 @@ hssacList: any[] = [];
     public ArApcomponent = ArApComponent;
   chargeWiseSummary : any[] = [];
   masterJobData: any;
+  allTabs : {name : string, icon : string}[] = [
+    { name: 'Shipment', icon: 'fas fa-ship' },
+    { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Connection', icon: 'fas fa-link' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'BOE', icon: 'fas fa-file-invoice' },
+    { name: 'Vehicle', icon: 'fas fa-truck' },
+    { name: 'Customs', icon: 'fas fa-passport' },
+    { name: 'AR/AP', icon: 'fas fa-file-alt' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+    { name: 'Edoc', icon: 'fas fa-file-pdf' },
+  ];
+  filteredTabs : {name : string, icon : string}[] = [...this.allTabs];
   selectTab(tab: string) {
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
@@ -388,29 +403,37 @@ isVoyageFreeText: boolean = false;
     { id: 4, name: 'Drat' },
   ];
 
- get filteredTabs() {
-  const allTabs = [
-    { name: 'Shipment', icon: 'fas fa-ship' },
-    { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
-    { name: 'Rate', icon: 'fas fa-rupee-sign' },
-    { name: 'BOE', icon: 'fas fa-file-invoice' },
-    { name: 'Vehicle', icon: 'fas fa-truck' },
-    { name: 'Customs', icon: 'fas fa-passport' },
-    { name: 'AR/AP', icon: 'fas fa-file-alt' },
-    { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
-    { name: 'Edoc', icon: 'fas fa-file-pdf' },
-  ];
+//  get filteredTabs() {
+//   const allTabs = [
+//     { name: 'Shipment', icon: 'fas fa-ship' },
+//     { name: 'Cargo', icon: 'fas fa-boxes' },
+//     { name: 'Connection', icon: 'fas fa-link' },
+//     { name: 'Others', icon: 'fas fa-ellipsis-h' },
+//     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+//     { name: 'BOE', icon: 'fas fa-file-invoice' },
+//     { name: 'Vehicle', icon: 'fas fa-truck' },
+//     { name: 'Customs', icon: 'fas fa-passport' },
+//     { name: 'AR/AP', icon: 'fas fa-file-alt' },
+//     { name: 'Follow Up', icon: 'fas fa-tasks' },
+//     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+//     { name: 'Edoc', icon: 'fas fa-file-pdf' },
+//   ];
  
-  // Filter out Vehicle tab when department type is AIR
-  if (this.selectedDepartmentType === 'AIR') {
-    return allTabs.filter(tab => tab.name !== 'Vehicle');
+//   // Filter out Vehicle tab when department type is AIR
+//   if (this.selectedDepartmentType === 'AIR') {
+//     return allTabs.filter(tab => tab.name !== 'Vehicle');
+//   }
+ 
+//   return allTabs;
+// }
+
+  filterTabs(){
+    if (this.selectedDepartmentType === 'AIR') {
+      this.filteredTabs = this.allTabs.filter(tab => tab.name !== 'Vehicle');
+    } else {
+      this.filteredTabs = [...this.allTabs];
+    }
   }
- 
-  return allTabs;
-}
  
 
   // Mail content
@@ -1793,6 +1816,7 @@ private getAgentNameById(agentId: number): string {
   if (!department) {
     this.selectedDepartment = null;
     this.selectedDepartmentType = '';
+    this.filterTabs();
     this.selectedFCLLCL = 'LCL';
     this.filteredPorts = [];
     this.filteredPOL = [];
@@ -1815,6 +1839,7 @@ private getAgentNameById(agentId: number): string {
   // Set department properties
   this.selectedDepartment = department;
   this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
+  this.filterTabs();
   this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
     ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
     : "AIR";
