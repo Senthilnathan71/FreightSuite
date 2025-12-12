@@ -155,7 +155,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
     //     user=>{
     //         if(user){
     //             this.userData = user;
-    //              this.checkPermissions();
+    //           
     //         }
     //     }
     // );

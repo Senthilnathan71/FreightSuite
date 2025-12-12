@@ -145,7 +145,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+    //    
     //     }
     //   }
     // )

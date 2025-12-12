@@ -98,7 +98,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
         //         this.userData = res;
-        //         this.checkPermissions();
+      
         //     }
         // )
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

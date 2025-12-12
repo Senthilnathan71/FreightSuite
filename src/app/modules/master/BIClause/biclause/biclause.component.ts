@@ -146,7 +146,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     //      this.appSettingService.getUser().subscribe(user => {
     //   if(user) {
     //     this.userData = user;
-    //     this.checkPermissions();
+    //   
     //   }
     // });
     this.initForm();

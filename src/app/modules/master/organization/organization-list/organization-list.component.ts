@@ -93,7 +93,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+   
     //     }
     //   }
     // );

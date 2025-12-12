@@ -232,7 +232,7 @@ private initializeTableConfig() {
     //    this.appSettingService.getUser().subscribe(user => {
     //   if (user) {
     //     this.userData = user;
-    //     this.checkPermissions();
+    //   
 
     //   }
     // });
