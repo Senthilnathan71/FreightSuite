@@ -161,7 +161,7 @@
             <i-feather name="calendar" class="feather-sm"></i-feather>
           </button>
         </div>
-        <label for="" class="input-label">HBL Date <span class="text-danger">*</span></label>
+        <label for="" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
       </div>
     </div>
 
@@ -828,71 +828,75 @@
                     </div>
                   </aside>
               <!-- Vessel Name -->
-<aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select inputChnages"
-    [class.filled]="!!houseJobForm.get('VesselName')?.value">
+ <aside class="col-md-6">
+                      <div class="custom-form-group custom-form-group-select inputChnages"
+                        [class.filled]="!!houseJobForm.get('VesselName')?.value">
+                        @if(selectedDepartmentType === "AIR"){
+                          <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                            <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="VesselName" placeholder="" appendTo="body" style="width: 85%">
+              </ng-select>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                          </div>
+                          <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
+      <label for="text-input" class="input-label">Flight Name <span class="text-danger"></span></label>
+                        }@else {
+                        <!-- Dropdown Mode -->
+                        <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                          <dofi-searchable-dropdown
+                            [items]="headerVesselList"
+                            formControlName="VesselName"
+                            placeholder=""
+                            [displayFields]="vesselVoyageConfig.displayFields"
+                            [displayLabels]="vesselVoyageConfig.displayLabels"
+                            [labelFields]="vesselVoyageConfig.labelFields"
+                            bindValue="VesselName"
+                            (itemSelected)="onVesselChange($event)"
+                            style="width: 85%">
+                          </dofi-searchable-dropdown>
 
-    <!-- Dropdown Mode -->
-    <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
-      <dofi-searchable-dropdown
-        [items]="headerVesselList"
-        formControlName="VesselName"
-        placeholder=""
-        [displayFields]="vesselVoyageConfig.displayFields"
-        [displayLabels]="vesselVoyageConfig.displayLabels"
-        [labelFields]="vesselVoyageConfig.labelFields"
-        bindValue="VesselName"
-        (itemSelected)="onVesselChange($event)"
-        style="width: 85%">
-      </dofi-searchable-dropdown>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                        </div>
 
-      <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-      </button>
-    </div>
+                        <!-- Manual Text Input -->
+                        <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
 
-    <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
-      <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
-      <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-      </button>
-    </div>
-
-    <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-  </div>
-</aside>
+                        <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                      }
+                      </div>
+                    </aside>
 
 <!-- Voyage No -->
 <aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select inputChnages"
-    [class.filled]="!!houseJobForm.get('VoyageNo')?.value">
-
-    <!-- Dropdown Mode -->
-    <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
+                        <div class="custom-form-group">
+                          @if(selectedDepartmentType === "AIR"){
       <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
-        formControlName="VoyageNo" readonly>
-      
-      <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-      </button>
-    </div>
-
-    <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.b['isVoyageFreeText']?.value">
-      <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
-      <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
-        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-      </button>
-    </div>
-
-    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-  </div>
-</aside>
+        formControlName="VoyageNo">
+      <label for="text-input" class="input-label">Flight Number<span class="text-danger"></span></label>
+    } @else {
+                          <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
+                          <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+    }
+                        </div>
+                    </aside>
 
 <!-- ETD -->
 <div class="col-md-6">

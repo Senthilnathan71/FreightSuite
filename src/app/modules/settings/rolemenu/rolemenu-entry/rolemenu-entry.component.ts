@@ -557,4 +557,128 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.spinner.hide();
   }
+
+  // Add these methods after your existing methods in the component class
+
+// Check if all Add permissions are selected (excluding disabled ones)
+isAllAddSelected(): boolean {
+  if (this.dynamicMenuList.length === 0) return false;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableInsert);
+  if (enabledMenus.length === 0) return false;
+  
+  return enabledMenus.every(menu => menu.InsertRole);
+}
+
+// Toggle all Add permissions
+toggleAllAdd(event: any): void {
+  const isChecked = event.target.checked;
+  
+  this.dynamicMenuList.forEach(menu => {
+    if (!menu.disableInsert) {
+      menu.InsertRole = isChecked;
+    }
+  });
+}
+
+// Check if all Add checkboxes are disabled
+isAllAddDisabled(): boolean {
+  if (this.dynamicMenuList.length === 0) return true;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableInsert);
+  return enabledMenus.length === 0;
+}
+
+// Check if all Modify permissions are selected (excluding disabled ones)
+isAllModifySelected(): boolean {
+  if (this.dynamicMenuList.length === 0) return false;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableUpdate);
+  if (enabledMenus.length === 0) return false;
+  
+  return enabledMenus.every(menu => menu.UpdateRole);
+}
+
+// Toggle all Modify permissions
+toggleAllModify(event: any): void {
+  const isChecked = event.target.checked;
+  
+  this.dynamicMenuList.forEach(menu => {
+    if (!menu.disableUpdate) {
+      menu.UpdateRole = isChecked;
+    }
+  });
+}
+
+// Check if all Modify checkboxes are disabled
+isAllModifyDisabled(): boolean {
+  if (this.dynamicMenuList.length === 0) return true;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableUpdate);
+  return enabledMenus.length === 0;
+}
+
+// Check if all View permissions are selected (excluding disabled ones)
+isAllViewSelected(): boolean {
+  if (this.dynamicMenuList.length === 0) return false;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableView);
+  if (enabledMenus.length === 0) return false;
+  
+  return enabledMenus.every(menu => menu.ViewRole);
+}
+
+// Toggle all View permissions
+toggleAllView(event: any): void {
+  const isChecked = event.target.checked;
+  
+  this.dynamicMenuList.forEach(menu => {
+    if (!menu.disableView) {
+      menu.ViewRole = isChecked;
+    }
+  });
+}
+
+// Check if all View checkboxes are disabled
+isAllViewDisabled(): boolean {
+  if (this.dynamicMenuList.length === 0) return true;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableView);
+  return enabledMenus.length === 0;
+}
+
+// Check if all Delete permissions are selected (excluding disabled ones)
+isAllDeleteSelected(): boolean {
+  if (this.dynamicMenuList.length === 0) return false;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableDelete);
+  if (enabledMenus.length === 0) return false;
+  
+  return enabledMenus.every(menu => menu.DeleteRole);
+}
+
+// Toggle all Delete permissions
+toggleAllDelete(event: any): void {
+  const isChecked = event.target.checked;
+  
+  this.dynamicMenuList.forEach(menu => {
+    if (!menu.disableDelete) {
+      menu.DeleteRole = isChecked;
+    }
+  });
+}
+
+// Check if all Delete checkboxes are disabled
+isAllDeleteDisabled(): boolean {
+  if (this.dynamicMenuList.length === 0) return true;
+  
+  const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableDelete);
+  return enabledMenus.length === 0;
+}
+
+// Call this method when any individual permission checkbox changes
+onPermissionChange(): void {
+  // This method is called to ensure header checkboxes update properly
+  // No need to implement anything, just triggering change detection
+}
 }

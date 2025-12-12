@@ -211,33 +211,10 @@ get currencyList(): any[] {
     const userProfile = this.appSettingServ.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
     }
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterServ.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions).filter(
-            (key) => this.currentMenuPermissions[key] === 'isTrue'
-          );
-        },
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-    }
+ 
 
   initHeaderForm() {
     this.tariffHeaderForm = this.fb.group({
@@ -405,7 +382,10 @@ get currencyList(): any[] {
       this.setDetailControlsReadOnly(true);
     } else {
       // Create mode - ensure min date is set correctly
-      this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+        const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
+  this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(tomorrow);
       
       // Set default effective date based on initially selected charge code (if any)
       const initialChargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
@@ -860,11 +840,16 @@ get currencyList(): any[] {
     this.filteredPOD = [...this.filteredPorts];
     this.polList = [...this.filteredPOL];
     this.podList = [...this.filteredPOD];
-    this.tariffHeaderForm.get('POOSid')?.setValue(null);
-    this.tariffHeaderForm.get('POLSid')?.setValue(null);
-    this.tariffHeaderForm.get('PODSid')?.setValue(null);
-    this.tariffHeaderForm.get('FDCSid')?.setValue(null);
-    this.tariffHeaderForm.get('MovementType')?.setValue(null);
+    this.tariffHeaderForm.patchValue({
+      POOSid: null,
+      POLSid: null,
+      PODSid: null,
+      FDCSid: null,
+      POLTerminal: '',
+      PODTerminal: '',
+      ViaPortSid: null,
+      MovementType: null, 
+    });
     
     // Clear filtered charges when no department selected
     this.filteredCharges = [];
@@ -875,13 +860,16 @@ get currencyList(): any[] {
   if (typeof department === 'number' || typeof department === 'string') {
     deptObj = this.departments?.find(d => Number(d.DepartmentMasterSid) === Number(department)) || { departmentType: '', FCLLCL: 'LCL' };
   }
-
+    const isDeptChanged = !this.selectedDepartment || 
+    this.selectedDepartment.DepartmentMasterSid !== deptObj.DepartmentMasterSid;
   this.selectedDepartment = deptObj;
   this.selectedDepartmentType = (deptObj.departmentType || '').toUpperCase();
   this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
     ? (deptObj.FCLLCL?.toUpperCase() || 'LCL')
     : 'AIR';
-
+  if (isDeptChanged && !this.isEditMode) {
+    this.clearPortSelections();
+  }
   this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
   this.filteredPOL = [...this.filteredPorts];
   this.filteredPOD = [...this.filteredPorts];
@@ -898,6 +886,24 @@ get currencyList(): any[] {
   // this.filterChargesByDepartment(deptObj);
   // this.filterChargesByDepartment(this.selectedDepartment);
   this.filterChargeBasedOnDept();
+}
+clearPortSelections(): void {
+  // Clear form values
+  this.tariffHeaderForm.patchValue({
+    POOSid: null,
+    POLSid: null,
+    PODSid: null,
+    FDCSid: null,
+    POLTerminal: '',
+    PODTerminal: '',
+    ViaPortSid: null,
+  });
+
+  // Reset filtered lists
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
 }
 filterChargesByDepartment(department: any): void {
   if (!department || !this.chargeList || this.chargeList.length === 0) {
@@ -1237,7 +1243,9 @@ filterChargesByDepartment(department: any): void {
  setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
   if (!chargeCode) {
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+     const tomorrow = new Date(this.todayDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
     return;
   }
 
@@ -1248,11 +1256,11 @@ filterChargesByDepartment(department: any): void {
   if (sameChargeDetails.length === 0) {
     // NEW charge code - set to today's date
     // ✅ FIX: Add one day to compensate for the adapter issue
-    const adjustedToday = new Date(this.todayDate);
-    adjustedToday.setDate(adjustedToday.getDate() + 1);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     
-    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(adjustedToday);
-    this.minEffectiveFrom = this.toNgbDateStruct(adjustedToday);
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(tomorrow);
+    this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
   } else {
     // EXISTING charge code logic remains the same
     const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
@@ -1281,7 +1289,9 @@ filterChargesByDepartment(department: any): void {
 
   calculateMinEffectiveFrom(chargeCode?: string) {
   if (!chargeCode) {
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    const tomorrow = new Date(this.todayDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
     return;
   }
 
@@ -1291,7 +1301,9 @@ filterChargesByDepartment(department: any): void {
   );
 
   if (sameChargeDetails.length === 0) {
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    const tomorrow = new Date(this.todayDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
   } else {
     const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
@@ -1314,8 +1326,9 @@ filterChargesByDepartment(department: any): void {
 
     // Reset time part for accurate date comparison
     effectiveDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
     // For different charge code - must be today or future
     const sameChargeDetails = this.TariffDetailsList.filter(
@@ -1324,7 +1337,7 @@ filterChargesByDepartment(department: any): void {
 
     if (sameChargeDetails.length === 0) {
       // Different charge code - must be today or future
-      if (effectiveDate < today) {
+      if (effectiveDate < tomorrow) {
         return { invalidEffectiveDate: 'Effective date cannot be in the past for new charge codes' };
       }
       return null;

@@ -451,7 +451,7 @@
     <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
   </div>
 </div> -->
-<aside class="col-md-4 mt-md-1">
+<!-- <aside class="col-md-4 mt-md-1">
     <div class="custom-form-group">
         <input type="text" formControlName="VesselName" placeholder="" class="custom-input-field sm" />
         <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
@@ -462,7 +462,44 @@
         <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
         <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
     </div>
-</aside>
+</aside> -->
+ <aside class="col-md-4 mt-md-1">
+                      <div class="custom-form-group custom-form-group-select inputChnages"
+                        [class.filled]="!!masterJobForm.get('VesselName')?.value">
+                          <div class="d-flex align-items-center" *ngIf="!this.f['isVesselFreeText']?.value">
+                            <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="VesselName" placeholder="" appendTo="body" style="width: 85%">
+              </ng-select>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                          </div>
+                          <div class="input-group" *ngIf="this.f['isVesselFreeText']?.value">
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
+      <label for="text-input" class="input-label">Flight Name <span class="text-danger"></span></label>
+                        
+                      </div>
+                    </aside>
+
+<!-- Voyage No -->
+<aside class="col-md-4 mt-md-1">
+                        <div class="custom-form-group">
+                          @if(selectedDepartmentType === "AIR"){
+      <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
+        formControlName="VoyageNo">
+      <label for="text-input" class="input-label">Flight Number<span class="text-danger"></span></label>
+    } @else {
+                          <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
+                          <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+    }
+                        </div>
+                    </aside>
                                     <!-- Voyage Field -->
                                     <!-- <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"

@@ -552,7 +552,7 @@ arapFilter = {
   }
 
   private updateGenerateJobButtonVisibility(): void {
-  const isFCLDepartment = this.selectedFCLLCL === "FCL";
+  const isFCLDepartment = this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "AIR";
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
   
   this.showGenerateJobButton = isFCLDepartment && !isStuffedStatus;
@@ -3539,8 +3539,10 @@ ${this.userData['userName']}`;
         // }
         
         this.appSettingService.showSuccess('Master Job generated successfully from booking');
-        if (masterJobSid) {
+        if (masterJobSid && this.selectedFCLLCL === "FCL") {
           this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+        } else {
+          this.router.navigate(['/operation/mawbill/entry', masterJobSid])
         }
       } else {
         this.appSettingService.showError('Error generating master job: ' + (resp.message || 'Unknown error'));

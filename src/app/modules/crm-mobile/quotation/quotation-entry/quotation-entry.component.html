@@ -668,8 +668,7 @@
                             class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                             (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
                             (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                          <label for="text-input" class="input-label "
-                            style="display: block; text-align: center; width: 100%;">Gross Weight <span
+                          <label for="text-input" class="input-label">Gross Weight <span
                               class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                           <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
@@ -682,8 +681,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label "
-                            style="display: block; text-align: center; width: 100%;">Net Weight <span
+                          <label for="text-input" class="input-label ">Net Weight <span
                               class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
                         </div>
@@ -694,8 +692,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label"
-                            style="display: block; text-align: center; width: 100%;">CBM <span class="text-danger">{{
+                          <label for="text-input" class="input-label">CBM <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                           @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
                           <div class="error-message">
