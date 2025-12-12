@@ -3123,6 +3123,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.uomList = this.uomList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
   }
 
        reportBill() {

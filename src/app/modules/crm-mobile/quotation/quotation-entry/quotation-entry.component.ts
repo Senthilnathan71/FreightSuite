@@ -176,7 +176,8 @@ export class QuotationEntryComponent implements OnInit {
   vendorSupplierList : any[] = [];
   productList : any[] =[];
   productLookupConfig = ['ProductCode','ProductName'];
-
+   showPrintLogo: boolean = false;
+    showPdfLogo: boolean = true;
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
@@ -3094,7 +3095,10 @@ ${this.userData.userName}`;
 
 
   async downloadPDF() {
-  this.spinner.show();
+      this.showPrintLogo = false;
+  this.showPdfLogo = true;
+  this.spinner.show();4
+   setTimeout(async () => {
   try {
     const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
     
@@ -3107,6 +3111,7 @@ ${this.userData.userName}`;
   } finally {
     this.spinner.hide();
   }
+  }, 50);
 }
   
         async generatePDFBlob(): Promise<Blob | null> {
@@ -3711,24 +3716,29 @@ navigateToEnquiry(): void {
 }
 
 
- printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
 }
 }
