@@ -914,7 +914,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     formGroup.patchValue({
       CostAmount: this.getFormattedAmount(finalAmount, CurrencyMasterSid)
-    }, { emitEvent: false });
+    });
 
     this.calculateCostLocalAmount(index);
   }
@@ -942,7 +942,7 @@ createRateFormGroup(data?: any): FormGroup {
     }
     formGroup.patchValue({
       CostLocalAmount: this.getFormattedAmount(localAmount, CurrencyMasterSid)
-    }, { emitEvent: false });
+    });
   }
 
   /**
@@ -966,7 +966,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     formGroup.patchValue({
       RevenueAmount: this.getFormattedAmount(finalAmount, formGroup.get('RevenueCurrencyMasterSid')?.value)
-    }, { emitEvent: false });
+    });
     this.calculateRevenueLocalAmount(index);
   }
 
@@ -992,7 +992,7 @@ createRateFormGroup(data?: any): FormGroup {
     }
     formGroup.patchValue({
       RevenueLocalAmount: this.getFormattedAmount(localAmount, CurrencyMasterSid)
-    }, { emitEvent: false });
+    });
   }
 
   /**
