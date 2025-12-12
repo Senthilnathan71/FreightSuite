@@ -122,7 +122,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+      
     }
 
     // Call parent ngOnInit which will handle state restoration and initial load
@@ -161,24 +161,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
     }
   }
 
-  // Permission methods
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+  
 
   // Header action handlers
   onSearchTriggered(searchValue: string): void {

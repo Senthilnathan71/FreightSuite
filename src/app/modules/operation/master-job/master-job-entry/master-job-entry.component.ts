@@ -376,6 +376,7 @@ currentMenuId: any;
     // Setup debounced vessel search
     this.setupVesselSearchDebouncing();
      this.loadHSSACLookups();
+     this.setupDepartmentBasedValidation();
     this.loadInitialData().subscribe(() => {
       const loadingPlanData = this.operationService.getLoadingPlanData();
       console.log(loadingPlanData, 'loadingPlanData')
@@ -1567,7 +1568,71 @@ existsInList(list: any[], value: any) {
   setAddress(controlName: string, item: any) {
     this.masterJobForm.get(controlName)?.setValue(item ? item.CustomerAddress1 : '');
   }
+private setupDepartmentBasedValidation(): void {
+  // Watch for department changes
+  this.masterJobForm.get('DepartmentMasterSid')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((departmentSid) => {
+      this.updateMBLValidation(departmentSid);
+    });
 
+  // Set initial validation based on current department
+  const currentDept = this.masterJobForm.get('DepartmentMasterSid')?.value;
+  this.updateMBLValidation(currentDept);
+}
+
+private updateMBLValidation(departmentSid: number | null): void {
+  const mblNoControl = this.masterJobForm.get('MBLNo');
+  const mblDateControl = this.masterJobForm.get('MBLDate');
+  
+  if (!departmentSid) {
+    // No department selected - disable both fields
+    mblNoControl?.disable();
+    mblDateControl?.disable();
+    mblNoControl?.clearValidators();
+    mblDateControl?.clearValidators();
+    return;
+  }
+
+  const department = this.departments.find(dep => dep.DepartmentMasterSid === departmentSid);
+  const deptType = department?.departmentType?.toLowerCase();
+  const deptName = department?.departmentName?.toLowerCase();
+
+  console.log('Department detected:', { deptType, deptName });
+
+  // Check if department is Export
+  const isExport = deptName?.includes('export');
+  
+  // Check if department is Import and has "Manual" in name
+  const isImportManual = deptName?.includes('import') && deptName?.includes('manual');
+  
+  if (isExport) {
+    // Export department - disable both fields
+    mblNoControl?.disable();
+    mblDateControl?.disable();
+    mblNoControl?.clearValidators();
+    mblDateControl?.clearValidators();
+    
+  } else if (isImportManual) {
+    // Import Manual department - enable and make required
+    mblNoControl?.enable();
+    mblDateControl?.enable();
+    mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+    mblDateControl?.setValidators([Validators.required]);
+    
+  } else {
+    // Other departments (including regular Import) - enable but not required
+    mblNoControl?.enable();
+    mblDateControl?.enable();
+    mblNoControl?.clearValidators();
+    mblDateControl?.clearValidators();
+    mblNoControl?.setValidators([Validators.maxLength(20)]);
+  }
+
+  mblNoControl?.updateValueAndValidity();
+  mblDateControl?.updateValueAndValidity();
+  this.cdr.detectChanges();
+}
   onDeptChange(department: any) {
     this.selectedDepartment = department;
     if (!department) {
@@ -1581,12 +1646,15 @@ existsInList(list: any[], value: any) {
       this.masterJobForm.get('ETA')?.setValue('');
       this.masterJobForm.get('ETD')?.setValue('');
       this.masterJobForm.get('MovementType')?.setValue(null);
+       this.updateMBLValidation(null);
       return;
     }
 
     this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ?
       (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
+
+        this.updateMBLValidation(department.DepartmentMasterSid);
 
     // Filter ports based on department type
     this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
@@ -1992,6 +2060,19 @@ private autoPopulateVoyageData(vessel: any): void {
     }
 
     this.isLoading = true;
+  //   const exportImportType = this.selectedDepartment?.ExportImport;
+  // const hblNo = houseJobFormValue.HBLNo;
+  // if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
+  //   this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    
+  //   // Focus on HBLNo field
+  //   const hblNoElement = document.querySelector('[formControlName="HBLNo"]');
+  //   if (hblNoElement) {
+  //     (hblNoElement as HTMLElement).focus();
+  //   }
+    
+  //   return;
+  // }
 
     const getPortCode = (portSid: any): string => {
       if (!portSid && portSid !== 0) return '';

@@ -161,7 +161,7 @@ export class TdsSetEntryComponent implements OnInit {
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
         //         this.userData = res;
-        //         this.checkPermissions();
+      
         //     }
         // )
         const userProfile = this.appSettingService.getDecryptedUserProfile();

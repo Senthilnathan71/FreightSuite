@@ -113,7 +113,7 @@ currentBranch: any;
 	// 	 this.appSettingService.getUser().subscribe(user => {
     //      if (user) {
     //         this.userData = user;
-    //          this.checkPermissions();
+    //       
     //      }
     //   });
 	const userProfile = this.appSettingService.getDecryptedUserProfile();

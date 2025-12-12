@@ -53,6 +53,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -132,6 +133,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  tableConfig: TableConfig;
   taxGroupResults: any[] = [];
   taxCategoryOptions = [
     { id: 1, name: 'Inter' },
@@ -139,27 +141,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   ];
 
   // Table configuration
-  tableConfig: TableConfig = {
-    columns: [],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-        // condition: (row: any) => this.hasPermission('View')
-
-      }
-    ],
-    selectable: false,
-    multiSelect: false,
-    showColumnToggle: true,
-    showFilters: true,
-    showPagination: true,
-    trackByKey: 'TaxMasterSid',
-    emptyMessage: 'No tax-group found',
-    dragAndDrop: true
-  };
+ 
   headerActions: HeaderAction[] = [];
   tableLoading = false;
   protected config: ListComponentConfig = {
@@ -186,6 +168,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
      public dropdownStore: DropdownStore,
+     public mps : MenuPermissionService,
   ) {
     super(paginationService);
       effect(() => {
@@ -208,31 +191,17 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
     super.ngOnInit();
     this.initializeTableConfig();
     this.initializeHeaderActions();
-    this.checkPermissions();
+    this.mps.init().subscribe(()=>{
+      this.initializeTableConfig();
+      this.initializeHeaderActions();
+    });
+   
     this.loadAllFields();
   }
 
-    checkPermissions() {
-		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-		if (currentMenuId && userRole) {
-			this.masterService
-				.getRoleMenuPermissions(currentMenuId, userRole)
-				.subscribe({
-					next: (response) => {
-						this.currentMenuPermissions = response.data.MenuPermissions || {};
-						this.permissions = Object.keys(this.currentMenuPermissions).filter(
-							(key) => this.currentMenuPermissions[key] === 'isTrue'
-						);
-					},
-				});
-		}
-	}
+   
 
-	//  checks for menu permission
-	hasPermission(permission: string): boolean {
-		return this.permissions.includes(permission);
-	}
+	
 
 	hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -305,6 +274,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
+        disabled : !this.mps.can('insert')
         // condition: this.hasPermission('Add')
       },
       {
@@ -364,8 +334,9 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-       {
+    this.tableConfig = {
+    columns: [
+      {
         key: 'taxGroupName',
         label: 'Tax Group',
         sortable: true,
@@ -430,8 +401,27 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
      
-      
-    ];
+    ],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+         state : !this.mps.can('view')
+        // condition: (row: any) => this.hasPermission('View')
+
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'TaxMasterSid',
+    emptyMessage: 'No tax-group found',
+    dragAndDrop: true
+  };
   }
 
   // Table event handlers

@@ -226,7 +226,7 @@ noOfTeuOptions = [
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+    //      
     //     }
     //   }
     // )

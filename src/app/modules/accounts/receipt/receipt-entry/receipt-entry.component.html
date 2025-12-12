@@ -682,9 +682,11 @@
                             <th class="bg-warning text-light"style="font-size: 14px;">Curr Amt</th>
                             <th class="bg-warning text-light"style="font-size: 14px;">Local Amt</th>
                             <th class="bg-warning text-light"style="font-size: 14px;">TDS Amt</th>
+                            
                             @if(!isPosted){
                             <th class="bg-warning text-light">Balance</th>
                             }
+                            <th class="bg-transparent text-light" *ngIf="!isEditMode" style="font-size: 14px;">✓</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="voucherMatchings">
@@ -761,6 +763,7 @@
                             <td class="dofi-min-w-50">
                                 <dofi-searchable-dropdown 
                                     [items]="currencyList" formControlName="matchCurr" 
+                                     bindValue="CurrencyMasterSid"
                                     [placeholder]="''"
                                     [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                                     [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
@@ -787,6 +790,7 @@
                                 <input 
                                     type="text" 
                                     formControlName="matchCurrAmt" 
+                                   (input)="validateMatchLimits(i)"
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="9" 
@@ -800,6 +804,7 @@
                                 <input 
                                     type="text" 
                                     formControlName="matchLocalAmt" 
+                                    (input)="validateMatchLimits(i)"
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="9" 
@@ -831,6 +836,9 @@
                                 />
                             </td>
                             }
+                             <td *ngIf="!isEditMode" class="text-center">
+        <input type="checkbox" (change)="onTickMatch(i, $event)" />
+    </td>
                         </tr>
 
                         <!-- TOTAL ROW -->
@@ -849,7 +857,9 @@
                             <td>{{ getTotalMatchCurrAmt() }}</td>
                             <td>{{ getTotalMatchLocalAmt() }}</td>
                             <td>{{ getTotalTdsAmt() }}</td>
+                            
                             <td></td>
+                            
                         </tr>
 
                     </tbody>
