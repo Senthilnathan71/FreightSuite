@@ -3832,6 +3832,7 @@ textarea:disabled {
 // search dropdown color
 .custom-dropdown-item {
   color: #333;
+  font-family: inherit !important;
 }
 
 .custom-dropdown-item:hover {
@@ -3846,6 +3847,12 @@ textarea:disabled {
   background-color: #0056b3;
   /* Active item color */
   color: white;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: transparent !important;
+  color: inherit !important;
 }
 
 

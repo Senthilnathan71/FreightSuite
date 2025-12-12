@@ -1,0 +1,83 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Profitability Report as on {{ params?.FromMBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">MBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromMBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">MBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToMBLDt | formatDate }}</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Job Number</th>
+                        <th class="bg-transparent text-light text-center">MBL</th>
+                        <th class="bg-transparent text-light">POL</th>
+                        <th class="bg-transparent text-light">POD</th>
+                        <th class="bg-transparent text-light">Prov.Revenue</th>
+                        <th class="bg-transparent text-light">Prov.Cost</th>
+                        <th class="bg-transparent text-light">Prov.GP</th>
+                        <th class="bg-transparent text-light">Actual Revenue</th>
+                        <th class="bg-transparent text-light">Actual Cost</th>
+                        <th class="bg-transparent text-light">Actual GP</th>
+                        <th class="bg-transparent text-light">Profit %</th>
+                        <th class="bg-transparent text-light">No.of Shipment</th>
+                        <th class="bg-transparent text-light">No.of 20ft</th>
+                        <th class="bg-transparent text-light">No.of 40ft</th>
+                        <th class="bg-transparent text-light">Container No.</th>
+                        <th class="bg-transparent text-light">Total Chargeable Wt</th>
+                        <th class="bg-transparent text-light">Total CBM/Volume</th>
+                        <th class="bg-transparent text-light">Unutilized Space in CBM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+                        <td>{{ item.jobNumber || '' }}</td>
+                        <td>{{ item.Mbl || ''}}</td>
+                        <td>{{ item.POL || '' }}</td>
+                        <td>{{ item.POD || '' }}</td>
+                        <td class="text-end">{{item.totalRevenue | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.totalCost | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.GP | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.actualRevenue | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.actualCost | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.actualGp | number:'1.2-2'}}</td>
+                        <td></td>
+                        <td class="text-end">{{item.noOfShipment || ''}}</td>
+                        <td class="text-end">{{ item.twentyft || '' }}</td>
+                        <td class="text-end">{{ item.fourty || '' }}</td>
+                        <td class="text-end">{{item.containerNo}}</td>
+                        <td class="text-end">{{ item.chargeable | number:'1.2-2'}}</td>
+                        <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
