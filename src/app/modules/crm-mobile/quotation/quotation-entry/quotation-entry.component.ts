@@ -176,7 +176,8 @@ export class QuotationEntryComponent implements OnInit {
   vendorSupplierList : any[] = [];
   productList : any[] =[];
   productLookupConfig = ['ProductCode','ProductName'];
-
+   showPrintLogo: boolean = false;
+    showPdfLogo: boolean = true;
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
@@ -204,6 +205,9 @@ export class QuotationEntryComponent implements OnInit {
     { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
+    { id: 6, name: 'ODC'},
+    { id: 7, name: 'Flexi'},
+    { id: 8, name: 'RORO'},
   ];
 
   serviceLevel = [
@@ -1508,6 +1512,28 @@ private extractCargoData(enquiryCargo: any[]): any {
     if (response.RateLock === "Y") {
     this.lockAllRateFields();
   }
+        // Check if this route has charges/tariffs applied
+      const hasCharges = route?.quoteCarrier?.some(carrier => 
+        carrier?.quoteCharge && carrier.quoteCharge.length > 0
+      );
+       if (hasCharges) {
+        setTimeout(() => {
+          const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+          if (routeForm) {
+            const fieldsToDisable = [
+              'DepartmentMasterSid', 'POLSid', 'PODSid', 
+              'effDate', 'expDate', 'PORSid', 'FPODSid'
+            ];
+            
+            fieldsToDisable.forEach(field => {
+              const control = routeForm.get(field);
+              if (control) {
+                control.disable({ emitEvent: false });
+              }
+            });
+          }
+        }, 0);
+      }
       if (cargo) {
         (cargo.quoteProduct || []).forEach(product => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
@@ -1621,6 +1647,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       return;
     }
 
+     const disabledFieldsByRoute = [];
+  
+  this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex) => {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const fieldsToCheck = ['DepartmentMasterSid', 'POLSid', 'PODSid', 'effDate', 'expDate', 'PORSid', 'FPODSid'];
+    
+    const disabledFields = fieldsToCheck.filter(field => routeForm.get(field)?.disabled);
+    disabledFieldsByRoute[routeIndex] = disabledFields;
+  });
+
     const formValue = this.quotationForm.getRawValue();
     let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -1729,6 +1765,21 @@ private extractCargoData(enquiryCargo: any[]): any {
         (resp: any) => {
 
           if (resp.status) {
+                      setTimeout(() => {
+            disabledFieldsByRoute.forEach((disabledFields, routeIndex) => {
+              if (disabledFields && disabledFields.length > 0) {
+                const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+                if (routeForm) {
+                  disabledFields.forEach(field => {
+                    const control = routeForm.get(field);
+                    if (control) {
+                      control.disable({ emitEvent: false });
+                    }
+                  });
+                }
+              }
+            });
+          }, 100);
             this.appSettingService.showSuccess('Quotation is successfully updated');
             const customerId = resp.data?.createdCustomer?.CustomerMasterSid;
             if(customerId){
@@ -2352,6 +2403,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'revenue');
       this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'cost');
     });
+    this.disableTariffFieldsForCurrentRoute();
 
     const customerId = this.quotationForm.get('CustomerMasterSid')?.value;
     const customer = this.customers.find(c => c.CustomerMasterSid === customerId);
@@ -2361,6 +2413,35 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     this.closeTariffModal();
   }
+  disableTariffFieldsForCurrentRoute(): void {
+  if (this.currentRouteIndex === undefined || this.currentRouteIndex === null) {
+    return;
+  }
+
+  const routeForm = this.quoteRoutes.at(this.currentRouteIndex) as FormGroup;
+  
+  // Disable the required fields for tariff
+  const fieldsToDisable = ['DepartmentMasterSid', 'POLSid', 'PODSid', 'effDate', 'expDate'];
+  
+  fieldsToDisable.forEach(field => {
+    const control = routeForm.get(field);
+    if (control && control.enabled) {
+      control.disable({ emitEvent: false });
+    }
+  });
+  
+  // Also disable PORSid if it exists
+  const porsControl = routeForm.get('PORSid');
+  if (porsControl && porsControl.enabled) {
+    porsControl.disable({ emitEvent: false });
+  }
+  
+  // Also disable FPODSid if it exists
+  const fpodControl = routeForm.get('FPODSid');
+  if (fpodControl && fpodControl.enabled) {
+    fpodControl.disable({ emitEvent: false });
+  }
+}
 
   areAllTariffsSelected(): boolean {
     if (!this.tariffDetails || this.tariffDetails.length === 0) {
@@ -3014,7 +3095,10 @@ ${this.userData.userName}`;
 
 
   async downloadPDF() {
-  this.spinner.show();
+      this.showPrintLogo = false;
+  this.showPdfLogo = true;
+  this.spinner.show();4
+   setTimeout(async () => {
   try {
     const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
     
@@ -3027,6 +3111,7 @@ ${this.userData.userName}`;
   } finally {
     this.spinner.hide();
   }
+  }, 50);
 }
   
         async generatePDFBlob(): Promise<Blob | null> {
@@ -3631,24 +3716,29 @@ navigateToEnquiry(): void {
 }
 
 
- printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
 }
 }

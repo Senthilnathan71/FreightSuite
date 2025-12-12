@@ -164,10 +164,62 @@
                       <th class="bg-transparent text-light">Module Name</th>
                       <th class="bg-transparent text-light">Menu Name</th>
                       <th class="bg-transparent text-light">Display Name</th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">Add</th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">Modify</th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">View</th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">Delete</th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                        <div class="d-flex flex-column align-items-center">
+                          <span>Add</span>
+                          <div class="mt-1">
+                            <input 
+                              type="checkbox" 
+                              class="form-check-input cursor-pointer"
+                              [checked]="isAllAddSelected()"
+                              (change)="toggleAllAdd($event)"
+                              [disabled]="isAllAddDisabled()"
+                            />
+                          </div>
+                        </div>
+                      </th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                        <div class="d-flex flex-column align-items-center">
+                          <span>Modify</span>
+                          <div class="mt-1">
+                            <input 
+                              type="checkbox" 
+                              class="form-check-input cursor-pointer"
+                              [checked]="isAllModifySelected()"
+                              (change)="toggleAllModify($event)"
+                              [disabled]="isAllModifyDisabled()"
+                            />
+                          </div>
+                        </div>
+                      </th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                        <div class="d-flex flex-column align-items-center">
+                          <span>View</span>
+                          <div class="mt-1">
+                            <input 
+                              type="checkbox" 
+                              class="form-check-input cursor-pointer"
+                              [checked]="isAllViewSelected()"
+                              (change)="toggleAllView($event)"
+                              [disabled]="isAllViewDisabled()"
+                            />
+                          </div>
+                        </div>
+                      </th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                        <div class="d-flex flex-column align-items-center">
+                          <span>Delete</span>
+                          <div class="mt-1">
+                            <input 
+                              type="checkbox" 
+                              class="form-check-input cursor-pointer"
+                              [checked]="isAllDeleteSelected()"
+                              (change)="toggleAllDelete($event)"
+                              [disabled]="isAllDeleteDisabled()"
+                            />
+                          </div>
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -197,6 +249,7 @@
                           [(ngModel)]="menu.InsertRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableInsert || isLoading"
+                          (change)="onPermissionChange()"
                         />
                       </td>
 
@@ -208,6 +261,7 @@
                           [(ngModel)]="menu.UpdateRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableUpdate || isLoading"
+                          (change)="onPermissionChange()"
                         />
                       </td>
 
@@ -219,6 +273,7 @@
                           [(ngModel)]="menu.ViewRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableView || isLoading"
+                          (change)="onPermissionChange()"
                         />
                       </td>
 
@@ -230,6 +285,7 @@
                           [(ngModel)]="menu.DeleteRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableDelete || isLoading"
+                          (change)="onPermissionChange()"
                         />
                       </td>
                     </tr>

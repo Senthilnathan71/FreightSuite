@@ -151,6 +151,7 @@ hssacList: any[] = [];
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
+  airlineList: any[] = [];
   masterJobId: number | null = null;
   cargoCurrencyValue: any;
     public rateComponent = CostEntryComponent;
@@ -1147,13 +1148,14 @@ loadHeaderLookups() {
     notify: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['notify'] }).pipe(catchError(err => of([]))),
     agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['agent'] }).pipe(catchError(err => of([]))),
     carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
+    airline: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['airLine'] }).pipe(catchError(err => of([]))),
     vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
     incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
     salesmans: this.operationService.getAllSalesman(CompanyMasterSid).pipe(catchError(err => of([]))),
     forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
     yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
     cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),
-  }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
+  }).pipe(tap(({ shippers, consignees, notify, carriers, airline, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
     this.shipperList = shippers.data;
     this.filteredShipperList = shippers.data;
     this.consigneeList = consignees.data;
@@ -1161,6 +1163,7 @@ loadHeaderLookups() {
     this.notifyList = notify.data;
     this.carrierList = carriers.data;
     this.vesselList = vessels.data;
+    this.airlineList = airline.data;
     this.incoList = incos.data;
     this.salesmanList = salesmans;
     this.agentList = agents.data;
@@ -3120,6 +3123,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.uomList = this.uomList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
   }
 
        reportBill() {
