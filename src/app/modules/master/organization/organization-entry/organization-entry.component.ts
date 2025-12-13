@@ -432,7 +432,7 @@ onCountryChange(): void {
   }
 
   ngOnInit(): void {
-    this.mps.init().subscribe();
+    
     this.dropdownStore.loadCountries().subscribe(() => {
 
   this.dropdownStore.loadStates().subscribe(() => {
@@ -461,7 +461,7 @@ onCountryChange(): void {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.loadNetworks();
-
+this.mps.init().subscribe();
     // ✅ Get logged-in user profile
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
@@ -472,7 +472,7 @@ onCountryChange(): void {
       console.log('currentCountry', this.currentCounty);
       console.log('User Profile loaded:', this.userData);
       console.log('User Email:', this.userData?.userEmail || this.userData?.UserEmail);
-      this.checkPermissions();
+      
     } 
     else {
       console.error('No user profile found in localStorage');
@@ -1894,23 +1894,6 @@ onCompanyTypeChange(): void {
     return email || '';
   }
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    if (currentMenuId && userRole) {
-      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-        next: (response) => {
-          this.currentMenuPermissions = response.data.MenuPermissions || {};
-          this.permissions = Object.keys(this.currentMenuPermissions)
-            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        }
-      });
-    }
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

@@ -193,7 +193,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
     // this.appSettingService.getUser().subscribe(user => {
     //   if (user) {
     //     this.userData = user;
-    //     this.checkPermissions();
+    
     //   }
     // });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

@@ -722,8 +722,8 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
-  getHouseJobById(BookingHeaderSid: number) {
-    return this.http.get<{ data: any }>(`house-job/fetch/${BookingHeaderSid}`).pipe(
+  getHouseJobById(HouseJobSid: number) {
+    return this.http.get<{ data: any }>(`house-job/fetch/${HouseJobSid}`).pipe(
       map((resp) => {
         return resp;
       })

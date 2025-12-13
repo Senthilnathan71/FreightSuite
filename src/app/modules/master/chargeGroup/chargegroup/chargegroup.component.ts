@@ -128,7 +128,7 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+    //       
     //     }
     //   }
     // );

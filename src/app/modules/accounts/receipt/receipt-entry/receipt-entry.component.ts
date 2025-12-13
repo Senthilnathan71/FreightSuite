@@ -108,6 +108,7 @@ export class ReceiptEntryComponent implements OnInit {
   searchType: string = 'Party';
   selectedParty: any;
   filterText: any;
+  
   matchingError: string | null = null;
 
   today = new Date();
@@ -130,6 +131,7 @@ export class ReceiptEntryComponent implements OnInit {
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
   receiptPrintData:any
+  isLimitErrorShown: false
 
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
@@ -1358,7 +1360,9 @@ export class ReceiptEntryComponent implements OnInit {
 
         balance: [
           isMatchedRecord ? (tx.OutstandingLocalAmount - tx.LocalAmount) : null
-        ]
+        ],
+         isTicked: [false],
+        isLimitErrorShown: [false]
       });
 
       // Disable fields
@@ -1392,6 +1396,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   calculateLocalAmountForMatchRow(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
+
     const amount = Number(row.get('matchCurrAmt')?.value);
     const exchangeRate = Number(row.get('matchExRate')?.value);
     const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, row.get('matchCurr')?.value);
@@ -1460,9 +1465,9 @@ export class ReceiptEntryComponent implements OnInit {
     return this.voucherMatchings.controls
       .reduce((total, control) => {
         if(control.get('drCr')?.value === "Dr"){
-          return total + Number(control.get('matchCurrAmt')?.value || 0)
+          return total + Number(control.get('matchLocalAmt')?.value || 0)
         }
-        return total - Number(control.get('matchCurrAmt')?.value || 0)
+        return total - Number(control.get('matchLocalAmt')?.value || 0)
       }, 0).toFixed(2);
   }
 
@@ -2211,4 +2216,101 @@ toggleCashOrBank(event: any) {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  getCurrencySidFromCode(code: string) {
+  if (!code || !this.currencyList) return null;
+
+  return this.currencyList.find(c => 
+      c.currencyCode?.toUpperCase() === code.toUpperCase()
+  )?.CurrencyMasterSid || null;
+}
+
+
+ onTickMatch(index: number, event: any) {
+  const checked = event.target.checked;
+  const row = this.voucherMatchings.at(index) as FormGroup;
+
+  if (!checked) {
+    row.patchValue({
+      matchCurr: null,
+      matchExRate: null,
+      matchCurrAmt: null,
+      matchLocalAmt: null
+    });
+    return;
+  }
+
+  const originalCurr = row.get('curr')?.value;      
+  const osCurrAmt = Number(row.get('osCurrAmt')?.value);
+  const osLocalAmt = Number(row.get('osLocalAmt')?.value);
+  const exRate = Number(row.get('exRate')?.value);
+
+  console.log('originalCurr:', originalCurr);
+
+  // FIXED HERE
+  const currencySid = this.getCurrencySidFromCode(originalCurr);
+
+  console.log("✔ FIXED currencySid:", currencySid);
+
+  row.patchValue({
+    matchCurr: currencySid,      
+    matchExRate: exRate,
+    matchCurrAmt: osCurrAmt,
+    matchLocalAmt: osLocalAmt
+  });
+  row.get('isTicked')?.setValue(checked);
+
+
+  console.log("✔ PATCHED ROW:", row.value);
+
+  // this.calculateLocalAmountForMatchRow(index);
+}
+validateMatchLimits(index: number) {
+  const row = this.voucherMatchings.at(index) as FormGroup;
+
+  const osCurr = Number(row.get('osCurrAmt')?.value || 0);
+  const osLocal = Number(row.get('osLocalAmt')?.value || 0);
+
+  const currAmt = Number(row.get('matchCurrAmt')?.value || 0);
+  const localAmt = Number(row.get('matchLocalAmt')?.value || 0);
+
+  // Skip check if ticked
+  if (row.get('isTicked')?.value === true) return;
+
+  // CONDITION VIOLATION
+  const violatesCurr = currAmt > osCurr;
+  const violatesLocal = localAmt > osLocal;
+
+  if (violatesCurr || violatesLocal) {
+
+    // SHOW ERROR ONLY ONCE
+    if (!row.get('isLimitErrorShown')?.value) {
+
+      const msg = `
+        Matching Curr. Amount cannot be greater than OS Curr.
+        Matching Local Amount cannot be greater than OS Local Amount.
+      `;
+
+      this.toastr.error(msg, "Validation Error");
+
+      row.patchValue({ isLimitErrorShown: true });
+
+      // Set field errors
+      row.get('matchCurrAmt')?.setErrors({ limitExceeded: true });
+      row.get('matchLocalAmt')?.setErrors({ limitExceeded: true });
+    }
+
+    return; // do not clear error until corrected
+  }
+
+  // IF VALUE NOW VALID → RESET FLAG
+  if (row.get('isLimitErrorShown')?.value) {
+    row.patchValue({ isLimitErrorShown: false });
+  }
+
+  // Clear errors
+  row.get('matchCurrAmt')?.setErrors(null);
+  row.get('matchLocalAmt')?.setErrors(null);
+}
+
+
 }

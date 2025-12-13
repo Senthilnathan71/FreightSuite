@@ -99,7 +99,7 @@ export class CurrencyEntryComponent implements OnInit {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+    //      
     //     }
     //   }
     // )

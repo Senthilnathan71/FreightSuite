@@ -144,7 +144,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+   
     //     }
     //   });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

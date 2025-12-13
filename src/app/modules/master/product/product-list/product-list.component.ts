@@ -192,7 +192,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
         //         if(user){
         //             this.userData = user;
         //             console.log(this.userData,'UserData')
-        //             this.checkPermissions();
+        //            
         //         }
         //     }
         // );

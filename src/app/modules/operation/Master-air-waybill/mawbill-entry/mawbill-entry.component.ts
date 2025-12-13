@@ -158,7 +158,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
-  
+  airlineList: any[] = [];
   // Department info
   selectedDepartment: any;
   selectedDepartmentType: string = '';
@@ -525,6 +525,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       // Voyage fields
       VoyageMasterSid: [null],
       VesselName: [''],
+      isVesselFreeText: [false],
       VoyageNo: [''],
       ETA: [null],
       ETD: [null],
@@ -587,6 +588,19 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       IsSoc: [false]
     });
   }
+  existsInList(list: any[], value: any) {
+  if (list) {
+    return list.some(item => item.CustomerName === value);
+  }
+  return false;
+}
+
+  evaluateDropdownOrFreeText(){
+    let response = this.masterAirWayData;
+    if (response?.VesselName && !this.existsInList(this.vesselList, response.VesselName)) {
+    this.masterJobForm.patchValue({ isVesselFreeText: true });
+  }
+  }
 
   // Getters for form arrays
   get connections(): FormArray {
@@ -628,7 +642,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
 
   loadInitialData() {
   const companySid = this.currentCompany?.CompanyMasterSid;
-  
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid
   return forkJoin({
      departments: this.operationService.getDepartmentByType('Air', companySid) 
       .pipe(catchError(err => of({ data: [] }))),
@@ -657,10 +671,11 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     charge: this.operationService.getAllCharges(companySid)
       .pipe(catchError(err => of({ data: [] }))),
+      airline: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['airLine'] }).pipe(catchError(err => of([]))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     departments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers,charge
+    containerTypes, currencies, packageTypes, customers,charge, airline
   }) => {
      this.departments = departments || [];
     
@@ -674,6 +689,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.forwarderList = forwarders.data;
     this.cfsList = cfsList.data ;
     this.yardList = yards.data ; 
+    this.airlineList = airline.data;
      
 
     this.containerTypeList = containerTypes.data ;
@@ -698,6 +714,12 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
 }
 
 
+toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+  event.stopPropagation();
+  const value = this.f[flagCtrl]?.value;
+  this.f[flagCtrl]?.setValue(!value);
+  this.masterJobForm.get(mainCtrl)?.reset();
+}
 
 
   loadMasterJobData(masterJobSid: number): void {

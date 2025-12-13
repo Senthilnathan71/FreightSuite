@@ -40,7 +40,7 @@
                         {{isEditMode ? 'Update':'Save'}}
                     </button> -->
                 
-                @if(hasPermission(isEditMode ? 'Edit' : 'Add')) {
+                @if((isEditMode ? 'Edit' : 'Add')) {
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
             (click)="onSubmit()" 
             [disabled]="(!mps.can('update') && isEditMode) || btnDisable">

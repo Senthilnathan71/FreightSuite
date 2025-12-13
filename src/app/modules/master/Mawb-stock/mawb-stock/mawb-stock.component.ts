@@ -83,7 +83,7 @@ export class MawbStockComponent implements OnInit{
          this.appSettingService.getUser().subscribe(user => {
       if(user) {
         this.userData = user;
-        this.checkPermissions();
+       
       }
     });
       this.initForm();
@@ -101,26 +101,7 @@ export class MawbStockComponent implements OnInit{
       });
     }
   
-          checkPermissions() {
-      const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-      const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-      console.log(currentMenuId)
-      console.log(userRole)
-      if (currentMenuId && userRole) {
-       this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-    next: (response) => {
-      this.currentMenuPermissions = response.data.MenuPermissions || {};
-      this.permissions = Object.keys(this.currentMenuPermissions)
-        .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-        console.log(this.permissions)
-    }
-  });
-      }
-    }
-  
-    hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+     
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];

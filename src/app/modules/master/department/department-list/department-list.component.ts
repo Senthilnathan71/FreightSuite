@@ -75,7 +75,7 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
     //       if (user) {
     //         this.userData = user;
     //         console.log(this.userData,'userData');
-    //         this.checkPermissions();
+    //      
     //       }
     //     }); 
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

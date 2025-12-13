@@ -231,7 +231,7 @@ export class DepartmentEntryComponent {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
+    //       
     //     }
     //   }
     // );

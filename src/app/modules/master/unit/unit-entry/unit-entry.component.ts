@@ -98,7 +98,7 @@ export class UnitEntryComponent {
   //        this.appSettingService.getUser().subscribe(user => {
   //   if(user) {
   //     this.userData = user;
-  //     this.checkPermissions();
+ 
   //   }
   // });
    this.mps.init().subscribe();

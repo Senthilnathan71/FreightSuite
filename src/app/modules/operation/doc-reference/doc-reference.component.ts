@@ -149,7 +149,7 @@ export class DocReferenceComponent implements OnInit {
       this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      this.checkPermissions();
+     
     }
   }
 
@@ -273,35 +273,7 @@ export class DocReferenceComponent implements OnInit {
   }
 
 
-  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole =
-      this.userData?.userRoleMaster?.[0]?.RoleMasterSid;
-
-
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions =
-              response.data.MenuPermissions || {};
-            this.permissions = Object.keys(
-              this.currentMenuPermissions,
-            ).filter(
-              (k) => this.currentMenuPermissions[k] === 'isTrue',
-            );
-          },
-          error: () => {},
-        });
-    }
-  }
-
-
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
-
+ 
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = [

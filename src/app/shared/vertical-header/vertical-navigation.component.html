@@ -215,7 +215,7 @@
       />
       <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
-      <div class="dropdown-menu w-100" style="max-height: 350px; min-width:300px; overflow-y: auto;" ngbDropdownMenu>
+      <div class="dropdown-menu w-100" style="max-height: 350px; min-width:200px; overflow-y: auto;" ngbDropdownMenu>
         <!-- <ng-container *ngIf="menuSearchResults.length > 0; else noMenuResults">
           <button
             *ngFor="let result of menuSearchResults; let i = index"
@@ -245,20 +245,46 @@
         <!-- Results -->
         <ng-container *ngIf="!isLoadingMenu && !menuSearchError">
           <div *ngIf="menuSearchResults.length > 0; else noMenuResults">
-              <a
+              <!-- <a
                 *ngFor="let result of menuSearchResults; let i = index"
-                class="dropdown-item custom-dropdown-item d-flex align-items-center py-2"
+                class="dropdown-item d-flex align-items-center py-2 custom-dropdown-item"
                 [class.active]="i === menuActiveIndex"
                 [class.bg-light]="i === menuActiveIndex"
                 href="javascript:void(0)"
-                (mousedown)="navigateToMenu(result)">
+                (mousedown)="navigateToMenu(result)" style="font-family: inherit;">
                 <i [ngClass]="[result.icon]">
-                  <span class="text-truncate mx-2" style="font-size: 0.9rem;">{{ result.title }}</span>
+                  <span class="text-truncate mx-2 fs-2" style="font-size: 0.9rem;">{{ result.title }}</span>
                 </i>
-              </a>
+              </a> -->
+                  <a
+                    *ngFor="let result of menuSearchResults; let i = index"
+                    class="dropdown-item d-flex align-items-center py-1 custom-dropdown-item"
+                    [class.active]="i === menuActiveIndex"
+                    [class.bg-light]="i === menuActiveIndex"
+                    href="javascript:void(0)"
+                    (mousedown)="navigateToMenu(result)"
+                  >
+
+                      <!-- ICON with fixed width -->
+                      <span 
+                        style="width: 24px; display: flex; justify-content: center; align-items: center;"
+                      >
+                        <i [ngClass]="result.icon" style="font-style: normal;"></i>
+                      </span>
+
+                      <!-- TEXT -->
+                      <span 
+                        style="font-size: 0.9rem; font-family: inherit; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                      >
+                        {{ result.title }}
+                      </span>
+
+                  </a>
+
+
           </div>
           <ng-template #noMenuResults>
-              <div class="dropdown-item text-muted py-3 text-center">
+              <div class="dropdown-item text-muted  text-center text-black">
                 <span>
                   <i class="fas fa-search me-2"></i>No Menu found
                 </span>
@@ -326,7 +352,7 @@
               </a>
             </div>
             <ng-template #noDocResults>
-              <div class="dropdown-item text-muted py-3 text-center">
+              <div class="dropdown-item text-muted text-center text-black">
                 <span *ngIf="docSearchInput?.value?.length >= 3">
                   <i class="fas fa-search me-2"></i>No documents found
                 </span>

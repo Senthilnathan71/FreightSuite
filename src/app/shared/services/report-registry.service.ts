@@ -468,11 +468,76 @@ export class ReportRegistryService {
           </div>
         `,
         modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn(' Balance Sheet Report component not yet created:', error);
+    }
+
+
+    // BL-Issue 
+
+      try {
+      const { BlIssueReportComponent } = await import(
+        '../components/reports/bl-issue-report/bl-issue-report.component'
+      );
+
+      this.registerReport({
+        id: 'bl-issue-list',
+        title: 'BL Issue Report',
+        component: BlIssueReportComponent,
+        filenameTemplate: 'BL_Issue_Report{GroupName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'BL_Issue_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> BL_Issue_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
         pdfOrientation: 'landscape'
       });
 
     } catch (error) {
       console.warn(' Balance Sheet Report component not yet created:', error);
+    }
+
+    // profitability 
+
+         try {
+      const { ProfitabilityReportComponent } = await import(
+        '../components/reports/profitability-report/profitability-report.component'
+      );
+
+      this.registerReport({
+        id: 'profitability-report',
+        title: 'Profitability Report',
+        component: ProfitabilityReportComponent,
+        filenameTemplate: 'Profitability_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Profitability_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Profitability_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
     }
   }
 

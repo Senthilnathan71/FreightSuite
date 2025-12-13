@@ -140,7 +140,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     //    user => {
     //      if (user) {
     //        this.userData = user;
-    //         this.checkPermissions();
+    
     //      }
     //    }
     //  )

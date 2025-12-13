@@ -200,7 +200,7 @@ export class CompanyEntryComponent implements OnInit {
 		// 	user => {
 		// 		if (user) {
 		// 			this.userData = user;
-		// 			this.checkPermissions();
+		// 			
 
 		// 		}
 		// 	}
