@@ -1800,50 +1800,48 @@ createRateFormGroup(data?: any): FormGroup {
     this.showChargeSelectionModal(billingPartySid, pendingCharges);
   }
 
-  private showChargeSelectionModal(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
-  console.log('showChargeSelectionModal called with:', {
-    billingPartySid,
-    parentValue: this.parentFormValue,
-    chargesCount: pendingCharges.length,
-    charges: pendingCharges.map((c: any) => ({
-      id: c.RateSid,
-      desc: c.ChargeDescription,
-      agentMasterSid: c.CostAgentMasterSid
-    }))
-  });
+  private async showChargeSelectionModal(
+    billingPartySid: number,
+    pendingCharges: BookingRateDetails[]
+  ) {
+    this.spinner.show();
 
-  this.currentBillingPartySid = billingPartySid;
-  this.availableCharges = pendingCharges.map(charge => ({
-    ...charge,
-    isSelected: true // Select all by default
-  }));
+    try {
+      console.log('showChargeSelectionModal called with:', {
+        billingPartySid,
+        parentValue: this.parentFormValue,
+        chargesCount: pendingCharges.length
+      });
 
-  console.log('Available charges set:', {
-    count: this.availableCharges.length,
-    charges: this.availableCharges
-  });
+      this.currentBillingPartySid = billingPartySid;
 
-  // Select all charges by default
-  this.selectedCharges = new Set(pendingCharges.map(c => c.RateSid));
+      this.availableCharges = pendingCharges.map(charge => ({
+        ...charge,
+        isSelected: true
+      }));
 
-  // Initialize invoice header
-  this.initializeInvoiceHeader(pendingCharges);
-  this.determineGSTTypeAndPlaceOfSupply();
+      this.selectedCharges = new Set(pendingCharges.map(c => c.RateSid));
 
-  // ✅ ADD THIS: Initialize tax groups for charges
-  this.initializeTaxGroupsForCharges();
+      // Run required initializers
+      this.initializeInvoiceHeader(pendingCharges);
+      this.determineGSTTypeAndPlaceOfSupply();
 
-  // Calculate initial tax
-  this.calculateChargeSelectionTax();
+      // ⚡ WAIT FOR TAX GROUPS TO LOAD
+      await this.initializeTaxGroupsForCharges();
 
-  // Open charge selection modal with custom extra-wide size
-  this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
-    size: 'xl',
-    backdrop: 'static',
-    keyboard: false,
-    scrollable: true
-  });
-}
+      // ⚡ Wait for tax calculation
+      this.calculateChargeSelectionTax();
+
+
+    } catch (error) {
+      console.error('Error in showChargeSelectionModal:', error);
+      this.appSettingService.showError('Failed to load charge details');
+    } finally {
+      // 🔥 STOP LOADING
+      this.spinner.hide();
+    }
+  }
+
 
   private initializeInvoiceHeader(charges: any[]) {
     if (!charges || charges.length === 0) {
@@ -1978,6 +1976,9 @@ createRateFormGroup(data?: any): FormGroup {
           }));
 
           console.log("Tax Group Fetch response",response);
+          if(!response.status){
+            throw new Error("Error finding tax masters.")
+          }
 
           const taxMasters = (response?.data || []).find(tg => tg.TaxGroupSid === taxGroupSid)?.taxMaster || [];
 
@@ -1997,18 +1998,31 @@ createRateFormGroup(data?: any): FormGroup {
               size: this.chargeTaxGroupMap.size,
               entries: Array.from(this.chargeTaxGroupMap.entries())
             });
+            
           } else {
-            console.warn(`No tax data found for charge: ${charge.ChargeDescription}`);
+            throw new Error(`No Tax Master has been mapped for charge : ${charge.ChargeDescription}.`)
           }
         } catch (error) {
+          this.appSettingService.showError(error.message)
           console.error(`Error initializing tax group for charge ${charge.RateSid}:`, error);
         }
       } else {
+        this.appSettingService.showError(`No Tax Group found for charge : ${charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC }.`)
         console.log(`No TaxGroupSid found for charge: ${charge.ChargeDescription}`);
       }
     }
 
     this.calculateChargeSelectionTax();
+    // Now open modal AFTER tax is ready
+    this.chargeSelectionModalRef = this.modalService.open(
+      this.chargeSelectionModal,
+      {
+        size: 'xl',
+        backdrop: 'static',
+        keyboard: false,
+        scrollable: true
+      }
+    );
     console.log('Tax group map after initialization:', {
       size: this.chargeTaxGroupMap.size,
       entries: this.chargeTaxGroupMap
@@ -2029,8 +2043,8 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         // Fetch exchange rate from CurrencyExchange table
         const payload = {
-          fromCurrencyCode: companyHomeCurrency.code,
-          toCurrencyCode: selectedCurrencyCode,
+          fromCurrencyCode: selectedCurrencyCode,
+          toCurrencyCode:  companyHomeCurrency.code,
           segment: this.selectedVoucherType === 'Invoice' ? 'revenue' : 'cost' // Use SellRate for revenue charges
         };
 
@@ -2916,6 +2930,9 @@ getChargeTaxPercentage(charge: any): string {
           taxAmount2 = (chargeAmount * taxPercentage2) / 100;
         }
 
+        const localAmount = chargeAmount * Number(isRevenue ? chargeInfo.RevenueExchangeRate : chargeInfo.CostExchangeRate);
+        const partyAmount = await this.getPartyAmount(chargeInfo);
+
         detailPromises.push({
           Sno: detailPromises.length + 1,
           ChargeMasterSid: chargeInfo.ChargeMasterSid,
@@ -2939,7 +2956,8 @@ getChargeTaxPercentage(charge: any): string {
           TaxPercentage2: taxPercentage2,
           TaxAmount2: taxAmount2,
           Amount: Number(isRevenue ? chargeInfo.RevenueAmount : chargeInfo.CostAmount),
-          LocalAmount: chargeAmount,
+          LocalAmount: localAmount,
+          PartyAmount : toNumber(partyAmount),
           CostRevenue : this.selectedVoucherType === "Invoice" ? "Revenue" : "Cost",
           InvoiceType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : null),
           ChargeUOMSid: isRevenue ? chargeInfo.RevenueChargeUomSid : chargeInfo.CostChargeUomSid,
@@ -3010,6 +3028,31 @@ getChargeTaxPercentage(charge: any): string {
       console.error('Error generating voucher:', error);
     }
   }
+
+  async getPartyAmount(charge: any) {
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
+    const voucherHeaderCurrency = this.invoiceHeaderCurrency?.currencyCode;
+    const voucherHeaderExRate = this.invoiceHeaderExchangeRate;
+    const chargeCurrencyCode = isRevenue
+      ? charge.RevenueCurrencyMaster?.currencyCode
+      : charge.CostCurrencyMaster?.currencyCode;
+    const chargeCurrencyId = isRevenue
+      ? charge.RevenueCurrencyMasterSid
+      : charge.CostCurrencyMasterSid;
+
+    // Same currency → no conversion
+    if (chargeCurrencyCode === voucherHeaderCurrency) {
+      return isRevenue ? 
+        this.getFormattedAmount(toNumber(charge.RevenueLocalAmount), chargeCurrencyId) :
+        this.getFormattedAmount(toNumber(charge.CostLocalAmount), chargeCurrencyId);
+    } else{
+      return isRevenue ? 
+        this.getFormattedAmount(toNumber(charge.RevenueLocalAmount) / toNumber(voucherHeaderExRate), chargeCurrencyId) :
+        this.getFormattedAmount(toNumber(charge.CostLocalAmount) / toNumber(voucherHeaderExRate), chargeCurrencyId);
+    }
+  }
+
 
 // private getCustomerBranchSid(): number | null {
 //   const firstCharge = this.availableCharges[0];
