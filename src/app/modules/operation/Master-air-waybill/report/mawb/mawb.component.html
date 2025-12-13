@@ -37,14 +37,14 @@
             <div style="display: flex; flex-wrap: wrap; margin-bottom: 0;">
 
                 <!-- LEFT COLUMN -->
-                <div style="width: 50%; padding: 0;">
+                <div style="width: 50%; padding: 0;font-size: 14px;">
 
                     <!-- Shipper Section -->
                     <div
                         style="display: flex; border-top:1px solid black; border-left:1px solid black; border-bottom:1px solid black; width:100%;">
 
                         <!-- LEFT -->
-                        <div style="width: 70%;">
+                        <div style="width: 70%;padding-left:10px;padding-top:10px">
                             <strong>Shipper</strong>
                             <div style="padding: 4px; height: 79px; line-height: 16px;">
                                 {{ masterAirWayData?.houseJob?.[0]?.ShipperName }} <br>
@@ -62,7 +62,7 @@
 
                     <!-- Consignee Section -->
                     <div style="display: flex; border-left:1px solid black; width:100%;">
-                        <div style="width: 70%;">
+                        <div style="width: 70%;padding-left:10px;padding-top:10px">
                             <strong>Consignee</strong>
                             <div style="padding: 4px; min-height: 79px; line-height: 16px;">
                                 {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }} <br>
@@ -78,7 +78,7 @@
 
                     <!-- Issuing Carrier's Agent -->
                     <div
-                        style="display: flex; flex-direction: column; border-top:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding: 4px;">
+                        style="display: flex; flex-direction: column; border-top:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding: 0px;padding-left:10px;padding-top:10px">
                         <div style="white-space: nowrap; width: 200px;"><strong>Issuing Carrier's Agent Name and
                                 City</strong>
                         </div>
@@ -108,7 +108,7 @@
 
                     <!-- Airport Departure -->
                     <div
-                        style="text-align:center; border-left:1px solid black; border-bottom:1px solid black; padding:4px;">
+                        style="text-align:center; border-left:1px solid black; border-bottom:1px solid black; padding:8px;">
                         <div style="white-space: nowrap;"><strong>Airport departure (Addr. of first Carrier) and
                                 requested
                                 Routing</strong></div>
@@ -122,28 +122,35 @@
 
                     <!-- MAWB & Company Info -->
                     <div style="display: flex; flex-direction: column; border:1px solid black;">
-                        <div style="display: flex;">
+                        <div style="display: flex;padding-left:10px;padding-top:10px">
                             <div style="width:70px; white-space: nowrap;"><strong>MAWB</strong></div>
                             <div>: {{ masterAirWayData?.MBLNo }}</div>
                         </div>
-                        <div style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
-                            <div style="display:flex; flex-direction:column; align-items:center;">
-                                <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                    style="width:50px; height:50px; object-fit:contain;">
+                        <div
+                            style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
+                            <div style="display: flex; align-items: center; flex-direction: column;">
+                               <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                             </div>
 
                             <div style="font-size:14px; text-align:center;">
-                                <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName ||
-                                    'Company Name' }}</h4>
-                                <h5 style="margin:0; padding:0; font-weight:600;">{{ currentBranch?.branchName ||
-                                    'Company Branch' }}</h5>
-                                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                                <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName ||
-                                    currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode ||
-                                    currentBranch?.ZipCode || '' }}</p>
-                                <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber ||
+                                <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company
+                                    Name' }}</h3>
+                                <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company
+                                    Branch' }}</h4>
+                                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                                <p style="margin: 2px 0; font-size: 15px;">
+                                    {{ currentBranch?.addressLine2 || '' }} ,
+                                    {{ currentBranchCityName || currentBranch?.cityMaster?.cityName ||
+                                    currentCompany?.City || '' }}
+                                    - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+                                </p>
+                                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber ||
                                     currentBranch?.Phone || '' }}</p>
                             </div>
                         </div>
@@ -155,13 +162,13 @@
                     </div> -->
 
                     <div
-                        style="display: flex; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;">
-                        <div style="width:200px; white-space: nowrap;"><strong>Account Information</strong></div>
-                        <div style="height:114px; "></div>
+                        style="display: flex; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;padding-left:10px;padding-top:10px; padding: 6px;">
+                        <div style="width:200px; white-space: nowrap;"><strong>Account Information</strong></div> <br>
+                        <div style="height:114px; ">: {{ masterAirWayData?.FreightPPCC }}</div>
                     </div>
 
                     <div
-                        style="display: flex; text-align:center; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;">
+                        style="display: flex; text-align:center; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;padding-left:10px;padding-top:10px;padding: 8px;">
                         <div>
                             <div style="width:200px; white-space: nowrap;"><strong>Reference Number</strong></div>
                             <div style="height:20px; "></div>
@@ -205,7 +212,8 @@
                 </div>
 
                 <!-- RIGHT -->
-                <div style="width:50%; display:flex; border-left:1px solid black; border-bottom:1px solid black;border-left: none;">
+                <div
+                    style="width:50%; display:flex; border-left:1px solid black; border-bottom:1px solid black;border-left: none;">
                     <div style="width:20%; text-align:center; border-right:1px solid black;">
                         <div><strong>Curr</strong></div>
                         <div>{{ getCurrencyCodeById(currentCurrency) }}</div>
@@ -246,7 +254,8 @@
                     </div>
 
                     <div style="width:30%; border-right:1px solid black;">
-                        <div><strong style="font-size: 9px; text-align: center;">Declared Value of Carriage</strong></div>
+                        <div><strong style="font-size: 9px; text-align: center;">Declared Value of Carriage</strong>
+                        </div>
                         <div></div>
                     </div>
 
@@ -294,7 +303,8 @@
             <div
                 style="border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px;">
                 <p>Handling Information</p>
-                <div style="height:50px;"></div>
+                <div style="width:70px; white-space:nowrap;">: {{masterAirWayData?.Cargo?.[0]?.NoOfPkg}}
+                            Packages Only</div>
             </div>
 
             <div style="display: flex; flex-direction: column; margin-bottom: 0;">
@@ -350,13 +360,13 @@
                         <p>Q</p>
                     </div>
                     <div style="width: 15%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.GrossWeight }}
+                        {{ masterAirWayData?.GrossWeight | number:'1.2-2'}}
                     </div>
                     <div style="width: 10%; border-right: 1px solid black; text-align: center;">
                         {{ masterAirWayData?.WeightIn }}
                     </div>
                     <div style="width: 15%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.ChargeableWeight }}
+                        {{ masterAirWayData?.ChargeableWeight | number:'1.2-2'}}
                     </div>
                     <div style="width: 10%; border-right: 1px solid black; text-align: center;">
                         {{ getFreightTotals().totalExchangeRate }}
@@ -584,7 +594,7 @@
                             <div style="width: 33.3333%; padding-left: 0; padding-right: 0;">
                                 <div style="padding-left: 8px; padding-right: 8px; text-align: center;">
                                     <strong>Total Collect</strong>
-                                    <div style="height: 2px; height: auto;"></div>
+                                    <div style="height: 2px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -603,7 +613,7 @@
                             </div>
                             <div style="width: 33.3333%; padding-left: 0; padding-right: 0; text-align: center;">
                                 <strong>Total Collect</strong>
-                                <div style="height: 20px; height: auto;"></div>
+                                <div style="height: 20px;"></div>
                             </div>
                         </div>
 

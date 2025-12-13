@@ -780,7 +780,7 @@
         [maxDate]="toNgbDateStruct(tariffDetailsForm.get('detailExpiredOn').value)"/>
       <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
       @if(tariffDetailsForm.get('detailEffectiveDate')?.touched && tariffDetailsForm.get('detailEffectiveDate')?.invalid){
-      <div class="error-message">
+      <div class="error-message pb-2">
         @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){
         <span>Required</span>
         } 
@@ -814,7 +814,7 @@
                                                 class="text-danger">*</span></label>
                                         @if(tariffDetailsForm.get('detailExpiredOn')?.touched &&
                                         tariffDetailsForm.get('detailExpiredOn')?.invalid){
-                                        <div class="error-message">
+                                        <div class="error-message pb-2">
                                             @if(tariffDetailsForm.get('detailExpiredOn')?.hasError('required')){
                                             <span>Required</span>
                                             }

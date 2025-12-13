@@ -166,7 +166,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         disabled: !this.mps.can('insert')
       },
       {
-        label: 'Excel Import',
+        label: 'Excel Imp',
         icon: 'fas fa-file-excel',
         action: 'excel-dropdown',
         disabled: !this.mps.can('insert'),
