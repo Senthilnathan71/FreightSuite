@@ -150,10 +150,10 @@ getTotalOriginalLocalAmount(): number {
   }
 
 
-       // print
+      
+            
 
-      // print
-
+        
 printDiv(divId: string): void {
   this.showPrintLogo = true;
   this.showPdfLogo = false;
@@ -179,6 +179,7 @@ printDiv(divId: string): void {
     }
   }, 50); // small timeout so Angular updates DOM
 }
+
 
 
 

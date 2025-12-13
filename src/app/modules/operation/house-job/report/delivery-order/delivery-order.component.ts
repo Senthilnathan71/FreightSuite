@@ -169,45 +169,56 @@ export class DeliveryOrderComponent {
   }
 
 
-    
-async downloadPDF() {
-  this.spinner.show();
-  try {
-   const DONo = this.housejobData?.ShipmentNo || 'Receipt';
+    async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
 
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Delivery_Order_${DONo}`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+  setTimeout(async () => {
+    this.spinner.show();
+     try {
+     const DONo = this.housejobData?.ShipmentNo || 'Receipt';
+
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Delivery_Order_${DONo}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    }finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
+    
 
-// Print
+ showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+     
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
- 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
 
 getAmountInWords(): string {

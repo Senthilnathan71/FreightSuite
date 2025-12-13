@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -20,6 +21,9 @@ export class MblComponent {
   userData: any;
   currentDate = new Date();
   branchDetails: any;
+  currentMenuId: any;
+  TandCList: any[] = [];
+  
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   @Input() masterJobData: any;
@@ -55,6 +59,7 @@ export class MblComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private pdfService: PdfDownloadService,
+    private modalService: NgbModal
   ) { }
 
   loadCityName(): void {
@@ -131,11 +136,15 @@ export class MblComponent {
     this.activeModal.close();
   }
 
-     async downloadPDF() {
-    this.spinner.show();
-    try {
-      const quotationNumber = this.masterJobData?.MBLNo;
 
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+     const quotationNumber = this.masterJobData?.MBLNo;
       await this.pdfService.downloadBalancedPDF(
         'printContent',
         `MBL_${quotationNumber}`,
@@ -145,27 +154,60 @@ export class MblComponent {
     } finally {
       this.spinner.hide();
     }
-  }
-
-
-   printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
-
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  }, 50);
 }
+
+
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
+  printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
+}
+
+
+openTandC(){
+    this.currentMenuId=Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+      if(resp.status) {
+        this.TandCList = resp.data;
+        const modelRef = this.modalService.open(TermsAndConditionsComponent,{
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+        modelRef.componentInstance.terms = this.TandCList;
+        modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+      } else {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+      }
+  },(error)=>{
+    this.appSettingService.showError('Error loading Terms and Conditions',error);
+  });
+}
+
 }

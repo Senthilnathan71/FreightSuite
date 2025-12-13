@@ -24,6 +24,9 @@ export class CommericalInvoiceComponent {
     branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+
+    showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
   
     @Input() housejobData: any;
     @Input() masterJobContainers: any[];
@@ -90,21 +93,26 @@ export class CommericalInvoiceComponent {
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 
-  async downloadPDF() {
-  this.spinner.show();
-  try {
-   const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
 
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Commercial_Invoice`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+
+  async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+       const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Commercial_Invoice`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
 
     async generatePDFBlob(): Promise<Blob | null> {
@@ -148,26 +156,32 @@ export class CommericalInvoiceComponent {
         }
 
 
-          printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+   printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
+
 
     
   modalClose() {
