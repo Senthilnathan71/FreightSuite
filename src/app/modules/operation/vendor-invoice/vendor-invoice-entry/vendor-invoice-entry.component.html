@@ -24,7 +24,7 @@
           </button>
           <div class="action-group"  *ngIf="isEditMode"> 
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
-            [disabled]="vendorInvoiceForm.invalid || isSaving || vendorInvoiceData?.PostStatus=== 'P'">
+            [disabled]="isSaving || vendorInvoiceData?.PostStatus=== 'P'">
             <i class="fas fa-check-circle me-1"></i> Post
           </button>
           </div>
@@ -44,8 +44,8 @@
           </button>
 
           <button *ngIf="!isViewMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSubmit()" [disabled]="vendorInvoiceForm.invalid || isSaving">
-            <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
+            (click)="onSubmit()" [disabled]="isSaving">
+            <i class="fas fa-save me-1"></i> Save
           </button>
           <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -672,8 +672,7 @@
 
                         <!-- Party Amount -->
                         <td>
-                          <span style="font-weight: 600; color: black;">{{ row.get('PartyAmount')?.value | numberFormat
-                            }}</span>
+                          <span style="font-weight: 600; color: black;">{{ getPartyAmount(row.value) }}</span>
                         </td>
 
                         <!-- MasterJobSid column -->
@@ -721,78 +720,50 @@
           </div>
 
           <!-- Totals Section -->
-          <div class="row mt-1">
-            <div class="col-md-4"></div>
-            <div class="col-md-8">
-
-              <div class="row">
-                <aside class="col-md-4">
-                  <div class="d-flex align-items-center gap-2">
-                    <div>
-                      <strong style="font-weight: 700; color: black;">Currency Amount : </strong>
-                    </div>
-                    <div style="font-weight: 600; color: black;">
-                      {{ getTotalCurrencyAmount() | number:'1.2-2' }}
-                    </div>
-                  </div>
-
-                </aside>
-                <aside class="col-md-4">
-                  <div class="d-flex align-items-center gap-2">
-                    <div>
-                      <strong style="font-weight: 700; color: black;">Tax Amount : </strong>
-                    </div>
-                    <div style="font-weight: 600; color: black;">
-                      {{ getTotalTaxAmount() | number:'1.2-2' }}
-                    </div>
-                  </div>
-
-                </aside>
-                <aside class="col-md-4">
-                  <div class="d-flex align-items-center gap-2">
-                    <div>
-                      <strong style="font-weight: 700; color: black;">Total Amount :</strong>
-                    </div>
-                    <div>
-                      <strong style="font-weight: 600; color: black;">{{ getGrandTotal() | number:'1.2-2' }}</strong>
-                    </div>
-                  </div>
-
-                </aside>
-                <!-- <table class="table table-sm table-borderless mb-0 w-100 align-middle" style="table-layout: fixed;">
-          <tbody>
-            <tr>
-              <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
-                <strong>Currency Amount</strong>
-              </td>
-              <td style="width: 5%; text-align: center;"><strong>:</strong></td>
-              <td class="text-end" style="width: 40%; padding-left: 10px;">
-                {{ getTotalCurrencyAmount() | number:'1.2-2' }}
-              </td>
-            </tr>
-            <tr>
-              <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
-                <strong>Tax Amount</strong>
-              </td>
-              <td style="width: 5%; text-align: center;"><strong>:</strong></td>
-              <td class="text-end" style="width: 40%; padding-left: 10px;">
-                {{ getTotalTaxAmount() | number:'1.2-2' }}
-              </td>
-            </tr>
-            <tr class="table-info">
-              <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
-                <strong>Total Amount</strong>
-              </td>
-              <td style="width: 5%; text-align: center;"><strong>:</strong></td>
-              <td class="text-end" style="width: 40%; padding-left: 10px;">
-                <strong>{{ getGrandTotal() | number:'1.2-2' }}</strong>
-              </td>
-            </tr>
-          </tbody>
-        </table> -->
-              </div>
-
+          <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
+          
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-secondary small">Total Credits</span>
+              <span class="fw-semibold text-success">
+                {{ getTotalLocalCredits() }}
+              </span>
             </div>
+          
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-secondary small">Total Debits</span>
+              <span class="fw-semibold text-danger">
+                {{ getTotalLocalDebits() }}
+              </span>
+            </div>
+          
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-secondary small">Net (Cr - Dr)</span>
+              <span class="fw-semibold text-primary">
+                {{ getNetCrDr() }}
+              </span>
+            </div>
+          
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-secondary small">Party Curr Credit</span>
+              <span class="fw-semibold">
+                {{ getPartyCurrCreditAmt() }}
+              </span>
+            </div>
+          
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-secondary small">Party Curr Debit</span>
+              <span class="fw-semibold">
+                {{ getPartyCurrDebitAmt() }}
+              </span>
+            </div>
+          
+            <div class="col d-flex justify-content-between px-2">
+              <span class="text-secondary small">Tax Amount</span>
+              <span class="fw-semibold text-warning">
+                {{ getTotalTaxAmount() }}
+              </span>
+            </div>
+          
           </div>
 
           <!-- TDS Section -->
