@@ -64,6 +64,7 @@ import { toNumber } from 'src/app/common/helper';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -3328,6 +3329,18 @@ handleCustomsChange(event: any) {
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
   }
 
+   reportCFSoutturn() {
+    const modalRef = this.modalService.open(CfsOutturnComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.cfsList = this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.agentList = this.agentList || [];
+    modalRef.componentInstance.yardList = this.yardList || [];
+  }
 
   reportreleaseOrder() {
     const modalRef = this.modalService.open(ReleaseOrderComponent, {

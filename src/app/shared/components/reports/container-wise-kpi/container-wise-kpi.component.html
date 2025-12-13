@@ -1,0 +1,105 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Container Wise KPI
+        as on {{ params?.FromHBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Booking No</th>
+                        <th class="bg-transparent text-light text-center">Freight Amount (SGD)</th>
+                        <th class="bg-transparent text-light">Report Month</th>
+                        <th class="bg-transparent text-light">Vessel Name</th>
+                        <th class="bg-transparent text-light">MBL</th>
+                        <th class="bg-transparent text-light">HBL</th>
+                        <th class="bg-transparent text-light">Shipment Type</th>
+                        <th class="bg-transparent text-light">Consignee Name</th>
+                        <th class="bg-transparent text-light">Destination of Country</th>
+                        <th class="bg-transparent text-light">Port of Discharge</th>
+                        <th class="bg-transparent text-light">Final Destination</th>
+                        <th class="bg-transparent text-light">DG Declaration on by container level</th>
+                        <th class="bg-transparent text-light">Container No.</th>
+                        <th class="bg-transparent text-light">Container Type</th>
+                        <th class="bg-transparent text-light">Volume</th>
+                        <th class="bg-transparent text-light">Weight</th>
+                        <th class="bg-transparent text-light">Booking Date</th>
+                        <th class="bg-transparent text-light">ETA POL Date</th>
+                        <th class="bg-transparent text-light">ETD POL Date</th>
+                        <th class="bg-transparent text-light">ATD POL Date</th>
+                        <th class="bg-transparent text-light">ETA Destination</th>
+                        <th class="bg-transparent text-light">ATA Destination</th>
+                        <th class="bg-transparent text-light">Freight Term</th>
+                        <th class="bg-transparent text-light">Booking Confirmation Date</th>
+                        <th class="bg-transparent text-light">DG Application on Received Date</th>
+                        <th class="bg-transparent text-light">DG Approval Date</th>
+                        <th class="bg-transparent text-light">BL Issued Date</th>
+                        <th class="bg-transparent text-light">Tax Invoice Release Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+                        <td>{{ item.bookingNo || '' }}</td>
+                        <td>{{ item.freightRevenue || '' }}</td>
+                        <td> {{ params?.FromHBLDt| date:'MMMM' }}</td>
+                        <td>{{ item.vesselName || '' }}</td>
+                        <td>{{ item.MBL || '' }}</td>
+                        <td>{{ item.HBL || '' }}</td>
+                        <td>{{ item.shipmentType || '' }}</td>
+                        <td>{{ item.consigneeName || '' }}</td>
+                        <td></td>
+                        <td>{{ item.portofDischarge || '' }}</td>
+                        <td>{{ item.fnalDestination || '' }}</td>
+                        <td class="text-center">{{ item.dgDelaration || '' }}</td>
+                        <td>{{ item.containerNo || '' }}</td>
+                        <td></td>
+                        <td class="text-end">{{ item.vol || '' }}</td>
+                        <td class="text-end">{{ item.weight || '' }}</td>
+                        <td>{{ item.bookingDate | formatDate }}</td>
+                        <td>{{ item.ETA | formatDate}}</td>
+                        <td>{{ item.ETD | formatDate }}</td>
+                        <td>{{ item.ATDPOL | formatDate }}</td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ item.freightTerms || '' }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
