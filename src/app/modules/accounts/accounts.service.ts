@@ -430,4 +430,22 @@ export class AccountsService {
     )
   }
 
+  searchVoucherMatching(payload: any) {
+    return this.http.post<{ data: any }>('voucher-matching/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getVoucherMatching(VoucherMatchingHeaderSid:number){
+    return this.http.get<{data:any}>(`voucher-matching/fetch/${VoucherMatchingHeaderSid}`).pipe(
+      map((resp:any)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 }

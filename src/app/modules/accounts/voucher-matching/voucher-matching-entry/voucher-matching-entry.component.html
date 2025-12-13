@@ -1,4 +1,4 @@
-<div class="row compact-form" [formGroup]="form">
+<div class="row compact-form">
     <div class="col-12 px-0">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
@@ -10,37 +10,12 @@
                 </div>
             </div>
             <div class="col-md-8 pb-1">
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                    <!-- <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-              ngbDropdownToggle>
-              <i class="fas fa-ellipsis-v"></i>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-envelope me-1"></i> Email</button>
-            </div>
-          </div>  -->
                 </div>
             </div>
         </div>
@@ -48,412 +23,260 @@
 
     <div class="col-12 px-0">
         <div class="card mb-1">
-            <div class="card-body py-1">
-                <form>
-                    <div class="row">
-                        <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
+            <div class="card-body">
+                <form [formGroup]="voucherMatchingForm" novalidate>
+                    <div class="row g-2 align-items-end">
 
-                        </aside>
+  <!-- Matching No -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="VoucherMatchingNo"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Matching No.</label>
+    </div>
+  </div>
 
-                        <aside class="col-md-2 pe-md-2">
-                            <div class="custom-form-group">
-                                <input type="text" class="custom-input-field sm" placeholder="" />
-                                <label class="input-label">Matching No. <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
+  <!-- Matching Date -->
+  <div class="col-md-2">
+    <div
+      class="custom-form-group custom-form-group-select-date"
+      [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value"
+    >
+      <div class="input-group">
+        <input
+          class="form-control"
+          formControlName="VoucherMatchingDate"
+          placeholder="dd-mm-yyyy"
+          ngbDatepicker
+          #d1="ngbDatepicker"
+          (click)="d1.toggle()"
+          readonly
+        />
+        <button class="btn" type="button" (click)="d1.toggle()">
+          <i-feather name="calendar" class="feather-sm"></i-feather>
+        </button>
+      </div>
+      <label class="input-label">Matching Date</label>
+    </div>
+  </div>
 
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group custom-form-group-select-date">
-                                <div class="input-group">
-                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d1="ngbDatepicker" (click)="d1.toggle()" readonly />
+  <!-- Post Date -->
+  <div class="col-md-2">
+    <div
+      class="custom-form-group custom-form-group-select-date"
+      [class.filled]="!!voucherMatchingForm.get('PostDate')?.value"
+    >
+      <div class="input-group">
+        <input
+          class="form-control"
+          formControlName="PostDate"
+          placeholder="dd-mm-yyyy"
+          ngbDatepicker
+          #d2="ngbDatepicker"
+          (click)="d2.toggle()"
+          readonly
+        />
+        <button class="btn" type="button" (click)="d2.toggle()">
+          <i-feather name="calendar" class="feather-sm"></i-feather>
+        </button>
+      </div>
+      <label class="input-label">Post Date</label>
+    </div>
+  </div>
 
-                                    <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
+  <!-- Ledger -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="LedgerName"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Ledger</label>
+    </div>
+  </div>
 
-                                <label class="input-label" for="dp">Matching Date <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
+  <!-- Subledger -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="SubledgerName"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Subledger</label>
+    </div>
+  </div>
 
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group custom-form-group-select-date">
-                                <div class="input-group">
-                                    <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                                        minDate></app-date-time-picker>
-                                </div>
-                                <label class="input-label" for="dp">Posted Date <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
+  <!-- Status -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="Status"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Status</label>
+    </div>
+  </div>
 
+</div>
 
-                        <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
-
-                        </aside>
-
-
-                        <aside class="col-md-2 ">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select bindLabel="name" bindValue="name" placeholder="">
-                                </ng-select>
-                                <label class="input-label">Ledger <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group custom-form-group-select">
-                                <label class="input-label">Subledger <span class="text-danger"></span></label>
-
-                                <div class="d-flex align-items-center gap-2">
-                                    <ng-select bindLabel="name" bindValue="name" placeholder=""
-                                        class="flex-grow-1"></ng-select>
-
-                                    <button type="button" class="btn btn-info btn-sm dofi-min-w-50 dofi-max-w-50">
-                                        Get
-                                    </button>
-                                </div>
-                            </div>
-                        </aside>
-
-
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group custom-form-group-select">
-                                <label class="input-label"> Status <span class="text-danger">*</span></label>
-                                <div class="d-flex  justify-content-between align-items-center gap-2">
-                                    <ng-select [items]='status' bindLabel="name" bindValue="name" placeholder=""
-                                        class="flex-grow-1">
-                                    </ng-select>
-
-                                </div>
-                            </div>
-                        </aside>
-
-
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <button type="button" class="btn-sm  dofi-min-w-80 dofi-max-w-80 btn btn-secondary">
-                                    Post
-                                </button>
-                            </div>
-                        </aside>
-                    </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Table Section with FormArray -->
+    <div class="col-12 mt-1 px-0">
+        <form [formGroup]="voucherMatchingForm" novalidate>
+            <div class="table-wrapper">
+                <div class="table-responsive table-borderless">
+                    <table class="table table-hover align-middle no-wrap table-sm mb-0">
+                        <thead class="bg-info">
+                            <tr>
+                                <th class="bg-transparent text-light">Branch</th>
+                                <th class="bg-transparent text-light">Ledger</th>
+                                <th class="bg-transparent text-light">Subledger</th>
+                                <th class="bg-transparent text-light">Voucher No.</th>
+                                <th class="bg-transparent text-light">Voucher Type</th>
+                                <th class="bg-transparent text-light">Voucher Date</th>
+                                <th class="bg-transparent text-light">Dr/Cr</th>
+                                <th class="bg-transparent text-light">Curr.</th>
+                                <th class="bg-transparent text-light">Ex.Rate</th>
+                                <th class="bg-transparent text-light">Curr.Amt</th>
+                                <th class="bg-transparent text-light">Local Amt</th>
+                                <th class="bg-transparent text-light">Matching Type</th>
+                            </tr>
+                        </thead>
 
-    <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-sm btn-info" (click)="addDetails()">
-            <i class="fas fa-plus"></i> Add Details
-        </button>
-    </div>
+                        <tbody formArrayName="voucherMatching">
+                            <!-- Use *ngFor to iterate over the FormArray -->
+                            <tr *ngFor="let detail of detail.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <input 
+                                        type="text"
+                                        formControlName="BranchName"
+                                        class="custom-input-field sm" 
+                                        style="min-width: 250px;" 
+                                    />
+                                </td>
 
-    <div class="col-12 mt-1 px-0" formArrayName="voucherMatching">
-        <div class="table-wrapper">
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                    <thead class="bg-info">
-                        <tr>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="LedgerName"
+                                        class="custom-input-field sm"
+                                        style="min-width: 100px;" 
+                                    />
+                                </td>
 
-                            <th colspan="13" class="matching-header bg-warning text-center fw-bold"
-                                style="color: black;">
-                                OS Vouchers
-                            </th>
-                            <th colspan="7" class="matching-header text-center fw-bold"
-                                style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
-                        </tr>
-                        <tr>
-                            <th class="bg-transparent text-light"></th>
-                            <th class="bg-transparent text-light">Branch</th>
-                            <th class="bg-transparent text-light">Ledger</th>
-                            <th class="bg-transparent text-light">Voucher No.</th>
-                            <th class="bg-transparent text-light">Voucher Type</th>
-                            <th class="bg-transparent text-light">Voucher Date</th>
-                            <th class="bg-transparent text-light">Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex.Rate</th>
-                            <th class="bg-transparent text-light"  style="width: 5%;">Curr.Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Local Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">OS Curr.Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">OS Local Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Curr.</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Ex.Rate</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Curr Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Local Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">TDS Amt</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Balance</th>
-                            <th class="bg-transparent text-light" style="width: 5%;">Tick Box</th>
-                        </tr>
-                    </thead>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="SubledgerName"
+                                        class="custom-input-field sm"
+                                        style="min-width: 100px;" 
+                                    />
+                                </td>
 
-                    <tbody>
-                        <tr *ngFor="let row of voucherMatching.controls; let i = index" [formGroupName]="i">
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
-                                    <i class="fas fa-trash text-danger"></i>
-                                </button>
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="VoucherNumber"
+                                        class="custom-input-field sm"
+                                        style="min-width: 200px;" 
+                                    />
+                                </td>
 
-                            <td><input type="text"  class="form-control" style="min-width: 100px;" />
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="VoucherType"
+                                        class="custom-input-field sm"
+                                        style="min-width: 75px;" 
+                                    />
+                                </td>
 
-                            <td><input type="text" class="form-control" style="min-width: 100px;" />
-                            </td>
+                                <td>
+                                    <input 
+                                        ngbDatepicker 
+                                        #d5="ngbDatepicker"
+                                        type="text" 
+                                        formControlName="VoucherDate"
+                                        class="custom-input-field sm"
+                                        style="min-width: 170px;" 
+                                    />
+                                </td>
 
-                            <td>
-                                <input type="text" class="form-control" style="min-width: 100px;" />
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="DrCr"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;" 
+                                    />
+                                </td>
 
-                            <td>
-                                <input type="text"  class="form-control" style="min-width: 100px;"/>
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="CurrencyCode"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;" 
+                                    />
+                                </td>
 
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        style="min-width: 100px;" #d3="ngbDatepicker" (click)="d3.toggle()" />
-                                    <button class="btn bi bi-calendar3" (click)="d3.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="ExchangeRate"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;" 
+                                    />
+                                </td>
 
-                            <td>
-                                <ng-select bindLabel="name" bindValue="id"  style="min-width: 73px;"
-                                    appendTo="body"></ng-select>
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="Amount"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;" 
+                                    />
+                                </td>
 
-                            <td>
-                                <ng-select bindLabel="name" bindValue="id"   style="min-width: 88px;"
-                                    appendTo="body"></ng-select>
-                            </td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="LocalAmount"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;" 
+                                    />
+                                </td>
 
-                            <td><input type="text"  class="form-control" style="min-width: 55px;" />
-                            </td>
-                            <td><input type="text"  class="form-control" style="min-width: 55px;" />
-                            </td>
-                            <td><input type="text"  class="form-control"  style="min-width: 55px;"/>
-                            </td>
-                            <td><input type="text" class="form-control"  style="min-width: 50px;"/>
-                            </td>
-                            <td><input type="text" class="form-control" style="min-width: 50px;" />
-                            </td>
-                            <td>
-                                <ng-select bindLabel="name" bindValue="id" formControlName=" " style="min-width: 85px;"
-                                    appendTo="body"></ng-select>
-                            </td>
-                            <td><input type="text" class="form-control" style="min-width: 100px;"/>
-                            </td>
-                            <td><input type="text"  class="form-control"  style="min-width: 60px;"/>
-                            </td>
-                            <td><input type="text"  class="form-control" style="min-width: 60px;" />
-                            </td>
-                            <td><input type="text"  class="form-control" style="min-width: 60px;" />
-                            </td>
-                            <td><input type="text"  class="form-control"  style="min-width: 60px;"/>
-                            </td>
-                            <td><input type="checkbox"  class="form-control"/>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- <div class="d-flex justify-content-center align-items-center gap-3 bg-white ">
-        <div class="d-flex justify-content-center gap-3">
-            <strong class="fw-bold">Total: </strong>
-            <p class="mb-0">xxx</p>
-        </div>
-    </div> -->
-
-    <!-- multiple tabs -->
-
-    <div class="nav-pills-container mt-2">
-        <div class="nav-pills d-flex align-items-center w-100">
-            <div class="pills-left d-flex flex-nowrap" style="flex:1;">
-                <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
-                    (click)="selectTab(tab.name)">
-                    <div class="pill-icon">
-                        <i [class]="tab"></i>
-                    </div>
-                    <span class="pill-label">{{ tab.name }}</span>
-                    <div class="pill-indicator" [hidden]="selectedTab !== tab.name"></div>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        formControlName="MatchingType"
+                                        class="custom-input-field sm"
+                                        style="min-width: 75px;" 
+                                    />
+                                </td>
+                            </tr>
+                            
+                            <!-- If no rows exist, show empty state -->
+                            <tr *ngIf="detail.length === 0">
+                                <td colspan="12" class="text-center py-3">
+                                    No voucher matching details available
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div [hidden]="selectedTab !== 'Inter Branch'">
-                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addInterBranch()">
-                    <i class="fas fa-plus"></i> Add Inter Branch Details
-                </button>
-            </div>
-            <div [hidden]="selectedTab !== 'Ex.JV'">
-                <button type="button" class="btn btn-sm btn-info">
-                    <i class="fas fa-plus me-1"></i> Add JV Details
-                </button>
-            </div>
-            <div [hidden]="selectedTab !== 'TDS'">
-                <button type="button" class="btn btn-sm btn-info">
-                    <i class="fas fa-plus me-1"></i> Add TDS Details
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="content-workspace px-0">
-        <div class="workspace-content px-0 " [hidden]="selectedTab !== 'Inter Branch'">
-            <div class="col-12 mt-1" formArrayName=" ">
-                <div class="table-wrapper">
-                    <div class="table-responsive table-borderless">
-                        <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                            <thead class="bg-info">
-                                <!-- <tr>
-
-                                    <th colspan="12" class="matching-header bg-warning text-center fw-bold"
-                                        style="color: black;">
-                                        OS Vouchers
-                                    </th>
-                                    <th colspan="7" class="matching-header text-center fw-bold"
-                                        style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
-                                </tr> -->
-                                <tr>
-                                    <th class="bg-transparent text-light" width="3%"></th>
-                                    <th class="bg-transparent text-light">Branch</th>
-                                    <th class="bg-transparent text-light">Curr.Amount</th>
-                                    <th class="bg-transparent text-light">Inter Branch JV</th>
-                                    <th class="bg-transparent text-light">Voucher Type</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr *ngFor="let row of voucherMatching.controls; let i = index" [formGroupName]="i">
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
-                                            <i class="fas fa-trash text-danger"></i>
-                                        </button>
-                                    </td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td>
-                                        <input type="text" class="form-control" />
-                                    </td>
-
-                                    <td>
-                                        <input type="text" class="form-control" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="workspace-content px-0" [hidden]="selectedTab !== 'Ex.JV'">
-            <div class="col-12 mt-1" formArrayName=" ">
-                <div class="table-wrapper">
-                    <div class="table-responsive table-borderless">
-                        <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                            <thead class="bg-info">
-                                <!-- <tr>
-
-                                    <th colspan="12" class="matching-header bg-warning text-center fw-bold"
-                                        style="color: black;">
-                                        OS Vouchers
-                                    </th>
-                                    <th colspan="7" class="matching-header text-center fw-bold"
-                                        style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
-                                </tr> -->
-                                <tr>
-                                    <th class="bg-transparent text-light" width="3%"></th>
-                                    <th class="bg-transparent text-light">Ex.JV No.</th>
-                                    <th class="bg-transparent text-light">JV Type</th>
-                                    <th class="bg-transparent text-light">JV Amount</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr *ngFor="let row of voucherMatching.controls; let i = index" [formGroupName]="i">
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
-                                            <i class="fas fa-trash text-danger"></i>
-                                        </button>
-                                    </td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td>
-                                        <input type="text" class="form-control" />
-                                    </td>
-
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="workspace-content  px-0" [hidden]="selectedTab !== 'TDS'">
-            <div class="col-12 mt-1" formArrayName=" ">
-                <div class="table-wrapper">
-                    <div class="table-responsive table-borderless">
-                        <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                            <thead class="bg-info">
-                                <!-- <tr>
-
-                                    <th colspan="12" class="matching-header bg-warning text-center fw-bold"
-                                        style="color: black;">
-                                        OS Vouchers
-                                    </th>
-                                    <th colspan="7" class="matching-header text-center fw-bold"
-                                        style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
-                                </tr> -->
-                                <tr>
-                                    <th class="bg-transparent text-light" width="3%"></th>
-                                    <th class="bg-transparent text-light">Branch</th>
-                                    <th class="bg-transparent text-light">JV No.</th>
-                                    <th class="bg-transparent text-light"> </th>
-                                    <th class="bg-transparent text-light"> </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr *ngFor="let row of voucherMatching.controls; let i = index" [formGroupName]="i">
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
-                                            <i class="fas fa-trash text-danger"></i>
-                                        </button>
-                                    </td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td><input type="text" class="form-control" /></td>
-
-                                    <td>
-                                        <input type="text" class="form-control" />
-                                    </td>
-
-                                    <td>
-                                        <input type="text" class="form-control" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
 </div>

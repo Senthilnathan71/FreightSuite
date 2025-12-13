@@ -384,6 +384,19 @@ export const AccountRoutes: Routes = [
       },
 
       {
+        path: "voucher-matching/entry/:VoucherMatchingHeaderSid",
+        component: VoucherMatchingEntryComponent,
+        data: {
+          title: "Voucher-Matching",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher-Matching", url: "/accounts/voucher-matching/list" },
+            { title: "Voucher-Matching" },
+          ],
+        },
+      },
+
+      {
         path: "trial-balance/report",
         component: TrialBalanceReportComponent,
         data: {
