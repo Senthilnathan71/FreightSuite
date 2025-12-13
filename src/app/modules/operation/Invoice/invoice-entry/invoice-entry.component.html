@@ -800,14 +800,14 @@
         
         <!-- Invoice Title -->
         <div style="text-align:center; border-top:1px solid black; padding-top:4px;">
-          <h5 style="margin:2px 0; font-weight:700;">{{ getInvoiceTitle() }}</h5>
+          <h4 style="margin:2px 0; font-weight:700;">{{ getInvoiceTitle() }}</h4>
           <p style="font-size:12px; margin:2px 0;" *ngIf="currentUserCountry === 'india'">
             <strong>GST Code :</strong> {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
           </p>
         </div>
         
         <!-- Billing Info -->
-        <div style="display:flex; justify-content:space-between; border-bottom:1px solid black; margin-top:8px; padding-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid black; margin-top:8px; padding-bottom:8px;font-size: 16px;">
           <div style="flex:0 0 50%; max-width:50%;">
             <strong>BILLED TO</strong><br />
             <span>{{ getCustomerName(invoiceForm.get('CustomerMasterSid')?.value) }}</span><br />
@@ -819,7 +819,7 @@
           <div style="flex:0 0 50%; max-width:50%;">
             <div>
               <div style="display:flex;">
-                <div style="width:180px;"><strong>Invoice No</strong></div>
+                <div style="width:180px;"><strong>Invoice No.</strong></div>
                 <div>: {{invoiceForm.get('VoucherNumber')?.value || ''}}</div>
               </div>
               <div style="display:flex;">
@@ -828,13 +828,13 @@
               </div>
             <div style="display:flex;">
   <div style="width:180px;">
-    <strong *ngIf="currentUserCountry === 'india'">GST No</strong>
-    <strong *ngIf="currentUserCountry !== 'india'">VAT No</strong>
+    <strong *ngIf="currentUserCountry === 'india'">GST No.</strong>
+    <strong *ngIf="currentUserCountry !== 'india'">VAT No.</strong>
   </div>
   <div>: {{invoiceForm.get('GST_VAT')?.value || ''}}</div>
 </div>
               <div style="display:flex;" *ngIf="currentUserCountry === 'india'">
-                <div style="width:180px;"><strong>IRN No</strong></div>
+                <div style="width:180px;"><strong>IRN No.</strong></div>
                 <div>: {{invoiceForm.get('IRNNumber')?.value || ''}}</div>
               </div>
               <!-- Show GST Type only for India -->
@@ -847,7 +847,7 @@
         </div>
         
         <!-- Shipment Details -->
-        <div style="display:flex; margin-top:8px;">
+        <div style="display:flex; margin-top:8px;font-size: 16px;">
           <div style="flex:0 0 50%; max-width:50%;">
             <div style="display:flex;">
               <div style="width:180px;"><strong>Shipper</strong></div>
@@ -887,7 +887,7 @@
             </div>
           </div>
           
-          <div style="flex:0 0 50%; max-width:50%;">
+          <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
             <div style="display:flex;">
               <div style="width:180px;"><strong>HBL / HAWB</strong></div>
               <div>: {{ invoiceData?.houseJob?.HBLNo }}</div>
@@ -930,40 +930,40 @@
         
         <!-- Table with Dynamic Tax Columns -->
         <div style="width:100%; overflow-x:auto; margin-top:8px;">
-          <table style="width:100%; border-collapse:collapse; font-size:14px;">
+          <table style="width:100%; border-collapse:collapse; font-size:16px;">
             <thead>
               <tr>
-                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;">S.No</th>
-                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;">Particulars</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">HSN/SAC</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">Curr</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">No of Unit</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">Rate</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">ROE</th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">Taxable Value</th>
+                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;"><strong>S.No.</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;"><strong>Particulars</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>HSN/SAC</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Curr.</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>No. of Unit</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Rate</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>ROE</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Taxable Value</strong></th>
                 
                 <!-- Dynamic Tax Columns based on Country and GST Type -->
                 <ng-container *ngIf="getTaxDisplayConfig().showCGST">
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">CGST %</th>
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">CGST Amt</th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>CGST %</strong></th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>CGST Amt.</strong></th>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showSGST">
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">SGST %</th>
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">SGST Amt</th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>SGST %</strong></th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>SGST Amt.</strong></th>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showIGST">
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">IGST %</th>
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">IGST Amt</th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>IGST %</strong></th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>IGST Amt.</strong></th>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showVAT">
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">VAT %</th>
-                  <th style="border:1px solid black; padding:2px 8px; text-align:left;">VAT Amt</th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>VAT %</strong></th>
+                  <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>VAT Amt.</strong></th>
                 </ng-container>
                 
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;">Total</th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Total</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -1033,13 +1033,13 @@
         </div>
         
         <!-- Amount in words -->
-        <div style="display:flex; margin-top:8px;">
-          <p style="font-weight:600; width:180px; margin:0;">Amount In Words</p>
+        <div style="display:flex; margin-top:8px;font-size: 16px;">
+          <p style="font-weight:600; width:180px; margin:0;"><strong>Amount In Words</strong></p>
           <p style="margin:0; font-style:italic;">: {{getAmountInWords()}}</p>
         </div>
         
         <!-- Remarks -->
-        <div style="display:flex; margin-top:8px;">
+        <div style="display:flex; margin-top:8px;font-size: 16px;">
           <p style="font-weight:600; width:180px; margin:0;">Remarks</p>
           <p style="margin:0;">: {{invoiceForm.get('Remarks')?.value || ''}}</p>
         </div>
