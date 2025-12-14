@@ -1206,9 +1206,8 @@ existsInList(list: any[], value: any) {
         const data = responses.masterJob.data;
         this.masterJobData = data;
         console.log("Master Job Data", this.masterJobData);
-        this.patchFormValues(data);
           const aggregatedTotals = data.aggregatedTotals;
-                
+
                 this.patchFormValues({
                     ...data,
                     // Use aggregated totals instead of individual values
@@ -2942,7 +2941,13 @@ handleCustomsChange(event: any) {
     this.transhipmentHouseJobSids.forEach(id => {
       this.operationService.getHouseJobById(id).subscribe((resp: any) => {
         if (resp.status && resp.data) {
-          this.loadedHouses.push(resp.data);
+          // Add deduplication check to prevent duplicate house jobs
+          const alreadyExists = this.loadedHouses.some(
+            house => house.HouseJobSid === resp.data.HouseJobSid
+          );
+          if (!alreadyExists) {
+            this.loadedHouses.push(resp.data);
+          }
         }
       });
     });

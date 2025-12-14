@@ -28,7 +28,7 @@
 <div style="width:280mm; min-height:400mm; margin:10px; padding:5mm; border:1px solid #000; box-sizing:border-box; position: relative; color: #000;">
 
                     <!-- Company Info -->
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-3">
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;font-size: 14px;" class=" p-3">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; flex-direction: column;">
             <!-- Print logo -->
@@ -57,10 +57,10 @@
    
 
     <!-- Bank Payment -->
-    <h3 style="text-align:center; padding:10px 0; font-weight:800; border-top: 1px solid black;">Bank Payment</h3>
+    <h4 style="text-align:center; padding:10px 0; font-weight:800; border-top: 1px solid black;">Bank Payment</h4>
 
     <!-- Details Row -->
-    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;"  class="fs-4">
+    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;font-size:16px;"  >
         
         <!-- Left -->
         <div style="width:50%;">
@@ -85,7 +85,7 @@
                 <div>: {{getBankName(paymentDataPrint?.BankCOA)}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;"><strong>Bank Ref</strong></div>
+                <div style="width:150px; font-weight:bold;"><strong>Bank Ref.</strong></div>
                 <div>: {{paymentDataPrint?.InstrumentMode}} / {{paymentDataPrint?.InstrumentNumber}} / {{paymentDataPrint?.InstrumentDate | formatDate}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
@@ -94,22 +94,22 @@
             </div>
             <div style="display:flex; margin-bottom:4px;">
                 <div style="width:150px; font-weight:bold;"><strong>Ex. Rate</strong></div>
-                <div>: {{paymentDataPrint?.ExchangeRate}}</div>
+                <div>: {{paymentDataPrint?.ExchangeRate| number:'1.2-2'}}</div>
             </div>
         </div>
     </div>
 
     <!-- Table -->
-    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;"  class="fs-4">
+    <table style="width:100%; border-collapse:collapse; margin:10px 0;  border:1px solid black;font-size:16px;">
         <tr>
-            <th style="border:1px solid black; width:50%;  text-align:center;font-weight:700;"><strong>Description</strong></th>
-            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;"><strong>MBL/HBL Ref</strong></th>
-            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;"><strong>Curr.</strong></th>
-            <th style="border:1px solid black; width:10%;  text-align:center;font-weight:700;"><strong>Ex.Rate</strong></th>
-            <th style="border:1px solid black; width:15%;  text-align:center;font-weight:700;"><strong>Amount</strong></th>
+            <th style="border:1px solid black; width:50%;  text-align:center;"><strong>Description</strong></th>
+            <th style="border:1px solid black; width:15%;  text-align:center;"><strong>MBL/HBL Ref</strong></th>
+            <th style="border:1px solid black; width:10%;  text-align:center;"><strong>Curr.</strong></th>
+            <th style="border:1px solid black; width:10%;  text-align:center;"><strong>Ex.Rate</strong></th>
+            <th style="border:1px solid black; width:15%;  text-align:center;"><strong>Amount</strong></th>
         </tr>
         <tr>
-            <td style="border:1px solid black;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
+            <td style="border:1px solid black;text-align:center;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
             <td style="border:1px solid black; text-align:center;">
                 {{paymentDataPrint?.MasterNumber}}
                 <span *ngIf="paymentDataPrint?.MasterNumber && paymentDataPrint?.HouseNumber">/</span>
@@ -121,10 +121,10 @@
         </tr>
     </table>
 
-    <h5 style="text-decoration:underline; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h5>
+    <h4 style="text-decoration:underline; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h4>
 
     <!-- Matching Table -->
-    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; border:1px solid black; font-size:14px;" class="fs-4">
+    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; border:1px solid black; font-size:16px;" >
         <tr>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher No.</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Type</strong></th>
@@ -152,19 +152,19 @@
         </tr>
     </table>
 
-    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;" class="fs-4">
+    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;font-size:16px;">
         <strong>Amount in Words :</strong>
         <span style="font-style:italic;"> {{ getAmountInWords() }} </span>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin-top:20px;" class="fs-4">
+    <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:16px;">
         <strong>Checked By :</strong>
         <strong>Approved By :</strong>
     </div>
 
     
   <!-- Footer -->
-  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;padding: 0 10px;" class="fs-4">
+  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;padding: 0 10px;">
     <div style="display:flex; justify-content:space-between;">
       <div>Printed By: {{userData.userName}}</div>
       <span>This document is computer-generated and does not require a signature.</span>

@@ -38,7 +38,7 @@ export class CargoArrivalComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList : any;
-
+  @Input() packageTypeList:any;
 
   
   showPrintLogo: boolean = false;
@@ -134,6 +134,13 @@ export class CargoArrivalComponent {
   }
 
 
+    getPackageTypeName(pkgTypeSid: number): string {
+    if (!pkgTypeSid) return 'Unknown';
+    const packageType = this.packageTypeList.find(
+      (pt) => pt.UOMMasterSid === pkgTypeSid
+    );
+    return packageType ? packageType.UOMName : 'Unknown';
+  }
   
   
   closePrint(){

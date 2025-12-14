@@ -25,30 +25,40 @@
   <div id="printContent"class="p-1">
    <div  style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
-   <!-- Company Info -->
-        <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; flex-direction: column;">
-                    <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                </div>
-                <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                </div>
-            </div>
+   <!-- Company Header -->
+<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-0">
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; flex-direction: column;">
+            <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
         </div>
 
+        <div style="flex: 1; text-align: center; padding-right: 12%;">
+            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin: 2px 0; font-size: 15px;">
+                {{ currentBranch?.addressLine2 || '' }} ,  
+                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
+                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+            </p>
+            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+        </div>
+    </div>
+</div>
+</div>
+
   <!-- Title -->
-  <h5 style="text-align:center; font-weight:700; margin:0; padding:15px 0; border-top:1px solid black;">Commercial Invoice</h5>
+  <h4 style="text-align:center; font-weight:700; margin:0; padding:15px 0; border-top:1px solid black;">Commercial Invoice</h4>
 
   <!-- Section 1 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;font-size: 16px; ">
     <!-- HBL No -->
     <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box; border-bottom: none;">
       <div style="display:flex; align-items:center;">
@@ -85,7 +95,7 @@
   </div>
 
   <!-- Section 2 -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;font-size: 16px; ">
     <!-- Consignee -->
     <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-top:1px solid black; border-left:1px solid black; padding:4px; box-sizing:border-box;">
       <div style="display:flex;">
@@ -108,7 +118,7 @@
   </div>
 
   <!-- Section 3: Cargo Details -->
-  <div style="display:flex; flex-wrap:wrap; padding:0 10px; ">
+  <div style="display:flex; flex-wrap:wrap; padding:0 10px;font-size: 16px; ">
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; padding:4px; box-sizing:border-box; text-align:center; border-right: none;">
       <div><strong>Commodity Description</strong></div>
       <div>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</div>
@@ -116,33 +126,33 @@
 
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
       <div><strong>Curr.</strong></div>
-      <div>{{housejobData?.Others?.[0]?.CargoCurrency}}</div>
+      <div style="text-align: center;">{{housejobData?.Others?.[0]?.CargoCurrency}}</div>
     </div>
 
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; padding:4px; box-sizing:border-box; text-align:center;border-left: none;">
-      <div><strong>No of Pkgs</strong></div>
-      <div>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
+      <div><strong>No. of Pkgs</strong></div>
+      <div style="text-align: right;">{{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
     </div>
 
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center; border-left: none;">
       <div><strong>Gross Wt.</strong></div>
-      <div>{{housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}}</div>
+      <div style="text-align: right;">{{housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}}</div>
     </div>
   </div>
 
   <!-- Section 4: More Cargo Details -->
-  <div style="display:flex; padding:0 10px; margin-bottom:10px;">
+  <div style="display:flex; padding:0 10px; margin-bottom:10px;font-size: 16px;">
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center; border-top: none;border-right: none;">
       <div><strong>Net Wt.</strong></div>
-      <div>{{housejobData?.Cargo?.[0]?.NetWeight | number:'1.3-3'}}</div>
+      <div style="text-align: right;">{{housejobData?.Cargo?.[0]?.NetWeight | number:'1.3-3'}}</div>
     </div>
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;">
       <div><strong>Volume</strong></div>
-      <div>{{housejobData?.Cargo?.[0]?.Volume | number:'1.3-3'}}</div>
+      <div style="text-align: right;">{{housejobData?.Cargo?.[0]?.Volume | number:'1.3-3'}}</div>
     </div>
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;border-left: none;">
       <div><strong>Good Value</strong></div>
-      <div>{{housejobData?.Others?.[0]?.CargoValue}}</div>
+      <div style="text-align: right;">{{housejobData?.Others?.[0]?.CargoValue}}</div>
     </div>
     <div style="flex:0 0 25%; max-width:25%; border:1px solid black; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px; text-align:center;border-top: none;border-left: none;">
       <div><strong>Total Value</strong></div>
@@ -151,7 +161,7 @@
   </div>
 
   <!-- Cargo Table -->
-  <table style="width:98%; border-collapse:collapse; margin: 0 10px;">
+  <table style="width:98%; border-collapse:collapse; margin: 0 10px;font-size: 16px;">
     <thead>
       <tr>
         <th style="border:1px solid black; text-align:center;"><strong>Type</strong></th>
@@ -178,7 +188,7 @@
   </table>
 
   <!-- Footer -->
-  <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px; display:flex; justify-content:space-between;">
+  <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px; display:flex; justify-content:space-between;font-size: 16px;">
     <div>Printed By: {{userData.userName}}</div>
     <div>This document is computer-generated and does not require a signature.</div>
     <div>Printed On: {{ currentDate | formatDate }}</div>

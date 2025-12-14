@@ -24,8 +24,8 @@
   <div style="width: 280mm; min-height: 402mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
 
     <!-- Company Info -->
-          <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-0">
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-3">
+          <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;font-size:16px;" class="fs-3 p-0">
+       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class=" p-3">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; flex-direction: column;">
             <!-- Print logo -->
@@ -54,7 +54,7 @@
 
     <!-- <div style="height:1px; background-color:black; width:100%; margin:0.3rem 0;"></div> -->
 
-    <h5 style="text-align:center; font-weight:bold; padding:15px 0; margin:0; border-top: 1px solid black; font-size: 18px;">Cargo Manifest</h5>
+    <h3 style="text-align:center; font-weight:bold; padding:15px 0; margin:0; border-top: 1px solid black; font-size: 18px;">Cargo Manifest</h3>
 
     <!-- Job Info -->
     <div style="display:flex; flex-wrap:wrap; border:1px solid black; padding:0 1rem; margin-bottom:0;font-size: 16px;">
@@ -155,20 +155,20 @@
         <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px;">
             <thead>
                 <tr>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Container</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Seal</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Size</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Tare Weight</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Packages</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Gross Weight</strong></th>
-                    <th style="border:1px solid black; padding:2px 8px;"><strong>Volume</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Container</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Seal</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Size</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Tare Weight</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Packages</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Gross Weight</strong></th>
+                    <th style="border:1px solid black; padding:2px 8px;text-align: center;"><strong>Volume</strong></th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let container of masterJobData?.containers">
-                    <td style="border:1px solid black; padding:2px 8px;">{{container.ContainerNumber}}</td>
-                    <td style="border:1px solid black; padding:2px 8px;">{{container.LineSeal}}</td>
-                    <td style="border:1px solid black; padding:2px 8px;">{{getContainerSize(container.ContainerType)}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align: center;">{{container.ContainerNumber}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align: center;">{{container.LineSeal}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{getContainerSize(container.ContainerType)}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{getTareWeight(container.ContainerType) | number:'1.3-3'}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{container.NoOfPkg || 0}} {{getPackageTypeName(masterJobData?.containers?.[0]?.PkgType)}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{container.GrossWeight | number:'1.3-3'}}</td>
@@ -189,7 +189,7 @@
 
     <!-- Footer -->
     <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
-        <div style="display:flex; justify-content:space-between; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:16px;">
             <div>Printed By: {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div>Printed On: {{ currentDate | formatDate }}</div>
@@ -269,6 +269,7 @@
         <div style="width:100%; max-width:50%; box-sizing:border-box;font-size: 16px;">
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>Load Port</strong></div>
+                  <p style="margin:0;">: {{masterJobData.POL}}</p>
             </div>
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>Discharge Port</strong></div>
@@ -301,43 +302,43 @@
     <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">
         <thead>
             <tr>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Container No.</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Container Type</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>SOC Container</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Seal</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Container No.</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Container Type</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>SOC Container</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Seal</strong></th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let container of masterJobData?.containers">
-                <td style="border:1px solid black; padding:0.25rem;">{{ container.ContainerNumber || '' }}</td>
-                <td style="border:1px solid black; padding:0.25rem;">{{ getContainerTypeName(container.ContainerType) || '' }}</td>
-                <td style="border:1px solid black; padding:0.25rem;">{{ container.IsSoc || '' }}</td>
-                <td style="border:1px solid black; padding:0.25rem;">{{ container.LineSeal || '' }}</td>
+                <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ container.ContainerNumber || '' }}</td>
+                <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ getContainerTypeName(container.ContainerType) || '' }}</td>
+                <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ container.IsSoc || '' }}</td>
+                <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ container.LineSeal || '' }}</td>
             </tr>
         </tbody>
     </table>
 
     <!-- House Job Table -->
-    <table style="width:100%; border-collapse:collapse; font-size:14px; margin-top:1rem; border:1px solid black;">
+    <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">
         <thead>
             <tr>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>SNo.</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>HBL No.</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Shipper / Consignee / Notify</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Marks & Number</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Pkg & Desc</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Weight (KGS)</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Vol (CBM)</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>PP/CC</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>AMS Ref No.</strong></th>
-                <th style="border:1px solid black; padding:0.25rem;"><strong>Service</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>SNo.</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>HBL No.</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Shipper / Consignee / Notify</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Marks & Number</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Pkg & Desc</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Weight (KGS)</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Vol (CBM)</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>PP/CC</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>AMS Ref No.</strong></th>
+                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Service</strong></th>
             </tr>
         </thead>
         <tbody>
             <ng-container *ngFor="let h of masterJobData?.houseJob; let i = index">
                 <ng-container *ngFor="let c of h.Cargo; let j = index">
                     <tr>
-                        <td style="border:1px solid black; padding:0.25rem;">{{ j === 0 ? (i + 1) : '' }}</td>
+                        <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ j === 0 ? (i + 1) : '' }}</td>
                         <td style="border:1px solid black; padding:0.25rem;">{{ j === 0 ? (h.HBLNo || '') : '' }}</td>
                         <td style="border:1px solid black; padding:0.25rem;">
                             <ng-container *ngIf="j === 0">
@@ -346,8 +347,8 @@
                                 <strong>Notify:</strong> {{ h.Notify || '' }} {{ h.NotifyAddress || '' }}
                             </ng-container>
                         </td>
-                        <td style="border:1px solid black; padding:0.25rem;">{{ c.MarksAndNumber }}</td>
-                        <td style="border:1px solid black; padding:0.25rem;">{{ c.NoOfPackage || '' }} Pkg <br>{{ c.CommodityDescription || '' }}</td>
+                        <td style="border:1px solid black; padding:0.25rem;text-align:right;">{{ c.MarksAndNumber }}</td>
+                        <td style="border:1px solid black; padding:0.25rem;text-align:right;">{{ c.NoOfPackage || '' }} Pkg <br>{{ c.CommodityDescription || '' }}</td>
                         <td style="border:1px solid black; padding:0.25rem; text-align:right;">{{ c.GrossWeight | number: '1.3-3' }}</td>
                         <td style="border:1px solid black; padding:0.25rem; text-align:right;">{{ c.Volume | number: '1.3-3' }}</td>
                         <td style="border:1px solid black; padding:0.25rem;">{{ h.FreightTerms || '' }}</td>
@@ -368,7 +369,7 @@
 
     <!-- Footer -->
    <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
-        <div style="display:flex; justify-content:space-between; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:16px;">
             <div>Printed By: {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div>Printed On: {{ currentDate | formatDate }}</div>

@@ -33,6 +33,9 @@ export class CertificateOfOriginComponent {
     @Input() currencyList: any;
     @Input() uomList: any;
     @Input() containerTypeList: any;
+
+     showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
   
     ngOnInit() {
       this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -79,21 +82,28 @@ export class CertificateOfOriginComponent {
     ) { }
   
       
-async downloadPDF() {
-  this.spinner.show();
-  try {
-   const Origin = this.housejobData?.ShipmentNo || 'Receipt';
 
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Certificate_of_Origin`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+
+async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+
+    const Origin = this.housejobData?.ShipmentNo || 'Receipt';
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `Certificate_of_Origin$`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
 
     async generatePDFBlob(): Promise<Blob | null> {
@@ -175,43 +185,31 @@ async downloadPDF() {
  
 }
 
+       
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-printDiv(divId: string, printHeightMM: number = 380): void {
-  const printContent = document.getElementById(divId);
-  if (!printContent) return;
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
 
-  // Save original inline height
-  const originalHeight = printContent.style.height;
-
-  // Convert mm to px
-  const printHeightPx = (printHeightMM * 96) / 25.4 + 'px';
-
-  // Temporarily set height for print
-  printContent.style.height = printHeightPx;
-
-  // Open print popup
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-          <style>
-            body { margin:0; }
-            #printContent { height: ${printHeightPx}; width: 280mm; }
-          </style>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContent.innerHTML}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
-
-  // Restore original height after print
-  printContent.style.height = originalHeight;
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
 
 
