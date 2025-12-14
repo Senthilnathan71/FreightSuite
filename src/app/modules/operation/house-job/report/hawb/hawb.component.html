@@ -62,7 +62,7 @@
                 <div style="flex:0 0 50%; padding:0;">
                     <div style="display:flex; flex-direction:column; border:1px solid black;">
                         <div style="display:flex; gap: 5px; ">
-                            <div style=" white-space:nowrap;"><strong>HAWB No :</strong></div>
+                            <div style=" white-space:nowrap;"><strong>HAWB No. :</strong></div>
                             <div>{{housejobData.HBLNo}}</div>
                         </div>
                         <div
@@ -92,15 +92,15 @@
                     <div
                         style="padding:2px; min-height:100px; height:auto; border-left: 1px solid black; border-right:1px solid black; border-bottom:1px solid black;">
                         <div style="display:flex;">
-                            <div style="width:200px; white-space:nowrap;"><strong>Job No</strong></div>
+                            <div style="width:200px; white-space:nowrap;"><strong>Job No.</strong></div>
                             <div style="min-height:20px; height:auto;">: {{masterJobData?.MasterJobNumber}}</div>
                         </div>
                         <div style="display:flex;">
-                            <div style="width:200px; white-space:nowrap;"><strong>MAWB No</strong></div>
+                            <div style="width:200px; white-space:nowrap;"><strong>MAWB No.</strong></div>
                             <div style="min-height:20px; height:auto;">: {{housejobData.MBLNo}}</div>
                         </div>
                         <div style="display:flex;">
-                            <div style="width:200px; white-space:nowrap;"><strong>HAWB No</strong></div>
+                            <div style="width:200px; white-space:nowrap;"><strong>HAWB No.</strong></div>
                             <div style="min-height:20px; height:auto;">: {{housejobData.HBLNo}}</div>
                         </div>
                         <div style="display:flex;">
@@ -291,6 +291,8 @@
                         {{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.2-2'}}</div>
                     <div
                         style="width:10%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
+                        {{ housejobData?.masterJobData?.WeightIn }}
+
                     </div>
                     <div
                         style="width:15%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">

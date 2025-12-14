@@ -40,9 +40,9 @@ export class MAWBComponent implements OnChanges {
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
-
-
-
+  companyCode:any;
+  showPrintLogo: boolean = false;
+    showPdfLogo: boolean = true;
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -94,6 +94,11 @@ export class MAWBComponent implements OnChanges {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+
+      this.companyCode = this.currentCompany?.companyCode;
+   
+    console.log(this.companyCode,"CompanyCode")
+    
   }
 
 
@@ -226,7 +231,11 @@ export class MAWBComponent implements OnChanges {
   }
 
 
-  printDiv(divId: string): void {
+ printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;
     if (!printContents) return;
 
@@ -234,35 +243,43 @@ export class MAWBComponent implements OnChanges {
     if (popupWin) {
       popupWin.document.open();
       popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
       popupWin.document.close();
     }
-  }
-
-    async downloadPDF() {
-  this.spinner.show();
-  try {
-   const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
-
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `MAWB_${BankPaymentNo}`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+  }, 50); 
 }
+
+
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+       const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `MAWB_${BankPaymentNo}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
+}
+
+
+ 
 
 
 }
