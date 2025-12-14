@@ -539,6 +539,38 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn(' Profitability Report component not yet created:', error);
     }
+
+    // Container-wise-kpi
+
+             try {
+      const { ContainerWiseKpiComponent } = await import(
+        '../components/reports/container-wise-kpi/container-wise-kpi.component'
+      );
+
+      this.registerReport({
+        id: 'contanier-wise-kpi',
+        title: 'Container-wise-KPI',
+        component: ContainerWiseKpiComponent,
+        filenameTemplate: 'Container_Wise-KPI_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Container_Wise-KPI_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Container_Wise-KPI_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
+    }
   }
 
   /**

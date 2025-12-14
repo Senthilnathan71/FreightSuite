@@ -61,20 +61,20 @@
                         <td>{{ item.Mbl || ''}}</td>
                         <td>{{ item.POL || '' }}</td>
                         <td>{{ item.POD || '' }}</td>
-                        <td class="text-end">{{item.totalRevenue | number:'1.2-2'}}</td>
-                        <td class="text-end">{{item.totalCost | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.totalRevenueWithHouse | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.totalCostWithHouse | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.GP | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualRevenue | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualCost | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualGp | number:'1.2-2'}}</td>
-                        <td></td>
+                        <td class="text-end">{{item.profit | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.noOfShipment || ''}}</td>
                         <td class="text-end">{{ item.twentyft || '' }}</td>
                         <td class="text-end">{{ item.fourty || '' }}</td>
                         <td class="text-end">{{item.containerNo}}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.2-2'}}</td>
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
-                        <td></td>
+                         <td class="text-end">{{ item.space | number:'1.2-2' }}</td>
                     </tr>
                 </tbody>
             </table>
