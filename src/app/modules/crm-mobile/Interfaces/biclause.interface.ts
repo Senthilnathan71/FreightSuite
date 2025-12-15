@@ -1,5 +1,6 @@
 export interface BLClause {
     BLClauseMasterSid?: number; // Optional for create operations
+    DepartmentMasterSid: number;
     ClauseDescription: string;
     Keyword: string;
     Sortorder?: number | null;

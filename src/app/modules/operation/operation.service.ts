@@ -1507,4 +1507,14 @@ searchActivityAllocationWorkload(
   );
 }
 
+getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
+    return this.http.get(`blclause/bl-clause/${ DepartmentMasterSid }`).pipe(
+      map((resp: any) => {
+        console.log(resp)
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 }

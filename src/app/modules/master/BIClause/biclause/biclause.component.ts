@@ -27,7 +27,7 @@ import { CommonPaginationComponent } from 'src/app/shared/components/pagination/
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
@@ -35,6 +35,8 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 
 @Component({
@@ -59,7 +61,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     DecimalPrecisionDirective,
     ReusableTableComponent,
     PageHeaderComponent,
-    ToolsDropdownComponent
+    ToolsDropdownComponent,
+    SearchableDropdown
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
@@ -84,7 +87,9 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
   tableConfig: TableConfig;
   currentMenuPermissions: any = {};
-
+  departments: any[] = [];
+  departmentList: any[] = [];
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   // Pagination
   // Alias for compatibility with existing template
   
@@ -151,9 +156,11 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     // });
     this.initForm();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    console.log(this.currentCompany,"COMPANY")
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
+    this.loadAllFields();
     if (userProfile) {
       this.userData = userProfile;
     
@@ -463,12 +470,23 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
 
   initForm() {
     this.biclauseForm = this.fb.group({
+      DepartmentMasterSid: [null, [Validators.required]],
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
       Keyword: ['', [Validators.required, Validators.maxLength(20)]],
       Sortorder: [''],
       DefaultClause: [false],
       status: [{ value: 'A', disabled: false }, Validators.required]
     });
+  }
+
+  loadAllFields() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    console.log("COMPANY", CompanyMasterSid)
+    forkJoin({
+      departments: this.masterService.getAllDepartments(CompanyMasterSid)
+    }).subscribe(({ departments}) => {
+      this.departmentList = departments;
+    })
   }
 
   openModal(content: any, clause?: BLClause): void {
@@ -479,12 +497,18 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
       this.biclauseForm.get('status')?.enable();
       this.blclauseData = clause;
       console.log(clause);
+      const normalizedStatus =
+  clause.status === 'Active' ? 'A' :
+  clause.status === 'Suspended' ? 'S' :
+  clause.status;
+
       this.biclauseForm.patchValue({
         ClauseDescription: clause.ClauseDescription,
+        DepartmentMasterSid: clause.DepartmentMasterSid,
         Keyword: clause.Keyword,
         Sortorder: clause.Sortorder?.toString() || '',
         DefaultClause: clause.DefaultClause === 'Y',
-        status: clause.status ? (clause.status === "A" ? "Active" : "Suspended") : 'Active'
+        status: normalizedStatus,
       });
     } else {
       this.biclauseForm.get('status')?.disable();
@@ -515,6 +539,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
 
     const payload = {
       ClauseDescription: formValue.ClauseDescription,
+      DepartmentMasterSid: formValue.DepartmentMasterSid,
       Keyword: formValue.Keyword,
       Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
       DefaultClause: formValue.DefaultClause ? 'Y' : 'N',
@@ -622,6 +647,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
       if (clause) {
         this.biclauseForm.patchValue({
           ClauseDescription: clause.ClauseDescription,
+          DepartmentMasterSid: clause.DepartmentMasterSid,
           Keyword: clause.Keyword,
           Sortorder: clause.Sortorder?.toString() || '',
           DefaultClause: clause.DefaultClause === 'Y',
@@ -635,6 +661,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     // Create-mode: reset form to initial state with proper default values
     this.biclauseForm.reset({
       ClauseDescription: null,
+      DepartmentMasterSid: null,
       Keyword: null,
       Sortorder: null,
       DefaultClause: false,

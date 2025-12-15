@@ -55,6 +55,7 @@ import { DeliveryNoteComponent } from '../report/delivery-note/delivery-note.com
 import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -107,7 +108,8 @@ type Html2PdfOptions = {
     NgbDropdownModule,
     BoeEntryComponent,
     VehicleComponent,
-    CustomsComponent
+    CustomsComponent,
+    MultiSelectComponent
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -318,6 +320,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Connection Part
   PODandFPODsame : boolean = true;
+  blClauseOptions: any[] = [];
   minStartDate : Date = new Date();
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
@@ -557,7 +560,7 @@ isVoyageFreeText: boolean = false;
     isCarrierFreeText: [false],
     isVesselFreeText: [false],
     isVoyageFreeText: [false],
-
+  MasterJobNumber: [{ value: '', disabled: true }],
       VesselName: [{ value: null, disabled: true }],
       VoyageMasterSid: [{ value: null, disabled: true }],
       VoyageNo: [{ value: null, disabled: true }],
@@ -575,6 +578,8 @@ isVoyageFreeText: boolean = false;
       JobType: [null],
       Coload: [false],
       ShipmentType: [false],
+      // HouseStatus: ['' ],
+      // HBLCount: [''],
       IncoTerms: [null, [Validators.required]],
       InternalNote: [''],
       GeneralNote: [''],
@@ -918,6 +923,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
+      BlClause:[null],
       SwitchBLAgent: [null],
       AgentAddress: [''],
       SwitchBLShipper: [null],
@@ -1209,6 +1215,77 @@ loadHeaderLookups() {
     })
   }
 
+  // Add this method to your component
+loadDefaultBLClauses(DepartmentMasterSid: number): void {
+  if (!DepartmentMasterSid) {
+    this.blClauseOptions = [];
+    this.o['BlClause']?.setValue('');
+    return;
+  }
+  
+  console.log('Loading default BL clauses for department:', DepartmentMasterSid);
+  
+  this.operationService.getDefaultBLClausesByDepartment(DepartmentMasterSid).subscribe({
+    next: (response: any) => {
+      console.log('BL Clauses API Response:', response);
+      
+      // Check if response is valid and has data array
+      if (response && response.status && Array.isArray(response.data)) {
+        // Map the response to the format needed for your dropdown
+        this.blClauseOptions = response.data.map((clause: any) => ({
+          ClauseDescription: clause.ClauseDescription,
+          displayText: clause.ClauseDescription
+        }));
+        
+        console.log(`Loaded ${this.blClauseOptions.length} default BL clauses`, this.blClauseOptions);
+        
+        // If this is a new house job (not edit mode), auto-populate the BlClause field
+        if (!this.isEditMode && this.blClauseOptions.length > 0) {
+          // Combine all clause descriptions into a single text
+          const allClausesText = this.blClauseOptions
+            .map(clause => clause.ClauseDescription)
+          
+          // Set the value in the form
+          this.otherForm.patchValue({
+            BlClause: allClausesText
+          });
+          
+          console.log('Auto-populated BlClause field with default clauses:', allClausesText);
+        } else if (this.blClauseOptions.length === 0) {
+          console.log('No default BL clauses found for this department');
+          // Clear the field if no clauses found
+          this.otherForm.patchValue({
+            BlClause: ''
+          });
+        }
+      } else {
+        this.blClauseOptions = [];
+        console.log('Invalid response format or no data:', response);
+        // Clear the field
+        this.otherForm.patchValue({
+          BlClause: ''
+        });
+      }
+    },
+    error: (error) => {
+      console.error('Error loading default BL clauses:', error);
+      this.blClauseOptions = [];
+      this.otherForm.patchValue({
+        BlClause: ''
+      });
+      
+      // Show appropriate error message
+      if (error.status === 404) {
+        this.appSettingService.showWarning('BL Clauses API endpoint not found');
+      } else if (error.status === 400) {
+        this.appSettingService.showWarning('Invalid department ID');
+      } else {
+        this.appSettingService.showWarning('Unable to load default BL clauses. Please try again.');
+      }
+    }
+  });
+}
+
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
@@ -1265,14 +1342,32 @@ loadHeaderLookups() {
         this.customsDataArray = resp.data.houseJobCustoms || [];
 
 
-
+ if (resp.data.MasterJobSid) {
+          this.loadMasterJobDetails(resp.data.MasterJobSid);
+        }
         // ✅ Trigger reload for child components like BOE
         this.resetTriggerBOE = true;
         }
       }
     )
   }
-
+private loadMasterJobDetails(masterJobSid: number): void {
+  this.operationService.getMasterJobById(masterJobSid).subscribe({
+    next: (response: any) => {
+      if (response.status && response.data) {
+        const masterJobData = response.data;
+        // Patch the Master Job Number to the form
+        this.houseJobForm.patchValue({
+          MasterJobNumber: masterJobData.MasterJobNumber
+        });
+        console.log('Master Job Number loaded:', masterJobData.MasterJobNumber);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading master job details:', error);
+    }
+  });
+}
   patchValues(response: any) {
   console.log('Response from backend:', response);
   console.log('AgentName from backend:', response.AgentName);
@@ -1280,6 +1375,7 @@ loadHeaderLookups() {
   
   this.bookingHeader = response;
   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+  this.onDeptChange(selectedDepartment);
   const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
   
   // FIX: Better agent matching
@@ -1314,6 +1410,7 @@ loadHeaderLookups() {
   
   this.houseJobForm.patchValue({
     MasterJobSid : response.MasterJobSid,
+    MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
     BookingNo: response.BookingNo,
     BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
     DepartmentMasterSid: response.DepartmentMasterSid,
@@ -1337,6 +1434,8 @@ loadHeaderLookups() {
     MBLNo: response.MBLNo,
     MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
     status: response.status === "A" ? "Active" : "Suspended",
+    HouseStatus: response.HouseStatus,
+    HBLCount: response.HBLCount,
    
     VesselName: response.VesselName,
     VoyageMasterSid: response.VoyageMasterSid,
@@ -1407,6 +1506,7 @@ loadHeaderLookups() {
       DeliveryDate:otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
       CHAName: otherData?.CHAName,
       PickupAddress: otherData?.PickupAddress,
+      BlClause:otherData?.BlClause,
       DeliveryAddress: otherData?.DeliveryAddress,
       CargoCurrency: otherData?.CargoCurrency,
       CargoValue: otherData?.CargoValue,
@@ -1456,6 +1556,24 @@ loadHeaderLookups() {
     this.rateResult = [...this.bookingRateArr];
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
+      setTimeout(() => {
+    const otherData = response.Others[0];
+    if (otherData?.BlClause) {
+      // If BlClause exists in the database, use it
+      this.otherForm.patchValue({
+        BlClause: otherData?.BlClause || null,
+      });
+    } else if (!this.isEditMode && this.blClauseOptions.length > 0) {
+      // For new records, auto-populate with default clauses
+      const allClausesText = this.blClauseOptions
+        .map(clause => clause.ClauseDescription)
+        .join('\n\n');
+      
+      this.otherForm.patchValue({
+        BlClause: allClausesText
+      });
+    }
+  }, 500);
   }
 
   onContainerTypeChange(containerType : any){
@@ -1580,6 +1698,9 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    if (!this.validateHBLNo()) {
+    return;
+  }
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
@@ -1683,6 +1804,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     DoValid: houseJobFormValue.DoValid ? new Date(houseJobFormValue.DoValid) : null,
     Coload: houseJobFormValue.Coload ? 'Y' : 'N',
     ShipmentType: houseJobFormValue.ShipmentType ? 'Y' : 'N',
+    HouseStatus: houseJobFormValue.HouseStatus,
+    HBLCount: houseJobFormValue.HBLCount,
     IncoTerms: houseJobFormValue.IncoTerms,
     InternalNote: houseJobFormValue.InternalNote || '',
     GeneralNote: houseJobFormValue.GeneralNote || '',
@@ -1721,6 +1844,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       Forwarder: otherFormValue.Forwarder || null,
       ForwarderAddress: otherFormValue.ForwarderAddress || '',
       NotifyParty: otherFormValue.NotifyParty || null,
+      BlClause: otherFormValue.BlClause || null,
       NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
       Notify2: otherFormValue?.Notify2 || null,
       NotifyAddress2: otherFormValue?.NotifyAddress2 || '',
@@ -1877,12 +2001,16 @@ private getAgentNameById(agentId: number): string {
     this.handleCFSOrYard();
     this.b['HBLNo']?.enable();
     this.b['HBLNo']?.setValue('');
+    this.blClauseOptions = [];
+    this.o['BlClause']?.setValue('');
+    this.handleHBLNoField('');
     return;
   }
   
   // Set department properties
   this.selectedDepartment = department;
   this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
+  this.handleHBLNoField(department.ExportImport);
   this.filterTabs();
   this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
     ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
@@ -1898,6 +2026,7 @@ private getAgentNameById(agentId: number): string {
     fcllcl: this.selectedFCLLCL,
     exportImport: department.ExportImport
   });
+  this.loadDefaultBLClauses(department.DepartmentMasterSid);
   this.handleHBLNoField(department.ExportImport);
   // Rest of the method remains the same...
   this.autoSetJobType(department);
@@ -1936,15 +2065,20 @@ private handleHBLNoField(exportImport: string): void {
     return;
   }
   
+  // Clear existing validators first
+  hblNoControl.clearValidators();
+  hblNoControl.updateValueAndValidity();
+  
   if (exportImport === 'Export') {
     // For Export departments: disable HBLNo field (will be auto-generated)
     hblNoControl.disable();
     hblNoControl.setValue('');
     hblNoControl.clearValidators();
   } else if (exportImport === 'Import') {
-    // For Import departments: enable HBLNo field for manual entry
+    // For Import departments: enable HBLNo field for manual entry AND make it required
     hblNoControl.enable();
-    hblNoControl.setValidators([Validators.required]);
+    hblNoControl.setValidators([Validators.required]); // This makes it required
+    hblNoControl.updateValueAndValidity();
     console.log('HBLNo field enabled and required for Import department');
   } else {
     // For other department types: enable but not required
@@ -1954,6 +2088,32 @@ private handleHBLNoField(exportImport: string): void {
   }
   
   hblNoControl.updateValueAndValidity();
+}
+
+validateHBLNo(): boolean {
+  const exportImportType = this.selectedDepartment?.ExportImport;
+  const hblNo = this.houseJobForm.get('HBLNo')?.value;
+  
+  // If it's Import department and HBLNo is empty, show error
+  if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
+    this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    
+    // Mark the field as touched to show validation error
+    this.houseJobForm.get('HBLNo')?.markAsTouched();
+    this.houseJobForm.get('HBLNo')?.setErrors({ required: true });
+    
+    // Focus on HBLNo field
+    setTimeout(() => {
+      const hblNoElement = document.getElementById('hbl-input');
+      if (hblNoElement) {
+        hblNoElement.focus();
+      }
+    }, 100);
+    
+    return false;
+  }
+  
+  return true;
 }
   private autoSetJobType(department: any): void {
   if (!department) {
@@ -3107,6 +3267,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.TandCList = this.TandCList || [];
   }
 
 
@@ -3816,17 +3977,20 @@ prepopulateFromMasterJob(masterJobData: any): void {
     // Set MasterJobSid and other basic fields
     this.houseJobForm.patchValue({
       MasterJobSid: masterJobData.MasterJobSid,
+      MasterJobNumber: masterJobData.MasterJobNumber || '',
       DepartmentMasterSid: departmentSid,
       MBLNo: masterJobData.MBLNo || '',
       MBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
       VesselName: masterJobData.VesselName || '',
       VoyageNo: masterJobData.VoyageNo || '',
-      CarrierName: masterJobData.CarrierName || ''
+      CarrierName: masterJobData.CarrierName || '',
+   
     });
     
     // Debug: Check form values
     console.log('Form after patch:', this.houseJobForm.value);
     console.log('DepartmentMasterSid in form:', this.houseJobForm.get('DepartmentMasterSid')?.value);
+    console.log('MasterJobNumber set to:', this.houseJobForm.get('MasterJobNumber')?.value);
     
     // Handle POL, POD, FPD - need to convert from codes to SIDs
     if (masterJobData.POLCode || masterJobData.POL) {
