@@ -22,6 +22,9 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { CommonService } from 'src/app/common/common.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { toNumber } from 'src/app/common/helper';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -212,6 +215,8 @@ gstTypes = [
     private ngbModal: NgbModal,
     private commonService: CommonService,
     private masterService: MasterService,
+    private currencyFormatter: CurrencyFormatService,
+    private currencyConfigService : CurrencyConfigurationService,
   ) {}
 
   ngOnInit(): void {
@@ -313,6 +318,14 @@ gstTypes = [
       CustomerBranchSid: [{ value: null, disabled: true }],
       CurrencyCode: [{ value: '', disabled: true }],
       ExchangeRate: [{ value: 1, disabled: true }],
+      IRNNumber: [{ value: '', disabled: true }],
+      IRNStatus: [{ value: '', disabled: true }],
+      State : [{ value: '', disabled: true }],
+      DepartmentMasterSid: [{ value: null, disabled: true }],
+      HouseNumber: [{ value: '', disabled: true }],
+      MasterNumber: [{ value: '', disabled: true }],
+      BookingHeaderSid: [{ value: null, disabled: true }],
+      CurrencyMasterSid: [{ value: null, disabled: true }],
       BillNo: [{ value: '', disabled: true }],
       BillDate: [{ value: null, disabled: true }],
       BillAmt: [{ value: 0, disabled: true }],
@@ -508,10 +521,20 @@ gstTypes = [
       PartyName: header.PartyName || '',
       PartyAddress: header.PartyAddress || '',
       CustomerBranchSid: header.CustomerBranchSid || null,
+      COAMasterSid: header.COAMasterSid || null,
       GSTNo: header.GST_VAT || '',
       GSTType: header.GSTType || '',
       PlaceOfSupply: header.PlaceOfSupply || '',
       InvoiceType: header.InvoiceType || '',
+      IRNNumber: header.IRNNumber || '',
+      IRNStatus: header.IRNStatus || '',
+      State: header.State || "",
+      DepartmentMasterSid: header.DepartmentMasterSid || null,
+      HouseNumber: header.HouseNumber || "",
+      MasterNumber: header.MasterNumber || "",
+      HouseJobSid: header.HouseJobSid || null,
+      BookingHeaderSid: header.BookingHeaderSid || null,
+      CurrencyMasterSid: header.CurrencyMasterSid || null,
       CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
       ExchangeRate: header.ExchangeRate || header.ExRate || 1,
       BillAmount: header.Amount || 0,
@@ -674,6 +697,8 @@ gstTypes = [
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
       HSSACMasterSid: detail.HSSACMasterSid,
+      LedgerMasterSid : detail.LedgerMasterSid,
+      COAMasterSid : detail.COAMasterSid,
       ChargeUOMSid: detail.ChargeUOMSid,
       DepartmentMasterSid: detail.DepartmentMasterSid,
       NumberOfUnit: detail.NumberOfUnit,
@@ -687,13 +712,17 @@ gstTypes = [
       TaxAmount1: mappedTaxValues.TaxAmount1,
       TaxPercentage2: mappedTaxValues.TaxPercentage2,
       TaxAmount2: mappedTaxValues.TaxAmount2,
-      
+      MasterNumber : header.MasterNumber || detail.masterJob?.MasterJobNumber,
+      HouseNumber : header.HouseNumber || detail.houseJob?.HouseNo,
+      YearMasterSid : detail.YearMasterSid,
       LocalAmount: localAmount,
       PartyAmount: partyAmount,
       MasterJobSid: detail.MasterJobSid,
       HouseJobSid: detail.HouseJobSid
     }));
   });
+
+  this.recalculateAllRows();
 
   const voucherOthersSource = data.VoucherOthers 
       || data.voucherOthers 
@@ -884,7 +913,10 @@ onGSTTypeChange() {
     HouseJobSid: [data?.HouseJobSid || null],
     DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
     LedgerMasterSid: [data?.LedgerMasterSid || null],
-    COAMasterSid: [data?.COAMasterSid || null]
+    COAMasterSid: [data?.COAMasterSid || null],
+    MasterNumber : [data?.masterJob?.MasterJobNumber || data?.MasterNumber || ''],
+    HouseNumber : [data?.houseJob?.HouseNo || data?.HouseNumber || ''],
+    YearMasterSid : [data?.YearMasterSid || null]
   });
 }
 
@@ -994,9 +1026,9 @@ private async recalcRow(index: number) {
   const row = this.details.at(index);
   if (!row) return;
   const headerCurrency = this.vendorCreditNoteForm.get('CurrencyCode')?.value;
-  if (row.get('CurrencyCode')?.value !== headerCurrency) {
-    row.get('CurrencyCode')?.setValue(headerCurrency);
-  }
+  // if (row.get('CurrencyCode')?.value !== headerCurrency) {
+  //   row.get('CurrencyCode')?.setValue(headerCurrency);
+  // }
 
   const unit = Number(row.get('NumberOfUnit')?.value || 0);
   const rate = Number(row.get('Rate')?.value || 0);
@@ -1173,7 +1205,7 @@ private async recalcRow(index: number) {
   }
   
   row.get('LocalAmount')?.setValue(this.round(localAmount));
-  row.get('PartyAmount')?.setValue(this.round(amount));
+  row.get('PartyAmount')?.setValue(this.getPartyAmount(row.value));
 
   this.updateBillAmount();
   console.log('=== RATE CHANGE DEBUG - END ===');
@@ -1371,10 +1403,10 @@ recalculateAllRows() {
     if (exRateCtrl && (exRateCtrl.value === null || exRateCtrl.value === undefined)) {
       exRateCtrl.setValue(this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1);
     }
-    const currCtrl = this.details.at(i).get('CurrencyCode');
-    if (currCtrl && !currCtrl.value) {
-      currCtrl.setValue(this.vendorCreditNoteForm.get('CurrencyCode')?.value || null);
-    }
+    // const currCtrl = this.details.at(i).get('CurrencyCode');
+    // if (currCtrl && !currCtrl.value) {
+    //   currCtrl.setValue(this.vendorCreditNoteForm.get('CurrencyCode')?.value || null);
+    // }
     this.recalcRow(i);
   }
 }
@@ -1388,18 +1420,18 @@ getTotalCurrencyAmount(): number {
   return this.round(total);
 }
 
-getTotalTaxAmount(): number {
+getTotalTaxAmount() {
   let total = 0;
   for (let i = 0; i < this.details.length; i++) {
     const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
     const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
     total += taxAmt1 + taxAmt2 ;
   }
-  return this.round(total);
+  return total.toFixed(2);
 }
 
 getGrandTotal(): number {
-  return this.round(this.getTotalCurrencyAmount() + this.getTotalTaxAmount());
+  return this.round(this.getTotalCurrencyAmount() + toNumber(this.getTotalTaxAmount()));
 }
 
   addDetailRow() {
@@ -1962,6 +1994,7 @@ getSelectedCosts(): any[] {
       this.vendorList = vendors.data || [];
       this.subledgerList = vendors.data || [];
       this.currencyList = currencies.data || [];
+      this.currencyConfigService.initializeConfigurations(this.currencyList);
       this.chargeList = charges.data || [];
       this.hssacList = hssac || [];
       this.uomList = uom.data || [];
@@ -2440,8 +2473,9 @@ getMasterJobNumber(jobSid: number): string {
   };
 
   // Add details with CostRevenueChargesSid
-  payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
-    
+  payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => {
+    const partyAmount = this.getPartyAmount(detail);
+    return {
     Sno: index + 1,
     VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
     ChargeMasterSid: detail.ChargeMasterSid,
@@ -2465,9 +2499,11 @@ getMasterJobNumber(jobSid: number): string {
     COAMasterSid: detail.COAMasterSid || coaMasterSid,
     MasterJobSid: detail.MasterJobSid,
     HouseJobSid: detail.HouseJobSid,
+    PartyAmount : partyAmount,
     DepartmentMasterSid: detail.DepartmentMasterSid,
     Remarks: detail.Remarks
-  }));
+    }
+  });
 
   // Add TDS
   // payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
@@ -2482,6 +2518,107 @@ console.log("Detail IDs:", formValue.voucherDetails.map(d => d.VoucherDetailSid)
 
     return payload;
 }
+
+  getPartyAmount(detail: any) {
+    const voucherHeaderCurrency = this.vendorCreditNoteForm.get('CurrencyCode')?.value;
+    const voucherHeaderExRate = this.vendorCreditNoteForm.get('ExchangeRate')?.value;
+    const chargeCurrencyCode = detail.CurrencyCode;
+    const chargeCurrencyId = this.currencyList.find(cr => detail.CurrencyCode === cr.currencyCode)?.CurrencyMasterSid;
+
+    if(detail.IsAutoGenerated){
+      return this.getFormattedAmount(toNumber(detail.PartyAmount), chargeCurrencyId);
+    }
+
+    // Same currency → no conversion
+    if (chargeCurrencyCode === voucherHeaderCurrency) {
+      return this.getFormattedAmount(toNumber(detail.LocalAmount), chargeCurrencyId);
+    } else {
+      return this.getFormattedAmount(toNumber(detail.LocalAmount) / toNumber(voucherHeaderExRate), chargeCurrencyId);
+    }
+  }
+
+  public getFormattedAmount(amount: number, CurrencyMasterSid: number) {
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    const input = {
+      value: amount,
+      currencyCode: currency?.currencyCode
+    }
+    return this.currencyFormatter.formatAmount(input, false);
+  }
+
+  patchExchangeRateForDetail(fromCurrencyCode: string, toCurrencyCode: string, index: number) {
+    const formGroup = this.details.at(index) as FormGroup;
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      fromCurrencyCode,
+      toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.vendorCreditNoteData?.VoucherDate) : new Date(),
+      segment: 'cost'
+    }
+
+    this.operationService.getExchangeRate(payload).subscribe({
+      next: (response: any) => {
+        if (response?.status && response.data) {
+          const formGroup = this.details.at(index) as FormGroup;
+          formGroup.get('ExchangeRate')?.enable();
+          formGroup.patchValue({ ExchangeRate: Number(response.data), });
+          this.recalcRow(index);
+        } else {
+          console.warn('Exchange rate not found, defaulting to 1');
+          formGroup.get('ExchangeRate')?.disable();
+          formGroup.patchValue({ ExchangeRate: 1, });
+          this.recalcRow(index);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching exchange rate:', err);
+        formGroup.get('ExchangeRate')?.disable();
+        formGroup.patchValue({ ExchangeRate: 1, });
+        this.recalcRow(index);
+      }
+    });
+  }
+
+  getTotalLocalCredits() {
+    return (this.details.getRawValue().reduce((sum, dtl: any) => {
+      if (dtl.DrCr === 'C') {
+        return sum + Number(dtl.LocalAmount);
+      }
+      return sum;
+    }, 0)).toFixed(2);
+  }
+
+  getTotalLocalDebits() {
+    return (this.details.getRawValue().reduce((sum, dtl: any) => {
+      if (dtl.DrCr === 'D') {
+        return sum + Number(dtl.LocalAmount);
+      }
+      return sum;
+    }, 0)).toFixed(2);
+  }
+
+  getNetCrDr() {
+    return toNumber(this.getTotalLocalCredits() - this.getTotalLocalDebits()).toFixed(2);
+  }
+
+  getPartyCurrCreditAmt() {
+    return (this.details.getRawValue().reduce((sum, dtl: any) => {
+      if (dtl.DrCr === 'C') {
+        return sum + Number(dtl.PartyAmount);
+      }
+      return sum;
+    }, 0)).toFixed(2);
+  }
+
+  getPartyCurrDebitAmt() {
+    return (this.details.getRawValue().reduce((sum, dtl: any) => {
+      if (dtl.DrCr === 'D') {
+        return sum + Number(dtl.PartyAmount);
+      }
+      return sum;
+    }, 0)).toFixed(2);
+  }
 
 //   prepareVoucherTDSPayload(details: any[]): any[] {
 //   const taxRecords: any[] = [];
