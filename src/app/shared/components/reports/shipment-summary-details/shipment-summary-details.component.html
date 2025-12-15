@@ -1,0 +1,252 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Shipment Summary Details
+        as on {{ params?.FromHBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+            </div>
+
+            <div>
+
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
+                    <p class="ms-1">: {{ params?.Customer }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Salesperson </strong>
+                    <p class="ms-1">: {{ params?.Salesperson }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Transhipment </strong>
+                    <p class="ms-1">: {{ params?.Transhipment }}</p>
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light text-center">Branch</th>
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light">Job Month</th>
+                        <th class="bg-transparent text-light">Job Date</th>
+                        <th class="bg-transparent text-light">MBL / MAWB</th>
+                        <th class="bg-transparent text-light">Import Job No</th>
+                        <th class="bg-transparent text-light">Export Job No</th>
+                        <th class="bg-transparent text-light text-center">Shipment No</th>
+                        <th class="bg-transparent text-light">Booking Date</th>
+                        <th class="bg-transparent text-light">House Dept</th>
+                        <th class="bg-transparent text-light">HBL / HAWB</th>
+                        <th class="bg-transparent text-light">Weight</th>
+                        <th class="bg-transparent text-light">Volume</th>
+                        <th class="bg-transparent text-light">Chargeable</th>
+                        <th class="bg-transparent text-light">Volume Wt</th>
+                        <th class="bg-transparent text-light">Customer</th>
+                        <th class="bg-transparent text-light">Customer Type</th>
+                        <th class="bg-transparent text-light">Shipper</th>
+                        <th class="bg-transparent text-light">Consignee</th>
+                        <th class="bg-transparent text-light">Origin Agent</th>
+                        <th class="bg-transparent text-light">Delivery Agent</th>
+                        <th class="bg-transparent text-light">Notify Name</th>
+                        <th class="bg-transparent text-light">Carrier</th>
+                        <th class="bg-transparent text-light">Origin Carrier</th>
+                        <th class="bg-transparent text-light">Agent</th>
+                        <th class="bg-transparent text-light">PCS</th>
+                        <th class="bg-transparent text-light">Inco Terms</th>
+                        <th class="bg-transparent text-light">PP/CC</th>
+                        <th class="bg-transparent text-light">Vessel </th>
+                        <th class="bg-transparent text-light">Voyage </th>
+                        <th class="bg-transparent text-light">Mode of Transport</th>
+                        <th class="bg-transparent text-light">Job Type</th>
+                        <th class="bg-transparent text-light">Hosue Status</th>
+                        <th class="bg-transparent text-light">Service Level Name</th>
+                        <th class="bg-transparent text-light">Shipment Origin Port Code </th>
+                        <th class="bg-transparent text-light">Shipment Origin Port Name </th>
+                        <th class="bg-transparent text-light">Shipment Origin Country Code</th>
+                        <th class="bg-transparent text-light">Shipment Origin Country Name </th>
+                        <th class="bg-transparent text-light">Shipment Destination Port Code </th>
+                        <th class="bg-transparent text-light">Shipment Destination Port Name </th>
+                        <th class="bg-transparent text-light">Shipment Destination Country Code</th>
+                        <th class="bg-transparent text-light">Shipment Destination Country Name</th>
+                        <th class="bg-transparent text-light">BL Type</th>
+                        <th class="bg-transparent text-light">BL Issued Date</th>
+                        <th class="bg-transparent text-light">ETD</th>
+                        <th class="bg-transparent text-light">ATD</th>
+                        <th class="bg-transparent text-light">ETA</th>
+                        <th class="bg-transparent text-light">ATA</th>
+                        <th class="bg-transparent text-light">POL Code</th>
+                        <th class="bg-transparent text-light">POL Name</th>
+                        <th class="bg-transparent text-light">POL Country Code</th>
+                        <th class="bg-transparent text-light">POL Country Name</th>
+                        <th class="bg-transparent text-light">POD Code</th>
+                        <th class="bg-transparent text-light">POD Name</th>
+                        <th class="bg-transparent text-light">POD Country Code</th>
+                        <th class="bg-transparent text-light">POD Country Name</th>
+                        <th class="bg-transparent text-light">Salesperson</th>
+                        <th class="bg-transparent text-light">Operation Person</th>
+                        <th class="bg-transparent text-light">Documentation Person</th>
+                        <th class="bg-transparent text-light">C/S Person</th>
+                        <th class="bg-transparent text-light">Nominated By</th>
+                        <th class="bg-transparent text-light">Nominated (Y/N)</th>
+                        <th class="bg-transparent text-light">CO Loader</th>
+                        <th class="bg-transparent text-light">Payment Terms</th>
+                        <th class="bg-transparent text-light">Remarks</th>
+                        <th class="bg-transparent text-light">Internal Remarks</th>
+                        <th class="bg-transparent text-light">No of Container</th>
+                        <th class="bg-transparent text-light">20'F</th>
+                        <th class="bg-transparent text-light">40'F</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC</th>
+                        <th class="bg-transparent text-light">20' Refer</th>
+                        <th class="bg-transparent text-light">40' Refer</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC Refer</th>
+                        <th class="bg-transparent text-light">20' Open Top</th>
+                        <th class="bg-transparent text-light">40' Open Top</th>
+                        <th class="bg-transparent text-light">40' HC Open Top</th>
+                        <th class="bg-transparent text-light">TEU</th>
+                        <th class="bg-transparent text-light">Shipper Ref. No</th>
+                        <th class="bg-transparent text-light">Status</th>
+                        <th class="bg-transparent text-light">Master Status</th>
+                        <th class="bg-transparent text-light">Job Close Date</th>
+                        <th class="bg-transparent text-light">House Created By</th>
+                        <th class="bg-transparent text-light">CAN Date</th>
+                        <th class="bg-transparent text-light">DO No</th>
+                        <th class="bg-transparent text-light">DO Date</th>
+                        <th class="bg-transparent text-light">SOB</th>
+                        <th class="bg-transparent text-light">Job Created By</th>
+                        <th class="bg-transparent text-light">Shipping Bill No</th>
+                        <th class="bg-transparent text-light">Export Broker</th>
+                        <th class="bg-transparent text-light">Additional Terms/Remarks</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+
+                        <td class="text-center"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ item.MBL || '' }}</td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ item.shipmentNo || '' }}</td>
+                        <td>{{ item.bookingDate | formatDate }}</td>
+                        <td>{{ item.housedepartment || '' }}</td>
+                        <td>{{ item.HBL || '' }}</td>
+                        <td class="text-end">{{ item.grossWeight || '' }}</td>
+                        <td class="text-end">{{ item.volume || '' }}</td>
+                        <td class="text-end">{{ item.chargeable || '' }}</td>
+                        <td class="text-end">{{ item.netWeight || '' }}</td>
+                        <td>{{ item.customer || '' }}</td>
+                        <td></td>
+                        <td>{{ item.shipper || '' }}</td>
+                        <td>{{ item.consignee || '' }}</td>
+                        <td>{{ item.originAgent || '' }}</td>
+                        <td>{{ item.deliveryAgent || '' }}</td>
+                        <td>{{ item.notify || '' }}</td>
+                        <td>{{ item.carrier || '' }}</td>
+                        <td></td>
+                        <td>{{ item.agent || '' }}</td>
+                        <td></td>
+                        <td>{{ item.incoTerms || '' }}</td>
+                        <td>{{ item.PPCC || '' }}</td>
+                        <td>{{ item.vesselName || '' }}</td>
+                        <td>{{ item.voyageNo || '' }}</td>
+                        <td>{{ item.modeofTransport || '' }}</td>
+                        <td>{{ item.jobType || '' }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{item.ETD | formatDate}}</td>
+                        <td>{{item.ATD | formatDate}}</td>
+                        <td>{{item.ETA | formatDate}}</td>
+                        <td>{{item.ATA | formatDate}}</td>
+                        <td>{{item.POLCode}}</td>
+                        <td>{{item.POLName}}</td>
+                        <td>{{item.POLCountryCode}}</td>
+                        <td>{{item.POLCountryName}}</td>
+                        <td>{{item.PODCode}}</td>
+                        <td>{{item.PODName}}</td>
+                         <td>{{item.PODCountryName}}</td>
+                        <td>{{item.PODCountryCode}}</td>
+                        <td>{{item.salesPerson}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+
+                        <td>{{item.nominationBY}}</td>
+                        <td>{{item.nominated}}</td>
+                        <td>{{item.coLoader}}</td>
+                        <td></td>
+                        <td></td>
+                        <td>{{item.internalNote}}</td>
+                        <td>{{item.noOfContainers}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{item.totalNoOfTEU}}</td>
+                        <td></td>
+                        <td>{{item.status}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{item.DoNo}}</td>
+                        <td>{{item.DoDate | formatDate}}</td>
+                        <td>{{item.SOBDate | formatDate}}</td>
+                        <td></td>
+                        <td>{{item.shippingBillNo}}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+</div>

@@ -340,7 +340,7 @@ export class ReportRegistryService {
           </div>
         `,
         modalSize: 'xl',
-        pdfOrientation: 'portrait'
+        pdfOrientation: 'landscape'
       });
 
     } catch (error) {
@@ -478,7 +478,7 @@ export class ReportRegistryService {
 
     // BL-Issue 
 
-      try {
+    try {
       const { BlIssueReportComponent } = await import(
         '../components/reports/bl-issue-report/bl-issue-report.component'
       );
@@ -510,7 +510,7 @@ export class ReportRegistryService {
 
     // profitability 
 
-         try {
+    try {
       const { ProfitabilityReportComponent } = await import(
         '../components/reports/profitability-report/profitability-report.component'
       );
@@ -542,7 +542,7 @@ export class ReportRegistryService {
 
     // Container-wise-kpi
 
-             try {
+    try {
       const { ContainerWiseKpiComponent } = await import(
         '../components/reports/container-wise-kpi/container-wise-kpi.component'
       );
@@ -561,6 +561,69 @@ export class ReportRegistryService {
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
             <p>Please find attached the <strong> Container_Wise-KPI_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
+    }
+
+    // DO_Issue
+      try {
+      const { DoIssueListComponent } = await import(
+        '../components/reports/do-issue-list/do-issue-list.component'
+      );
+
+      this.registerReport({
+        id: 'do-issue-list',
+        title: 'Do_Issue_List',
+        component: DoIssueListComponent,
+        filenameTemplate: 'Do_Issue_List_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Do_Issue_List_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Do_Issue_List_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
+    }
+
+
+       // Shipment_summary_details
+      try {
+      const { ShipmentSummaryDetailsComponent } = await import(
+        '../components/reports/shipment-summary-details/shipment-summary-details.component'
+      );
+
+      this.registerReport({
+        id: 'shipment-summary-details',
+        title: 'Shipment_Summary_Details',
+        component: ShipmentSummaryDetailsComponent,
+        filenameTemplate: 'Shipment_Summary_Details_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Shipment_Summary_Details_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Shipment_Summary_Details_Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,

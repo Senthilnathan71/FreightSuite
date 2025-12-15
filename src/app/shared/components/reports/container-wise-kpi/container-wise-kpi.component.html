@@ -53,7 +53,7 @@
                         <th class="bg-transparent text-light">Volume</th>
                         <th class="bg-transparent text-light">Weight</th>
                         <th class="bg-transparent text-light">Booking Date</th>
-                        <th class="bg-transparent text-light">ETA POL Date</th>
+                        <!-- <th class="bg-transparent text-light">ETA POL Date</th> -->
                         <th class="bg-transparent text-light">ETD POL Date</th>
                         <th class="bg-transparent text-light">ATD POL Date</th>
                         <th class="bg-transparent text-light">ETA Destination</th>
@@ -76,20 +76,20 @@
                         <td>{{ item.HBL || '' }}</td>
                         <td>{{ item.shipmentType || '' }}</td>
                         <td>{{ item.consigneeName || '' }}</td>
-                        <td></td>
-                        <td>{{ item.portofDischarge || '' }}</td>
+                         <td>{{ item.consigneeName || '' }}</td>
+                        <td>{{ item.countryName || '' }}</td>
                         <td>{{ item.fnalDestination || '' }}</td>
                         <td class="text-center">{{ item.dgDelaration || '' }}</td>
                         <td>{{ item.containerNo || '' }}</td>
-                        <td></td>
+                        <td>{{ item.containerName || '' }}</td>
                         <td class="text-end">{{ item.vol || '' }}</td>
                         <td class="text-end">{{ item.weight || '' }}</td>
                         <td>{{ item.bookingDate | formatDate }}</td>
-                        <td>{{ item.ETA | formatDate}}</td>
+                        <!-- <td>{{ item.ETA | formatDate}}</td> -->
                         <td>{{ item.ETD | formatDate }}</td>
                         <td>{{ item.ATDPOL | formatDate }}</td>
-                        <td></td>
-                        <td></td>
+                        <td>{{ item.ETA | formatDate}}</td>
+                        <td>{{ item.ATA | formatDate}}</td>
                         <td>{{ item.freightTerms || '' }}</td>
                         <td></td>
                         <td></td>

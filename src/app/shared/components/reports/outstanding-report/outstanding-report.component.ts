@@ -3,6 +3,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 
 @Component({
@@ -18,11 +19,12 @@ export class OutstandingReportComponent {
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
-
+  orientation : 'portrait' | 'landscape' = 'portrait';
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
+    private reportRegistryService : ReportRegistryService
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -33,6 +35,7 @@ export class OutstandingReportComponent {
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
     this.loadSalesPerson();
+    this.orientation = this.reportRegistryService.getReportConfig('ageing-report').pdfOrientation;
   }
 
 
