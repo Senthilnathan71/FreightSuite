@@ -560,7 +560,7 @@ isVoyageFreeText: boolean = false;
     isCarrierFreeText: [false],
     isVesselFreeText: [false],
     isVoyageFreeText: [false],
-
+  MasterJobNumber: [{ value: '', disabled: true }],
       VesselName: [{ value: null, disabled: true }],
       VoyageMasterSid: [{ value: null, disabled: true }],
       VoyageNo: [{ value: null, disabled: true }],
@@ -578,6 +578,8 @@ isVoyageFreeText: boolean = false;
       JobType: [null],
       Coload: [false],
       ShipmentType: [false],
+      // HouseStatus: ['' ],
+      // HBLCount: [''],
       IncoTerms: [null, [Validators.required]],
       InternalNote: [''],
       GeneralNote: [''],
@@ -1340,14 +1342,32 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
         this.customsDataArray = resp.data.houseJobCustoms || [];
 
 
-
+ if (resp.data.MasterJobSid) {
+          this.loadMasterJobDetails(resp.data.MasterJobSid);
+        }
         // ✅ Trigger reload for child components like BOE
         this.resetTriggerBOE = true;
         }
       }
     )
   }
-
+private loadMasterJobDetails(masterJobSid: number): void {
+  this.operationService.getMasterJobById(masterJobSid).subscribe({
+    next: (response: any) => {
+      if (response.status && response.data) {
+        const masterJobData = response.data;
+        // Patch the Master Job Number to the form
+        this.houseJobForm.patchValue({
+          MasterJobNumber: masterJobData.MasterJobNumber
+        });
+        console.log('Master Job Number loaded:', masterJobData.MasterJobNumber);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading master job details:', error);
+    }
+  });
+}
   patchValues(response: any) {
   console.log('Response from backend:', response);
   console.log('AgentName from backend:', response.AgentName);
@@ -1390,6 +1410,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
   
   this.houseJobForm.patchValue({
     MasterJobSid : response.MasterJobSid,
+    MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
     BookingNo: response.BookingNo,
     BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
     DepartmentMasterSid: response.DepartmentMasterSid,
@@ -1413,6 +1434,8 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
     MBLNo: response.MBLNo,
     MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
     status: response.status === "A" ? "Active" : "Suspended",
+    HouseStatus: response.HouseStatus,
+    HBLCount: response.HBLCount,
    
     VesselName: response.VesselName,
     VoyageMasterSid: response.VoyageMasterSid,
@@ -1675,6 +1698,9 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    if (!this.validateHBLNo()) {
+    return;
+  }
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
@@ -1778,6 +1804,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     DoValid: houseJobFormValue.DoValid ? new Date(houseJobFormValue.DoValid) : null,
     Coload: houseJobFormValue.Coload ? 'Y' : 'N',
     ShipmentType: houseJobFormValue.ShipmentType ? 'Y' : 'N',
+    HouseStatus: houseJobFormValue.HouseStatus,
+    HBLCount: houseJobFormValue.HBLCount,
     IncoTerms: houseJobFormValue.IncoTerms,
     InternalNote: houseJobFormValue.InternalNote || '',
     GeneralNote: houseJobFormValue.GeneralNote || '',
@@ -1975,12 +2003,14 @@ private getAgentNameById(agentId: number): string {
     this.b['HBLNo']?.setValue('');
     this.blClauseOptions = [];
     this.o['BlClause']?.setValue('');
+    this.handleHBLNoField('');
     return;
   }
   
   // Set department properties
   this.selectedDepartment = department;
   this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
+  this.handleHBLNoField(department.ExportImport);
   this.filterTabs();
   this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
     ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
@@ -2035,15 +2065,20 @@ private handleHBLNoField(exportImport: string): void {
     return;
   }
   
+  // Clear existing validators first
+  hblNoControl.clearValidators();
+  hblNoControl.updateValueAndValidity();
+  
   if (exportImport === 'Export') {
     // For Export departments: disable HBLNo field (will be auto-generated)
     hblNoControl.disable();
     hblNoControl.setValue('');
     hblNoControl.clearValidators();
   } else if (exportImport === 'Import') {
-    // For Import departments: enable HBLNo field for manual entry
+    // For Import departments: enable HBLNo field for manual entry AND make it required
     hblNoControl.enable();
-    hblNoControl.setValidators([Validators.required]);
+    hblNoControl.setValidators([Validators.required]); // This makes it required
+    hblNoControl.updateValueAndValidity();
     console.log('HBLNo field enabled and required for Import department');
   } else {
     // For other department types: enable but not required
@@ -2053,6 +2088,32 @@ private handleHBLNoField(exportImport: string): void {
   }
   
   hblNoControl.updateValueAndValidity();
+}
+
+validateHBLNo(): boolean {
+  const exportImportType = this.selectedDepartment?.ExportImport;
+  const hblNo = this.houseJobForm.get('HBLNo')?.value;
+  
+  // If it's Import department and HBLNo is empty, show error
+  if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
+    this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    
+    // Mark the field as touched to show validation error
+    this.houseJobForm.get('HBLNo')?.markAsTouched();
+    this.houseJobForm.get('HBLNo')?.setErrors({ required: true });
+    
+    // Focus on HBLNo field
+    setTimeout(() => {
+      const hblNoElement = document.getElementById('hbl-input');
+      if (hblNoElement) {
+        hblNoElement.focus();
+      }
+    }, 100);
+    
+    return false;
+  }
+  
+  return true;
 }
   private autoSetJobType(department: any): void {
   if (!department) {
@@ -3206,6 +3267,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.TandCList = this.TandCList || [];
   }
 
 
@@ -3915,17 +3977,20 @@ prepopulateFromMasterJob(masterJobData: any): void {
     // Set MasterJobSid and other basic fields
     this.houseJobForm.patchValue({
       MasterJobSid: masterJobData.MasterJobSid,
+      MasterJobNumber: masterJobData.MasterJobNumber || '',
       DepartmentMasterSid: departmentSid,
       MBLNo: masterJobData.MBLNo || '',
       MBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
       VesselName: masterJobData.VesselName || '',
       VoyageNo: masterJobData.VoyageNo || '',
-      CarrierName: masterJobData.CarrierName || ''
+      CarrierName: masterJobData.CarrierName || '',
+   
     });
     
     // Debug: Check form values
     console.log('Form after patch:', this.houseJobForm.value);
     console.log('DepartmentMasterSid in form:', this.houseJobForm.get('DepartmentMasterSid')?.value);
+    console.log('MasterJobNumber set to:', this.houseJobForm.get('MasterJobNumber')?.value);
     
     // Handle POL, POD, FPD - need to convert from codes to SIDs
     if (masterJobData.POLCode || masterJobData.POL) {

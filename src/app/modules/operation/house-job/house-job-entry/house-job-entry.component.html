@@ -125,29 +125,35 @@
     </div>
 
     <!-- HBL No -->
-    <div class="col-md-3 ">
-      <div class="custom-form-group">
-        <input 
-          type="text" 
-          id="hbl-input" 
-          placeholder="" 
-          class="form-control custom-input-field sm"
-          formControlName="HBLNo"
-          [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
-          [ngClass]="{
-            'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
-                          (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)
-          }">
-        <label 
-          for="hbl-input" 
-          [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !b['HBLNo']?.getRawValue()
-          }">
-          {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
-        </label>
-      </div>
+<div class="col-md-3 ">
+  <div class="custom-form-group">
+    <input 
+      type="text" 
+      id="hbl-input" 
+      placeholder="" 
+      class="form-control custom-input-field sm"
+      formControlName="HBLNo"
+      [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
+      [ngClass]="{
+        'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
+                      (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)
+      }">
+    <label 
+      for="hbl-input" 
+      [ngClass]="{
+        'input-label': true,
+        'bg-transparent': !b['HBLNo']?.getRawValue()
+      }">
+      {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+    </label>
+    
+    <!-- Add validation message -->
+    <div *ngIf="selectedDepartment?.ExportImport === 'Import' && b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)" 
+         class="invalid-feedback d-block">
+      HBL Number is required for Import operations
     </div>
+  </div>
+</div>
 
     <!-- HBL Date -->
     <div class="col-md-3">
@@ -218,8 +224,37 @@
           }">Status</label>
       </div>
     </div>
+    <div class="col-md-3"> 
+      <div class="custom-form-group">
+        <input type="text" id="house-status-input" placeholder="" class="form-control custom-input-field sm"
+          formControlName="HouseStatus">
+        <label for="house-status-input" class="input-label">House Status <span class="text-danger">*</span></label>
+      </div>
+    </div>
 
+    <!-- HBL Count -->
+    <div class="col-md-3">
+      <div class="custom-form-group">
+        <input type="text" id="hbl-count-input" placeholder="" class="form-control custom-input-field sm"
+          formControlName="HBLCount">
+        <label for="hbl-count-input" class="input-label">HBL Count <span class="text-danger">*</span></label>
+      </div>
+      </div>
+  <!-- Master Job Number Field (Read-only) -->
+<div class="col-md-3">
+  <div class="custom-form-group">
+    <input 
+      type="text" 
+      id="masterjob-number-input" 
+      placeholder="" 
+      class="form-control custom-input-field sm"
+      formControlName="MasterJobNumber"
+      [readonly]="true">
+    <label for="masterjob-number-input" class="input-label">
+      Master Job Number
+    </label>
   </div>
+</div>
 
   <!-- Expandable Fields -->
   <div class="row g-3 mt-2" *ngIf="isQuickFormExpanded">

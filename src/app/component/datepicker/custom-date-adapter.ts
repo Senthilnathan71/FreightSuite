@@ -99,7 +99,7 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
     }
 
     // 🚨 Anything else
-    console.warn('⚠️ Unexpected value passed to fromModel:', date);
+    // console.warn('⚠️ Unexpected value passed to fromModel:', date);
     return null;
   }
 

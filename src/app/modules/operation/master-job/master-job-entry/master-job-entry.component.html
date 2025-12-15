@@ -501,7 +501,7 @@
 
     <!-- Manual Text Input -->
     <div class="input-group" *ngIf="this.f['isVesselFreeText']?.value">
-      <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+      <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="form-control" />
       <button class="btn bi bi-calendar3 pe-0" type="button"
         (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -546,7 +546,7 @@
 
     <!-- Manual Text Input -->
     <div class="input-group" *ngIf="this.f['isVoyageFreeText']?.value">
-      <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
+      <input type="text" formControlName="VoyageNo" placeholder=""  [textWithNumbers]="10" class="form-control" />
       <button class="btn bi bi-calendar3 pe-0" type="button"
         (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -665,8 +665,8 @@
   <div class="custom-form-group custom-form-group-select-date mt-1">
     <div class="input-group">
       <input class="form-control" placeholder="dd-mm-yyyy"
-             formControlName="CutOffDate" ngbDatepicker
-             #cutOffDatePicker="ngbDatepicker"
+             formControlName="PortCutoffDate" bindValue="PortCutoffDate" ngbDatepicker
+             #cutOffDatePicker="ngbDatepicker" 
              (click)="cutOffDatePicker.toggle()" container="body" readonly />
       <button class="btn bi bi-calendar3 px-0" (click)="cutOffDatePicker.toggle()"
               type="button">
@@ -677,13 +677,22 @@
   </div>
 </div>
                                     <!-- SI Cut Off Field -->
-                                    <aside class="col-md-4">
-                                        <div class="custom-form-group mt-1">
-                                            <input type="text" formControlName="SICutOff" class="custom-input-field sm" placeholder="">
-                                            <label class="input-label">SI Cut Off<span
-                                                    class="text-danger"></span></label>
+                                   <div class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select-date mt-1">
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="dd-mm-yyyy"
+                                                     formControlName="SiCutoffDate" ngbDatepicker
+                                                     #siCutOffDatePicker="ngbDatepicker"
+                                                     (click)="siCutOffDatePicker.toggle()" container="body" readonly />
+                                                <button class="btn bi bi-calendar3 px-0" (click)="siCutOffDatePicker.toggle()"
+                                                        type="button">
+                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                                </button>
+                                            </div>
+                                            <label class="input-label">SI Cut Off <span class="text-danger"></span></label>
                                         </div>
-                                    </aside>
+                                        </div>
+
 
 
                                     <!-- Shipment Terms Field - Updated to Dropdown -->
@@ -698,8 +707,8 @@
                                         </div>
                                     </aside>
                                     
-                                    <aside class="col-md-4">
-                                        <div class="custom-form-group mt-1">
+                                    <aside class="col-md-3">
+                                        <div class="custom-form-group mt-1">    
                                             <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                 class="custom-input-field sm" placeholder="" [textWithNumbers]="1000">
                                             <label for="text-input" class="input-label">Marks and Number </label>
@@ -710,7 +719,7 @@
                                             </div>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-4">
+                                    <aside class="col-md-3">
                                         <div class="custom-form-group mt-1">
                                             <input type="textarea" formControlName="CommodityDescription"
                                                 id="text-input" class="custom-input-field sm" placeholder=""
@@ -724,7 +733,23 @@
                                             </div>
                                         </div>
                                     </aside>
-                                     <div class="col-md-4 text-end mt-2 ">
+                                    <aside class="col-md-3">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('JobStatus')?.value">
+                                           <input type="text" formControlName="JobStatus" class="custom-input-field sm" placeholder="">
+                                            <label class="input-label"> Job Status <span
+                                                    class="text-danger">*</span></label>
+                                            @if(masterJobForm.get('JobStatus')?.touched &&
+                                            masterJobForm.get('JobStatus')?.invalid){
+                                            <div class="error-message">
+                                                @if(masterJobForm.get('JobStatus')?.hasError('required')){
+                                                <span>Required</span>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                    </aside>
+                                     <div class="col-md-3 text-end mt-2 ">
                                         <div class="d-flex justify-content-end gap-2">
                                           <button type="button" 
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
@@ -852,9 +877,9 @@
                                     <th>POD</th>
                                     <th>PP/CC</th>
                                     <th>Job Type</th>
-                                    <!-- <th>Gross Wt</th>
+                                    <th>Gross Wt</th>
                                     <th>CBM</th>
-                                    <th>Total Pkg</th> -->
+                                    <th>Total Pkg</th>
                                     </tr>
                                     </thead>
                                     
@@ -862,7 +887,8 @@
                                 <!-- Row 1 -->
                                 @for(shipment of slicedAttachedBookings ;let shipmentIndex = $index ; track
                                 shipmentIndex){
-                                <tr class="table-row">
+                                <tr class="table-row"
+                                      [ngClass]="{'no-container-mapping': !hasContainerMapping(shipment) && shipment.HouseJobSid}">
                                     <td class="actions-cell">
                                         <div class="action-buttons">
 
@@ -876,6 +902,14 @@
                                             <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                             <button class="action-icon delete"
                                                 (click)="detachBooking(shipmentIndex,shipment)" ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
+                                                  <span *ngIf="shipment.HouseJobSid && hasContainerMappingForShipment(shipment)" 
+                  class="ms-1" ngbTooltip="Container mapped">
+                <i class="fas fa-check-circle text-success" style="font-size: 12px;"></i>
+            </span>
+            <span *ngIf="shipment.HouseJobSid && !hasContainerMappingForShipment(shipment)" 
+                  class="ms-1" ngbTooltip="No container mapping">
+                <i class="fas fa-exclamation-circle text-warning" style="font-size: 12px;"></i>
+            </span>
                                         </div>
                                     </td>
                                     <td><a class="fw-bold"
@@ -904,10 +938,10 @@
                                         }
                                     </td>
                                     <td>{{shipment.JobType}}</td>
-                                       <!-- <td>{{shipment?.Cargo?.[0]?.GrossWeight}}</td>
-                    <td>{{masterJobData?.housejob?.Cargo?.[0]?.Volume}}</td>
-                    <td>{{shipment.NoOfPackage}}</td>
-                                     -->
+                                      <td>{{ getHouseJobGrossWeightFromMaster(shipment) }}</td>
+<td>{{ getHouseJobVolumeFromMaster(shipment) }}</td>
+<td>{{ getHouseJobTotalPackagesFromMaster(shipment) }}</td>
+                                    
                                 </tr>
                                 }
                             </tbody>
@@ -976,13 +1010,29 @@
                                                 (click)="openContainerModal(containerModal, container.value, i)" ngbTooltip="View">
                                                 <i class="fas fa-eye text-info"></i>
                                             </button>
-                                           <button class="action-icon delete" 
-        (click)="removeContainer(i)" 
-        ngbTooltip="Delete"
-        [disabled]="isDeletingContainer === i">
-  <i class="fas fa-trash text-danger"></i>
-  <span *ngIf="isDeletingContainer === i" class="spinner-border spinner-border-sm ms-1"></span>
-</button>
+                                                  <button class="action-icon delete" 
+                    (click)="removeContainer(i)" 
+                    [disabled]="isContainerMapped(container.value.MasterJobContainerSid) || 
+                               isDeletingContainer === i"
+                    ngbTooltip="{{isContainerMapped(container.value.MasterJobContainerSid) ? 
+                               'Cannot delete - Container is mapped to house job products' : 
+                               'Delete container'}}">
+                <i class="fas fa-trash" 
+                   [ngClass]="{
+                     'text-danger': !isContainerMapped(container.value.MasterJobContainerSid),
+                     'text-muted': isContainerMapped(container.value.MasterJobContainerSid)
+                   }"></i>
+            </button>
+            
+            <!-- Mapping indicator -->
+            <span *ngIf="isContainerMapped(container.value.MasterJobContainerSid)" 
+                  class="ms-1" 
+                  ngbTooltip="Mapped to {{getContainerMappingCount(container.value.MasterJobContainerSid)}} product(s)">
+                <i class="fas fa-link text-success" style="font-size: 12px;"></i>
+                <small class="text-success ms-1" style="font-size: 10px;">
+                  {{getContainerMappingCount(container.value.MasterJobContainerSid)}}
+                </small>
+            </span>
                                         </div>
                                     </td>
                                     <td>{{ getContainerTypeName(container.value.ContainerType) }}</td>
@@ -1216,16 +1266,16 @@
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
-                            <input type="number" formControlName="SellExchangeRate" 
-                                class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
+                            <input type="text" formControlName="SellExchangeRate" 
+                                class="custom-input-field sm" step="0.0001" min="0" [onlyNumbers]="10" placeholder="">
                             <label class="input-label">Sell Exchange Rate</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date mt-1">
-                            <input type="number" formControlName="AgentExchangeRate"
-                                class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
+                            <input type="text" formControlName="AgentExchangeRate"
+                                class="custom-input-field sm" step="0.0001" min="0" [onlyNumbers]="10" placeholder="">
                             <label class="input-label">Agent Exchange Rate</label>
                         </div>
                     </aside>
@@ -2733,7 +2783,7 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="number" formControlName="ChargeableWeight" class="custom-input-field sm"
+                            <input type="text" formControlName="ChargeableWeight" class="custom-input-field sm"
                              DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
                                 step="0.001" min="0" placeholder="">
                             <label class="input-label">Chargeable Weight</label>
