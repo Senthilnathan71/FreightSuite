@@ -501,6 +501,7 @@ export class MAWBComponent implements OnChanges {
         border: 1px solid #000;
         border-top: none;
         padding: 8px;
+        flex: 1;
       }
 
       .reference-cell {
