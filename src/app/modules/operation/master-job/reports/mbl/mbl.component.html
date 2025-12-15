@@ -306,7 +306,7 @@
 
    <div  style="
     width: 280mm;
-    min-height: 405mm;
+    min-height: 400mm;
     margin: 10px auto !important;
     background: #fff;
     box-sizing: border-box;
@@ -368,9 +368,14 @@
     </div>
 
     <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0px; border-bottom:1px solid black;">
-      <img src="assets/images/logos/xtreme-dark-icon.svg" style="max-height:80px; margin-bottom:5px;">
+          <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
       <div style="text-align:center;">
-        <h4 style="margin:0;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
         <h5 style="margin:0;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
         <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 }}</p>
         <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 }}</p>
@@ -432,7 +437,7 @@
       <tbody>
         <tr *ngFor="let container of masterJobData?.containers">
           <td style="border:1px solid black; padding:2px 8px;">
-            {{container?.ContainerNumber}} / {{ container?.LineSeal }}
+            {{container?.ContainerNumber}} / {{ container?.LineSeal }}  
           </td>
 
           <td style="border:1px solid black; padding:2px 8px;">

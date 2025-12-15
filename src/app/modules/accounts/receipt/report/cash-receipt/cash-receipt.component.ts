@@ -37,6 +37,10 @@ export class CashReceiptComponent {
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
 
+    
+ showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
@@ -182,22 +186,27 @@ export class CashReceiptComponent {
   }
   // pdf download
 
-  async downloadPDF() {
+
+      async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
     this.spinner.show();
-    try {
-      const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
+     try {
 
-
+    const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Cash_Receipt_${BankReceiptNo}`,
+         `Cash_Receipt_${BankReceiptNo}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
-    } finally {
+    }finally {
       this.spinner.hide();
     }
-  }
+  }, 50);
+}
 
 
 
@@ -242,9 +251,12 @@ export class CashReceiptComponent {
     }
   }
 
-  // print
+       
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  printDiv(divId: string): void {
+  setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;
     if (!printContents) return;
 
@@ -252,18 +264,20 @@ export class CashReceiptComponent {
     if (popupWin) {
       popupWin.document.open();
       popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
       popupWin.document.close();
     }
-  }
+  }, 50); // small timeout so Angular updates DOM
+}
+
 
 
   modalClose() {

@@ -771,32 +771,31 @@
     <div id="printContent" class="p-1">
       <div style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;font-size:12pt;">
         
-        <!-- Company Info -->
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-4 p-4">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; flex-direction: column;">
-            <!-- Print logo -->
+     
+ <!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                 <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
             <!-- Pdf logo -->
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-        </div>
-
-        <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 15px;">
-                {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
-                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
-            </p>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
         </div>
     </div>
-</div>
         
         <!-- Invoice Title -->
         <div style="text-align:center; border-top:1px solid black; padding-top:4px;">
@@ -1052,7 +1051,7 @@
             <div style="font-size:12px;">: {{bankDetails.BeneficiaryName}}</div>
           </div>
           <div style="display:flex;">
-            <div style="width:180px; font-size:12px;"><strong>Account No</strong></div>
+            <div style="width:180px; font-size:12px;"><strong>Account No.</strong></div>
             <div style="font-size:12px;">: {{bankDetails.BankAccountNo}}</div>
           </div>
           <div style="display:flex;">
@@ -1077,7 +1076,7 @@
         
         <!-- Footer -->
         <footer style="position:absolute; bottom:0; left:0; width:100%; text-align:center; font-size:10pt; padding:10px; box-sizing:border-box;">
-          <div style="display:flex; justify-content:space-between; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:16px;">
             <div>Printed By: {{ userData.userName }}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div>Printed On: {{ currentDate | formatDate }}</div>

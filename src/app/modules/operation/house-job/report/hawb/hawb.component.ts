@@ -26,6 +26,9 @@ export class HAWBComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+  
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
 
   @Input() housejobData: any;
   @Input() masterJobData: any;
@@ -121,7 +124,12 @@ export class HAWBComponent {
   }
 
 
-  printDiv(divId: string): void {
+ 
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;
     if (!printContents) return;
 
@@ -129,26 +137,29 @@ export class HAWBComponent {
     if (popupWin) {
       popupWin.document.open();
       popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
       popupWin.document.close();
     }
-  }
+  }, 50); 
+}
 
 
-  async downloadPDF() {
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
     this.spinner.show();
-    try {
-      const BankPaymentNo = this.housejobData?.HBLNo || '';
-
-
+   try {
+        const BankPaymentNo = this.housejobData?.HBLNo || '';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
         `HAWB_${BankPaymentNo}`,
@@ -158,5 +169,7 @@ export class HAWBComponent {
     } finally {
       this.spinner.hide();
     }
-  }
+  }, 50);
+}
+
 }

@@ -315,34 +315,30 @@
 
    <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
-  <!-- Company Header -->
-<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-0">
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-3">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; flex-direction: column;">
-            <!-- Print logo -->
+  <!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                 <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
             <!-- Pdf logo -->
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-        </div>
-
-        <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 15px;">
-                {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
-                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
-            </p>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
         </div>
     </div>
-</div>
-</div>
 
   
 
@@ -517,6 +513,11 @@
     </table>
     }
 
+
+    
+
+    
+
     <!-- Charges Table -->
     @if(withOrWithoutCharge){
     <table style="width:100%; border-collapse: collapse;  margin-bottom:0.25rem;font-size: 16px;" class="mt-2">
@@ -550,6 +551,20 @@
         </tbody>
     </table>
     }
+
+    @if(withOrWithoutCharge){
+            
+           <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;font-size: 16px;">
+    <strong style="white-space:nowrap;min-width:150px;">Amount in Words   </strong>
+
+    <p style="margin:0; line-height:22px; word-break:break-word;">
+      :  <strong>{{ getAmountInWords() }}</strong>
+    </p>
+</div>
+    }
+
+
+
 
     <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
         <div style="display:flex; justify-content:space-between; font-size:12px;">

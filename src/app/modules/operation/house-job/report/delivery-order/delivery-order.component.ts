@@ -31,7 +31,7 @@ export class DeliveryOrderComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-
+  @Input() TandCList: any;
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() packageTypeList: any;
@@ -48,6 +48,10 @@ export class DeliveryOrderComponent {
     this.loadCityName();
     this.loadCurrencyList();
   }
+
+  
+ showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
 
     loadCityName(): void {
     if (!this.currentBranchCityId) return;
@@ -192,8 +196,6 @@ export class DeliveryOrderComponent {
 }
     
 
- showPrintLogo: boolean = false;
-  showPdfLogo: boolean = true;
      
 printDiv(divId: string): void {
   this.showPrintLogo = true;

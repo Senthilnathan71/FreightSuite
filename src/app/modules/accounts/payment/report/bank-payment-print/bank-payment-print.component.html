@@ -25,7 +25,7 @@
 <div class="modal-body">
     <div id="printContent"class="p-1">
 
-<div style="width:280mm; min-height:400mm; margin:10px; padding:5mm; border:1px solid #000; box-sizing:border-box; position: relative; color: #000;">
+<div style="width:280mm; min-height:400mm; margin:10px;  border:1px solid #000; box-sizing:border-box; position: relative; color: #000;">
 
                     <!-- Company Info -->
        <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;font-size: 14px;" class=" p-3">
@@ -100,16 +100,16 @@
     </div>
 
     <!-- Table -->
-    <table style="width:100%; border-collapse:collapse; margin:10px 0;  border:1px solid black;font-size:16px;">
+    <table style="width:100%; border-collapse:collapse; margin:10px 0;  font-size:16px;">
         <tr>
-            <th style="border:1px solid black; width:50%;  text-align:center;"><strong>Description</strong></th>
+            <th style="border:1px solid black; width:50%;  text-align:center;border-left: none;"><strong>Description</strong></th>
             <th style="border:1px solid black; width:15%;  text-align:center;"><strong>MBL/HBL Ref</strong></th>
             <th style="border:1px solid black; width:10%;  text-align:center;"><strong>Curr.</strong></th>
             <th style="border:1px solid black; width:10%;  text-align:center;"><strong>Ex.Rate</strong></th>
-            <th style="border:1px solid black; width:15%;  text-align:center;"><strong>Amount</strong></th>
+            <th style="border:1px solid black; width:15%;  text-align:center;border-right: none;"><strong>Amount</strong></th>
         </tr>
         <tr>
-            <td style="border:1px solid black;text-align:center;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
+            <td style="border:1px solid black;text-align:center;border-left: none;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
             <td style="border:1px solid black; text-align:center;">
                 {{paymentDataPrint?.MasterNumber}}
                 <span *ngIf="paymentDataPrint?.MasterNumber && paymentDataPrint?.HouseNumber">/</span>
@@ -117,47 +117,47 @@
             </td>
             <td style="border:1px solid black; text-align:center;">{{paymentDataPrint?.CurrencyCode}}</td>
             <td style="border:1px solid black; text-align:right;">{{paymentDataPrint?.ExchangeRate | number:'1.2-2'}}</td>
-            <td style="border:1px solid black; text-align:right;">{{paymentDataPrint?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}</td>
+            <td style="border:1px solid black; text-align:right;border-right: none;">{{paymentDataPrint?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}</td>
         </tr>
     </table>
 
-    <h4 style="text-decoration:underline; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h4>
+    <h4 style="text-align: center; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h4>
 
     <!-- Matching Table -->
-    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; border:1px solid black; font-size:16px;" >
+    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse;  font-size:16px;" >
         <tr>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher No.</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;border-left: none;"><strong>Voucher No.</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Type</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Date</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Curr.</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Ex. Rate</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Curr. Amt</strong></th>
-            <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Local Amount</strong></th>
+            <th style="border:1px solid black;  text-align:center;font-weight:700;border-right: none;"><strong>Local Amount</strong></th>
         </tr>
 
         <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
-            <td style="border:1px solid black; text-align:center;">{{voucher?.VoucherNumber}}</td>
+            <td style="border:1px solid black; text-align:center;border-left: none;">{{voucher?.VoucherNumber}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.VoucherType}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.VoucherDate | formatDate}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.CurrencyCode}}</td>
             <td style="border:1px solid black; text-align:right;">{{voucher?.ExchangeRate | number:'1.3-3'}}</td>
             <td style="border:1px solid black; text-align:right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
-            <td style="border:1px solid black; text-align:right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
+            <td style="border:1px solid black; text-align:right;border-right: none;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
         </tr>
 
         <tr>
-            <td colspan="5" style="border:1px solid black; text-align:right; font-weight:bold;"><strong>Total</strong></td>
+            <td colspan="5" style="border:1px solid black; text-align:right; font-weight:bold;border-left: none;"><strong>Total</strong></td>
             <td style="border:1px solid black; text-align:right;"><strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong></td>
-            <td style="border:1px solid black; text-align:right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
+            <td style="border:1px solid black; text-align:right;border-right: none;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
         </tr>
     </table>
 
-    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 0;font-size:16px;">
+    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 10px;font-size:16px;">
         <strong>Amount in Words :</strong>
         <span style="font-style:italic;"> {{ getAmountInWords() }} </span>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:16px;">
+    <div style="display:flex; justify-content:space-between; margin:30px 50px;font-size:16px;">
         <strong>Checked By :</strong>
         <strong>Approved By :</strong>
     </div>
