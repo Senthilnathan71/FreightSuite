@@ -1,7 +1,6 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
     <h5 class="modal-title text-white mb-0">MAWB</h5>
     <div class="d-flex gap-2 align-items-center">
-
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
@@ -14,653 +13,423 @@
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
-
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
-
     </div>
 </div>
 
-
 <div class="modal-body">
     <div id="printContent" class="p-1">
-        <div style="
-            width: 280mm;
-            min-height: 400mm;
-            margin: 10px auto !important;
-            background: #fff;
-            box-sizing: border-box;
-            position: relative;
-            color: #000;
-            page-break-after: always;
-          ">
+        <div class="mawb-report">
+            <div class="mawb-page">
 
-            <div style="display: flex; flex-wrap: wrap; margin-bottom: 0;">
+                <!-- HEADER ROW: Left & Right Columns -->
+                <div class="mawb-header-row">
 
-                <!-- LEFT COLUMN -->
-                <div style="width: 50%; padding: 0;font-size: 14px;">
+                    <!-- LEFT COLUMN -->
+                    <div class="mawb-left-col">
 
-                    <!-- Shipper Section -->
-                    <div
-                        style="display: flex; border-top:1px solid black; border-left:1px solid black; border-bottom:1px solid black; width:100%;">
-
-                        <!-- LEFT -->
-                        <div style="width: 70%;padding-left:10px;padding-top:10px">
-                            <strong>Shipper</strong>
-                            <div style="padding: 4px; height: 79px; line-height: 16px;">
-                                {{ masterAirWayData?.houseJob?.[0]?.ShipperName }} <br>
-                                {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
-                            </div>
-                        </div>
-
-                        <!-- RIGHT -->
-                        <div
-                            style="width: 35%; border-left:1px solid black; border-bottom:1px solid black; height:50px;">
-                            <strong style="padding: 2px; font-size: 12px;">Shipper's Account Number</strong>
-                            <div style="padding: 1px; text-align: center;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Consignee Section -->
-                    <div style="display: flex; border-left:1px solid black; width:100%;">
-                        <div style="width: 70%;padding-left:10px;padding-top:10px">
-                            <strong>Consignee</strong>
-                            <div style="padding: 4px; min-height: 79px; line-height: 16px;">
-                                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }} <br>
-                                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
-                            </div>
-                        </div>
-                        <div
-                            style="width: 35%; border-left:1px solid black; border-bottom:1px solid black; height:50px;">
-                            <strong style="padding: 2px; font-size: 12px;">Consignee's Account Number</strong>
-                            <div style="padding: 1px; text-align: center;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Issuing Carrier's Agent -->
-                    <div
-                        style="display: flex; flex-direction: column; border-top:1px solid black; border-left:1px solid black; border-bottom:1px solid black; padding: 0px;padding-left:10px;padding-top:10px">
-                        <div style="white-space: nowrap; width: 200px;"><strong>Issuing Carrier's Agent Name and
-                                City</strong>
-                        </div>
-                        <div style="min-height: 78px; ">
-                            {{ getAgentName(masterAirWayData?.DestinationAgent) }} <br>
-                            {{ getAgentName(masterAirWayData?.DestinationAgentAddress) }}
-                        </div>
-                    </div>
-
-                    <!-- Agent Info -->
-                    <div style="display: flex; border-left:1px solid black; border-bottom:1px solid black;">
-
-                        <div style="display: flex; flex-direction: column; width: 260px;">
-                            <div style="width:200px; white-space: nowrap; text-align: center;"><strong>Agent's IATA
-                                    Code</strong></div>
-                            <div style="min-height: 20px;  text-align:center;"></div>
-                        </div>
-
-                        <div
-                            style="display: flex; flex-direction: column; border-left:1px solid black; padding-left: 4px;">
-                            <div style="width:200px; white-space: nowrap; text-align:center;"><strong>Account
-                                    No</strong></div>
-                            <div style="min-height:20px;  text-align:center;"></div>
-                        </div>
-
-                    </div>
-
-                    <!-- Airport Departure -->
-                    <div
-                        style="text-align:center; border-left:1px solid black; border-bottom:1px solid black; padding:8px;">
-                        <div style="white-space: nowrap;"><strong>Airport departure (Addr. of first Carrier) and
-                                requested
-                                Routing</strong></div>
-                        <div style="min-height: 20px; ">{{ masterAirWayData?.POL }}</div>
-                    </div>
-
-                </div>
-
-                <!-- RIGHT COLUMN -->
-                <div style="width: 50%; padding: 0;">
-
-                    <!-- MAWB & Company Info -->
-                    <div style="display: flex; flex-direction: column; border:1px solid black;">
-                        <div style="display: flex;padding-left:10px;padding-top:10px">
-                            <div style="width:70px; white-space: nowrap;"><strong>MAWB</strong></div>
-                            <div>: {{ masterAirWayData?.MBLNo }}</div>
-                        </div>
-                        <div
-                            style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
-                            <div style="display: flex; align-items: center; flex-direction: column;">
-                               <!-- Print logo -->
-            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-            <!-- Pdf logo -->
-                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-                            </div>
-
-                            <div style="font-size:14px; text-align:center;">
-                                <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company
-                                    Name' }}</h3>
-                                <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company
-                                    Branch' }}</h4>
-                                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                <p style="margin: 2px 0; font-size: 15px;">
-                                    {{ currentBranch?.addressLine2 || '' }} ,
-                                    {{ currentBranchCityName || currentBranch?.cityMaster?.cityName ||
-                                    currentCompany?.City || '' }}
-                                    - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
-                                </p>
-                                <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber ||
-                                    currentBranch?.Phone || '' }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Account & Reference Info -->
-                    <!-- <div
-                        style="min-height:101px;  border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;">
-                    </div> -->
-
-                    <div
-                        style="display: flex; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;padding-left:10px;padding-top:10px; padding: 6px;">
-                        <div style="width:200px; white-space: nowrap;"><strong>Account Information</strong></div> <br>
-                        <div style="height:114px; ">: {{ masterAirWayData?.FreightPPCC }}</div>
-                    </div>
-
-                    <div
-                        style="display: flex; text-align:center; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black;padding-left:10px;padding-top:10px;padding: 8px;">
-                        <div>
-                            <div style="width:200px; white-space: nowrap;"><strong>Reference Number</strong></div>
-                            <div style="height:20px; "></div>
-                        </div>
-                        <div style="border-left:1px solid black;">
-                            <div style="width:200px; white-space: nowrap;"><strong>Optional Shipping
-                                    Information</strong></div>
-                            <div style="height:20px; "></div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Next row: Routing & Currency -->
-            <div style="display:flex; margin-bottom:0;">
-
-                <!-- LEFT -->
-                <div style="width:50%; display:flex; border-left:1px solid black; border-bottom:1px solid black;">
-
-                    <div style="width:33.33%; text-align:center; border-right:1px solid black;">
-                        <div><strong>To</strong></div>
-                        <div>{{ masterAirWayData?.POO }}</div>
-                    </div>
-
-                    <div style="width:33.33%; text-align:center; border-right:1px solid black;">
-                        <div><strong>By first Carrier</strong></div>
-                        <div>{{ masterAirWayData?.voyages?.[0]?.CarrierName }}</div>
-                    </div>
-
-                    <div style="width:33.33%; text-align:center; border-right:1px solid black;">
-                        <div><strong>To</strong></div>
-                        <div>{{ masterAirWayData?.POL }}</div>
-                    </div>
-
-                    <div style="width:33.33%; text-align:center;">
-                        <div><strong>By</strong></div>
-                        <div>{{ masterAirWayData?.POD }}</div>
-                    </div>
-
-                </div>
-
-                <!-- RIGHT -->
-                <div
-                    style="width:50%; display:flex; border-left:1px solid black; border-bottom:1px solid black;border-left: none;">
-                    <div style="width:20%; text-align:center; border-right:1px solid black;">
-                        <div><strong>Curr</strong></div>
-                        <div>{{ getCurrencyCodeById(currentCurrency) }}</div>
-                    </div>
-
-                    <!-- Weight (PP/CC) -->
-                    <div style="width:20%; border-right:1px solid black; text-align:center;">
-                        <div style="border-bottom:1px solid black; font-size:12px;"><strong>WT</strong></div>
-                        <div style="display:flex; justify-content:center;">
-                            <div style="width:50px; text-align:center;">
-                                <strong>PP/CC</strong>
-                                <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span>
+                        <!-- Shipper Section -->
+                        <div class="mawb-party-section shipper">
+                            <div class="party-info">
+                                <div class="party-label">Shipper</div>
+                                <div class="party-content">
+                                    {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}<br>
+                                    {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
                                 </div>
                             </div>
-                            <div style="width:50px; border-left:1px solid black; text-align:center;">
-                                <strong>COLL</strong>
-                                <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span>
+                            <div class="party-account">
+                                <div class="account-label">Shipper's Account Number</div>
+                                <div class="account-value"></div>
+                            </div>
+                        </div>
+
+                        <!-- Consignee Section -->
+                        <div class="mawb-party-section consignee">
+                            <div class="party-info">
+                                <div class="party-label">Consignee</div>
+                                <div class="party-content">
+                                    {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }}<br>
+                                    {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
+                                </div>
+                            </div>
+                            <div class="party-account">
+                                <div class="account-label">Consignee's Account Number</div>
+                                <div class="account-value"></div>
+                            </div>
+                        </div>
+
+                        <!-- Issuing Carrier's Agent -->
+                        <div class="mawb-carrier-agent">
+                            <div class="carrier-label">Issuing Carrier's Agent Name and City</div>
+                            <div class="carrier-content">
+                                {{ getAgentName(masterAirWayData?.DestinationAgent) }}<br>
+                                {{ getAgentName(masterAirWayData?.DestinationAgentAddress) }}
+                            </div>
+                        </div>
+
+                        <!-- Agent Info -->
+                        <div class="mawb-agent-info">
+                            <div class="agent-cell">
+                                <div class="agent-label">Agent's IATA Code</div>
+                                <div class="agent-value"></div>
+                            </div>
+                            <div class="agent-cell">
+                                <div class="agent-label">Account No</div>
+                                <div class="agent-value"></div>
+                            </div>
+                        </div>
+
+                        <!-- Airport Departure -->
+                        <div class="mawb-airport-departure">
+                            <div class="departure-label">Airport departure (Addr. of first Carrier) and requested Routing</div>
+                            <div class="departure-value">{{ masterAirWayData?.POL }}</div>
+                        </div>
+
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="mawb-right-col">
+
+                        <!-- MAWB & Company Info -->
+                        <div class="mawb-company-info">
+                            <div class="mawb-number">
+                                <div class="mawb-label">MAWB</div>
+                                <div>: {{ masterAirWayData?.MBLNo }}</div>
+                            </div>
+                            <div class="company-branding">
+                                <!-- Print logo -->
+                                <img *ngIf="showPrintLogo"
+                                     src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                                     alt="Company Logo"
+                                     class="company-logo">
+                                <!-- PDF logo -->
+                                <img *ngIf="showPdfLogo"
+                                     src="assets/images/logos/xtreme-dark-icon.svg"
+                                     alt="Company Logo"
+                                     class="company-logo">
+                                <div class="company-details">
+                                    <h3>{{ currentCompany?.companyName || 'Company Name' }}</h3>
+                                    <h4>{{ currentBranch?.branchName || 'Company Branch' }}</h4>
+                                    <p>{{ currentBranch?.addressLine1 || '' }}</p>
+                                    <p>
+                                        {{ currentBranch?.addressLine2 || '' }},
+                                        {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                                        - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+                                    </p>
+                                    <p>{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Account Information -->
+                        <div class="mawb-account-info">
+                            <div class="account-info-label">Account Information</div>
+                            <div class="account-info-value">: {{ masterAirWayData?.FreightPPCC }}</div>
+                        </div>
+
+                        <!-- Reference & Optional Shipping Info -->
+                        <div class="mawb-reference-info">
+                            <div class="reference-cell">
+                                <div class="reference-label">Reference Number</div>
+                                <div class="reference-value"></div>
+                            </div>
+                            <div class="reference-cell">
+                                <div class="reference-label">Optional Shipping Information</div>
+                                <div class="reference-value"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ROUTING ROW -->
+                <div class="mawb-routing-row">
+                    <!-- LEFT: To / By first Carrier / To / By -->
+                    <div class="mawb-routing-left">
+                        <div class="routing-cell">
+                            <div class="routing-label">To</div>
+                            <div class="routing-value">{{ masterAirWayData?.POO }}</div>
+                        </div>
+                        <div class="routing-cell">
+                            <div class="routing-label">By first Carrier</div>
+                            <div class="routing-value">{{ masterAirWayData?.voyages?.[0]?.CarrierName }}</div>
+                        </div>
+                        <div class="routing-cell">
+                            <div class="routing-label">To</div>
+                            <div class="routing-value">{{ masterAirWayData?.POL }}</div>
+                        </div>
+                        <div class="routing-cell">
+                            <div class="routing-label">By</div>
+                            <div class="routing-value">{{ masterAirWayData?.POD }}</div>
+                        </div>
                     </div>
 
-                    <!-- Other (PP/CC) -->
-                    <div style="width:20%; border-right:1px solid black; text-align:center;">
-                        <div style="border-bottom:1px solid black; font-size:12px;"><strong>Other</strong></div>
-                        <div style="display:flex; justify-content:center;">
-                            <div style="width:50px; text-align:center;">
-                                <strong>PP/CC</strong>
-                                <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span>
+                    <!-- RIGHT: Currency / WT / Other / Declared Values -->
+                    <div class="mawb-routing-right">
+                        <div class="currency-cell">
+                            <div class="currency-label">Curr</div>
+                            <div>{{ getCurrencyCodeById(currentCurrency) }}</div>
+                        </div>
+                        <div class="wt-cell">
+                            <div class="wt-header">WT</div>
+                            <div class="wt-content">
+                                <div class="wt-sub">
+                                    <strong>PP/CC</strong>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span></div>
+                                </div>
+                                <div class="wt-sub">
+                                    <strong>COLL</strong>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span></div>
                                 </div>
                             </div>
-                            <div style="width:50px; border-left:1px solid black; text-align:center;">
-                                <strong>COLL</strong>
-                                <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span>
+                        </div>
+                        <div class="other-cell">
+                            <div class="wt-header">Other</div>
+                            <div class="wt-content">
+                                <div class="wt-sub">
+                                    <strong>PP/CC</strong>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span></div>
+                                </div>
+                                <div class="wt-sub">
+                                    <strong>COLL</strong>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div style="width:30%; border-right:1px solid black;">
-                        <div><strong style="font-size: 9px; text-align: center;">Declared Value of Carriage</strong>
+                        <div class="declared-cell">
+                            <div class="declared-label">Declared Value of Carriage</div>
+                            <div></div>
                         </div>
-                        <div></div>
-                    </div>
-
-                    <div style="width:30%; border-right:1px solid black;">
-                        <div><strong style="font-size: 9px;text-align: center;">Declared Value of Customs</strong></div>
-                        <div></div>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Airport / Flight / Insurance / Handling -->
-            <div style="display:flex; flex-wrap: wrap; margin-bottom:0;">
-
-                <!-- LEFT -->
-                <div style="width:50%; display:flex;">
-                    <div style="width:50%; border-left:1px solid black; border-bottom:1px solid black;">
-                        <div style="text-align:center;"><strong>Airport of Destination</strong></div>
-                        <div style="height:20px;">{{ masterAirWayData?.FPD }}</div>
-                    </div>
-                    <div style="width:50%; border-left:1px solid black; border-bottom:1px solid black;">
-                        <div style="text-align:center;"><strong>Flight/Date</strong></div>
-                        <div style="height:20px;">{{ masterAirWayData?.voyages?.[0]?.ETA }}</div>
-                    </div>
-                </div>
-
-                <!-- RIGHT -->
-                <div style="width:50%; display:flex;">
-                    <div
-                        style="width:50%; border-left:1px solid black; border-bottom:1px solid black; text-align:center;">
-                        <div><strong>Amount of Insurance</strong></div>
-                        <div style="height:20px;"></div>
-                    </div>
-                    <div
-                        style="width:50%; border-left:1px solid black; border-bottom:1px solid black; border-right:1px solid black; text-align:center;">
-                        <div><strong>Insurance</strong></div>
-                        <div style="height:20px;"></div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Handling Information -->
-            <div
-                style="border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:4px;">
-                <p>Handling Information</p>
-                <div style="width:70px; white-space:nowrap;">: {{masterAirWayData?.Cargo?.[0]?.NoOfPkg}}
-                            Packages Only</div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; margin-bottom: 0;">
-
-                <!-- Header Row -->
-                <div style="display: flex; padding: 0;">
-                    <div
-                        style="width: 10%; white-space: nowrap; border: 1px solid black; border-top: none; text-align: center;">
-                        <strong>No of Pieces</strong>
-                    </div>
-                    <div
-                        style="width: 3%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <div>
-                            <strong style="display: flex; flex-direction: column;">K</strong>
-                            <strong style="display: flex; flex-direction: column;">b</strong>
-                            <strong style="display: flex; flex-direction: column;"></strong>
+                        <div class="declared-cell">
+                            <div class="declared-label">Declared Value of Customs</div>
+                            <div></div>
                         </div>
                     </div>
-                    <div
-                        style="width: 15%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Gross Wt</strong>
+                </div>
+
+                <!-- FLIGHT ROW: Airport / Flight / Insurance -->
+                <div class="mawb-flight-row">
+                    <div class="flight-left">
+                        <div class="flight-cell">
+                            <div class="flight-label">Airport of Destination</div>
+                            <div class="flight-value">{{ masterAirWayData?.FPD }}</div>
+                        </div>
+                        <div class="flight-cell">
+                            <div class="flight-label">Flight/Date</div>
+                            <div class="flight-value">{{ masterAirWayData?.voyages?.[0]?.ETA }}</div>
+                        </div>
                     </div>
-                    <div
-                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Kg Lb</strong>
-                    </div>
-                    <div
-                        style="width: 15%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Chargeable Wt</strong>
-                    </div>
-                    <div
-                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Rate</strong>
-                    </div>
-                    <div
-                        style="width: 10%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Total</strong>
-                    </div>
-                    <div
-                        style="width: 30%; white-space: nowrap; border-right: 1px solid black; border-top: none; border-bottom: 1px solid black; text-align: center;">
-                        <strong>Description and Marks</strong>
+                    <div class="flight-right">
+                        <div class="flight-cell">
+                            <div class="flight-label">Amount of Insurance</div>
+                            <div class="flight-value"></div>
+                        </div>
+                        <div class="flight-cell">
+                            <div class="flight-label">Insurance</div>
+                            <div class="flight-value"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- MAIN DATA ROW -->
-                <div style="display: flex; padding: 0; height: 300px;">
-                    <div style="width: 10%; border: 1px solid black; border-top: none; text-align: center;">
-                        {{ masterAirWayData?.NoOfPkg }}
+                <!-- HANDLING INFORMATION -->
+                <div class="mawb-handling">
+                    <div class="handling-label">Handling Information</div>
+                    <div class="handling-value">: {{ masterAirWayData?.Cargo?.[0]?.NoOfPkg }} Packages Only</div>
+                </div>
+
+                <!-- DATA TABLE -->
+                <div class="mawb-data-table">
+                    <!-- Header Row -->
+                    <div class="table-header">
+                        <div class="table-cell col-pieces">No of Pieces</div>
+                        <div class="table-cell col-unit">K<br>b</div>
+                        <div class="table-cell col-gross">Gross Wt</div>
+                        <div class="table-cell col-kglb">Kg Lb</div>
+                        <div class="table-cell col-chargeable">Chargeable Wt</div>
+                        <div class="table-cell col-rate">Rate</div>
+                        <div class="table-cell col-total">Total</div>
+                        <div class="table-cell col-description">Description and Marks</div>
                     </div>
-                    <div style="width: 3%; border-right: 1px solid black; text-align: center;">
-                        <p>K</p>
-                        <p>A</p>
-                        <p>Q</p>
+
+                    <!-- Data Row -->
+                    <div class="table-row data-row-height">
+                        <div class="table-cell col-pieces">{{ masterAirWayData?.NoOfPkg }}</div>
+                        <div class="table-cell col-unit">
+                            <p>K</p>
+                            <p>A</p>
+                            <p>Q</p>
+                        </div>
+                        <div class="table-cell col-gross">{{ masterAirWayData?.GrossWeight | number:'1.2-2' }}</div>
+                        <div class="table-cell col-kglb">{{ masterAirWayData?.WeightIn }}</div>
+                        <div class="table-cell col-chargeable">{{ masterAirWayData?.ChargeableWeight | number:'1.2-2' }}</div>
+                        <div class="table-cell col-rate">{{ getFreightTotals().totalExchangeRate }}</div>
+                        <div class="table-cell col-total">{{ getFreightTotals().totalRevenueAmount }}</div>
+                        <div class="table-cell col-description">
+                            {{ masterAirWayData?.CommodityDescription }}<br>
+                            {{ masterAirWayData?.MarksandNumber }}
+                        </div>
                     </div>
-                    <div style="width: 15%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.GrossWeight | number:'1.2-2'}}
-                    </div>
-                    <div style="width: 10%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.WeightIn }}
-                    </div>
-                    <div style="width: 15%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.ChargeableWeight | number:'1.2-2'}}
-                    </div>
-                    <div style="width: 10%; border-right: 1px solid black; text-align: center;">
-                        {{ getFreightTotals().totalExchangeRate }}
-                    </div>
-                    <div style="width: 10%; border-right: 1px solid black; text-align: center;">
-                        {{ getFreightTotals().totalRevenueAmount }}
-                    </div>
-                    <div style="width: 30%; border-right: 1px solid black; text-align: center;">
-                        {{ masterAirWayData?.CommodityDescription }} <br>
-                        {{ masterAirWayData?.MarksandNumber }}
+
+                    <!-- Totals Row -->
+                    <div class="table-totals totals-row-height">
+                        <div class="table-cell col-pieces">{{ masterAirWayData?.NoOfPkg }}</div>
+                        <div class="table-cell col-unit"></div>
+                        <div class="table-cell col-gross">{{ masterAirWayData?.GrossWeight }}</div>
+                        <div class="table-cell col-kglb"></div>
+                        <div class="table-cell col-chargeable">{{ masterAirWayData?.ChargeableWeight }}</div>
+                        <div class="table-cell col-rate">{{ getFreightTotals().totalExchangeRate }}</div>
+                        <div class="table-cell col-total">{{ getFreightTotals().totalRevenueAmount }}</div>
+                        <div class="table-cell col-description"></div>
                     </div>
                 </div>
 
-                <!-- TOTALS ROW -->
-                <div style="display: flex; padding: 0; height: 40px;">
-                    <div style="width: 10%; border: 1px solid black; border-top: none; text-align: center;">
-                        <strong>{{ masterAirWayData?.NoOfPkg }}</strong>
-                    </div>
-                    <div style="width: 3%; border-right: 1px solid black; border-bottom: 1px solid black;"></div>
-                    <div
-                        style="width: 15%; border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">
-                        <strong>{{ masterAirWayData?.GrossWeight }}</strong>
-                    </div>
-                    <div style="width: 10%; border-right: 1px solid black; border-bottom: 1px solid black;"></div>
-                    <div
-                        style="width: 15%; border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">
-                        <strong>{{ masterAirWayData?.ChargeableWeight }}</strong>
-                    </div>
-                    <div
-                        style="width: 10%; border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">
-                        <strong>{{ getFreightTotals().totalExchangeRate }}</strong>
-                    </div>
-                    <div
-                        style="width: 10%; border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">
-                        <strong>{{ getFreightTotals().totalRevenueAmount }}</strong>
-                    </div>
-                    <div style="width: 30%; border-right: 1px solid black; border-bottom: 1px solid black;"></div>
-                </div>
-
-                <!-- LEFT + RIGHT CHARGES ROW -->
-                <div style="display: flex; margin-bottom: 0; align-items: stretch;">
-
-                    <!-- Left Column -->
-                    <div
-                        style="width: 50%; display: flex; flex-direction: column; padding: 0; border: 1px solid black; border-top: none;">
-
+                <!-- CHARGES ROW -->
+                <div class="mawb-charges-row">
+                    <!-- Left: Prepaid / Weight Charge / Collect -->
+                    <div class="charges-left">
                         <!-- First Row: Prepaid, Weight Charge, Collect -->
-                        <div style="display: flex; border-bottom: 1px solid black;">
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0;">
-                                <div
-                                    style="display: flex; flex-direction: column; padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong>Prepaid</strong>
-                                    </div>
-                                    <div>
-                                        <p style="margin-bottom: 0; text-align: center;">{{
-                                            freightCharges[0]?.RevenueAmount }}
-                                        </p>
-                                    </div>
+                        <div class="charge-row">
+                            <div class="charge-cell">
+                                <div class="charge-label">Prepaid</div>
+                                <div class="charge-value">{{ freightCharges[0]?.RevenueAmount }}</div>
+                            </div>
+                            <div class="charge-cell">
+                                <div class="charge-label">Weight Charge</div>
+                                <div class="charge-value" style="position: relative;">
+                                    <div class="center-divider"></div>
                                 </div>
                             </div>
-
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0; position: relative;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong>Weight Charge</strong>
-                                    </div>
-                                    <div style="position: relative; height: 20px;">
-                                        <div
-                                            style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong>Collect</strong>
-                                    </div>
-                                    <div></div>
-                                </div>
+                            <div class="charge-cell">
+                                <div class="charge-label">Collect</div>
+                                <div class="charge-value"></div>
                             </div>
                         </div>
 
                         <!-- Second Row: Valuation Charge -->
-                        <div style="display: flex;">
-                            <div style="width: 100%; padding-left: 0; padding-right: 0; position: relative;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong style="width: fit-content;">Valuation Charge</strong>
-                                    </div>
-                                    <div style="position: relative; height: 20px;">
-                                        <div
-                                            style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                        </div>
-                                    </div>
+                        <div class="charge-row">
+                            <div class="charge-full">
+                                <div class="charge-label">Valuation Charge</div>
+                                <div class="charge-value" style="position: relative;">
+                                    <div class="center-divider"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Third Row: Tax -->
-                        <div style="display: flex;">
-                            <div
-                                style="width: 100%; padding-left: 0; padding-right: 0; position: relative; border-top: 1px solid black;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong style="width: fit-content;">Tax</strong>
-                                    </div>
-                                    <div style="position: relative; height: 20px;">
-                                        <div
-                                            style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                        </div>
-                                    </div>
+                        <div class="charge-row">
+                            <div class="charge-full">
+                                <div class="charge-label">Tax</div>
+                                <div class="charge-value" style="position: relative;">
+                                    <div class="center-divider"></div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- Right Column: Other Charges -->
-                    <div
-                        style="width: 50%; padding-left: 0; padding-right: 0; border: 1px solid black; border-top: none; border-left: none;">
-                        <div style="width: 100%; padding: 8px; font-size: 12px;">
-                            <strong>Others Charges</strong>
-                            <div>
-                                <span *ngFor="let charge of otherCharges">
-                                    {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate
-                                    }}&nbsp;&nbsp;
-                                </span>
-                            </div>
+                    <!-- Right: Other Charges -->
+                    <div class="charges-right">
+                        <div class="charges-title">Others Charges</div>
+                        <div>
+                            <span *ngFor="let charge of otherCharges">
+                                {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}&nbsp;&nbsp;
+                            </span>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- Total Other Charges due agent/carrier + Shipper Certificate -->
-                <div style="display: flex; margin-bottom: 0; align-items: stretch;">
-
-                    <!-- Left Column -->
-                    <div
-                        style="width: 50%; display: flex; flex-direction: column; padding: 0; border: 1px solid black; border-top: none;">
-
-                        <!-- Total Other Charges due Agent -->
-                        <div style="display: flex;">
-                            <div style="width: 100%; padding-left: 0; padding-right: 0; position: relative;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong style="width: fit-content;">Total other Charges due agent</strong>
-                                    </div>
-                                    <div style="position: relative; height: 20px;">
-                                        <div
-                                            style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                        </div>
-                                    </div>
+                <!-- TOTAL OTHER CHARGES + SHIPPER CERTIFICATE -->
+                <div class="mawb-charges-row">
+                    <!-- Left: Total Other Charges -->
+                    <div class="charges-left">
+                        <div class="charge-row">
+                            <div class="charge-full">
+                                <div class="charge-label">Total other Charges due agent</div>
+                                <div class="charge-value" style="position: relative;">
+                                    <div class="center-divider"></div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Total Other Charges due Carrier -->
-                        <div style="display: flex;">
-                            <div
-                                style="width: 100%; padding-left: 0; padding-right: 0; position: relative; border-top: 1px solid black;">
-                                <div style="padding-left: 8px; padding-right: 8px;">
-                                    <div
-                                        style="white-space: nowrap; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; text-align: center;">
-                                        <strong style="width: fit-content;">Total other Charges due Carrier</strong>
-                                    </div>
-                                    <div style="position: relative; height: 20px;">
-                                        <div style="text-align: center;">{{ getTotalExchangeRate() }}</div>
-                                    </div>
-                                </div>
+                        <div class="charge-row">
+                            <div class="charge-full">
+                                <div class="charge-label">Total other Charges due Carrier</div>
+                                <div class="charge-value">{{ getTotalExchangeRate() }}</div>
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- Right Column: Shipper Certification -->
-                    <div
-                        style="width: 50%; padding-left: 0; padding-right: 0; border: 1px solid black; border-top: none; border-left: none; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div style="width: 100%; font-size: 12px; padding: 8px;">
-                            <strong> Shipper certifies that the particulars on the face hereof are correct and that
-                                insofar as
-                                any part of the consignment contains dangerous goods such part is properly described by
-                                name and
-                                is in proper condition for carriage by air according to the applicable Dangerous Goods
-                                Regulations.</strong>
+                    <!-- Right: Shipper Certificate -->
+                    <div class="charges-right shipper-certificate">
+                        <div class="certificate-text">
+                            Shipper certifies that the particulars on the face hereof are correct and that insofar as
+                            any part of the consignment contains dangerous goods such part is properly described by name and
+                            is in proper condition for carriage by air according to the applicable Dangerous Goods Regulations.
                         </div>
-                        <div style="width: 100%; text-align: center; margin-top: 40px;">
-                            <p style="margin-bottom: 0;">{{getAgentName(masterAirWayData?.DestinationAgent)}} <strong>As
-                                    Agent</strong></p>
-                            <strong>Signature of Shipper or his Agent</strong>
+                        <div class="signature-block">
+                            <p class="agent-name">{{ getAgentName(masterAirWayData?.DestinationAgent) }} <strong>As Agent</strong></p>
+                            <div class="signature-label">Signature of Shipper or his Agent</div>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- Remaining Total Prepaid / Collect / Execution info rows -->
-                <div style="display: flex; margin-bottom: 0; align-items: stretch;">
-
-                    <!-- Left Column: Total Prepaid / Collect -->
-                    <div
-                        style="width: 50%; display: flex; flex-direction: column; padding: 0; border-right: 1px solid black; border-top: none;">
-
-                        <div style="display: flex; border-bottom: 1px solid black; border-left: 1px solid black;">
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0;">
-                                <div style="padding-left: 8px; padding-right: 8px; text-align: center;">
-                                    <strong>Total Prepaid</strong>
-                                    <div>{{getGrandTotal()}}</div>
-                                </div>
+                <!-- TOTALS ROW -->
+                <div class="mawb-totals-row">
+                    <!-- Left: Total Prepaid / Collect -->
+                    <div class="totals-left">
+                        <div class="total-row">
+                            <div class="total-cell">
+                                <div class="total-label">Total Prepaid</div>
+                                <div class="total-value">{{ getGrandTotal() }}</div>
                             </div>
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0; position: relative;">
-                                <div style="padding-left: 8px; padding-right: 8px; position: relative; height: 45px;">
-                                    <div
-                                        style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                    </div>
-                                </div>
+                            <div class="total-divider">
+                                <div class="center-line"></div>
                             </div>
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0;">
-                                <div style="padding-left: 8px; padding-right: 8px; text-align: center;">
-                                    <strong>Total Collect</strong>
-                                    <div style="height: 2px;"></div>
-                                </div>
+                            <div class="total-cell">
+                                <div class="total-label">Total Collect</div>
+                                <div class="total-value"></div>
                             </div>
                         </div>
-
-                        <!-- Additional Total Prepaid / Collect Rows if any -->
-                        <div style="display: flex; border-bottom: 1px solid black; border-left: 1px solid black;">
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0; text-align: center;">
-                                <strong>Total Prepaid</strong>
-                                <div></div>
+                        <div class="total-row">
+                            <div class="total-cell">
+                                <div class="total-label">Total Prepaid</div>
+                                <div class="total-value"></div>
                             </div>
-                            <div
-                                style="width: 33.3333%; padding-left: 0; padding-right: 0; position: relative; height: 45px;">
-                                <div
-                                    style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: black; transform: translateX(-50%);">
-                                </div>
+                            <div class="total-divider">
+                                <div class="center-line"></div>
                             </div>
-                            <div style="width: 33.3333%; padding-left: 0; padding-right: 0; text-align: center;">
-                                <strong>Total Collect</strong>
-                                <div style="height: 20px;"></div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Right Column: Execution info -->
-                    <div
-                        style="width: 50%; padding-left: 0; padding-right: 0; border: 1px solid black; border-top: none; border-left: none;">
-                        <div style="width: 100%; height: 28px;"></div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px;">
-                            <div style="display: flex; flex-direction: column; text-align: center;">
-                                <div>{{ masterAirWayData?.MBLDate | formatDate }}</div>
-                                <div><strong>Executed on Date</strong></div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; text-align: center;">
-                                <div>{{ currentCountryName }}</div>
-                                <div><strong>at Place</strong></div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; text-align: center;">
-                                <div>{{ getAgentName(masterAirWayData?.DestinationAgent) }}</div>
-                                <div><strong>signature of issuing Carrier or its Agent</strong></div>
+                            <div class="total-cell">
+                                <div class="total-label">Total Collect</div>
+                                <div class="total-value"></div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Right: Execution Info -->
+                    <div class="totals-right execution-info">
+                        <div class="execution-row">
+                            <div class="execution-cell">
+                                <div class="execution-value">{{ masterAirWayData?.MBLDate | formatDate }}</div>
+                                <div class="execution-label">Executed on Date</div>
+                            </div>
+                            <div class="execution-cell">
+                                <div class="execution-value">{{ currentCountryName }}</div>
+                                <div class="execution-label">at Place</div>
+                            </div>
+                            <div class="execution-cell">
+                                <div class="execution-value">{{ getAgentName(masterAirWayData?.DestinationAgent) }}</div>
+                                <div class="execution-label">signature of issuing Carrier or its Agent</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="mawb-footer">
+                    <div><span>Printed By :</span> {{ userData.userName }}</div>
+                    <span>This document is computer-generated and does not require a signature.</span>
+                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
                 </div>
 
             </div>
-
-
-
-            <footer style="
-              position: absolute;
-              bottom: 2mm;
-              left: 0;
-              right: 0;
-              
-              font-size: 10pt;
-            ">
-                <div class="d-flex justify-content-between">
-                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                    <span>
-                        This document is computer-generated and does not require a signature.
-                    </span>
-                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-                </div>
-            </footer>
         </div>
     </div>
 </div>
