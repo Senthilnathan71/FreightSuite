@@ -1668,7 +1668,7 @@ export class PaymentEntryComponent implements OnInit {
       fromCurrencyCode,
       toCurrencyCode,
       EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
-      segment: 'revenue'
+      segment: 'cost'
     };
     this.accountService.getExchangeRate(payload).subscribe(
       (resp: any) => {
@@ -1829,7 +1829,7 @@ export class PaymentEntryComponent implements OnInit {
       fromCurrencyCode,
       toCurrencyCode,
       EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
-      segment: 'revenue'
+      segment: 'cost'
     };
 
     return this.accountService.getExchangeRate(payload).pipe(
