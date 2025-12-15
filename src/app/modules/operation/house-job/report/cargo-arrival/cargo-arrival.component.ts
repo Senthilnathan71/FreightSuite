@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
@@ -34,7 +35,7 @@ export class CargoArrivalComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL : any;
-
+  currency:any[] = [];
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList : any;
@@ -86,6 +87,8 @@ export class CargoArrivalComponent {
     private masterService: MasterService,
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
+   private numberToWords: NumberToWordsService
+    
   ) { }
 
 
@@ -147,7 +150,33 @@ export class CargoArrivalComponent {
     this.activeModal.close();
   }
 
-  
+
+  getAmountInWords(): string {
+    const total = this.getTotalLocalAmount();
+    if (!total) return '';
+
+    const rupees = Math.floor(total);
+    const paise = Math.round((total - rupees) * 100);
+
+    const rupeesInWords = this.numberToWords.convert(rupees);
+    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+
+    // Get currency code safely from first voucher
+    const selectedCode = this.housejobData?.voucherMatchings?.[0]?.CurrencyCode;
+    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+
+    // Find currency in the list
+    const selectedCurrency = this.currency?.find(
+      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+    );
+
+    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+    return paise > 0
+      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+      : `${rupeesInWords} ${currencyName} Only`;
+  }
   
 
 

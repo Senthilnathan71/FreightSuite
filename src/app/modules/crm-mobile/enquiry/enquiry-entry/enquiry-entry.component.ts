@@ -78,6 +78,8 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     CustomDatePipe
   ],
 })
+
+
 export class EnquiryEntryComponent implements OnInit {
   @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
     @ViewChild('emailModal') emailModalRef: any;
@@ -200,6 +202,9 @@ export class EnquiryEntryComponent implements OnInit {
     { FreightTermsSid: 'Collect', FreightTerms: 'Collect' }
   ];
 
+  
+ showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
 
   selectTab(tab: string) {
     this.selectedTab = tab;
@@ -1990,20 +1995,28 @@ ${this.userData.userName}`;
   }
 
 
-  async downloadPDF() {
-  this.spinner.show();
-  try {
-    const enquiryNumber = this.rateRequestData?.EnquiryNumber || 'Enquiry';
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Enquiry_${enquiryNumber}`,
-      () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+
+
+    async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+     try {
+     const enquiryNumber = this.rateRequestData?.EnquiryNumber || 'Enquiry';
+
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+            `Enquiry_${enquiryNumber}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    }finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
 
       async generatePDFBlob(): Promise<Blob | null> {
@@ -2134,27 +2147,32 @@ openFollowup() {
   }
 
 
-           printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+     
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
-
   ngOnDestroy(): void {
     this.commonService.clearDocumentData()
     this.dropdownStore.clearCache()

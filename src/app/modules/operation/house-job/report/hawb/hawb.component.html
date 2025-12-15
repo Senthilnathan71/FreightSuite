@@ -23,13 +23,14 @@
 
 <div class="modal-body">
     <div id="printContent" class="p-1">
-        <div class="" style="width: 280mm;
+        <div style="width: 280mm;
     min-height: 400mm;
     margin: 10px auto !important;
     background: #fff;
     box-sizing: border-box;
     position: relative;
     color: #000;
+    padding-bottom: 18mm;  
     page-break-after: always;">
             <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">
                 <!-- Left Column -->
@@ -47,7 +48,8 @@
                     </div>
                     <div style="display:flex; flex-direction:column; border:1px solid black;border-right: none;">
                         <div style="width:200px; white-space:nowrap;"><strong>Notify Party</strong></div>
-                        <div style="min-height:119px; height:auto;">{{housejobData?.Others?.[0]?.NotifyParty}}<br>{{housejobData?.Others?.[0]?.NotifyPartyAddress}}
+                        <div style="min-height:119px; height:auto;">
+                            {{housejobData?.Others?.[0]?.NotifyParty}}<br>{{housejobData?.Others?.[0]?.NotifyPartyAddress}}
                         </div>
                     </div>
                     <div
@@ -68,8 +70,16 @@
                         <div
                             style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
                             <div style="display:flex; flex-direction:column; align-items:center;">
-                                <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                    style="width:50px; height:50px; object-fit:contain;">
+                                <!-- Print logo -->
+                                <img *ngIf="showPrintLogo"
+                                    src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                                    alt="Company Logo"
+                                    style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                                <!-- Pdf logo -->
+                                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg"
+                                    alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+                                <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name'
+                                        }}</strong></h4>
                             </div>
 
                             <div style="font-size:14px; text-align:center;">
@@ -160,7 +170,8 @@
                     <div style="flex:0 0 16.66%; border-left:1px solid black; display:flex; flex-direction:column;">
                         <div
                             style="white-space:nowrap; border-bottom:1px solid black; text-align:center; font-size:12px;">
-                            <strong>WT</strong></div>
+                            <strong>WT</strong>
+                        </div>
                         <div style="display:flex; font-size:12px;">
                             <div style="width:50px; text-align:center;"><strong>PP/CC</strong>
                                 <div><span *ngIf="housejobData?.FreightTerms==='Prepaid'">X</span></div>
@@ -174,7 +185,8 @@
                     <div style="flex:0 0 16.66%; border-left:1px solid black; display:flex; flex-direction:column;">
                         <div
                             style="white-space:nowrap; border-bottom:1px solid black; text-align:center; font-size:12px;">
-                            <strong>Other</strong></div>
+                            <strong>Other</strong>
+                        </div>
                         <div style="display:flex; font-size:12px;">
                             <div style="width:50px; text-align:center;"><strong>PP/CC</strong>
                                 <div><span *ngIf="housejobData?.FreightTerms==='Prepaid'">X</span></div>
@@ -260,25 +272,32 @@
                 <div style="display:flex; padding:0;">
                     <div
                         style="width:10%; white-space:nowrap; border:1px solid black; border-top:none; text-align:center;">
-                        <strong>No of Pieces</strong></div>
+                        <strong>No of Pieces</strong>
+                    </div>
                     <div
                         style="width:15%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Gross Wt</strong></div>
+                        <strong>Gross Wt</strong>
+                    </div>
                     <div
                         style="width:10%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Kg / Lb</strong></div>
+                        <strong>Kg / Lb</strong>
+                    </div>
                     <div
                         style="width:15%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Chargeable Wt</strong></div>
+                        <strong>Chargeable Wt</strong>
+                    </div>
                     <div
                         style="width:10%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Rate</strong></div>
+                        <strong>Rate</strong>
+                    </div>
                     <div
                         style="width:10%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Charge</strong></div>
+                        <strong>Charge</strong>
+                    </div>
                     <div
                         style="width:30%; white-space:nowrap; border-right:1px solid black; border-top:none; border-bottom:1px solid black; text-align:center;">
-                        <strong>Description and Marks</strong></div>
+                        <strong>Description and Marks</strong>
+                    </div>
                 </div>
 
                 <!-- Data Row -->
@@ -322,7 +341,8 @@
                             <div style="padding:0 8px;">
                                 <div
                                     style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
-                                    <strong>Prepaid</strong></div>
+                                    <strong>Prepaid</strong>
+                                </div>
                                 <div></div>
                             </div>
                         </div>
@@ -331,7 +351,8 @@
                             <div style="padding:0 8px;">
                                 <div
                                     style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
-                                    <strong>Weight Charge</strong></div>
+                                    <strong>Weight Charge</strong>
+                                </div>
                                 <div style="position:relative; height:20px;">
                                     <div
                                         style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
@@ -344,7 +365,8 @@
                             <div style="padding:0 8px;">
                                 <div
                                     style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
-                                    <strong>Collect</strong></div>
+                                    <strong>Collect</strong>
+                                </div>
                                 <div></div>
                             </div>
                         </div>
@@ -356,7 +378,8 @@
                             <div style="padding:0 8px;">
                                 <div
                                     style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
-                                    <strong style="width:fit-content;">Valuation Charge</strong></div>
+                                    <strong style="width:fit-content;">Valuation Charge</strong>
+                                </div>
                                 <div style="position:relative; height:20px;">
                                     <div
                                         style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
@@ -372,7 +395,8 @@
                             <div style="padding:0 8px;">
                                 <div
                                     style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
-                                    <strong style="width:fit-content;">Tax</strong></div>
+                                    <strong style="width:fit-content;">Tax</strong>
+                                </div>
                                 <div style="position:relative; height:20px;">
                                     <div
                                         style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
@@ -500,14 +524,20 @@
             </div>
 
             <footer style="
-              position: absolute;
-              bottom: 2mm;
-              left: 0;
-              right: 0;
-              
-              font-size: 10pt;
-            ">
-                <div class="d-flex justify-content-between">
+             position: absolute;
+  bottom: 6mm;
+  left: 0;
+  right: 0;
+  font-size: 10pt;
+  line-height: 1.2;
+">
+                <div style="
+  display:flex;
+  justify-content:space-between;
+  padding: 0 10px;
+  padding-bottom: 20px;
+  margin-top:10px  ;
+">
                     <div class=""><span>Printed By :</span> {{userData.userName}} </div>
                     <span>
                         This document is computer-generated and does not require a signature.

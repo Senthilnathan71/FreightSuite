@@ -1844,39 +1844,33 @@
    <div style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
 
-  <!-- Company Header -->
-<div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px; font-weight: 800;" class=" p-4">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; flex-direction: column;">
-          <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-     alt="Company Logo" 
-     style="
-        width:50px; 
-        height:50px; 
-        object-fit:contain; 
-        margin-bottom:0.5rem;
-        visibility: visible !important;
-        display: block !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-     ">
+ <!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                 <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-        </div>
-
-        <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h2 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h2>
-            <h4 style="margin: 0;"><strong>{{ currentBranch?.branchName || 'Company Branch' }}</strong></h4>
-            <p style="margin: 2px 0; font-size: 15px;"><strong>{{ currentBranch?.addressLine1 || '' }}</strong></p>
-            <p style="margin: 2px 0; font-size: 15px;"><strong>   {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
-                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</strong></p>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Title -->
-    <h3 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px;" class=""><strong>ENQUIRY</strong></h3>
+    <h4 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;" class=""><strong>ENQUIRY</strong></h4>
 
     <!-- Enquiry Details -->
     <div style="display: flex; flex-wrap: wrap; margin-top: 1rem; padding:10px;">
