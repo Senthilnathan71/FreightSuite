@@ -485,9 +485,10 @@ export class JournalVoucherEntryComponent implements OnInit {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      FromCurrency: currency?.currencyCode || '',
-      ToCurrency: this.currentUserCurrency || 'USD',
-      VoucherDate: dateString,
+      fromCurrencyCode: currency?.currencyCode || '',
+      toCurrencyCode: this.currentUserCurrency || 'USD',
+      EffectiveFrom : this.editMode ? this.voucherData?.VoucherDate : new Date(),
+      segment : 'cost'
     };
 
     this.accountsService.getExchangeRate(payload).subscribe({

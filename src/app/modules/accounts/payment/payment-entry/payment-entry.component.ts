@@ -1663,8 +1663,11 @@ export class PaymentEntryComponent implements OnInit {
       toCurrencyCode: toCurrencyCode
     })
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
       segment: 'revenue'
     };
     this.accountService.getExchangeRate(payload).subscribe(
@@ -1821,9 +1824,12 @@ export class PaymentEntryComponent implements OnInit {
     }
 
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      segment: 'sale'
+      EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
+      segment: 'revenue'
     };
 
     return this.accountService.getExchangeRate(payload).pipe(

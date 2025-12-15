@@ -2394,9 +2394,12 @@ private autoSetHssacForPendingCosts(): void {
   patchExchangeRateForDetail(fromCurrencyCode: string, toCurrencyCode: string, index: number) {
     const formGroup = this.details.at(index) as FormGroup;
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      segment: 'revenue'
+      EffectiveFrom : this.isEditMode ? new Date(this.vendorInvoiceData?.VoucherDate) : new Date(),
+      segment: 'cost'
     }
  
     this.operationService.getExchangeRate(payload).subscribe({
@@ -2784,9 +2787,12 @@ private autoSetHssacForPendingCosts(): void {
   // Add this new method to fetch exchange rate
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
   const payload = {
-    fromCurrencyCode: toCurrencyCode, // Company currency
-    toCurrencyCode: fromCurrencyCode, // Selected currency
-    segment: 'Cost' // or 'cost' depending on your segment
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    fromCurrencyCode: fromCurrencyCode, // Company currency
+    toCurrencyCode: toCurrencyCode, // Selected currency
+    EffectiveFrom : this.isEditMode ? new Date(this.vendorInvoiceData?.VoucherDate) : new Date(),
+    segment: 'cost' // or 'cost' depending on your segment
   };
 
   console.log('Fetching exchange rate with payload:', payload);

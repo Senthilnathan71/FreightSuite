@@ -242,7 +242,7 @@ export class CreditNoteEntryComponent {
         // New invoice - set default currency from company config
         const currencySettings = this.companySettings.getCurrencySettings();
         this.creditNoteForm.patchValue({
-          PartyMasterSid: 3,
+          PartyMasterSid: null,
           CurrencyCode: currencySettings.code,
           ExchangeRate: 1 // Home currency always has exchange rate of 1
         });
@@ -306,7 +306,7 @@ export class CreditNoteEntryComponent {
         GSTType: [{ value: '', disabled: true }],
         PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
-        Narration: ['hi'],
+        Narration: [''],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
         IRNStatus: [{ value: '', disabled: true }],

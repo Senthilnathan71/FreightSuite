@@ -1015,7 +1015,14 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const payload = { fromCurrencyCode, toCurrencyCode ,segment: 'cost' };
+    const payload = { 
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      fromCurrencyCode, 
+      toCurrencyCode ,
+      EffectiveFrom : this.isEditMode ? this.parentFormValue?.BookingDateTime : new Date(),
+      segment: 'cost',
+    };
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status && resp.data) {
@@ -1048,7 +1055,14 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const payload = { fromCurrencyCode, toCurrencyCode , segment : 'revenue'};
+    const payload = { 
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      fromCurrencyCode, 
+      toCurrencyCode , 
+      EffectiveFrom : this.isEditMode ? new Date(this.parentFormValue?.BookingDateTime) : new Date(),
+      segment : 'revenue',
+    };
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status && resp.data) {
@@ -2043,8 +2057,11 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         // Fetch exchange rate from CurrencyExchange table
         const payload = {
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
           fromCurrencyCode: selectedCurrencyCode,
           toCurrencyCode:  companyHomeCurrency.code,
+          EffectiveFrom : this.isEditMode ? new Date(this.parentFormValue?.BookingDate) : new Date(),
           segment: this.selectedVoucherType === 'Invoice' ? 'revenue' : 'cost' // Use SellRate for revenue charges
         };
 

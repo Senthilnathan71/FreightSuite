@@ -2253,6 +2253,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     const payload = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSod : this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: routeForm.get('DepartmentMasterSid')?.value,
       PORSid: routeForm.get('PORSid')?.value,
       POLSid: routeForm.get('POLSid')?.value,
@@ -3323,8 +3324,11 @@ ${this.userData.userName}`;
     
     if(fromCurrencyCode && toCurrencyCode && segment){
       const payload = {
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid : this.currentBranch?.BranchMasterSid,
         fromCurrencyCode: fromCurrencyCode,
         toCurrencyCode: toCurrencyCode,
+        EffectiveFrom : this.isEditMode ? new Date(this.quotationData?.QuoteDate) : new Date(),
         segment: segment
       }
       this.subscription.add(

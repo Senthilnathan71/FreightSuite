@@ -1718,8 +1718,11 @@ export class ReceiptEntryComponent implements OnInit {
       toCurrencyCode: toCurrencyCode
     })
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.receiptData?.VoucherDate) : new Date(),
       segment: 'revenue'
     };
     this.accountService.getExchangeRate(payload).subscribe(
@@ -1896,9 +1899,12 @@ toggleCashOrBank(event: any) {
     }
 
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      segment: 'sale'
+      EffectiveFrom : this.isEditMode ? new Date(this.receiptData?.VoucherDate) : new Date(),
+      segment: 'revenue'
     };
 
     return this.accountService.getExchangeRate(payload).pipe(

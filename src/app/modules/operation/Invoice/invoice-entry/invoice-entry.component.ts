@@ -2697,8 +2697,11 @@ showInfo() {
   patchExchangeRateForDetail(fromCurrencyCode: string, toCurrencyCode: string, index: number) {
     const formGroup = this.details.at(index) as FormGroup;
     const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.invoiceData?.VoucherDate) : new Date(),
       segment: 'revenue'
     }
 
@@ -2774,8 +2777,11 @@ private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string) {
     toCurrencyCode
   });
   const payload = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
     fromCurrencyCode: fromCurrencyCode, // Company currency
     toCurrencyCode: toCurrencyCode, // Selected currency
+    EffectiveFrom : this.isEditMode ? new Date(this.invoiceData?.VoucherDate) : new Date(),
     segment: 'revenue'
   };
 
