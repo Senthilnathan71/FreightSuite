@@ -55,6 +55,7 @@ import { DeliveryNoteComponent } from '../report/delivery-note/delivery-note.com
 import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -107,7 +108,8 @@ type Html2PdfOptions = {
     NgbDropdownModule,
     BoeEntryComponent,
     VehicleComponent,
-    CustomsComponent
+    CustomsComponent,
+    MultiSelectComponent
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -318,6 +320,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Connection Part
   PODandFPODsame : boolean = true;
+  blClauseOptions: any[] = [];
   minStartDate : Date = new Date();
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
@@ -918,6 +921,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
+      BlClause:[null],
       SwitchBLAgent: [null],
       AgentAddress: [''],
       SwitchBLShipper: [null],
@@ -1209,6 +1213,77 @@ loadHeaderLookups() {
     })
   }
 
+  // Add this method to your component
+loadDefaultBLClauses(DepartmentMasterSid: number): void {
+  if (!DepartmentMasterSid) {
+    this.blClauseOptions = [];
+    this.o['BlClause']?.setValue('');
+    return;
+  }
+  
+  console.log('Loading default BL clauses for department:', DepartmentMasterSid);
+  
+  this.operationService.getDefaultBLClausesByDepartment(DepartmentMasterSid).subscribe({
+    next: (response: any) => {
+      console.log('BL Clauses API Response:', response);
+      
+      // Check if response is valid and has data array
+      if (response && response.status && Array.isArray(response.data)) {
+        // Map the response to the format needed for your dropdown
+        this.blClauseOptions = response.data.map((clause: any) => ({
+          ClauseDescription: clause.ClauseDescription,
+          displayText: clause.ClauseDescription
+        }));
+        
+        console.log(`Loaded ${this.blClauseOptions.length} default BL clauses`, this.blClauseOptions);
+        
+        // If this is a new house job (not edit mode), auto-populate the BlClause field
+        if (!this.isEditMode && this.blClauseOptions.length > 0) {
+          // Combine all clause descriptions into a single text
+          const allClausesText = this.blClauseOptions
+            .map(clause => clause.ClauseDescription)
+          
+          // Set the value in the form
+          this.otherForm.patchValue({
+            BlClause: allClausesText
+          });
+          
+          console.log('Auto-populated BlClause field with default clauses:', allClausesText);
+        } else if (this.blClauseOptions.length === 0) {
+          console.log('No default BL clauses found for this department');
+          // Clear the field if no clauses found
+          this.otherForm.patchValue({
+            BlClause: ''
+          });
+        }
+      } else {
+        this.blClauseOptions = [];
+        console.log('Invalid response format or no data:', response);
+        // Clear the field
+        this.otherForm.patchValue({
+          BlClause: ''
+        });
+      }
+    },
+    error: (error) => {
+      console.error('Error loading default BL clauses:', error);
+      this.blClauseOptions = [];
+      this.otherForm.patchValue({
+        BlClause: ''
+      });
+      
+      // Show appropriate error message
+      if (error.status === 404) {
+        this.appSettingService.showWarning('BL Clauses API endpoint not found');
+      } else if (error.status === 400) {
+        this.appSettingService.showWarning('Invalid department ID');
+      } else {
+        this.appSettingService.showWarning('Unable to load default BL clauses. Please try again.');
+      }
+    }
+  });
+}
+
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
@@ -1280,6 +1355,7 @@ loadHeaderLookups() {
   
   this.bookingHeader = response;
   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+  this.onDeptChange(selectedDepartment);
   const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
   
   // FIX: Better agent matching
@@ -1407,6 +1483,7 @@ loadHeaderLookups() {
       DeliveryDate:otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
       CHAName: otherData?.CHAName,
       PickupAddress: otherData?.PickupAddress,
+      BlClause:otherData?.BlClause,
       DeliveryAddress: otherData?.DeliveryAddress,
       CargoCurrency: otherData?.CargoCurrency,
       CargoValue: otherData?.CargoValue,
@@ -1456,6 +1533,24 @@ loadHeaderLookups() {
     this.rateResult = [...this.bookingRateArr];
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
+      setTimeout(() => {
+    const otherData = response.Others[0];
+    if (otherData?.BlClause) {
+      // If BlClause exists in the database, use it
+      this.otherForm.patchValue({
+        BlClause: otherData?.BlClause || null,
+      });
+    } else if (!this.isEditMode && this.blClauseOptions.length > 0) {
+      // For new records, auto-populate with default clauses
+      const allClausesText = this.blClauseOptions
+        .map(clause => clause.ClauseDescription)
+        .join('\n\n');
+      
+      this.otherForm.patchValue({
+        BlClause: allClausesText
+      });
+    }
+  }, 500);
   }
 
   onContainerTypeChange(containerType : any){
@@ -1721,6 +1816,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       Forwarder: otherFormValue.Forwarder || null,
       ForwarderAddress: otherFormValue.ForwarderAddress || '',
       NotifyParty: otherFormValue.NotifyParty || null,
+      BlClause: otherFormValue.BlClause || null,
       NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
       Notify2: otherFormValue?.Notify2 || null,
       NotifyAddress2: otherFormValue?.NotifyAddress2 || '',
@@ -1877,6 +1973,8 @@ private getAgentNameById(agentId: number): string {
     this.handleCFSOrYard();
     this.b['HBLNo']?.enable();
     this.b['HBLNo']?.setValue('');
+    this.blClauseOptions = [];
+    this.o['BlClause']?.setValue('');
     return;
   }
   
@@ -1898,6 +1996,7 @@ private getAgentNameById(agentId: number): string {
     fcllcl: this.selectedFCLLCL,
     exportImport: department.ExportImport
   });
+  this.loadDefaultBLClauses(department.DepartmentMasterSid);
   this.handleHBLNoField(department.ExportImport);
   // Rest of the method remains the same...
   this.autoSetJobType(department);

@@ -1904,6 +1904,16 @@
               <label for="text-input" class="input-label">External Note<span class="text-danger"></span></label>
             </div>
           </aside>
+          <aside class="col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!otherForm.get('BlClause')?.value">
+                                        <multi-select [items]="blClauseOptions" bindLabel="ClauseDescription"
+                                            bindValue="ClauseDescription" placeholder=""
+                                            [control]="otherForm.get('BlClause')">
+                                        </multi-select>
+                                        <label class="input-label">BL Clause</label>
+                                    </div>
+                                </aside>
           @if(selectedDepartmentType === "SEA") {
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">

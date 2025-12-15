@@ -141,7 +141,35 @@
                 <div class="col-md-12">
 
                     <div class="row compact-form">
-                        <aside class="col-md-12">
+                      <aside class="col-md-6 ">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!biclauseForm.get('DepartmentMasterSid')?.value">
+   
+    <!-- <ng-select [items]="departments" bindLabel="departmentName"
+                                                bindValue="DepartmentMasterSid" formControlName="DepartmentMasterSid"
+                                                (change)="onDeptChange($event)" appendTo="body">
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown 
+  [items]="departmentList" 
+  formControlName="DepartmentMasterSid"
+  [placeholder]="''"
+  [displayFields]="departmentLookupConfig.displayFields"
+  [displayLabels]="departmentLookupConfig.displayLabels"
+  [labelFields]="departmentLookupConfig.labelFields"
+  [bindValue]="'DepartmentMasterSid'"
+  >
+</dofi-searchable-dropdown>
+    <label for="text-input" class="input-label">Dept Name <span class="text-danger">*</span></label>
+                            @if(biclauseForm.get('DepartmentMasterSid')?.touched &&
+                            biclauseForm.get('DepartmentMasterSid')?.errors){
+                            <div class="error-message">
+                                @if(biclauseForm.get('DepartmentMasterSid')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="ClauseDescription" formControlName="ClauseDescription"
                                     class="custom-input-field sm" placeholder="" [class.is-invalid]="biclauseForm.get('ClauseDescription')?.invalid && 
