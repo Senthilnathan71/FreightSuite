@@ -1033,6 +1033,7 @@ onGSTTypeChange() {
       VoucherNumber: header.VoucherNumber,
       VoucherDate: this.toNgbDate(header.VoucherDate),
       CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
+      CustomerBranchSid : header.CustomerBranchSid || null,
       PartyMasterSid: header.PartyMasterSid || null,
       PartyName: header.PartyName || '',
       PartyAddress: header.PartyAddress || '',
@@ -1459,7 +1460,7 @@ onGSTTypeChange() {
   }
   
   row.get('LocalAmount')?.setValue(this.round(localAmount));
-  row.get('PartyAmount')?.setValue(this.round(amount));
+  row.get('PartyAmount')?.setValue(this.getPartyAmount(row.getRawValue()));
 
   this.updateBillAmount();
   console.log('=== TAX CALCULATION DEBUG - END ===');
@@ -1598,7 +1599,7 @@ private applyFallbackTax(
   }
 
   // Calculate total tax amount (CGST + SGST + IGST)
-  getTotalTaxAmount(): number {
+  getTotalTaxAmount() {
   let total = 0;
   for (let i = 0; i < this.details.length; i++) {
     const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
@@ -1606,7 +1607,7 @@ private applyFallbackTax(
     // const igstAmt = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
     total += taxAmt1 + taxAmt2;
   }
-  return this.round(total);
+  return (total).toFixed(2);
 }
 
   // Calculate grand total (Currency Amount + Tax Amount)
@@ -2497,7 +2498,7 @@ private applyFallbackTax(
     return `${currency} ${words} Only`;
   }
   getGrandTotal(): number {
-    return this.round(this.getTotalCurrencyAmount() + this.getTotalTaxAmount());
+    return this.round(this.getTotalCurrencyAmount() + toNumber(this.getTotalTaxAmount()));
   }
   getCustomerName(CustomerMasterSid: number) {
     if (!CustomerMasterSid || this.customerList.length === 0) {

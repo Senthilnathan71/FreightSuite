@@ -2144,12 +2144,12 @@ createRateFormGroup(data?: any): FormGroup {
   //   return taxGroup?.TaxMasterSid || null;
   // }
 
-  convertToHeaderCurrency(amount: number): number {
+  convertToHeaderCurrency(amount: number) {
     if (!this.invoiceHeaderCurrency || !this.invoiceHeaderExchangeRate) {
       return amount;
     }
     // Convert amount to header currency using exchange rate
-    return amount * this.invoiceHeaderExchangeRate;
+    return (amount / this.invoiceHeaderExchangeRate).toFixed(2);
   }
 
   toggleChargeSelection(charge: any) {
