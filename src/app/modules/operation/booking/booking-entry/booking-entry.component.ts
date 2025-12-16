@@ -964,22 +964,22 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
+      // Check if department is LCL or AIR
+  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  
+  if (isLCLorAIR) {
+    // Always setup calculations for LCL/AIR
     this.setupProductFormImmediateCalculation(productForm);
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
-
-      if (data) {
-    setTimeout(() => {
-      // Force calculation for existing dimensions
-      const length = productForm.get('Length')?.value;
-      const width = productForm.get('Width')?.value;
-      const height = productForm.get('Height')?.value;
-      const uom = productForm.get('UomMasterSid')?.value;
-      
-      // Manually call the calculation methods
-      if (length || width || height) {
-        productForm.get('ExternlQty')?.updateValueAndValidity({ emitEvent: true });
-      }
-    }, 0);
+    
+    // If we have data with volume, trigger calculation AFTER form is stable
+    // This allows the patched value to be set first, then calculations take over
+    if (data && (data.Length || data.Width || data.Height)) {
+      setTimeout(() => {
+        // Trigger calculation by emitting a change event
+        productForm.get('UomMasterSid')?.updateValueAndValidity({ emitEvent: true });
+      }, 100);
+    }
   }
     if (data?.CargoRecDate) {
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
