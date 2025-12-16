@@ -106,7 +106,7 @@
   <div class="row g-3 pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
 
     <!-- Department -->
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-2">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
         <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
@@ -125,7 +125,7 @@
     </div>
 
     <!-- HBL No -->
-<div class="col-md-3 ">
+<div class="col-md-2 ">
   <div class="custom-form-group">
     <input 
       type="text" 
@@ -150,13 +150,13 @@
     <!-- Add validation message -->
     <div *ngIf="selectedDepartment?.ExportImport === 'Import' && b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)" 
          class="invalid-feedback d-block">
-      HBL Number is required for Import operations
+      HBL Number is required for Import
     </div>
   </div>
 </div>
 
     <!-- HBL Date -->
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="custom-form-group custom-form-group-select-date"
         [class.filled]="!!houseJobForm.get('HBLDate')?.value">
         <div class="input-group">
@@ -172,7 +172,7 @@
     </div>
 
     <!-- Booking No -->
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="custom-form-group">
         <input type="text" id="booking-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="BookingNo">
@@ -185,7 +185,7 @@
     </div>
 
     <!-- Shipment No -->
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="custom-form-group">
         <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="ShipmentNo">
@@ -194,7 +194,7 @@
     </div>
 
     <!-- Job Type -->
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!houseJobForm.get('JobType')?.value">
         <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
@@ -224,16 +224,18 @@
           }">Status</label>
       </div>
     </div>
-    <div class="col-md-3"> 
-      <div class="custom-form-group">
-        <input type="text" id="house-status-input" placeholder="" class="form-control custom-input-field sm"
-          formControlName="HouseStatus">
-        <label for="house-status-input" class="input-label">House Status <span class="text-danger">*</span></label>
+    <div class="col-md-3">
+      <div class="custom-form-group-select" [class.filled]="!!houseJobForm.get('HouseStatus')?.value">
+        <!-- <input type="text" id="house-status-input" placeholder="" class="form-control custom-input-field sm"
+              formControlName="HouseStatus"> -->
+        <ng-select [items]="jobStatusOptions" bindLabel="name" bindValue="id" formControlName="HouseStatus" placeholder=""
+          class="ng-select" appendTo="body"></ng-select>
+        <label class="input-label"> House Status <span class="text-danger">*</span></label>
       </div>
     </div>
 
     <!-- HBL Count -->
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="custom-form-group">
         <input type="text" id="hbl-count-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="HBLCount">
@@ -241,7 +243,7 @@
       </div>
       </div>
   <!-- Master Job Number Field (Read-only) -->
-<div class="col-md-3">
+<div class="col-md-2">
   <div class="custom-form-group">
     <input 
       type="text" 
@@ -1507,7 +1509,7 @@
               <label for="text-input" class="input-label">Marks And Number<span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-2">
+          <aside class="col-md-2" *ngIf="selectedDepartment?.ExportImport !== 'Export'">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('LandedMarksandNumber')?.value">
               <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"

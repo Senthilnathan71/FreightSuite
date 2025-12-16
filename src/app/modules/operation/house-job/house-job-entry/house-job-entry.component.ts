@@ -146,6 +146,7 @@ resetTriggerVehicle: boolean = false; // trigger flag for reset
 customsDataArray: any[] = [];        // for BOE data
 resetTriggerCustoms: boolean = false; // trigger flag for reset
 hssacList: any[] = [];
+selectedCustomer: any;
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   userData : any;
@@ -311,6 +312,14 @@ auditLogs: any[] = []; // Stores audit logs
   yardCFSList: any[] = [];
   filteredYardCFSList: any[] = [];
   currentYardCFSType: 'yard' | 'cfs' | null = null;
+  jobStatusOptions = [
+  { id: 'Job Generated', name: 'Job Generated' },
+  { id: 'Open', name: 'Open' },
+  { id: 'Closed', name: 'Closed' },
+  { id: 'Sailed', name: 'Sailed' },
+  { id: 'Operation Closed', name: 'Operation Closed' },
+  { id: 'Documentation Closed', name: 'Documentation Closed' }
+];
     measurementUnitList =[
     { id: 1, name: 'M' },
     { id: 2, name: 'CM' },
@@ -484,6 +493,7 @@ isVoyageFreeText: boolean = false;
   this.initCargoForm();
   this.initOtherForm();
   this.initDetailsForm();
+  this.setupMBLDateListener();
   this.spinner.show();
   
   // Check for master job data in query parameters
@@ -519,6 +529,19 @@ isVoyageFreeText: boolean = false;
     console.log('CargoCurrency value changed:', value);
   });
   this.loadHSSACLookups();
+}
+private setupMBLDateListener(): void {
+  this.houseJobForm.get('MBLDate')?.valueChanges.subscribe((mblDateValue) => {
+    if (mblDateValue) {
+      // If MBLDate has a value and HBLDate is empty, auto-fill HBLDate
+      const currentHBLDate = this.houseJobForm.get('HBLDate')?.value;
+      if (!currentHBLDate) {
+        this.houseJobForm.patchValue({
+          HBLDate: mblDateValue
+        }, { emitEvent: false });
+      }
+    }
+  });
 }
   /**
   |--------------------------------------------------
@@ -578,8 +601,8 @@ isVoyageFreeText: boolean = false;
       JobType: [null],
       Coload: [false],
       ShipmentType: [false],
-      // HouseStatus: ['' ],
-      // HBLCount: [''],
+      HouseStatus:['Job Generated', Validators.required],
+      HBLCount: [0],
       IncoTerms: [null, [Validators.required]],
       InternalNote: [''],
       GeneralNote: [''],
@@ -2166,19 +2189,38 @@ validateHBLNo(): boolean {
 
 
   onCustomerChange(customer: any) {
-    console.log(customer);
-    if (!customer) {
-      this.b['CustomerName']?.setValue('');
-      this.b['CustomerAddress']?.setValue(null);
-      this.customerBranchList = [];
-      this.handleImportExport();
-      return;
-    }
-    this.b['CustomerName']?.setValue(customer.CustomerName);
+  console.log(customer);
+  
+  // Check if department is selected
+  if (!this.selectedDepartment) {
+    this.appSettingService.showWarning('Please select a department first before selecting a customer.');
+    
+    // Clear the customer selection
+    this.b['CustomerMasterSid']?.setValue(null);
+    this.selectedCustomer = null;
+    this.b['CustomerName']?.setValue('');
     this.b['CustomerAddress']?.setValue(null);
-    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+    this.b['CustomerBranchSid']?.setValue(null);
+    this.customerBranchList = [];
     this.handleImportExport();
+    return;
   }
+  
+  this.selectedCustomer = customer; 
+  if (!customer) {
+    this.b['CustomerName']?.setValue('');
+    this.b['CustomerAddress']?.setValue(null);
+    this.b['CustomerBranchSid']?.setValue(null);
+    this.customerBranchList = [];
+    this.handleImportExport();
+    return;
+  }
+  
+  this.b['CustomerName']?.setValue(customer.CustomerName);
+  this.b['CustomerAddress']?.setValue(customer.Address);
+  this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
+  this.handleImportExport();
+}
 
   onShipperChange(shipper?: any) {
     if (!shipper) {
@@ -2188,14 +2230,24 @@ validateHBLNo(): boolean {
     this.filteredConsigneeList = this.consigneeList.filter(c => c.CustomerMasterSid !== shipper.CustomerMasterSid);
   }
 
-  onConsigneeChange(consignee?: any) {
-    if (!consignee) {
-      this.filteredShipperList = [...this.shipperList];
-      return;
-    }
-    this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
+ onConsigneeChange(consignee?: any) {
+  if (!consignee) {
+    this.filteredShipperList = [...this.shipperList];
+    this.houseJobForm.patchValue({
+      Notify: null,
+      NotifyAddress: ''
+    });
+    return;
   }
-
+  
+  this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
+  
+  // Auto-fill Notify with consignee details - SAME LOGIC AS BOOKING-ENTRY
+  this.houseJobForm.patchValue({
+    Notify: consignee.CustomerName,
+    NotifyAddress: consignee.Address
+  });
+}
   handleDestAgentChange(agent?: any) {
     if (!agent) {
       this.originAgentList = [...this.agentList];
@@ -2213,13 +2265,15 @@ validateHBLNo(): boolean {
   }
 
 
-  handleImportExport() {
+    handleImportExport() {
     // Early return if no department selected - clear both fields
     if (!this.selectedDepartment) {
       this.b['ShipperName']?.setValue(null);
       this.b['ShipperAddress']?.setValue('');
       this.b['ConsigneeName']?.setValue(null);
       this.b['ConsigneeAddress']?.setValue('');
+      this.b['Notify']?.setValue(null);
+      this.b['NotifyAddress']?.setValue('')
       this.onShipperChange();
       this.onConsigneeChange();
       return;
@@ -2229,26 +2283,26 @@ validateHBLNo(): boolean {
     console.log(exportImportType);
     if (exportImportType === "Export") {
       // Handle Export logic
-      const customerName = this.b['CustomerName']?.value;
+      const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
 
-      if (!customerName) {
+      if (!CustomerBranchSid) {
         this.b['ShipperName']?.setValue(null);
         this.b['ShipperAddress']?.setValue('');
         this.onShipperChange();
         return;
       }
 
-      const shipperExist = this.shipperList.find(s => s.CustomerName === customerName);
-      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerName === customerName);
+      const shipperExist = this.shipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
+      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
 
-      if(shipperExist && shipperExistInFiltered) {
+      if (shipperExist && shipperExistInFiltered) {
         this.b['ShipperName']?.setValue(shipperExistInFiltered.CustomerName);
-        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.CustomerAddress1);
+        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.Address);
         this.onShipperChange(shipperExistInFiltered);
         this.onConsigneeChange();
       } else if (shipperExist && !shipperExistInFiltered) {
-        this.b['ShipperName']?.setValue(customerName);
-        this.b['ShipperAddress']?.setValue(shipperExist.CustomerAddress1);
+        this.b['ShipperName']?.setValue(shipperExist.CustomerName);
+        this.b['ShipperAddress']?.setValue(shipperExist.Address);
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
         this.onShipperChange(shipperExist);
@@ -2263,36 +2317,55 @@ validateHBLNo(): boolean {
 
     if (exportImportType === "Import") {
       // Handle Import logic
-      const customerName = this.b['CustomerName']?.value;
+      const customerBranchSid = this.b['CustomerBranchSid']?.value;
 
-      if (!customerName) {
+      if (!customerBranchSid) {
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
+        this.b['Notify']?.setValue(null); // Clear Notify
+        this.b['NotifyAddress']?.setValue('');
         this.onConsigneeChange();
         return;
       }
 
-      const consigneeExist = this.consigneeList.find(c => c.CustomerName === customerName);
-      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerName === customerName);
+      const consigneeExist = this.consigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
+      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
 
       if (consigneeExist && consigneeExistInFiltered) {
-        this.b['ConsigneeName']?.setValue(consigneeExistInFiltered.CustomerName);
-        this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.CustomerAddress1);
-        this.onConsigneeChange(consigneeExistInFiltered);
-        this.onShipperChange();
-      } else if(consigneeExist && !consigneeExistInFiltered) {
-        this.b['ConsigneeName']?.setValue(customerName);
-        this.b['ConsigneeAddress']?.setValue(consigneeExist.CustomerAddress1);
-        this.b['ShipperName']?.setValue(null);
-        this.b['ShipperAddress']?.setValue('');
-        this.onConsigneeChange(consigneeExist);
-        this.onShipperChange();
-      } else {
-        this.b['ConsigneeName']?.setValue(null);
-        this.b['ConsigneeAddress']?.setValue('');
-        this.onConsigneeChange();
-      }
-    }
+    this.houseJobForm.patchValue({
+      ConsigneeName: consigneeExistInFiltered.CustomerName,
+      ConsigneeAddress: consigneeExistInFiltered.Address,
+      // AUTO-FILL NOTIFY WITH CONSIGNEE INFO - SAME AS BOOKING
+      Notify: consigneeExistInFiltered.CustomerName,
+      NotifyAddress: consigneeExistInFiltered.Address
+    });
+    this.onConsigneeChange(consigneeExistInFiltered);
+    this.onShipperChange();
+  } else if (consigneeExist && !consigneeExistInFiltered) {
+    this.houseJobForm.patchValue({
+      ConsigneeName: consigneeExist.CustomerName,
+      ConsigneeAddress: consigneeExist.Address,
+      // AUTO-FILL NOTIFY WITH CONSIGNEE INFO - SAME AS BOOKING
+      Notify: consigneeExist.CustomerName,
+      NotifyAddress: consigneeExist.Address
+    });
+    this.houseJobForm.patchValue({
+      ShipperName: null,
+      ShipperAddress: ''
+    });
+    this.onConsigneeChange(consigneeExist);
+    this.onShipperChange();
+  } else {
+    this.houseJobForm.patchValue({
+      ConsigneeName: null,
+      ConsigneeAddress: '',
+      // CLEAR NOTIFY TOO
+      Notify: null,
+      NotifyAddress: ''
+    });
+    this.onConsigneeChange();
+  }
+}
   }
 
 

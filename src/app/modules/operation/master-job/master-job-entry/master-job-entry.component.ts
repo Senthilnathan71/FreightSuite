@@ -247,7 +247,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   isVoyageFreeText: boolean = false;
   isETDFreeText: boolean = false;
   isETAFreeText: boolean = false;
-
+jobStatusOptions = [
+  { id: 'Job Generated', name: 'Job Generated' },
+  { id: 'Open', name: 'Open' },
+  { id: 'Closed', name: 'Closed' },
+  { id: 'Sailed', name: 'Sailed' },
+  { id: 'Operation Closed', name: 'Operation Closed' },
+  { id: 'Documentation Closed', name: 'Documentation Closed' }
+];
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Container', icon: 'fas fa-boxes' },
@@ -804,6 +811,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CommodityDescription: [''],
       MarksandNumber: [''],
       Status: ['Active', Validators.required],
+      JobStatus: ['Job Generated', Validators.required],
       isVesselFreeText: [false],
       isVoyageFreeText: [false],
       // Voyage fields
@@ -818,7 +826,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       DestinationATA: [null],
       // CarrierMasterSid: [null],
       CarrierName: [''],
-
       // Others fields
       MasterJobOthersSid: [null],
       Yard: [null],
@@ -1589,53 +1596,50 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const mblDateControl = this.masterJobForm.get('MBLDate');
 
     if (!departmentSid) {
-      // No department selected - disable both fields
-      mblNoControl?.disable();
-      mblDateControl?.disable();
-      mblNoControl?.clearValidators();
-      mblDateControl?.clearValidators();
-      return;
+        // No department selected - disable both fields
+        mblNoControl?.disable();
+        mblDateControl?.disable();
+        mblNoControl?.clearValidators();
+        mblDateControl?.clearValidators();
+        return;
     }
 
     const department = this.departments.find(dep => dep.DepartmentMasterSid === departmentSid);
-    const deptType = department?.departmentType?.toLowerCase();
     const deptName = department?.departmentName?.toLowerCase();
-
-    console.log('Department detected:', { deptType, deptName });
 
     // Check if department is Export
     const isExport = deptName?.includes('export');
 
-    // Check if department is Import and has "Manual" in name
-    const isImportManual = deptName?.includes('import') && deptName?.includes('manual');
+    // Check if department is Import
+    const isImport = deptName?.includes('import');
 
     if (isExport) {
-      // Export department - disable both fields
-      mblNoControl?.disable();
-      mblDateControl?.disable();
-      mblNoControl?.clearValidators();
-      mblDateControl?.clearValidators();
-
-    } else if (isImportManual) {
-      // Import Manual department - enable and make required
-      mblNoControl?.enable();
-      mblDateControl?.enable();
-      mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
-      mblDateControl?.setValidators([Validators.required]);
-
+        // Export department - disable both fields
+        mblNoControl?.disable();
+        mblDateControl?.disable();
+        mblNoControl?.clearValidators();
+        mblDateControl?.clearValidators();
+        
+    } else if (isImport) {
+        // Import department - enable and make required
+        mblNoControl?.enable();
+        mblDateControl?.enable();
+        mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+        mblDateControl?.setValidators([Validators.required]);
+        
     } else {
-      // Other departments (including regular Import) - enable but not required
-      mblNoControl?.enable();
-      mblDateControl?.enable();
-      mblNoControl?.clearValidators();
-      mblDateControl?.clearValidators();
-      mblNoControl?.setValidators([Validators.maxLength(20)]);
+        // Other departments - enable but not required
+        mblNoControl?.enable();
+        mblDateControl?.enable();
+        mblNoControl?.clearValidators();
+        mblDateControl?.clearValidators();
+        mblNoControl?.setValidators([Validators.maxLength(20)]);
     }
 
     mblNoControl?.updateValueAndValidity();
     mblDateControl?.updateValueAndValidity();
     this.cdr.detectChanges();
-  }
+}
   onDeptChange(department: any) {
     this.selectedDepartment = department;
     if (!department) {

@@ -873,7 +873,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CHAName: [''],
       PickupAddress: [''],
       DeliveryAddress: [''],
-      CargoCurrency: [null],
+      CargoCurrency: [''],
       CargoValue: [''],
       SwitchBL: [false],
       BacktoBack: [false],
@@ -1568,7 +1568,32 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
   }
 
+    private findInvalidControlsRecursive(form: FormGroup | FormArray): string[] {
+    let invalidControls: string[] = [];
+    Object.keys(form.controls).forEach(key => {
+      const control = (form as any).get(key);
+      if (control.invalid) {
+        invalidControls.push(key);
+      }
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        invalidControls = invalidControls.concat(
+          this.findInvalidControlsRecursive(control).map(childKey => `${key}.${childKey}`)
+        );
+      }
+    });
+    return invalidControls;
+  }
 
+  public errorLogger(): void {
+    console.log('Form Status:', this.bookingForm.status);
+    console.log('Form Value', this.bookingForm.value);
+    if (this.bookingForm.invalid) {
+      const invalid = this.findInvalidControlsRecursive(this.bookingForm);
+      console.log('Invalid controls:', invalid);
+    } else {
+      console.log('No invalid controls found.');
+    }
+  }
 
 
   onSubmit() {
@@ -1589,8 +1614,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   };
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
-  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+  // this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
   // Update the form state
+  this.errorLogger();
   this.bookingForm.updateValueAndValidity();
        if (!this.validateAllForms()) {
         console.log("STOP 2 - validateAllForms failed");
@@ -1660,7 +1686,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null,
+      // CutOffDate: bookingFormValue.CutOffDate ? (bookingFormValue.CutOffDate) : null,
       POO: bookingFormValue.POO || null,
       POL: bookingFormValue.POL,
       POD: bookingFormValue.POD,
@@ -1725,7 +1751,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         CHAName: otherFormValue.CHAName || '',
         PickupAddress: otherFormValue.PickupAddress || '',
         DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency || null,
+        CargoCurrency: otherFormValue.CargoCurrency || '',
         CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
         SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
         BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
@@ -3508,6 +3534,14 @@ ${this.userData['userName']}`;
     DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,
     POL: this.b['POL']?.value,
     POD: this.b['POD']?.value,
+    POO: this.b['POO']?.value,
+    POLTerminal: this.b['POLTerminal']?.value,
+    PODTerminal: this.b['PODTerminal']?.value,
+    FPD: this.b['FPD']?.value,
+    DestinationAgent: this.b['DestinationAgent']?.value,
+    AgentAddress: this.b['AgentAddress']?.value,
+    Notify: this.b['Notify']?.value,
+    NotifyAddress: this.b['NotifyAddress']?.value,
     NoOfPkg: this.c['NoOfPackage']?.value || 0,
     GrossWeight: this.c['GrossWeight']?.value || 0,
     NetWeight: this.c['NetWeight']?.value || 0,
