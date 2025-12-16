@@ -51,6 +51,8 @@ import { MAWBComponent } from '../report/mawb/mawb.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CargoManifestComponent } from '../../master-job/reports/cargo-manifest/cargo-manifest.component';
+import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -197,7 +199,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     status: 'all' // 'all', 'unpaid', 'partial', 'paid'
   };
   currentMenuId: any;
-  
+  masterJobData:any;
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -735,6 +737,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         if (response.masterJob.status && response.masterJob.data) {
           const data = response.masterJob.data;
           this.masterAirWayData= data;
+          this.masterJobData=data;
           const aggregatedTotals = data.aggregatedTotals; 
           this.patchFormValues({
             ...data,
@@ -2350,5 +2353,33 @@ onYardChange(selectedYard: any): void {
     // Implement print functionality
     window.print();
   }
-  
+
+    // Print
+ 
+    reportcargomanifest() {
+      const modalRef = this.modalService.open(CargoManifestComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      modalRef.componentInstance.masterJobData = this.masterJobData;
+      modalRef.componentInstance.containerTypeList = this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.agentList = this.agentList;
+      modalRef.componentInstance.yardList = this.yardList;
+ 
+    }
+ 
+      reportPreAlertModel() {
+        const modalRef = this.modalService.open(PreAlertComponent, {
+          size: 'xl',
+          scrollable: true,
+        })
+        modalRef.componentInstance.masterJobData = this.masterJobData;
+        modalRef.componentInstance.containerTypeList = this.containerTypeList;
+        modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+        modalRef.componentInstance.packageTypeList = this.packageTypeList;
+        modalRef.componentInstance.agentList = this.agentList;
+        modalRef.componentInstance.yardList = this.yardList;
+      }
 }
