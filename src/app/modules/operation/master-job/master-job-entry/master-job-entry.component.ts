@@ -3352,6 +3352,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.agentList = this.agentList;
     modalRef.componentInstance.yardList = this.yardList;
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
   }
 
   reportcargomanifest() {
@@ -3365,6 +3366,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.agentList = this.agentList;
     modalRef.componentInstance.yardList = this.yardList;
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
 
   }
 

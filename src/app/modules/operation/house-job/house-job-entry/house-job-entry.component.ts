@@ -3479,6 +3479,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.chargeList = this.chargeList || [];
       }
 
 // Helper Funstion 
