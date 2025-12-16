@@ -57,7 +57,7 @@
     <section style="display:flex; flex-direction:column;  border-top: 1px solid black;">
         <h4 style="text-align:center; margin:5px auto 12px auto;padding-left:100px;"><strong>Cash Receipt</strong></h4>
 
-        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;font-size: 16px;">
+        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;font-size: 14px;">
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top: 10px;">
                 <div style="display:flex; margin-bottom:4px;">
                     <div style="width:120px; white-space:nowrap;"><strong>Receipt No.</strong></div>
@@ -82,7 +82,7 @@
         </div>
 
         <!-- Voucher Table -->
-        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px; ">
+        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 14px; ">
             <tbody>
                 <tr>
                     <th style="width:60%; border:1px solid black; padding:2px 8px; text-align:center; border-left: none; "><strong>Description</strong></th>
@@ -99,10 +99,10 @@
             </tbody>
         </table>
 
-        <h4 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="padding:4px 0; text-decoration:underline;" class="mb-0"><strong>Remittance Details</strong></h4>
+        <h5 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="text-align: start;margin-top:0px;margin-bottom:0px;padding-left:15px;"><strong>Remittance Details</strong></h5>
 
         <!-- Remittance Table -->
-        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px; ">
+        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 14px; ">
             <tbody>
                 <tr>
                     <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; border-left:none"><strong>Voucher No.</strong></th>
@@ -131,7 +131,7 @@
             </tbody>
         </table>
 
-        <p  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="margin:4px 0;"><strong>Amount in Words : </strong>
+        <p  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="margin:4px 0;padding-left: 15px;"><strong>Amount in Words : </strong>
             <strong> {{ getAmountInWords() }}</strong>
         </p>
 
@@ -147,7 +147,7 @@
 
   <!-- Footer -->
 <footer style="position: absolute; bottom:0; left:0; width:100%; text-align:center; font-size:10pt; padding:0.5rem; background:#fff;  box-sizing:border-box;">
-    <div style="display:flex; justify-content:space-between; font-size:12px;">
+    <div style="display:flex; justify-content:space-between; font-size:14px;">
         <div>Printed By: {{userData.userName}}</div>
         <span>This document is computer-generated and does not require a signature.</span>
         <div>Printed On: {{ currentDate | formatDate }}</div>

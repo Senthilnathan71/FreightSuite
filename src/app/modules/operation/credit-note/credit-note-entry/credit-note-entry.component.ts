@@ -51,6 +51,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   templateUrl: './credit-note-entry.component.html',
   styleUrl: './credit-note-entry.component.scss'
 })
+
+
 export class CreditNoteEntryComponent {
   creditNoteForm!: FormGroup;
   emailForm!: FormGroup;
@@ -64,6 +66,9 @@ export class CreditNoteEntryComponent {
   currentClauseId: any;
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   @ViewChild('printModal') printModalRef: any;
@@ -3530,25 +3535,31 @@ calculateTotalColspan(): number {
   }
 
 
-  printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+       
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
 
 }
