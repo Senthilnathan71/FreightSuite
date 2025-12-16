@@ -687,7 +687,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'LCL'">
+                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL'">
                         <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
@@ -1095,7 +1095,7 @@
                                           </a>
                                           <button class="btn btn-info btn-sm me-1" type="button"
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-        [disabled]="disableAllModification || quotationApproved || isRateLocked()">
+        [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
 
@@ -1864,7 +1864,7 @@
                           </div>
                         </aside>
 
-                        <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
+                        <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
                           <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                               formControlName="Volume" [onlyNumbers]>

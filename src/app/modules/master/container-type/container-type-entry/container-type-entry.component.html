@@ -340,64 +340,49 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Length" type="text" placeholder=""
-                                    class="custom-input-field sm text-end"[onlyNumbers]="10">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
                                 <label for="" class="input-label"> Length(m) <span
                                         class="text-danger fw-bold"></span></label>
-                                @if(containertypeForm.get('Length')?.touched &&
+                                @if((containertypeForm.get('Length')?.touched || containertypeForm.get('Length')?.dirty) &&
                                 containertypeForm.get('Length')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Length')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(containertypeForm.get('Length')?.hasError('min')){
-                                    <span>Must be positive number</span>
-                                    } @else if(containertypeForm.get('Length')?.hasError('onlyNumbers')){
-                                    <span>Only numbers allowed</span>
+                                    @if(containertypeForm.get('Length')?.errors?.['decimalPrecision']){
+                                    <span>Allowed: 4 Digits before and 3 digits after decimal point</span>
                                     }
                                 </div>
                                 }
-                                <!-- <button type="button" class=" ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('Length')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'Length' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button> -->
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Width" type="text" placeholder=""
-                                    class="custom-input-field sm text-end" [onlyNumbers]="10">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
                                 <label for="" class="input-label"> Width(m) <span
                                         class="text-danger fw-bold"></span></label>
-                                @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
+                                @if((containertypeForm.get('Width')?.touched || containertypeForm.get('Width')?.dirty) &&
+                                containertypeForm.get('Width')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Width')?.hasError('onlyNumbers')){
-                                    <span>Only numbers allowed</span>
+                                    @if(containertypeForm.get('Width')?.errors?.['decimalPrecision']){
+                                    <span>Allowed: 4 Digits before and 3 digits after decimal point</span>
                                     }
                                 </div>
                                 }
-                                <!-- <button type="button" class=" ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('Width')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'Width' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button> -->
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Height" type="text" placeholder=""
-                                    class="custom-input-field sm text-end"[onlyNumbers]="10">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
                                 <label for="" class="input-label"> Height(m) <span
                                         class="text-danger fw-bold"></span></label>
-                                @if(containertypeForm.get('Height')?.touched &&
+                                @if((containertypeForm.get('Height')?.touched || containertypeForm.get('Height')?.dirty) &&
                                 containertypeForm.get('Height')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Height')?.hasError('onlyNumbers')){
-                                    <span>Only numbers allowed</span>
+                                    @if(containertypeForm.get('Height')?.errors?.['decimalPrecision']){
+                                    <span>Allowed: 4 Digits before and 3 digits after decimal point</span>
                                     }
                                 </div>
                                 }
-                                <!-- <button type="button" class=" ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('Height')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'Height' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button> -->
                             </div>
                         </aside>
 
