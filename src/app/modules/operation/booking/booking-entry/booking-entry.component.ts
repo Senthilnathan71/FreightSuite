@@ -131,6 +131,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   uploadResult: any = null;
 
 
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -3690,6 +3692,9 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
   );
 }
 
+
+
+
 // Helper method to get PDF element ID based on type
 private getPdfElementId(type: string): string {
   switch (type) {
@@ -4091,27 +4096,31 @@ printARAPReport() {
 
 
 
- printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
 }
-
 // Add this method to your component class
 getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {

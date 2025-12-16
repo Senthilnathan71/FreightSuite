@@ -3133,206 +3133,184 @@
   position:relative;        /* REQUIRED for bottom footer */
 ">  <div>
 
-    <!-- Company Info -->
-   <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; flex-direction: column;">
-                    <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                </div>
-                <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                    <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                    <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                </div>
+<!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;padding-left: 20px;">
+                 <!-- Print logo -->
+            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
+                 alt="Company Logo" 
+                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
             </div>
         </div>
-
-    <div style="height:1px; background:black; width:100%; margin:15px 0;"></div>
-
-    <h5 style="text-align:center; font-size:17px; font-weight:bold; margin:0;">
-      Booking Confirmation - {{selectedDepartment?.departmentName}}
-    </h5>
-
-    <div style="height:1px; background:black; width:100%; margin:15px 0;"></div>
-
-    <!-- Customer & Booking Info -->
-    <div style="display:flex; flex-wrap:wrap;">
-
-      <!-- Left Column -->
-      <div style="width:50%; padding-right:10px;">
-        <div style="margin-bottom:10px;">
-          <div style="font-weight:bold;">Customer :</div>
-          <div style="word-break:break-word;">{{bookingHeader?.CustomerName}}</div>
-          <div style="word-break:break-word;">{{bookingHeader?.CustomerAddress}}</div>
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div style="width:50%; padding-left:10px;">
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:120px; font-weight:bold;">Booking No</div>
-          <div>: {{bookingHeader?.BookingNo}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:120px; font-weight:bold;">Booking Date</div>
-          <div>: {{bookingHeader?.BookingDateTime | formatDate }}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:120px; font-weight:bold;">Cut Off Date</div>
-          <div>: {{bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</div>
-        </div>
-
-        <div *ngIf="bookingHeader?.quotationHeader?.QuoteNumber"
-             style="display:flex; margin-bottom:5px;">
-          <div style="min-width:120px; font-weight:bold;">Quotation No</div>
-          <div>: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
-        </div>
-      </div>
-
     </div>
 
-    <div style="height:1px; background:black; width:100%; margin:15px 0;"></div>
+<!-- Top Border -->
+<div style="border-top:1px solid #000; margin:10px 0;"></div>
 
-    <!-- Booking Details -->
-    <div style="display:flex; flex-wrap:wrap;">
-      <p style="width:100%; font-weight:bold;">
-        We are pleased to confirm your booking as below :
-      </p>
+<h4 style="text-align:center; font-size:17px; font-weight:700; margin:6px 0;">
+  Booking Confirmation - {{ selectedDepartment?.departmentName }}
+</h4>
 
-      <!-- Left -->
-      <div style="width:50%; padding-right:10px;">
+<div style="border-top:1px solid #000; margin:10px 0;"></div>
 
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Vessel/Voyage</div>
-          <div>
+<!-- Main Info Table -->
+<table style="width:100%; border-collapse:collapse; font-size:14px;">
+  <tr>
+    <!-- LEFT COLUMN -->
+    <td style="width:50%; vertical-align:top; padding-top:6px;">
+      <div style="font-weight:700; margin-bottom:4px;">Customer </div>
+      <div>{{ bookingHeader?.CustomerName }}</div>
+      <div>{{ bookingHeader?.CustomerAddress }}</div>
+    </td>
+
+    <!-- RIGHT COLUMN -->
+    <td style="width:50%; vertical-align:top; padding-top:6px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="width:140px; font-weight:700;">Booking No.</td>
+          <td>: {{ bookingHeader?.BookingNo }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Booking Date</td>
+          <td>: {{ bookingHeader?.BookingDateTime | formatDate }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Cut Off Date</td>
+          <td>: {{ bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</td>
+        </tr>
+        <tr *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+          <td style="font-weight:700;">Quotation No.</td>
+          <td>: {{ bookingHeader?.quotationHeader?.QuoteNumber }}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Bottom Border -->
+<div style="border-top:1px solid #000; margin:12px 0;"></div>
+
+  <!-- Booking Details -->
+<p style="font-weight:800; margin:10px 0 8px 0;">
+  We are pleased to confirm your booking as below :
+</p>
+
+<table style="width:100%; border-collapse:collapse; font-size:14px;">
+  <tr>
+    <!-- LEFT COLUMN -->
+    <td style="width:50%; vertical-align:top;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="width:160px; font-weight:700;">Vessel/Voyage</td>
+          <td>
             : {{
               bookingHeader?.VesselName && bookingHeader?.VoyageNo
               ? bookingHeader?.VesselName + ' / ' + bookingHeader?.VoyageNo
               : ''
             }}
-          </div>
-        </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Port of Loading</td>
+          <td>: {{ bookingHeader?.POL }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Port of Discharge</td>
+          <td>: {{ bookingHeader?.POD }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Final Destination</td>
+          <td>: {{ bookingHeader?.FPD }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Shipper Name</td>
+          <td>: {{ bookingHeader?.ShipperName }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Shipping Bill No.</td>
+          <td>: {{ bookingHeader?.bookingProduct[0]?.ShippingBillNo || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Inco Terms</td>
+          <td>: {{ bookingHeader?.IncoTerms || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Hand Over To.</td>
+          <td>: {{ bookingHeader?.bookingOthers[0]?.YardCFS || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Remarks</td>
+          <td>: {{ bookingHeader?.InternalNote || '' }}</td>
+        </tr>
+      </table>
+    </td>
 
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Port of Loading</div>
-          <div>: {{bookingHeader?.POL}}</div>
-        </div>
+    <!-- RIGHT COLUMN -->
+    <td style="width:50%; vertical-align:top;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="width:140px; font-weight:700;">
+            {{ selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No' }}
+          </td>
+          <td>: {{ bookingHeader?.HBLNo || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">POD ETA</td>
+          <td>: {{ bookingHeader?.ETA | formatDate }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">FPD ETA</td>
+          <td>: {{ getFPDETA() | formatDate }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Commodity</td>
+          <td>: {{ bookingHeader?.bookingCargo[0]?.CargoType || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Freight</td>
+          <td>: {{ bookingHeader?.FreightTerms || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Destination Agent</td>
+          <td>: {{ getDestinationAgent(bookingHeader?.DestinationAgent) || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Consignee Name</td>
+          <td>: {{ bookingHeader?.ConsigneeName || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Carrier</td>
+          <td>: {{ bookingHeader?.CarrierName || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Carrier Booking</td>
+          <td>: {{ bookingHeader?.bookingOthers[0]?.CarrierBookingRef || '' }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Shipment Terms</td>
+          <td>: {{ bookingHeader?.bookingCargo[0]?.ShipmentTerms || '' }}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Port of Discharge</div>
-          <div>: {{bookingHeader?.POD}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Final Destination</div>
-          <div>: {{bookingHeader?.FPD}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Shipper Name</div>
-          <div>: {{bookingHeader?.ShipperName}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Shipping Bill No</div>
-          <div>: {{bookingHeader?.bookingProduct[0]?.ShippingBillNo || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Inco Terms</div>
-          <div>: {{bookingHeader?.IncoTerms || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Hand Over To</div>
-          <div>: {{bookingHeader?.bookingOthers[0]?.YardCFS || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Remarks</div>
-          <div>: {{bookingHeader?.InternalNote || ''}}</div>
-        </div>
-
-      </div>
-
-      <!-- Right -->
-      <div style="width:50%; padding-left:10px;">
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">
-            {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
-          </div>
-          <div>: {{bookingHeader?.HBLNo || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">POD ETA</div>
-          <div>: {{bookingHeader?.ETA | formatDate }}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">FPD ETA</div>
-          <div>: {{getFPDETA() | formatDate}}</div>
-        </div>
-
-        <!-- <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Gross Weight</div>
-          <div>: {{bookingHeader?.bookingCargo[0]?.GrossWeight || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Volume (CBM)</div>
-          <div>: {{bookingHeader?.bookingCargo[0]?.Volume || ''}}</div>
-        </div> -->
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Commodity</div>
-          <div>: {{bookingHeader?.bookingCargo[0]?.CargoType || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Freight</div>
-          <div>: {{bookingHeader?.FreightTerms || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Destination Agent</div>
-          <div>: {{getDestinationAgent(bookingHeader?.DestinationAgent) || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Consignee Name</div>
-          <div>: {{bookingHeader?.ConsigneeName || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Carrier</div>
-          <div>: {{bookingHeader?.CarrierName || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Carrier Booking</div>
-          <div>: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || ''}}</div>
-        </div>
-
-        <div style="display:flex; margin-bottom:5px;">
-          <div style="min-width:150px; font-weight:bold;">Shipment Terms</div>
-          <div>: {{bookingHeader?.bookingCargo[0]?.ShipmentTerms || ''}}</div>
-        </div>
-
-      </div>
-
-    </div>
 
     <!-- Product Table -->
-    <h5 style="font-weight:bold; margin-top:15px;">Product Details</h5>
+    <h4 style="font-weight:bold; margin-top:15px;">Product Details</h4>
 
     <div style="width:100%; overflow-x:auto;">
       <table style="width:100%; border-collapse:collapse; font-size:14px;">
@@ -3401,33 +3379,50 @@
     </div>
 
     <!-- Footer -->
-  <!-- Footer fixed at bottom -->
+<!-- Print Footer -->
 <footer style="
   position:absolute;
-  bottom:0;
+  bottom:15px;
   left:0;
   width:100%;
-  padding:5px;
-  background:#fff;
+  font-size:14px;
 ">
 
-  <div style="text-align:left;">
-    <p style="font-weight:bold; margin:0;">Your's Sincerely</p>
-    <div>{{userData?.userName || ''}}</div>
+  <!-- Left: Signature -->
+  <div style="margin-left:10px;">
+    <div style="font-weight:700;">Your's Sincerely</div>
+    <div style="margin-top:2px;">{{ userData?.userName || '' }}</div>
   </div>
 
-  <p style="margin:15px 0; text-align:center;">
-    IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO <br>
+  <!-- Center Message -->
+  <div style="
+    text-align:center;
+    margin:18px 40px 10px 40px;
+    font-weight:500;
+  ">
+    IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO<br>
     CONTACT US. THANK YOU FOR SHIPPING WITH US
-  </p>
-
-  <div style="display:flex; justify-content:space-between; font-size:12px;">
-    <div>Printed By: {{ userData.userName }}</div>
-    <span>This document is computer-generated and does not require a signature.</span>
-    <div>Printed On: {{ currentDate | formatDate }}</div>
   </div>
+
+  <!-- Bottom Line -->
+  <table style="width:100%; border-collapse:collapse; font-size:14px;">
+    <tr>
+      <td style="text-align:left; padding-left:10px;">
+        Printed By: {{ userData?.userName }}
+      </td>
+
+      <td style="text-align:center;">
+        This document is computer-generated and does not require a signature.
+      </td>
+
+      <td style="text-align:right; padding-right:10px;">
+        Printed On: {{ currentDate | formatDate }}
+      </td>
+    </tr>
+  </table>
 
 </footer>
+
 
 
   </div>
