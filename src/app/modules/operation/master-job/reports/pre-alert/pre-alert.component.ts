@@ -31,6 +31,7 @@ export class PreAlertComponent {
    @Input() packageTypeList: any[] = [];
    @Input() agentList: any[] = [];
    @Input() yardList: any[] = [];
+     @Input()  selectedFCLLCL:any;
    constructor(
      private appSettingsService: AppSettingsService,
      private activeModal: NgbActiveModal,

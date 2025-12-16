@@ -95,8 +95,9 @@ $font-size-label: 9px;
 .party-account {
   width: 35%;
   border-left: 1px solid $border-color;
+  border-bottom: 1px solid $border-color;
   padding: 4px;
-  height: 50px;
+  height: 35px;
 
   .account-label {
     font-size: $font-size-label;
@@ -264,7 +265,6 @@ $font-size-label: 9px;
   display: flex;
   border: 1px solid $border-color;
   border-top: none;
-  padding: 8px;
   flex: 1;
 
   .reference-cell {
@@ -425,6 +425,26 @@ $font-size-label: 9px;
   }
 }
 
+.flight-cell1 {
+  width: 50%;
+  border: 1px solid $border-color;
+  border-left: none;
+  border-top: none;
+  text-align: center;
+  padding: 4px;
+
+  &:first-child {
+    border-right: none;
+  }
+
+  .flight-label {
+    font-weight: bold;
+  }
+
+  .flight-value {
+    min-height: 20px;
+  }
+}
 // ============================================
 // Handling Information
 // ============================================
@@ -435,6 +455,7 @@ $font-size-label: 9px;
 
   .handling-label {
     margin-bottom: 2px;
+    font-weight: 700;
   }
 
   .handling-value {

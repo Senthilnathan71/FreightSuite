@@ -38,7 +38,7 @@
                                 </div>
                             </div>
                             <div class="party-account">
-                                <div class="account-label">Shipper's Account Number</div>
+                                <div class="account-label">Shipper's Acc No</div>
                                 <div class="account-value"></div>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                                 </div>
                             </div>
                             <div class="party-account">
-                                <div class="account-label">Consignee's Account Number</div>
+                                <div class="account-label">Consignee's Acc No</div>
                                 <div class="account-value"></div>
                             </div>
                         </div>
@@ -71,7 +71,7 @@
                         <div class="mawb-agent-info">
                             <div class="agent-cell">
                                 <div class="agent-label">Agent's IATA Code</div>
-                                <div class="agent-value"></div>
+                                <div class="agent-value">{{currentUserCode}}</div>
                             </div>
                             <div class="agent-cell">
                                 <div class="agent-label">Account No</div>
@@ -216,11 +216,11 @@
                         </div>
                         <div class="flight-cell">
                             <div class="flight-label">Flight/Date</div>
-                            <div class="flight-value">{{ masterAirWayData?.voyages?.[0]?.ETA }}</div>
+                            <div class="flight-value">{{ masterAirWayData?.voyages?.[0]?.ETA | formatDate}}</div>
                         </div>
                     </div>
                     <div class="flight-right">
-                        <div class="flight-cell">
+                        <div class="flight-cell1">
                             <div class="flight-label">Amount of Insurance</div>
                             <div class="flight-value"></div>
                         </div>
@@ -234,7 +234,7 @@
                 <!-- HANDLING INFORMATION -->
                 <div class="mawb-handling">
                     <div class="handling-label">Handling Information</div>
-                    <div class="handling-value">: {{ masterAirWayData?.Cargo?.[0]?.NoOfPkg }} Packages Only</div>
+                    <div class="handling-value"> {{ masterAirWayData?.Cargo?.[0]?.NoOfPkg }} Packages Only</div>
                 </div>
 
                 <!-- DATA TABLE -->
@@ -301,7 +301,7 @@
                             </div>
                             <div class="charge-cell">
                                 <div class="charge-label">Collect</div>
-                                <div class="charge-value"></div>
+                                <div class="charge-value">{{ freightCharges[0]?.CostAmount }}</div>
                             </div>
                         </div>
 

@@ -35,11 +35,14 @@ export class HAWBComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-
+  @Input() chargeList: any;
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() packageTypeList: any;
   @Input() containerTypeList: any;
+    costRevenueCharges: any[] = [];
+  freightCharges: any[] = [];
+  otherCharges: any[] = [];
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(
@@ -123,6 +126,40 @@ export class HAWBComponent {
     return currency ? currency.currencyCode : '';
   }
 
+    getTotalExchangeRate(): number {
+    if (!this.otherCharges || this.otherCharges.length === 0) return 0;
+
+    return this.otherCharges.reduce((sum, c) => {
+      return sum + (Number(c.RevenueExchangeRate) || 0);
+    }, 0);
+  }
+
+    handleCharges() {
+    this.costRevenueCharges = this.housejobData.costRevenueCharges || [];
+    const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
+    console.log("Filtered Charges", filteredCharges);
+
+    this.freightCharges = filteredCharges.filter(cr => {
+      const chargeGroupName = cr.chargeMaster?.chargeGroup?.GroupName || '';
+      return chargeGroupName === "Freight"
+    })
+
+    console.log("only freight charges", this.freightCharges);
+
+    const freightChargeIds = this.freightCharges.map(c => c.ChargeMasterSid);
+    console.log("Freight Charge Ids", freightChargeIds)
+
+    this.otherCharges = filteredCharges.filter(c => {
+      return !freightChargeIds.includes(c.ChargeMasterSid);
+    })
+
+    console.log("Other Charges", this.otherCharges)
+  }
+
+    getChargeCode(ChargeMasterSid: number) {
+    const chargeCode = this.chargeList.find((c: any) => c.ChargeMasterSid === ChargeMasterSid);
+    return chargeCode ? chargeCode.chargeCode : "";
+  }
 
  
 printDiv(divId: string): void {
@@ -133,7 +170,7 @@ printDiv(divId: string): void {
     const printContents = document.getElementById(divId)?.innerHTML;
     if (!printContents) return;
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    const popupWin = window.open('', '_blank', 'width=1000,height=600');
     if (popupWin) {
       popupWin.document.open();
       popupWin.document.write(`

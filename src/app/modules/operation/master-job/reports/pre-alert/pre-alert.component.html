@@ -65,10 +65,17 @@
                 <div style="width:130px; white-space:nowrap; "><strong>Job No.</strong></div>
                 <div>: {{masterJobData.MasterJobNumber}}</div>
             </div>
+             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px; white-space:nowrap; "><strong>MBL</strong></div>
                 <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
             </div>
+        }@else{
+             <div style="display:flex; margin-bottom:0.25rem;">
+                <div style="width:130px; white-space:nowrap; "><strong>MAWB</strong></div>
+                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
+            </div>
+         }
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px; white-space:nowrap; "><strong>MBL Date</strong></div>
                 <p style="margin:0;">: {{ masterJobData.MasterJobDate | formatDate }}</p>
@@ -96,10 +103,17 @@
     <!-- Vessel & Carrier Info -->
     <div style="display:flex; flex-wrap:wrap; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0 1rem;font-size: 16px;">
         <div style="width:50%; box-sizing:border-box;">
+            @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:145px; white-space:nowrap; "><strong>Vessel</strong></div>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}} {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
             </div>
+        }@else{
+            <div style="display:flex; margin-bottom:0.25rem;">
+                <div style="width:145px; white-space:nowrap; "><strong>Flight</strong></div>
+                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}} {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+            </div>
+        }
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:145px; white-space:nowrap; "><strong>POL</strong></div>
                 <p style="margin:0;">: {{masterJobData.POL}}</p>
@@ -130,10 +144,17 @@
                 <div style="width:130px; white-space:nowrap; "><strong>Agents Ref</strong></div>
                 <div style="margin:0;">: {{masterJobData?.others?.[0]?.AgentRef}}</div>
             </div>
+             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin:0.25rem 0;">
                 <div style="width:130px; white-space:nowrap; "><strong>Package</strong></div>
                 <p style="margin:0;">: {{masterJobData?.containers?.[0]?.NoOfPkg}}</p>
             </div>
+        }@else{
+             <div style="display:flex; margin:0.25rem 0;">
+                <div style="width:130px; white-space:nowrap; "><strong>Chargeable Wt</strong></div>
+                <p style="margin:0;">: {{masterJobData?.ChargeableWeight}}</p>
+            </div>
+        }
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px; white-space:nowrap;"><strong>Gross Weight</strong></div>
                 <p style="margin:0;">: {{masterJobData.GrossWeight}}</p>
@@ -146,7 +167,9 @@
     </div>
 
     <!-- Containers Table -->
-    <div style="overflow-x:auto;">
+
+      @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
+          <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px;">
             <thead>
                 <tr>
@@ -180,7 +203,9 @@
                 </tr>
             </tbody>
         </table>
-    </div>
+    </div> 
+    }
+ 
 
     <!-- Footer -->
     <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
@@ -235,22 +260,36 @@
                 <div style="width:130px;"><strong>Manifest Date</strong></div>
                 <p style="margin:0;">: {{masterJobData.MasterJobDate | formatDate}}</p>
             </div>
+              @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>Vessel</strong></div>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
             </div>
             <div style="display:flex; margin-bottom:0.25rem;">
-                <div style="width:130px;"><strong>Voyage</strong></div>
+                <div style="width:130px;"><strong>Flight Name</strong></div>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
             </div>
+        }@else{
+            <div style="display:flex; margin-bottom:0.25rem;">
+                <div style="width:130px;"><strong>Flight No</strong></div>
+                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+            </div>
+            <div style="display:flex; margin-bottom:0.25rem;">
+                <div style="width:130px;"><strong>Flight Name</strong></div>
+                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+            </div>
+        }
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>Booking No.</strong></div>
                 <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
             </div>
+
+              @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin-bottom:0.25rem;">
-                <div style="width:130px;">Sailing Date</div>
+                <div style="width:130px;"><strong>Sailing Date</strong></div>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ATA | formatDate}}</p>
             </div>
+        }
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>Master PP/CC</strong></div>
                 <p style="margin:0;">: {{masterJobData.FreightPPCC}}</p>
@@ -270,10 +309,19 @@
                 <div style="width:130px;"><strong>Delivery Port</strong></div>
                 <p style="margin:0;">: {{masterJobData.FPD}}</p>
             </div>
+             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>MBL No.</strong></div>
                 <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
             </div>
+        }@else{
+              <div style="display:flex; margin-bottom:0.25rem;">
+                <div style="width:130px; white-space:nowrap; "><strong>MAWB</strong></div>
+                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
+            </div>
+        }
+
+
             <div style="display:flex; margin-bottom:0.25rem;">
                 <div style="width:130px;"><strong>MBL Date</strong></div>
                 <p style="margin:0;">: {{ masterJobData.MasterJobDate | formatDate }}</p>
@@ -289,6 +337,7 @@
         </div>
     </div>
 
+     @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
     <!-- Container Table -->
     <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">
         <thead>
@@ -308,6 +357,7 @@
             </tr>
         </tbody>
     </table>
+}
 
     <!-- House Job Table -->
     <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">

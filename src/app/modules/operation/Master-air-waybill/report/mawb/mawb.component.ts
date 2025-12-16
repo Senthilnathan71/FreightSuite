@@ -27,6 +27,7 @@ export class MAWBComponent implements OnChanges {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+  currentUserCode:any;
   @Input() masterAirWayData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -67,7 +68,9 @@ export class MAWBComponent implements OnChanges {
       );
       this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
     }
-
+    
+     this.currentUserCode = this.userData?.userCode?.trim();
+     console.log(this.currentUserCode,"User Code")
     // IDs
     this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
     this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
