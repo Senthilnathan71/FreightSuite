@@ -926,11 +926,11 @@
         </div>
         
         <!-- Table with Dynamic Tax Columns -->
-        <div style="width:100%; overflow-x:auto; margin-top:8px;">
+         <div style="width:100%; overflow-x:auto; margin-top:8px;">
           <table style="width:100%; border-collapse:collapse; font-size:16px;">
             <thead>
               <tr>
-                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;"><strong>S.No.</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;width: 20px;"><strong>S.No.</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;"><strong>Particulars</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>HSN/SAC</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Curr.</strong></th>
@@ -961,7 +961,7 @@
                 </ng-container>
                 
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{currentCurrencyCode}}</strong></th>
-                   <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{invoiceData?.CurrencyCode}}</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{invoiceData?.CurrencyCode }}</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -1010,14 +1010,14 @@
                   <td style="border:1px solid black; padding:2px 8px;">
                     {{ getTaxAmountForDisplay(detail).vatAmt | number:'1.2-2' }}
                   </td>
-                    <td style="border:1px solid black; padding:2px 8px;">
-                    {{ detail?.partyAmount | number:'1.2-2' }}
-                  </td>
                 </ng-container>
-                
-                <td style="border:1px solid black; padding:2px 8px;">
-                  {{ getPartyCurrDebitAmt() }}
+                 <td style="border:1px solid black; padding:2px 8px;">
+                  {{detail?.PartyAmount | number:'1.2-2'}}
                 </td>
+                <td style="border:1px solid black; padding:2px 8px;">
+                   {{ getPartyCurrDebitAmt() }}
+                </td>
+               
               </tr>
               
               <!-- Total Row with dynamic colspan -->
@@ -1026,7 +1026,7 @@
                   <strong>Total</strong>
                 </td>
                 <td style="border:1px solid black; padding:2px 8px;">
-                  <strong>{{getPartyCurrDebitAmt()}}</strong>
+                  <strong> {{ getPartyCurrDebitAmt() }}</strong>
                 </td>
               </tr>
             </tbody>
