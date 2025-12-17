@@ -916,7 +916,7 @@
             </div>
             <div style="display:flex;">
               <div style="width:180px;"><strong>Currency / Ex-Rate</strong></div>
-              <div>: {{invoiceData?.VoucherDetail?.[0]?.CurrencyCode }} / {{invoiceData?.ExchangeRate }}</div>
+              <div>: {{invoiceData?.CurrencyCode }} / {{invoiceData?.ExchangeRate }}</div>
             </div>
             <div style="display:flex;">
               <div style="width:180px;"><strong>Sales Person</strong></div>
@@ -960,7 +960,8 @@
                   <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>VAT Amt.</strong></th>
                 </ng-container>
                 
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Total</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{currencyCurrentCode}}</strong></th>
+                   <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{invoiceData?.CurrencyCode}}</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -1009,10 +1010,13 @@
                   <td style="border:1px solid black; padding:2px 8px;">
                     {{ getTaxAmountForDisplay(detail).vatAmt | number:'1.2-2' }}
                   </td>
+                    <td style="border:1px solid black; padding:2px 8px;">
+                    {{ detail?.partyAmount | number:'1.2-2' }}
+                  </td>
                 </ng-container>
                 
                 <td style="border:1px solid black; padding:2px 8px;">
-                  {{ getRowTotal(detail) | number:'1.2-2' }}
+                  {{ getPartyCurrDebitAmt() }}
                 </td>
               </tr>
               
@@ -1022,7 +1026,7 @@
                   <strong>Total</strong>
                 </td>
                 <td style="border:1px solid black; padding:2px 8px;">
-                  <strong>{{getGrandRowTotal() | number:'1.2-2'}}</strong>
+                  <strong>{{getPartyCurrDebitAmt()}}</strong>
                 </td>
               </tr>
             </tbody>
