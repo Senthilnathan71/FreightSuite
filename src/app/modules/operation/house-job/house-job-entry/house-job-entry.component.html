@@ -55,7 +55,9 @@
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
                }
-            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Lading</button>
+           <button class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">House Bill of Lading</button>
+<button class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
+
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
               Loss</button>
             <button class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>

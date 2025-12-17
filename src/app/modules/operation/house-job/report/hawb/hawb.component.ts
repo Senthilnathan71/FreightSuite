@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
@@ -26,7 +26,7 @@ export class HAWBComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
-  
+
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -35,12 +35,13 @@ export class HAWBComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-  @Input() chargeList: any;
+
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() packageTypeList: any;
   @Input() containerTypeList: any;
-    costRevenueCharges: any[] = [];
+  @Input() chargeList: any;
+  costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
   ngOnInit() {
@@ -80,6 +81,7 @@ export class HAWBComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.handleCharges()
   }
 
 
@@ -115,6 +117,13 @@ export class HAWBComponent {
     private pdfService: PdfDownloadService,
   ) { }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['housejobData']) {
+      console.log('Data changed', changes['housejobData'])
+      this.handleCharges();
+    }
+  }
+
   modalClose() {
     this.activeModal.close();
   }
@@ -126,7 +135,7 @@ export class HAWBComponent {
     return currency ? currency.currencyCode : '';
   }
 
-    getTotalExchangeRate(): number {
+  getTotalExchangeRate(): number {
     if (!this.otherCharges || this.otherCharges.length === 0) return 0;
 
     return this.otherCharges.reduce((sum, c) => {
@@ -134,7 +143,7 @@ export class HAWBComponent {
     }, 0);
   }
 
-    handleCharges() {
+  handleCharges() {
     this.costRevenueCharges = this.housejobData.costRevenueCharges || [];
     const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
     console.log("Filtered Charges", filteredCharges);
@@ -156,24 +165,24 @@ export class HAWBComponent {
     console.log("Other Charges", this.otherCharges)
   }
 
-    getChargeCode(ChargeMasterSid: number) {
+  getChargeCode(ChargeMasterSid: number) {
     const chargeCode = this.chargeList.find((c: any) => c.ChargeMasterSid === ChargeMasterSid);
     return chargeCode ? chargeCode.chargeCode : "";
   }
 
- 
-printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
 
-  setTimeout(() => {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
+  printDiv(divId: string): void {
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
 
-    const popupWin = window.open('', '_blank', 'width=1000,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) return;
+
+      const popupWin = window.open('', '_blank', 'width=1000,height=600');
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <html>
           <head>
             <title>Print</title>
@@ -183,30 +192,93 @@ printDiv(divId: string): void {
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 50); 
+        popupWin.document.close();
+      }
+    }, 50);
+  }
+
+
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
+
+    setTimeout(async () => {
+      this.spinner.show();
+      try {
+        const BankPaymentNo = this.housejobData?.HBLNo || '';
+        await this.pdfService.downloadBalancedPDF(
+          'printContent',
+          `HAWB_${BankPaymentNo}`,
+          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+        );
+      } finally {
+        this.spinner.hide();
+      }
+    }, 50);
+  }
+
+  getFreightTotal() {
+    if (!this.freightCharges || this.freightCharges.length === 0) return 0;
+
+    return this.freightCharges.reduce((sum, c) => {
+      return sum + ((Number(c.RevenueExchangeRate) || 0) * (Number(c.RevenueAmount) || 0));
+    }, 0);
+  }
+
+  getGrandTotal(): number {
+    const exchangeTotal = this.getTotalExchangeRate() || 0;
+    const freightAmount = Number(this.freightCharges?.[0]?.RevenueAmount) || 0;
+    return exchangeTotal * freightAmount;
+  }
+
+
+  getFreightTotals() {
+    if (!this.freightCharges?.length) return { totalExchangeRate: 0, totalRevenueAmount: 0 };
+
+    const totalExchangeRate = this.freightCharges.reduce(
+      (sum, c) => sum + Number(c.RevenueExchangeRate || 0),
+      0
+    );
+
+    console.log(totalExchangeRate, "Total Exchange Rate")
+
+    const totalRevenueAmount = this.freightCharges.reduce(
+      (sum, c) => sum + Number(c.RevenueAmount || 0),
+      0
+    );
+
+    console.log(totalRevenueAmount, "Total Revenue Amt")
+
+    return { totalExchangeRate, totalRevenueAmount };
+  }
+
+  getTotalPieces(): number {
+  return (this.housejobData?.Cargo || []).reduce(
+    (sum: number, c: any) => sum + Number(c.NoOfPackage || 0),
+    0
+  );
 }
 
+getTotalGrossWeight(): number {
+  return (this.housejobData?.Cargo || []).reduce(
+    (sum: number, c: any) => sum + Number(c.GrossWeight || 0),
+    0
+  );
+}
 
-   async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+getTotalChargeableWeight(): number {
+  return (this.housejobData?.Cargo || []).reduce(
+    (sum: number, c: any) => sum + Number(c.ChargeableWeight || 0),
+    0
+  );
+}
 
-  setTimeout(async () => {
-    this.spinner.show();
-   try {
-        const BankPaymentNo = this.housejobData?.HBLNo || '';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `HAWB_${BankPaymentNo}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-      );
-    } finally {
-      this.spinner.hide();
-    }
-  }, 50);
+getTotalRate(): number {
+  return this.freightCharges.reduce(
+    (sum, c) => sum + Number(c.RevenueExchangeRate || 0),
+    0
+  );
 }
 
 }

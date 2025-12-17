@@ -80,7 +80,7 @@
                         <th class="bg-transparent text-light">Carrier</th>
                         <th class="bg-transparent text-light">Origin Carrier</th>
                         <th class="bg-transparent text-light">Agent</th>
-                        <th class="bg-transparent text-light">PCS</th>
+                        <th class="bg-transparent text-light">No of Pkg</th>
                         <th class="bg-transparent text-light">Inco Terms</th>
                         <th class="bg-transparent text-light">PP/CC</th>
                         <th class="bg-transparent text-light">Vessel </th>
@@ -97,7 +97,7 @@
                         <th class="bg-transparent text-light">Shipment Destination Port Name </th>
                         <th class="bg-transparent text-light">Shipment Destination Country Code</th>
                         <th class="bg-transparent text-light">Shipment Destination Country Name</th>
-                        <th class="bg-transparent text-light">BL Type</th>
+                        <th class="bg-transparent text-light">Release Type</th>
                         <th class="bg-transparent text-light">BL Issued Date</th>
                         <th class="bg-transparent text-light">ETD</th>
                         <th class="bg-transparent text-light">ATD</th>
@@ -118,8 +118,8 @@
                         <th class="bg-transparent text-light">Nominated By</th>
                         <th class="bg-transparent text-light">Nominated (Y/N)</th>
                         <th class="bg-transparent text-light">CO Loader</th>
-                        <th class="bg-transparent text-light">Payment Terms</th>
-                        <th class="bg-transparent text-light">Remarks</th>
+                        <th class="bg-transparent text-light">FreightPPCC</th>
+                        <!-- <th class="bg-transparent text-light">Remarks</th> -->
                         <th class="bg-transparent text-light">Internal Remarks</th>
                         <th class="bg-transparent text-light">No of Container</th>
                         <th class="bg-transparent text-light">20'F</th>
@@ -132,7 +132,7 @@
                         <th class="bg-transparent text-light">40' Open Top</th>
                         <th class="bg-transparent text-light">40' HC Open Top</th>
                         <th class="bg-transparent text-light">TEU</th>
-                        <th class="bg-transparent text-light">Shipper Ref. No</th>
+                        <th class="bg-transparent text-light">CustomerRef No</th>
                         <th class="bg-transparent text-light">Status</th>
                         <th class="bg-transparent text-light">Master Status</th>
                         <th class="bg-transparent text-light">Job Close Date</th>
@@ -144,61 +144,48 @@
                         <th class="bg-transparent text-light">Job Created By</th>
                         <th class="bg-transparent text-light">Shipping Bill No</th>
                         <th class="bg-transparent text-light">Export Broker</th>
-                        <th class="bg-transparent text-light">Additional Terms/Remarks</th>
+                        <th class="bg-transparent text-light">External Note</th>
 
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
 
-                        <td class="text-center"></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td class="text-center">{{item.branchName}}</td>
+                        <td>{{item.houseDepartment}}</td>
+                        <td> {{ params?.FromHBLDt| date:'MMMM' }}</td>
+                        <td>{{item.HBLDate | formatDate}}</td>
                         <td>{{ item.MBL || '' }}</td>
-                        <td></td>
-                        <td></td>
+                        <td>{{item.importJobNo}}</td>
+                        <td>{{item.exportJobNo}}</td>
                         <td>{{ item.shipmentNo || '' }}</td>
                         <td>{{ item.bookingDate | formatDate }}</td>
-                        <td>{{ item.housedepartment || '' }}</td>
+                        <td>{{ item.houseDepartment || '' }}</td>
                         <td>{{ item.HBL || '' }}</td>
                         <td class="text-end">{{ item.grossWeight || '' }}</td>
                         <td class="text-end">{{ item.volume || '' }}</td>
                         <td class="text-end">{{ item.chargeable || '' }}</td>
                         <td class="text-end">{{ item.netWeight || '' }}</td>
                         <td>{{ item.customer || '' }}</td>
-                        <td></td>
+                        <td>{{getFilteredCustomerType(item.customerType)}}</td>
                         <td>{{ item.shipper || '' }}</td>
                         <td>{{ item.consignee || '' }}</td>
                         <td>{{ item.originAgent || '' }}</td>
                         <td>{{ item.deliveryAgent || '' }}</td>
                         <td>{{ item.notify || '' }}</td>
                         <td>{{ item.carrier || '' }}</td>
-                        <td></td>
+                        <td>{{ item.originCarrier || '' }}</td>
                         <td>{{ item.agent || '' }}</td>
-                        <td></td>
+                        <td>{{item.pcs}}</td>
                         <td>{{ item.incoTerms || '' }}</td>
                         <td>{{ item.PPCC || '' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.voyageNo || '' }}</td>
                         <td>{{ item.modeofTransport || '' }}</td>
                         <td>{{ item.jobType || '' }}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>{{item.ETD | formatDate}}</td>
-                        <td>{{item.ATD | formatDate}}</td>
-                        <td>{{item.ETA | formatDate}}</td>
-                        <td>{{item.ATA | formatDate}}</td>
+                        <td>{{item.houseStatus}}</td>
+                        <td>{{item.serviceLevelName}}</td>
+                        <!-- shipment port details -->
                         <td>{{item.POLCode}}</td>
                         <td>{{item.POLName}}</td>
                         <td>{{item.POLCountryCode}}</td>
@@ -207,7 +194,24 @@
                         <td>{{item.PODName}}</td>
                          <td>{{item.PODCountryName}}</td>
                         <td>{{item.PODCountryCode}}</td>
+                        <td>{{item.blType}}</td>
+                        <td></td>
+                        <td>{{item.ETD | formatDate}}</td>
+                        <td>{{item.ATD | formatDate}}</td>
+                        <td>{{item.ETA | formatDate}}</td>
+                        <td>{{item.ATA | formatDate}}</td>
+                        <!-- house port details -->
+                        <td>{{item.POLCode}}</td>
+                        <td>{{item.POLName}}</td>
+                        <td>{{item.POLCountryCode}}</td>
+                        <td>{{item.POLCountryName}}</td>
+                        <td>{{item.PODCode}}</td>
+                        <td>{{item.PODName}}</td>
+                         <td>{{item.PODCountryName}}</td>
+                        <td>{{item.PODCountryCode}}</td>
+
                         <td>{{item.salesPerson}}</td>
+
                         <td></td>
                         <td></td>
                         <td></td>
@@ -215,33 +219,37 @@
                         <td>{{item.nominationBY}}</td>
                         <td>{{item.nominated}}</td>
                         <td>{{item.coLoader}}</td>
-                        <td></td>
-                        <td></td>
+                        <td>{{item.paymentTerms}}</td>
+                        <!-- <td></td> -->
                         <td>{{item.internalNote}}</td>
                         <td>{{item.noOfContainers}}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <!-- Feet Contanier -->
+                        <td>{{item.numberOfTwentyFt}}</td>
+                        <td>{{item.numberOfFourtyFt}}</td>
+                        <td>{{item.numberofFurtyFiveFt}}</td>
+                        <!-- Refer container -->
+                        <td>{{item.numberOfTwentyRefer}}</td>
+                        <td>{{item.numberOfFourtyRefer}}</td>
+                        <td>{{item.numberOfFourtyFiveRefer}}</td>
+                        <!-- open Top -->
+                         <td>{{item.numberofTwentyOpen}}</td>
+                        <td>{{item.numberofFourtyOpen}}</td>
+                        <td>{{item.numberofFourtyFiveOpen}}</td>
+
                         <td>{{item.totalNoOfTEU}}</td>
-                        <td></td>
+                        <td>{{item.shipperNo}}</td>
                         <td>{{item.status}}</td>
+                        <td>{{item.masterStatus}}</td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>{{item.housecreatedBy}}</td>
                         <td></td>
                         <td>{{item.DoNo}}</td>
                         <td>{{item.DoDate | formatDate}}</td>
                         <td>{{item.SOBDate | formatDate}}</td>
-                        <td></td>
+                        <td>{{item.mastercreatedBy}}</td>
                         <td>{{item.shippingBillNo}}</td>
                         <td></td>
-                        <td></td>
+                        <td>{{item.addtionalRemarks}}</td>
                     </tr>
                 </tbody>
             </table>

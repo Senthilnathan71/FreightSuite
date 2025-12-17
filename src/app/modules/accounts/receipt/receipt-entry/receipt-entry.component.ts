@@ -2049,7 +2049,7 @@ toggleCashOrBank(event: any) {
     let totalCredits = 0;
     let totalDebits = 0;
     (this.detailItems.getRawValue() || []).forEach( vd => {
-      console.log(vd)
+      // console.log(vd)
       if(vd.DrCr === 'C'){
         totalCredits += Number(vd.Amount) || 0;
       } else {
@@ -2059,10 +2059,10 @@ toggleCashOrBank(event: any) {
     this.totalCredits = totalCredits || 0;
     this.totalDebits = totalDebits || 0;
 
-    console.log("TOTAL CALCULATION", {
-      CreditAmt: this.totalCredits,
-      DebitAmt: this.totalDebits,
-    });
+    // console.log("TOTAL CALCULATION", {
+    //   CreditAmt: this.totalCredits,
+    //   DebitAmt: this.totalDebits,
+    // });
   }
 
 
@@ -2207,6 +2207,7 @@ toggleCashOrBank(event: any) {
         scrollable: true,
       })
       modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+      modalRef.componentInstance.currencyList = this.currencyList || [];
       modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
     }
 
