@@ -85,7 +85,7 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
     super(paginationService);
   }
   override ngOnInit(){
-     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-comapny'));
+     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
      const userProfile = this.appSettingService.getDecryptedUserProfile();
      if (userProfile) {

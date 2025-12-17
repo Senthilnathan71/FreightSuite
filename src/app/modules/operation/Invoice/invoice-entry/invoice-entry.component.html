@@ -13,19 +13,7 @@
 
        <!-- Replace the button section in your HTML -->
 <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-  <!-- Draft Save Button -->
-  <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
-    (click)="onDraftSave()" 
-    [disabled]="invoiceForm.invalid || isPosted">
-    <i class="fas fa-save me-1"></i> Draft
-  </button>
-
-  <!-- Final Save Button -->
-  <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-    (click)="onFinalSave()" 
-    [disabled]="invoiceForm.invalid || details.length === 0 || isPosted">
-    <i class="fas fa-check-circle me-1"></i> Final
-  </button>
+  
 
   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
     (click)="openPrintModal()" 
@@ -45,11 +33,19 @@
   </button>
 
   <!-- Regular Save (for backward compatibility) -->
-  <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-    (click)="onSave()" 
-    [disabled]="(!mps.can('update') && isEditMode) || isPosted">
-    <i class="fas fa-save me-1"></i> Save
+
+  <!-- Draft Save Button -->
+  <button type="button" appPreventMultiClick class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onDraftSave()"
+    [disabled]="invoiceForm.invalid || isPosted">
+    <i class="fas fa-save me-1"></i> Draft
   </button>
+  
+  <!-- Final Save Button -->
+  <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
+    [disabled]="invoiceForm.invalid || details.length === 0 || isPosted">
+    <i class="fas fa-check-circle me-1"></i> {{ isPosted ? 'Posted' : 'Post' }}
+  </button>
+  
   <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
@@ -92,7 +88,7 @@
       <div class="card-body">
         <form [formGroup]="invoiceForm" novalidate>
           <!-- Invoice Tab Content -->
-          <div *ngIf="selectedTab === 'Invoice'">
+          <div [hidden]="selectedTab !== 'Invoice'">
             <div class="row">
               <!-- 1. Invoice No (VoucherNumber) -->
               <aside class="col-md-3">
@@ -135,7 +131,7 @@
               <!-- 4. Customer Address (branch select) -->
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!invoiceForm.get('PartyName')?.value">
+                  [class.filled]="!!invoiceForm.get('CustomerBranchSid')?.value">
                   <ng-select [items]="customerBranchList.length ? customerBranchList : []" bindLabel="Address"
                     bindValue="CustomerBranchSid" placeholder="" formControlName="CustomerBranchSid"
                     (change)="onCustomerBranchChange($event)" appendTo="body">
@@ -413,12 +409,14 @@
 
                     <!-- HSN/SAC -->
                     <td>
-                        <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="hssacList" formControlName="HSSACMasterSid"
+                        <dofi-searchable-dropdown *ngIf="!isPosted" [items]="hssacList[i]" formControlName="HSSACMasterSid"
                             [placeholder]="''" [displayFields]="HSSACLookupConfig.displayFields"
                             [displayLabels]="HSSACLookupConfig.displayLabels"
-                            [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
+                            [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body"
+                            (itemSelected)="onDetailChange(i,'HSSACMasterSid')"
+                          >
                         </dofi-searchable-dropdown>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
+                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
                     </td>
 
                     <!-- Unit -->
@@ -456,16 +454,16 @@
 
                     <!-- Rate -->
                     <td>
-                        <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                        <input *ngIf="!isPosted" type="number" step="0.01" class="custom-input-field sm"
                             formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('Rate')?.value | numberFormat }}</span>
+                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('Rate')?.value | numberFormat }}</span>
                     </td>
 
                     <!-- Exchange Rate -->
                     <td>
-                        <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm"
+                        <input *ngIf="!isPosted" type="number" step="0.0001" class="custom-input-field sm"
                             formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
+                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
                     </td>
 
                     <!-- Amount -->
@@ -651,55 +649,55 @@
 
             </div>
 
-          </div>
-          <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
-          
-            <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Credits</span>
-              <span class="fw-semibold text-success">
-                {{ getTotalLocalCredits() }}
-              </span>
+            <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
+            
+              <div class="col d-flex justify-content-between border-end px-2">
+                <span class="text-secondary small">Total Credits</span>
+                <span class="fw-semibold text-success">
+                  {{ getTotalLocalCredits() }}
+                </span>
+              </div>
+            
+              <div class="col d-flex justify-content-between border-end px-2">
+                <span class="text-secondary small">Total Debits</span>
+                <span class="fw-semibold text-danger">
+                  {{ getTotalLocalDebits() }}
+                </span>
+              </div>
+            
+              <div class="col d-flex justify-content-between border-end px-2">
+                <span class="text-secondary small">Net (Cr - Dr)</span>
+                <span class="fw-semibold text-primary">
+                  {{ getNetCrDr() }}
+                </span>
+              </div>
+            
+              <div class="col d-flex justify-content-between border-end px-2">
+                <span class="text-secondary small">Party Curr Credit</span>
+                <span class="fw-semibold">
+                  {{ getPartyCurrCreditAmt() }}
+                </span>
+              </div>
+            
+              <div class="col d-flex justify-content-between border-end px-2">
+                <span class="text-secondary small">Party Curr Debit</span>
+                <span class="fw-semibold">
+                  {{ getPartyCurrDebitAmt() }}
+                </span>
+              </div>
+            
+              <div class="col d-flex justify-content-between px-2">
+                <span class="text-secondary small">Tax Amount</span>
+                <span class="fw-semibold text-warning">
+                  {{ getTotalTaxAmount() }}
+                </span>
+              </div>
+            
             </div>
-          
-            <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Debits</span>
-              <span class="fw-semibold text-danger">
-                {{ getTotalLocalDebits() }}
-              </span>
-            </div>
-          
-            <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Net (Cr - Dr)</span>
-              <span class="fw-semibold text-primary">
-                {{ getNetCrDr() }}
-              </span>
-            </div>
-          
-            <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Credit</span>
-              <span class="fw-semibold">
-                {{ getPartyCurrCreditAmt() }}
-              </span>
-            </div>
-          
-            <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Debit</span>
-              <span class="fw-semibold">
-                {{ getPartyCurrDebitAmt() }}
-              </span>
-            </div>
-          
-            <div class="col d-flex justify-content-between px-2">
-              <span class="text-secondary small">Tax Amount</span>
-              <span class="fw-semibold text-warning">
-                {{ getTotalTaxAmount() }}
-              </span>
-            </div>
-          
           </div>
 
           <!-- Others Tab Content -->
-          <div *ngIf="selectedTab === 'Others'">
+          <div [hidden]="selectedTab !== 'Others'">
             <div class="row" formGroupName="voucherOthers">
               <aside class="col-md-3">
                 <div class="custom-form-group">
@@ -918,7 +916,7 @@
             </div>
             <div style="display:flex;">
               <div style="width:180px;"><strong>Currency / Ex-Rate</strong></div>
-              <div>: {{invoiceData?.VoucherDetail?.[0]?.CurrencyCode }} / {{invoiceData?.ExchangeRate }}</div>
+              <div>: {{invoiceData?.CurrencyCode }} / {{invoiceData?.ExchangeRate }}</div>
             </div>
             <div style="display:flex;">
               <div style="width:180px;"><strong>Sales Person</strong></div>
@@ -962,7 +960,8 @@
                   <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>VAT Amt.</strong></th>
                 </ng-container>
                 
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Total</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{currencyCurrentCode}}</strong></th>
+                   <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{invoiceData?.CurrencyCode}}</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -1011,10 +1010,13 @@
                   <td style="border:1px solid black; padding:2px 8px;">
                     {{ getTaxAmountForDisplay(detail).vatAmt | number:'1.2-2' }}
                   </td>
+                    <td style="border:1px solid black; padding:2px 8px;">
+                    {{ detail?.partyAmount | number:'1.2-2' }}
+                  </td>
                 </ng-container>
                 
                 <td style="border:1px solid black; padding:2px 8px;">
-                  {{ getRowTotal(detail) | number:'1.2-2' }}
+                  {{ getPartyCurrDebitAmt() }}
                 </td>
               </tr>
               
@@ -1024,7 +1026,7 @@
                   <strong>Total</strong>
                 </td>
                 <td style="border:1px solid black; padding:2px 8px;">
-                  <strong>{{getGrandRowTotal() | number:'1.2-2'}}</strong>
+                  <strong>{{getPartyCurrDebitAmt()}}</strong>
                 </td>
               </tr>
             </tbody>

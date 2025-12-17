@@ -729,6 +729,23 @@ getHouseJobARAPData(HouseJobSid: number) {
       })
     );
   }
+
+  getDueDate(payload: any) {
+    return this.http.post<{ data: any }>('credit-request/due-date', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getChargeTaxForChargeId(ChargeMasterSid: number) {
+    return this.http.get<{ data: any }>(`charge/charge-tax/${ChargeMasterSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   // ----- Invoice Operations ----- //
 
   createInvoice(payload: any) {
