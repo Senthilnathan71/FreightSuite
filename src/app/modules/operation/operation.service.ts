@@ -732,7 +732,7 @@ getHouseJobARAPData(HouseJobSid: number) {
 
   getDueDate(payload: any) {
     return this.http.post<{ data: any }>('credit-request/due-date', payload).pipe(
-      map((resp) => {
+      map((resp:any) => {
         return resp;
       })
     );

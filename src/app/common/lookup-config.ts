@@ -69,6 +69,11 @@ export const DROPDOWN_CONFIGS = {
     displayLabels: ['HSSAC Code', 'HSSAC Name'],  
     labelFields: ['HSSACCode']
   },
+  HSSAC_TAX: {
+    displayFields: ['HSSACCode', 'TaxType'],
+    displayLabels: ['HSSAC Code', 'Tax'],
+    labelFields: ['HSSACCode']
+  },
   CURRENCY : {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],

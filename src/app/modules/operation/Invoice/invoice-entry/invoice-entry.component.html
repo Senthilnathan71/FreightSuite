@@ -291,20 +291,20 @@
               <div class=" mb-0">
                 <div class="py-1">
                   <form [formGroup]="invoiceForm" novalidate>
-                    <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
+                    <div class="d-flex justify-content-end mb-1" *ngIf="!isPosted">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
                         <i class="fas fa-plus me-1"></i> Add Charge
                       </button>
                     </div>
 
                     <div class="table-responsive table-borderless">
-    <table class="table table-hover table-sm mb-0 text-center">
+    <table class="table table-hover table-sm mb-0 ">
         <thead class="table-header-booking">
             <tr class="align-middle bg-info">
                 <th rowspan="2" *ngIf="!isEditMode" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno.</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
+                <th rowspan="2" class="text-start bg-transparent text-light" style="min-width: 200px;">Description</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">HS/SAC</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
@@ -388,91 +388,91 @@
                         </button>
                     </td>
                     
-                    <td><span style="font-weight: 600; color: black;">{{ i + 1 }}</span></td>
+                    <td class="text-center"><span style="font-weight: 600; color: black;">{{ i + 1 }}</span></td>
 
                     <!-- Charge -->
-                    <td>
-                        <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="chargeList" formControlName="ChargeMasterSid"
+                    <td class="text-center">
+                        <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid"
                             [placeholder]="''" [displayFields]="chargeLookupConfig.displayFields"
                             [displayLabels]="chargeLookupConfig.displayLabels"
                             [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'"
                             (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
                         </dofi-searchable-dropdown>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span> -->
                     </td>
 
                     <!-- Description -->
                     <td>
-                        <input *ngIf="!isEditMode" class="custom-input-field sm" formControlName="ChargeDescription" readonly>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('ChargeDescription')?.value || '-' }}</span>
+                        <input class="text-start custom-input-field sm" formControlName="ChargeDescription" readonly>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="text-align:start; font-weight: 600; color: black;">{{ row.get('ChargeDescription')?.value || '-' }}</span> -->
                     </td>
 
                     <!-- HSN/SAC -->
-                    <td>
-                        <dofi-searchable-dropdown *ngIf="!isPosted" [items]="hssacList[i]" formControlName="HSSACMasterSid"
+                    <td class="text-center">
+                        <dofi-searchable-dropdown [items]="hssacList[i]" formControlName="HSSACMasterSid"
                             [placeholder]="''" [displayFields]="HSSACLookupConfig.displayFields"
                             [displayLabels]="HSSACLookupConfig.displayLabels"
                             [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body"
                             (itemSelected)="onDetailChange(i,'HSSACMasterSid')"
                           >
                         </dofi-searchable-dropdown>
-                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
+                        <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span> -->
                     </td>
 
                     <!-- Unit -->
-                    <td>
-                        <ng-select *ngIf="!isEditMode" [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid"
+                    <td class="text-center">
+                        <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid"
                             placeholder="" formControlName="ChargeUOMSid" appendTo="body">
                         </ng-select>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span> -->
                     </td>
 
                     <!-- No of Unit -->
-                    <td>
-                        <input *ngIf="!isEditMode" type="number" min="0" class="custom-input-field sm"
+                    <td class="text-center">
+                        <input type="number" min="0" class="custom-input-field sm"
                             formControlName="NumberOfUnit" (input)="onDetailChange(i, 'NumberOfUnit')">
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span> -->
                     </td>
 
                     <!-- Dr/Cr -->
-                    <td>
-                        <ng-select *ngIf="!isEditMode" [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
+                    <td class="text-center">
+                        <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
                             bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('DrCr')?.value || '-' }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('DrCr')?.value || '-' }}</span> -->
                     </td>
 
                     <!-- Currency -->
-                    <td>
-                        <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="currencyList" formControlName="CurrencyCode"
+                    <td class="text-center">
+                        <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode"
                             [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
                             [displayLabels]="CurrencyLookupConfig.displayLabels"
                             [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
                             (itemSelected)="onDetailChange(i,'CurrencyCode')">
                         </dofi-searchable-dropdown>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('CurrencyCode')?.value || '-' }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('CurrencyCode')?.value || '-' }}</span> -->
                     </td>
 
                     <!-- Rate -->
-                    <td>
-                        <input *ngIf="!isPosted" type="number" step="0.01" class="custom-input-field sm"
+                    <td class="text-center">
+                        <input type="number" step="0.01" class="custom-input-field sm"
                             formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('Rate')?.value | numberFormat }}</span>
+                        <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('Rate')?.value | numberFormat }}</span> -->
                     </td>
 
                     <!-- Exchange Rate -->
-                    <td>
-                        <input *ngIf="!isPosted" type="number" step="0.0001" class="custom-input-field sm"
+                    <td class="text-center">
+                        <input type="number" step="0.0001" class="custom-input-field sm"
                             formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-                        <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
+                        <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span> -->
                     </td>
 
                     <!-- Amount -->
-                    <td>
+                    <td class="text-center">
                         <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat }}</span>
                     </td>
 
                     <!-- Taxable Amount -->
-                    <td>
+                    <td class="text-center">
                         <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                     </td>
 
@@ -483,33 +483,33 @@
                         <!-- CGST+SGST Scenario -->
                         <ng-container *ngIf="invoiceForm.get('GSTType')?.value === 'CGST+SGST'">
                             <!-- CGST Rate -->
-                            <td>
-                                <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                            <td class="text-center">
+                                <div class="input-group input-group-sm">
                                     <div class="d-flex">
                                         <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                             (input)="onDetailChange(i, 'TaxPercentage1')">
                                         <span class="" style="font-weight: 600; color: black;">%</span>
                                     </div>
                                 </div>
-                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- CGST Amount -->
-                            <td>
+                            <td class="text-center">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                             <!-- SGST Rate -->
-                            <td>
-                                <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                            <td class="text-center">
+                                <div class="input-group input-group-sm">
                                     <div class="d-flex gap-1">
                                         <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                                             (input)="onDetailChange(i, 'TaxPercentage2')">
                                         <span class="" style="font-weight: 600; color: black;">%</span>
                                     </div>
                                 </div>
-                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
+                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span> -->
                             </td>
                             <!-- SGST Amount -->
-                            <td>
+                            <td class="text-center">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -517,18 +517,18 @@
                         <!-- IGST Scenario -->
                         <ng-container *ngIf="invoiceForm.get('GSTType')?.value === 'IGST'">
                             <!-- IGST Rate -->
-                            <td>
-                                <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                            <td class="text-center">
+                                <div class="input-group input-group-sm">
                                     <div class="d-flex gap-1">
                                         <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                             (input)="onDetailChange(i, 'TaxPercentage1')">
                                         <span class="" style="font-weight: 600; color: black;">%</span>
                                     </div>
                                 </div>
-                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- IGST Amount -->
-                            <td>
+                            <td class="text-center">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -536,18 +536,18 @@
                         <!-- B2C Scenario -->
                         <ng-container *ngIf="invoiceForm.get('GSTType')?.value === 'B2C'">
                             <!-- CGST Rate (for B2C) -->
-                            <td>
-                                <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                            <td class="text-center">
+                                <div class="input-group input-group-sm">
                                     <div class="d-flex">
                                         <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                             (input)="onDetailChange(i, 'TaxPercentage1')">
                                         <span class="" style="font-weight: 600; color: black;">%</span>
                                     </div>
                                 </div>
-                                <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- CGST Amount (for B2C) -->
-                            <td>
+                            <td class="text-center">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -561,35 +561,35 @@
                     <!-- Non-India VAT Columns -->
                     <ng-container *ngIf="currentUserCountry !== 'india'">
                         <!-- VAT Rate -->
-                        <td>
-                            <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                        <td class="text-center">
+                            <div class="input-group input-group-sm">
                                 <div class="d-flex">
                                     <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                         (input)="onDetailChange(i, 'TaxPercentage1')">
                                     <span class="" style="font-weight: 600; color: black;">%</span>
                                 </div>
                             </div>
-                            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                            <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                         </td>
                         <!-- VAT Amount -->
-                        <td>
+                        <td class="text-center">
                             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                         </td>
                     </ng-container>
 
                     <!-- Local Amount -->
-                    <td>
+                    <td class="text-center">
                         <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                     </td>
                     
                     <!-- Party Amount -->
-                    <td>
+                    <td class="text-center">
                         <span style="font-weight: 600; color: black;">{{ getPartyAmount(row.value) }}</span>
                     </td>
 
                     <!-- MasterJobSid -->
-                    <td style="min-width:200px;">
-                        <ng-select *ngIf="!isEditMode" [items]="masterJobList" bindLabel="displayLabel"
+                    <td class="text-center" style="min-width:200px;">
+                        <ng-select [items]="masterJobList" bindLabel="displayLabel"
                             bindValue="MasterJobSid" formControlName="MasterJobSid" placeholder=""
                             [clearable]="true" [searchable]="true" appendTo="body">
                             <ng-template ng-option-tmp let-item="item">
@@ -601,12 +601,12 @@
                                 {{ item.MasterJobNumber }}
                             </ng-template>
                         </ng-select>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span> -->
                     </td>
 
                     <!-- HouseJobSid -->
-                    <td style="min-width:200px;">
-                        <ng-select *ngIf="!isEditMode"
+                    <td class="text-center" style="min-width:200px;">
+                        <ng-select
                             [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
                             bindLabel="displayLabel" bindValue="HouseJobSid" formControlName="HouseJobSid"
                             placeholder="" [clearable]="true" [searchable]="true" appendTo="body">
@@ -619,20 +619,20 @@
                                 {{ item.HouseJobNumber }}
                             </ng-template>
                         </ng-select>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
-                            row.get('MasterJobSid')?.value) }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
+                            row.get('MasterJobSid')?.value) }}</span> -->
                     </td>
                     
                     <!-- Department -->
-                    <td style="min-width:200px;">
-                        <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="departmentList"
+                    <td class="text-center" style="min-width:200px;">
+                        <dofi-searchable-dropdown [items]="departmentList"
                             formControlName="DepartmentMasterSid" [placeholder]="''"
                             [displayFields]="departmentLookupConfig.displayFields"
                             [displayLabels]="departmentLookupConfig.displayLabels"
                             [labelFields]="departmentLookupConfig.labelFields" [bindValue]="'DepartmentMasterSid'"
                             appendTo="body">
                         </dofi-searchable-dropdown>
-                        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span>
+                        <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span> -->
                     </td>
                 </tr>
             </ng-container>
