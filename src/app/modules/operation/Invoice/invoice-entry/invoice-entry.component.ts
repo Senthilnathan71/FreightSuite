@@ -1205,6 +1205,7 @@ export class InvoiceEntryComponent implements OnInit {
         NumberOfUnit: det.NumberOfUnit,
         DepartmentMasterSid: det.DepartmentMasterSid,
         DrCr: det.DrCr,
+        CurrencyMasterSid : det.CurrencyMasterSid || this.invoiceForm.get('CurrencyMasterSid')?.value,
         CurrencyCode: det.CurrencyCode || this.invoiceForm.get('CurrencyCode')?.value,
         Rate: det.Rate,
         ExchangeRate: det.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value,
@@ -1264,6 +1265,7 @@ export class InvoiceEntryComponent implements OnInit {
   addDetailRow() {
     this.details.push(this.createDetailGroup());
     this.onDetailChange(this.details.length - 1 , 'CurrencyCode');
+    console.log("STOP",this.invoiceForm.getRawValue())
     this.invoiceForm.updateValueAndValidity();
   }
 
@@ -2796,6 +2798,7 @@ export class InvoiceEntryComponent implements OnInit {
   }
   onHeaderCurrencyChange(selectedCurrency: any) {
     if(!selectedCurrency) return;
+    console.log(selectedCurrency)
     const currencyCode = typeof selectedCurrency === 'object' ? selectedCurrency?.currencyCode : selectedCurrency;
     const companyCurrencyCode = this.companyCurrency?.currencyCode;
 
@@ -2811,7 +2814,7 @@ export class InvoiceEntryComponent implements OnInit {
       // Different currency - fetch exchange rate and enable field
       this.fetchExchangeRate(currencyCode, companyCurrencyCode);
     }
-
+    console.log("STOP",this.invoiceForm.getRawValue())
     // Update all detail rows to match header currency
     // this.updateDetailCurrencies(currencyCode);
   }
@@ -3091,9 +3094,11 @@ export class InvoiceEntryComponent implements OnInit {
     if (!fromCurrencyCode || !toCurrencyCode) {
       return;
     }
-
+    const fromCurrencyId = this.currencyList.find(c => c.currencyCode === fromCurrencyCode)?.CurrencyMasterSid;
+    
     if(fromCurrencyCode === toCurrencyCode){
       this.invoiceForm.patchValue({
+        CurrencyMasterSid : fromCurrencyId,
         CurrencyCode : fromCurrencyCode,
         ExchangeRate: 1
       });
@@ -3105,6 +3110,7 @@ export class InvoiceEntryComponent implements OnInit {
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.invoiceForm.patchValue({
+            CurrencyMasterSid : fromCurrencyId,
             CurrencyCode : fromCurrencyCode,
             ExchangeRate: Number(resp.data)
           });
@@ -3112,6 +3118,7 @@ export class InvoiceEntryComponent implements OnInit {
           this.recalculateAllRows();
         } else {
           this.invoiceForm.patchValue({
+            CurrencyMasterSid : fromCurrencyId,
             CurrencyCode : fromCurrencyCode,
             ExchangeRate: 1
           });
@@ -3122,6 +3129,7 @@ export class InvoiceEntryComponent implements OnInit {
         console.error('Error fetching exchange rate:', err);
         // Default to 1 if API fails
         this.invoiceForm.patchValue({
+          CurrencyMasterSid : fromCurrencyId,
           CurrencyCode : fromCurrencyCode,
           ExchangeRate: 1
         });
