@@ -286,23 +286,27 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group " style="margin-top: 7px;">
-                                            <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-                                                [textWithNumbers]="20" placeholder="">
-                                            <label class="input-label">MBL NO </label>
-                                            @if(masterJobForm.get('MBLNo')?.touched &&
-                                            masterJobForm.get('MBLNo')?.invalid){
-                                            <div class="error-message">
-                                                @if(masterJobForm.get('MBLNo')?.hasError('required')){
-                                                <span>Required</span>
-                                                }
-                                                @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
-                                                <span>Max 20 chars</span>
-                                                }
-                                            </div>
-                                            }
-                                        </div>
-                                    </aside>
+    <div class="custom-form-group " style="margin-top: 7px;">
+        <input type="text" formControlName="MBLNo" class="custom-input-field sm"
+            [textWithNumbers]="20" placeholder="">
+        <label class="input-label">MBL NO 
+            @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
+                <span class="text-danger">*</span>
+            }
+        </label>
+        @if(masterJobForm.get('MBLNo')?.touched &&
+        masterJobForm.get('MBLNo')?.invalid){
+        <div class="error-message">
+            @if(masterJobForm.get('MBLNo')?.hasError('required')){
+            <span>Required</span>
+            }
+            @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
+            <span>Max 20 chars</span>
+            }
+        </div>
+        }
+    </div>
+</aside>
                                     <div class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
@@ -475,7 +479,7 @@
                                     </aside>
 
                                    <!-- Vessel Field -->
-<div class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!masterJobForm.get('VesselName')?.value">
 
@@ -510,10 +514,10 @@
 
     <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
   </div>
-</div>
+</aside>
 
 <!-- Voyage Field -->
-<div class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
 
@@ -555,10 +559,10 @@
 
     <label class="input-label">Voyage <span class="text-danger"></span></label>
   </div>
-</div>
+</aside>
 
 <!-- ETD Field -->
-<div class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select-date">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETDFreeText">
@@ -592,10 +596,10 @@
     
     <label class="input-label">ETD <span class="text-danger"></span></label>
   </div>
-</div>
+</aside>
 
 <!-- ETA Field -->
-<div class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select-date">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETAFreeText">
@@ -629,7 +633,7 @@
     
     <label class="input-label">ETA <span class="text-danger"></span></label>
   </div>
-</div>
+</aside>
 
                                     <!-- Carrier Field -->
                                     <aside class="col-md-4 ">
@@ -661,7 +665,7 @@
                                     <!-- SOB Date Field -->
 
                                    <!-- Cut Off Date Field -->
-<div class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select-date mt-1">
     <div class="input-group">
       <input class="form-control" placeholder="dd-mm-yyyy"
@@ -675,9 +679,9 @@
     </div>
     <label class="input-label">Cut Off Date <span class="text-danger"></span></label>
   </div>
-</div>
+</aside>
                                     <!-- SI Cut Off Field -->
-                                   <div class="col-md-4">
+                                   <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select-date mt-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -691,7 +695,7 @@
                                             </div>
                                             <label class="input-label">SI Cut Off <span class="text-danger"></span></label>
                                         </div>
-                                        </div>
+                                    </aside>
 
 
 
@@ -736,7 +740,7 @@
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('JobStatus')?.value">
-                                           <input type="text" formControlName="JobStatus" class="custom-input-field sm" placeholder="">
+                                           <ng-select [items]="jobStatusOptions" bindLabel="name" bindValue="id" formControlName="JobStatus" placeholder="" class="ng-select" appendTo="body"></ng-select>
                                             <label class="input-label"> Job Status <span
                                                     class="text-danger">*</span></label>
                                             @if(masterJobForm.get('JobStatus')?.touched &&
@@ -749,21 +753,32 @@
                                             }
                                         </div>
                                     </aside>
-                                     <div class="col-md-3 text-end mt-2 ">
-                                        <div class="d-flex justify-content-end gap-2">
-                                          <button type="button" 
-            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-            *ngIf="isEditMode" 
-            (click)="navigateToHouseJobCreation()">
-      <i class="fas fa-plus me-1"></i> Create 
-    </button>
+   <aside class="col-md-2 p-0 mt-md-2">
+    <div style="display: flex;">
+        <div>
+              <button 
+        type="button"
+        class="btn btn-info btn-sm dofi-min-w-70 dofi-max-w-70" 
+        *ngIf="isEditMode" 
+        (click)="navigateToHouseJobCreation()">
+        <i class="fas fa-plus me-1"></i> Create
+      </button>
+        </div>
     
-                                        
-                                   
-                            <button class="btn btn-sm btn-info " (click)="openAttachModal()"><i
-                                    class="fas fa-save me-1"></i> Attach Booking</button>
-                                    </div>
-                        </div>
+
+        <div class="ms-1">
+               <button 
+        type="button"
+        class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
+        (click)="openAttachModal()">
+        <i class="fas fa-save me-1"></i> Attach Booking
+      </button>
+        </div>
+   
+    </div>
+  </aside>
+
+
                                 </div>
                             </div>
                         </div>
@@ -798,7 +813,7 @@
                                                 formControlName="WeightIn" readonly>
                                             </ng-select>
                                             <label class="input-label">Weight In</label>
-                                        </div>
+                                       </div>
                                     </aside>
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">

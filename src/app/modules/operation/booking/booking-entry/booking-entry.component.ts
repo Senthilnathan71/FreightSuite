@@ -131,6 +131,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   uploadResult: any = null;
 
 
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -873,7 +875,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CHAName: [''],
       PickupAddress: [''],
       DeliveryAddress: [''],
-      CargoCurrency: [null],
+      CargoCurrency: [''],
       CargoValue: [''],
       SwitchBL: [false],
       BacktoBack: [false],
@@ -962,22 +964,22 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
+      // Check if department is LCL or AIR
+  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  
+  if (isLCLorAIR) {
+    // Always setup calculations for LCL/AIR
     this.setupProductFormImmediateCalculation(productForm);
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
-
-      if (data) {
-    setTimeout(() => {
-      // Force calculation for existing dimensions
-      const length = productForm.get('Length')?.value;
-      const width = productForm.get('Width')?.value;
-      const height = productForm.get('Height')?.value;
-      const uom = productForm.get('UomMasterSid')?.value;
-      
-      // Manually call the calculation methods
-      if (length || width || height) {
-        productForm.get('ExternlQty')?.updateValueAndValidity({ emitEvent: true });
-      }
-    }, 0);
+    
+    // If we have data with volume, trigger calculation AFTER form is stable
+    // This allows the patched value to be set first, then calculations take over
+    if (data && (data.Length || data.Width || data.Height)) {
+      setTimeout(() => {
+        // Trigger calculation by emitting a change event
+        productForm.get('UomMasterSid')?.updateValueAndValidity({ emitEvent: true });
+      }, 100);
+    }
   }
     if (data?.CargoRecDate) {
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
@@ -1568,7 +1570,32 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
   }
 
+    private findInvalidControlsRecursive(form: FormGroup | FormArray): string[] {
+    let invalidControls: string[] = [];
+    Object.keys(form.controls).forEach(key => {
+      const control = (form as any).get(key);
+      if (control.invalid) {
+        invalidControls.push(key);
+      }
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        invalidControls = invalidControls.concat(
+          this.findInvalidControlsRecursive(control).map(childKey => `${key}.${childKey}`)
+        );
+      }
+    });
+    return invalidControls;
+  }
 
+  public errorLogger(): void {
+    console.log('Form Status:', this.bookingForm.status);
+    console.log('Form Value', this.bookingForm.value);
+    if (this.bookingForm.invalid) {
+      const invalid = this.findInvalidControlsRecursive(this.bookingForm);
+      console.log('Invalid controls:', invalid);
+    } else {
+      console.log('No invalid controls found.');
+    }
+  }
 
 
   onSubmit() {
@@ -1589,8 +1616,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   };
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
-  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+  // this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
   // Update the form state
+  this.errorLogger();
   this.bookingForm.updateValueAndValidity();
        if (!this.validateAllForms()) {
         console.log("STOP 2 - validateAllForms failed");
@@ -1660,7 +1688,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null,
+      // CutOffDate: bookingFormValue.CutOffDate ? (bookingFormValue.CutOffDate) : null,
       POO: bookingFormValue.POO || null,
       POL: bookingFormValue.POL,
       POD: bookingFormValue.POD,
@@ -1725,7 +1753,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         CHAName: otherFormValue.CHAName || '',
         PickupAddress: otherFormValue.PickupAddress || '',
         DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency || null,
+        CargoCurrency: otherFormValue.CargoCurrency || '',
         CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
         SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
         BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
@@ -3508,6 +3536,14 @@ ${this.userData['userName']}`;
     DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,
     POL: this.b['POL']?.value,
     POD: this.b['POD']?.value,
+    POO: this.b['POO']?.value,
+    POLTerminal: this.b['POLTerminal']?.value,
+    PODTerminal: this.b['PODTerminal']?.value,
+    FPD: this.b['FPD']?.value,
+    DestinationAgent: this.b['DestinationAgent']?.value,
+    AgentAddress: this.b['AgentAddress']?.value,
+    Notify: this.b['Notify']?.value,
+    NotifyAddress: this.b['NotifyAddress']?.value,
     NoOfPkg: this.c['NoOfPackage']?.value || 0,
     GrossWeight: this.c['GrossWeight']?.value || 0,
     NetWeight: this.c['NetWeight']?.value || 0,
@@ -3655,6 +3691,9 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
     }
   );
 }
+
+
+
 
 // Helper method to get PDF element ID based on type
 private getPdfElementId(type: string): string {
@@ -4057,27 +4096,31 @@ printARAPReport() {
 
 
 
- printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
 }
-
 // Add this method to your component class
 getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {

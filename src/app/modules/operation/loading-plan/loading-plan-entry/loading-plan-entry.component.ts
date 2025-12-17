@@ -211,6 +211,8 @@ export class LoadingPlanEntryComponent {
       pod: [null, Validators.required],
       vesselVoyage: [null],
       carrier: [null],
+      ETA: [null],
+      ETD: [null]
     });
   }
 
@@ -465,9 +467,17 @@ export class LoadingPlanEntryComponent {
     this.calculateTotal();
     if (!vesselVoyage) {
       this.selectedVoyage = null;
+       this.loadingPlanForm.patchValue({
+      ETA: null,
+      ETD: null
+    });
       return;
     }
     this.selectedVoyage = vesselVoyage;
+     this.loadingPlanForm.patchValue({
+    ETA: vesselVoyage.ETA ? new Date(vesselVoyage.ETA) : null,
+    ETD: vesselVoyage.ETD ? new Date(vesselVoyage.ETD) : null
+  });
   }
 
   getBookings() {
@@ -513,6 +523,8 @@ export class LoadingPlanEntryComponent {
             this.availableBookings = (resp.data || []).filter(bk => !this.exceptionalBookings.includes(bk.BookingHeaderSid)).map(bk =>{
               return {
                 ...bk,
+                ETADate : bk.ETA,
+                ETDDate : bk.ETD,
                 ETA : this.datePipe.transform(bk.ETA),
                 ETD : this.datePipe.transform(bk.ETD)
               }
@@ -580,9 +592,17 @@ export class LoadingPlanEntryComponent {
   handleMultipleVesselChange(selectedVoyage: any) {
     if(!selectedVoyage){
       this.selectedVoyage = null;
+       this.loadingPlanForm.patchValue({
+      ETA: null,
+      ETD: null
+    });
       return;
     }
     this.selectedVoyage = selectedVoyage;
+     this.loadingPlanForm.patchValue({
+    ETA: selectedVoyage.ETA ? new Date(selectedVoyage.ETA) : null,
+    ETD: selectedVoyage.ETD ? new Date(selectedVoyage.ETD) : null
+  });
     this.handleMultipleVoyages()
   }
 
@@ -809,8 +829,8 @@ export class LoadingPlanEntryComponent {
       VoyageNo: this.selectedVoyage?.VoyageNo,
       CarrierName: formValue.carrier,
       CutOffDate : this.selectedVoyage?.PortCutoff,
-      ETD : this.selectedVoyage?.ETD,
-      ETA : this.selectedVoyage?.ETA,
+        ETD: formValue.ETD,
+    ETA: formValue.ETA,
       Haz : isHaz ? 'Y' : 'N',
 
       // Calculated fields
@@ -864,13 +884,13 @@ export class LoadingPlanEntryComponent {
       VoyageNo : this.selectedVoyage?.VoyageNo,
       CarrierName : formValue.carrier,
       CarrierMasterSid : formValue.CarrierMasterSid,
-      ETD : this.selectedVoyage?.ETD,
-      ETA : this.selectedVoyage?.ETA,
+      ETD: formValue.ETD, 
+      ETA: formValue.ETA,
       CutOffDate : this.selectedVoyage?.PortCutoff,
       shipmentList,
       masterJobContainers : containers
     }
-
+console.log('Sending payload with ETA/ETD:', payload);
     this.operationService.createMasterJob(payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
