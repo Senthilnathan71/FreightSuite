@@ -1089,10 +1089,7 @@
                                         <div class="d-flex align-items-center px-0 py-1">
                                           <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
                                         
-                                          <a (click)="toggleLock()" >
-                                            <i [class]="isLocked ? 'fas fa-lock' : 'fas fa-unlock'"
-                                              class="feather-sm me-1"></i>
-                                          </a>
+                                          
                                           <button class="btn btn-info btn-sm me-1" type="button"
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
         [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
@@ -2143,9 +2140,7 @@
                                 <h6 class="card-title text-info ms-1">Charge Details</h6>
                                 <div class="ms-auto">
                                   
-                                <a (click)="toggleLock()">
-                                  <i [class]="isLocked ? 'fas fa-lock' : 'fas fa-unlock'" class="feather-sm"></i>
-                                </a>
+                                
                                   <button class="btn btn-light-secondary btn-sm me-1" type="button"
                                     (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
                                     [disabled]="disableAllModification">

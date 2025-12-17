@@ -1671,7 +1671,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
       AgreedRate : formValue.AgreedRate ? "Y" : "N",
       IsContract : formValue.IsContract ? "Y" : "N",
-      RateLock : this.isEditMode?(formValue.RateLock ? "y" :"N"): "Y",
+      RateLock : this.isEditMode?(formValue.RateLock ? "y" :"N"): "N",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,

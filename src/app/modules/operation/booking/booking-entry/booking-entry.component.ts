@@ -649,7 +649,7 @@ arapFilter = {
       VoyageNo: [ null],
       ETA: [null],
       ETD: [null],
-      CutOffDate: [null],
+      CutOffDate: [{ value: null, disabled: true }],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1100,8 +1100,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: [data?.VoyageNo || null],
       POL: [data?.POL || null],
       POD: [data?.POD || null],
-      ETD: [new Date(data?.ETD) || ''],
-      ETA: [new Date(data?.ETA) || ''],
+      ETD: [new Date(data?.ETD) || null],
+      ETA: [new Date(data?.ETA) || null],
       status: [data.status ? (data.status === "A" ? "Active" : "Suspended") : "Active"]
     })
     return connectionForm;
@@ -1616,7 +1616,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   };
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
-  // this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
   // Update the form state
   this.errorLogger();
   this.bookingForm.updateValueAndValidity();
@@ -1688,9 +1688,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      // CutOffDate: bookingFormValue.CutOffDate ? (bookingFormValue.CutOffDate) : null,
+      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null, 
       POO: bookingFormValue.POO || null,
-      POL: bookingFormValue.POL,
+      POL: bookingFormValue.POL,  
       POD: bookingFormValue.POD,
       POLTerminal: bookingFormValue.POLTerminal || '',
       PODTerminal: bookingFormValue.PODTerminal || '',
@@ -3557,7 +3557,7 @@ ${this.userData['userName']}`;
     CarrierMasterSid: null,
     ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
-    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate'] ? new Date(this.b['CutOffDate']?.value): null),
+    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
     masterJobContainers: masterJobContainers
   };
@@ -4059,7 +4059,9 @@ openVoucherDetails(voucherHeaderSid: number) {
     // Navigate to voucher details page
     this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
 }
-
+navigateToCreate() {
+        this.router.navigate(['operation/booking/entry']);
+    }
 exportARAPReport() {
     const dataForExport = this.arapData.map(item => ({
         'Voucher No': item.VoucherNumber,
