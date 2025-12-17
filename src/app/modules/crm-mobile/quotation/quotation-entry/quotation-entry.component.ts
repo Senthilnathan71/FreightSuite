@@ -2327,6 +2327,33 @@ private extractCargoData(enquiryCargo: any[]): any {
     );
   }
 
+  // Add this method to your component class
+canGetTariff(routeIndex: number): boolean {
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  
+  if (!routeForm) return false;
+  
+  // Check if all required fields have values
+  for (const field of this.requiredFieldsToGetTariff) {
+    const control = routeForm.get(field);
+    const value = control?.value;
+    
+    // Check if the value is null, undefined, or empty
+    if (!value && value !== 0) { // Allow 0 as valid value
+      return false;
+    }
+    
+    // For date fields, check if it's a valid date
+    if ((field === 'effDate' || field === 'expDate') && value) {
+      if (isNaN(new Date(value).getTime())) {
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}
+
   getCharge(chargeCode){
     if(!chargeCode || !this.chargeMaster || this.chargeMaster.length === 0){
       return {};

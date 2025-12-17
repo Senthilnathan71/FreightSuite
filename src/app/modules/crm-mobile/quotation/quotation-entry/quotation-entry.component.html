@@ -687,7 +687,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'LCL'">
+                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL'">
                         <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
@@ -1095,7 +1095,7 @@
                                           </a>
                                           <button class="btn btn-info btn-sm me-1" type="button"
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-        [disabled]="disableAllModification || quotationApproved || isRateLocked()">
+        [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
 
@@ -1864,7 +1864,7 @@
                           </div>
                         </aside>
 
-                        <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
+                        <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
                           <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                               formControlName="Volume" [onlyNumbers]>
@@ -2912,7 +2912,7 @@
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
             <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h4 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                 <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
@@ -2927,35 +2927,35 @@
     
 
     <!-- Title -->
-    <div style="text-align: center;   ;border-top: 1px solid black;margin:1px 0;font-size: 16px;padding-left:100px ;">
+    <div style="text-align: center;   ;border-top: 1px solid black;margin:1px 0;font-size: 14px;padding-left:100px ;">
     <h3>
         <strong> {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}</strong>
     </h3>  
     </div>
 
     <!-- Customer Info -->
-    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; padding: 0 100px;font-size: 16px;">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; padding: 0 100px;font-size: 14px;">
       <div style="width: 48%; display: flex; flex-direction: column; margin-top: 10;">
-        <p style="margin: 0; font-weight: bold;">To:</p>
+        <p style="margin: 0;"><strong>To:</strong></p>
         <p style="margin: 0;">{{ this.selectedItem.CustomerName }}</p>
         <p style="margin: 0;">{{ this.selectedItem.CustomerAddress }}</p>
       </div>
 
       <div style="width: 48%; display: flex; flex-direction: column; ">
         <div style="display: flex;  margin-bottom: 0.2rem;">
-          <p style="margin: 0; width: 120px; font-weight: bold;">
-            {{ selectedItem?.IsContract === 'Y' ? 'Contract No' : 'Quotation No' }}
+          <p style="margin: 0; width: 120px;">
+           <strong> {{ selectedItem?.IsContract === 'Y' ? 'Contract No.' : 'Quotation No.' }}</strong>
           </p>
           <p style="margin: 0;">: {{ selectedItem.QuoteNumber }}</p>
         </div>
         <div style="display: flex;  margin-bottom: 0.2rem;">
           <p style="margin: 0; width: 120px; font-weight: bold;">
-            {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}
+            <strong>  {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}</strong>
           </p>
           <p style="margin: 0;">: {{ selectedItem.QuoteDate | formatDate }}</p>
         </div>
         <div style="display: flex;  margin-bottom: 0.2rem;">
-          <p style="margin: 0; width: 120px; font-weight: bold;">Reference</p>
+          <p style="margin: 0; width: 120px;"><strong>Reference</strong></p>
           <p style="margin: 0;">: {{ selectedItem.CustomerRef || '' }}</p>
         </div>
       </div>
@@ -2964,15 +2964,15 @@
     <!-- Quote Routes Table -->
     @for(route of selectedItem.quoteRoute; track route){
       <div style="overflow-x: auto; ">
-        <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
             <td colspan="8" >
-              <div style="display: flex; justify-content: space-between;border: 1px solid black;border-bottom: none;">
-                <div>
+              <div style="display: flex; justify-content: space-between;border-top: 1px solid black;border-bottom: 1px solid black;">
+                <div style="border-left: none;">
                   <p style="margin: 0;padding: 4px;">{{ getDepartmentName(route.DepartmentMasterSid) }}</p>
                 </div>
                 <div>
-                  <p style="margin: 0;padding: 4px;">
+                  <p style="margin: 0;padding: 4px;border-right: none;">
                     {{ getFormattedPort(route.POLSid) }} - {{ getFormattedPort(route.PODSid) }}
                     {{ route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : '' }}
                   </p>
@@ -2985,7 +2985,7 @@
             <tbody>
               <tr>
                 <td colspan="8">
-                  <div style="display: flex; flex-wrap: wrap; border: 1px solid black;border-bottom: none ">
+                  <div style="display: flex; flex-wrap: wrap; border-top: none; ">
                     <p style="margin: 0; padding: 4px; width: 25%;;">
                      <strong>
                       Carrier :
@@ -3013,7 +3013,7 @@
               </tr>
 
               <tr>
-                <th style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Charge</strong></th>
+                <th style="border: 1px solid #000; padding: 4px;text-align: center;border-left:none"><strong>Charge</strong></th>
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Unit</strong></td>
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Qty</strong></td>
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Curr.</strong></td>
@@ -3021,15 +3021,15 @@
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Ex Rate</strong></td>
                 }
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Rate</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Amt</strong></td>
+                <td style="border: 1px solid #000; padding: 4px;text-align: center;border-right:none"><strong>Amt</strong></td>
                 @if(selectedItem.AgreedRate === "Y"){
-                  <td style="border: 1px solid #000; padding: 4px;text-align: center;"><strong>Local Amount</strong></td>
+                  <td style="border: 1px solid #000; padding: 4px;text-align: center;border-right:none"><strong>Local Amount</strong></td>
                 }
               </tr>
 
               @for(charge of route.quoteCarrier[0]?.quoteCharge; track charge){
                 <tr>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ charge.ChargeDisplayName }}</td>
+                  <td style="border: 1px solid #000; padding: 4px;text-align: center;border-left:none">{{ charge.ChargeDisplayName }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ getChargeUOMCodeById(charge.RevenueChargeUomSid) }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.Qty }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ getCurrencyCodeById(charge.RevenueCurrencyMasterSid) }}</td>
@@ -3037,9 +3037,9 @@
                     <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ charge.RevenueExchangeRate }}</td>
                   }
                   <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.RevenueRate }}</td>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.RevenueAmount | number: '1.3-3' }}</td>
+                  <td style="border: 1px solid #000; padding: 4px;text-align: end;border-right:none">{{ charge.RevenueAmount | number: '1.3-3' }}</td>
                   @if(selectedItem.AgreedRate === "Y"){
-                    <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.RevenueLocalAmount }}</td>
+                    <td style="border: 1px solid #000; padding: 4px;text-align: end;border-right:none">{{ charge.RevenueLocalAmount }}</td>
                   }
                 </tr>
               }
@@ -3050,7 +3050,7 @@
     }
 
     <!-- Terms & Conditions -->
-    <div style="margin-top: 1rem;font-size: 16px;">
+    <div style="margin-top: 1rem;font-size: 14px;padding-left: 10px;">
       <h5 style=" margin-bottom: 0.5rem;"><strong>Terms and Conditions:</strong></h5>
       <ul style="margin-top: 0; padding-left: 1.2rem;">
         @for(term of TandCList; track term){
@@ -3109,18 +3109,18 @@
           <section class="d-flex flex-column gap-1">
             <aside class="d-flex gap-3 justify-content-end">
               <p class="mb-0 col-3 fw-bold">
-                {{ selectedItem?.IsContract === 'Y' ? 'Contract No' : 'Quotation No' }}
+                <strong>{{ selectedItem?.IsContract === 'Y' ? 'Contract No' : 'Quotation No' }}</strong>
                 </p>
               <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
             </aside>
             <aside class="d-flex gap-3 justify-content-end">
               <p class="mb-0 col-3 fw-bold">
-                {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}
+                <strong>  {{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}</strong>
                 </p>
               <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
             </aside>
             <aside class="d-flex gap-3 justify-content-end">
-              <p class="mb-0 col-3 fw-bold">Reference</p>
+              <p class="mb-0 col-3 fw-bold"><strong>Reference</strong></p>
               <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
             </aside>
           </section>
@@ -3149,26 +3149,26 @@
             <tr>
               <td colspan="8" class="p-0" style="border:2px solid black">
                 <aside class="d-flex flex-wrap">
-                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span>
+                  <p class="mb-0 col-3 border-end p-2"><span><strong>Carrier :</strong></span>
                     {{route.quoteCarrier[0]?.CarrierName}}
                   </p>
-                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
+                  <p class="mb-0 col-3 border-end p-2"><span><strong>Cargo Type :</strong></span>
                     {{route.quoteCargo[0]?.CargoType}}</p>
-                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
+                  <p class="mb-0 col-3 border-end p-2"><span><strong>Valid From : </strong></span>
                     {{route.effDate | formatDate }}</p>
-                  <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
+                  <p class="mb-0 col-3 p-2"><span class="fw-bold"><strong>Valid To : </strong></span> {{route.expdate | formatDate }}
                   </p>
                 </aside>
               </td>
             </tr>
 
             <tr style="border:2px solid black">
-              <td class="fw-bold table-secondary border border-dark">Charge</td>
-              <td class="fw-bold table-secondary border border-dark">Unit</td>
-              <td class="fw-bold table-secondary border border-dark">Qty</td>
-              <td class="fw-bold table-secondary border border-dark">Curr</td>
-              <td class="fw-bold table-secondary border border-dark">Rate</td>
-              <td class="fw-bold table-secondary border border-dark">Amt</td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Charge</strong></td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Unit</strong></td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Qty</strong></td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Curr</strong></td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Rate</strong></td>
+              <td class="fw-bold table-secondary border border-dark"><strong>Amt.</strong></td>
               @if(selectedItem.AgreedRate === "Y"){
               <td class="fw-bold table-secondary border border-dark">Ex Rate</td>
               <td class="fw-bold table-secondary border border-dark">Local Amount</td>

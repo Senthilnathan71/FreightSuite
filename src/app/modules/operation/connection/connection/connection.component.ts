@@ -13,6 +13,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { Search } from 'angular-feather/icons';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-connection',
@@ -25,7 +26,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
     CommonModule,
     ReactiveFormsModule,
     NgbPaginationModule,
-    SearchableDropdown
+    SearchableDropdown,
+    TextWithNumbersDirective 
   ],
   templateUrl: './connection.component.html',
   styleUrl: './connection.component.scss',
@@ -601,14 +603,14 @@ export class ConnectionComponent implements OnInit {
 
   getVesselLabel(): string {
   if (this.selectedMode?.toLowerCase() === 'air') {
-    return 'Airline';
+    return 'Flight';
   }
   return 'Vsl';
 }
 
 getVoyageLabel(): string {
   if (this.selectedMode?.toLowerCase() === 'air') {
-    return 'Airline No';
+    return 'Flight Number';
   }
   return 'Voy';
 }
@@ -620,8 +622,8 @@ getVoyageLabel(): string {
       const isAirMode = connection.Mode?.toLowerCase() === 'air';
       const data: any = {
       Mode: connection.Mode || '',
-      [isAirMode ? 'Airline' : 'VesselName']: connection.VesselName || '',
-      [isAirMode ? 'AirlineNo' : 'VoyageNo']: connection.VoyageNo || '',
+      [isAirMode ? 'Flight' : 'VesselName']: connection.VesselName || '',
+      [isAirMode ? 'FlightNumber' : 'VoyageNo']: connection.VoyageNo || '',
       POL: connection.POL || '',
       POD: connection.POD || '',
       ETD: this.datePipe.transform(connection.ETD) || '',
@@ -631,8 +633,8 @@ getVoyageLabel(): string {
       Status: connection.status || ''
       };
       if (isAirMode) {
-      data['Airline'] = data.VesselName;
-      data['AirlineNo'] = data.VoyageNo;
+      data['Flight'] = data.VesselName;
+      data['FlightNumber'] = data.VoyageNo;
       delete data.VesselName;
       delete data.VoyageNo;
     }
@@ -650,8 +652,8 @@ getVoyageLabel(): string {
 
     const headers = [
       { key: 'Mode', label: 'Mode' },
-      { key: this.selectedMode?.toLowerCase() === 'air' ? 'Airline' : 'VesselName', label: this.getVesselLabel()},
-      { key: this.selectedMode?.toLowerCase() === 'air' ? 'AirlineNo' : 'VoyageNo', label: this.getVoyageLabel() },
+      { key: this.selectedMode?.toLowerCase() === 'air' ? 'Flight' : 'VesselName', label: this.getVesselLabel()},
+      { key: this.selectedMode?.toLowerCase() === 'air' ? 'FlightNumber' : 'VoyageNo', label: this.getVoyageLabel() },
       { key: 'POL', label: 'POL' },
       { key: 'POD', label: 'POD' },
       { key: 'ETD', label: 'ETD' },
