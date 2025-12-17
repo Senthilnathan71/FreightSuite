@@ -330,7 +330,7 @@
 
   <h4 style="text-align: center; font-weight: bold; padding:10px 0;border-top: 1px solid black;">Shipment Profit and Loss / Shipment No - {{housejobData?.ShipmentNo}}</h4>
 
-  <div style="display: flex; padding: 0 10px; margin-bottom: 10px;font-size: 16px;">
+  <div style="display: flex; padding: 0px; margin-bottom: 10px;font-size: 14px;">
     <div style="flex: 1; border: 1px solid black; padding: 5px;">
       <div style="display: flex; margin-bottom: 5px;">
         <div style="width: 120px;"><strong>Customer</strong></div>
@@ -345,7 +345,7 @@
     </div>
   </div>
 
-  <div style="display: flex; padding: 0 10px; margin-bottom: 10px;font-size: 16px;">
+  <div style="display: flex; padding:0px; margin-bottom: 10px;font-size: 14px;">
     <div style="flex: 1; border: 1px solid black; padding: 5px;">
       <div style="display: flex; margin-bottom: 5px;">
         <div style="width: 120px;"><strong>Consignee</strong></div>
@@ -360,7 +360,7 @@
     </div>
   </div>
 
-  <div style="display: flex; border: 1px solid black; margin: 0 0 10px 0;font-size: 16px;">
+  <div style="display: flex; border: 1px solid black; margin: 0 0 10px 0;font-size: 14px;">
     <div style="flex: 1; padding: 5px;">
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Shipment No.</strong></div><div>: {{housejobData?.ShipmentNo}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>MBL No.</strong></div><div>: {{housejobData?.MBLNo}}</div></div>
@@ -372,7 +372,7 @@
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Service Type</strong></div><div>: {{housejobData?.Cargo?.[0]?.ShipmentTerms}}</div></div>
     </div>
     <div style="flex: 1; padding: 5px;">
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Job No.</strong></div><div>: </div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Job No.</strong></div><div>: </div> {{housejobData?.masterJob?.[0]?.MasterJobNumber}}</div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>HBL No.</strong></div><div>: {{housejobData?.HBLNo}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Port of Receipt</strong></div><div>: {{housejobData?.POR}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 120px;"><strong>Port of Discharge</strong></div><div>: {{housejobData?.POD}}</div></div>
@@ -383,7 +383,7 @@
     </div>
   </div>
 
-  <div style="overflow-x:auto; margin-bottom: 10px;font-size: 16px;">
+  <div style="overflow-x:auto; margin-bottom: 10px;font-size: 14px;">
     <table style="width: 100%; border-collapse: collapse;  border: 1px solid black;">
       <thead style="background-color: #f8f9fa;">
         <tr>
@@ -428,7 +428,7 @@
     </table>
   </div>
 
-  <div style="overflow-x:auto; margin-bottom: 10px;font-size: 16px;">
+  <div style="overflow-x:auto; margin-bottom: 10px;font-size: 14px;">
     <table style="width: 100%; border-collapse: collapse;  border: 1px solid black;">
       <thead style="background-color: #f8f9fa;">
         <tr>
@@ -466,7 +466,7 @@
     </table>
   </div>
 
-  <div style="display: flex; margin-bottom: 10px;font-size: 16px;">
+  <div style="display: flex; margin-bottom: 10px;font-size: 14px;">
     <div style="flex: 1; padding-right: 5px;">
       <h5 style="text-align: center; margin: 0 0 5px 0; "><strong>Revenue</strong></h5>
       <div style="overflow-x:auto;">
@@ -509,7 +509,7 @@
 
  <!-- Footer -->
   <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;">
-    <div style="display:flex; justify-content:space-between; font-size:16px;">
+    <div style="display:flex; justify-content:space-between; font-size:14px;">
       <div>Printed By: {{ userData.userName }}</div>
       <span>This document is computer-generated and does not require a signature.</span>
       <div>Printed On: {{ currentDate | formatDate }}</div>

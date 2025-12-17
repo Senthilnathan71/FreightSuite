@@ -62,7 +62,7 @@
         <h4 style="text-align:center;   border-top:1px solid black;padding-top: 10px;padding-left: 50px;"><strong>Bank Receipt</strong></h4>
 
         <!-- Details -->
-        <div style="display:flex; flex-wrap:wrap; width:100%; padding:0 130px; margin-top:10px;font-size: 16px;">
+        <div style="display:flex; flex-wrap:wrap; width:100%; padding:0 130px; margin-top:10px;font-size: 14px;">
             <div style="width:50%; padding-bottom:6px;">
                 <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Received From</strong></div><div>: {{receiptPrintData?.PartyName}}</div></div>
                 <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Receipt No.</strong></div><div>: {{receiptPrintData?.VoucherNumber}}</div></div>
@@ -78,7 +78,7 @@
         </div>
 
    <!-- Table -->
-<table style="width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; font-size:16px;">
+<table style="width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; font-size:14px;">
     <tr>
         <th style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:40%;"><strong>Description</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; width:15%;"><strong>Curr.</strong></th>
@@ -105,11 +105,11 @@
 
 
        <!-- Remittance section -->
-<div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 16px;">
+<div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 14px;">
 
-    <h4 style="padding:4px 0; margin:0;text-align: center;"><strong>Remittance Details</strong></h4>
+    <h5 style="padding-left: 15px; margin:0;text-align: start;"><strong>Remittance Details</strong></h5>
 
-<table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;">
+<table style="width:100%; border-collapse:collapse; font-size:14px; margin-top:5px;">
     <tbody>
 
         <tr>
@@ -160,7 +160,7 @@
 </div>
 
 <!-- Checked By -->
-<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 15px;" class="fs-4">
+<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 15px;font-size: 14px;">
     <strong>Checked By</strong>
     <strong>Approved By</strong>
 </div>
@@ -168,7 +168,7 @@
     </div>
 
     <!-- Footer -->
-    <footer style="margin-top:10px; text-align:center; font-size:16px; padding:0.5rem;">
+    <footer style="margin-top:10px; text-align:center; font-size:14px; padding:0.5rem;">
         <div style="display:flex; justify-content:space-between;">
             <div>Printed By: {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>

@@ -35,6 +35,9 @@ export class HblComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
 
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -111,23 +114,28 @@ export class HblComponent {
     return agent ? agent.CustomerName : '';
   }
 
+   async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
 
-    async downloadPDF() {
-  this.spinner.show();
-  try {
-   const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
-
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `HBL`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+       const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `HBL`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
+
+
+
 
     async generatePDFBlob(): Promise<Blob | null> {
           const printContent = document.getElementById('printContent');
@@ -169,25 +177,31 @@ export class HblComponent {
           }
         }
         
-      printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
+  printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
+
 }
 
   modalClose() {

@@ -27,40 +27,37 @@
 
 <div style="width:280mm; min-height:400mm; margin:10px;  border:1px solid #000; box-sizing:border-box; position: relative; color: #000;">
 
-                    <!-- Company Info -->
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;font-size: 14px;" class=" p-3">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; flex-direction: column;">
-            <!-- Print logo -->
+  <!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                 <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
             <!-- Pdf logo -->
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-        </div>
-
-        <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 15px;">
-                {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
-                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
-            </p>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
+            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            </div>
         </div>
     </div>
-</div>
-
    
 
     <!-- Bank Payment -->
     <h4 style="text-align:center; padding:10px 0; font-weight:800; border-top: 1px solid black;">Bank Payment</h4>
 
     <!-- Details Row -->
-    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;font-size:16px;"  >
+    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:150px;font-size:14px;"  >
         
         <!-- Left -->
         <div style="width:50%;">
@@ -100,7 +97,7 @@
     </div>
 
     <!-- Table -->
-    <table style="width:100%; border-collapse:collapse; margin:10px 0;  font-size:16px;">
+    <table style="width:100%; border-collapse:collapse; margin:10px 0;  font-size:14px;">
         <tr>
             <th style="border:1px solid black; width:50%;  text-align:center;border-left: none;"><strong>Description</strong></th>
             <th style="border:1px solid black; width:15%;  text-align:center;"><strong>MBL/HBL Ref</strong></th>
@@ -121,10 +118,10 @@
         </tr>
     </table>
 
-    <h4 style="text-align: center; margin:5px 0;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h4>
+    <h5 style="text-align:start; margin:5px 0;padding-left:10px;" *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"><strong>Remittance Details</strong></h5>
 
     <!-- Matching Table -->
-    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse;  font-size:16px;" >
+    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse;  font-size:14px;" >
         <tr>
             <th style="border:1px solid black;  text-align:center;font-weight:700;border-left: none;"><strong>Voucher No.</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:700;"><strong>Voucher Type</strong></th>
@@ -152,12 +149,12 @@
         </tr>
     </table>
 
-    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 10px;font-size:16px;">
+    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="margin:10px 10px;font-size:14px;">
         <strong>Amount in Words :</strong>
         <span style="font-style:italic;"> {{ getAmountInWords() }} </span>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin:30px 50px;font-size:16px;">
+    <div style="display:flex; justify-content:space-between; margin:30px 50px;font-size:14px;">
         <strong>Checked By :</strong>
         <strong>Approved By :</strong>
     </div>
