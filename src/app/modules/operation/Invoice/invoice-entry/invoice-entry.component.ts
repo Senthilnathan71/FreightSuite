@@ -374,7 +374,7 @@ export class InvoiceEntryComponent implements OnInit {
     this.invoiceForm.setValidators(this.consistentExchangeRatesValidator(this.currencyList));
   }
 
-    initializeDefaultHeaderCurrency() {
+  initializeDefaultHeaderCurrency() {
     const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
     // taking currency related infos
     this.companyCurrency = this.companySettings.getCurrencySettings();
@@ -386,7 +386,6 @@ export class InvoiceEntryComponent implements OnInit {
     this.invoiceForm.patchValue({
       CurrencyMasterSid: finalCompanyCurrencyId
     });
-    // console.log("INIT VENDOR INVOICE FORM", this.vendorInvoiceForm.getRawValue());
 
   }
 
