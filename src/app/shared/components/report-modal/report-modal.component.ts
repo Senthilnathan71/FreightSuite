@@ -327,6 +327,14 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     if (typeof this.componentRef.instance.getExcelData === 'function') {
       excelData = this.componentRef.instance.getExcelData();
       console.log('Got data from getExcelData():', excelData);
+
+      // Check if it's a ComplexReportExportConfig (has reportHeader and rows properties)
+      if (excelData && excelData.reportHeader && excelData.rows) {
+        this.excelReportService.exportComplexReport(excelData);
+        console.log('Excel export completed successfully (complex report)');
+        this.spinner.hide();
+        return;
+      }
     }
     
     // Method 2: Component has getTableData() method (common pattern)

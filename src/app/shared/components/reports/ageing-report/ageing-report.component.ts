@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 
@@ -61,5 +62,115 @@ export class AgeingReportComponent implements OnInit{
     return sub.SubledgerMasterSid;
   }
 
+  /**
+   * Provide Excel data for export via report modal
+   * Called by GenericReportModalComponent.downloadExcel()
+   */
+  getExcelData(): ComplexReportExportConfig {
+    const buckets = this.bucketLabels || [];
 
+    // Build table headers dynamically based on bucket labels
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'subledger', label: 'Subledger' },
+      { key: 'osLocal', label: 'OS in Local' },
+      { key: 'osCurr', label: 'OS in Curr' },
+      ...buckets.map((label: string) => ({ key: label, label: label })),
+      { key: 'onAccLocal', label: 'On Acc Local' },
+      { key: 'onAccCurr', label: 'On Acc Curr' },
+      { key: 'creditDays', label: 'Credit Days' },
+      { key: 'creditLimit', label: 'Credit Limit' }
+    ];
+
+    const rows: ExcelRow[] = [];
+    const totalCols = tableHeaders.length;
+
+    // Process each currency group
+    for (const group of this.ageingResults) {
+      // Currency header row (only if CurrencyWise is enabled)
+      if (this.params?.CurrencyWise) {
+        rows.push({
+          cells: [{ value: `Curr : ${group.CurrencyCode || 'N/A'}`, colspan: totalCols }],
+          style: 'section'
+        });
+      }
+
+      // Subledger data rows
+      for (const sub of group.subledgers || []) {
+        const cells: ExcelCell[] = [
+          { value: sub.SubledgerName || '' },
+          { value: this.formatNumber(sub.totalOutstandingLocal) },
+          { value: this.formatNumber(sub.totalOutstandingCurrency) },
+          ...buckets.map((label: string) => ({
+            value: this.formatNumber(sub.buckets?.[label] || 0)
+          })),
+          { value: this.formatNumber(sub.totalOnAccountCreditLocal) },
+          { value: this.formatNumber(sub.totalOnAccountCreditCurr) },
+          { value: sub.CreditDays ?? 0 },
+          { value: sub.CreditLimit ?? 0 }
+        ];
+        rows.push({ cells, style: 'data' });
+      }
+
+      // Currency total row
+      const totalCells: ExcelCell[] = [
+        { value: 'Total' },
+        { value: this.formatNumber(group.totalOutstandingLocal) },
+        { value: this.formatNumber(group.totalOutstandingCurrency) },
+        ...buckets.map((label: string) => ({
+          value: this.formatNumber(group.bucketTotals?.[label] || 0)
+        })),
+        { value: this.formatNumber(group.totalOnAccountCreditLocal) },
+        { value: this.formatNumber(group.totalOnAccountCreditCurr) },
+        { value: '' },
+        { value: '' }
+      ];
+      rows.push({ cells: totalCells, style: 'total' });
+    }
+
+    // Grand total row
+    const grandTotalCells: ExcelCell[] = [
+      { value: 'Grand Total' },
+      { value: this.formatNumber(this.fullData?.grandTotalLocal) },
+      ...Array(totalCols - 2).fill(null).map(() => ({ value: '' }))
+    ];
+    rows.push({ cells: grandTotalCells, style: 'grandTotal' });
+
+    return {
+      fileName: 'Ageing-Report',
+      sheetName: 'AgeingReport',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `Customer Ageing as on ${this.formatDate(this.fullData?.concludedUpto)}`,
+        additionalInfo: [
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Ledger', value: this.fullData?.LedgerName || '' },
+          { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [25, 15, 15, ...buckets.map(() => 12), 15, 15, 12, 12]
+    };
+  }
+
+  /**
+   * Format number for Excel display
+   */
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
+
+  /**
+   * Format date for display
+   */
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
+  }
 }

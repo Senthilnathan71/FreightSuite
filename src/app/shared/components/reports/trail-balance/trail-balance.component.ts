@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
@@ -166,5 +167,118 @@ export class TrailBalanceComponent {
     return sub.SubledgerMasterSid;
   }
 
+  /**
+   * Provide Excel data for export via report modal
+   * Called by GenericReportModalComponent.downloadExcel()
+   */
+  getExcelData(): ComplexReportExportConfig {
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'type', label: 'Type' },
+      { key: 'group', label: 'Group' },
+      { key: 'subGroup', label: 'Sub Group' },
+      { key: 'ledger', label: 'Ledger' },
+      { key: 'openingDebit', label: 'Opening Debit' },
+      { key: 'openingCredit', label: 'Opening Credit' },
+      { key: 'currentDebit', label: 'Current Debit' },
+      { key: 'currentCredit', label: 'Current Credit' },
+      { key: 'closingDebit', label: 'Closing Debit' },
+      { key: 'closingCredit', label: 'Closing Credit' },
+      { key: 'closingNet', label: 'Closing Net Amount' }
+    ];
+
+    const rows: ExcelRow[] = [];
+    const totalCols = tableHeaders.length;
+
+    // Process each subgroup
+    for (const group of this.groupedData) {
+      // Ledger data rows
+      for (const item of group.items || []) {
+        const cells: ExcelCell[] = [
+          { value: item.LedgerType || '' },
+          { value: item.GroupName || '' },
+          { value: item.SubGroupName || '' },
+          { value: item.LedgerName || '' },
+          { value: this.formatNumber(item.OpeningDebit) },
+          { value: this.formatNumber(item.OpeningCredit) },
+          { value: this.formatNumber(item.CurrentDebit) },
+          { value: this.formatNumber(item.CurrentCredit) },
+          { value: this.formatNumber(item.ClosingDebit) },
+          { value: this.formatNumber(item.ClosingCredit) },
+          { value: this.formatNumber(item.ClosingNet) }
+        ];
+        rows.push({ cells, style: 'data' });
+      }
+
+      // Subgroup total row
+      const subTotalCells: ExcelCell[] = [
+        { value: 'Total', colspan: 3 },
+        { value: '' },
+        { value: this.formatNumber(group.totals?.OpeningDebit) },
+        { value: this.formatNumber(group.totals?.OpeningCredit) },
+        { value: this.formatNumber(group.totals?.CurrentDebit) },
+        { value: this.formatNumber(group.totals?.CurrentCredit) },
+        { value: this.formatNumber(group.totals?.ClosingDebit) },
+        { value: this.formatNumber(group.totals?.ClosingCredit) },
+        { value: this.formatNumber(group.totals?.ClosingNet) }
+      ];
+      rows.push({ cells: subTotalCells, style: 'total' });
+    }
+
+    // Grand total row
+    if (this.data?.grandTotal) {
+      const grandTotalCells: ExcelCell[] = [
+        { value: 'Grand Total', colspan: 3 },
+        { value: '' },
+        { value: this.formatNumber(this.data.grandTotal.TotalOpeningDebit) },
+        { value: this.formatNumber(this.data.grandTotal.TotalOpeningCredit) },
+        { value: this.formatNumber(this.data.grandTotal.TotalCurrentDebit) },
+        { value: this.formatNumber(this.data.grandTotal.TotalCurrentCredit) },
+        { value: this.formatNumber(this.data.grandTotal.TotalClosingDebit) },
+        { value: this.formatNumber(this.data.grandTotal.TotalClosingCredit) },
+        { value: this.formatNumber(this.data.grandTotal.Difference) }
+      ];
+      rows.push({ cells: grandTotalCells, style: 'grandTotal' });
+    }
+
+    return {
+      fileName: 'Trail-Balance-Report',
+      sheetName: 'TrailBalance',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `Customer Trail Balance as on ${this.formatDate(this.params?.fromDate)}`,
+        additionalInfo: [
+          { label: 'From Date', value: this.formatDate(this.params?.fromDate) },
+          { label: 'To Date', value: this.formatDate(this.params?.toDate) },
+          { label: 'Branch', value: this.getBranchNameById(this.params?.BranchMasterSid) || '' },
+          { label: 'SubGroup Name', value: this.params?.SubGroupName || '' },
+          { label: 'Group Name', value: this.getGroupName(this.params?.GroupName) || '' }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [10, 15, 15, 20, 15, 15, 15, 15, 15, 15, 18]
+    };
+  }
+
+  /**
+   * Format number for Excel display
+   */
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
+
+  /**
+   * Format date for display
+   */
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
+  }
 }
 

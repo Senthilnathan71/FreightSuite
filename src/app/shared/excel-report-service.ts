@@ -15,6 +15,43 @@ export interface ExcelExportConfig {
   title?: string;
 }
 
+/**
+ * Represents a single cell in a complex report row
+ */
+export interface ExcelCell {
+  value: string | number;
+  colspan?: number;
+}
+
+/**
+ * Represents a row in a complex report
+ */
+export interface ExcelRow {
+  cells: ExcelCell[];
+  style?: 'header' | 'data' | 'total' | 'section' | 'grandTotal';
+}
+
+/**
+ * Report header configuration
+ */
+export interface ReportHeaderConfig {
+  companyName: string;
+  reportTitle: string;
+  additionalInfo?: { label: string; value: string }[];
+}
+
+/**
+ * Configuration for complex report exports with grouped data, sections, and totals
+ */
+export interface ComplexReportExportConfig {
+  fileName: string;
+  sheetName?: string;
+  reportHeader: ReportHeaderConfig;
+  tableHeaders: ExcelHeader[];
+  rows: ExcelRow[];
+  columnWidths?: number[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -62,6 +99,110 @@ export class ExcelExportService {
       ];
     }
 
+    const workbook: XLSX.WorkBook = {
+      Sheets: { [sheetName]: worksheet },
+      SheetNames: [sheetName]
+    };
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    const blob: Blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    FileSaver.saveAs(blob, `${fileName}-${new Date().getTime()}.xlsx`);
+  }
+
+  /**
+   * Export complex reports with grouped data, sections, and totals
+   * Supports: merged header rows, section headers, subtotals, grand totals
+   */
+  exportComplexReport(config: ComplexReportExportConfig): void {
+    const {
+      fileName,
+      sheetName = fileName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 31),
+      reportHeader,
+      tableHeaders,
+      rows,
+      columnWidths
+    } = config;
+
+    const aoa: any[][] = [];
+    const merges: XLSX.Range[] = [];
+    const totalCols = tableHeaders.length;
+
+    // Row 1: Company Name (merged across all columns)
+    aoa.push([reportHeader.companyName]);
+    merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } });
+
+    // Row 2: Report Title (merged across all columns)
+    aoa.push([reportHeader.reportTitle]);
+    merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } });
+
+    // Row 3: Empty row
+    aoa.push([]);
+
+    // Additional info rows (Branch, Ledger, Date, etc.)
+    if (reportHeader.additionalInfo && reportHeader.additionalInfo.length > 0) {
+      for (const info of reportHeader.additionalInfo) {
+        aoa.push([`${info.label} : ${info.value}`]);
+        merges.push({
+          s: { r: aoa.length - 1, c: 0 },
+          e: { r: aoa.length - 1, c: totalCols - 1 }
+        });
+      }
+    }
+
+    // Table Header Row
+    aoa.push(tableHeaders.map(h => h.label));
+
+    // Data Rows
+    let currentRowIndex = aoa.length;
+    for (const row of rows) {
+      const excelRow: any[] = [];
+      let colIndex = 0;
+
+      for (const cell of row.cells) {
+        excelRow.push(cell.value ?? '');
+
+        // Handle colspan for merged cells (section headers, etc.)
+        if (cell.colspan && cell.colspan > 1) {
+          merges.push({
+            s: { r: currentRowIndex, c: colIndex },
+            e: { r: currentRowIndex, c: colIndex + cell.colspan - 1 }
+          });
+          // Fill remaining columns for colspan
+          for (let i = 1; i < cell.colspan; i++) {
+            excelRow.push('');
+          }
+          colIndex += cell.colspan;
+        } else {
+          colIndex++;
+        }
+      }
+
+      // Pad remaining columns if row has fewer cells than headers
+      while (excelRow.length < totalCols) {
+        excelRow.push('');
+      }
+
+      aoa.push(excelRow);
+      currentRowIndex++;
+    }
+
+    // Create worksheet
+    const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(aoa);
+    worksheet['!merges'] = merges;
+
+    // Set column widths if provided
+    if (columnWidths && columnWidths.length > 0) {
+      worksheet['!cols'] = columnWidths.map(w => ({ wch: w }));
+    }
+
+    // Create workbook and export
     const workbook: XLSX.WorkBook = {
       Sheets: { [sheetName]: worksheet },
       SheetNames: [sheetName]

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
@@ -86,7 +87,7 @@ export class OutstandingReportComponent {
   }
 
 
-    getCumulative(transactions: any[], index: number): number {
+  getCumulative(transactions: any[], index: number): number {
     let total = 0;
 
     for (let i = 0; i <= index; i++) {
@@ -101,5 +102,102 @@ export class OutstandingReportComponent {
     }
 
     return total;
+  }
+
+  /**
+   * Provide Excel data for export via report modal
+   * Called by GenericReportModalComponent.downloadExcel()
+   */
+  getExcelData(): ComplexReportExportConfig {
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'voucherNo', label: 'Voucher No' },
+      { key: 'voucherDate', label: 'Voucher Date' },
+      { key: 'voucherType', label: 'Voucher Type' },
+      { key: 'hblNo', label: 'HBL No' },
+      { key: 'dept', label: 'Dept' },
+      { key: 'desc', label: 'Desc' },
+      { key: 'salesperson', label: 'Salesperson' },
+      { key: 'drCr', label: 'Dr/Cr' },
+      { key: 'currency', label: 'Cur' },
+      { key: 'amt', label: 'Amt' },
+      { key: 'localAmt', label: 'Local Amt' },
+      { key: 'osCurrAmt', label: 'O/S Currency Amt' },
+      { key: 'osLocalAmt', label: 'O/S Local Amt' },
+      { key: 'cumulative', label: 'Cumulative' }
+    ];
+
+    const rows: ExcelRow[] = [];
+    const transactions = this.fullData?.transactions || [];
+
+    // Transaction data rows
+    transactions.forEach((item: any, index: number) => {
+      const cells: ExcelCell[] = [
+        { value: item?.voucherNumber || '' },
+        { value: this.formatDate(item?.voucherDate) },
+        { value: item?.voucherType || '' },
+        { value: item?.HouseJobNumber || '' },
+        { value: item?.deptname || '' },
+        { value: item?.naration || '' },
+        { value: this.getSalesmanById(item?.salesmanSid) || '' },
+        { value: item?.drCr || '' },
+        { value: item?.currencyCode || '' },
+        { value: this.formatNumber(item?.originalLocalAmount) },
+        { value: this.formatNumber(item?.originalCurrencyAmount) },
+        { value: this.formatNumber(item?.outstandingCurrencyAmount) },
+        { value: this.formatNumber(item?.outstandingLocalAmount) },
+        { value: this.formatNumber(this.getCumulative(transactions, index)) }
+      ];
+      rows.push({ cells, style: 'data' });
+    });
+
+    // Total row
+    const totalCells: ExcelCell[] = [
+      { value: 'TOTAL', colspan: 9 },
+      { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
+      { value: this.formatNumber(this.getTotal(transactions, 'originalCurrencyAmount')) },
+      { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
+      { value: this.formatNumber(this.getTotal(transactions, 'outstandingLocalAmount')) },
+      { value: this.formatNumber(this.getCumulative(transactions, transactions.length - 1)) }
+    ];
+    rows.push({ cells: totalCells, style: 'total' });
+
+    return {
+      fileName: 'Outstanding-Report',
+      sheetName: 'OutstandingReport',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `Customer Outstanding as on ${this.formatDate(this.params?.ToDate)}`,
+        additionalInfo: [
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          { label: 'Branch', value: this.fullData?.branchesInvolved || '' },
+          { label: 'Subledger', value: this.fullData?.subledgerName || '' },
+          { label: 'Ledger', value: this.fullData?.ledgerName || '' }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [15, 12, 12, 15, 10, 25, 15, 8, 8, 15, 15, 15, 15, 15]
+    };
+  }
+
+  /**
+   * Format number for Excel display
+   */
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
+
+  /**
+   * Format date for display
+   */
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 }
