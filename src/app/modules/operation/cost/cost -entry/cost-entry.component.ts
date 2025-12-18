@@ -1317,8 +1317,35 @@ createRateFormGroup(data?: any): FormGroup {
     } else if (segment === "AIR") {
       value = this.parentFormValue.ChargeableWeight
     }
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSod : this.currentBranch?.BranchMasterSid,
+      DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid || null,
+      PORSid: this.parentFormValue?.PORSid || null,
+      POLSid: this.parentFormValue?.POLSid || null,
+      PODSid:this.parentFormValue?.PODSid || null,
+      FPODSid: this.parentFormValue?.FPODSid || null,
+      CargoType: this.parentFormValue?.CargoType || 'General',
+      EffectiveDate: this.isEditMode ? this.parentFormValue?.EffectiveDate : new Date,
+      ExpiredDate: this.isEditMode ? this.parentFormValue?.ExpiredDate : new Date,
+      Carrier: this.parentFormValue?.Carrier || null,
+      IncoTerms: this.parentFormValue?.IncoTerms || null,
+    };
+
+    let stopFlag = false;
+    ['CompanyMasterSid','POLSid','PODSid','DepartmentMasterSid','EffectiveDate','ExpiredDate'].forEach(field => {
+      if(!payload[field]){
+        stopFlag = true;
+      }
+    })
+
+    if(stopFlag){
+      this.appSettingService.showWarning("Please fill all required fields to get tariff.");
+      return;
+    }
+
     this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
-    this.operationService.getTariffDetails(this.parentFormValue).subscribe(
+    this.operationService.getTariffDetails(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           console.log(resp.data)

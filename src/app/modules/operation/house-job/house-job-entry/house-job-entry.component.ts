@@ -1,6 +1,6 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
@@ -56,6 +56,7 @@ import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { getMaxDate, getMinDate } from 'src/app/common/helper';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -109,7 +110,8 @@ type Html2PdfOptions = {
     BoeEntryComponent,
     VehicleComponent,
     CustomsComponent,
-    MultiSelectComponent
+    MultiSelectComponent,
+    RouterModule
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -153,6 +155,9 @@ selectedCustomer: any;
   isPrintLoading : boolean;
   currentCompany : any;
   currentBranch : any;
+  startFinanceYr : any;
+  endFinanceYr : any;
+  currentFinacialYear : any;
   filterOption : any;
   airlineList: any[] = [];
   masterJobId: number | null = null;
@@ -303,6 +308,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "Yard/CFS"
+  selectedReportAir: 'HAWB' | 'HAWBDraft' = 'HAWB';
   forwarderList: any[] = [];
   currencyList: any[] = [];
   imcoList: any[] = [];
@@ -360,6 +366,12 @@ isVoyageFreeText: boolean = false;
 };
   today : any;
   minDate : any;
+  minDODate : any;
+  minShippingBillDate : any;
+  maxShippingBillDate : any;
+  minCargoRecDate : any;
+  maxCargoRecDate : any;
+  minDeliveryDate : any;
   currentDate = new Date();
   housejobData:any;
   departments: any[] = [];
@@ -453,7 +465,6 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
       this.filteredTabs = [...this.allTabs];
     }
   }
- 
 
   // Mail content
 
@@ -490,6 +501,11 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.countryOfCompany = this.currentCompany?.CountryName;
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+
+  this.currentFinacialYear = this.appSettingService.getCurrentFinancialYear();
+  this.startFinanceYr = this.currentFinacialYear?.StartDate ? new Date(this.currentFinacialYear.StartDate) : null;
+  this.endFinanceYr = this.currentFinacialYear?.EndDate ? new Date(this.currentFinacialYear.EndDate) : null;
+  
   this.filterOption = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentCompany?.BranchMasterSid,
@@ -517,9 +533,9 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
       this.loadHouseById(this.HouseJobSid);
     } else {
       this.minDate = this.today;
+      this.setMinMaxDateConditions();
     }
   });
-  
   this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
       this.loadCargoLookups();
@@ -536,6 +552,26 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   });
   this.loadHSSACLookups();
 }
+
+setMinMaxDateConditions(){
+  if(this.isEditMode){
+    const HBLDate = this.housejobData.HBLDate ? new Date(this.housejobData.HBLDate) : new Date();
+    this.minShippingBillDate = this.toNgbDateStruct(getMinDate(HBLDate,15));
+    this.maxShippingBillDate = this.toNgbDateStruct(getMaxDate(HBLDate,15));
+    this.minDeliveryDate = this.toNgbDateStruct(HBLDate);
+    this.minCargoRecDate = this.toNgbDateStruct(getMinDate(HBLDate,15));
+    this.maxCargoRecDate = this.toNgbDateStruct(getMaxDate(HBLDate));
+  } else {
+    const HBLDate = this.houseJobForm.get('HBLDate')?.value ? new Date(this.houseJobForm.get('HBLDate')?.value) : new Date();
+    this.minShippingBillDate = this.toNgbDateStruct(getMinDate(HBLDate,15));
+    this.maxShippingBillDate = this.toNgbDateStruct(getMaxDate(HBLDate,15));
+    this.minDeliveryDate = this.toNgbDateStruct(HBLDate);
+    this.minCargoRecDate = this.toNgbDateStruct(getMinDate(HBLDate,15));
+    this.maxCargoRecDate = this.toNgbDateStruct(getMaxDate(HBLDate));
+  }
+}
+
+
 private setupMBLDateListener(): void {
   this.houseJobForm.get('MBLDate')?.valueChanges.subscribe((mblDateValue) => {
     if (mblDateValue) {
@@ -576,6 +612,7 @@ private setupMBLDateListener(): void {
       DestinationAgent : [null, [Validators.required]],
       AgentName : [''],
       AgentAddress: [''],
+      CarrierSid : [null],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
@@ -1348,39 +1385,38 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
     })
   }
 
+
   loadHouseById(HouseJobSid: number) {
     this.operationService.getHouseJobById(HouseJobSid).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
-          this.patchValues(resp.data); 
+          this.patchValues(resp.data);
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
-          this.housejobData=resp.data;
+          this.housejobData = resp.data;
           this.loadMasterJobARAPData();
-          console.log("House Job",this.housejobData)
+          console.log("House Job", this.housejobData)
           this.minDate = undefined;
-
-        // ✅ Update the formData for child components
-        this.commonFormValue = {
-          HouseJobSid: resp.data.HouseJobSid, // 👈 from backend response
-          CompanyMasterSid: resp.data.CompanyMasterSid,
-          BranchMasterSid: resp.data.BranchMasterSid,
-          CreatedBy: this.userData['userEmail'],
-          UpdatedBy: this.userData['userEmail']
-        };
+          const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
+          this.minDODate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
+          this.setMinMaxDateConditions();
+          // ✅ Update the formData for child components
+          this.commonFormValue = {
+            HouseJobSid: resp.data.HouseJobSid, // 👈 from backend response
+            CompanyMasterSid: resp.data.CompanyMasterSid,
+            BranchMasterSid: resp.data.BranchMasterSid,
+            CreatedBy: this.userData['userEmail'],
+            UpdatedBy: this.userData['userEmail']
+          };
 
           // ✅ Extract BOE records for the current house job
-        this.boeDataArray = resp.data.houseJobBOE || [];
-        this.vehicleDataArray = resp.data.houseJobVehicle || [];
-        this.customsDataArray = resp.data.houseJobCustoms || [];
+          this.boeDataArray = resp.data.houseJobBOE || [];
+          this.vehicleDataArray = resp.data.houseJobVehicle || [];
+          this.customsDataArray = resp.data.houseJobCustoms || [];
 
-
- if (resp.data.MasterJobSid) {
-          this.loadMasterJobDetails(resp.data.MasterJobSid);
-        }
-        // ✅ Trigger reload for child components like BOE
-        this.resetTriggerBOE = true;
+          // ✅ Trigger reload for child components like BOE
+          this.resetTriggerBOE = true;
         }
       }
     )
@@ -1462,6 +1498,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     DestinationAgent: response.DestinationAgent || null,
     AgentName : response.AgentName || null, 
     AgentAddress: response.AgentAddress,
+    CarrierSid : response.CarrierSid,
     CarrierName: response.CarrierName,
     QuotationHeaderSid: response.QuotationHeaderSid,
     HBLNo: response.HBLNo,
@@ -1494,7 +1531,10 @@ private loadMasterJobDetails(masterJobSid: number): void {
     FreightTerms : response.FreightTerms,
     JobType: response.JobType,
     ShipmentNo: response.ShipmentNo
-  });
+  })
+
+  console.warn("FormValue after patching",this.houseJobForm.value);
+
   this.PODandFPODsame = response.POD === response.FPD;
    const cargoData = response.Cargo?.[0];
   if (cargoData) {
@@ -2284,6 +2324,13 @@ validateHBLNo(): boolean {
     this.deliveryAgentList = this.agentList.filter(s => s.CustomerMasterSid !== agent.CustomerMasterSid);
   }
 
+  handleCarrierChange(carrier:any){
+    if(!carrier){
+      this.houseJobForm.get('CarrierSid')?.setValue(null);
+      return;
+    }
+    this.houseJobForm.get('CarrierSid')?.setValue(carrier.CustomerMasterSid);
+  }
 
     handleImportExport() {
     // Early return if no department selected - clear both fields
@@ -2796,12 +2843,14 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const selectedPOL = this.houseJobForm.get('POL')?.value; // PortMasterSid
     const selectedPOD = this.houseJobForm.get('POD')?.value; // PortMasterSid
     const selectedFPD = this.houseJobForm.get('FPD')?.value; // PortMasterSid
-    const EffectiveDate = this.houseJobForm.get('MasterJobDate')?.value;
-    const ExpiredDate = this.houseJobForm.get('MasterJobDate')?.value;
+    const EffectiveDate = this.houseJobForm.get('HBLDate')?.value;
+    const ExpiredDate = this.houseJobForm.get('HBLDate')?.value;
     const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
     const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
+    const Carrier = this.houseJobForm.get('CarrierSid')?.value;
+    const IncoTerms = this.houseJobForm.get('IncoTerms')?.value
     const CargoType = this.cargoForm.get('CargoType')?.value;
     const NetWeight = this.cargoForm.get('NetWeight')?.value;
     const GrossWeight =this.cargoForm.get('GrossWeight')?.value;
@@ -2828,6 +2877,8 @@ getVoyageTypeBasedOnDept(deptId: number) {
       FPODSid,
       EffectiveDate,
       ExpiredDate,
+      Carrier,
+      IncoTerms,
       CargoType,
       GrossWeight,
       NetWeight,
@@ -3492,12 +3543,13 @@ ${this.userData['userName']}`;
 
       // House Air Way Bill
 
-      reportHAWB() {
-        const modalRef =this.modalService.open(HAWBComponent,{
-          size: 'xl',
-          scrollable: true,
-        })
-    modalRef.componentInstance.masterJobData=this.masterJobData; 
+  reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+    this.selectedReportAir = type;
+    const modalRef = this.modalService.open(HAWBComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
     modalRef.componentInstance.housejobData = this.housejobData || [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.uomList = this.uomList || [];
@@ -3506,7 +3558,8 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.chargeList = this.chargeList || [];
-      }
+    modalRef.componentInstance.selectedReportAir = type;
+  }
 
 // Helper Funstion 
 
@@ -4071,7 +4124,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
   
   // Set the department first - this triggers department-specific logic
   this.onDeptChange(selectedDepartment);
-  
+  this.b['VesselName']?.enable();
   // Wait a moment for department change to take effect
   setTimeout(() => {
     // Set MasterJobSid and other basic fields
@@ -4088,11 +4141,15 @@ prepopulateFromMasterJob(masterJobData: any): void {
     });
     
     // Debug: Check form values
-    console.log('Form after patch:', this.houseJobForm.value);
+    console.log('Form after patch:', this.houseJobForm.getRawValue());
     console.log('DepartmentMasterSid in form:', this.houseJobForm.get('DepartmentMasterSid')?.value);
     console.log('MasterJobNumber set to:', this.houseJobForm.get('MasterJobNumber')?.value);
     
     // Handle POL, POD, FPD - need to convert from codes to SIDs
+    if (masterJobData.POOCode || masterJobData.POO) {
+      this.setPortFromCode('POO', masterJobData.POOCode || masterJobData.POO);
+    }
+
     if (masterJobData.POLCode || masterJobData.POL) {
       this.setPortFromCode('POL', masterJobData.POLCode || masterJobData.POL);
     }
@@ -4120,18 +4177,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
     
     // Disable department field since it's from master job
     this.houseJobForm.get('DepartmentMasterSid')?.disable();
-    
-    // Trigger vessel search based on ports after a delay
-    setTimeout(() => {
-      this.getVesselBasedOnPorts();
-      
-      // If vessel name is provided, try to auto-select it
-      if (masterJobData.VesselName) {
-        setTimeout(() => {
-          this.autoSelectVesselVoyage(masterJobData.VesselName, masterJobData.VoyageNo);
-        }, 1000);
-      }
-    }, 500);
+
     
     this.appSettingService.showSuccess('Master job data loaded successfully');
   }, 200);
@@ -4165,35 +4211,36 @@ private setPortFromCode(formControlName: string, portCode: string): void {
     this.handlePODChange(port);
   }
 }
-private autoSelectVesselVoyage(vesselName: string, voyageNo: string): void {
-  if (!vesselName || this.headerVesselList.length === 0) return;
+// private autoSelectVesselVoyage(vesselName: string, voyageNo: string): void {
+//   if (!vesselName || this.airlineList.length === 0) return;
   
-  // Find matching vessel in the list
-  const matchingVessel = this.headerVesselList.find(vessel => 
-    vessel.VesselName?.toLowerCase() === vesselName.toLowerCase()
-  );
+//   // Find matching vessel in the list
+//   const matchingVessel = this.airlineList.find(vessel => 
+//     vessel.VesselName?.toLowerCase() === vesselName.toLowerCase()
+//   );
   
-  if (matchingVessel) {
-    console.log('Found matching vessel:', matchingVessel);
+//   if (matchingVessel) {
+//     console.log('Found matching vessel:', matchingVessel);
     
-    // Set the vessel name first
-    this.houseJobForm.patchValue({
-      VesselName: matchingVessel.VesselName
-    });
+//     // Set the vessel name first
+//     this.houseJobForm.patchValue({
+//       VesselName: matchingVessel.VesselName,
+//       VoyageNo : matchingVessel.VoyageNo,
+//     });
     
-    // If voyage number matches, set it too
-    if (voyageNo && matchingVessel.VoyageNo === voyageNo) {
-      this.houseJobForm.patchValue({
-        VoyageNo: matchingVessel.VoyageNo,
-        ETA: matchingVessel.ETA ? new Date(matchingVessel.ETA) : null,
-        ETD: matchingVessel.ETD ? new Date(matchingVessel.ETD) : null
-      });
-    }
+//     // If voyage number matches, set it too
+//     // if (voyageNo && matchingVessel.VoyageNo === voyageNo) {
+//     //   this.houseJobForm.patchValue({
+//     //     VoyageNo: matchingVessel.VoyageNo,
+//     //     ETA: matchingVessel.ETA ? new Date(matchingVessel.ETA) : null,
+//     //     ETD: matchingVessel.ETD ? new Date(matchingVessel.ETD) : null
+//     //   });
+//     // }
     
-    // Get voyages for this vessel
-    this.getVoyageForPortsAndVessels();
-  }
-}
+//     // Get voyages for this vessel
+//     this.getVoyageForPortsAndVessels();
+//   }
+// }
  
  
  
