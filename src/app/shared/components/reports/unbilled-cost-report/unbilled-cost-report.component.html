@@ -1,0 +1,116 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Unbilled Cost
+        as on {{ params?.FromHBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                </div>
+                <div>
+
+                </div>
+            </div>
+
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="detailRadio" name="viewMode" (change)="viewMode = 'detail'"
+                [checked]="viewMode === 'detail'">
+            <label class="form-check-label" for="detailRadio">Detail</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="summaryRadio" name="viewMode"
+                (change)="viewMode = 'summary'" [checked]="viewMode === 'summary'">
+            <label class="form-check-label" for="summaryRadio">Summary</label>
+        </div>
+
+        <div *ngIf="viewMode === 'detail'" class="table-responsive">
+            <h5>Detail</h5>
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Branch</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
+                        <th class="bg-transparent text-light">HBL No.</th>
+                        <th class="bg-transparent text-light">Job Status</th>
+                        <th class="bg-transparent text-light">Booking No</th>
+                        <th class="bg-transparent text-light">Charge Name</th>
+                        <th class="bg-transparent text-light">PP/CC</th>
+                        <th class="bg-transparent text-light">Dr/Cr</th>
+                        <th class="bg-transparent text-light">Amount</th>
+                        <th class="bg-transparent text-light">Local Amount</th>
+                        <th class="bg-transparent text-light">Party</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data" style="white-space: nowrap;">
+                        <td>{{item.branchName}}</td>
+                        <td>{{ item.houseDept }}</td>
+                        <td>{{ item.HBLNo }}</td>
+                        <td>{{ item.houseStatus }}</td>
+                        <td>{{ item.bookingNo }}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.chargeName }}</td>
+                        <td>{{ item.PPCC }}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.CostDrCr }}</td>
+                        <td>{{item.CostAmount}}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.CostLocalAmount }}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="viewMode === 'summary'" class="table-responsive">
+            <h5>Summary</h5>
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Branch</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
+                        <th class="bg-transparent text-light">HBL No.</th>
+                        <th class="bg-transparent text-light">Job Status</th>
+                        <th class="bg-transparent text-light">Booking No</th>
+                        <th class="bg-transparent text-light">Amount</th>
+                        <th class="bg-transparent text-light">Local Amount</th>
+                        <th class="bg-transparent text-light">Party</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data" style="white-space: nowrap;">
+                        <td>{{item.branchName}}</td>
+                        <td>{{ item.houseDept }}</td>
+                        <td>{{ item.HBLNo }}</td>
+                        <td>{{ item.houseStatus }}</td>
+                        <td>{{ item.bookingNo }}</td>
+                        <td>{{item.CostAmount}}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.CostLocalAmount }}</td>
+                        <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
