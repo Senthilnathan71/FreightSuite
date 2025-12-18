@@ -231,22 +231,20 @@ export class InvoiceEntryComponent implements OnInit {
       this.userData = userProfile;
 
     }
-    this.initForm();
+    
     try {
-      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+      this.currentBranch = this.appSettingService.getCurrentBranchInfo();
       this.MenuMasterSid = localStorage.getItem('currentMenuId');
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
-      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
       this.currentCountry = Number(this.currentCompany?.CountryMasterSid)
-      this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid)
-      this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
+
       this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
+
       this.currentBranchCityId = this.currentBranch.CityMasterSid;
-        this.currentCurrencyCode=this.companySettings.getCurrencySettings().code;
          console.log('currentCompany', this.currentCurrencyCode)
       console.log('=== INITIAL COMPANY DATA ===');
       console.log('Current User Country:', this.currentUserCountry);
@@ -262,7 +260,8 @@ export class InvoiceEntryComponent implements OnInit {
 
 
 
-
+    this.initForm();
+    this.initializeDefaultHeaderCurrency();
     this.loadLookups();
     this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
       console.log('GSTType changed to:', value);
@@ -375,7 +374,21 @@ export class InvoiceEntryComponent implements OnInit {
     this.invoiceForm.setValidators(this.consistentExchangeRatesValidator(this.currencyList));
   }
 
+    initializeDefaultHeaderCurrency() {
+    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    // taking currency related infos
+    this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    const finalCompanyCurrencyId = companyCurrencyId || this.companyCurrency.currencyMasterSid;
+    const companyCurrency = this.currencyList.find(c => c.CurrencyMasterSid === finalCompanyCurrencyId);
+    const finalCompanyCurrencyCode = this.currentCurrencyCode || companyCurrency?.currencyCode;
 
+    this.invoiceForm.patchValue({
+      CurrencyMasterSid: finalCompanyCurrencyId
+    });
+    // console.log("INIT VENDOR INVOICE FORM", this.vendorInvoiceForm.getRawValue());
+
+  }
 
   async loadLookups() {
     this.spinner.show();
