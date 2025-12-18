@@ -368,6 +368,12 @@ isVoyageFreeText: boolean = false;
   customerWiseSummary : any;
     profitSummary : any;
       chargeList:any[]=[];
+
+      // Add a variable to track which report is selected
+selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
+
+
+
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
     { id: 2, name: 'FCL' },
@@ -3374,7 +3380,9 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
   }
 
-       reportBill() {
+
+       reportBill(type: 'HBL' | 'HBLDraft') {
+        this.selectedReport = type;
         const modalRef = this.modalService.open(HblComponent,{
           size: 'xl',
           scrollable: true,
@@ -3382,7 +3390,11 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.housejobData = this.housejobData || [];
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
+          modalRef.componentInstance.selectedReport = type; 
       }
+
+
+
 
         reportShipmentProfit() {
           const modalRef=this.modalService.open(ShipmentComponent,{

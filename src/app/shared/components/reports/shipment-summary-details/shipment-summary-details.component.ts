@@ -46,4 +46,11 @@ export class ShipmentSummaryDetailsComponent {
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
+  
+  getFilteredCustomerType(customerType: string[]): string {
+    if (!customerType || !Array.isArray(customerType)) return '';
+    const allowed = ['consignee', 'shipper'];
+    return customerType.filter(c => allowed.includes(c)).join(', ');
+  }
+
 }

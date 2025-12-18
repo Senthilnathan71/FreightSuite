@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -20,37 +21,39 @@ export class NumberToWordsService {
   private scalesInternational = ['', 'Thousand', 'Million', 'Billion'];
   private scalesIndian = ['', 'Thousand', 'Lakh', 'Crore'];
 
-  convert(num: number, region: 'IN' | 'US' = 'US'): string {
+  private currencyList : any[] = [];
+
+  constructor() {}
+
+  initializeCurrencies(currenies : any[]){
+    this.currencyList = currenies;
+    console.log("Inside Number to Words service",{
+      currencies : this.currencyList
+    })
+  }
+
+  convert(num: number, CurrencyMasterSid?: number): string {
     if (num === 0) return 'Zero';
 
     let words = '';
     let scaleIndex = 0;
 
-    if (region === 'IN') {
-      // Indian Numbering System
-      const chunks = this.splitIndian(num);
+    // Indian Numbering System
+    const chunks = this.splitIndian(num);
 
-      for (let i = chunks.length - 1; i >= 0; i--) {
-        const chunk = chunks[i];
-        if (chunk !== 0) {
-          words += this.convertChunk(chunk) + ' ' + this.scalesIndian[i] + ' ';
-        }
-      }
-    } else {
-      // International Numbering System
-      while (num > 0) {
-        const chunk = num % 1000;
-        if (chunk !== 0) {
-          words = this.convertChunk(chunk) + ' ' +
-                  this.scalesInternational[scaleIndex] + ' ' + words;
-        }
-        num = Math.floor(num / 1000);
-        scaleIndex++;
+    for (let i = chunks.length - 1; i >= 0; i--) {
+      const chunk = chunks[i];
+      if (chunk !== 0) {
+        words += this.convertChunk(chunk) + ' ' + this.scalesIndian[i] + ' ';
       }
     }
 
-    return words.trim();
+    const ourCurrency = (this.currencyList || []).find(c => c.CurrencyMasterSid === CurrencyMasterSid);
+    const unit = ourCurrency?.CurrencyUnit;
+    const subUnit = ourCurrency?.CurrencySubUnit;
+    return `${unit} ${words.trim()} ${subUnit}`;
   }
+
 
   private convertChunk(num: number): string {
     let words = '';

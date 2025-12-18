@@ -70,7 +70,7 @@
                         <div
                             style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
                             <div style="display:flex; flex-direction:column; align-items:center;">
-                                
+                               
                                 <img *ngIf="showPrintLogo"
                                     src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
                                     alt="Company Logo"
@@ -78,7 +78,8 @@
                                
                                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg"
                                     alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-                               
+                                <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name'
+                                        }}</strong></h4>
                             </div>
 
                             <div style="font-size:14px; text-align:center;">
@@ -209,8 +210,9 @@
                 </div>
             </div>
 
-           
+            
             <div style="display:flex; margin-bottom:0;">
+                
                 <div style="flex:0 0 50%; display:flex; padding:0;">
                    
                     <div style="flex:0 0 50%;">
@@ -220,7 +222,7 @@
                             <div style="min-height:20px; height:auto;">{{housejobData.FPD}}</div>
                         </div>
                     </div>
-                    
+                   
                     <div style="flex:0 0 50%;">
                         <div
                             style="display:flex; flex-direction:column; border-left:1px solid black; border-bottom:1px solid black; text-align:center;">
@@ -242,9 +244,9 @@
                 </div>
             </div>
 
-          
+            
             <div style="display:flex;  margin-bottom:0;">
-               
+                
                 <div
                     style="flex:0 0 50%; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:8px;">
                     <p class="fw-bold">Handling Information</p>
@@ -298,7 +300,7 @@
                     </div>
                 </div>
 
-                
+               
                 <div style="display:flex; padding:0; min-height:300px; height:auto;">
                     <div
                         style="width:10%; white-space:nowrap; border:1px solid black; border-top:none; text-align:center;">
@@ -327,9 +329,9 @@
                 </div>
             </div>
 
-            
+           
             <div style="display:flex;align-items:stretch;">
-                
+               
                 <div
                     style="flex:0 0 50%; display:flex; flex-direction:column; border:1px solid black; border-top:none;">
                    
@@ -405,18 +407,18 @@
                     </div>
                 </div>
 
-                
+               
                 <div style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:8px;">
                     <div style="width:100%;"><strong>Others Charges</strong></div>
                 </div>
             </div>
 
-           
+            
             <div style="display:flex;  align-items:stretch; margin-bottom:0;">
-                
+               
                 <div
                     style="flex:0 0 50%; display:flex; flex-direction:column; border:1px solid black; border-top:none; padding:0;">
-                    
+                   
                     <div style="display:flex;">
                         <div style="flex:1; position:relative; padding:0;">
                             <div style="padding:0 8px;">
@@ -433,7 +435,7 @@
                         </div>
                     </div>
 
-                   
+                    
                     <div style="display:flex;">
                         <div style="flex:1; position:relative; padding:0; border-top:1px solid black;">
                             <div style="padding:0 8px;">
@@ -451,7 +453,7 @@
                     </div>
                 </div>
 
-              
+                
                 <div style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:8px;">
                     <p style="font-size:10px; margin:0;">Shipper certifies that particulars on the face hereof are
                         correct and that insofar as any part of the consignment contains restricted articles, such part
@@ -460,13 +462,13 @@
                 </div>
             </div>
 
-          
+            
             <div style="display:flex;  align-items:stretch; margin-bottom:0;">
-                
+               
                 <div
-                    style="flex:0 0 50%; display:flex; flex-direction:column; border-top:none; border-right:1px solid black; padding:0;border-bottom: none;">
+                    style="flex:0 0 50%; display:flex; flex-direction:column; border-top:none; border-right:1px solid black; padding:0;">
                     <div style="display:flex; border-bottom:1px solid black; border-left:1px solid black;">
-                       
+                        
                         <div style="flex:0 0 33.33%; padding:0;">
                             <div style="padding:0 8px;">
                                 <div
@@ -477,7 +479,7 @@
                             </div>
                         </div>
 
-                       
+                        
                         <div style="flex:0 0 33.33%; padding:0; position:relative;">
                             <div style="padding:0 8px;">
                                 <div style="position:relative; height:71px;">
@@ -501,8 +503,8 @@
                     </div>
                 </div>
 
-              
-                <div style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:0px;font-size: 12px;">
+                
+                <div style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:0px;">
                     <div style="width:100%;"><strong>As Agent for the Carrier</strong></div>
                     <div style="display:flex; justify-content:space-between; margin-top:4px;">
                         <div style="display:flex; flex-direction:column; margin-bottom:4px; text-align:center;">
@@ -544,7 +546,7 @@
                 </div>
             </footer>
 
-        </div> -->
+        </div>  -->
 
 
         <div style="width: 280mm;
@@ -564,18 +566,19 @@
                 <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">
                     <!-- Left Column -->
                     <div style="flex:0 0 50%; padding:0;">
-                        <div style="display:flex; flex-direction:column;   border-bottom:1px solid black;">
+                        <div
+                            style="display:flex; flex-direction:column;   border-bottom:1px solid black;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Shipper</strong></div>
                             <div style="min-height:130px; height:auto;">
                                 {{housejobData.ShipperName}}<br>{{housejobData.ShipperAddress}}</div>
                         </div>
-                        <div style="display:flex; flex-direction:column;">
+                        <div style="display:flex; flex-direction:column;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Consignee</strong></div>
                             <div style="min-height:130px; height:auto;">
                                 {{housejobData.ConsigneeName}}<br>{{housejobData.ConsigneeAddress}}</div>
                         </div>
                         <div
-                            style="display:flex; flex-direction:column; border:1px solid black;border-right: none;border-left: none;">
+                            style="display:flex; flex-direction:column; border:1px solid black;border-right: none;border-left: none;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Notify Party</strong></div>
                             <div style="min-height:119px; height:auto;">
                                 {{housejobData?.Others?.[0]?.NotifyParty}}<br>{{housejobData?.Others?.[0]?.NotifyPartyAddress}}
@@ -593,13 +596,13 @@
                     <div style="flex:0 0 50%; padding:0;">
                         <div
                             style="display:flex; flex-direction:column; border-bottom:1px solid black;border-left: 1px solid black;">
-                            <div style="display:flex; gap: 5px; ">
+                            <div style="display:flex; gap: 5px; padding-left: 5px;">
                                 <div style=" white-space:nowrap;"><strong>HAWB No. :</strong></div>
                                 <div>{{housejobData.HBLNo}}</div>
                             </div>
                             <div
                                 style="display:flex; flex-direction: column; align-items:center; flex-wrap:wrap; gap:1rem;">
-                                <div style="display:flex; flex-direction:column; align-items:center;">
+                                <div style="display:flex; flex-direction:column; align-items:center;margin-top: 5px;">
                                     <!-- Print logo -->
                                     <img *ngIf="showPrintLogo"
                                         src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
@@ -611,47 +614,80 @@
                                         }}</strong></h4> -->
                                 </div>
 
-                                <div style="font-size:14px; text-align:center;">
-                                    <h4 style="margin:0; padding:0; font-weight:600;">{{ currentCompany?.companyName ||
+                                <div style=" text-align:center; margin-top: 2px;">
+                                    <h4 style="margin:2px; padding:0; font-weight:600;">{{ currentCompany?.companyName
+                                        ||
                                         'Company Name' }}</h4>
-                                    <h5 style="margin:0; padding:0; font-weight:600;">{{ currentBranch?.branchName ||
+                                    <h5 style="margin:2px; padding:0; font-weight:600;">{{ currentBranch?.branchName ||
                                         'Company Branch' }}</h5>
                                     <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                    <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                                    <p style="margin:2px 0; font-size:14px;">{{ currentBranchCityName ||
+                                    <p style="margin:2px 0; ">{{ currentBranch?.addressLine2 || '' }} , {{
+                                        currentBranchCityName ||
                                         currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                                    <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.postalCode ||
-                                        currentBranch?.ZipCode || '' }}</p>
-                                    <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.phoneNumber ||
+                                    <p style="margin:2px 0; ">{{ currentBranch?.postalCode ||
+                                        currentBranch?.ZipCode || '' }} - {{ currentBranch?.phoneNumber ||
                                         currentBranch?.Phone || '' }}</p>
+                                    <p style="margin:2px 0; "></p>
                                 </div>
                             </div>
                         </div>
 
                         <div
                             style="padding:2px; min-height:100px; height:auto; border-left: 1px solid black;  border-bottom:1px solid black;">
-                            <div style="display:flex;">
+                            <div style="display:flex;padding-left: 5px;">
                                 <div style="width:200px; white-space:nowrap;"><strong>Job No.</strong></div>
-                                <div style="min-height:20px; height:auto;">: {{masterJobData?.MasterJobNumber}}</div>
+                                <div style="min-height:20px; height:auto;">:
+                                    {{housejobData?.masterJob?.MasterJobNumber}}</div>
                             </div>
-                            <div style="display:flex;">
+                            <div style="display:flex;padding-left: 5px;">
                                 <div style="width:200px; white-space:nowrap;"><strong>MAWB No.</strong></div>
                                 <div style="min-height:20px; height:auto;">: {{housejobData.MBLNo}}</div>
                             </div>
-                            <div style="display:flex;">
+                            <div style="display:flex;padding-left: 5px;">
                                 <div style="width:200px; white-space:nowrap;"><strong>HAWB No.</strong></div>
                                 <div style="min-height:20px; height:auto;">: {{housejobData.HBLNo}}</div>
                             </div>
-                            <div style="display:flex;">
+                            <div style="display:flex;padding-left: 5px;">
                                 <div style="width:200px; white-space:nowrap;"><strong>Agent</strong></div>
                                 <div>: {{housejobData.CustomerName}}</div>
                             </div>
                         </div>
 
-                        <div style="display:flex;  border-left:1px solid black; min-height:140px;">
-                            <div style="width:200px; white-space:nowrap;"><strong>Dimension or Volume</strong></div>
-                            <div>: {{housejobData?.Products?.[0]?.Volume}}</div>
+                        <div style="border-left:1px solid black; min-height:140px; padding-left:5px;">
+
+                            <!-- Label -->
+
+                            <div style="display: flex;">
+
+                                <strong style=" white-space:nowrap;">Dimension or Volume </strong>
+                                <div>
+                                    : {{ housejobData?.Products?.[0]?.Volume }}
+                                </div>
+                            </div>
+
+
+                            <!-- Values -->
+                            <div style="padding-left:5px;">
+
+                                <!-- Volume -->
+
+
+                                <!-- Dimensions with comma -->
+                                <div>
+                                    <ng-container *ngFor="let item of housejobData?.Products; let i = index">
+                                        {{ item?.Length }} × {{ item?.Width }} × {{ item?.Height }}
+                                        <span *ngIf="i < housejobData.Products.length - 1">, </span>
+                                    </ng-container>
+                                </div>
+
+                            </div>
+                            <div>
+                                <strong>Total Vol : </strong>
+                                <span> {{housejobData?.Cargo?.[0]?.ChargeableWeight}}</span>
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
 
@@ -659,40 +695,40 @@
                 <div style="display:flex;  margin-bottom:0;">
                     <div style="flex:0 0 50%; display:flex;   border-top:1px solid black;">
                         <div style="flex:0 0 16.66%; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong>To</strong></div>
-                            <div>{{housejobData.POL}}</div>
+                            <div><strong>to</strong></div>
+                            <div>{{housejobData.POD}}</div>
                         </div>
                         <div
                             style="flex:0 0 50%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
                             <div><strong>By first Carrier</strong></div>
                             <div>{{housejobData.CarrierName}}</div>
                         </div>
-                        <div
-                            style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong>To</strong></div>
-                            <div style="font-size:10px;">{{housejobData.POL}}</div>
+                        <div style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; ">
+                            <div><strong style="padding-left: 2px;">to</strong></div>
+                            <div style="text-align:center;"></div>
+                            <!-- {{housejobData.POL}} -->
                         </div>
-                        <div
-                            style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong>By</strong></div>
-                            <div style="font-size:10px;">{{housejobData.POD}}</div>
+                        <div style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; ">
+                            <div><strong style="padding-left: 2px;">by</strong></div>
+                            <div style="text-align:center;"></div>
+                            <!-- {{housejobData.POD}} -->
                         </div>
-                        <div
-                            style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong>To</strong></div>
-                            <div style="font-size:10px;">{{housejobData.POL}}</div>
+                        <div style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; ">
+                            <div><strong style="padding-left: 2px;">to</strong></div>
+                            <div style="text-align:center;"></div>
+                            <!-- {{housejobData.POL}} -->
                         </div>
-                        <div
-                            style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong>By</strong></div>
-                            <div style="font-size:10px;">{{housejobData.POD}}</div>
+                        <div style="flex:0 0 8.33%; border-left:1px solid black; display:flex; flex-direction:column; ">
+                            <div><strong style="padding-left: 2px;">by</strong></div>
+                            <div style="text-align:center;"></div>
+                            <!-- {{housejobData.POD}} -->
                         </div>
                     </div>
 
                     <div style="flex:0 0 50%; display:flex; border-left:1px solid black; border-top: 1px solid black; ">
                         <div style="flex:0 0 12%; display:flex; flex-direction:column; text-align:center;">
                             <div><strong>Cur</strong></div>
-                            <div style="font-size:10px;">{{getCurrencyCodeById(currentCurrency)}}</div>
+                            <div>{{getCurrencyCodeById(currentCurrency)}}</div>
                         </div>
                         <div style="flex:0 0 16.66%; border-left:1px solid black; display:flex; flex-direction:column;">
                             <div
@@ -726,13 +762,13 @@
                         </div>
                         <div
                             style="flex:0 0 25%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong style="font-size:10px;">Declared Value of Carriage</strong></div>
-                            <div>N.V.D</div>
+                            <div><strong>Declared Value of Carriage</strong></div>
+                            <div></div>
                         </div>
                         <div
                             style="flex:0 0 25%; border-left:1px solid black; display:flex; flex-direction:column; text-align:center;">
-                            <div><strong style="font-size:10px;">Declared Value of Customs</strong></div>
-                            <div>AS PER INV</div>
+                            <div><strong>Declared Value of Customs</strong></div>
+                            <div></div>
                         </div>
                     </div>
                 </div>
@@ -761,14 +797,25 @@
 
                     <!-- Right Column -->
                     <div style="flex:0 0 50%; display:flex;border-left: 1px solid black;">
-                        <div style="flex:0 0 100%;">
-                            <div style="display:flex; flex-direction:column; text-align:center; padding:5px;">
-                                <div style="width:200px; white-space:nowrap; margin:0 auto;"><strong>Amount of
+                        <div style="flex:0 0 20%;">
+                            <div
+                                style="display:flex; flex-direction:column; text-align:center; padding:5px;border-right:1px solid black;">
+                                <div style=" white-space:nowrap; margin:0 auto;"><strong>Amt of
                                         Insurance</strong></div>
                                 <div style="min-height:20px; height:auto;"></div>
                             </div>
                         </div>
+                        <div style="flex:0 0 80%;">
+                            <div style="display:flex; flex-direction:column; padding-left: 5px;">
+                                <span style=" height:auto; font-size: 12px;">
+                                    INSURANCE-If shipper requests insurance in accordance with
+                                    conditions<br> on reverse hereof,  indicate amount to be insured in
+                                    figures in box marked <br>amount  of insurance.
+                                </span>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
 
                 <!-- Fourth Row -->
@@ -789,8 +836,8 @@
                         <td style="width:50%; padding:8px; vertical-align:top; border-left: 1px solid black;">
                             <table style="width:100%; border-collapse:collapse;">
                                 <tr>
-                                    <td style="width:100px; font-weight:bold;">Freight Terms</td>
-                                    <td>{{housejobData?.FreightTerms}}</td>
+                                    <td style="width:100px; font-weight:bold;">Freight Terms </td>
+                                    <td>: {{housejobData?.FreightTerms}}</td>
                                 </tr>
                             </table>
                         </td>
@@ -799,8 +846,7 @@
 
 
                 <!-- Cargo Table Header -->
-                <table
-                    style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:0; min-height:300px; height:auto;">
+                <table style="width:100%; border-collapse:collapse;  margin-bottom:0; min-height:300px; height:auto;">
                     <!-- Header Row -->
                     <thead>
                         <tr>
@@ -846,13 +892,13 @@
                                 {{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.2-2' }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
-                                {{ housejobData?.masterJobData?.WeightIn }}
+                                {{ housejobData?.masterJob?.WeightIn }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
                                 {{ housejobData?.Cargo?.[0]?.ChargeableWeight | number:'1.2-2' }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
-                                <!-- Rate empty -->
+                                {{ getFreightTotals().totalExchangeRate }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
                                 AS ARRANGED
@@ -863,6 +909,43 @@
                                 housejobData?.Cargo?.[0]?.MarksAndNumber }}
                             </td>
                         </tr>
+                        <tr>
+                            <!-- Total Pieces -->
+                            <td style="border:1px solid black; padding:5px; text-align:center; border-left:none;">
+                                <strong>{{ getTotalPieces() }}</strong>
+                            </td>
+
+                            <!-- Total Gross Weight -->
+                            <td style="border:1px solid black; padding:5px; text-align:center;">
+                                <strong>{{ getTotalGrossWeight() | number:'1.2-2' }}</strong>
+                            </td>
+
+                            <!-- Kg / Lb -->
+                            <td style="border:1px solid black; padding:5px; text-align:center;">
+
+                            </td>
+
+                            <!-- Total Chargeable Weight -->
+                            <td style="border:1px solid black; padding:5px; text-align:center;">
+                                <strong>{{ getTotalChargeableWeight() | number:'1.2-2' }}</strong>
+                            </td>
+
+                            <!-- Total Rate -->
+                            <td style="border:1px solid black; padding:5px; text-align:center;">
+                                <strong>{{ getTotalRate() }}</strong>
+                            </td>
+
+                            <!-- Charge -->
+                            <td style="border:1px solid black; padding:5px; text-align:center;">
+
+                            </td>
+
+                            <!-- Description -->
+                            <td style="border:1px solid black; padding:5px; text-align:center; border-right:none;">
+
+                            </td>
+                        </tr>
+
                     </tbody>
 
                 </table>
@@ -881,35 +964,32 @@
                             <!-- Prepaid -->
                             <div style="flex:0 0 33.33%; padding:0;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Prepaid</strong>
                                     </div>
-                                    <div></div>
+                                    <div>{{ freightCharges[0]?.RevenueAmount }}</div>
                                 </div>
                             </div>
                             <!-- Weight Charge -->
                             <div style="flex:0 0 33.33%; padding:0; position:relative;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Weight Charge</strong>
                                     </div>
                                     <div style="position:relative; height:20px;">
-                                        <div
+                                        <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
                             <!-- Collect -->
                             <div style="flex:0 0 33.33%; padding:0;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Collect</strong>
                                     </div>
-                                    <div></div>
+                                    <div>{{ freightCharges[0]?.CostAmount }}</div>
                                 </div>
                             </div>
                         </div>
@@ -918,14 +998,13 @@
                         <div style="display:flex;">
                             <div style="flex:0 0 100%; padding:0; position:relative;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong style="width:fit-content;">Valuation Charge</strong>
                                     </div>
                                     <div style="position:relative; height:20px;">
-                                        <div
+                                        <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -935,14 +1014,13 @@
                         <div style="display:flex;">
                             <div style="flex:0 0 100%; padding:0; position:relative; border-top:1px solid black;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong style="width:fit-content;">Tax</strong>
                                     </div>
                                     <div style="position:relative; height:20px;">
-                                        <div
+                                        <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -951,10 +1029,11 @@
 
                     <!-- Right Column: Others Charges -->
                     <table
-                        style="width:100%; border-collapse: collapse; border:1px solid black; box-sizing: border-box; border-right: none;border-left: none; border-top: none;">
+                        style="width:100%;  border-collapse: collapse; border:1px solid black; box-sizing: border-box; border-right: none;border-left: none; border-top: none;">
                         <tr>
-                            <td style="padding:2px; box-sizing: border-box;">
+                            <td style="padding:2px; box-sizing: border-box; vertical-align: top;">
                                 <strong>Other Charges</strong>
+                                <br>
                                 <span *ngFor="let charge of otherCharges">
                                     {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate
                                     }}&nbsp;&nbsp;
@@ -974,14 +1053,13 @@
                         <div style="display:flex;">
                             <div style="flex:1; position:relative; padding:0;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong style="width:fit-content;">Total other Charges due agent</strong>
                                     </div>
                                     <div style="position:relative; height:20px;">
-                                        <div
+                                        <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -992,8 +1070,7 @@
                             <div
                                 style="flex:1; position:relative; padding:0; border-top:1px solid black;border-bottom: none;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong style="width:fit-content;">Total other Charges due Carrier</strong>
 
                                     </div>
@@ -1010,12 +1087,20 @@
                     <!-- Right Column -->
                     <div
                         style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:8px;border-right: none;box-sizing: border-box;">
-                        <p style="font-size:10px; margin:0;">Shipper certifies that particulars on the face hereof are
+                        <p style=" margin:0;">Shipper certifies that particulars on the face hereof are
                             correct and that insofar as any part of the consignment contains restricted articles, such
                             part
                             is properly described by name and is in proper condition for carriage by air according to
                             the
                             International Air Transport Association's Restricted Articles Regulations.</p>
+
+                        <div style="text-align:center; display:flex; flex-direction:column; margin-top: 10px;">
+                            <span>
+                                {{ housejobData?.ShipperName || housejobData?.AgentName }}
+                            </span>
+                            <strong>Signature of Shipper or his Agent</strong>
+                        </div>
+
                     </div>
                 </div>
 
@@ -1028,8 +1113,7 @@
                             <!-- Total Prepaid -->
                             <div style="flex:0 0 33.33%; padding:0;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Total Prepaid</strong>
                                     </div>
                                     <div></div>
@@ -1040,9 +1124,9 @@
                             <div style="flex:0 0 33.33%; padding:0; position:relative;">
                                 <div style="padding:0 8px;">
                                     <div style="position:relative; height:71px;">
-                                        <div
+                                        <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -1050,8 +1134,7 @@
                             <!-- Total Collect -->
                             <div style="flex:0 0 33.33%; padding:0;">
                                 <div style="padding:0 8px;">
-                                    <div
-                                        style="white-space:nowrap; border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; text-align:center;">
+                                    <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Total Collect</strong>
                                     </div>
                                     <div style="min-height:50px; height:auto;"></div>
@@ -1062,28 +1145,32 @@
 
                     <!-- Right Column -->
                     <div
-                        style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:0px;font-size: 12px;border-bottom: none;border-right: none;padding: 2px;">
+                        style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:0px;border-bottom: none;border-right: none;padding: 2px;">
                         <div style="width:100%;"><strong>As Agent for the Carrier</strong></div>
-                        <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                            <div style="display:flex; flex-direction:column; margin-bottom:4px; text-align:center;">
-                                <div>{{housejobData.HBLDate | formatDate}}</div>
-                                <div><strong>Executed on(Date)</strong></div>
+                        <div style="display:flex; justify-content:space-between; margin-top:4px; padding:0 5px;">
+                            <!-- Executed on -->
+                            <div style="display:flex; flex-direction:column; text-align:center;">
+                                <strong>Executed on (Date)</strong>
+                                <span>{{ housejobData?.HBLDate | formatDate }}</span>
                             </div>
-                            <div style="display:flex; flex-direction:column; margin-bottom:4px; text-align:center;">
-                                <div>{{ currentCountryName }}</div>
-                                <div><strong>At(Place)</strong></div>
+                            <!-- At Place -->
+                            <div style="display:flex; flex-direction:column; text-align:center;">
+                                <strong>At (Place)</strong>
+                                <span>{{ currentCountryName }}</span>
                             </div>
-                            <div style="display:flex; flex-direction:column; margin-bottom:4px; text-align:center;">
-                                <div>{{housejobData.CarrierName}}</div>
-                                <div><strong>Signature of issuing <br> Carrier or its Agent</strong></div>
+                            <!-- Signature -->
+                            <div style="display:flex; flex-direction:column; text-align:center;">
+                                <strong>Signature of issuing <br> Carrier or its Agent</strong>
+                                <span>{{ housejobData?.CarrierName }}</span>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <!-- Footer -->
-            <footer style="position: absolute; bottom: 6mm; left: 0; right: 0; font-size: 10pt; line-height: 1.2;">
+            <footer style="position: absolute; bottom: 6mm; left: 0; right: 0;  line-height: 1.2;">
                 <div style="display:flex; justify-content:space-between; padding: 0 10px; margin-top:10px;">
                     <div><span>Printed By :</span> {{userData.userName}} </div>
                     <span>This document is computer-generated and does not require a signature.</span>
@@ -1091,7 +1178,5 @@
                 </div>
             </footer>
         </div>
-
-
     </div>
 </div>

@@ -247,6 +247,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   isVoyageFreeText: boolean = false;
   isETDFreeText: boolean = false;
   isETAFreeText: boolean = false;
+  selectedReport: 'MBL' | 'MBLDraft' = 'MBL';
 jobStatusOptions = [
   { id: 'Job Generated', name: 'Job Generated' },
   { id: 'Open', name: 'Open' },
@@ -3449,7 +3450,8 @@ getContainerMappingCount(containerSid: number): number {
 
 
 
-  reportMBLBill() {
+  reportMBLBill(type:'MBL' | 'MBLDraft') {
+    this.selectedReport = type;
     const modalRef = this.modalService.open(MblComponent, {
       size: 'xl',
       scrollable: true,
@@ -3458,6 +3460,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.selectedReport = type; 
 
   }
 

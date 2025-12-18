@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -17,7 +17,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
   templateUrl: './bank-receipt.component.html',
   styles: ``
 })
-export class BankReceiptComponent {
+export class BankReceiptComponent implements OnChanges {
   
   currentCompany: any
   currentBranch: any;
@@ -41,12 +41,15 @@ export class BankReceiptComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    // console.log(this.branchDetails, "BRANCH DETAILS");
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.numberToWords.initializeCurrencies(this.currencyList);
   }
+
+  
 
     loadCityName(): void {
     if (!this.currentBranchCityId) return;
@@ -54,13 +57,13 @@ export class BankReceiptComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
+        // console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
+          // console.log("Final City Name:", this.currentBranchCityName);
         }
 
  
@@ -77,7 +80,7 @@ export class BankReceiptComponent {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response|| [];
-        console.log('Currency List:', this.currency);
+        // console.log('Currency List:', this.currency);
       },
       error: (error) => {
         console.error('Failed to load currencies:', error);
@@ -95,13 +98,21 @@ export class BankReceiptComponent {
     private numberToWords: NumberToWordsService
   ) { }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['currencyList'] && changes['currencyList'].currentValue) {
+      this.currencyList = changes['currencyList'].currentValue;
+      this.numberToWords.initializeCurrencies(this.currencyList);
+    }
+  }
+
+
   modalClose() {
     this.activeModal.close()
   }
 
    getBankName(COAMasterSid: number ) {
     const bank = this.bankTypedLedgers.find(b => b.COAMasterSid == COAMasterSid);
-    console.log(bank,"BANK")
+    // console.log(bank,"BANK")
     return bank ? bank.LedgerName : '';
   }
  getTotalOriginalCurrencyAmount(): number {
@@ -120,32 +131,43 @@ getTotalOriginalLocalAmount(): number {
   }, 0);
 }
 
-  getAmountInWords(): string {
+  getAmountInWords() : string{
     const total = this.getTotalOriginalLocalAmount();
-    if (!total) return '';
-
-    const rupees = Math.floor(total);
-    const paise = Math.round((total - rupees) * 100);
-
-    const rupeesInWords = this.numberToWords.convert(rupees);
-    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
-
-    // Get currency code safely from first voucher
-    const selectedCode = this.receiptPrintData?.voucherMatchings?.[0]?.CurrencyCode;
-    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
-
-    // Find currency in the list
-    const selectedCurrency = this.currency?.find(
-      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
-    );
-
-    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
-
-    return paise > 0
-      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
-      : `${rupeesInWords} ${currencyName} Only`;
+    if(!total) return '';
+    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
+    if(!companyCurrency){
+      return '';
+    }
+    const amountInWords = this.numberToWords.convert(total,companyCurrency);
+    return amountInWords || '';
   }
+
+  // getAmountInWords(): string {
+  //   const total = this.getTotalOriginalLocalAmount();
+  //   if (!total) return '';
+
+  //   const rupees = Math.floor(total);
+  //   const paise = Math.round((total - rupees) * 100);
+
+  //   const rupeesInWords = this.numberToWords.convert(rupees);
+  //   const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+
+  //   // Get currency code safely from first voucher
+  //   const selectedCode = this.receiptPrintData?.voucherMatchings?.[0]?.CurrencyCode;
+  //   if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+
+  //   // Find currency in the list
+  //   const selectedCurrency = this.currency?.find(
+  //     (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  //   );
+
+  //   const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+  //   const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+  //   return paise > 0
+  //     ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+  //     : `${rupeesInWords} ${currencyName} Only`;
+  // }
 
 
 
