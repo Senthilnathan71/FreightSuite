@@ -128,7 +128,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   public edocComponent = EdocComponent;
   public emailComponent = EmailEntryComponent;
   public containeractivity = ContainerActivityComponent;
-
+  private invoiceStatusCache = new Map<string, string>();
   masterJobForm: FormGroup;
   isEditMode = false;
   masterJobSid: number | null = null;
@@ -157,6 +157,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   profitSummary: any;
   customerWiseSummary: any;
   chargeWiseSummary: any[] = []
+  
 
   // Lookup data
   departments: any[] = [];
@@ -381,7 +382,7 @@ jobStatusOptions = [
     console.log('📋 Filter Option:', this.filterOption);
     console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
 
-
+     
     // Setup debounced vessel search
     this.setupVesselSearchDebouncing();
     this.loadHSSACLookups();
@@ -1217,6 +1218,7 @@ jobStatusOptions = [
         if (responses.masterJob.status && responses.masterJob.data) {
           const data = responses.masterJob.data;
           this.masterJobData = data;
+          
           console.log("Master Job Data", this.masterJobData);
           const aggregatedTotals = data.aggregatedTotals;
 
@@ -2523,16 +2525,12 @@ getContainerMappingCount(containerSid: number): number {
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
     const MBLNo = this.masterJobForm.get('MBLNo')?.value;
-    const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
-    const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
-    const selectedPOD = this.masterJobForm.get('POD')?.value; // PortMasterSid
-    const selectedFPD = this.masterJobForm.get('FPD')?.value; // PortMasterSid
+    const PORSid = this.masterJobForm.get('POO')?.value; // PortMasterSid
+    const POLSid = this.masterJobForm.get('POL')?.value; // PortMasterSid
+    const PODSid = this.masterJobForm.get('POD')?.value; // PortMasterSid
+    const FPODSid = this.masterJobForm.get('FPD')?.value; // PortMasterSid
     const EffectiveDate = this.masterJobForm.get('MasterJobDate')?.value;
     const ExpiredDate = this.masterJobForm.get('MasterJobDate')?.value;
-    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
-    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
-    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
-    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const CargoType = this.f['CargoType']?.value;
     const NetWeight = this.f['NetWeight']?.value;
     const GrossWeight = this.f['GrossWeight']?.value;
@@ -2897,7 +2895,8 @@ getContainerMappingCount(containerSid: number): number {
       POL: [data?.POL || null],
       POD: [data?.POD || null],
       FreightTerms: [data?.FreightTerms || ''],
-      JobType: [data?.JobType || '']
+      JobType: [data?.JobType || ''],
+      HouseStatus: [data?.HouseStatus || '']
     })
     return shipmentForm;
   }
@@ -2931,6 +2930,7 @@ getContainerMappingCount(containerSid: number): number {
 
   //2
   patchShipments(shipments: any[]) {
+      this.clearInvoiceStatusCache();
     this.bookingItems = shipments
     this.attachedBookings.clear();
     console.log(shipments, 'shipments')
@@ -3754,28 +3754,54 @@ getContainerMappingCount(containerSid: number): number {
     window.print();
   }
 
-  bookingCreateInMasterJob() {
-    const bookingPayload = {
-      houses: this.loadedHouses,  // ✅ send all houses
-      createdBy: this.appSettingsService.userSettingSource.value['userEmail']
-    };
+ bookingCreateInMasterJob() {
+  const bookingPayload = {
+    houses: this.loadedHouses,
+    createdBy: this.appSettingsService.userSettingSource.value['userEmail']
+  };
 
-    this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
-      next: (results: any) => {
-        this.spinner.hide();
+  this.spinner.show();
 
-        if (results.status) {
-          this.toastr.success('Booking created successfully');
-        } else {
-          this.toastr.error(results.message || 'Failed to create booking');
-        }
-      },
-      error: () => {
-        this.spinner.hide();
-        this.toastr.error('Failed to create booking');
+  this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
+    next: (resp: any) => {
+      this.spinner.hide();
+
+      // 🚨 Hard failure (API / server error)
+      if (!resp || resp.status !== true) {
+        this.appSettingService.showError(
+          resp?.message || 'Failed to create booking'
+        );
+        return;
       }
-    });
-  }
+
+      const results = resp.data || [];
+
+      const successList = results.filter((r: any) => r.success);
+      const duplicateList = results.filter((r: any) => !r.success);
+
+      // ✅ Case 1: At least one booking created
+      if (successList.length > 0) {
+        this.appSettingService.showSuccess(
+          `${successList.length} booking(s) created successfully`
+        );
+      }
+
+      // ℹ️ Case 2: All houses already have booking
+      else if (duplicateList.length > 0 && successList.length === 0) {
+        this.appSettingService.showInfo(
+          'All selected house jobs already have bookings'
+        );
+      }
+
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Booking creation failed:', err);
+      this.appSettingService.showError('Failed to create booking');
+    }
+  });
+}
+
   showInfo() {
     if (!this.masterJobData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
@@ -4049,6 +4075,203 @@ getHouseJobTotalPackagesFromMaster(shipment: any): string {
     return false;
   }
 
+ 
+
+getInvoiceStatus(shipment: any): string {
+    // Generate cache key based on shipment and house job data
+    const cacheKey = this.getInvoiceStatusCacheKey(shipment);
+    
+    // Return cached result if available
+    if (this.invoiceStatusCache.has(cacheKey)) {
+        return this.invoiceStatusCache.get(cacheKey)!;
+    }
+    
+    console.log('🔍 Checking invoice status for shipment:', shipment);
+    console.log('📋 Shipment HBLNo:', shipment?.HBLNo);
+    
+    // First, try to find the corresponding house job from masterJobData
+    let houseJobData = null;
+    
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+        houseJobData = this.masterJobData.houseJob.find(
+            (hj: any) => hj.HBLNo === shipment.HBLNo
+        );
+        console.log('📊 Found houseJobData:', houseJobData);
+    }
+    
+    // Use houseJobData if found, otherwise use shipment data
+    const dataToCheck = houseJobData || shipment;
+    
+    // Check if costRevenueCharges exists and is an array with items
+    if (!dataToCheck || !dataToCheck.costRevenueCharges || !Array.isArray(dataToCheck.costRevenueCharges)) {
+        console.log('❌ No costRevenueCharges table available or not an array');
+        this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
+        return 'no-cost-charges';
+    }
+    
+    if (dataToCheck.costRevenueCharges.length === 0) {
+        console.log('⚠️ costRevenueCharges array is empty');
+        this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
+        return 'no-cost-charges';
+    }
+    
+    console.log('📋 costRevenueCharges items:', dataToCheck.costRevenueCharges.length);
+    
+    // Check each costRevenueCharge for revenue voucher
+    let hasRevenueVoucher = false;
+    let voucherDetails = null;
+    
+    for (const charge of dataToCheck.costRevenueCharges) {
+        console.log('🔍 Checking charge:', {
+            RevenueVoucherHeaderSid: charge.RevenueVoucherHeaderSid,
+            revenueVoucherHeader: charge.revenueVoucherHeader
+        });
+        
+        if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid) {
+            hasRevenueVoucher = true;
+            voucherDetails = charge.revenueVoucherHeader || { VoucherHeaderSid: charge.RevenueVoucherHeaderSid };
+            console.log('✅ Found revenue voucher:', voucherDetails);
+            break;
+        }
+    }
+    
+    if (!hasRevenueVoucher) {
+        console.log('⚠️ No revenue voucher found in costRevenueCharges');
+        this.invoiceStatusCache.set(cacheKey, 'pending');
+        return 'pending';
+    }
+    
+    // Check if revenueVoucherHeader has a value
+    const voucherHeaderSid = voucherDetails?.VoucherHeaderSid;
+    
+    let result: string;
+    if (voucherHeaderSid && voucherHeaderSid !== null && voucherHeaderSid !== undefined) {
+        console.log('✅ Invoice generated with VoucherHeaderSid:', voucherHeaderSid);
+        result = 'generated';
+    } else {
+        console.log('❌ RevenueVoucherHeaderSid is null/undefined');
+        result = 'pending';
+    }
+    
+    // Cache the result
+    this.invoiceStatusCache.set(cacheKey, result);
+    return result;
+}
+private getInvoiceStatusCacheKey(shipment: any): string {
+    if (!shipment) return 'null-shipment';
+    
+    const hblNo = shipment.HBLNo || 'no-hbl';
+    const houseJobSid = shipment.HouseJobSid || 'no-house-job-sid';
+    
+    // Also include masterJobData houseJob costRevenueCharges hash if available
+    let costRevenueHash = 'no-cost-revenue';
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+        const houseJob = this.masterJobData.houseJob.find((hj: any) => hj.HBLNo === shipment.HBLNo);
+        if (houseJob && houseJob.costRevenueCharges) {
+            // Create a simple hash of the costRevenueCharges
+            costRevenueHash = JSON.stringify(houseJob.costRevenueCharges.map((c: any) => ({
+                RevenueVoucherHeaderSid: c.RevenueVoucherHeaderSid,
+                VoucherHeaderSid: c.revenueVoucherHeader?.VoucherHeaderSid
+            })));
+        }
+    }
+    
+    return `${hblNo}-${houseJobSid}-${costRevenueHash.substring(0, 50)}`;
+}
+clearInvoiceStatusCache(): void {
+    this.invoiceStatusCache.clear();
+}
+/**
+ * Check if shipment has costRevenueCharges table
+ */
+hasCostRevenueCharges(shipment: any): boolean {
+    // First, try to find the corresponding house job from masterJobData
+    let houseJobData = null;
+    
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+        houseJobData = this.masterJobData.houseJob.find(
+            (hj: any) => hj.HBLNo === shipment.HBLNo
+        );
+    }
+    
+    // Use houseJobData if found, otherwise use shipment data
+    const dataToCheck = houseJobData || shipment;
+    
+    return dataToCheck && 
+           dataToCheck.costRevenueCharges && 
+           Array.isArray(dataToCheck.costRevenueCharges) && 
+           dataToCheck.costRevenueCharges.length > 0;
+}
+
+/**
+ * Get detailed invoice information
+ */
+getInvoiceInfo(shipment: any): any {
+    if (!this.hasCostRevenueCharges(shipment)) {
+        return null;
+    }
+    
+    // First, try to find the corresponding house job from masterJobData
+    let houseJobData = null;
+    
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+        houseJobData = this.masterJobData.houseJob.find(
+            (hj: any) => hj.HBLNo === shipment.HBLNo
+        );
+    }
+    
+    // Use houseJobData if found, otherwise use shipment data
+    const dataToCheck = houseJobData || shipment;
+    
+    // Find charge with revenue voucher
+    for (const charge of dataToCheck.costRevenueCharges) {
+        if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader) {
+            return {
+                chargeDescription: charge.ChargeDescription,
+                revenueAmount: charge.RevenueAmount,
+                voucherNumber: charge.revenueVoucherHeader?.VoucherNumber,
+                voucherHeaderSid: charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid,
+                voucherType: charge.revenueVoucherTypeMaster?.DocumentTypeName || 'Invoice'
+            };
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Get the voucher number for display
+ */
+getVoucherNumber(shipment: any): string {
+    // First, try to find the corresponding house job from masterJobData
+    let houseJobData = null;
+    
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+        houseJobData = this.masterJobData.houseJob.find(
+            (hj: any) => hj.HBLNo === shipment.HBLNo
+        );
+    }
+    
+    // Use houseJobData if found, otherwise use shipment data
+    const dataToCheck = houseJobData || shipment;
+    
+    if (!dataToCheck || !dataToCheck.costRevenueCharges || !Array.isArray(dataToCheck.costRevenueCharges)) {
+        return '';
+    }
+    
+    // Find first charge with revenue voucher
+    for (const charge of dataToCheck.costRevenueCharges) {
+        if (charge.revenueVoucherHeader?.VoucherNumber) {
+            return charge.revenueVoucherHeader.VoucherNumber;
+        }
+        if (charge.RevenueVoucherHeaderSid && !charge.revenueVoucherHeader) {
+            // If we have the SID but no voucher header object
+            return `Voucher #${charge.RevenueVoucherHeaderSid}`;
+        }
+    }
+    
+    return '';
+}
   
   /**
    * Get grouped error keys for template iteration

@@ -870,113 +870,138 @@
 
              
             </div>
-               @if(totalLengthOfAttachedBookings > 0){
-                <div>
-                    <div class="modern-table-wrapper my-1">
-                        <table class="modern-table ">
-                            <thead>
-                                <tr>
-                                    <th width="3%"></th>
-                                    <th>Booking No</th>
-                                    <!-- <th>Booking Date</th> -->
-                                    <th>Dept</th>
-                                    <th>HBL No</th>
-                                    <th>Customer</th>
-                                    <!-- <th>Customer Address</th> -->
-                                    <th>Shipper</th>
-                                    <!-- <th>Shipper Address</th> -->
-                                    <th>Consignee</th>
-                                    <!-- <th>Consignee Address</th> -->
-                                    <th>Dest.Agent</th>
-                                    <!-- <th>MBL Date</th> -->
-                                    <th>POL</th>
-                                    <th>POD</th>
-                                    <th>PP/CC</th>
-                                    <th>Job Type</th>
-                                    <th>Gross Wt</th>
-                                    <th>CBM</th>
-                                    <th>Total Pkg</th>
-                                    </tr>
-                                    </thead>
-                                    
-                                    <tbody>
-                                <!-- Row 1 -->
-                                @for(shipment of slicedAttachedBookings ;let shipmentIndex = $index ; track
-                                shipmentIndex){
-                                <tr class="table-row"
-                                      [ngClass]="{'no-container-mapping': !hasContainerMapping(shipment) && shipment.HouseJobSid}">
-                                    <td class="actions-cell">
-                                        <div class="action-buttons">
-
-                                            <!-- <a class="action-icon edit" target="_blank"
-                                                [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]" ngbTooltip="View House Job">
-                                                <i class="fas fa-eye text-info"></i>
-                                            </a> -->
-                                            <button class="action-icon delete" (click)="navigateToHouse(shipment)" [disabled]="!shipment.HouseJobSid" ngbTooltip="View House Job">
-                                                 <i class="fas fa-eye text-info"></i>
-                                            </button>
-                                            <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
-                                            <button class="action-icon delete"
-                                                (click)="detachBooking(shipmentIndex,shipment)" ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
-                                                  <span *ngIf="shipment.HouseJobSid && hasContainerMappingForShipment(shipment)" 
-                  class="ms-1" ngbTooltip="Container mapped">
-                <i class="fas fa-check-circle text-success" style="font-size: 12px;"></i>
-            </span>
-            <span *ngIf="shipment.HouseJobSid && !hasContainerMappingForShipment(shipment)" 
-                  class="ms-1" ngbTooltip="No container mapping">
-                <i class="fas fa-exclamation-circle text-warning" style="font-size: 12px;"></i>
-            </span>
-                                        </div>
-                                    </td>
-                                    <td><a class="fw-bold"
-                                            [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">{{shipment.BookingNo}}</a>
-                                    </td>
-                                    <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
-                                    <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
-                                    <td>{{shipment.HBLNo }}</td>
-                                    <td>{{shipment.CustomerName}}</td>
-                                    <!-- <td>{{shipment.CustomerAddress}}</td> -->
-                                    <td>{{shipment.ShipperName}}</td>
-                                    <!-- <td>{{shipment.ShipperAddress}}</td> -->
-                                    <td>{{shipment.ConsigneeName}}</td>
-                                    <!-- <td>{{shipment.ConsigneeAddress}}</td> -->
-                                    <td>{{getAgentName(shipment.DestinationAgent)}}</td>
-                                    <!-- <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td> -->
-                                    <td>{{shipment.POL}}</td>
-                                    <td>{{shipment.POD}}</td>
-                                    <td>
-                                        @if(shipment.FreightTerms === 'Prepaid'){
-                                        <span class="type-badge type-prepaid">PREPAID</span>
-                                        } @else if(shipment.FreightTerms === 'Collect'){
-                                        <span class="type-badge type-collect">COLLECT</span>
-                                        } @else {
-                                        <span>N/A</span>
-                                        }
-                                    </td>
-                                    <td>{{shipment.JobType}}</td>
-                                      <td>{{ getHouseJobGrossWeightFromMaster(shipment) }}</td>
-<td>{{ getHouseJobVolumeFromMaster(shipment) }}</td>
-<td>{{ getHouseJobTotalPackagesFromMaster(shipment) }}</td>
-                                    
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-1">
-                        <ngb-pagination class="d-flex justify-content-end"
-                            [collectionSize]="totalLengthOfAttachedBookings" [pageSize]="pageSize" [(page)]="page"
-                            (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true" [ellipses]="false"
-                            [maxSize]="10" size="sm">
-                        </ngb-pagination>
-                    </div>
+            @if(totalLengthOfAttachedBookings > 0){
+            <div>
+                <div class="modern-table-wrapper my-1">
+                    <table class="modern-table ">
+                        <thead>
+                            <tr>
+                                <th width="3%"></th>
+                                <th>Booking No</th>
+                                <!-- <th>Booking Date</th> -->
+                                <th>Dept</th>
+                                <th>HBL No</th>
+                                <th>Customer</th>
+                                <!-- <th>Customer Address</th> -->
+                                <th>Shipper</th>
+                                <!-- <th>Shipper Address</th> -->
+                                <th>Consignee</th>
+                                <!-- <th>Consignee Address</th> -->
+                                <th>Dest.Agent</th>
+                                <!-- <th>MBL Date</th> -->
+                                <th>POL</th>
+                                <th>POD</th>
+                                <th>PP/CC</th>
+                                <th>Job Type</th>
+                                <th>Gross Wt</th>
+                                <th>CBM</th>
+                                <th>Total Pkg</th>
+                                <th>House Status</th>
+                                <th>Invoice Status</th>
+                            </tr>
+                        </thead>
+            
+                        <tbody>
+                            <!-- Row 1 -->
+                            @for(shipment of slicedAttachedBookings ;let shipmentIndex = $index ; track
+                            shipmentIndex){
+                            <tr class="table-row"
+                                [ngClass]="{'no-container-mapping': !hasContainerMapping(shipment) && shipment.HouseJobSid}">
+                                <td class="actions-cell">
+                                    <div class="action-buttons">
+            
+                                        <!-- <a class="action-icon edit" target="_blank"
+                                                            [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]" ngbTooltip="View House Job">
+                                                            <i class="fas fa-eye text-info"></i>
+                                                        </a> -->
+                                        <button class="action-icon delete" (click)="navigateToHouse(shipment)"
+                                            [disabled]="!shipment.HouseJobSid" ngbTooltip="View House Job">
+                                            <i class="fas fa-eye text-info"></i>
+                                        </button>
+                                        <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
+                                        <button class="action-icon delete" (click)="detachBooking(shipmentIndex,shipment)"
+                                            ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
+                                        <span *ngIf="shipment.HouseJobSid && hasContainerMappingForShipment(shipment)" class="ms-1"
+                                            ngbTooltip="Container mapped">
+                                            <i class="fas fa-check-circle text-success" style="font-size: 12px;"></i>
+                                        </span>
+                                        <span *ngIf="shipment.HouseJobSid && !hasContainerMappingForShipment(shipment)" class="ms-1"
+                                            ngbTooltip="No container mapping">
+                                            <i class="fas fa-exclamation-circle text-warning" style="font-size: 12px;"></i>
+                                        </span>
+            
+                                    </div>
+                                </td>
+                                <td><a class="fw-bold"
+                                        [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">{{shipment.BookingNo}}</a>
+                                </td>
+                                <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
+                                <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
+                                <td>{{shipment.HBLNo }}</td>
+                                <td>{{shipment.CustomerName}}</td>
+                                <!-- <td>{{shipment.CustomerAddress}}</td> -->
+                                <td>{{shipment.ShipperName}}</td>
+                                <!-- <td>{{shipment.ShipperAddress}}</td> -->
+                                <td>{{shipment.ConsigneeName}}</td>
+                                <!-- <td>{{shipment.ConsigneeAddress}}</td> -->
+                                <td>{{getAgentName(shipment.DestinationAgent)}}</td>
+                                <!-- <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td> -->
+                                <td>{{shipment.POL}}</td>
+                                <td>{{shipment.POD}}</td>
+                                <td>
+                                    @if(shipment.FreightTerms === 'Prepaid'){
+                                    <span class="type-badge type-prepaid">PREPAID</span>
+                                    } @else if(shipment.FreightTerms === 'Collect'){
+                                    <span class="type-badge type-collect">COLLECT</span>
+                                    } @else {
+                                    <span>N/A</span>
+                                    }
+                                </td>
+                                <td>{{shipment.JobType}}</td>
+                                <td>{{ getHouseJobGrossWeightFromMaster(shipment) }}</td>
+                                <td>{{ getHouseJobVolumeFromMaster(shipment) }}</td>
+                                <td>{{ getHouseJobTotalPackagesFromMaster(shipment) }}</td>
+                                <td>{{shipment.HouseStatus }}</td>
+                                 <td>
+                            <!-- Updated invoice status check -->
+                            @if(getInvoiceStatus(shipment) === 'no-cost-charges'){
+                                <span class="invoice-status-badge badge bg-secondary" 
+                                    ngbTooltip="No cost/revenue charges table available">
+                                     No Charges
+                                </span>
+                            }
+                            @else if(getInvoiceStatus(shipment) === 'pending'){
+                                <span class="invoice-status-badge badge bg-warning" 
+                                    [ngbTooltip]="'Invoice pending for ' + shipment.HBLNo">
+                                    Pending
+                                </span>
+                            }
+                            @else if(getInvoiceStatus(shipment) === 'generated'){
+                                <span class="invoice-status-badge badge bg-success">
+                                 Generated
+                                </span>
+                            }
+                        </td>
+            
+            
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-                } @else {
-                <div class="col-12 mt-1">
-                    <div class="text-center">Click 'Attach Booking' to add booking details.</div>
+                <div class="mt-1">
+                    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAttachedBookings"
+                        [pageSize]="pageSize" [(page)]="page" (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true"
+                        [ellipses]="false" [maxSize]="10" size="sm">
+                    </ngb-pagination>
                 </div>
-                }
-        </div>
+            </div>
+            } @else {
+            <div class="col-12 mt-1">
+                <div class="text-center">Click 'Attach Booking' to add booking details.</div>
+            </div>
+            }
+            </div>
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Container'">
             <div class="modern-table-container">

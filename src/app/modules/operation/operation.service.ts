@@ -1402,7 +1402,7 @@ getHouseJobARAPData(HouseJobSid: number) {
   createBookingFromMasterJob(payload: any) {
     return this.http.post<{ data: any }>('master-job/booking-create/transhipment', payload).pipe(
       map((resp) => {
-        return resp.data;
+        return resp;
       })
     );
   }
