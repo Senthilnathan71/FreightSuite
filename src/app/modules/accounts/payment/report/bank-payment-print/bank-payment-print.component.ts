@@ -128,32 +128,125 @@ export class BankPaymentPrintComponent {
     }, 0);
   }
 
-  getAmountInWords(): string {
-    const total = this.getTotalOriginalLocalAmount();
-    if (!total) return '';
+  // getAmountInWords(): string {
+  //   const total = this.getTotalOriginalLocalAmount();
+  //   if (!total) return '';
 
-    const rupees = Math.floor(total);
-    const paise = Math.round((total - rupees) * 100);
+  //   const rupees = Math.floor(total);
+  //   const paise = Math.round((total - rupees) * 100);
 
-    const rupeesInWords = this.numberToWords.convert(rupees);
-    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+  //   const rupeesInWords = this.numberToWords.convert(rupees);
+  //   const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
 
-    // Get currency code safely from first voucher
-    const selectedCode = this.paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode;
-    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+  //   // Get currency code safely from first voucher
+  //   const selectedCode = this.paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode;
+  //   if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
 
-    // Find currency in the list
-    const selectedCurrency = this.currency?.find(
-      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  //   // Find currency in the list
+  //   const selectedCurrency = this.currency?.find(
+  //     (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  //   );
+
+  //   const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+  //   const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+  //   return paise > 0
+  //     ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+  //     : `${rupeesInWords} ${currencyName} Only`;
+  // }
+
+getAmountInWords(): string {
+  const total = this.getTotalOriginalLocalAmount();
+  if (!total) return '';
+
+  const selectedCode = this.paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode;
+
+  const selectedCurrency = this.currency?.find(
+    (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  );
+
+  const currencyName = selectedCurrency?.CurrencyUnit || '';
+  const subCurrencyName = selectedCurrency?.CurrencySubUnit || '';
+
+  const isIndian = currencyName.toLowerCase() === 'rupees';
+
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const teens = [
+    'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+    'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+  ];
+
+  const convertLessThanHundred = (n: number): string => {
+    if (n === 0) return '';
+    if (n < 10) return ones[n];
+    if (n < 20) return teens[n - 10];
+    return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+  };
+
+  const convertLessThanThousand = (n: number): string => {
+    if (n === 0) return '';
+    if (n < 100) return convertLessThanHundred(n);
+    return (
+      ones[Math.floor(n / 100)] +
+      ' Hundred' +
+      (n % 100 ? ' and ' + convertLessThanHundred(n % 100) : '')
     );
+  };
 
-    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+  // 🇮🇳 Indian system
+  const convertIndianNumber = (num: number): string => {
+    if (num === 0) return 'Zero';
 
-    return paise > 0
-      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
-      : `${rupeesInWords} ${currencyName} Only`;
+    const crore = Math.floor(num / 10000000);
+    const lakh = Math.floor((num % 10000000) / 100000);
+    const thousand = Math.floor((num % 100000) / 1000);
+    const remainder = num % 1000;
+
+    let result = '';
+
+    if (crore) result += convertLessThanHundred(crore) + ' Crore ';
+    if (lakh) result += convertLessThanHundred(lakh) + ' Lakh ';
+    if (thousand) result += convertLessThanHundred(thousand) + ' Thousand ';
+    if (remainder) result += convertLessThanThousand(remainder);
+
+    return result.trim();
+  };
+
+  // 🌍 International system
+  const convertInternationalNumber = (num: number): string => {
+    if (num === 0) return 'Zero';
+
+    const billion = Math.floor(num / 1_000_000_000);
+    const million = Math.floor((num % 1_000_000_000) / 1_000_000);
+    const thousand = Math.floor((num % 1_000_000) / 1000);
+    const remainder = num % 1000;
+
+    let result = '';
+
+    if (billion) result += convertLessThanThousand(billion) + ' Billion ';
+    if (million) result += convertLessThanThousand(million) + ' Million ';
+    if (thousand) result += convertLessThanThousand(thousand) + ' Thousand ';
+    if (remainder) result += convertLessThanThousand(remainder);
+
+    return result.trim();
+  };
+
+  const integerPart = Math.floor(total);
+  const decimalPart = Math.round((total - integerPart) * 100);
+
+  let words = isIndian
+    ? convertIndianNumber(integerPart)
+    : convertInternationalNumber(integerPart);
+
+  if (decimalPart > 0) {
+    words += ' and ' + convertLessThanHundred(decimalPart) + ` ${subCurrencyName}`;
   }
+
+  return `${words} ${currencyName} Only`;
+}
+
+
 
 
 

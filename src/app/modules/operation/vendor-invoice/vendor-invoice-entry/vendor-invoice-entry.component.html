@@ -22,12 +22,12 @@
             (click)="openVendorInvoiceUploadModal()" [disabled]="isViewMode">
             <i class="fas fa-upload me-1"></i> Upload
           </button>
-          <div class="action-group"  *ngIf="isEditMode"> 
+          <!-- <div class="action-group"  *ngIf="isEditMode"> 
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
             [disabled]="isSaving || vendorInvoiceData?.PostStatus=== 'P'">
             <i class="fas fa-check-circle me-1"></i> Post
-          </button>
-          </div>
+          </button> 
+          </div>-->
 
           <!-- <button *ngIf="isViewMode && isPosted" type="button"
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled>
@@ -42,11 +42,19 @@
             (click)="onReset()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
-
-          <button *ngIf="!isViewMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSubmit()" [disabled]="isSaving">
+          
+          <!-- Draft Save Button -->
+          <button type="button" *ngIf="!isEditMode" appPreventMultiClick class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onDraftSave()" [disabled]="vendorInvoiceForm.invalid || isPosted">
             <i class="fas fa-save me-1"></i> Save
           </button>
+          
+          <!-- Final Save Button -->
+          <button type="button" *ngIf="isEditMode" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onFinalSave()" [disabled]="vendorInvoiceForm.invalid || details.length === 0 || isPosted">
+            <i class="fas fa-check-circle me-1"></i> {{ isPosted ? 'Posted' : 'Post' }}
+          </button>
+
           <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
@@ -470,7 +478,7 @@
                       <tr [formGroupName]="i">
                         <!-- Delete Button -->
                         <td>
-                          <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
+                          <button type="button" class="btn border-0 btn-sm pt-0" (click)="removeDetailRow(i)" [disabled]="isPosted">
                             <i class="fas fa-trash text-danger"></i>
                           </button>
                         </td>
@@ -497,13 +505,16 @@
 
                         <!-- HSN/SAC -->
                         <td>
-                          <!-- <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
-                  [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
-                  [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
-                </dofi-searchable-dropdown> -->
-                          <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid" placeholder=""
-                            formControlName="HSSACMasterSid" appendTo="body">
-                          </ng-select>
+                          <dofi-searchable-dropdown 
+                            [items]="hssacList[i]" formControlName="HSSACMasterSid"
+                            [placeholder]="''" 
+                            [displayFields]="HSSACLookupConfig.displayFields"
+                            [displayLabels]="HSSACLookupConfig.displayLabels"
+                            [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" 
+                            appendTo="body"
+                            (itemSelected)="onDetailChange(i,'HSSACMasterSid')"
+                          >
+                        </dofi-searchable-dropdown>
                         </td>
 
                         <!-- Unit -->
@@ -672,7 +683,7 @@
 
                         <!-- Party Amount -->
                         <td>
-                          <span style="font-weight: 600; color: black;">{{ getPartyAmount(row.value) }}</span>
+                          <span style="font-weight: 600; color: black;">{{ getPartyAmount(i) }}</span>
                         </td>
 
                         <!-- MasterJobSid column -->

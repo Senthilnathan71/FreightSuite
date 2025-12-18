@@ -105,7 +105,7 @@ export class CurrencyFormatService {
     const currency = this.resolveCurrencyConfig(input);
     
     if (!currency) {
-      console.warn(`Currency config not found for: ${input.currencyCode}`);
+      // console.warn(`Currency config not found for: ${input.currencyCode}`);
       return input.value.toFixed(2); // Fallback to 2 decimal places
     }
 

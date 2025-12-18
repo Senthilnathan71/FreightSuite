@@ -34,9 +34,10 @@ export class HblComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
-
+  @Input() selectedReport: 'HBL' | 'HBLDraft' = 'HBL'; 
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();

@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import {  NgbActiveModal, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { catchError, forkJoin, of, Subject } from 'rxjs';
@@ -42,12 +42,14 @@ import { MasterService } from 'src/app/modules/master/master.service';
     SearchableDropdown,
     CustomDatePipe,
     NgxSpinnerModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    
   ],
   templateUrl: './loading-plan-entry.component.html',
   styleUrl: './loading-plan-entry.component.scss',
   providers: [
-    CustomDatePipe
+    CustomDatePipe,
+    NgbActiveModal
   ]
 })
 export class LoadingPlanEntryComponent {
@@ -66,7 +68,7 @@ export class LoadingPlanEntryComponent {
   @Output() onSubmit = new EventEmitter<any>();
 
   selectedTab = 'Container';
-  activeModal: any;
+ 
 
   selectTab(tab: string) {
     this.selectedTab = tab;
@@ -122,6 +124,9 @@ export class LoadingPlanEntryComponent {
   pageSize = 5;
   totalLengthOfCollection: number = 0;
 
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
   selectedDepartment: any;
   showButton:boolean = false;
   currentDate = new Date()
@@ -147,6 +152,9 @@ export class LoadingPlanEntryComponent {
     private pdfService:PdfDownloadService,
     private appSettingsService: AppSettingsService,
      private masterService: MasterService,
+    
+
+  
     
   ) {
     this.masterJobContainers = this.fb.array([]);
@@ -308,7 +316,9 @@ export class LoadingPlanEntryComponent {
     }
   );
 }
-
+ modalClose() {
+  this.modalService.dismissAll(); // closes all open modals
+}
 
   setInitialConfig(){
     if(this.screenName === 'Loading Plan'){
@@ -913,6 +923,8 @@ console.log('Sending payload with ETA/ETD:', payload);
 
   }
 
+
+
   onReset() {
     this.loadingPlanForm.reset();
     this.filterDepartments();
@@ -996,20 +1008,24 @@ console.log('Sending payload with ETA/ETD:', payload);
     });
   }
 
-    async downloadPDF() {
-  this.spinner.show();
-  try {
-    // const enquiryNumber = this.loadingPlanForm?.EnquiryNumber || 'Enquiry';
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      ``,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
-  }
+
+async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
+
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        ``,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
 }
 
       async generatePDFBlob(): Promise<Blob | null> {
@@ -1072,34 +1088,34 @@ getDestinationAgent(id: number): string {
 
 
 // print
+  printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
 
-          printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
- 
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
 
 
 // pdf download
-
- modalClose() {
-    this.activeModal.close(); // closes the modal
-  }
 
 
 }

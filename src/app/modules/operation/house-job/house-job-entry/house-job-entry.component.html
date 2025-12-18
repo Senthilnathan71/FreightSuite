@@ -55,7 +55,9 @@
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
                }
-            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Lading</button>
+           <button class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">House Bill of Lading</button>
+<button class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
+
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
               Loss</button>
             <button class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
@@ -1903,6 +1905,66 @@
               }
             </div>
           </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
+                formControlName="ValueForInsurance" DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="2" max="9999999.999">
+              <label for="text-input" class="input-label">Value For Insurance<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((otherForm.get('ValueForInsurance')?.touched || otherForm.get('ValueForInsurance')?.dirty) &&
+              otherForm.get('ValueForInsurance')?.invalid) {
+              <div class="error-message">
+                @if (otherForm.get('ValueForInsurance')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 10 Digits before and 2 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
+                  formControlName="InsuranceAmount" DecimalPrecision [DecimalPrecisionBefore]="10"
+                  [DecimalPrecisionAfter]="2" max="9999999.999">
+                <label for="text-input" class="input-label">Insurance Amount<span class="text-danger"></span></label>
+                <!-- Validation Messages -->
+                @if ((otherForm.get('InsuranceAmount')?.touched || otherForm.get('InsuranceAmount')?.dirty) &&
+                otherForm.get('InsuranceAmount')?.invalid) {
+                <div class="error-message">
+                  @if (otherForm.get('InsuranceAmount')?.errors?.['decimalPrecision']) {
+                  <small>Allowed: 10 Digits before and 2 digits after decimal point</small>
+                  }
+                </div>
+                }
+              </div>
+              </aside>
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
+                    formControlName="ValuationCharge" DecimalPrecision [DecimalPrecisionBefore]="10"
+                    [DecimalPrecisionAfter]="2" max="9999999.999">
+                  <label for="text-input" class="input-label">Valuation Charge<span class="text-danger"></span></label>
+                  <!-- Validation Messages -->
+                  @if ((otherForm.get('ValuationCharge')?.touched || otherForm.get('ValuationCharge')?.dirty) &&
+                  otherForm.get('ValuationCharge')?.invalid) {
+                  <div class="error-message">
+                    @if (otherForm.get('ValuationCharge')?.errors?.['decimalPrecision']) {
+                    <small>Allowed: 10 Digits before and 2 digits after decimal point</small>
+                    }
+                  </div>
+                  }
+                </div>
+                </aside>
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
+                      formControlName="HandlingInformation" [textWithNumbers]="200">
+                    <label for="text-input" class="input-label">Handling Information<span
+                        class="text-danger"></span></label>
+                  </div>
+                </aside>
+
           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

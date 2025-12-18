@@ -35,7 +35,7 @@ export class MblComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() packageTypeList: any[] = [];
-
+  @Input() selectedReport: 'MBL' | 'MBLDraft' = 'MBL'; 
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();

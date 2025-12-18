@@ -634,6 +634,8 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn(' Profitability Report component not yet created:', error);
     }
+
+    // 
   }
 
   /**

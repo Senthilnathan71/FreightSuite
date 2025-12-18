@@ -9,7 +9,7 @@ $page-height: 297mm;
 $page-padding: 5mm;
 $border-color: #000;
 $font-size-base: 11px;
-$font-size-small: 10px;
+$font-size-small: 12px;
 $font-size-label: 9px;
 
 // ============================================
@@ -125,6 +125,7 @@ $font-size-label: 9px;
   .carrier-label {
     font-weight: bold;
     white-space: nowrap;
+    font-size: 12px;
   }
 
   .carrier-content {

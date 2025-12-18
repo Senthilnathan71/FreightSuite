@@ -368,6 +368,12 @@ isVoyageFreeText: boolean = false;
   customerWiseSummary : any;
     profitSummary : any;
       chargeList:any[]=[];
+
+      // Add a variable to track which report is selected
+selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
+
+
+
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
     { id: 2, name: 'FCL' },
@@ -594,7 +600,8 @@ private setupMBLDateListener(): void {
       POD: [{ value: null, disabled: true }, [Validators.required]],
       POLTerminal: [''],
       PODTerminal: [''],
-      FPD: [{ value: null, disabled: true }],
+      // FPD: [{ value: null, disabled: true }],
+      FPD:[''],
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
       FreightTerms : [null],
@@ -942,6 +949,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       DeliveryAddress: [''],
       CargoCurrency: [null],
       CargoValue: [''],
+      ValueForInsurance: [''],
+      InsuranceAmount: [''],
+      ValuationCharge: [''],
+      HandlingInformation: [''],
       SwitchBL: [false],
       BacktoBack: [false],
       Depo: [''],
@@ -1484,6 +1495,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     JobType: response.JobType,
     ShipmentNo: response.ShipmentNo
   });
+  this.PODandFPODsame = response.POD === response.FPD;
    const cargoData = response.Cargo?.[0];
   if (cargoData) {
     console.log('Patching cargo form with HouseJobCargoSid:', cargoData.HouseJobCargoSid);
@@ -1533,6 +1545,10 @@ private loadMasterJobDetails(masterJobSid: number): void {
       DeliveryAddress: otherData?.DeliveryAddress,
       CargoCurrency: otherData?.CargoCurrency,
       CargoValue: otherData?.CargoValue,
+      ValueForInsurance: otherData?.ValueForInsurance,
+      InsuranceAmount: otherData?.InsuranceAmount,
+      ValuationCharge: otherData?.ValuationCharge,
+      HandlingInformation: otherData?.HandlingInformation,
       SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
       BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
       Depo: otherData?.Depo,
@@ -1881,6 +1897,10 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       // FIXED: CargoCurrency handling
       CargoCurrency: cargoCurrencyValue,
       CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
+      HandlingInformation: otherFormValue.HandlingInformation || '',
+      ValueForInsurance: otherFormValue.ValueForInsurance || 0,
+      InsuranceAmount: otherFormValue.InsuranceAmount || 0,
+      ValuationCharge: otherFormValue.ValuationCharge || 0,
       SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
       BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
       Depo: otherFormValue.Depo || '',
@@ -3360,7 +3380,9 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
   }
 
-       reportBill() {
+
+       reportBill(type: 'HBL' | 'HBLDraft') {
+        this.selectedReport = type;
         const modalRef = this.modalService.open(HblComponent,{
           size: 'xl',
           scrollable: true,
@@ -3368,7 +3390,11 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.housejobData = this.housejobData || [];
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
+          modalRef.componentInstance.selectedReport = type; 
       }
+
+
+
 
         reportShipmentProfit() {
           const modalRef=this.modalService.open(ShipmentComponent,{
