@@ -34,7 +34,7 @@ export class ImdemintyComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
-
+   containerList: string[] = [];
        showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -48,7 +48,23 @@ export class ImdemintyComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+      this.prepareContainers();
   }
+
+   prepareContainers() {
+    if (this.housejobData?.Products?.length) {
+      const set = new Set<string>();
+      this.housejobData.Products.forEach((p: any) => {
+        if (p.ContainerNo) {
+          set.add(p.ContainerNo);
+        }
+      });
+      this.containerList = Array.from(set);
+    } else {
+      this.containerList = ['—'];
+    }
+  }
+
 
       loadCityName(): void {
     if (!this.currentBranchCityId) return;

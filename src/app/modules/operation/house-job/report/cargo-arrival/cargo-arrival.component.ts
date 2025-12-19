@@ -54,6 +54,7 @@ export class CargoArrivalComponent {
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.numberToWords.initializeCurrencies(this.currencyList);
     this.loadCityName();
   }
 
@@ -150,33 +151,43 @@ export class CargoArrivalComponent {
     this.activeModal.close();
   }
 
-
-  getAmountInWords(): string {
-    const total = this.getTotalLocalAmount();
-    if (!total) return '';
-
-    const rupees = Math.floor(total);
-    const paise = Math.round((total - rupees) * 100);
-
-    const rupeesInWords = this.numberToWords.convert(rupees);
-    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
-
-    // Get currency code safely from first voucher
-    const selectedCode = this.housejobData?.voucherMatchings?.[0]?.CurrencyCode;
-    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
-
-    // Find currency in the list
-    const selectedCurrency = this.currency?.find(
-      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
-    );
-
-    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
-
-    return paise > 0
-      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
-      : `${rupeesInWords} ${currencyName} Only`;
+    getAmountInWords() : string{
+    const total = this.getTotalAmount();
+    if(!total) return '';
+    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
+    if(!companyCurrency){
+      return '';
+    }
+    const amountInWords = this.numberToWords.convert(total,companyCurrency);
+    return amountInWords || '';
   }
+
+  // getAmountInWords(): string {
+  //   const total = this.getTotalLocalAmount();
+  //   if (!total) return '';
+
+  //   const rupees = Math.floor(total);
+  //   const paise = Math.round((total - rupees) * 100);
+
+  //   const rupeesInWords = this.numberToWords.convert(rupees);
+  //   const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+
+  //   // Get currency code safely from first voucher
+  //   const selectedCode = this.housejobData?.voucherMatchings?.[0]?.CurrencyCode;
+  //   if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+
+  //   // Find currency in the list
+  //   const selectedCurrency = this.currency?.find(
+  //     (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
+  //   );
+
+  //   const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
+  //   const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
+
+  //   return paise > 0
+  //     ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
+  //     : `${rupeesInWords} ${currencyName} Only`;
+  // }
   
 
 
