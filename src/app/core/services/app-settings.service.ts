@@ -121,6 +121,14 @@ export class AppSettingsService {
             ?.branchMaster || null;
     }
 
+    getCurrentFinancialYear() {
+        const encryptedYear = localStorage.getItem('current-financial-year');
+        if (!encryptedYear) return null;
+
+        const decryptedYear = this.decrypt(encryptedYear);
+        return decryptedYear;
+    }
+
     public sessionExpire() {
         return new Promise((resolve) => {
             let observable = [this.storage.delete(this.tokenName)];

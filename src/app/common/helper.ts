@@ -103,6 +103,129 @@ export function toNgbDateStruct(date: Date | null): NgbDateStruct | null {
   };
 }
 
+
+/**
+ * Calculates the minimum allowed date based on a base date and tolerance.
+ *
+ * How it works:
+ * 1. Validates that `baseDate` is a valid Date object.
+ * 2. Subtracts `toleranceDays` from the base date.
+ * 3. If `withinThisYear` is true, ensures the result does not go
+ *    earlier than January 1st of the base date's year.
+ * 4. Returns a **new Date instance** (original date is never mutated).
+ *
+ * @param baseDate - The reference date used to calculate the minimum date.
+ * @param toleranceDays - Number of days allowed before the base date.
+ *                         Must be a non-negative number. Default is `0`.
+ * @param withinThisYear - If true, clamps the minimum date to
+ *                         January 1st of the base date's year. Default is `false`.
+ *
+ * @returns A new Date representing the calculated minimum date.
+ *
+ * @throws {Error} If `baseDate` is not a valid Date.
+ * @throws {Error} If `toleranceDays` is negative.
+ *
+ * @example
+ * // Base date: 15 Mar 2025
+ * getMinDate(new Date('2025-03-15'), 10);
+ * // → 05 Mar 2025
+ *
+ * @example
+ * // Clamped to start of year
+ * getMinDate(new Date('2025-01-05'), 10, true);
+ * // → 01 Jan 2025
+ */
+export function getMinDate(
+  baseDate: Date,
+  toleranceDays: number = 0,
+  withinThisYear: boolean = false
+): Date {
+  // Validate inputs
+  if (!(baseDate instanceof Date) || isNaN(baseDate.getTime())) {
+    throw new Error('Invalid base date provided');
+  }
+
+  if (toleranceDays < 0) {
+    throw new Error('toleranceDays must be non-negative');
+  }
+
+  // Create new date instance to avoid mutating the original
+  const d = new Date(baseDate.getTime());
+  d.setDate(d.getDate() - toleranceDays);
+
+  if (withinThisYear) {
+    const yearStart = new Date(baseDate.getFullYear(), 0, 1);
+    // Set to start of day for consistent comparison
+    yearStart.setHours(0, 0, 0, 0);
+
+    if (d < yearStart) {
+      return yearStart;
+    }
+  }
+
+  return d;
+}
+
+/**
+ * Calculates the maximum allowed date based on a base date and tolerance.
+ *
+ * How it works:
+ * 1. Validates that `baseDate` is a valid Date object.
+ * 2. Adds `toleranceDays` to the base date.
+ * 3. If `withinThisYear` is true, ensures the result does not go
+ *    beyond December 31st of the base date's year.
+ * 4. Returns a **new Date instance** (original date is never mutated).
+ *
+ * @param baseDate - The reference date used to calculate the maximum date.
+ * @param toleranceDays - Number of days allowed after the base date.
+ *                         Must be a non-negative number. Default is `0`.
+ * @param withinThisYear - If true, clamps the maximum date to
+ *                         December 31st of the base date's year. Default is `false`.
+ *
+ * @returns A new Date representing the calculated maximum date.
+ *
+ * @throws {Error} If `baseDate` is not a valid Date.
+ * @throws {Error} If `toleranceDays` is negative.
+ *
+ * @example
+ * // Base date: 15 Mar 2025
+ * getMaxDate(new Date('2025-03-15'), 10);
+ * // → 25 Mar 2025
+ *
+ * @example
+ * // Clamped to end of year
+ * getMaxDate(new Date('2025-12-25'), 10, true);
+ * // → 31 Dec 2025 23:59:59.999
+ */
+export function getMaxDate(
+  baseDate: Date,
+  toleranceDays: number = 0,
+  withinThisYear: boolean = false
+): Date {
+  // Validate inputs
+  if (!(baseDate instanceof Date) || isNaN(baseDate.getTime())) {
+    throw new Error('Invalid base date provided');
+  }
+
+  if (toleranceDays < 0) {
+    throw new Error('toleranceDays must be non-negative');
+  }
+
+  // Create new date instance to avoid mutating the original
+  const d = new Date(baseDate.getTime());
+  d.setDate(d.getDate() + toleranceDays);
+
+  if (withinThisYear) {
+    const yearEnd = new Date(baseDate.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+    if (d > yearEnd) {
+      return yearEnd;
+    }
+  }
+
+  return d;
+}
+
 export function toNumber(value: any): number {
   if (value === null || value === undefined) {
     return 0;

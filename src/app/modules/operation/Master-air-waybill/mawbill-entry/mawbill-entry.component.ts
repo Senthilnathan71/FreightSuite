@@ -2051,6 +2051,7 @@ handleEdocChange(event: any) {
     MBLDate: this.masterJobForm.get('MBLDate')?.value,
     VesselName: this.masterJobForm.get('VesselName')?.value,
     VoyageNo: this.masterJobForm.get('VoyageNo')?.value,
+    POO : this.masterJobForm.get('POO')?.value,
     POL: this.masterJobForm.get('POL')?.value,
     POD: this.masterJobForm.get('POD')?.value,
     FPD: this.masterJobForm.get('FPD')?.value,
@@ -2058,9 +2059,10 @@ handleEdocChange(event: any) {
     ETD: this.masterJobForm.get('ETD')?.value,
     CarrierName: this.masterJobForm.get('CarrierName')?.value,
     // Get port codes instead of SIDs
+    POOCode : this.getPortCode(this.masterJobForm.get('POO')?.value),
     POLCode: this.getPortCode(this.masterJobForm.get('POL')?.value),
     PODCode: this.getPortCode(this.masterJobForm.get('POD')?.value),
-    FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value)
+    FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value),
   };
 
   // Navigate to house job entry with master job data as query parameters

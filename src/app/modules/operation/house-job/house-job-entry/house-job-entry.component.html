@@ -20,6 +20,12 @@
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
+      @if(isEditMode){
+        <!-- <button class="btn btn-link text-info focus-ring">{{houseJobForm.get('MasterJobNumber')?.value || ''}}</button> -->
+        <a class="fw-bold px-2 text-decoration-underline" [routerLink]="['/operation/master-job/entry',housejobData?.masterJob?.MasterJobSid]">
+          {{housejobData?.masterJob?.MasterJobNumber || ''}}
+        </a>
+      }
     </div>
 
     <div class="header-actions">
@@ -45,7 +51,8 @@
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
              @if(selectedDepartmentType === "AIR"){
-               <button class="text-dark" ngbDropdownItem (click)="reportHAWB()">HAWB</button>
+               <button class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWB')">HAWB</button>
+                <button class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWBDraft')">HAWB Draft</button>
              }@else{ 
               @if(houseJobForm.get('JobType')?.value !== 'Transhipment'){
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
@@ -163,7 +170,7 @@
         [class.filled]="!!houseJobForm.get('HBLDate')?.value">
         <div class="input-group">
           <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-            (click)="d1.toggle()" formControlName="HBLDate" [minDate]="minDate"
+            (click)="d1.toggle()" formControlName="HBLDate"
             (keydown.arrowDown)="d1.open()" container="body" />
           <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
             <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -245,7 +252,7 @@
       </div>
       </div>
   <!-- Master Job Number Field (Read-only) -->
-<div class="col-md-2">
+<!-- <div class="col-md-2">
   <div class="custom-form-group">
     <input 
       type="text" 
@@ -258,7 +265,7 @@
       Master Job Number
     </label>
   </div>
-</div>
+</div> -->
 
   <!-- Expandable Fields -->
   <div class="row g-3 mt-2" *ngIf="isQuickFormExpanded">
@@ -493,32 +500,32 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6 pe-0" [formGroup]="otherForm">
+                  <aside class="col-md-6 pe-0">
   <div class="custom-form-group custom-form-group-select inputChnages mt-1"
-    [class.filled]="!!otherForm.get('NotifyParty')?.value">
+    [class.filled]="!!houseJobForm.get('Notify')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
-      <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
+      <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify" placeholder=""
         [displayFields]="customerLookupConfig.displayFields"
         [displayLabels]="customerLookupConfig.displayLabels"
         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
         bindValue="CustomerName"
-        (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)"
+        (itemSelected)="setAddressOthers('NotifyAddress',$event)"
         style="width : 100%;">
       </dofi-searchable-dropdown>
       
       <!-- Swap icon -->
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('NotifyParty','isNotifyFreeText',$event)">
+        (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
 
     <!-- Manual text input mode -->
     <div class="input-group" *ngIf="this.b['isNotifyFreeText']?.value">
-      <input type="text" formControlName="NotifyParty" placeholder="" class="form-control" />
+      <input type="text" formControlName="Notify" placeholder="" class="form-control" />
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('NotifyParty','isNotifyFreeText',$event)">
+        (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
@@ -526,10 +533,10 @@
   </div>
 </aside>
 
-                  <aside class="col-md-6" [formGroup]="otherForm">
-                    <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value">
+                  <aside class="col-md-6">
+                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('NotifyAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="NotifyPartyAddress">
+                        formControlName="NotifyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
                           class="text-danger"></span></label>
                     </div>
@@ -1563,7 +1570,7 @@
                 <th>Net Wt</th>
                 <th>Cargo Received Date</th>
                 <th>Received Qty</th>
-                <th>Container No.</th>
+                <th *ngIf="selectedDepartmentType !== 'AIR'">Container No.</th>
                 <th>Damaged Qty</th>
                 <th>Delivery Date</th>
                 <th>Delivered Qty</th>
@@ -1601,7 +1608,7 @@
                 <td>{{product.value.NetWeight}}</td>
                 <td>{{product.value.CargoRecDate | formatDate}}</td>
                 <td>{{product.value.ReceivedQty}}</td>
-                <td>{{product.value.ContainerNo}}</td>
+                <td *ngIf="selectedDepartmentType !== 'AIR'">{{product.value.ContainerNo}}</td>
                 <td>{{product.value.DamageQty}}</td>
                 <td>{{product.value.DeliveryDate | formatDate}}</td>
                 <td>{{product.value.DeliveredQty}}</td>
@@ -1758,19 +1765,9 @@
               <label for="text-input" class="input-label">Forwarder Address<span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-3">
+          <!-- <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!otherForm.get('NotifyParty')?.value">
-              <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="NotifyParty" placeholder="" appendTo="body"
-                (change)="setAddressOthers('NotifyPartyAddress',$event)">
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.CustomerName }}</strong><br>
-                    <small>{{ item.CustomerAddress1 }}</small>
-                  </div>
-                </ng-template>
-              </ng-select> -->
               <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
                 [displayFields]="customerLookupConfig.displayFields"
                 [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
@@ -1786,7 +1783,7 @@
                 formControlName="NotifyPartyAddress" [textWithNumbers]="20">
               <label for="text-input" class="input-label">Notify Address<span class="text-danger"></span></label>
             </div>
-          </aside>
+          </aside> -->
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Notify2')?.value">
               <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
@@ -2114,19 +2111,19 @@
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                 formControlName="DONo" >
-              <label for="text-input" class="input-label">DO No<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">DO No.<span class="text-danger"></span></label>
             </div>
           </aside>
            <aside class="col-md-3">
             <div class=" custom-form-group custom-form-group-select-date">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                  formControlName="DODate" [minDate]="minDate" #d16="ngbDatepicker" (keydown.arrowDown)="d16.open()"
+                  formControlName="DODate" [minDate]="minDODate" #d16="ngbDatepicker" (keydown.arrowDown)="d16.open()"
                   (click)="d16.toggle()" container="body" />
                 <button class="btn  bi bi-calendar3 px-0" (click)="d16.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
-              <label for="" class="input-label">Do Date <span class="text-danger"></span>
+              <label for="" class="input-label">DO Date <span class="text-danger"></span>
               </label>
 
             </div>
@@ -2505,7 +2502,7 @@
         <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
+              [minDate]="minShippingBillDate" [maxDate]="maxShippingBillDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
               formControlName="ShippingBillDate" />
             <button class="btn  bi bi-calendar3 px-0" (click)="d2.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
@@ -2540,7 +2537,7 @@
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty" [onlyNumbers]>
           <label for="text-input" class="input-label">No. of Pkg <span class="text-danger">*</span></label>
           @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
           <div class="error-message">
@@ -2564,21 +2561,21 @@
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Length"
-            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+            DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2" max="9999999.999">
           <label for="text-input" class="input-label">Length <span class="text-danger"></span></label>
         </div>
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Width"
-            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+            DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2" max="9999999.999">
           <label for="text-input" class="input-label">Width <span class="text-danger"></span></label>
         </div>
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Height"
-            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+            DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2" max="9999999.999">
           <label for="text-input" class="input-label">Height <span class="text-danger"></span></label>
         </div>
       </aside>
@@ -2643,7 +2640,7 @@
         <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
-              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()"
+              #d8="ngbDatepicker" [minDate]="minCargoRecDate" [maxDate]="maxCargoRecDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()"
               container="body" />
             <button class="btn bi bi-calendar3 px-0" (click)="d8.toggle()" type="button"> <i-feather name="calendar"
                 class="feather-sm"></i-feather></button>
@@ -2692,7 +2689,7 @@
           <label for="text-input" class="input-label">Damage Remarks <span class="text-danger"></span></label>
         </div>
       </aside>
-      <aside class="col-md-4">
+      <aside class="col-md-4" *ngIf="selectedDepartmentType !== 'AIR'">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('MasterJobContainerSid')?.value">
           <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber"
@@ -2706,7 +2703,7 @@
             <div class=" custom-form-group custom-form-group-select-date mb-0">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                  formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
+                  formControlName="DeliveryDate" [minDate]="minDeliveryDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
                   (click)="d3.toggle()" container="body">
                 <button class="btn  bi bi-calendar3 px-0" (click)="d3.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>

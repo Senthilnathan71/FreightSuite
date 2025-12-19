@@ -12,6 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { MasterService } from '../../master/master.service';
+import { toNumber } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-login',
@@ -177,7 +178,15 @@ export class LoginComponent implements OnInit {
         this.appSettingService.showError(this.errorMessage)
         return;
       }
-      localStorage.setItem('current-year-id', this.loginform.get('yearMasterSid')?.value);
+
+      const selectedYearId = this.loginform.get('yearMasterSid')?.value;
+      const selectedYr = this.financialYears.find(fy => fy.YearMasterSid === toNumber(selectedYearId));
+      localStorage.setItem('current-year-id', selectedYearId)
+      const encryptedYearObj = this.appSettingService.encrypt(selectedYr);
+      if (encryptedYearObj) {
+        localStorage.setItem('current-financial-year', encryptedYearObj);
+      }
+
       if (this.loginform.get('rememberMe')?.value) {
         localStorage.setItem('rememberedEmail', param.email);
         const encryptedPass = this.appSettingService.encrypt(param.password);
