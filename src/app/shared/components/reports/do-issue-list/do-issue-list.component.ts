@@ -5,6 +5,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
+
 @Component({
   selector: 'app-do-issue-list',
   standalone: true,
@@ -44,6 +46,63 @@ export class DoIssueListComponent {
 
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
+  }
+
+
+    getExcelData(): ComplexReportExportConfig {
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'HBLNo', label: 'HBL No' },
+      { key: 'HBLDate', label: 'HBL Date' },
+      { key: 'MBLNo', label: 'MBL No' },
+      { key: 'BookingNo', label: 'Booking No' },
+      { key: 'Shipper', label: 'Shipper' },
+      { key: 'Consignee', label: 'Consignee' },
+      { key: 'POL', label: 'POL' },
+      { key: 'POD', label: 'POD' },
+      { key: 'jobStatus', label: 'Job Status' }
+    ];
+
+    const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
+      const cells: ExcelCell[] = [
+        { value: item.HBLNo || '' },
+        { value: this.formatDate(item.HBLDate) },
+        { value: item.MBLNo || '' },
+        { value: item.BookingNo || '' },
+        { value: item.Shipper || '' },
+        { value: item.Consignee || '' },
+        { value: item.POL || '' },
+        { value: item.POD || '' },
+        { value: item.jobStatus || '' }
+      ];
+      return { cells, style: 'data' };
+    });
+
+    return {
+      fileName: 'DO-Issue-Report',
+      sheetName: 'DOIssueReport',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `DO Issue List as on ${this.formatDate(this.params?.FromHBLDt)}`,
+        additionalInfo: [
+          { label: 'Branch', value: this.params?.Branch || '' },
+          { label: 'Dept', value: this.params?.Dept || '' },
+          { label: 'From Date', value: this.formatDate(this.params?.FromHBLDt) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToHBLDt) }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [15, 15, 15, 15, 25, 25, 15, 15, 15] // adjust widths as needed
+    };
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 
 }

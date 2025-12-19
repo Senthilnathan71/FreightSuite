@@ -549,18 +549,22 @@
         </div>  -->
 
 
-        <div style="width: 280mm;
-    min-height: 400mm;
-    margin: 10px auto !important;
-    background: #fff;
-    box-sizing: border-box;
-    position: relative;
-    color: #000;
-    padding-bottom: 18mm;  
-    page-break-after: always;">
+      <div [ngStyle]="{
+    'border': selectedReportAir === 'HAWBDraft' ? '1px solid black' : 'none',
+    'width': '280mm',
+    'min-height': '400mm',
+    'margin': '10px auto',
+    'background': '#fff',
+    'box-sizing': 'border-box',
+    'position': 'relative',
+    'color': '#000',
+    'padding-bottom': '18mm',
+    'page-break-after': 'always'
+}">
+
 
             <!-- Main Container -->
-            <div style="border:1px solid black;padding: 2px;">
+            <div style="padding: 2px;">
 
                 <!-- First Row - Main Sections -->
                 <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">
@@ -1170,7 +1174,7 @@
             </div>
 
             <!-- Footer -->
-            <footer style="position: absolute; bottom: 6mm; left: 0; right: 0;  line-height: 1.2;">
+            <footer *ngIf="selectedReportAir === 'HAWBDraft'"  style="position: absolute; bottom: 6mm; left: 0; right: 0;  line-height: 1.2;">
                 <div style="display:flex; justify-content:space-between; padding: 0 10px; margin-top:10px;">
                     <div><span>Printed By :</span> {{userData.userName}} </div>
                     <span>This document is computer-generated and does not require a signature.</span>

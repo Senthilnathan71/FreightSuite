@@ -35,7 +35,7 @@ export class HAWBComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-
+   @Input() selectedReportAir: 'HAWB' | 'HAWBDraft' = 'HAWB'; 
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() packageTypeList: any;

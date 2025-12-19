@@ -23,7 +23,7 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ params?.Branch }}</p>
+                    <p class="ms-1">: {{ fullData?.branchesInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
@@ -62,6 +62,7 @@
                         <td>{{ item.Consignee || '' }}</td>
                         <td>{{ item.POL || '' }}</td>
                         <td>{{ item.POD || '' }}</td>
+                        <td>{{item.jobStatus || ''}}</td>
                     </tr>
                 </tbody>
             </table>

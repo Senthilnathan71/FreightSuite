@@ -635,6 +635,69 @@ export class ReportRegistryService {
       console.warn(' Profitability Report component not yet created:', error);
     }
 
+
+    // Unbilled_Cost_Report
+    try {
+      const { UnbilledCostReportComponent } = await import(
+        '../components/reports/unbilled-cost-report/unbilled-cost-report.component'
+      );
+
+      this.registerReport({
+        id: 'unbilled-cost-report',
+        title: 'Unbilled_cost_report',
+        component: UnbilledCostReportComponent,
+        filenameTemplate: 'Unbilled_cost_report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Unbilled_cost_report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Unbilled_cost_report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
+    }
+
+    // Unbilled_Revenue_Report
+    try {
+      const { UnbilledRevenueReportComponent } = await import(
+        '../components/reports/unbilled-revenue-report/unbilled-revenue-report.component'
+      );
+
+      this.registerReport({
+        id: 'unbilled-revenue-report',
+        title: 'Unbilled_Revenue_report',
+        component: UnbilledRevenueReportComponent,
+        filenameTemplate: 'Unbilled_Revenue_report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Unbilled_Revenue_report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Unbilled_Revenue_report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profitability Report component not yet created:', error);
+    }
+
     // 
   }
 
