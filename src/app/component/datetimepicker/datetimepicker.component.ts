@@ -203,6 +203,21 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
   }
 }
 
+// Add this method to your DateTimePickerComponent class
+reset(): void {
+  this.datetime = new DateTimeModel();
+  this.dateString = '';
+  this.onChange('');
+  this.onTouched();
+  
+  // Also reset the NgbDatepicker if available
+  if (this.dp) {
+    this.dp.navigateTo(this.minDate);
+  }
+  
+  this.showTimePickerToggle = false;
+}
+
 
   inputBlur($event) {
     this.onTouched();

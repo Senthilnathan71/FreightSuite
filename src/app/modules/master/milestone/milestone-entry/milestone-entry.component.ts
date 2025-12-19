@@ -19,6 +19,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -31,7 +32,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     DatePipe,
     PreventMultiClickDirective,
     NgbDropdownModule,
-    SearchableDropdown
+    SearchableDropdown,
+    MultiSelectComponent 
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']
@@ -42,6 +44,8 @@ export class MilestoneEntryComponent implements OnInit {
   btnDisable = false;
   milestoneId: number;
   departmentList: any[] = [];
+  departmentOptions: any[] = [];
+  selectedDepartments: any[] = [];
   userData: any;
   milestoneData : any
   permissions: string[] = [];
@@ -112,7 +116,7 @@ hasAnyDropdownPermission(): boolean {
     this.milestoneForm = this.fb.group({
       MilestoneName: ['', [Validators.required, Validators.maxLength(30)]],
       MilestoneCode: ['', [Validators.required, Validators.maxLength(30)]],
-      DepartmentMasterSid: ['', Validators.required],
+      DepartmentMasterSid: [[], Validators.required],
       ShipmentType: ['', Validators.required],
       SortBy: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
       AutoCapture: ['N'],
@@ -196,7 +200,7 @@ hasAnyDropdownPermission(): boolean {
       CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
       BranchMasterSid:this.currentBranch?.BranchMasterSid,
       ...formValue,
-      DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+      DepartmentMasterSid: formValue.DepartmentMasterSid,
       status: this.isEditMode ? formValue.status : 'A',
       ...(this.isEditMode ? updatedBy : createdBy)
     };
@@ -236,7 +240,7 @@ hasAnyDropdownPermission(): boolean {
       this.milestoneForm.reset({
         MilestoneName: '',
         MilestoneCode: '',
-        DepartmentMasterSid: '',
+        DepartmentMasterSid: [],
         ShipmentType: '',
         SortBy: '',
         AutoCapture: 'N',

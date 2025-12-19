@@ -207,7 +207,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
           customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
           meetingType: meeting.meetingType || 'N/A',
-          meetingDate: meeting.meetingDate ? this.datePipe.transform(meeting.meetingDate) : '',
+          meetingDate: this.datePipe.transform(meeting?.meetingDate),
           salesPerson: salesPerson?.userName || 'N/A',
           leadAssignTo: meeting.leadAssignTo,
           status: meeting.status === "A" ? "Active" : "Suspended",

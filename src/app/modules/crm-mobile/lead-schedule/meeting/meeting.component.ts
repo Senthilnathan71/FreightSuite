@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { FeatherModule } from 'angular-feather';
@@ -28,6 +28,7 @@ import { DateTimePickerComponent } from 'src/app/component/datetimepicker/dateti
   styleUrl: './meeting.component.scss'
 })
 export class MeetingComponent {
+  @ViewChild(DateTimePickerComponent) dateTimePicker!: DateTimePickerComponent;
   meetingForm: FormGroup;
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
@@ -218,23 +219,42 @@ changeTime(time: string) {
     }
   }
 
-  resetForm() {
-    // Get a list of all form controls
-    const controls = this.meetingForm.controls;
-
-    // Loop through the controls and reset only the editable ones
-    Object.keys(controls).forEach(key => {
-      const control = controls[key];
-
-      // Check if the control is disabled, if not, reset its value
-      if (!control.disabled) {
-        control.reset(); // Reset only editable controls
-      }
-    });
-
-    // You can also reset the form state (pristine, touched, etc.) if needed
-    this.meetingForm.markAsPristine();
-    this.meetingForm.markAsUntouched();
+   resetForm(): void {
+    // Reset the DateTimePickerComponent first
+    if (this.dateTimePicker) {
+      this.dateTimePicker.reset();
+    }
+    
+    // Reset form values
+    const originalValues = {
+      customerName: this.lead?.preCustomerName || '',
+      contactPerson: this.lead?.contactPerson || '',
+      phone: this.lead?.phone || '',
+      status: this.lead?.status || 'A',
+      meetingDate: '',
+      meetingType: '',
+      leadAssignTo: '',
+      customerProfile: '',
+      meetingDuration: '10 min'
+    };
+    
+    // Reset the form
+    this.meetingForm.reset(originalValues);
+    
+    // Force reset the meetingDate control
+    this.meetingForm.get('meetingDate')?.setValue('');
+    
+    // Reset selected time
+    this.selectedTime = '10 min';
+    
+    // Re-disable fields
+    this.meetingForm.get('customerName')?.disable();
+    this.meetingForm.get('contactPerson')?.disable();
+    this.meetingForm.get('phone')?.disable();
+    this.meetingForm.get('status')?.disable();
+    
+    this.btnDisable = false;
+    this.errorMessage = '';
   }
 
   goBack() {

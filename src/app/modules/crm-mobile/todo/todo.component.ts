@@ -7,6 +7,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 @Component({
   selector: 'app-todo',
   standalone: true,
@@ -17,11 +18,12 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FeatherModule,
     FormsModule,
     NgbTooltip,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    CustomDatePipe
   ],
   templateUrl: './todo.component.html',
   styleUrl: './todo.component.scss',
-  providers: [DatePipe]
+  providers: [CustomDatePipe]
 })
 export class TodoComponent implements OnInit {
   active = 1;
@@ -53,7 +55,7 @@ export class TodoComponent implements OnInit {
     this.modalService.open(content, { scrollable: true, size: 'lg', centered: true, windowClass: 'todo-modal' }).result.then();
   }
 
-  constructor(private appService: AppService, private leadService: LeadService, private datePipe: DatePipe, private appSettingService: AppSettingsService, private spinner: NgxSpinnerService) { }
+  constructor(private appService: AppService, private leadService: LeadService, private datePipe: CustomDatePipe, private appSettingService: AppSettingsService, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -75,7 +77,7 @@ export class TodoComponent implements OnInit {
         console.log(resp)
         this.todoNeverMet = resp['data'].map(meeting => ({
           ...meeting,
-          createdOn: this.datePipe.transform(meeting.createdOn, 'yyyy-MM-dd')
+          createdOn: this.datePipe.transform(meeting?.createdOn)
         }));
       }
     );
@@ -91,13 +93,13 @@ export class TodoComponent implements OnInit {
       (resp: any[]) => {
         this.todoNotMet = resp['data'].notMet.map(meeting => ({
           ...meeting,
-          meetingDate: this.datePipe.transform(meeting.meetingDate, 'yyyy-MM-dd')
+          meetingDate: this.datePipe.transform(meeting?.meetingDate)
         }));
         this.pendingSchedule = resp['data'].toMeet;
         console.log(resp['data'], this.pendingSchedule)
         this.todoInActive = resp['data'].inActive.map(meeting => ({
           ...meeting,
-          createdOn: this.datePipe.transform(meeting.createdOn, 'yyyy-MM-dd')
+          createdOn: this.datePipe.transform(meeting?.createdOn)
         }));
         this.spinner.hide();
         console.log(this.todoNotMet)

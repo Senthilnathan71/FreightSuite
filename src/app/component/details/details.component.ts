@@ -1,13 +1,15 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal, NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
     standalone: true,
     imports: [
         DatePipe,
         NgbModalModule,
-        CommonModule
+        CommonModule,
+        CustomDatePipe
     ],
     selector: 'dofi-info',
     templateUrl: 'details.component.html'

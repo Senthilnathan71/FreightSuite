@@ -100,7 +100,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
         dataType: 'string'
       },
       {
-        key: 'departmentName',
+        key: 'DepartmentMasterSid',
         label: 'Department ',
         sortable: true,
         filterable: true,
@@ -113,7 +113,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'number'
       },
       {
         key: 'AutoCapture',
@@ -168,8 +168,8 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   protected config: ListComponentConfig = {
     storageKey: 'milestone-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'MilestoneName',
-    defaultSortDirection: 'desc',
+    defaultSortColumn: 'SortBy',
+    defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
@@ -240,6 +240,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
+        SortBy: Number(item.SortBy),
         status: item.status === 'A' ? 'Active' : 'Suspended',
         departmentName:item.departmentMaster?.departmentName,
         // ReceivedDate: this.datePipe.transform(item?.ReceivedDate)

@@ -20,6 +20,7 @@ import { map } from 'rxjs/operators';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { JournalVoucherService, JournalVoucherSearchResponse } from '../journal-voucher.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -35,7 +36,9 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     ReusableTableComponent,
     PageHeaderComponent,
     CommonModule,
+    CustomDatePipe
   ],
+  providers: [CustomDatePipe],
   templateUrl: './journal-voucher-list.component.html',
   styles: ``
 })
@@ -75,6 +78,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     private dialog: MatDialog,
     private spinner: NgxSpinnerService,
     public mps: MenuPermissionService,
+    private datePipe: CustomDatePipe,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -145,8 +149,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         ...item,
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended',
-        VoucherDateFormatted: new Date(item.VoucherDate).toLocaleDateString(),
-        PostDateFormatted: item.PostDate ? new Date(item.PostDate).toLocaleDateString() : '-',
+        VoucherDateFormatted: this.datePipe.transform(item.VoucherDate),
+        PostDateFormatted: this.datePipe.transform(item.PostDate),
       }));
      this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
