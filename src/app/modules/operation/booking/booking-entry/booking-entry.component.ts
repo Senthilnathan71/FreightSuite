@@ -3587,6 +3587,14 @@ ${this.userData['userName']}`;
  */
   private updateBookingStatusOnCargoDate(): void {
     // Check if any product in the FormArray has a value for CargoRecDate
+    const isLCLExport = this.selectedDepartmentType === "SEA" 
+      && this.selectedDepartment?.FCLLCL === 'LCL' 
+      && this.selectedDepartment?.ExportImport === "Export";
+
+    if(!isLCLExport){
+      return;
+    }
+
     const atLeastOneHasDate = this.bookingProducts.controls.some(
       (product) => !!product.get('CargoRecDate')?.value
     );
@@ -3696,7 +3704,8 @@ ${this.userData['userName']}`;
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
     CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
-    masterJobContainers: masterJobContainers
+    masterJobContainers: masterJobContainers,
+    screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job"
   };
 
   console.log('Generate Job Payload:', payload);

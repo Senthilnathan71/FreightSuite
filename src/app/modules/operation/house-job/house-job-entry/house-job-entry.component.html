@@ -112,7 +112,7 @@
  <!-- Smart Quick Form -->
 <div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
 
-  <div class="row g-3 pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
+  <div class="row pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
 
     <!-- Department -->
     <div class="col-md-2">
@@ -234,7 +234,7 @@
       </div>
     </div>
     <div class="col-md-3">
-      <div class="custom-form-group-select" [class.filled]="!!houseJobForm.get('HouseStatus')?.value">
+      <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('HouseStatus')?.value">
         <!-- <input type="text" id="house-status-input" placeholder="" class="form-control custom-input-field sm"
               formControlName="HouseStatus"> -->
         <ng-select [items]="jobStatusOptions" bindLabel="name" bindValue="id" formControlName="HouseStatus" placeholder=""
@@ -243,14 +243,7 @@
       </div>
     </div>
 
-    <!-- HBL Count -->
-    <div class="col-md-2">
-      <div class="custom-form-group">
-        <input type="text" id="hbl-count-input" placeholder="" class="form-control custom-input-field sm"
-          formControlName="HBLCount">
-        <label for="hbl-count-input" class="input-label">HBL Count <span class="text-danger">*</span></label>
-      </div>
-      </div>
+
   <!-- Master Job Number Field (Read-only) -->
 <!-- <div class="col-md-2">
   <div class="custom-form-group">
@@ -1254,8 +1247,8 @@
       <!-- <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry> -->
-      <app-cost-entry #costEntryComponent screenName="HouseJob" [currencyList]="currencyList"
-        [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
+      <app-cost-entry #costEntryComponent [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'"
+        [currencyList]="currencyList" [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
         (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
@@ -1725,6 +1718,14 @@
               <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
             </div>
           </aside>
+              <!-- HBL Count -->
+              <aside class="col-md-3" [formGroup]="houseJobForm">
+                <div class="custom-form-group">
+                  <input type="text" id="hbl-count-input" placeholder="" class="form-control custom-input-field sm"
+                    formControlName="HBLCount">
+                  <label for="hbl-count-input" class="input-label">HBL Count <span class="text-danger">*</span></label>
+                </div>
+              </aside>
           <aside class="col-md-3 d-none">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"

@@ -121,7 +121,7 @@ export class CostEntryComponent implements OnInit {
     this.selectedTab = tab;
   }
 
-  @Input() screenName: string;
+  @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job';
   private _currencyList: any[] = [];
   private _customerList: any[] = [];
   private _agentList: any[] = [];
@@ -1709,8 +1709,8 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         ratesResp = ((await firstValueFrom(this.operationService.getCostRevenueChargeWithDetails({
           TransactionSid: this.routeParentSid,
-          MenuMasterSid: this.screenName === "HouseJob" ? -1 : this.currentMenuId,
-          modelName : this.screenName  // this is the screen name. For houseJob we need this to be "houseJob"
+          MenuMasterSid: this.screenName === "House Job" || this.screenName === "House Air Waybill" ? -1 : this.currentMenuId,
+          screenName : this.screenName
         }))).data || []).map(rate =>({
           ...rate,
           RateSid : rate.CostRevenueChargesSid,
@@ -2844,7 +2844,7 @@ getChargeTaxPercentage(charge: any): string {
   const bookingNo = this.parentFormValue?.BookingNumber || 'N/A';
   const bookingDate = this.parentFormValue?.BookingDate || new Date().toLocaleDateString();
   narration = `Booking No. ${bookingNo}, Dt. ${bookingDate}`;
-} else if (this.screenName === 'MasterJob') {
+} else if (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') {
   // Master Job only (no house job)
   const mblNo = this.parentFormValue?.MBLNo || 'N/A';
   const mblDate = this.parentFormValue?.MBLDate || new Date().toLocaleDateString();
@@ -2855,7 +2855,7 @@ getChargeTaxPercentage(charge: any): string {
   const mblPrefix = segment === 'AIR' ? 'MAWB' : 'MBL';
   
   narration = `Voucher from Master Job – ${mblPrefix} No. ${mblNo}, Master Job No. ${masterJobNo}, Dt. ${mblDate}`;
-} else if (this.screenName === 'HouseJob') {
+} else if (this.screenName === 'House Job'|| this.screenName === 'House Air Waybill') {
   // Master Job + House Job
   const hblNo = this.parentFormValue?.HBLNo || 'N/A';
   const hblDate = this.parentFormValue?.HBLDate || new Date().toLocaleDateString();
@@ -2895,10 +2895,19 @@ getChargeTaxPercentage(charge: any): string {
         GSTType: this.selectedTaxCategory ?? '',
         Remarks: '',
         DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid ?? null,
-        HouseNumber: this.screenName === 'HouseJob' ? this.parentFormValue?.HBLNo ?? '' : '',
-        MasterNumber: this.screenName === 'MasterJob' ? this.parentFormValue?.MasterJobNumber : (this.screenName === 'HouseJob') ? this.parentFormValue?.MasterJobNumber : '',
-        HouseJobSid: this.screenName === 'HouseJob' ? this.getParentSid() : null,
-        MasterJobSid: (this.screenName === 'MasterJob') ? this.getParentSid() : (this.screenName === 'HouseJob') ? this.parentFormValue?.MasterJobSid : null,
+        HouseNumber: 
+          (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') ? 
+            this.parentFormValue?.HBLNo ?? '' : '',
+        MasterNumber: 
+          (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') ? 
+            this.parentFormValue?.MasterJobNumber : 
+            (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') ? 
+              this.parentFormValue?.MasterJobNumber : '',
+        HouseJobSid: (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') ? this.getParentSid() : null,
+        MasterJobSid: (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') ? 
+          this.getParentSid() : 
+          (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') ? 
+          this.parentFormValue?.MasterJobSid : null,
         CurrencyMasterSid: this.invoiceHeaderCurrency?.CurrencyMasterSid ?? null,
         CurrencyCode: this.invoiceHeaderCurrency?.currencyCode ?? '',
         ExchangeRate: this.invoiceHeaderExchangeRate ?? 1,
@@ -2985,8 +2994,11 @@ getChargeTaxPercentage(charge: any): string {
           COAMasterSid: chargeSubledger?.COAMasterSid ?? null,
           HSSACMasterSid: chargeInfo.ChargeMaster?.chargeTaxMaster?.[0]?.HSSACMasterSid || chargeInfo.ChargeMaster?.HSNSAC || null,
           DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid ?? null,
-          HouseJobSid: this.screenName === 'HouseJob' ? this.getParentSid() : null,
-          MasterJobSid: (this.screenName === 'MasterJob') ? this.getParentSid() : (this.screenName === 'HouseJob') ? this.parentFormValue?.MasterJobSid : null,
+          HouseJobSid: this.screenName === 'House Job' || this.screenName === 'House Air Waybill' ? this.getParentSid() : null,
+          MasterJobSid: 
+            (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') ? 
+            this.getParentSid() : 
+            (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') ? this.parentFormValue?.MasterJobSid : null,
           CurrencyMasterSid: isRevenue ? chargeInfo.RevenueCurrencyMasterSid : chargeInfo.CostCurrencyMasterSid,
           CurrencyCode: isRevenue ? chargeInfo.RevenueCurrencyMaster?.currencyCode : chargeInfo.CostCurrencyMaster?.currencyCode,
           ExchangeRate: Number(isRevenue ? chargeInfo.RevenueExchangeRate : chargeInfo.CostExchangeRate),

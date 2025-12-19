@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-hawb',
@@ -41,6 +42,7 @@ export class HAWBComponent {
   @Input() packageTypeList: any;
   @Input() containerTypeList: any;
   @Input() chargeList: any;
+  @Output() hblCountUpdated = new EventEmitter<void>();
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
@@ -115,6 +117,7 @@ export class HAWBComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private pdfService: PdfDownloadService,
+    private operationService : OperationService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -172,17 +175,45 @@ export class HAWBComponent {
 
 
   printDiv(divId: string): void {
+    // HAWB Draft - print directly
+    if(this.selectedReportAir === 'HAWBDraft'){
+      this.print(divId);
+      return;
+    }
+
+    // HAWB - increment HBL count
+    const payload = {
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      CompanyMasterSid : this.housejobData?.CompanyMasterSid,
+      BranchMasterSid : this.housejobData?.BranchMasterSid,
+    }
+    this.operationService.incrementHBLCount(payload).subscribe({
+      next : (resp:any)=>{
+        if (resp.status) {
+          this.print(divId);
+          this.updateHBLCountInDisplay();
+        } else{
+          this.appSettingService.showError("Error incrementing HBL Count")
+        }
+      },
+      error : (error)=>{
+        this.appSettingService.showError(error.message)
+        console.error(error);
+      }
+    });
+    
+  }
+
+  print(divId:string) {
     this.showPrintLogo = true;
     this.showPdfLogo = false;
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
 
-    setTimeout(() => {
-      const printContents = document.getElementById(divId)?.innerHTML;
-      if (!printContents) return;
-
-      const popupWin = window.open('', '_blank', 'width=1000,height=600');
-      if (popupWin) {
-        popupWin.document.open();
-        popupWin.document.write(`
+    const popupWin = window.open('', '_blank', 'width=1000,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
         <html>
           <head>
             <title>Print</title>
@@ -192,30 +223,65 @@ export class HAWBComponent {
           </body>
         </html>
       `);
-        popupWin.document.close();
-      }
-    }, 50);
+      popupWin.document.close();
+    }
   }
 
 
   async downloadPDF() {
+    // HAWB Draft - download directly
+    if(this.selectedReportAir === 'HAWBDraft'){
+      this.download();
+      return;
+    }
+  
+    // HAWB - increment HBL count
+    const payload = {
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      CompanyMasterSid: this.housejobData?.CompanyMasterSid,
+      BranchMasterSid: this.housejobData?.BranchMasterSid,
+    };
+
+    this.spinner.show();
+
+    this.operationService.incrementHBLCount(payload).subscribe({
+      next: async (resp: any) => {
+        if (resp.status) {
+          this.download();
+          this.updateHBLCountInDisplay();
+        } else {
+          this.spinner.hide();
+          this.appSettingService.showError("Error incrementing HBL Count");
+        }
+      },
+      error: (error) => {
+        this.spinner.hide();
+        this.appSettingService.showError(error.message);
+        console.error(error);
+      }
+    });
+  }
+
+  async download() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
+    try {
+      const BankPaymentNo = this.housejobData?.HBLNo || '';
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `HAWB_${BankPaymentNo}`,
+        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      );
+    } catch (error) {
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const BankPaymentNo = this.housejobData?.HBLNo || '';
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `HAWB_${BankPaymentNo}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
+  updateHBLCountInDisplay() {
+    this.hblCountUpdated.emit();
   }
 
   getFreightTotal() {

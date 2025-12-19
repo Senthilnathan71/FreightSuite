@@ -5,7 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, firstValueFrom, forkJoin, of, tap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, take, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -56,7 +56,7 @@ import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
-import { getMaxDate, getMinDate } from 'src/app/common/helper';
+import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -519,12 +519,16 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.spinner.show();
   
   // Check for master job data in query parameters
-  this.currentRoute.queryParams.subscribe(params => {
-    if (params['MasterJobSid']) {
-      console.log('Creating house job from master job:', params);
-      this.loadMasterJobDataForHouseJob(params);
+  this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
+    if (params['fromMasterJob'] === 'true') {
+      const masterJobState = window.history.state?.masterJobData;
+      console.log('Creating house job from master job:', masterJobState);
+      if(masterJobState){
+        this.loadMasterJobDataForHouseJob(masterJobState);
+      }
     }
   });
+  
   
   this.currentRoute.paramMap.subscribe((param) => {
     this.HouseJobSid = +param.get('id');
@@ -646,7 +650,7 @@ private setupMBLDateListener(): void {
       Coload: [false],
       ShipmentType: [false],
       HouseStatus:['Job Generated', Validators.required],
-      HBLCount: [0],
+      HBLCount: [{value : 0, disabled: true}],
       IncoTerms: [null, [Validators.required]],
       InternalNote: [''],
       GeneralNote: [''],
@@ -1974,7 +1978,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       Volumetric: parseFloat(product.Volumetric) || 0,
       IsHaz: product.IsHaz ? 'Y' : 'N',
       ImcoClass: product.ImcoClass || '',
-      UnNo: product.UnNo || '',
+      UnNo: String(product.UnNo) || '',
       PkgGroup: product.PkgGroup || '',
       Length: Number(product.Length),
       Width: Number(product.Width),
@@ -2017,7 +2021,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
           }
           
           // Optionally reload the data to get the generated IDs
-          this.loadHouseById(this.HouseJobSid);
+          // this.loadHouseById(this.HouseJobSid);
         } else {
           this.appSettingService.showError(resp.message || 'Error creating house job.');
           console.error('Create error:', resp.message);
@@ -2062,6 +2066,7 @@ private getAgentNameById(agentId: number): string {
   return agent ? agent.CustomerName : '';
 }
  onDeptChange(department) {
+   console.log("DEBUG VALUE AFTER ROUTE CHANGE",this.houseJobForm.getRawValue())
   console.log('onDeptChange called with:', department);
   
   if (!department) {
@@ -2465,11 +2470,13 @@ validateHBLNo(): boolean {
     this.b[controlName]?.setValue(item ? item.CustomerAddress1 : '')
   }
 
-  handlePOLChange(selectedPort: any) {
-  this.b['VesselName']?.setValue(null);
-  this.b['VoyageNo']?.setValue(null);
-  this.b['ETA']?.setValue('');
-  this.b['ETD']?.setValue('');
+  handlePOLChange(selectedPort: any,resetTrigger:boolean = true) {
+    if (resetTrigger) {
+      this.b['VesselName']?.setValue(null);
+      this.b['VoyageNo']?.setValue(null);
+      this.b['ETA']?.setValue('');
+      this.b['ETD']?.setValue('');
+    }
   if (!selectedPort) {
     this.filteredPOD = [...this.filteredPorts];
     return;
@@ -2478,11 +2485,13 @@ validateHBLNo(): boolean {
   this.getVesselBasedOnPorts(); // Add this call
 }
 
-  handlePODChange(selectedPort: any) {
-  this.b['VesselName']?.setValue(null);
-  this.b['VoyageNo']?.setValue(null);
-  this.b['ETA']?.setValue('');
-  this.b['ETD']?.setValue('');
+  handlePODChange(selectedPort: any,resetTrigger:boolean = true) {
+    if (resetTrigger) {
+      this.b['VesselName']?.setValue(null);
+      this.b['VoyageNo']?.setValue(null);
+      this.b['ETA']?.setValue('');
+      this.b['ETD']?.setValue('');
+    }
   if (!selectedPort) {
     this.filteredPOL = [...this.filteredPorts];
     this.b['FPD']?.setValue(null);
@@ -3559,6 +3568,12 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.chargeList = this.chargeList || [];
     modalRef.componentInstance.selectedReportAir = type;
+    modalRef.componentInstance.hblCountUpdated.subscribe(() => {
+      const prev = toNumber(this.houseJobForm.get('HBLCount')?.value);
+      this.houseJobForm.patchValue({
+        HBLCount: prev + 1
+      });
+    });
   }
 
 // Helper Funstion 
@@ -4124,7 +4139,9 @@ prepopulateFromMasterJob(masterJobData: any): void {
   
   // Set the department first - this triggers department-specific logic
   this.onDeptChange(selectedDepartment);
-  this.b['VesselName']?.enable();
+  this.houseJobForm.get('VesselName')?.enable();
+  this.houseJobForm.get('VoyageMasterSid')?.enable();
+  this.houseJobForm.get('VoyageNo')?.enable();
   // Wait a moment for department change to take effect
   setTimeout(() => {
     // Set MasterJobSid and other basic fields
@@ -4138,7 +4155,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
       VoyageNo: masterJobData.VoyageNo || '',
       CarrierName: masterJobData.CarrierName || '',
    
-    });
+    },{ emitEvent : false});
     
     // Debug: Check form values
     console.log('Form after patch:', this.houseJobForm.getRawValue());
@@ -4206,9 +4223,9 @@ private setPortFromCode(formControlName: string, portCode: string): void {
   
   // Update filtered ports
   if (formControlName === 'POL') {
-    this.handlePOLChange(port);
+    this.handlePOLChange(port,false);
   } else if (formControlName === 'POD') {
-    this.handlePODChange(port);
+    this.handlePODChange(port,false);
   }
 }
 // private autoSelectVesselVoyage(vesselName: string, voyageNo: string): void {
