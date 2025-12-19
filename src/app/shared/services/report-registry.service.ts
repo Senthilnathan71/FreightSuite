@@ -698,6 +698,68 @@ export class ReportRegistryService {
       console.warn(' Profitability Report component not yet created:', error);
     }
 
+     // House_Job_Loss_Report
+    try {
+      const { HouseJobLossReportComponent } = await import(
+        '../components/reports/house-job-loss-report/house-job-loss-report.component'
+      );
+
+      this.registerReport({
+        id: 'house-job-loss-report',
+        title: 'House_Job_Loss_Report',
+        component: HouseJobLossReportComponent,
+        filenameTemplate: 'House_Job_Loss_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'House_Job_Loss_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>House_Job_Loss_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' House Job Loss Report component not yet created:', error);
+    }
+
+    // Profi_Summary_Report
+    try {
+      const { ProfitSummaryComponent } = await import(
+        '../components/reports/profit-summary/profit-summary.component'
+      );
+
+      this.registerReport({
+        id: 'profit-summary',
+        title: 'Profit_Summary_Report',
+        component: ProfitSummaryComponent,
+        filenameTemplate: 'Profit_Summary_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Profit_Summary_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Profit_Summary_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profit_Summary_Reportt component not yet created:', error);
+    }
+
     // 
   }
 
