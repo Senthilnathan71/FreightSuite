@@ -2219,7 +2219,7 @@ if (this.selectedTab === 'Products' && this.bookingProducts.length > 0) {
       return;
     }
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
-    this.b['ETA']?.setValue(new Date(selectedPort.ETA));
+    // this.b['ETA']?.setValue(new Date(selectedPort.ETA));
     this.getVesselVoyBasedOnPorts();
   }
 
@@ -2248,47 +2248,136 @@ if (this.selectedTab === 'Products' && this.bookingProducts.length > 0) {
     }
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
   }
-
-  onVesselChange(voyage: any) {
-    console.log(voyage);
-    if (!voyage) {
+onVesselChange(vessel: any) {
+  
+  if(!vessel){
+    console.log('No voyage selected, clearing all voyage-related fields');
+    this.voyageList = [];
+    this.bookingForm.get('VoyageNo')?.setValue(null);
+    this.bookingForm.get('ETA')?.setValue(null);
+    this.bookingForm.get('ETD')?.setValue(null);
+    this.bookingForm.get('PortCutoffDate')?.setValue(null);
+    return;
+  }
+  
+  this.bookingForm.get('vesselName')?.setValue(vessel.VesselName);
+  this.getVoyageForPortsAndVessels(vessel.VesselName);
+  if(vessel.VoyageNo){
+    this.autoPopulateVoyageData(vessel);
+  }
+}
+ private autoPopulateVoyageData(vessel: any): void {
+    if (vessel.VoyageNo) {
       this.bookingForm.patchValue({
-        VoyageMasterSid : null,
-        VoyageNo: null,
-        ETA: null,
-        ETD: null,
-        CutOffDate: null
-      })
-      return;
+        VoyageNo: vessel.VoyageNo,
+        ETA: vessel.ETA ? new Date(vessel.ETA) : null,
+        ETD: vessel.ETD ? new Date(vessel.ETD) : null,
+        PortCutoffDate: vessel.PortCutoff ? new Date(vessel.PortCutoff) : null
+      });
     }
-    this.bookingForm.patchValue({
-      VoyageMasterSid : voyage.VoyageMasterSid,
-      VoyageNo: voyage.VoyageNo,
-      ETA: new Date(voyage.ETA),
-      ETD: new Date(voyage.ETD),
-      CutOffDate: new Date(voyage.PortCutoff),
-    })
   }
 
-  onVoyageChange(voyage: any) {
-    if (!voyage) {
-      this.b['ETA'].setValue(null);
-      this.b['ETD'].setValue(null);
-      this.b['CutOffDate'].setValue(null);
-      this.b['VoyageMasterSid']?.setValue('')
-      return;
-    }
-    const POL = this.b['POL'].value;
-    const POD = this.b['POD'].value;
-    this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
-    const polETD = voyage.ETD || null;
-    const podETA = voyage?.ETA || null;
-    const cutOff = voyage?.PortCutoff || null;
-    this.b['ETD'].setValue(new Date(polETD));
-    this.b['ETA'].setValue(new Date(podETA));
-    this.b['CutOffDate'].setValue(new Date(cutOff));
-    this.minStartDate = new Date(podETA);
+//   onVesselChange(vessel: any) {
+//   console.log('=== onVesselChange START ===');
+//   console.log('Voyage object:', voyage);
+//   console.log('Is voyage null/undefined?', !voyage);
+  
+//   if (!vessel) {
+//     console.log('No voyage selected, clearing all voyage-related fields');
+//     this.bookingForm.patchValue({
+//       VoyageMasterSid : null,
+//       VoyageNo: null,
+//       ETA: null,
+//       ETD: null,
+//       CutOffDate: null
+//     });
+//     console.log('Fields cleared');
+//     console.log('=== onVesselChange END (no voyage) ===');
+//     return;
+//   }
+  
+//   console.log('Setting voyage data:');
+//   console.log('- VoyageMasterSid:', voyage.VoyageMasterSid);
+//   console.log('- VoyageNo:', voyage.VoyageNo);
+//   console.log('- ETA from voyage:', voyage.ETA, 'as Date:', new Date(voyage.ETA));
+//   console.log('- ETD from voyage:', voyage.ETD, 'as Date:', new Date(voyage.ETD));
+//   console.log('- PortCutoff from voyage:', voyage.PortCutoff, 'as Date:', new Date(voyage.PortCutoff));
+  
+//   this.bookingForm.patchValue({
+//     VoyageMasterSid : voyage.VoyageMasterSid,
+//     VoyageNo: voyage.VoyageNo,
+//     ETA: new Date(voyage.ETA),
+//     ETD: new Date(voyage.ETD),
+//     CutOffDate: new Date(voyage.PortCutoff),
+//   });
+  
+//   console.log('Fields set successfully');
+//   console.log('=== onVesselChange END ===');
+// }
+onVoyageChange(voyage: any) {
+   
+  if(!voyage){
+  
+    this.bookingForm.get('ETA')?.setValue(null);
+    this.bookingForm.get('ETD')?.setValue(null);
+    this.bookingForm.get('PortCutoffDate')?.setValue(null);
+    this.bookingForm.get('VoyageMasterSid')?.setValue(null);
+    return;
   }
+
+this.bookingForm.get('VesselName')?.setValue(voyage.VesselName);
+this.bookingForm.get('VoyageNo')?.setValue(voyage.VoyageNo);
+this.bookingForm.get('ETA')?.setValue(new Date(voyage.ETA));
+this.bookingForm.get('ETD')?.setValue(new Date(voyage.ETD));
+this.bookingForm.get('PortCutoffDate')?.setValue(new Date(voyage.PortCutoff));
+this.bookingForm.patchValue({
+ VoyageMasterSid: voyage.VoyageMasterHeaderSid || null,
+      VoyageNo: voyage.VoyageNo,
+      VesselName: voyage.VesselName || this.bookingForm.get('VesselName')?.value
+    });
+    if(voyage.ETD){
+      this.bookingForm.get('ETD')?.setValue(new Date(voyage.ETD));
+    }
+    if(voyage.ETA){
+      this.bookingForm.get('ETA')?.setValue(new Date(voyage.ETA));
+      this.minStartDate = new Date(voyage.ETA);
+    }
+    if(voyage.PortCutoff){
+      this.bookingForm.get('PortCutoffDate')?.setValue(new Date(voyage.PortCutoff));
+    } else if(voyage.PortCutoffDate){
+      this.bookingForm.get('PortCutoffDate')?.setValue(new Date(voyage.PortCutoffDate));
+    }
+    // Also check voyage.Ports array for port-specific cutoff
+    if (voyage.Ports && Array.isArray(voyage.Ports)) {
+      const POL = this.bookingForm.get('POL')?.value;
+      const polDetail = voyage.Ports.find((p: any) => p.POLSid === POL);
+
+      if (polDetail?.PortCutoff) {
+        
+        this.bookingForm.get('PortCutoffDate')?.setValue(new Date(polDetail.PortCutoff));
+      }
+    }
+    
+}
+  // onVoyageChange(voyage: any) {
+  //   if (!voyage) {
+  //     this.b['ETA'].setValue(null);
+  //     this.b['ETD'].setValue(null);
+  //     this.b['CutOffDate'].setValue(null);
+  //     this.b['VoyageMasterSid']?.setValue('')
+  //     return;
+  //   }
+  //   const POL = this.b['POL'].value;
+  //   const POD = this.b['POD'].value;
+  //   this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
+  //   const polETD = voyage.ETD || null;
+  //   const podETA = voyage?.ETA || null;
+  //   const cutOff = voyage?.PortCutoff || null;
+  //   this.b['ETD'].setValue(new Date(polETD));
+  //   this.b['ETA'].setValue(new Date(podETA));
+  //   this.b['CutOffDate'].setValue(new Date(cutOff));
+  //   this.minStartDate = new Date(podETA);
+  // }
 
   getVoyageTypeBasedOnDept(deptId: number) {
     const dept = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
@@ -2305,79 +2394,127 @@ if (this.selectedTab === 'Products' && this.bookingProducts.length > 0) {
     }
   }
 
-  getVesselVoyBasedOnPorts() {
-    const POL = this.b['POL']?.value;
-    const POD = this.b['POD']?.value;
-    const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-      this.hasShownVesselWarning = false;
-    if (!POLSid || !PODSid || !voyageType) return;
-    const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
-   
-    this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.headerVesselList = resp.data.map(vslVoy =>({
-              ...vslVoy , 
-              ETD : vslVoy.ETD ? new Date (vslVoy.ETD) : null,
-              ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
-              CutOffDate: vslVoy.CutOffDate ? new Date (vslVoy.CutOffDate) : null,
-          }));
-          console.log(this.headerVesselList);
-           if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
-          this.hasShownVesselWarning = true;
-          }
-        } else {
-          this.appSettingService.showError("Error loading Vessel")
-        }
-      }
-    )
+getVesselVoyBasedOnPorts() {
+  console.log('=== getVesselVoyBasedOnPorts START ===');
+  
+  const POL = this.b['POL']?.value;
+  const POD = this.b['POD']?.value;
+  const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
+  
+  console.log('POL code:', POL);
+  console.log('POD code:', POD);
+  console.log('Voyage type:', voyageType);
+  console.log('Port List:', this.portList);
+  
+  const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
+  const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+  
+  console.log('POLSid found:', POLSid, 'for POL:', POL);
+  console.log('PODSid found:', PODSid, 'for POD:', POD);
+  
+  this.hasShownVesselWarning = false;
+  
+  if (!POLSid || !PODSid || !voyageType) {
+    console.log('Missing required data - returning early:');
+    console.log('- POLSid exists?:', !!POLSid);
+    console.log('- PODSid exists?:', !!PODSid);
+    console.log('- voyageType exists?:', !!voyageType);
+    console.log('=== getVesselVoyBasedOnPorts END (early return) ===');
+    return;
   }
+  
+  const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
+  console.log('Calling API with payload:', payload);
+  
+  this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
+    (resp: any) => {
+      console.log('API Response:', resp);
+      if (resp.status) {
+        this.headerVesselList = resp.data.map(vslVoy =>({
+            ...vslVoy , 
+            ETD : vslVoy.ETD ? new Date (vslVoy.ETD) : null,
+            ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
+            CutOffDate: vslVoy.CutOffDate ? new Date (vslVoy.CutOffDate) : null,
+        }));
+        console.log('Header Vessel List updated:', this.headerVesselList.length, 'items');
+        if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
+          this.hasShownVesselWarning = true;
+          console.log('No vessels found for route');
+        }
+      } else {
+        console.log('API error:', resp);
+        this.appSettingService.showError("Error loading Vessel");
+      }
+      console.log('=== getVesselVoyBasedOnPorts END (API complete) ===');
+    }
+  );
+}
 
-  getVoyageForPortsAndVessels() {
-    const POO = this.b['POO']?.value;
-    const POL = this.b['POL']?.value;
-    const POD = this.b['POD']?.value;
-    const FPOD = this.b['FPD']?.value;
-    const MovementType = this.selectedDepartment?.departmentType;
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const vessel = this.b['VesselName']?.value;
-    const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
-    if (!POL || !POD || !vesselId) {
+  getVoyageForPortsAndVessels(vesselName?: string) {
+    const POL = this.bookingForm.get('POL')?.value;
+    const POD = this.bookingForm.get('POD')?.value;
+    const vessel = vesselName || this.bookingForm.get('VesselName')?.value;
+
+    if (!POL || !POD || !vessel) {
       return;
     }
-    const payload = { VesselMasterSid: vesselId, POL: POLSid, POD: PODSid, MovementType: MovementType }
+
+    // Get port details
+    const polPort = this.portList.find(p => p.PortMasterSid === POL);
+    const podPort = this.portList.find(p => p.PortMasterSid === POD);
+
+    if (!polPort || !podPort) {
+      return;
+    }
+
+    const payload = {
+      VesselName: vessel,
+      POL: polPort.PortMasterSid,
+      POD: podPort.PortMasterSid,
+      MovementType: this.selectedDepartment?.departmentType
+    };
+
     this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.voyageList = resp.data.map(voyage => {
-            const pol = this.portList.find(p => p.PortMasterSid === voyage.POL);
-            const pod = this.portList.find(p => p.PortMasterSid === voyage.POD);
-            const polName = pol?.PortName;
-            const podName = pod?.PortName;
-            const polWithName = pol ? { ...pol, PortName: polName } : null;
-            const podWithName = pod ? { ...pod, PortName: podName } : null;
-
-
-
+          this.voyageList = resp.data.map((voyage: any) => {
+            // Format the voyage data
             return {
               VoyageNo: voyage.VoyageNo,
-              ETD: voyage.ETD,
-              ETA: voyage.ETA,
-              CutOffDate: voyage.PortCutoff,
-              VoyageMasterHeaderSid: voyage.VoyageMasterHeaderSid,
-              POL: polWithName,
-              POD: podWithName
+              ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+              ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+              PortCutoff: voyage.PortCutoff ? new Date(voyage.PortCutoff) : null,
+              VoyageMasterHeaderSid: voyage.VoyageMasterSid,
+              VesselName: voyage.VesselName,
+              POL: polPort,
+              POD: podPort
             };
           });
-          console.log(this.voyageList);
+
+          // In edit mode, try to find and select the existing voyage
+          if (this.isEditMode) {
+            const currentVoyageNo = this.bookingForm.get('VoyageNo')?.value;
+            if (currentVoyageNo) {
+              const existingVoyage = this.voyageList.find(v => v.VoyageNo === currentVoyageNo);
+              if (existingVoyage) {
+                this.onVoyageChange(existingVoyage);
+              }
+            }
+          } else {
+            // Auto-select if only one voyage exists in create mode
+            if (this.voyageList.length === 1) {
+              this.onVoyageChange(this.voyageList[0]);
+            }
+          }
         } else {
-          this.appSettingService.showError("Error loading sailing schedules.")
+          this.appSettingService.showError("Error loading sailing schedules.");
         }
+      },
+      (err) => {
+        console.error('Error loading voyages:', err);
+        this.appSettingService.showError("Error loading sailing schedules.");
       }
-    )
+    );
   }
 
   toggleHeaderCheckboxes(event: Event, fieldName: string) {

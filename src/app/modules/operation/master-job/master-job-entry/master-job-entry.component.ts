@@ -1750,8 +1750,8 @@ jobStatusOptions = [
   private clearVesselAndVoyageData(): void {
     this.masterJobForm.get('VesselName')?.setValue(null);
     this.masterJobForm.get('VoyageNo')?.setValue(null);
-    this.masterJobForm.get('ETA')?.setValue('');
-    this.masterJobForm.get('ETD')?.setValue('');
+    this.masterJobForm.get('ETA')?.setValue(null);
+    this.masterJobForm.get('ETD')?.setValue(null);
     this.headerVesselList = [];
     this.voyageList = [];
   }
@@ -1867,8 +1867,8 @@ jobStatusOptions = [
     if (!vessel) {
       this.voyageList = [];
       this.masterJobForm.get('VoyageNo')?.setValue(null);
-      this.masterJobForm.get('ETA')?.setValue('');
-      this.masterJobForm.get('ETD')?.setValue('');
+      this.masterJobForm.get('ETA')?.setValue(null);
+      this.masterJobForm.get('ETD')?.setValue(null);
       this.masterJobForm.get('PortCutoffDate')?.setValue(null);
       return;
     }
@@ -1954,8 +1954,8 @@ jobStatusOptions = [
   // Voyage change handler
   onVoyageChange(voyage: any) {
     if (!voyage) {
-      this.masterJobForm.get('ETA')?.setValue('');
-      this.masterJobForm.get('ETD')?.setValue('');
+      this.masterJobForm.get('ETA')?.setValue(null);
+      this.masterJobForm.get('ETD')?.setValue(null);
       this.masterJobForm.get('PortCutoffDate')?.setValue(null);
       this.masterJobForm.get('VoyageMasterSid')?.setValue(null);
       return;

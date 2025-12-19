@@ -50,6 +50,8 @@ export class QuotationListManager {
                         QuoteDate: this.datePipe.transform(item?.QuoteDate),
                         bookingNo : item.bookingHeader?.BookingNo || '',
                         status: item.status === 'A' ? 'Active' : 'Suspended',
+                          approvalStatus: this.getApprovalStatus(item),
+                        approvalStatusLabel: this.getApprovalStatusLabel(item)
                     }));
                     this.totalRecords = response.data.totalCount || 0;
                     this.updateSearchParams();
@@ -70,6 +72,37 @@ export class QuotationListManager {
                 return of(null);
             })
         ).subscribe();
+    }
+
+     private getApprovalStatus(item: any): string {
+        if (!item.quoteRoute || item.quoteRoute.length === 0) {
+            return 'Pending';
+        }
+        
+        const route = item.quoteRoute[0];
+        if (!route.quoteCarrier || route.quoteCarrier.length === 0) {
+            return 'Pending';
+        }
+        
+        // Get the approval status from the first carrier
+        const carrier = route.quoteCarrier[0];
+        return carrier.ApprovalStatus || 'Pending';
+    }
+
+    // Helper method to get formatted approval status label
+    private getApprovalStatusLabel(item: any): string {
+        const status = this.getApprovalStatus(item);
+        
+        const statusLabels: Record<string, string> = {
+            'Pending': 'Pending',
+            'Approved': 'Approved',
+            'Rejected': 'Rejected',
+            'Counter': 'Counter Offer',
+            'WaitingForFinalApproval': 'Waiting for Final Approval',
+            'WaitingForCustomerApproval': 'Waiting for Customer Approval'
+        };
+        
+        return statusLabels[status] || status;
     }
 
     private getSearchObservable(): Observable<any> {
