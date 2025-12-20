@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormGroup,
@@ -8,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {  NgbActiveModal, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { catchError, forkJoin, of, Subject } from 'rxjs';
@@ -43,7 +44,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
     CustomDatePipe,
     NgxSpinnerModule,
     PreventMultiClickDirective,
-    
+
   ],
   templateUrl: './loading-plan-entry.component.html',
   styleUrl: './loading-plan-entry.component.scss',
@@ -53,22 +54,22 @@ import { MasterService } from 'src/app/modules/master/master.service';
   ]
 })
 export class LoadingPlanEntryComponent {
-    @ViewChild('loadingPlanPrint') loadingPlanPrint!: TemplateRef<any>;
+  @ViewChild('loadingPlanPrint') loadingPlanPrint!: TemplateRef<any>;
   private destroy$ = new Subject<void>();
 
   @Input() screenName: string = "Loading Plan";
   @Input() masterJobFormValue = {
-    hasValue : false,
-    DepartmentMasterSid : null,
-    POL : null,
-    POD : null
+    hasValue: false,
+    DepartmentMasterSid: null,
+    POL: null,
+    POD: null
   };
   @Input() exceptionalBookings: number[] = [];
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() onSubmit = new EventEmitter<any>();
 
   selectedTab = 'Container';
- 
+
 
   selectTab(tab: string) {
     this.selectedTab = tab;
@@ -96,12 +97,12 @@ export class LoadingPlanEntryComponent {
   selectedBookings: any[] = [];
   isLoadChecked = false;
   loadingPlanForm: FormGroup;
- departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
-  hasMultipleVoyages : boolean = false;
-  multipleVoyageList : any[] = [];
+  hasMultipleVoyages: boolean = false;
+  multipleVoyageList: any[] = [];
 
   // Details Related Variables
   totalPkg: any = '';
@@ -117,7 +118,7 @@ export class LoadingPlanEntryComponent {
   currentContainerIndex = -1;
   containerTypeList: any[] = [];
   packageTypeList: any[] = [];
-  slicedContainerArr : any[] = [];
+  slicedContainerArr: any[] = [];
   containerForm !: FormGroup;
   masterJobContainers: FormArray;
   page = 1;
@@ -128,11 +129,11 @@ export class LoadingPlanEntryComponent {
   showPdfLogo: boolean = true;
 
   selectedDepartment: any;
-  showButton:boolean = false;
+  showButton: boolean = false;
   currentDate = new Date()
   userData: any;
-  agentList:any;
- loadingPlanData: any[] = [];
+  agentList: any;
+  loadingPlanData: any[] = [];
 
 
   branchDetails: any;
@@ -141,21 +142,21 @@ export class LoadingPlanEntryComponent {
   constructor(
     private fb: FormBuilder,
     private modalService: NgbModal,
-     private ngbModal: NgbModal,
+    private ngbModal: NgbModal,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
-    private router : Router,
+    private router: Router,
     public dropdownStore: DropdownStore,
-    private datePipe : CustomDatePipe,
-    private spinnerService : NgxSpinnerService,
+    private datePipe: CustomDatePipe,
+    private spinnerService: NgxSpinnerService,
     private spinner: NgxSpinnerService,
-    private pdfService:PdfDownloadService,
+    private pdfService: PdfDownloadService,
     private appSettingsService: AppSettingsService,
-     private masterService: MasterService,
-    
+    private masterService: MasterService,
 
-  
-    
+
+
+
   ) {
     this.masterJobContainers = this.fb.array([]);
     // effect(()=>{
@@ -164,7 +165,7 @@ export class LoadingPlanEntryComponent {
     //   const carriers = this.dropdownStore.customerTypeData();
     //   const containerType = this.dropdownStore.containerTypes();
     //   const packageType = this.dropdownStore.uomsByType()
-      
+
 
     //   this.departmentList = departments;
     //   this.portList = ports;
@@ -218,14 +219,26 @@ export class LoadingPlanEntryComponent {
       pol: [null, Validators.required],
       pod: [null, Validators.required],
       vesselVoyage: [null],
+      isVesselVoyage: [false],
       carrier: [null],
       ETA: [null],
       ETD: [null]
     });
   }
 
+  get f(): { [key: string]: AbstractControl<any, any> } {
+    return this.loadingPlanForm.controls || {};
+  }
 
-    loadCityName(): void {
+
+  toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const value = this.f[flagCtrl]?.value;
+    this.f[flagCtrl]?.setValue(!value);
+    this.loadingPlanForm.get(mainCtrl)?.reset();
+  }
+
+  loadCityName(): void {
     if (!this.currentBranchCityId) return;
 
 
@@ -240,88 +253,88 @@ export class LoadingPlanEntryComponent {
           console.log("Final City Name:", this.currentBranchCityName);
         }
 
- 
+
       },
       error: (error) => {
         console.error("Failed to load city:", error);
-   
+
       }
     });
   }
- loadAllLookups() {
-  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-  const activeBranchId = this.currentBranch?.BranchMasterSid;
+  loadAllLookups() {
+    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+    const activeBranchId = this.currentBranch?.BranchMasterSid;
 
-  const filterOption = {
-    CompanyMasterSid: activeCompanyId,
-    BranchMasterSid: activeBranchId,
-  };
+    const filterOption = {
+      CompanyMasterSid: activeCompanyId,
+      BranchMasterSid: activeBranchId,
+    };
 
-  const payload = {
-    CompanyMasterSid: activeCompanyId,
-    types: ['carrier'],
-  };
+    const payload = {
+      CompanyMasterSid: activeCompanyId,
+      types: ['carrier'],
+    };
 
-  forkJoin({
-    departments: this.dropdownStore.loadDepartments({ CompanyMasterSid: activeCompanyId }),
-    ports: this.dropdownStore.loadPorts(),
-    carriers: this.dropdownStore.loadCustomerTypeData(payload),
-    containerTypes: this.dropdownStore.loadContainerTypes(),
-    uomsByType: this.dropdownStore.loadUOMsByType('P'),
-  }).subscribe(
-    ({ departments, ports, carriers, containerTypes, uomsByType }) => {
-      this.departmentList = departments || [];
-      this.portList = (ports || []).map(p => ({...p,Country:p.countryMaster?.countryName}));
-      this.carrierList = carriers || [];
-      this.containerTypeList = containerTypes || [];
-      this.packageTypeList = uomsByType || [];
+    forkJoin({
+      departments: this.dropdownStore.loadDepartments({ CompanyMasterSid: activeCompanyId }),
+      ports: this.dropdownStore.loadPorts(),
+      carriers: this.dropdownStore.loadCustomerTypeData(payload),
+      containerTypes: this.dropdownStore.loadContainerTypes(),
+      uomsByType: this.dropdownStore.loadUOMsByType('P'),
+    }).subscribe(
+      ({ departments, ports, carriers, containerTypes, uomsByType }) => {
+        this.departmentList = departments || [];
+        this.portList = (ports || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+        this.carrierList = carriers || [];
+        this.containerTypeList = containerTypes || [];
+        this.packageTypeList = uomsByType || [];
 
-      // Proceed only when key lists are loaded
-      if (this.departmentList.length && this.portList.length) {
-        this.setInitialConfig();
+        // Proceed only when key lists are loaded
+        if (this.departmentList.length && this.portList.length) {
+          this.setInitialConfig();
 
-        if (this.masterJobFormValue.hasValue) {
-          const dept = this.masterJobFormValue.DepartmentMasterSid;
-          const selectedDept = this.departmentList.find(
-            (d) => d.DepartmentMasterSid === dept
-          );
+          if (this.masterJobFormValue.hasValue) {
+            const dept = this.masterJobFormValue.DepartmentMasterSid;
+            const selectedDept = this.departmentList.find(
+              (d) => d.DepartmentMasterSid === dept
+            );
 
-          this.selectedPOL = this.portList.find(
-            (p) => p.PortCode === this.masterJobFormValue.POL
-          );
-          this.selectedPOD = this.portList.find(
-            (p) => p.PortCode === this.masterJobFormValue.POD
-          );
+            this.selectedPOL = this.portList.find(
+              (p) => p.PortCode === this.masterJobFormValue.POL
+            );
+            this.selectedPOD = this.portList.find(
+              (p) => p.PortCode === this.masterJobFormValue.POD
+            );
 
-          console.log(this.selectedPOL, this.selectedPOD);
+            console.log(this.selectedPOL, this.selectedPOD);
 
-          this.onDeptChange(selectedDept);
+            this.onDeptChange(selectedDept);
 
-          this.loadingPlanForm.patchValue({
-            dept: this.masterJobFormValue.DepartmentMasterSid,
-            pol: this.masterJobFormValue.POL,
-            pod: this.masterJobFormValue.POD,
-          });
+            this.loadingPlanForm.patchValue({
+              dept: this.masterJobFormValue.DepartmentMasterSid,
+              pol: this.masterJobFormValue.POL,
+              pod: this.masterJobFormValue.POD,
+            });
 
-          this.loadingPlanForm.get('dept')?.disable();
-          this.loadingPlanForm.get('pol')?.disable();
-          this.loadingPlanForm.get('pod')?.disable();
+            this.loadingPlanForm.get('dept')?.disable();
+            this.loadingPlanForm.get('pol')?.disable();
+            this.loadingPlanForm.get('pod')?.disable();
 
-          this.fetchVesselForCondition();
+            this.fetchVesselForCondition();
+          }
         }
+      },
+      (error) => {
+        console.error('Error loading dropdowns:', error);
       }
-    },
-    (error) => {
-      console.error('Error loading dropdowns:', error);
-    }
-  );
-}
- modalClose() {
-  this.modalService.dismissAll(); // closes all open modals
-}
+    );
+  }
+  modalClose() {
+    this.modalService.dismissAll(); // closes all open modals
+  }
 
-  setInitialConfig(){
-    if(this.screenName === 'Loading Plan'){
+  setInitialConfig() {
+    if (this.screenName === 'Loading Plan') {
       this.filterDepartments();
       this.filteredDepartments = this.departmentList.filter(dept => dept.departmentType === 'Sea').filter(d => d.FCLLCL === 'LCL');
       this.selectedDepartment = this.filteredDepartments.find(dept => dept.departmentType === 'Sea' && dept.FCLLCL === 'LCL' && dept.ExportImport === 'Export');
@@ -342,9 +355,9 @@ export class LoadingPlanEntryComponent {
     if (!this.departmentList) {
       this.filteredDepartments = [];
     }
-    
+
   }
-  
+
   handleDepartmentChange(department: any) {
     this.selectedVoyage = null;
     this.filteredVesselsVoyage = [];
@@ -356,13 +369,13 @@ export class LoadingPlanEntryComponent {
     this.calculateTotal();
     this.fetchVesselForCondition();
     this.loadingPlanForm.get('vesselVoyage')?.setValue(null);
-    if(department){
+    if (department) {
       this.selectedDepartment = department;
       this.filterPorts();
     }
   }
 
-  onDeptChange(department:any){
+  onDeptChange(department: any) {
     this.selectedVoyage = null;
     this.filteredVesselsVoyage = [];
     this.availableBookings = [];
@@ -372,7 +385,7 @@ export class LoadingPlanEntryComponent {
     this.selectedBookings = [];
     this.calculateTotal();
     this.fetchVesselForCondition();
-    if(!department){
+    if (!department) {
       this.selectedDepartment = null;
     } else {
       this.selectedDepartment = department;
@@ -455,7 +468,7 @@ export class LoadingPlanEntryComponent {
     const payload = {
       POL: this.selectedPOL.PortMasterSid,
       POD: this.selectedPOD.PortMasterSid,
-      segment : 'Sea'  // As Loading Plan is only for LCL Import and Export
+      segment: 'Sea'  // As Loading Plan is only for LCL Import and Export
     }
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
@@ -477,34 +490,47 @@ export class LoadingPlanEntryComponent {
     this.calculateTotal();
     if (!vesselVoyage) {
       this.selectedVoyage = null;
-       this.loadingPlanForm.patchValue({
-      ETA: null,
-      ETD: null
-    });
+      this.loadingPlanForm.patchValue({
+        ETA: null,
+        ETD: null
+      });
       return;
     }
     this.selectedVoyage = vesselVoyage;
-     this.loadingPlanForm.patchValue({
-    ETA: vesselVoyage.ETA ? new Date(vesselVoyage.ETA) : null,
-    ETD: vesselVoyage.ETD ? new Date(vesselVoyage.ETD) : null
-  });
+    this.loadingPlanForm.patchValue({
+      ETA: vesselVoyage.ETA ? new Date(vesselVoyage.ETA) : null,
+      ETD: vesselVoyage.ETD ? new Date(vesselVoyage.ETD) : null
+    });
   }
 
   getBookings() {
-    if(this.masterJobFormValue.hasValue){
+    if (this.masterJobFormValue.hasValue) {
       this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
       this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
     }
-    
+
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
     const departmentId = this.loadingPlanForm.get('dept')?.getRawValue();
-    console.log(this.selectedPOL,this.selectedPOD);
+    console.log(this.selectedPOL, this.selectedPOD);
     const polId = this.selectedPOL?.PortCode;
     const podId = this.selectedPOD?.PortCode;
-    const vesselName = this.selectedVoyage?.VesselName;
-    const voyageNo = this.selectedVoyage?.VoyageNo;
-    console.log(departmentId,polId,podId);
+    const isFreeText = this.loadingPlanForm.get('isVesselVoyage')?.value;
+
+    let vesselName: string | null = null;
+    let voyageNo: string | null = null;
+
+    if (isFreeText) {
+      // Free text entry
+      vesselName = this.loadingPlanForm.get('vesselVoyage')?.value;
+      voyageNo = null; 
+    } else {
+      // Dropdown selection
+      vesselName = this.selectedVoyage?.VesselName || null;
+      voyageNo = this.selectedVoyage?.VoyageNo || null;
+    }
+
+    console.log(departmentId, polId, podId);
     if (!departmentId || !polId || !podId) {
       this.loadingPlanForm.markAllAsTouched();
       this.loadingPlanForm.updateValueAndValidity();
@@ -520,7 +546,7 @@ export class LoadingPlanEntryComponent {
       VesselName: vesselName,
       VoyageNo: voyageNo,
     }
-    this.showButton=false;
+    this.showButton = false;
     this.operationService.getBookingForLoadingPlan(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -530,32 +556,32 @@ export class LoadingPlanEntryComponent {
             this.totalLengthOfAvailableBookings = 0;
             this.loadingPlanData = [];
           } else {
-            this.availableBookings = (resp.data || []).filter(bk => !this.exceptionalBookings.includes(bk.BookingHeaderSid)).map(bk =>{
+            this.availableBookings = (resp.data || []).filter(bk => !this.exceptionalBookings.includes(bk.BookingHeaderSid)).map(bk => {
               return {
                 ...bk,
-                ETADate : bk.ETA,
-                ETDDate : bk.ETD,
-                ETA : this.datePipe.transform(bk.ETA),
-                ETD : this.datePipe.transform(bk.ETD)
+                ETADate: bk.ETA,
+                ETDDate: bk.ETD,
+                ETA: this.datePipe.transform(bk.ETA),
+                ETD: this.datePipe.transform(bk.ETD)
               }
             });
             this.totalLengthOfAvailableBookings = this.availableBookings.length;
             this.loadingPlanData = this.availableBookings;
-            console.log(this.loadingPlanData,"LOADING PLAN")
-             this.showButton=true;
+            console.log(this.loadingPlanData, "LOADING PLAN")
+            this.showButton = true;
           }
           this.updateBookingList();
         } else {
           this.appSettingService.showError('Error fetching booking.');
           this.availableBookings = [];
           this.loadingPlanData = [];
-          this.showButton=false;
+          this.showButton = false;
         }
       }
     )
   }
 
-  updateBookingList(){
+  updateBookingList() {
     const start = (this.bPage - 1) * this.bPageSize;
     const end = start + this.bPageSize;
     this.slicedAvailableBookings = this.availableBookings.slice(start, end);
@@ -584,10 +610,10 @@ export class LoadingPlanEntryComponent {
         uniqueVoyages.set(b.VoyageMasterSid, b);
       }
     });
-    
+
     this.multipleVoyageList = Array.from(uniqueVoyages.values());
     this.hasMultipleVoyages = this.multipleVoyageList.length > 1;
-    
+
     // if the previously selected voyage is not in the new list of unique voyages, reset it
     if (this.selectedVoyage && !this.multipleVoyageList.some(v => v.VoyageMasterSid === this.selectedVoyage.VoyageMasterSid)) {
       this.selectedVoyage = null;
@@ -600,19 +626,19 @@ export class LoadingPlanEntryComponent {
   }
 
   handleMultipleVesselChange(selectedVoyage: any) {
-    if(!selectedVoyage){
+    if (!selectedVoyage) {
       this.selectedVoyage = null;
-       this.loadingPlanForm.patchValue({
-      ETA: null,
-      ETD: null
-    });
+      this.loadingPlanForm.patchValue({
+        ETA: null,
+        ETD: null
+      });
       return;
     }
     this.selectedVoyage = selectedVoyage;
-     this.loadingPlanForm.patchValue({
-    ETA: selectedVoyage.ETA ? new Date(selectedVoyage.ETA) : null,
-    ETD: selectedVoyage.ETD ? new Date(selectedVoyage.ETD) : null
-  });
+    this.loadingPlanForm.patchValue({
+      ETA: selectedVoyage.ETA ? new Date(selectedVoyage.ETA) : null,
+      ETD: selectedVoyage.ETD ? new Date(selectedVoyage.ETD) : null
+    });
     this.handleMultipleVoyages()
   }
 
@@ -737,27 +763,27 @@ export class LoadingPlanEntryComponent {
     this.modalService.open(content, { centered: true, backdrop: 'static', size: 'lg' });
   }
 
-  deleteContainer(containerIndex:number){
-    const realIndex = ((this.page - 1) * this.pageSize)+ containerIndex;
+  deleteContainer(containerIndex: number) {
+    const realIndex = ((this.page - 1) * this.pageSize) + containerIndex;
     this.masterJobContainers.removeAt(realIndex);
     this.totalLengthOfCollection = this.masterJobContainers.length;
     this.updateContainerPagination();
   }
 
-  onContainerSubmit(){
-    if(this.containerForm.invalid){
+  onContainerSubmit() {
+    if (this.containerForm.invalid) {
       this.containerForm.markAllAsTouched();
       this.containerForm.updateValueAndValidity();
       this.appSettingService.showWarning("Please fill all the required fields correctly.")
       return;
     }
     const formValue = this.containerForm.getRawValue();
-    if(this.currentContainerIndex !== -1){
-      const realIndex = ((this.page - 1) * this.pageSize)+ this.currentContainerIndex;
+    if (this.currentContainerIndex !== -1) {
+      const realIndex = ((this.page - 1) * this.pageSize) + this.currentContainerIndex;
       const existingForm = this.masterJobContainers.at(realIndex) as FormGroup;
       existingForm.patchValue({
         ...formValue,
-        IsSoc : formValue.IsSoc ? 'Y' : 'N'
+        IsSoc: formValue.IsSoc ? 'Y' : 'N'
       })
     } else {
       this.masterJobContainers.push(this.constructContainerForm(formValue));
@@ -768,14 +794,14 @@ export class LoadingPlanEntryComponent {
     this.modalService.dismissAll();
   }
 
-  updateContainerPagination(){
+  updateContainerPagination() {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.slicedContainerArr = this.masterJobContainers.getRawValue().slice(start, end);
   }
 
   getContainerTypeName(ContainerTypeMasterSid: number): string {
-    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0) return '';
+    if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) return '';
     const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
     return containerType ? containerType.ContainerName : 'Unknown';
   }
@@ -786,11 +812,11 @@ export class LoadingPlanEntryComponent {
     return ourPort ? ourPort.UOMName : 'Unknown';
   }
 
-  toggleSOC(event:any){
+  toggleSOC(event: any) {
     console.log(event);
     const ctrl = this.containerForm.get('IsSoc');
     const element = event.target as HTMLInputElement;
-    if(event instanceof KeyboardEvent){
+    if (event instanceof KeyboardEvent) {
       element.checked = !element.checked;
     }
     ctrl?.setValue(element.checked);
@@ -809,23 +835,23 @@ export class LoadingPlanEntryComponent {
 
     const bookings = this.selectedBookings.map(booking => {
       return {
-        BookingHeaderSid : booking.BookingHeaderSid,
-        BookingNo : booking.BookingNo,
-        BookingDateTime : booking.BookingDate,
-        DepartmentMasterSid : booking.DepartmentMasterSid,
-        HBLNo : booking.HBLNo || null,
-        CustomerMasterSid : booking.CustomerMasterSid,
-        CustomerName : booking.CustomerName,
-        CustomerAddress : booking.CustomerAddress,
-        ShipperName : booking.ShipperName,
-        ShipperAddress : booking.ShipperAddress,
-        ConsigneeName : booking.ConsigneeName,
-        ConsigneeAddress : booking.ConsigneeAddress,
-        DestinationAgent : booking.DestinationAgent,
-        MBLDate : booking.MBLDate || null,
-        POL : booking.POL,
-        POD : booking.POD,
-        FreightTerms : booking.FreightTerms,
+        BookingHeaderSid: booking.BookingHeaderSid,
+        BookingNo: booking.BookingNo,
+        BookingDateTime: booking.BookingDate,
+        DepartmentMasterSid: booking.DepartmentMasterSid,
+        HBLNo: booking.HBLNo || null,
+        CustomerMasterSid: booking.CustomerMasterSid,
+        CustomerName: booking.CustomerName,
+        CustomerAddress: booking.CustomerAddress,
+        ShipperName: booking.ShipperName,
+        ShipperAddress: booking.ShipperAddress,
+        ConsigneeName: booking.ConsigneeName,
+        ConsigneeAddress: booking.ConsigneeAddress,
+        DestinationAgent: booking.DestinationAgent,
+        MBLDate: booking.MBLDate || null,
+        POL: booking.POL,
+        POD: booking.POD,
+        FreightTerms: booking.FreightTerms,
       }
     })
 
@@ -834,25 +860,25 @@ export class LoadingPlanEntryComponent {
       DepartmentMasterSid: formValue.dept,
       POL: formValue.pol,
       POD: formValue.pod,
-      VoyageMasterSid : this.selectedVoyage?.VoyageMasterSid,
+      VoyageMasterSid: this.selectedVoyage?.VoyageMasterSid,
       VesselName: this.selectedVoyage?.VesselName,
       VoyageNo: this.selectedVoyage?.VoyageNo,
       CarrierName: formValue.carrier,
-      CutOffDate : this.selectedVoyage?.PortCutoff,
-        ETD: formValue.ETD,
-    ETA: formValue.ETA,
-      Haz : isHaz ? 'Y' : 'N',
+      CutOffDate: this.selectedVoyage?.PortCutoff,
+      ETD: formValue.ETD,
+      ETA: formValue.ETA,
+      Haz: isHaz ? 'Y' : 'N',
 
       // Calculated fields
-      NoofPkg : this.totalPkg,
-      GrossWeight : this.totalGrossWeight,
-      NetWeight : this.totalNetWeight,
-      Volume : this.totalVolume,
+      NoofPkg: this.totalPkg,
+      GrossWeight: this.totalGrossWeight,
+      NetWeight: this.totalNetWeight,
+      Volume: this.totalVolume,
 
       // Shipment part
-      bookingList : bookings,
+      bookingList: bookings,
 
-      masterJobContainers : containers, 
+      masterJobContainers: containers,
     }
 
     this.operationService.setLoadingPlanData(valueToPatchOnMasterJob);
@@ -872,41 +898,41 @@ export class LoadingPlanEntryComponent {
     const containers = this.masterJobContainers.getRawValue();
     const shipmentList = this.selectedBookings.map(booking => {
       return {
-        BookingHeaderSid : booking.BookingHeaderSid,
-        HBLNo : booking.HBLNo,
+        BookingHeaderSid: booking.BookingHeaderSid,
+        HBLNo: booking.HBLNo,
       }
     });
     const payload = {
-      CreatedBy : userEmail,
-      MenuMasterSid : currentMenuId,
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid : formValue.dept,
-      POL : formValue.pol,
-      POD : formValue.pod,
-      NoOfPkg : this.totalPkg,
-      GrossWeight : this.totalGrossWeight,
-      NetWeight : this.totalNetWeight,
-      Volume : this.totalVolume,
-      Haz : isHaz ? 'Y' : 'N',
-      VoyageMasterSid : this.selectedVoyage?.VoyageMasterSid,
-      VesselName : this.selectedVoyage?.VesselName,
-      VoyageNo : this.selectedVoyage?.VoyageNo,
-      CarrierName : formValue.carrier,
-      CarrierMasterSid : formValue.CarrierMasterSid,
-      ETD: formValue.ETD, 
+      CreatedBy: userEmail,
+      MenuMasterSid: currentMenuId,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentMasterSid: formValue.dept,
+      POL: formValue.pol,
+      POD: formValue.pod,
+      NoOfPkg: this.totalPkg,
+      GrossWeight: this.totalGrossWeight,
+      NetWeight: this.totalNetWeight,
+      Volume: this.totalVolume,
+      Haz: isHaz ? 'Y' : 'N',
+      VoyageMasterSid: this.selectedVoyage?.VoyageMasterSid,
+      VesselName: this.selectedVoyage?.VesselName,
+      VoyageNo: this.selectedVoyage?.VoyageNo,
+      CarrierName: formValue.carrier,
+      CarrierMasterSid: formValue.CarrierMasterSid,
+      ETD: formValue.ETD,
       ETA: formValue.ETA,
-      CutOffDate : this.selectedVoyage?.PortCutoff,
+      CutOffDate: this.selectedVoyage?.PortCutoff,
       shipmentList,
-      masterJobContainers : containers
+      masterJobContainers: containers
     }
-console.log('Sending payload with ETA/ETD:', payload);
+    console.log('Sending payload with ETA/ETD:', payload);
     this.operationService.createMasterJob(payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('Master Job generated successfully');
           this.spinnerService.hide();
-          if(resp.data){
+          if (resp.data) {
             this.router.navigate(['/operation/master-job/entry', resp.data?.newMasterJob?.MasterJobSid]);
           }
         } else {
@@ -951,155 +977,155 @@ console.log('Sending payload with ETA/ETD:', payload);
     this.isLoadChecked = false;
   }
 
-  attachToMasterJob(){
-    if(this.selectedBookings.length === 0){
+  attachToMasterJob() {
+    if (this.selectedBookings.length === 0) {
       this.appSettingService.showWarning('Please select at least one booking.');
       return;
     }
-    const allSelectedBookings = this.selectedBookings.map((booking)=>{
+    const allSelectedBookings = this.selectedBookings.map((booking) => {
       return {
         ...booking,
-        BookingDateTime : booking.BookingDate ? new Date(booking.BookingDate) : null,
+        BookingDateTime: booking.BookingDate ? new Date(booking.BookingDate) : null,
       }
     })
     this.onSubmit.emit(allSelectedBookings);
   }
 
-  closeTemplate(){
+  closeTemplate() {
     this.closeModal.emit(true);
   }
 
-  getParseInteger(value:any){
+  getParseInteger(value: any) {
     return value ? parseInt(value).toFixed(3) : '0.000';
   }
   getParseIntegerNoDecimal(value: any): string {
     return value ? parseInt(value).toString() : '0';
-}
+  }
 
-  existInSelected(item){
+  existInSelected(item) {
     return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);
   }
 
-  getVesselVoy(booking:any){
+  getVesselVoy(booking: any) {
     const vessel = booking.VesselName;
     const voyage = booking.VoyageNo;
-    if(vessel && voyage){
+    if (vessel && voyage) {
       return `${vessel} / ${voyage}`;
     }
     return '';
   }
 
- mathMin(a: number, b: number): number {
+  mathMin(a: number, b: number): number {
     return Math.min(a, b);
   }
-  
+
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
-    openPrint() {
+
+  openPrint() {
     this.ngbModal.open(this.loadingPlanPrint, {
       size: 'xl',
       centered: true,
       backdrop: 'static',
-      scrollable:true
+      scrollable: true
     });
   }
 
 
-async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
 
-  setTimeout(async () => {
-    this.spinner.show();
-   try {
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        ``,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-      );
-    } finally {
-      this.spinner.hide();
+    setTimeout(async () => {
+      this.spinner.show();
+      try {
+        await this.pdfService.downloadBalancedPDF(
+          'printContent',
+          ``,
+          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+        );
+      } finally {
+        this.spinner.hide();
+      }
+    }, 50);
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
     }
-  }, 50);
-}
 
-      async generatePDFBlob(): Promise<Blob | null> {
-        const printContent = document.getElementById('printContent');
-        if (!printContent) {
-          return null;
-        }
-    
-        try {
-          const canvas = await html2canvas(printContent, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-          });
-    
-          const imgWidth = 210;
-          const pageHeight = 297;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
-    
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const imgData = canvas.toDataURL('image/png');
-    
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-    
-          while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-          }
-    
-          return pdf.output('blob');
-        } catch (error) {
-          console.error('Error generating PDF blob:', error);
-          return null;
-        }
+    try {
+      const canvas = await html2canvas(printContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
       }
 
-get totalPackages(): number {
-  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.NoOfPackage || 0), 0) || 0;
-}
+      return pdf.output('blob');
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+  }
 
-get totalGrossWeight1(): number {
-  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.GrossWeight || 0), 0) || 0;
-}
+  get totalPackages(): number {
+    return this.loadingPlanData?.reduce((sum, i) => sum + (+i.NoOfPackage || 0), 0) || 0;
+  }
 
-get totalVolume1(): number {
-  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.Volume || 0), 0) || 0;
-}
+  get totalGrossWeight1(): number {
+    return this.loadingPlanData?.reduce((sum, i) => sum + (+i.GrossWeight || 0), 0) || 0;
+  }
 
-getDestinationAgent(id: number): string {
-  if (!id || !this.agentList?.length) return '';
-  const agent = this.agentList.find(a => a.CustomerMasterSid === id);
-  return agent ? agent.CustomerName : '';
-}
+  get totalVolume1(): number {
+    return this.loadingPlanData?.reduce((sum, i) => sum + (+i.Volume || 0), 0) || 0;
+  }
+
+  getDestinationAgent(id: number): string {
+    if (!id || !this.agentList?.length) return '';
+    const agent = this.agentList.find(a => a.CustomerMasterSid === id);
+    return agent ? agent.CustomerName : '';
+  }
 
 
-// print
+  // print
   printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
 
-  setTimeout(() => {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) return;
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <html>
           <head>
             <title>Print</title>
@@ -1109,13 +1135,13 @@ getDestinationAgent(id: number): string {
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 50); // small timeout so Angular updates DOM
-}
+        popupWin.document.close();
+      }
+    }, 50); // small timeout so Angular updates DOM
+  }
 
 
-// pdf download
+  // pdf download
 
 
 }

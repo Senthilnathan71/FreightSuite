@@ -2023,6 +2023,25 @@
                                         <label class="input-label">BL Clause</label>
                                     </div>
                                 </aside>
+                                @if(selectedDepartmentType === "AIR") {
+                                <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('DeclaredValueOfCarriage')?.value">
+              <ng-select [items]="DeclaredValueOfCarriage" bindLabel="name" bindValue="id" class="ng-select" placeholder=""
+                formControlName="DeclaredValueOfCarriage" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Declared Value Of Carriage <span class="text-danger"></span></label>
+            </div>
+          </aside><aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('DeclaredValueOfCustoms')?.value">
+              <ng-select [items]="DeclaredValueOfCustoms" bindLabel="name" bindValue="id" class="ng-select" placeholder=""
+                formControlName="DeclaredValueOfCustoms" appendTo="body"> 
+              </ng-select>
+              <label for="" class="input-label">Declared Value Of Customs <span class="text-danger"></span></label>
+            </div>
+          </aside>
+        }
           @if(selectedDepartmentType === "SEA") {
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">

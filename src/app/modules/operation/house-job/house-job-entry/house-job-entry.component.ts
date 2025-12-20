@@ -434,6 +434,16 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     { id: 4, name: 'Drat' },
   ];
 
+  DeclaredValueOfCarriage = [
+    { id: 'NVD', name: 'No value declared' },
+    { id: 'DVC', name: 'Declared value for Carriage' },
+  ];
+
+  DeclaredValueOfCustoms = [
+    { id: 'NCV', name: 'No Commercial Value' },
+    { id: 'DVC', name: 'Declared value for Customs' },
+  ];
+
 //  get filteredTabs() {
 //   const allTabs = [
 //     { name: 'Shipment', icon: 'fas fa-ship' },
@@ -984,6 +994,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CustomerRefNo: [''],
       YardCFS: [''],
       ReleaseType: [null],
+      DeclaredValueOfCarriage: [null],
+      DeclaredValueOfCustoms:[null],
       HBLNo: [{value :'', disabled: true}],
       Forwarder: [null],
       ForwarderAddress: [''],
@@ -1586,6 +1598,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
       CustomerRefNo: otherData?.CustomerRefNo,
       YardCFS: otherData?.YardCFS,
       ReleaseType : otherData?.ReleaseType || null,
+      DeclaredValueOfCarriage: otherData?.DeclaredValueOfCarriage || null,
+      DeclaredValueOfCustoms: otherData?.DeclaredValueOfCustoms || null,
       HBLNo: otherData?.HBLNo || null,
       Forwarder: otherData?.Forwarder || null,
       ForwarderAddress: otherData?.ForwarderAddress,
@@ -1944,6 +1958,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       CustomerRefNo: otherFormValue.CustomerRefNo || '',
       YardCFS: otherFormValue.YardCFS || '',
       ReleaseType: otherFormValue.ReleaseType || null,
+      DeclaredValueOfCarriage: otherFormValue.DeclaredValueOfCarriage || null,
+      DeclaredValueOfCustoms : otherFormValue.DeclaredValueOfCustoms || null,
       HBLNo: otherFormValue.HBLNo || '',
       Forwarder: otherFormValue.Forwarder || null,
       ForwarderAddress: otherFormValue.ForwarderAddress || '',
