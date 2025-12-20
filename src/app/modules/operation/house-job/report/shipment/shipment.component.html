@@ -506,7 +506,8 @@
            <tfoot>
         <tr style="font-weight: bold;">
           <td style="border: 1px solid black; text-align: right;">Total</td>
-          <td style="border: 1px solid black; text-align: right;"></td>
+          <td style="border: 1px solid black; text-align: right;"> 
+            <strong>{{ totalRevenue | number : '1.2-2' }}</strong></td>
         </tr>
       </tfoot>
         </table>
@@ -531,7 +532,9 @@
                <tfoot>
         <tr style="font-weight: bold;">
           <td style="border: 1px solid black; text-align: right;">Total</td>
-          <td style="border: 1px solid black; text-align: right;"></td>
+          <td style="border: 1px solid black; text-align: right;">
+            <strong>{{ totalExpense | number : '1.2-2' }}</strong>
+          </td>
         </tr>
       </tfoot>
         </table>
