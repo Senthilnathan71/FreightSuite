@@ -2069,7 +2069,7 @@ handleEdocChange(event: any) {
   // Navigate to house job entry with master job data as query parameters
     this.router.navigate(['/operation/house-job/entry'], {
       queryParams: {
-        fromMasterJob: 'true',
+        fromMasterAirWaybill: 'true',
         MasterJobSid: masterJobData.MasterJobSid
       },
       state: { masterJobData: structuredClone(masterJobData) }

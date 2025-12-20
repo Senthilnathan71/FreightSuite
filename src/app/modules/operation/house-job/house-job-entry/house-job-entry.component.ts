@@ -520,7 +520,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   
   // Check for master job data in query parameters
   this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
-    if (params['fromMasterJob'] === 'true') {
+    if (params['fromMasterJob'] === 'true' || params['fromMasterAirWaybill'] === 'true') {
       const masterJobState = window.history.state?.masterJobData;
       console.log('Creating house job from master job:', masterJobState);
       if(masterJobState){

@@ -3599,6 +3599,7 @@ getContainerMappingCount(containerSid: number): number {
       ETD: this.masterJobForm.get('ETD')?.value,
       CarrierName: this.masterJobForm.get('CarrierName')?.value,
       // Get port codes instead of SIDs
+      POOCode : this.getPortCode(this.masterJobForm.get('POO')?.value),
       POLCode: this.getPortCode(this.masterJobForm.get('POL')?.value),
       PODCode: this.getPortCode(this.masterJobForm.get('POD')?.value),
       FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value)
@@ -3606,8 +3607,11 @@ getContainerMappingCount(containerSid: number): number {
 
     // Navigate to house job entry with master job data as query parameters
     this.router.navigate(['/operation/house-job/entry'], {
-      queryParams: masterJobData,
-      state: { masterJobData: masterJobData } // Pass as state for larger data
+      queryParams: {
+        fromMasterJob: 'true',
+        MasterJobSid: masterJobData.MasterJobSid
+      },
+      state: { masterJobData: structuredClone(masterJobData) }
     });
   }
 
