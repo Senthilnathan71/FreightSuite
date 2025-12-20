@@ -1,0 +1,135 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Profit Summary Report
+        as on {{ params?.FromMBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromMBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToMBLDt | formatDate }}</p>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Job No</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
+                        <th class="bg-transparent text-light">MBL No</th>
+                        <th class="bg-transparent text-light">House No</th>
+                        <th class="bg-transparent text-light">HBL No</th>
+                        <th class="bg-transparent text-light">House Status</th>
+                        <th class="bg-transparent text-light">Job Type</th>
+                        <th class="bg-transparent text-light">Customer</th>
+                        <th class="bg-transparent text-light">Origin Agent</th>
+                        <th class="bg-transparent text-light">Destination Agent</th>
+                        <th class="bg-transparent text-light">Origin Port</th>
+                        <th class="bg-transparent text-light">Destination Port</th>
+                        <th class="bg-transparent text-light">Load Port</th>
+                        <th class="bg-transparent text-light">Discharge Port</th>
+                        <th class="bg-transparent text-light">ETA</th>
+                        <th class="bg-transparent text-light">ETD</th>
+                        <th class="bg-transparent text-light">ATA</th>
+                        <th class="bg-transparent text-light">ATD</th>
+                        <th class="bg-transparent text-light">Transport of Mode</th>
+                        <th class="bg-transparent text-light">Salesperson</th>
+                        <th class="bg-transparent text-light">PP/CC</th>
+                        <th class="bg-transparent text-light">P.Sale</th>
+                        <th class="bg-transparent text-light">P.Cost</th>
+                        <th class="bg-transparent text-light">P.GP</th>
+                        <th class="bg-transparent text-light">A.Sale</th>
+                        <th class="bg-transparent text-light">A.Cost</th>
+                        <th class="bg-transparent text-light">A.GP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let item of fullData?.data">
+
+                        <!-- ================= MASTER JOB ROW ================= -->
+                        <tr style="white-space: nowrap;">
+                            <td>{{ item.JobNo }}</td>
+                            <td>{{ item.deptName }}</td>
+                            <td>{{ item.MBLNo }}</td>
+                            <td>{{ item.houseJobs?.[0]?.HouseNo }}</td>
+                            <td>{{ item.houseJobs?.[0]?.HBLNo }}</td>
+                            <td>{{ item.houseJobs?.[0]?.HouseStatus }}</td>
+                            <td>{{ item.houseJobs?.[0]?.JobType }}</td>
+                            <td>{{ item.houseJobs?.[0]?.customerName }}</td>
+                            <td>{{ item.OriginAgent }}</td>
+                            <td>{{ item.DestinationAgent }}</td>
+                            <td>{{ item.POO }}</td>
+                            <td>{{ item.FPD }}</td>
+                            <td>{{ item.POL }}</td>
+                            <td>{{ item.POD }}</td>
+                            <td>{{ item.ETA | formatDate }}</td>
+                            <td>{{ item.ETD | formatDate }}</td>
+                            <td>{{ item.ATA | formatDate }}</td>
+                            <td>{{ item.ATD | formatDate }}</td>
+                            <td>{{ item.houseJobs?.[0]?.ModeOfTransport }}</td>
+                            <td>{{ item.houseJobs?.[0]?.salesperson }}</td>
+                            <td>{{ item.houseJobs?.[0]?.FreightTerms }}</td>
+                            <td>{{ item.masterCostRevenue?.[0]?.RevenueLocalAmount }}</td>
+                            <td>{{ item.masterCostRevenue?.[0]?.CostLocalAmount }}</td>
+                            <td>{{ item.masterCostRevenue?.[0]?.Profit }}</td>
+                        </tr>
+
+                        <!-- ================= HOUSE JOB ROWS ================= -->
+                        <tr *ngFor="let hj of item.houseJobs" style="white-space: nowrap;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td>{{ hj.HBLNo }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td>{{ hj.costRevenue?.[0]?.RevenueLocalAmount }}</td>
+                            <td>{{ hj.costRevenue?.[0]?.CostLocalAmount }}</td>
+                            <td>{{ hj.costRevenue?.[0]?.Profit }}</td>
+                        </tr>
+
+                    </ng-container>
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>

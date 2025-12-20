@@ -1,0 +1,83 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <h3 class="text-center fw-bold py-2" style="margin: 0;">
+        {{ currentCompany?.companyName }}
+    </h3>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        House Job Loss Report
+        as on {{ params?.FromHBLDt | formatDate }}
+    </h4>
+    <div style="margin-top: 1rem;">
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ params?.Branch }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ params?.Dept }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
+                    <p class="ms-1">: {{ params?.Customer }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Job No</th>
+                        <th class="bg-transparent text-light text-center">Job Date</th>
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light">MBL No</th>
+                        <th class="bg-transparent text-light">HBL No</th>
+                        <th class="bg-transparent text-light">House Status</th>
+                        <th class="bg-transparent text-light">Job Type</th>
+                        <th class="bg-transparent text-light">Customer</th>
+                        <th class="bg-transparent text-light">Vsl/Voy</th>
+                        <th class="bg-transparent text-light">Origin Agent</th>
+                        <th class="bg-transparent text-light">Destination Agent</th>
+                        <th class="bg-transparent text-light">Revenue</th>
+                        <th class="bg-transparent text-light">Cost</th>
+                        <th class="bg-transparent text-light">GP</th>
+                        <th class="bg-transparent text-light">GP%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let item of fullData?.data">
+                        <tr *ngFor="let cr of item.costRevenueDetails" style="white-space: nowrap;">
+                            <td>{{ item.HouseNo }}</td>
+                            <td>{{ item.jobDate | formatDate }}</td>
+                            <td>{{ item.houseDept }}</td>
+                            <td>{{ item.MBLNo }}</td>
+                            <td>{{ item.HBLNo }}</td>
+                            <td>{{ item.houseStatus }}</td>
+                            <td>{{ item.jobType }}</td>
+                            <td>{{ item.customerName }}</td>
+                            <td>
+                                {{ item.vesselName }}{{ item.vesselName && item.voyNo ? ' / ' : '' }}{{ item.voyNo }}
+                            </td>
+                            <td>{{ item.originAgent }}</td>
+                            <td>{{ item.destinationAgent }}</td>
+                            <td class="text-end">{{ cr.RevenueLocalAmount | number:'1.2-2'}}</td>
+                            <td class="text-end">{{ cr.CostLocalAmount | number:'1.2-2'}}</td>
+                            <td class="text-end">{{ cr.Profit | number:'1.2-2'}}</td>
+                            <td class="text-end">{{ cr.GP | number:'1.2-2'}}</td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

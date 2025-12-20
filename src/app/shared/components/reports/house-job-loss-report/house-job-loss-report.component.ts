@@ -1,0 +1,122 @@
+import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit } from '@angular/core';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
+import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
+
+@Component({
+  selector: 'app-house-job-loss-report',
+  standalone: true,
+  imports: [CustomDatePipe, CommonModule],
+  templateUrl: './house-job-loss-report.component.html',
+  styles: ``
+})
+export class HouseJobLossReportComponent {
+
+
+  currentCompany: any;
+  currentBranch: any;
+  salesmanList: any[];
+  orientation: 'portrait' | 'landscape' = 'portrait';
+  constructor(
+    @Inject(REPORT_DATA) public data: any,
+    private appSettingsService: AppSettingsService,
+    private reportRegistryService: ReportRegistryService
+  ) {
+    console.log('House Job Loss Report Data:', this.data);
+  }
+
+  ngOnInit(): void {
+    this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
+    console.log('Current Company:', this.currentCompany);
+    console.log('Current Branch:', this.currentBranch);
+    this.orientation = this.reportRegistryService.getReportConfig('house-job-loss-report').pdfOrientation;
+  }
+
+  get fullData(): any {
+    return this.data || {};
+  }
+
+  get params(): any {
+    return this.data?.params || {};
+  }
+
+  get bucketLabels(): any {
+    return this.fullData?.bucketLabels || [];
+  }
+
+  getExcelData(): ComplexReportExportConfig {
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'JobNo', label: 'Job No' },
+      { key: 'JobDate', label: 'Job Date' },
+      { key: 'Dept', label: 'Dept' },
+      { key: 'MBLNo', label: 'MBL No' },
+      { key: 'HBLNo', label: 'HBL No' },
+      { key: 'HouseStatus', label: 'House Status' },
+      { key: 'JobType', label: 'Job Type' },
+      { key: 'Customer', label: 'Customer' },
+      { key: 'VslVoy', label: 'Vsl / Voy' },
+      { key: 'OriginAgent', label: 'Origin Agent' },
+      { key: 'DestinationAgent', label: 'Destination Agent' },
+      { key: 'Revenue', label: 'Revenue' },
+      { key: 'Cost', label: 'Cost' },
+      { key: 'Profit', label: 'GP' },
+      { key: 'GPPercent', label: 'GP %' }
+    ];
+
+    const rows: ExcelRow[] = (this.fullData?.data || []).flatMap(item =>
+      (item.costRevenueDetails || []).map(cr => ({
+        cells: [
+          { value: item.HouseNo || '' },
+          { value: this.formatDate(item.jobDate) },
+          { value: item.houseDept || '' },
+          { value: item.MBLNo || '' },
+          { value: item.HBLNo || '' },
+          { value: item.houseStatus || '' },
+          { value: item.jobType || '' },
+          { value: item.customerName || '' },
+          { value: `${item.vesselName || ''} / ${item.voyNo || ''}` },
+          { value: item.originAgent || '' },
+          { value: item.destinationAgent || '' },
+          { value: cr.RevenueLocalAmount ?? 0 },
+          { value: cr.CostLocalAmount ?? 0 },
+          { value: cr.Profit ?? 0 },
+          { value: cr.GP ?? 0 }
+        ],
+        style: 'data'
+      }))
+    );
+
+    return {
+      fileName: 'House-Job-Loss-Report',
+      sheetName: 'HouseJobLoss',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `House Job Loss Report as on ${this.formatDate(this.params?.FromHBLDt)}`,
+        additionalInfo: [
+          { label: 'HBL From Date', value: this.formatDate(this.params?.FromHBLDt) },
+          { label: 'HBL To Date', value: this.formatDate(this.params?.ToHBLDt) },
+          { label: 'Branch', value: this.params?.Branch || '' },
+          { label: 'Dept', value: this.params?.Dept || '' },
+          { label: 'Customer', value: this.params?.Customer || '' }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [15, 15, 15, 15, 15, 18, 12, 25, 18, 20, 20, 15, 15, 15, 12]
+    };
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
+  }
+}
