@@ -163,7 +163,7 @@ export class OperationService {
       })
     );
   }
-  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, MenuMasterSid: number, menuName: string }) {
+  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, menuName: string }) {
     return this.http.post<{ data: any[] }>(`operation-common/cost-revenue/fetchWithDetails`, payload).pipe(
       map((resp) => {
         return resp;

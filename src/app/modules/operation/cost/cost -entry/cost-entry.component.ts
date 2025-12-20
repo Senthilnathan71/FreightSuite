@@ -1709,7 +1709,6 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         ratesResp = ((await firstValueFrom(this.operationService.getCostRevenueChargeWithDetails({
           TransactionSid: this.routeParentSid,
-          MenuMasterSid: this.screenName === "House Job" || this.screenName === "House Air Waybill" ? -1 : this.currentMenuId,
           menuName : this.screenName
         }))).data || []).map(rate =>({
           ...rate,
