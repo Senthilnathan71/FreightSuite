@@ -1627,16 +1627,12 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
     const MBLNo = this.masterJobForm.get('MBLNo')?.value;
-    const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
-    const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
-    const selectedPOD = this.masterJobForm.get('POD')?.value; // PortMasterSid
-    const selectedFPD = this.masterJobForm.get('FPD')?.value; // PortMasterSid
+    const PORSid = this.masterJobForm.get('POO')?.value; // PortMasterSid
+    const POLSid = this.masterJobForm.get('POL')?.value; // PortMasterSid
+    const PODSid = this.masterJobForm.get('POD')?.value; // PortMasterSid
+    const FPODSid = this.masterJobForm.get('FPD')?.value; // PortMasterSid
     const EffectiveDate = this.masterJobForm.get('MasterJobDate')?.value;
     const ExpiredDate = this.masterJobForm.get('MasterJobDate')?.value;
-    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
-    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
-    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
-    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const CargoType = this.f['CargoType']?.value;
     const NetWeight = this.f['NetWeight']?.value;
     const GrossWeight = this.f['GrossWeight']?.value;
@@ -2066,10 +2062,13 @@ handleEdocChange(event: any) {
   };
 
   // Navigate to house job entry with master job data as query parameters
-  this.router.navigate(['/operation/house-job/entry'], {
-    queryParams: masterJobData,
-    state: { masterJobData: masterJobData } // Pass as state for larger data
-  });
+    this.router.navigate(['/operation/house-job/entry'], {
+      queryParams: {
+        fromMasterJob: 'true',
+        MasterJobSid: masterJobData.MasterJobSid
+      },
+      state: { masterJobData: structuredClone(masterJobData) }
+    });
 }
 
   openAttachModal(){

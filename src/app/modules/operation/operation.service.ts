@@ -100,6 +100,13 @@ export class OperationService {
       })
     );
   }
+  incrementHBLCount(payload: any) {
+    return this.http.patch<{ data: any }>(`house-job/hbl-count`,payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 
   deleteBookingConnection(id: number) {
     return this.http.delete<{ data: any }>(`ff-bookingff-booking/connection/${id}`).pipe(
@@ -156,7 +163,7 @@ export class OperationService {
       })
     );
   }
-  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, MenuMasterSid: number, modelName: string }) {
+  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, MenuMasterSid: number, screenName: string }) {
     return this.http.post<{ data: any[] }>(`operation-common/cost-revenue/fetchWithDetails`, payload).pipe(
       map((resp) => {
         return resp;

@@ -578,7 +578,7 @@
     <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
 
 
-      <app-cost-entry #costEntryComponent screenName="ServiceJob" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
+      <app-cost-entry #costEntryComponent screenName="Service Job" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
         (reloadParent)="loadServiceJobById($event)"></app-cost-entry>
     </div>

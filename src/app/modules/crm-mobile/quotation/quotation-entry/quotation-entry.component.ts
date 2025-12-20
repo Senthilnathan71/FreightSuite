@@ -652,7 +652,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       EnquirySid: [''],
       AgreedRate : [false],
       IsContract:[false],
-      RateLock: [false],
+      RateLock: ["false"],
       ContactPerson:[''],
       ContactNumber:['']
     })
@@ -1472,7 +1472,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       LeadOrCustomer : response.LeadOrCustomer === "C",
       AgreedRate : response.AgreedRate === "Y",
       IsContract : response.IsContract === "Y",
-      RateLock : response.RateLock === "Y",
+       RateLock : response.RateLock === "Y", 
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
       ContactPerson:response.ContactPerson,
@@ -1671,7 +1671,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
       AgreedRate : formValue.AgreedRate ? "Y" : "N",
       IsContract : formValue.IsContract ? "Y" : "N",
-      RateLock : this.isEditMode?(formValue.RateLock ? "y" :"N"): "N",
+      RateLock : formValue.RateLock ? "Y" : "N",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,
@@ -3662,7 +3662,7 @@ toggleLock() {
     return;
   }
 
-  const allowedEmails = this.rateLockConfig.ConfigurationValue
+  const allowedEmails = this.rateLockConfig.ConfigurationValue  
     ?.split(',')
     .map((email: string) => email.trim().toLowerCase()) || [];
 

@@ -253,7 +253,18 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           width: '100px',
           dataType: 'string',
           cellClass: 'status-column'
-        }
+        },
+        {
+                key: 'approvalStatus',
+                label: 'Approval Status',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                template: 'status', // Use status template
+                width: '150px',
+                dataType: 'string',
+                cellClass: 'approval-status-column'
+            },
       ],
       actions: [
         {

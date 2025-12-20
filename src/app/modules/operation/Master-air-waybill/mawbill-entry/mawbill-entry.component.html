@@ -1121,7 +1121,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <input type="number" formControlName="SellExchangeRate" 
-                                class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
+                                class="custom-input-field sm" step="0.0001" min="0">
                             <label class="input-label">Sell Exchange Rate</label>
                         </div>
                     </aside>
@@ -1129,7 +1129,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date mt-1">
                             <input type="number" formControlName="AgentExchangeRate"
-                                class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
+                                class="custom-input-field sm" step="0.0001" min="0">
                             <label class="input-label">Agent Exchange Rate</label>
                         </div>
                     </aside>
@@ -1325,7 +1325,7 @@
 
 
             <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
-                <app-cost-entry #costEntryComponent screenName="MasterJob" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
+                <app-cost-entry #costEntryComponent screenName="Master Air Waybill" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
                     [dataItems]="masterJobRateArr" [resetTrigger]="rateResetTrigger" [formData]="currentFormValue"
                     (dataEmitter)="handleRateChange($event)" (reloadParent)="loadMasterJobData($event)">
                 </app-cost-entry>
