@@ -21,11 +21,11 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ params?.Branch }}</p>
+                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ params?.Dept }}</p>
+                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
@@ -55,10 +55,11 @@
                     </tr>
                 </thead>
                 <tbody>
+                <tbody>
                     <ng-container *ngFor="let item of fullData?.data">
-                        <tr *ngFor="let cr of item.costRevenueDetails" style="white-space: nowrap;">
+                        <tr>
                             <td>{{ item.HouseNo }}</td>
-                            <td>{{ item.jobDate | formatDate }}</td>
+                            <td>{{ item.jobDate | date:'shortDate' }}</td>
                             <td>{{ item.houseDept }}</td>
                             <td>{{ item.MBLNo }}</td>
                             <td>{{ item.HBLNo }}</td>
@@ -70,10 +71,11 @@
                             </td>
                             <td>{{ item.originAgent }}</td>
                             <td>{{ item.destinationAgent }}</td>
-                            <td class="text-end">{{ cr.RevenueLocalAmount | number:'1.2-2'}}</td>
-                            <td class="text-end">{{ cr.CostLocalAmount | number:'1.2-2'}}</td>
-                            <td class="text-end">{{ cr.Profit | number:'1.2-2'}}</td>
-                            <td class="text-end">{{ cr.GP | number:'1.2-2'}}</td>
+                            <td class="text-right">{{ item.costRevenueDetails.RevenueLocalAmount | number:'1.2-2' }}
+                            </td>
+                            <td class="text-right">{{ item.costRevenueDetails.CostLocalAmount | number:'1.2-2' }}</td>
+                            <td class="text-right">{{ item.costRevenueDetails.Profit | number:'1.2-2' }}</td>
+                            <td class="text-right">{{ item.costRevenueDetails.GP | number:'1.2-2' }}%</td>
                         </tr>
                     </ng-container>
                 </tbody>

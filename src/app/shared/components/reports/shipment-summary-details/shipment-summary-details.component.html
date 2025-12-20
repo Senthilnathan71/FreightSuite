@@ -20,27 +20,26 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ params?.Branch }}</p>
+                   <p class="ms-1">: {{ fullData?.branchNames }}</p>
                 </div>
             </div>
 
             <div>
 
-
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ params?.Dept }}</p>
+                   <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
-                    <p class="ms-1">: {{ params?.Customer }}</p>
+                    <p class="ms-1">: {{ fullData?.customerNames }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Salesperson </strong>
                     <p class="ms-1">: {{ params?.Salesperson }}</p>
                 </div>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center d-none">
                     <strong style="margin-bottom: 4px;width: 130px;">Transhipment </strong>
                     <p class="ms-1">: {{ params?.Transhipment }}</p>
                 </div>

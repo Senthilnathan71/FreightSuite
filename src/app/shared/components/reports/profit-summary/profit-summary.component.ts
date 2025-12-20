@@ -47,4 +47,38 @@ export class ProfitSummaryComponent {
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
+
+getHouseTotal(item: any, field: string): number {
+  if (!item?.houseWithCR?.length) return 0;
+
+  return item.houseWithCR.reduce(
+    (acc: number, h: any) =>
+      acc + (h?.costRevenues?.houseCrSummary?.[field] || 0),
+    0
+  );
+}
+getGrandTotal(field: string): number {
+  if (!this.fullData?.data?.length) return 0;
+
+  return this.fullData.data.reduce((total: number, item: any) => {
+
+    // 1️⃣ MASTER VALUE
+    const masterValue =
+      item?.costRevenues?.masterCrSummary?.[field] || 0;
+
+    // 2️⃣ HOUSE TOTAL
+    const houseValue =
+      item?.houseWithCR?.reduce(
+        (sum: number, h: any) =>
+          sum + (h?.costRevenues?.houseCrSummary?.[field] || 0),
+        0
+      ) || 0;
+
+    // 3️⃣ MASTER + HOUSE
+    return total + masterValue + houseValue;
+
+  }, 0);
+}
+
+
 }

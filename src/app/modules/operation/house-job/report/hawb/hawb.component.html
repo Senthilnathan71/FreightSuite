@@ -573,19 +573,19 @@
                         <div
                             style="display:flex; flex-direction:column;   border-bottom:1px solid black;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Shipper</strong></div>
-                            <div style="min-height:130px; height:auto;">
+                            <div style="min-height:130px; height:auto;padding-left: 15px;">
                                 {{housejobData.ShipperName}}<br>{{housejobData.ShipperAddress}}</div>
                         </div>
                         <div style="display:flex; flex-direction:column;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Consignee</strong></div>
-                            <div style="min-height:130px; height:auto;">
+                            <div style="min-height:130px; height:auto;padding-left: 15px;">
                                 {{housejobData.ConsigneeName}}<br>{{housejobData.ConsigneeAddress}}</div>
                         </div>
                         <div
                             style="display:flex; flex-direction:column; border:1px solid black;border-right: none;border-left: none;padding-left: 5px;">
                             <div style="width:200px; white-space:nowrap;"><strong>Notify Party</strong></div>
-                            <div style="min-height:119px; height:auto;">
-                                {{housejobData?.Others?.[0]?.NotifyParty}}<br>{{housejobData?.Others?.[0]?.NotifyPartyAddress}}
+                            <div style="min-height:105px; height:auto;padding-left: 15px;">
+                                {{housejobData?.Notify}}<br>{{housejobData?.NotifyAddress}}
                             </div>
                         </div>
                         <div
@@ -618,7 +618,7 @@
                                         }}</strong></h4> -->
                                 </div>
 
-                                <div style=" text-align:center; margin-top: 2px;">
+                                <div style=" text-align:center; margin-top: 5x; margin-bottom: 8px;">
                                     <h4 style="margin:2px; padding:0; font-weight:600;">{{ currentCompany?.companyName
                                         ||
                                         'Company Name' }}</h4>
@@ -627,10 +627,10 @@
                                     <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
                                     <p style="margin:2px 0; ">{{ currentBranch?.addressLine2 || '' }} , {{
                                         currentBranchCityName ||
-                                        currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                                    <p style="margin:2px 0; ">{{ currentBranch?.postalCode ||
+                                        currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode ||
                                         currentBranch?.ZipCode || '' }} - {{ currentBranch?.phoneNumber ||
                                         currentBranch?.Phone || '' }}</p>
+                                    <p style="margin:2px 0; "></p>
                                     <p style="margin:2px 0; "></p>
                                 </div>
                             </div>
@@ -687,7 +687,7 @@
                             </div>
                             <div>
                                 <strong>Total Vol : </strong>
-                                <span> {{housejobData?.Cargo?.[0]?.ChargeableWeight}}</span>
+                                <span> {{housejobData?.Cargo?.[0]?.ChargeableWeight | number:'1.3-3'}}</span>
                             </div>
 
                         </div>
@@ -787,7 +787,7 @@
                             <div
                                 style="display:flex; flex-direction:column; text-align:center; padding:5px; border-right:1px solid black;">
                                 <div style="white-space:nowrap;"><strong>Airport of Destination</strong></div>
-                                <div style="min-height:20px; height:auto;">{{housejobData.FPD}}</div>
+                                <div style="min-height:20px; height:auto;">{{housejobData.POD}}</div>
                             </div>
                         </div>
                         <!-- Requested Flight/Date -->
@@ -899,7 +899,7 @@
                                 {{ housejobData?.masterJob?.WeightIn }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
-                                {{ housejobData?.Cargo?.[0]?.ChargeableWeight | number:'1.2-2' }}
+                                {{ housejobData?.Cargo?.[0]?.ChargeableWeight | number:'1.3-3' }}
                             </td>
                             <td style="border:1px solid black; padding:5px; text-align:center; vertical-align:top;">
                                 {{ getFreightTotals().totalExchangeRate }}
@@ -931,7 +931,7 @@
 
                             <!-- Total Chargeable Weight -->
                             <td style="border:1px solid black; padding:5px; text-align:center;">
-                                <strong>{{ getTotalChargeableWeight() | number:'1.2-2' }}</strong>
+                                <strong>{{ getTotalChargeableWeight() | number:'1.3-3' }}</strong>
                             </td>
 
                             <!-- Total Rate -->
@@ -1006,6 +1006,7 @@
                                         <strong style="width:fit-content;">Valuation Charge</strong>
                                     </div>
                                     <div style="position:relative; height:20px;">
+                                        <p style="text-align: center;"> AS ARRANGED</p>
                                         <!-- <div
                                             style="position:absolute; top:0; bottom:0; left:50%; width:1px; background-color:black; transform:translateX(-50%);">
                                         </div> -->
@@ -1040,7 +1041,7 @@
                                 <br>
                                 <span *ngFor="let charge of otherCharges">
                                     {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate
-                                    }}&nbsp;&nbsp;
+                                    }} {{charge.RevenueAmount}}&nbsp;&nbsp;
                                 </span>
                             </td>
                         </tr>
@@ -1120,7 +1121,7 @@
                                     <div style="white-space:nowrap;  text-align:center;">
                                         <strong>Total Prepaid</strong>
                                     </div>
-                                    <div></div>
+                                    <div style="text-align: center;"> AS ARRANGED</div>
                                 </div>
                             </div>
 
@@ -1150,7 +1151,7 @@
                     <!-- Right Column -->
                     <div
                         style="flex:0 0 50%; border:1px solid black; border-top:none; border-left:none; padding:0px;border-bottom: none;border-right: none;padding: 2px;">
-                        <div style="width:100%;"><strong>As Agent for the Carrier</strong></div>
+                        <div style="width:100%;"><strong>As Agent for the Carrier :</strong> {{housejobData?.VesselName}}</div>
                         <div style="display:flex; justify-content:space-between; margin-top:4px; padding:0 5px;">
                             <!-- Executed on -->
                             <div style="display:flex; flex-direction:column; text-align:center;">

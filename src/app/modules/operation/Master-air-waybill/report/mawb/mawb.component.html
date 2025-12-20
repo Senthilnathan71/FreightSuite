@@ -114,9 +114,8 @@
                                     <p>
                                         {{ currentBranch?.addressLine2 || '' }},
                                         {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                                        - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+                                        - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}
                                     </p>
-                                    <p>{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -473,6 +472,7 @@
                         </div>
                         
                     </div>
+                    
 
                     <!-- Right: Execution Info -->
                     <div class="totals-right execution-info">
@@ -491,6 +491,36 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                  <div class="mawb-totals-row">
+                    <!-- Left: Total Prepaid / Collect -->
+                    <div class="totals-left">
+                        <div class="total-row">
+                            <div class="total-cell">
+                                <div class="total-label">Total Prepaid</div>
+                                <div class="total-value">{{ getGrandTotal() }}</div>
+                            </div>
+                            <div class="total-divider">
+                                <div class="center-line"></div>
+                            </div>
+                            <div class="total-cell">
+                                <div class="total-label">Total Collect</div>
+                                <div class="total-value"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="totals-right1">
+                    
+                            <div class="total-cell">
+                                <div class="total-label" style="white-space: nowrap;">Total Prepaid</div>
+                                <div class="total-value">{{ getGrandTotal() }}</div>
+                            </div>
+                        
+                    </div>
+                    
+
                 </div>
 
                 <!-- FOOTER -->

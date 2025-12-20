@@ -21,11 +21,11 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ params?.Branch }}</p>
+                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ params?.Dept }}</p>
+                    <p class="ms-1">: {{ fullData?.DeptNames }}</p>
                 </div>
             </div>
         </div>
@@ -64,71 +64,82 @@
                 </thead>
                 <tbody>
                     <ng-container *ngFor="let item of fullData?.data">
-
-                        <!-- ================= MASTER JOB ROW ================= -->
-                        <tr style="white-space: nowrap;">
+                        <tr style="white-space: nowrap; font-weight: 600; background: #f5f5f5;">
                             <td>{{ item.JobNo }}</td>
                             <td>{{ item.deptName }}</td>
-                            <td>{{ item.MBLNo }}</td>
-                            <td>{{ item.houseJobs?.[0]?.HouseNo }}</td>
-                            <td>{{ item.houseJobs?.[0]?.HBLNo }}</td>
-                            <td>{{ item.houseJobs?.[0]?.HouseStatus }}</td>
-                            <td>{{ item.houseJobs?.[0]?.JobType }}</td>
-                            <td>{{ item.houseJobs?.[0]?.customerName }}</td>
+                            <td class="fw-bold">{{ item.MBLNo }}</td>
+                            <td class="fw-bold">{{item.houseNo}}</td>
+                            <td>{{item.HBLNo}}</td>
+                            <td>{{item.houseStatus}}</td>
+                            <td>{{item.jobType}}</td>
+                            <td>{{item.customerName}}</td>
                             <td>{{ item.OriginAgent }}</td>
                             <td>{{ item.DestinationAgent }}</td>
                             <td>{{ item.POO }}</td>
-                            <td>{{ item.FPD }}</td>
-                            <td>{{ item.POL }}</td>
                             <td>{{ item.POD }}</td>
-                            <td>{{ item.ETA | formatDate }}</td>
-                            <td>{{ item.ETD | formatDate }}</td>
-                            <td>{{ item.ATA | formatDate }}</td>
-                            <td>{{ item.ATD | formatDate }}</td>
-                            <td>{{ item.houseJobs?.[0]?.ModeOfTransport }}</td>
-                            <td>{{ item.houseJobs?.[0]?.salesperson }}</td>
-                            <td>{{ item.houseJobs?.[0]?.FreightTerms }}</td>
-                            <td>{{ item.masterCostRevenue?.[0]?.RevenueLocalAmount }}</td>
-                            <td>{{ item.masterCostRevenue?.[0]?.CostLocalAmount }}</td>
-                            <td>{{ item.masterCostRevenue?.[0]?.Profit }}</td>
+                            <td>{{ item.POL }}</td>
+                            <td>{{ item.FPD }}</td>
+                            <td>{{ item.ETA | date:'shortDate' }}</td>
+                            <td>{{ item.ETD | date:'shortDate' }}</td>
+                            <td>{{ item.ATA | date:'shortDate' }}</td>
+                            <td>{{ item.ATD | date:'shortDate' }}</td>
+                            <td>{{item.ModeOfTransport}}</td>
+                            <td>{{item.salesPerson}}</td>
+                            <td>{{item.PPCC}}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.pSale | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.pCost | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.pGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.aSale | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.aCost | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.aGp | number:'1.2-2' }}</td>
                         </tr>
-
-                        <!-- ================= HOUSE JOB ROWS ================= -->
-                        <tr *ngFor="let hj of item.houseJobs" style="white-space: nowrap;">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-
-                            <td></td>
-                            <td>{{ hj.HBLNo }}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-
+                        <tr *ngFor="let hj of item.houseWithCR" style="white-space: nowrap;">
                             <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-
-                            <td></td>
-                            <td></td>
-                            <td></td>
-
-                            <td>{{ hj.costRevenue?.[0]?.RevenueLocalAmount }}</td>
-                            <td>{{ hj.costRevenue?.[0]?.CostLocalAmount }}</td>
-                            <td>{{ hj.costRevenue?.[0]?.Profit }}</td>
+                            <td class="fw-bold">{{item.HBLNo}}</td>
+                            <td colspan="16"></td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.pSale | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.pCost | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.pGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.aSale | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.aCost | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.aGp | number:'1.2-2' }}</td>
                         </tr>
-
+                        <!-- <tr style="font-weight: 700; background: #e9ecef;">
+                            <td colspan="21" class="text-end">TOTAL</td>
+                            <td class="text-end">{{ getHouseTotal(item,'pSale') | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ getHouseTotal(item,'pCost') | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ getHouseTotal(item,'pGp') | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ getHouseTotal(item,'aSale') | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ getHouseTotal(item,'aCost') | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ getHouseTotal(item,'aGp') | number:'1.2-2' }}</td>
+                        </tr> -->
                     </ng-container>
+                    <tr style="font-weight: 800; background: #cfe2ff; white-space: nowrap;">
+                        <td colspan="21" class="text-end">GRAND TOTAL</td>
 
+                        <td class="text-end">
+                            {{ getGrandTotal('pSale') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandTotal('pCost') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandTotal('pGp') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandTotal('aSale') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandTotal('aCost') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandTotal('aGp') | number:'1.2-2' }}
+                        </td>
+                    </tr>
                 </tbody>
-
             </table>
         </div>
     </div>

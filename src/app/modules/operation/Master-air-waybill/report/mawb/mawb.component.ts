@@ -6,6 +6,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-mawb',
@@ -27,7 +28,7 @@ export class MAWBComponent implements OnChanges {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
-  currentUserCode:any;
+  currentUserCode: any;
   @Input() masterAirWayData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -41,9 +42,10 @@ export class MAWBComponent implements OnChanges {
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
-  companyCode:any;
+  companyCode: any;
+  bankDetails: any;
   showPrintLogo: boolean = false;
-    showPdfLogo: boolean = true;
+  showPdfLogo: boolean = true;
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -68,9 +70,9 @@ export class MAWBComponent implements OnChanges {
       );
       this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
     }
-    
-     this.currentUserCode = this.userData?.userCode?.trim();
-     console.log(this.currentUserCode,"User Code")
+
+    this.currentUserCode = this.userData?.userCode?.trim();
+    console.log(this.currentUserCode, "User Code")
     // IDs
     this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
     this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
@@ -98,17 +100,17 @@ export class MAWBComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
 
-      this.companyCode = this.currentCompany?.companyCode;
-   
-    console.log(this.companyCode,"CompanyCode")
-    
+    this.companyCode = this.currentCompany?.companyCode;
+
+    console.log(this.companyCode, "CompanyCode")
+    this.getBankDetails();
   }
 
 
-      loadCityName(): void {
+  loadCityName(): void {
     if (!this.currentBranchCityId) return;
 
- 
+
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
@@ -121,11 +123,11 @@ export class MAWBComponent implements OnChanges {
           console.log("Final City Name:", this.currentBranchCityName);
         }
 
-        
+
       },
       error: (error) => {
         console.error("Failed to load city:", error);
-       
+
       }
     });
   }
@@ -138,6 +140,7 @@ export class MAWBComponent implements OnChanges {
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
+    private operationService: OperationService,
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
@@ -166,6 +169,31 @@ export class MAWBComponent implements OnChanges {
     })
 
     console.log("Other Charges", this.otherCharges)
+  }
+
+  getBankDetails() {
+    console.log('DEBUG - getBankDetails');
+
+    const payload = {
+      CompanyMasterSid:this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      CurrencyMasterSid:this.currentCompany?.CurrencyMasterSid,
+    }
+    this.operationService.getBankDetails(payload).subscribe({
+      next: (resp: any) => {
+        console.log('Bank Details Response:', resp);
+        if (resp?.status && resp.data) {
+          this.bankDetails = resp.data;
+        } else {
+          this.bankDetails = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching bank details', err);
+        this.bankDetails = null;
+      }
+    });
+
   }
 
   getChargeCode(ChargeMasterSid: number) {
@@ -234,18 +262,18 @@ export class MAWBComponent implements OnChanges {
   }
 
 
- printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
+  printDiv(divId: string): void {
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
 
-  setTimeout(() => {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) return;
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -257,10 +285,10 @@ export class MAWBComponent implements OnChanges {
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 100);
-}
+        popupWin.document.close();
+      }
+    }, 100);
+  }
 
   private getPrintStyles(): string {
     return `
@@ -949,28 +977,28 @@ export class MAWBComponent implements OnChanges {
   }
 
 
-   async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
 
-  setTimeout(async () => {
-    this.spinner.show();
-   try {
-       const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `MAWB_${BankPaymentNo}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-      );
-    } finally {
-      this.spinner.hide();
-    }
-  }, 50);
-}
+    setTimeout(async () => {
+      this.spinner.show();
+      try {
+        const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
+        await this.pdfService.downloadBalancedPDF(
+          'printContent',
+          `MAWB_${BankPaymentNo}`,
+          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+        );
+      } finally {
+        this.spinner.hide();
+      }
+    }, 50);
+  }
 
 
- 
+
 
 
 }

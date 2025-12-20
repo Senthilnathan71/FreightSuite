@@ -259,6 +259,26 @@ $font-size-label: 9px;
   }
 }
 
+
+.mawb-account-info1 {
+  display: flex;
+  border: 1px solid $border-color;
+  border-top: none;
+  padding: 6px 10px;
+
+  .account-info-label {
+    width: 150px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .account-info-value {
+    min-height: 20px;
+    font-size: 10px;
+  }
+}
+
+
 // ============================================
 // Reference / Optional Shipping Info
 // ============================================
@@ -683,6 +703,14 @@ $font-size-label: 9px;
 .totals-right {
   width: 50%;
   border: 1px solid $border-color;
+  border-top: none;
+  border-left: none;
+}
+
+.totals-right1 {
+  width: 25%;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
   border-top: none;
   border-left: none;
 }
