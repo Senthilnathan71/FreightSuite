@@ -730,7 +730,7 @@ getHouseJobARAPData(HouseJobSid: number) {
   }
 
   getHouseJobById(HouseJobSid:number) {
-    return this.http.get<{ data: any }>(`house-job/fetch/:${HouseJobSid}`).pipe(
+    return this.http.get<{ data: any }>(`house-job/fetch/${HouseJobSid}`).pipe(
       map((resp) => {
         return resp;
       })
