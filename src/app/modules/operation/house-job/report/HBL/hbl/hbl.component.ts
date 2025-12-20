@@ -89,27 +89,66 @@ export class HblComponent {
 
     const cargoList = this.housejobData?.Cargo || [];
 
-    return cargoList.reduce((sum: number, item: any) => {
-
+     return cargoList.reduce((sum: number, item: any) => {
+ 
       const weight = parseFloat(item?.GrossWeight) || 0;
-
+ 
       return sum + weight;
-
+ 
     }, 0);
 
   }
+
   volumeAmount(): number {
 
-    const cargoList = this.housejobData?.Cargo || [];
-
+   const cargoList = this.housejobData?.Cargo || [];
+ 
     return cargoList.reduce((sum: number, item: any) => {
-
+ 
       const volume = parseFloat(item?.Volume) || 0;
-
+ 
       return sum + volume;
-
+ 
     }, 0);
   }
+
+  // container details only show
+
+  get containerMappedProducts() {
+  return (this.housejobData?.Products || []).filter(
+    (p: any) => !!p.MasterJobContainerSid
+  );
+}
+
+// All container details  show
+
+// get containerMappedProducts() {
+//   const products = this.housejobData?.Products || [];
+ 
+//   const map = new Map<number, any>();
+ 
+//   products.forEach((p: any) => {
+//     if (!p.MasterJobContainerSid) return; // ❌ skip unmapped
+ 
+//     if (!map.has(p.MasterJobContainerSid)) {
+//       map.set(p.MasterJobContainerSid, {
+//         MasterJobContainerSid: p.MasterJobContainerSid,
+//         ContainerNo: p.ContainerNo,
+//         GrossWeight: Number(p.GrossWeight) || 0,
+//         Volume: Number(p.Volume) || 0,
+//         ExternlQty: Number(p.ExternlQty) || 0,
+//         ExternaPkg: p.ExternaPkg
+//       });
+//     } else {
+//       const existing = map.get(p.MasterJobContainerSid);
+//       existing.GrossWeight += Number(p.GrossWeight) || 0;
+//       existing.Volume += Number(p.Volume) || 0;
+//       existing.ExternlQty += Number(p.ExternlQty) || 0;
+//     }
+//   });
+ 
+//   return Array.from(map.values());
+// }
   getDestinationAgentName(CustomerMasterSid: number | string): string {
     const agent = this.agentList.find(a => a.CustomerMasterSid == CustomerMasterSid);
     return agent ? agent.CustomerName : '';
@@ -119,6 +158,8 @@ export class HblComponent {
   this.showPrintLogo = false;
   this.showPdfLogo = true;
 
+
+ 
   setTimeout(async () => {
     this.spinner.show();
    try {
