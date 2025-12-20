@@ -3516,6 +3516,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
         modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+        modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     }
 
   reportIndeminty() {
