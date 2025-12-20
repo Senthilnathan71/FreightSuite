@@ -343,6 +343,7 @@ dataFromEnqPage:any;
     this.checkRateLockPermissions();
   }).catch(error => {
     console.error('Failed to load rate lock config:', error);
+     this.canUserLockRates = false;
   });
   
     this.loadAllLookUps().subscribe(() => {
@@ -652,7 +653,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       EnquirySid: [''],
       AgreedRate : [false],
       IsContract:[false],
-      RateLock: ["false"],
+      RateLock: [false],
       ContactPerson:[''],
       ContactNumber:['']
     })
@@ -1430,7 +1431,9 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
     this.dropdownStore.loadCustomerTypeData(payload).subscribe();
   }
-
+isRateLockDisabled(): boolean {
+  return !this.canUserLockRates || this.disableAllModification || this.quotationApproved;
+}
   loadQuotation(id): void {
     this.spinner.show();
     this.leadService.getQuoteById(id).subscribe(
@@ -1509,7 +1512,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.addQuoteRoute(fullRouteData)
       this.handleValidationOnDept(routeIndex, route.segmentType)
       this.onRouteChange(routeIndex);
-    if (response.RateLock === "Y") {
+     if (response.RateLock === "Y" && this.canUserLockRates)  {
     this.lockAllRateFields();
   }
         // Check if this route has charges/tariffs applied
@@ -3631,7 +3634,6 @@ toggleLock() {
     }
     
     console.log('Loading rate lock config for company:', this.currentCompany.CompanyMasterSid);
-    console.log('Current user email:', this.currentUserEmail);
     
     const config = await firstValueFrom(
       this.leadService.getAllCompanyConfigsByCompanyId(this.currentCompany.CompanyMasterSid)
@@ -3644,33 +3646,100 @@ toggleLock() {
     
     console.log('Rate lock config found:', this.rateLockConfig);
     
-    if (this.rateLockConfig) {
-      console.log('ConfigurationValue:', this.rateLockConfig.ConfigurationValue);
-      console.log('Current user email for comparison:', this.currentUserEmail);
-    } else {
-      console.log('No rate lock configuration found');
-    }
+    // After loading config, check permissions
+    this.checkRateLockPermissions();
     
   } catch (error) {
     console.error('Error loading rate lock configuration:', error);
     this.rateLockConfig = null;
+    this.canUserLockRates = false;
+    
+    // Disable the checkbox on error
+    const rateLockControl = this.quotationForm.get('RateLock');
+    if (rateLockControl) {
+      rateLockControl.disable({ emitEvent: false });
+    }
   }
 }
- checkRateLockPermissions(): void {
+
+checkRateLockPermissions(): void {
+  console.log('=== Checking Rate Lock Permissions ===');
+  console.log('Rate Lock Config:', this.rateLockConfig);
+  console.log('Current User Email:', this.currentUserEmail);
+  
+  const rateLockControl = this.quotationForm.get('RateLock');
+  if (!rateLockControl) return;
+
+  // Store the current value before any changes
+  const currentRateLockValue = rateLockControl.value;
+  console.log('Current RateLock Value:', currentRateLockValue);
+  
   if (!this.rateLockConfig || !this.currentUserEmail) {
+    console.log('Missing config or user email - disabling rate lock');
     this.canUserLockRates = false;
+    
+    // Keep the existing value but disable the checkbox
+    rateLockControl.disable({ emitEvent: false });
+    
+    // If it was locked, keep fields locked
+    if (currentRateLockValue === true) {
+      this.lockAllRateFields();
+    }
     return;
   }
 
-  const allowedEmails = this.rateLockConfig.ConfigurationValue  
-    ?.split(',')
-    .map((email: string) => email.trim().toLowerCase()) || [];
+  // Parse the ConfigurationValue to get allowed emails
+  const configValue = this.rateLockConfig.ConfigurationValue;
+  console.log('Raw ConfigurationValue:', configValue);
+  
+  if (!configValue || typeof configValue !== 'string') {
+    console.log('Invalid ConfigurationValue - disabling rate lock');
+    this.canUserLockRates = false;
+    
+    // Keep the existing value but disable the checkbox
+    rateLockControl.disable({ emitEvent: false });
+    
+    // If it was locked, keep fields locked
+    if (currentRateLockValue === true) {
+      this.lockAllRateFields();
+    }
+    return;
+  }
 
+  // Split by comma and trim/lowercase each email
+  const allowedEmails = configValue
+    .split(',')
+    .map((email: string) => email.trim().toLowerCase())
+    .filter((email: string) => email.length > 0); // Remove empty strings
+  
+  console.log('Allowed Emails:', allowedEmails);
+  console.log('Current User Email (lowercase):', this.currentUserEmail.toLowerCase());
+
+  // Check if current user's email is in the allowed list
   this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
   
-  // Apply rate lock state based on form value
-  if (this.quotationForm.get('RateLock')?.value === true) {
-    this.lockAllRateFields();
+  console.log('Can User Lock Rates:', this.canUserLockRates);
+
+  // Enable or disable the RateLock checkbox based on permission
+  if (this.canUserLockRates) {
+    console.log('Enabling rate lock checkbox - user has permission');
+    rateLockControl.enable({ emitEvent: false });
+    
+    // If already locked in data, apply the lock
+    if (currentRateLockValue === true) {
+      this.lockAllRateFields();
+    }
+  } else {
+    console.log('Disabling rate lock checkbox - user lacks permission');
+    // IMPORTANT: Keep the existing value (don't change it to false)
+    // This preserves RateLock = "Y" from database
+    rateLockControl.disable({ emitEvent: false });
+    
+    // If it's locked, keep the fields locked even though user can't change it
+    if (currentRateLockValue === true) {
+      console.log('Rate is locked, applying field locks');
+      this.lockAllRateFields();
+    }
   }
 }
  onRateLockChange(): void {

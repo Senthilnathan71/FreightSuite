@@ -2602,19 +2602,19 @@
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
-          <!-- Validation Messages -->
-          @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&
-          productForm.get('GrossWeight')?.invalid) {
-          <div class="error-message">
-            @if (productForm.get('GrossWeight')?.errors?.['required']) {
-            <span>Required</span>
-            } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
-            <span>Gross Weight cannot exceed 9,999,999.999</span>
-            } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
-            <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-            }
-          </div>
-          }
+           <!-- Validation Messages -->
+    @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&
+    productForm.get('GrossWeight')?.invalid) {
+    <div class="error-message">
+      @if (productForm.get('GrossWeight')?.errors?.['required']) {
+      <span>Required</span>
+      } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
+      <span>Gross Weight cannot exceed 9,999,999.999</span>
+      } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+      <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      }
+    </div>
+    }
         </div>
       </aside>
       <aside class="col-md-4">
@@ -2623,18 +2623,18 @@
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
           <!-- Validation Messages -->
-          @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
-          productForm.get('NetWeight')?.invalid) {
-          <div class="error-message">
-            @if (productForm.get('NetWeight')?.errors?.['required']) {
-            <span>Required</span>
-            } @else if (productForm.get('NetWeight')?.errors?.['max']) {
-            <span>Net Wt cannot exceed 9,999,999.999</span>
-            } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
-            <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-            }
-          </div>
-          }
+    @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
+    productForm.get('NetWeight')?.invalid) {
+    <div class="error-message">
+      @if (productForm.get('NetWeight')?.errors?.['required']) {
+      <span>Required</span>
+      } @else if (productForm.get('NetWeight')?.errors?.['max']) {
+      <span>Net Wt cannot exceed 9,999,999.999</span>
+      } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+      <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      }
+    </div>
+    }
         </div>
       </aside>
       <div class="col-md-4">

@@ -930,15 +930,22 @@
                       <div class="col-12" formArrayName="quoteCarriers">
                         <div>
                           <div class="d-flex justify-content-end align-items-center px-1 gap-2">
-                            <div *ngIf="canUserLockRates" class="custom-form-group me-2">
+                            <div  class="custom-form-group me-2">
     <div class="form-check">
        <input class="form-check-input" type="checkbox" 
              id="rateLock" 
              [formControl]="$any(quotationForm.get('RateLock'))"
-             [disabled]="!canUserLockRates || disableAllModification || quotationApproved">
+            [disabled]="isRateLockDisabled()"
+      (change)="onRateLockChange()">
       <label class="form-check-label" for="rateLock" style="margin-left: 5px;">
         Rate Lock
       </label>
+      <i 
+      *ngIf="!canUserLockRates" 
+      class="fas fa-info-circle text-muted"
+      [ngbTooltip]="'You do not have permission to lock rates'"
+      placement="top"
+    ></i>
     </div>
   </div>
                              
