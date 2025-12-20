@@ -877,7 +877,7 @@ jobStatusOptions = [
       HsCode: ['', Validators.maxLength(10)],
       CommodityDescription: ['', Validators.maxLength(500)],
       PkgType: [null],
-      NoOfPkg: [0, [Validators.min(0)]],
+      NoOfPkg: [{ value: 0, disabled: true }],
       GrossWeight: [{ value: 0, disabled: true }],
       NetWeight: [{ value: 0, disabled: true }],
       Volume: [{ value: 0, disabled: true }],

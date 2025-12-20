@@ -3519,6 +3519,20 @@ ${this.userData['userName']}`;
     }
 
   reportIndeminty() {
+     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if any products have ContainerMasterSid mapped
+    const hasContainerMapping = this.housejobData?.Products?.some(
+      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    );
+    
+    if (!hasContainerMapping) {
+      this.appSettingService.showWarning(
+        'ContainerNo. mapping is required. ' +
+        'Please map containersNo'
+      );
+      return;
+    } 
+  }
     const modalRef = this.modalService.open(ImdemintyComponent,{
       size: 'xl',
       scrollable: true,
