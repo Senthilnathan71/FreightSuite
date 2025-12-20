@@ -1709,8 +1709,7 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         ratesResp = ((await firstValueFrom(this.operationService.getCostRevenueChargeWithDetails({
           TransactionSid: this.routeParentSid,
-          MenuMasterSid: this.screenName === "House Job" || this.screenName === "House Air Waybill" ? -1 : this.currentMenuId,
-          screenName : this.screenName
+          menuName : this.screenName
         }))).data || []).map(rate =>({
           ...rate,
           RateSid : rate.CostRevenueChargesSid,
@@ -3066,11 +3065,11 @@ getChargeTaxPercentage(charge: any): string {
             ? '/operation/vendor-invoice/entry'
             : '/operation/invoice/entry';
 
-        const key = `${this.screenName}Id`;
-
+        const joinedWords = this.screenName.split(' ').join('');
+        const key = `${joinedWords}Id`;
         this.router.navigate([targetRoute, voucherHeaderSid], {
           queryParams: {
-            from: this.screenName,
+            from: joinedWords,
             [key]: this.routeParentSid,
           }
         });

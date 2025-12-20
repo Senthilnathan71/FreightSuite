@@ -3651,27 +3651,6 @@ ${this.userData['userName']}`;
 
   const isHaz = this.c['CargoType']?.value === 'Haz';
 
-  const masterJobContainers = [];
-  if (this.selectedFCLLCL === "FCL" && this.c['ContainerType']?.value && this.c['NoofContainers']?.value) {
-    for (let i = 0; i < this.c['NoofContainers']?.value; i++) {
-      masterJobContainers.push({
-        ContainerType: this.c['ContainerType']?.value,
-        ContainerNumber: '',
-        LineSeal: '',
-        CustomsSeal: '',
-        HsCode: '',
-        CommodityDescription: this.cargoForm.get('CargoType')?.value || '',
-        PkgType: null,
-        NoOfPkg: this.c['NoOfPackage']?.value || 0,
-        GrossWeight: this.c['GrossWeight']?.value || 0,
-        NetWeight: this.c['NetWeight']?.value || 0,
-        ChargeableWeight: this.c['ChargeableWeight']?.value || 0,
-        Volume: this.c['Volume']?.value || 0,
-        Volumetric: this.c['Volumetric']?.value || 0,
-        IsSoc: "N"
-      });
-    }
-  }
 
   const payload = {
     CreatedBy: userEmail,
@@ -3704,7 +3683,6 @@ ${this.userData['userName']}`;
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
     CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
-    masterJobContainers: masterJobContainers,
     screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job"
   };
 

@@ -1426,6 +1426,10 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
     )
   }
 private loadMasterJobDetails(masterJobSid: number): void {
+  const payload = {
+    screenName : 'Master Job',
+    masterJobSid : masterJobSid
+  }
   this.operationService.getMasterJobById(masterJobSid).subscribe({
     next: (response: any) => {
       if (response.status && response.data) {

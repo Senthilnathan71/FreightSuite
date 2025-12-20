@@ -729,8 +729,12 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
   loadMasterJobData(masterJobSid: number): void {
       this.spinner.show();
+      const payload = {
+        screenName : 'Master Air Waybill',
+        MasterJobSid : masterJobSid
+      }
     forkJoin({
-      masterJob: this.operationService.getMasterJobById(masterJobSid),
+      masterJob: this.operationService.getMasterJobById(payload),
       arapData: this.operationService.getMasterJobARAPData(masterJobSid)
     }).subscribe({
       next: (response: any) => {
@@ -1329,6 +1333,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+        screenName : 'Master Air Waybill'
     };
 
     // Add shipment list if needed

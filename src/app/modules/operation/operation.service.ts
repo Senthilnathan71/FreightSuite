@@ -163,7 +163,7 @@ export class OperationService {
       })
     );
   }
-  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, MenuMasterSid: number, screenName: string }) {
+  getCostRevenueChargeWithDetails(payload: { TransactionSid: number, menuName: string }) {
     return this.http.post<{ data: any[] }>(`operation-common/cost-revenue/fetchWithDetails`, payload).pipe(
       map((resp) => {
         return resp;
@@ -546,8 +546,8 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
-  getMasterJobById(MasterJobSid: number) {
-    return this.http.get<{ data: any }>(`master-job/fetch/${MasterJobSid}`).pipe(
+  getMasterJobById(payload:any) {
+    return this.http.post<{ data: any }>(`master-job/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -729,7 +729,7 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
-  getHouseJobById(HouseJobSid: number) {
+  getHouseJobById(HouseJobSid:number) {
     return this.http.get<{ data: any }>(`house-job/fetch/${HouseJobSid}`).pipe(
       map((resp) => {
         return resp;
