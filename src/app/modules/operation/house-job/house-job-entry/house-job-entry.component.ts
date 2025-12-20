@@ -1391,7 +1391,11 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
 
 
   loadHouseById(HouseJobSid: number) {
-    this.operationService.getHouseJobById(HouseJobSid).subscribe(
+    const payload = {
+      screenName : this.selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job',
+      houseJobSid : HouseJobSid
+    }
+    this.operationService.getHouseJobById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
@@ -1426,6 +1430,10 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
     )
   }
 private loadMasterJobDetails(masterJobSid: number): void {
+  const payload = {
+    screenName : 'Master Job',
+    masterJobSid : masterJobSid
+  }
   this.operationService.getMasterJobById(masterJobSid).subscribe({
     next: (response: any) => {
       if (response.status && response.data) {

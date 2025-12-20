@@ -1209,8 +1209,12 @@ jobStatusOptions = [
 
   loadMasterJobData(masterJobSid: number): void {
     this.spinner.show();
+    const payload = {
+      screenName : 'Master Job',
+      MasterJobSid : masterJobSid
+    }
     forkJoin({
-      masterJob: this.operationService.getMasterJobById(masterJobSid),
+      masterJob: this.operationService.getMasterJobById(payload),
       arapData: this.operationService.getMasterJobARAPData(masterJobSid)
     }).subscribe({
       next: (responses: any) => {
@@ -2992,7 +2996,11 @@ getContainerMappingCount(containerSid: number): number {
     this.loadedHouses = [];
 
     this.transhipmentHouseJobSids.forEach(id => {
-      this.operationService.getHouseJobById(id).subscribe((resp: any) => {
+      const payload = {
+        screenName : 'Master Job',
+        houseJobSid : id
+      }
+      this.operationService.getHouseJobById(payload).subscribe((resp: any) => {
         if (resp.status && resp.data) {
           // Add deduplication check to prevent duplicate house jobs
           const alreadyExists = this.loadedHouses.some(
