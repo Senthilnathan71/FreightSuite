@@ -118,7 +118,8 @@ export class InvoiceEntryComponent implements OnInit {
   // master jobs
   masterJobList: any[] = [];
   salesmanList: any[] = [];
-  houseJobListByMasterJob: { [key: number]: any[] } = {};
+  houseJobList : any[] = [];
+  masterHouseMap : Map<number,any[]> = new Map();
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
 
@@ -1197,6 +1198,7 @@ export class InvoiceEntryComponent implements OnInit {
     console.log("Filtered Detail Items", this.filteredDetailItems);
 
     this.details.clear();
+    let index = 0;
     for (const det of detailsFromResp) {
       console.log("patching detail", det)
       // Tax logic: If TaxPercentage2 is 0/null, then TaxPercentage1 is IGST
@@ -1240,6 +1242,7 @@ export class InvoiceEntryComponent implements OnInit {
       }));
       this.fetchHSN(this.details.length - 1);
       this.onDetailChange(this.details.length - 1 , 'CurrencyCode');
+      this.onDetailMasterJobSelected({MasterJobSid : det.MasterJobSid}, index++);
     }
     this.recalculateAllRows();
     // Don't recalculate when loading existing invoice - preserve the stored tax amounts
@@ -1875,6 +1878,44 @@ export class InvoiceEntryComponent implements OnInit {
     }
   }
 
+  onDetailMasterJobSelected(masterJob:any,detailIndex:number){
+    const row = this.details.at(detailIndex) as FormGroup
+    if(!masterJob) {
+      this.houseJobList[detailIndex] = [];
+      row.get('HouseJobSid')?.setValue(null);
+      return;
+    };
+
+    // const alreadyDetailIndex = this.details.getRawValue().findIndex(x => x.MasterJobSid === masterJob.MasterJobSid);
+    // let found : boolean;
+    // if(alreadyDetailIndex && alreadyDetailIndex !== -1) {
+    //   const cache = this.houseJobList[alreadyDetailIndex]
+    //   this.houseJobList[detailIndex] = cache;
+    //   found = true;
+    //   return;
+    // };
+
+    // if(found) return;
+
+    const payload = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid,
+      MasterJobSid : masterJob.MasterJobSid
+    }
+    this.operationService.getHouseJobByMasterJob(payload).subscribe({
+      next : (resp:any) => {
+        if(resp){
+          this.houseJobList[detailIndex] = resp;
+        } else {
+          this.houseJobList[detailIndex] = [];
+        }
+      },
+      error : (err:any) => {
+        console.error("Error fetching houseJobList",err);
+      }
+    })
+  }
+
   applyMasterJobToAllDetails(masterJobSid: number | null) {
     if (!masterJobSid) return;
     for (let i = 0; i < this.details.length; i++) {
@@ -2410,11 +2451,11 @@ export class InvoiceEntryComponent implements OnInit {
     return job?.MasterJobNumber || job?.displayLabel || '-';
   }
 
-  getHouseJobNumber(jobSid: number, masterJobSid: number): string {
-    const houseJobs = this.houseJobListByMasterJob[masterJobSid] || [];
-    const job = houseJobs.find(j => j.HouseJobSid === jobSid);
-    return job?.HouseJobNumber || job?.displayLabel || '-';
-  }
+  // getHouseJobNumber(jobSid: number, masterJobSid: number): string {
+  //   const houseJobs = this.houseJobListByMasterJob[masterJobSid] || [];
+  //   const job = houseJobs.find(j => j.HouseJobSid === jobSid);
+  //   return job?.HouseJobNumber || job?.displayLabel || '-';
+  // }
 
   // Print Modal Methods
   openPrintModal() {

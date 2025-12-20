@@ -591,7 +591,7 @@
                     <td class="text-center" style="min-width:200px;">
                         <ng-select [items]="masterJobList" bindLabel="displayLabel"
                             bindValue="MasterJobSid" formControlName="MasterJobSid" placeholder=""
-                            [clearable]="true" [searchable]="true" appendTo="body">
+                            [clearable]="true" [searchable]="true" (change)="onDetailMasterJobSelected($event,i)" appendTo="body">
                             <ng-template ng-option-tmp let-item="item">
                                 <div>
                                     <strong>{{ item.MasterJobNumber }}</strong><br>
@@ -607,16 +607,16 @@
                     <!-- HouseJobSid -->
                     <td class="text-center" style="min-width:200px;">
                         <ng-select
-                            [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
-                            bindLabel="displayLabel" bindValue="HouseJobSid" formControlName="HouseJobSid"
+                            [items]="houseJobList[i] || []"
+                            bindLabel="HBLNo" bindValue="HouseJobSid" formControlName="HouseJobSid"
                             placeholder="" [clearable]="true" [searchable]="true" appendTo="body">
                             <ng-template ng-option-tmp let-item="item">
                                 <div>
-                                    <strong>{{ item.HouseJobNumber }}</strong>
+                                    <strong>{{ item.HBLNo }}</strong>
                                 </div>
                             </ng-template>
                             <ng-template ng-label-tmp let-item="item">
-                                {{ item.HouseJobNumber }}
+                                {{ item.HBLNo }}
                             </ng-template>
                         </ng-select>
                         <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
