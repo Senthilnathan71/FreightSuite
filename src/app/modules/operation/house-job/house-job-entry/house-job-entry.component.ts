@@ -1391,11 +1391,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
 
 
   loadHouseById(HouseJobSid: number) {
-    const payload = {
-      screenName : this.selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job',
-      houseJobSid : HouseJobSid
-    }
-    this.operationService.getHouseJobById(payload).subscribe(
+    this.operationService.getHouseJobById(HouseJobSid).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();

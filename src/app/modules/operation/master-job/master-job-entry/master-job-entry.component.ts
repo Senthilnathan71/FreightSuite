@@ -2996,11 +2996,7 @@ getContainerMappingCount(containerSid: number): number {
     this.loadedHouses = [];
 
     this.transhipmentHouseJobSids.forEach(id => {
-      const payload = {
-        screenName : 'Master Job',
-        houseJobSid : id
-      }
-      this.operationService.getHouseJobById(payload).subscribe((resp: any) => {
+      this.operationService.getHouseJobById(id).subscribe((resp: any) => {
         if (resp.status && resp.data) {
           // Add deduplication check to prevent duplicate house jobs
           const alreadyExists = this.loadedHouses.some(
