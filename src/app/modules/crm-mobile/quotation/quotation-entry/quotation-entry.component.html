@@ -2903,7 +2903,7 @@
      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;">
+            <div style="display: flex;  flex-direction: column; align-items: center;">
                  <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
@@ -2916,10 +2916,8 @@
                 <h4 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                 <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+  
             </div>
         </div>
     </div>
@@ -2935,14 +2933,14 @@
     </div>
 
     <!-- Customer Info -->
-    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; padding: 0 100px;font-size: 14px;">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; padding: 0 30px;font-size: 14px;">
       <div style="width: 48%; display: flex; flex-direction: column; margin-top: 10;">
         <p style="margin: 0;"><strong>To:</strong></p>
         <p style="margin: 0;">{{ this.selectedItem.CustomerName }}</p>
         <p style="margin: 0;">{{ this.selectedItem.CustomerAddress }}</p>
       </div>
 
-      <div style="width: 48%; display: flex; flex-direction: column; ">
+      <div style="width: 48%; display: flex; flex-direction: column; text-align: start;">
         <div style="display: flex;  margin-bottom: 0.2rem;">
           <p style="margin: 0; width: 120px;">
            <strong> {{ selectedItem?.IsContract === 'Y' ? 'Contract No.' : 'Quotation No.' }}</strong>
@@ -3030,7 +3028,7 @@
 
               @for(charge of route.quoteCarrier[0]?.quoteCharge; track charge){
                 <tr>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: center;border-left:none">{{ charge.ChargeDisplayName }}</td>
+                  <td style="border: 1px solid #000; padding: 4px;border-left:none">{{ charge.ChargeDisplayName }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ getChargeUOMCodeById(charge.RevenueChargeUomSid) }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.Qty }}</td>
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;">{{ getCurrencyCodeById(charge.RevenueCurrencyMasterSid) }}</td>

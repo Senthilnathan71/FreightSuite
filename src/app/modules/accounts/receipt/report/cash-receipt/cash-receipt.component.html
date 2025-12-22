@@ -27,29 +27,32 @@
       <div  style="width:280mm; min-height:400mm; margin:10px;  background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; justify-content:flex-start; page-break-after:always; position: relative;">
 
   <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+         <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;">
-                 <!-- Print logo -->
-            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-            <!-- Pdf logo -->
-                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; flex-direction: column;">
+                        <!-- Print logo -->
+                        <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                            alt="Company Logo"
+                            style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                        <!-- Pdf logo -->
+                        <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                            style="width:50px; height:50px; object-fit:contain;">
+                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                    </div>
+                    <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h4>
+                        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+                        </h5>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+                            currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+                            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
-        </div>
-    </div>
 
  
 

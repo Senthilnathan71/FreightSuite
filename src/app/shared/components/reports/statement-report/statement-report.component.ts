@@ -32,7 +32,6 @@ export class StatementReportComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.loadSalesPerson();
   }
 
   get fullData(): any {
@@ -56,21 +55,7 @@ export class StatementReportComponent {
     }, 0);
   }
 
-  loadSalesPerson(): void {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    this.leadService.getAllSalesman(CompanyMasterSid).subscribe(
-      (resp: any) => {
-        console.log(resp, 'SalesPerson')
-        this.salesmanList = resp;
-        console.log(this.salesmanList, "SALESMAN LIST")
-      });
-  }
 
-  getSalesmanById(id: number) {
-    if (!id || !this.salesmanList.length) return;
-    const user = this.salesmanList.find(person => person.UserMasterSid === id);
-    return user?.userName;
-  }
 
   trackByCurrencyCode(index: number, group: any): string {
     return group.CurrencyCode;
@@ -124,18 +109,18 @@ export class StatementReportComponent {
     const rows: ExcelRow[] = [];
     const transactions = this.fullData?.transactions || [];
 
-    // Transaction data rows
+   
     transactions.forEach((item: any, index: number) => {
       const cells: ExcelCell[] = [
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.voucherType || '' },
         { value: item?.voucherNumber || '' },
         { value: item?.MasterJobNumber || '' },
-        { value: '' }, // House column (empty in original)
+        { value: '' }, 
         { value: item?.HouseJobNumber || '' },
         { value: item?.deptname || '' },
         { value: item?.naration || '' },
-        { value: this.getSalesmanById(item?.salesmanSid) || '' },
+        { value: item?.salesmanSid || '' },
         { value: item?.drCr || '' },
         { value: item?.currencyCode || '' },
         { value: this.formatNumber(item?.originalLocalAmount) },
@@ -147,7 +132,7 @@ export class StatementReportComponent {
       rows.push({ cells, style: 'data' });
     });
 
-    // Total row
+    
     const totalCells: ExcelCell[] = [
       { value: 'TOTAL', colspan: 11 },
       { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
@@ -178,18 +163,14 @@ export class StatementReportComponent {
     };
   }
 
-  /**
-   * Format number for Excel display
-   */
+ 
   private formatNumber(value: any): number | string {
     if (value === null || value === undefined) return '';
     const num = Number(value);
     return isNaN(num) ? '' : Number(num.toFixed(2));
   }
 
-  /**
-   * Format date for display
-   */
+ 
   private formatDate(date: any): string {
     if (!date) return '';
     try {

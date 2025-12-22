@@ -270,7 +270,7 @@
                 </div>
 
               <!-- DATA TABLE -->
-<div style="width:100%; border:1px solid #000;">
+<div style="width:100%; border:1px solid #000;border-top: none;">
 
   <!-- HEADER -->
   <div style="display:table; width:100%; table-layout:fixed; border-bottom:1px solid #000;">
@@ -321,10 +321,10 @@
     <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
       {{ getFreightTotals().totalRevenueAmount }}
     </div>
-    <div style="display:table-cell; width:34%; vertical-align:top; padding:6px;">
-      {{ masterAirWayData?.CommodityDescription }}<br>
-      {{ masterAirWayData?.MarksandNumber }}
-    </div>
+     <div style="display:table-cell; vertical-align:top; padding:6px; overflow-wrap: break-word;">
+    {{ masterAirWayData?.CommodityDescription }}<br>
+    {{ masterAirWayData?.MarksandNumber }}
+  </div>
   </div>
 
   <!-- TOTALS ROW -->

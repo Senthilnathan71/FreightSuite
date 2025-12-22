@@ -28,29 +28,32 @@
    <div   style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
     <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;">
-                 <!-- Print logo -->
-            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-            <!-- Pdf logo -->
-                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; flex-direction: column;">
+                        <!-- Print logo -->
+                        <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                            alt="Company Logo"
+                            style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                        <!-- Pdf logo -->
+                        <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                            style="width:50px; height:50px; object-fit:contain;">
+                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                    </div>
+                    <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h4>
+                        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+                        </h5>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+                            currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+                            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-            </div>
-        </div>
-    </div>
 
 
   <!-- Title -->
@@ -60,7 +63,7 @@
   <div style="display:flex; flex-wrap:wrap; margin-bottom:2px; padding-left:2%; padding-right:2%; margin-top: 5px;font-size: 16px;" class="ms-2">
     <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;font-size: 16px;">
       <strong>Release To </strong> <br>
-      <div class="mt-2">{{ housejobData?.CustomerName }} <br> {{ housejobData?.CustomerAddress }}</div>
+      <div style="margin-top: 2px; padding-left: 30px;">{{ housejobData?.CustomerName }} <br> {{ housejobData?.CustomerAddress }}</div>
     </div>
     <div style="flex:0 0 50%; max-width:50%;">
       <div style="display:flex; margin-bottom:4px;">
@@ -83,7 +86,7 @@
   </div>
 
 <!-- Shipment Details -->
-<h4 style="margin:8px 0; margin-left:25px;"><strong>SHIPMENT DETAILS</strong></h4>
+<h4 style="margin:8px 0;padding-left: 10px;"><strong>SHIPMENT DETAILS</strong></h4>
 
 <!-- Shipper & Consignee -->
 <div style="border-top:1px solid black; padding:0px 25px 20px 25px; margin-bottom:10px; margin-top:2px;font-size: 16px;" 
@@ -92,12 +95,16 @@
   <div style="display:flex; flex-wrap:wrap; ">
     <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;margin-top: 5px;">
       <strong>Shipper</strong><br>
-      <span>{{ housejobData?.ShipperName }}<br>{{ housejobData?.ShipperAddress }}</span>
+      <div style="padding-left: 30px;">
+        <span >{{ housejobData?.ShipperName }}<br>{{ housejobData?.ShipperAddress }}</span>
+      </div>
     </div>
 
     <div style="flex:0 0 50%; max-width:50%;margin-top: 5px;">
       <strong>Consignee</strong><br>
-      <span>{{ housejobData?.ConsigneeName }}<br>{{ housejobData?.ConsigneeAddress }}</span>
+      <div style="padding-left: 30px;">
+        <span >{{ housejobData?.ConsigneeName }}<br>{{ housejobData?.ConsigneeAddress }}</span>
+      </div>
     </div>
   </div>
 
@@ -111,12 +118,18 @@
 
   <div style="flex:1; padding-right:20px;margin-bottom:8px; margin-top: 5px;">
     <strong style="display:block; margin-bottom:4px;">Notify Party</strong>
-    <span>{{ housejobData?.Others?.[0]?.NotifyParty }}</span>
+    <div style="padding-left: 30px;">
+
+      <span>{{ housejobData?.Others?.[0]?.NotifyParty }}</span>
+    </div>
   </div>
 
   <div style="flex:1; padding-right:20px; margin-bottom:8px;margin-top: 5px;">
     <strong style="display:block; margin-bottom:4px;">Goods Available At</strong>
-    <span>{{ housejobData?.Others?.[0]?.YardCFS }}</span>
+    <div style="padding-left: 30px;">
+
+      <span>{{ housejobData?.Others?.[0]?.YardCFS }}</span>
+    </div>
   </div>
 
 </div>
@@ -157,8 +170,7 @@
 
   <!-- FCL Heading -->
   <h5 *ngIf="selectedFCLLCL === 'FCL'" 
-      style="margin:5px 0; margin-left:27px;" 
-      class="ms-3 mb-2">
+      style="margin:5px 0;padding-left: 10px;" >
     <strong>ROUTING INFORMATION</strong>
   </h5>
 
@@ -275,7 +287,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let rate of housejobData?.costRevenueCharges"class="fs-4">
-          <td style="border:1px solid black;text-align:center;border-left: none;">{{ rate.ChargeDescription }}</td>
+          <td style="border:1px solid black;border-left: none;">{{ rate.ChargeDescription }}</td>
           <td style="border:1px solid black;text-align:center;">{{ getUnitCode(rate.ChargeUomSid) }}</td>
           <td style="border:1px solid black;text-align:center; text-align: center;width: 40px;">{{ getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
           <td style="border:1px solid black; text-align:right;">{{ rate.RevenueRate | number:'1.2-2' }}</td>

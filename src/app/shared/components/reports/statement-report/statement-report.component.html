@@ -53,7 +53,7 @@
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info">
+                    <tr class="bg-info" style="white-space: nowrap;">
                         <th class="bg-transparent text-light">Voucher Date</th>
                         <th class="bg-transparent text-light text-center">Voucher Type</th>
                         <th class="bg-transparent text-light text-center">Voucher No</th>
@@ -83,7 +83,7 @@
                         <td>{{item?.HouseJobNumber}}</td>
                         <td>{{item?.deptname}}</td>
                         <td>{{item?.naration}}</td>
-                        <td>{{getSalesmanById(item?.salesmanSid)}}</td>
+                        <td>{{item?.salesmanSid}}</td>
                         <td class="text-center">{{item?.drCr}}</td>
                         <td>{{item?.currencyCode}}</td>
                         <td style="text-align: right;">{{item?.originalLocalAmount | number:'1.2-2'}}</td>

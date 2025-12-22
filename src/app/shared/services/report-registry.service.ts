@@ -440,6 +440,38 @@ export class ReportRegistryService {
       console.warn(' Balance Sheet Report component not yet created:', error);
     }
 
+
+       // Profit and Loss Report
+     try {
+      const { ProfitLossReportComponent } = await import(
+        '../components/reports/profit-loss-report/profit-loss-report.component'
+      );
+
+      this.registerReport({
+        id: 'profit-loss',
+        title: 'Profit and Loss',
+        component: ProfitLossReportComponent,
+        filenameTemplate: 'Profit_Loss_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Profit_Loss_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Profit Loss Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn(' Balance Sheet Report component not yet created:', error);
+    }
+
 // ======================================================
     // operation report
 
