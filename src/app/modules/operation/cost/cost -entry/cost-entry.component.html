@@ -141,19 +141,20 @@
 
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
-            <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i" [ngClass]="{
-              'bg-success': row.get('RevenueVoucherHeaderSid')?.value,
-            }">
-            <td>
-  <!-- Change the delete button condition -->
-  <button class="action-icon delete py-0"
-    (click)="deleteRate(i,row.value.RateSid)"
-    [disabled]="!canEditRate(i) || rateFormArray.length === 1"
-    [class.disabled]="rateFormArray.length === 1"
-    title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
-    <i class="fas fa-trash fs-2" [class.text-muted]="rateFormArray.length === 1"></i>
-  </button>
-</td>
+            <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
+            <td class="d-flex">
+              <!-- Change the delete button condition -->
+              <button class="action-icon delete py-0" (click)="deleteRate(i,row.value.RateSid)"
+                [disabled]="!canEditRate(i) || rateFormArray.length === 1" [class.disabled]="rateFormArray.length === 1"
+                title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
+                <i class="fas fa-trash fs-2" [class.text-muted]="rateFormArray.length === 1"></i>
+              </button>
+              @if(row.get('RevenueVoucherHeaderSid')?.value || row.get('CostVoucherHeaderSid')?.value){
+              <button class="border-0 bg-transparent" [disabled]="true">
+                <div class="rounded-circle bg-success" style="width: 12px; height: 12px;"></div>
+              </button>
+              }
+            </td>
               <td>
                 <div class="custom-form-group dofi-min-w-40">
                   <input type="number" id="text-input" [value]="i+1" class="custom-input-field sm" disabled>

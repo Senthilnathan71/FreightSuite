@@ -2945,6 +2945,7 @@ getChargeTaxPercentage(charge: any): string {
         // Get Subledger details
         const ledgerResp = await firstValueFrom(
           this.operationService.getLedgerDetails({
+            DepartmentMasterSid : this.parentFormValue?.DepartmentMasterSid,
             CompanyMasterSid: this.currentCompany.CompanyMasterSid,
             SubledgerMappingSid: chargeInfo.ChargeMasterSid,
             LedgerType: 'Charge',

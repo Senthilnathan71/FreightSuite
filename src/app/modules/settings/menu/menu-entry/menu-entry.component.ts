@@ -193,12 +193,12 @@ export class MenuEntryComponent implements OnInit {
 
   initForm() {
     this.menuForm = this.fb.group({
-      MenuName: ['', [Validators.required, Validators.maxLength(50), this.noSpecialCharsValidator()]],
+      MenuName: [{value:'',disabled:true}, [Validators.required, Validators.maxLength(50), this.noSpecialCharsValidator()]],
       MenuCode: ['', [Validators.required, Validators.maxLength(3), this.uppercaseValidator()]],
       ModuleMasterSid: ['', Validators.required],
       ModuleName: [''],
       parentId: ['', []],
-      path: ['', [Validators.required, this.pathValidator()]],
+      path: [{value:'',disabled:true}, [Validators.required, this.pathValidator()]],
       icon: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
       menuPermissions: this.fb.group({

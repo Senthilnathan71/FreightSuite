@@ -1308,8 +1308,8 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
         POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
         PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
-        CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
-        MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
+        CommodityDescription: formValue.CommodityDescription || '',
+        MarksandNumber: formValue.MarksandNumber || '',
         Status: formValue.Status === 'Active' ? 'A' : 'S',
         
         // Your existing arrays
@@ -2069,7 +2069,7 @@ handleEdocChange(event: any) {
   // Navigate to house job entry with master job data as query parameters
     this.router.navigate(['/operation/house-job/entry'], {
       queryParams: {
-        fromMasterJob: 'true',
+        fromMasterAirWaybill: 'true',
         MasterJobSid: masterJobData.MasterJobSid
       },
       state: { masterJobData: structuredClone(masterJobData) }

@@ -115,7 +115,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
                             <dofi-searchable-dropdown [items]="filteredVesselsVoyage" formControlName="vesselVoyage"
@@ -124,35 +124,41 @@
                                 [labelFields]="vesselVoyageConfig.labelFields" bindValue="VoyageNo"
                                 (itemSelected)="onVesselVoyageChange($event)">
                             </dofi-searchable-dropdown>
-                            <!-- <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
-                                bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
-                                formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
-                                <ng-template ng-option-tmp let-item="item">
-                                    <div
-                                        style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-                                        {{item.VesselName}} / {{ item.VoyageNo }}
-                                    </div>
-
-                                    <div
-                                        style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
-
-                                        <div style="flex: 1; text-align: left;">
-                                            <div>ETA: {{ item.ETD | formatDate }}</div>
-                                        </div>
-
-                                        <div style="flex: 1; text-align: right;">
-                                            <div>ETD: {{ item.ETA | formatDate }}</div>
-                                        </div>
-
-                                    </div>
-                                </ng-template>
-                            </ng-select> -->
                             <label class="input-label">Vessel/Voyage <span class="text-danger"></span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('vesselVoyage')?.touched && loadingPlanForm.get('vesselVoyage')?.invalid">
                                 Required
                             </div>
                         </div>
+                    </aside> -->
+
+                    <aside class="col-md-3 ">
+                      <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+                        [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
+                          <div class="d-flex align-items-center" *ngIf="!this.f['isVesselVoyage']?.value">
+                            <dofi-searchable-dropdown [items]="filteredVesselsVoyage" formControlName="vesselVoyage"
+                                placeholder="" [displayFields]="vesselVoyageConfig.displayFields"
+                                [displayLabels]="vesselVoyageConfig.displayLabels"
+                                [labelFields]="vesselVoyageConfig.labelFields" bindValue="VoyageNo"
+                                (itemSelected)="onVesselVoyageChange($event)"
+                                style="width: 85%"
+                                >
+                            </dofi-searchable-dropdown>
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('vesselVoyage','isVesselVoyage',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                          </button>
+                          </div>
+                          <div class="input-group" *ngIf="this.f['isVesselVoyage']?.value">
+                          <input type="text" formControlName="vesselVoyage" placeholder="" class="form-control" />
+                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                            (click)="toggleInputType('vesselVoyage','isVesselVoyage',$event)">
+                            <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                          </button>
+                        </div>
+      <label for="text-input" class="input-label">Vessel/Voyage <span class="text-danger"></span></label>
+                        
+                      </div>
                     </aside>
 
                     <aside class="col-md-3">

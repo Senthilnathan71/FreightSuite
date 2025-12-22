@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { catchError, firstValueFrom, forkJoin, of, take, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -434,6 +434,16 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     { id: 4, name: 'Drat' },
   ];
 
+  DeclaredValueOfCarriage = [
+    { id: 'NVD', name: 'No value declared' },
+    { id: 'DVC', name: 'Declared value for Carriage' },
+  ];
+
+  DeclaredValueOfCustoms = [
+    { id: 'NCV', name: 'No Commercial Value' },
+    { id: 'DVC', name: 'Declared value for Customs' },
+  ];
+
 //  get filteredTabs() {
 //   const allTabs = [
 //     { name: 'Shipment', icon: 'fas fa-ship' },
@@ -520,7 +530,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   
   // Check for master job data in query parameters
   this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
-    if (params['fromMasterJob'] === 'true') {
+    if (params['fromMasterJob'] === 'true' || params['fromMasterAirWaybill'] === 'true') {
       const masterJobState = window.history.state?.masterJobData;
       console.log('Creating house job from master job:', masterJobState);
       if(masterJobState){
@@ -815,7 +825,17 @@ existsInList(list: any[], value: any) {
     }
   }
 }
-
+validateGrossNetWeight(): ValidatorFn {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
+    const grossWeight = formGroup.get('GrossWeight')?.value;
+    const netWeight = formGroup.get('NetWeight')?.value;
+    
+    if (grossWeight && netWeight && parseFloat(grossWeight) < parseFloat(netWeight)) {
+      return { grossLessThanNet: true };
+    }
+    return null;
+  };
+}
   // Product Form Initialization
   initProductForm() {
     this.productForm = this.fb.group({
@@ -847,7 +867,7 @@ existsInList(list: any[], value: any) {
       MarksAndNumbers : [''],
       DeliveredQty: [null],
       DeliveryDate: [null]
-    });
+    },{ validators: this.validateGrossNetWeight() });
       this.productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onContainerSelectionChange(containerSid);
   });
@@ -974,6 +994,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CustomerRefNo: [''],
       YardCFS: [''],
       ReleaseType: [null],
+      DeclaredValueOfCarriage: [null],
+      DeclaredValueOfCustoms:[null],
       HBLNo: [{value :'', disabled: true}],
       Forwarder: [null],
       ForwarderAddress: [''],
@@ -1576,6 +1598,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
       CustomerRefNo: otherData?.CustomerRefNo,
       YardCFS: otherData?.YardCFS,
       ReleaseType : otherData?.ReleaseType || null,
+      DeclaredValueOfCarriage: otherData?.DeclaredValueOfCarriage || null,
+      DeclaredValueOfCustoms: otherData?.DeclaredValueOfCustoms || null,
       HBLNo: otherData?.HBLNo || null,
       Forwarder: otherData?.Forwarder || null,
       ForwarderAddress: otherData?.ForwarderAddress,
@@ -1732,6 +1756,13 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   onProductSubmit() {
+    const grossWeight = this.productForm.get('GrossWeight')?.value;
+  const netWeight = this.productForm.get('NetWeight')?.value;
+  
+  if (grossWeight && netWeight && parseFloat(grossWeight) < parseFloat(netWeight)) {
+    this.appSettingService.showWarning('Gross Weight cannot be less than Net Weight');
+    return;
+  }
     if(this.productForm.invalid){
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
@@ -1927,6 +1958,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       CustomerRefNo: otherFormValue.CustomerRefNo || '',
       YardCFS: otherFormValue.YardCFS || '',
       ReleaseType: otherFormValue.ReleaseType || null,
+      DeclaredValueOfCarriage: otherFormValue.DeclaredValueOfCarriage || null,
+      DeclaredValueOfCustoms : otherFormValue.DeclaredValueOfCustoms || null,
       HBLNo: otherFormValue.HBLNo || '',
       Forwarder: otherFormValue.Forwarder || null,
       ForwarderAddress: otherFormValue.ForwarderAddress || '',
@@ -3429,6 +3462,19 @@ ${this.userData['userName']}`;
 
 
   reportCargoArrival(withOrWithoutCharge : boolean) {
+    if (this.selectedDepartmentType === "SEA" && (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL")) {
+    const hasContainerMapping = this.housejobData?.Products?.some(
+      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    );
+    
+    if (!hasContainerMapping) {
+      this.appSettingService.showWarning(
+        'Container mapping is required before generating Cargo Arrival Notice. ' +
+        'Please map containers to products first.'
+      );
+      return;
+    }
+  }
     
     const modalRef = this.modalService.open(CargoArrivalComponent, {
       size: 'xl',
@@ -3446,6 +3492,20 @@ ${this.userData['userName']}`;
 
 
        reportBill(type: 'HBL' | 'HBLDraft') {
+         if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if any products have ContainerMasterSid mapped
+    const hasContainerMapping = this.housejobData?.Products?.some(
+      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    );
+    
+    if (!hasContainerMapping) {
+      this.appSettingService.showWarning(
+        'ContainerNo. mapping is required. ' +
+        'Please map containersNo'
+      );
+      return;
+    } 
+  }
         this.selectedReport = type;
         const modalRef = this.modalService.open(HblComponent,{
           size: 'xl',
@@ -3472,9 +3532,24 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
         modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+        modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     }
 
   reportIndeminty() {
+     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if any products have ContainerMasterSid mapped
+    const hasContainerMapping = this.housejobData?.Products?.some(
+      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    );
+    
+    if (!hasContainerMapping) {
+      this.appSettingService.showWarning(
+        'ContainerNo. mapping is required. ' +
+        'Please map containersNo'
+      );
+      return;
+    } 
+  }
     const modalRef = this.modalService.open(ImdemintyComponent,{
       size: 'xl',
       scrollable: true,
