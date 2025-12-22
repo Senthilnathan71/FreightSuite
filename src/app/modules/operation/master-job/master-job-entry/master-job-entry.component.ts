@@ -2081,7 +2081,7 @@ jobStatusOptions = [
       return port ? port.PortCode : portSid?.toString().substring(0, 100);
     };
 
-    const formValue = this.masterJobForm.value;
+    const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
