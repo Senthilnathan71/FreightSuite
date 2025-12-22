@@ -2241,6 +2241,22 @@ jobStatusOptions = [
   onContainerSubmit(): void {
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
+        if (this.selectedFCLLCL === 'FCL') {
+      const currentContainerCount = this.masterJobContainers.length;
+      const totalAllowedContainers = this.getTotalAllowedContainers();
+      
+      // For edit mode, check if we're adding a new container (not editing existing)
+      const isAddingNewContainer = !this.isEditContainer;
+      
+      if (isAddingNewContainer && currentContainerCount >= totalAllowedContainers) {
+        // Show warning but allow to proceed
+        const warningMsg = totalAllowedContainers === 0 
+          ? 'No containers are allowed based on attached bookings.'
+          : `Booking Container Qty (${totalAllowedContainers}) exceeded. Current count: ${currentContainerCount + 1}`;
+        
+        this.toastr.warning(warningMsg, 'Container Limit Warning');
+      }
+    }
 
       if (this.isEditContainer && this.editingContainerIndex !== null) {
         // Update existing container - preserve the MasterJobContainerSid
@@ -3347,6 +3363,20 @@ getContainerMappingCount(containerSid: number): number {
   }
 
   reportPreAlertModel() {
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if any products have ContainerMasterSid mapped
+    const hasContainerMapping = this.masterJobData?.Products?.some(
+      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    );
+    
+    if (!hasContainerMapping) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required. '
+        
+      );
+      return;
+    } 
+  }
     const modalRef = this.modalService.open(PreAlertComponent, {
       size: 'xl',
       scrollable: true,
@@ -4280,7 +4310,30 @@ getVoucherNumber(shipment: any): string {
     
     return '';
 }
+  getTotalAllowedContainers(): number {
+  // Only check for FCL departments
+  if (this.selectedFCLLCL !== 'FCL') {
+    return Infinity; // No limit for non-FCL
+  }
+
+  // If there are no attached bookings, no limit
+  if (!this.bookingItems || this.bookingItems.length === 0) {
+    return Infinity;
+  }
+
+  // Sum up NoofContainers from all house jobs
+  let totalAllowed = 0;
   
+  this.bookingItems.forEach(booking => {
+    if (booking.Cargo && Array.isArray(booking.Cargo)) {
+      booking.Cargo.forEach(cargo => {
+        totalAllowed += parseInt(cargo.NoofContainers) || 0;
+      });
+    }
+  });
+
+  return totalAllowed;
+}
   /**
    * Get grouped error keys for template iteration
    */

@@ -229,6 +229,7 @@ selectedCustomer: any;
   incoList: any[] = [];
   TandCList: any[]=[];
   bookingHeader: any;
+  isSubmitting = false; 
   selectedCustomerBranch : any;
   edocData : any;
   edocResetTrigger : any;
@@ -528,38 +529,39 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.setupMBLDateListener();
   this.spinner.show();
   
-  // Check for master job data in query parameters
-  this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
-    if (params['fromMasterJob'] === 'true' || params['fromMasterAirWaybill'] === 'true') {
-      const masterJobState = window.history.state?.masterJobData;
-      console.log('Creating house job from master job:', masterJobState);
-      if(masterJobState){
-        this.loadMasterJobDataForHouseJob(masterJobState);
-      }
-    }
-  });
-  
-  
-  this.currentRoute.paramMap.subscribe((param) => {
-    this.HouseJobSid = +param.get('id');
-    if (this.HouseJobSid) {
-      this.isEditMode = true;
-      this.loadHouseById(this.HouseJobSid);
-    } else {
-      this.minDate = this.today;
-      this.setMinMaxDateConditions();
-    }
-  });
-  this.loadHeaderMandatoryParts().subscribe(() => {
-    this.loadHeaderLookups().subscribe(() => {
-      this.loadCargoLookups();
-      if (!this.productLookupsLoaded) {
-        this.loadProductLookups();
-      }
-      this.loadOtherLookups();
+
+    this.loadHeaderMandatoryParts().subscribe(() => {
+      // Check for master job data in query parameters
+      this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
+        if (params['fromMasterJob'] === 'true' || params['fromMasterAirWaybill'] === 'true') {
+          const masterJobState = window.history.state?.masterJobData;
+          console.log('Creating house job from master job:', masterJobState);
+          if (masterJobState) {
+            this.loadMasterJobDataForHouseJob(masterJobState);
+          }
+        }
+      });
+
+
+      this.currentRoute.paramMap.subscribe((param) => {
+        this.HouseJobSid = +param.get('id');
+        if (this.HouseJobSid) {
+          this.isEditMode = true;
+          this.loadHouseById(this.HouseJobSid);
+        } else {
+          this.minDate = this.today;
+          this.setMinMaxDateConditions();
+        }
+      });
+      this.loadHeaderLookups().subscribe(() => {
+        this.loadCargoLookups();
+        if (!this.productLookupsLoaded) {
+          this.loadProductLookups();
+        }
+        this.loadOtherLookups();
+      });
+      this.spinner.hide();
     });
-    this.spinner.hide();
-  });
   
   this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
     console.log('CargoCurrency value changed:', value);
@@ -836,6 +838,11 @@ validateGrossNetWeight(): ValidatorFn {
     return null;
   };
 }
+
+shouldCalculateVolume(): boolean {
+    return this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+}
+
   // Product Form Initialization
   initProductForm() {
     this.productForm = this.fb.group({
@@ -843,11 +850,11 @@ validateGrossNetWeight(): ValidatorFn {
       ProductName: [null],
       ShippingBillNo: [''],
       ShippingBillDate: [null],
-      ExternaPkg: [null, [Validators.required]],
+      ExternaPkg: [null],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.required]],
-      Volume: [''],
+      Volume: [{ value: '', disabled: this.shouldCalculateVolume() }],
       Volumetric: [''],
       IsHaz: [false],
       ImcoClass: [null],
@@ -871,7 +878,9 @@ validateGrossNetWeight(): ValidatorFn {
       this.productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onContainerSelectionChange(containerSid);
   });
+     if (this.shouldCalculateVolume()) {
     this.setupImmediateCBMCalculation();
+  }
     this.setupImmediateVolumetricCalculation(this.productForm)
   }
   onContainerSelectionChange(containerSid: number | null): void {
@@ -908,6 +917,9 @@ getUomName(uomId: number): string {
 }
 
 private calculateCBM() {
+   if (!this.shouldCalculateVolume()) {
+    return;
+  }
   const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
   const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
@@ -1081,7 +1093,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [data?.GrossWeight || '', [Validators.required]],
       NetWeight: [data?.NetWeight || '', [Validators.required]],
-      Volume: [data?.Volume || '', [Validators.required]],
+      Volume: [{ value: data?.Volume || '', disabled: this.shouldCalculateVolume() }],
       Volumetric: [data?.Volumetric|| ''],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass : [data?.ImcoClass || null],
@@ -1106,12 +1118,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
      productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onFormArrayContainerChange(containerSid, productForm);
   });
+    if (this.shouldCalculateVolume()) {
     this.setupProductFormImmediateCalculation(productForm);
+  }
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
     return productForm;
   }
 
    private setupProductFormImmediateCalculation(productForm: FormGroup) {
+     if (!this.shouldCalculateVolume()) {
+    return;
+  }
   const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
   
   dimensionFields.forEach(field => {
@@ -1137,6 +1154,9 @@ onFormArrayContainerChange(containerSid: number | null, productForm: FormGroup):
   }
 }
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
+  if (!this.shouldCalculateVolume()) {
+    return;
+  }
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -1227,18 +1247,15 @@ loadHeaderMandatoryParts() {
     departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
     ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
-     userCountry: countrySid ? 
-      this.operationService.getCountryById(countrySid).pipe(catchError(err => of({}))) : 
-      of({}),
+    
   }).pipe(tap(({ 
-      departments, customers, ports, userCountry 
-    }) => {
+      departments, customers, ports    }) => {
     if (!this.isEditMode) {
       this.spinner.hide();
     }
     this.departmentList = departments.data;
     this.customerList = customers;
-    this.countryOfCompany = (userCountry?.data?.countryCode)?.trim().toLowerCase();
+  
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
   }));
 }
@@ -1475,7 +1492,11 @@ private loadMasterJobDetails(masterJobSid: number): void {
   
   this.bookingHeader = response;
   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+   this.selectedDepartment = selectedDepartment;
+  this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
+  this.filterTabs();
   this.onDeptChange(selectedDepartment);
+
   const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
   
   // FIX: Better agent matching
@@ -1816,6 +1837,10 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    if (this.isSubmitting) {
+    console.log('Already submitting, please wait...');
+    return;
+  }
     if (!this.validateHBLNo()) {
     return;
   }
@@ -1839,6 +1864,14 @@ onCurrencyChange(event: any) {
     }
     
     return;
+  }
+  this.isSubmitting = true;
+  
+  // Disable save button during submission
+  const saveButton = document.querySelector('button[class*="btn-save"]') as HTMLButtonElement;
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i><span>Saving...</span>';
   }
   const cargoFormValue = this.cargoForm.getRawValue();
   const otherFormValue = this.otherForm.getRawValue();
@@ -2076,7 +2109,9 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       next: (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('House Job successfully updated.');
-          this.loadHouseById(this.HouseJobSid);
+            this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+            this.router.navigate(['/operation/house-job/entry', this.HouseJobSid]);
+          });
         } else {
           this.appSettingService.showError('Error updating booking.');
           console.error(resp.message);
@@ -2105,7 +2140,7 @@ private getAgentNameById(agentId: number): string {
  onDeptChange(department) {
    console.log("DEBUG VALUE AFTER ROUTE CHANGE",this.houseJobForm.getRawValue())
   console.log('onDeptChange called with:', department);
-  
+  this.selectedDepartment = department;
   if (!department) {
     this.selectedDepartment = null;
     this.selectedDepartmentType = '';
@@ -2292,9 +2327,10 @@ validateHBLNo(): boolean {
 
   onCustomerChange(customer: any) {
   console.log(customer);
-  
+  const departmentSid = this.houseJobForm.get('DepartmentMasterSid')?.value;
+  const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === departmentSid);
   // Check if department is selected
-  if (!this.selectedDepartment) {
+  if (!selectedDepartment) {
     this.appSettingService.showWarning('Please select a department first before selecting a customer.');
     
     // Clear the customer selection
@@ -3492,6 +3528,18 @@ ${this.userData['userName']}`;
 
 
        reportBill(type: 'HBL' | 'HBLDraft') {
+         const hasPostedInvoice = this.housejobData?.costRevenueCharges?.some(
+    (charge: any) => charge.RevenueVoucherHeaderSid !== null
+  );
+
+  // For HBL (final), require posted invoice
+  if (type === 'HBL' && !hasPostedInvoice) {
+    this.appSettingService.showWarning(
+      'Cannot print HBL without a posted invoice. ' +
+      'Please post at least one revenue invoice first.'
+    );
+    return;
+  }
          if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
     // Check if any products have ContainerMasterSid mapped
     const hasContainerMapping = this.housejobData?.Products?.some(
@@ -4216,12 +4264,10 @@ prepopulateFromMasterJob(masterJobData: any): void {
   
   console.log('Found department:', selectedDepartment);
   
-  // Set the department first - this triggers department-specific logic
+  // FIRST: Set the department - this will trigger onDeptChange with the department object
   this.onDeptChange(selectedDepartment);
-  this.houseJobForm.get('VesselName')?.enable();
-  this.houseJobForm.get('VoyageMasterSid')?.enable();
-  this.houseJobForm.get('VoyageNo')?.enable();
-  // Wait a moment for department change to take effect
+  
+  // Wait for department change to complete before populating other fields
   setTimeout(() => {
     // Set MasterJobSid and other basic fields
     this.houseJobForm.patchValue({
@@ -4233,13 +4279,15 @@ prepopulateFromMasterJob(masterJobData: any): void {
       VesselName: masterJobData.VesselName || '',
       VoyageNo: masterJobData.VoyageNo || '',
       CarrierName: masterJobData.CarrierName || '',
-   
-    },{ emitEvent : false});
+    }, { emitEvent: false });
     
-    // Debug: Check form values
-    console.log('Form after patch:', this.houseJobForm.getRawValue());
-    console.log('DepartmentMasterSid in form:', this.houseJobForm.get('DepartmentMasterSid')?.value);
-    console.log('MasterJobNumber set to:', this.houseJobForm.get('MasterJobNumber')?.value);
+    // Disable department field since it's from master job
+    this.houseJobForm.get('DepartmentMasterSid')?.disable();
+    
+    // Enable vessel/voyage fields if needed
+    this.houseJobForm.get('VesselName')?.enable();
+    this.houseJobForm.get('VoyageMasterSid')?.enable();
+    this.houseJobForm.get('VoyageNo')?.enable();
     
     // Handle POL, POD, FPD - need to convert from codes to SIDs
     if (masterJobData.POOCode || masterJobData.POO) {
@@ -4271,12 +4319,13 @@ prepopulateFromMasterJob(masterJobData: any): void {
       });
     }
     
-    // Disable department field since it's from master job
-    this.houseJobForm.get('DepartmentMasterSid')?.disable();
-
+    // Load master job details
+    if (masterJobData.MasterJobSid) {
+      this.loadMasterJobDetails(masterJobData.MasterJobSid);
+    }
     
     this.appSettingService.showSuccess('Master job data loaded successfully');
-  }, 200);
+  }, 300); // Increased timeout to ensure department change completes
 }
 
 private setPortFromCode(formControlName: string, portCode: string): void {

@@ -1011,7 +1011,8 @@
 
                         </div>
                         <div class="toolbar-right">
-                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)">
+                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
+                             [disabled]="selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers()">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                             <button class="table-action-btn export">
@@ -2795,6 +2796,15 @@
     <label class="input-label">HS Code</label>
   </div>
 </aside>
+<aside class="col-md-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="IsSoc" formControlName="IsSoc"
+                                    class="focus-ring form-check-input sm p-0">
+                                <label for="IsSoc" class="form-check-label sm">SOC Container</label>
+                            </div>
+                        </div>
+                    </aside>
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -2814,14 +2824,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="NoOfPkg" class="custom-input-field sm" min="0" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
-                                placeholder="">
-                            <label class="input-label">No of Pkg</label>
-                        </div>
-                    </aside>
-
+                    
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="ChargeableWeight" class="custom-input-field sm"
@@ -2830,6 +2833,14 @@
                             <label class="input-label">Chargeable Weight</label>
                         </div>
                     </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="NoOfPkg" class="custom-input-field sm" min="0" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
+                                placeholder="">
+                            <label class="input-label">No of Pkg</label>
+                        </div>
+                    </aside>
+
 
                     <aside class="col-md-4">
   <div class="custom-form-group">
@@ -2883,15 +2894,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="IsSoc" formControlName="IsSoc"
-                                    class="focus-ring form-check-input sm p-0">
-                                <label for="IsSoc" class="form-check-label sm">SOC Container</label>
-                            </div>
-                        </div>
-                    </aside>
+                    
                 </div>
             </form>
         </div>

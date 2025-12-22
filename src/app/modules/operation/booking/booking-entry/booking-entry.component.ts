@@ -3655,6 +3655,7 @@ ${this.userData['userName']}`;
   const payload = {
     CreatedBy: userEmail,
     MenuMasterSid: currentMenuId,
+    BookingHeaderSid: this.BookingHeaderSid,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,

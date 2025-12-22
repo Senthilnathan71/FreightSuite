@@ -62,7 +62,7 @@
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
                }
-           <button class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">House Bill of Lading</button>
+           <button class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">HBL</button>
 <button class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
 
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
@@ -1591,7 +1591,7 @@
                       <i-feather class="feather-sm text-info pt-1" name="eye"></i-feather>
                     </a>
                     <a class="text-danger  ps-2"
-                      (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                      (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)">
                       <i class="fas fa-trash text-center fs-2"></i>
                     </a>
                   </div>
@@ -2557,12 +2557,12 @@
           <ng-select [items]="packageTypeList" placeholder="" bindLabel="UOMName" bindValue="UOMName"
             formControlName="ExternaPkg">
           </ng-select>
-          <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
+          <label for="text-input" class="input-label">External Pkg <span class="text-danger"></span></label>
           @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
           <div class="error-message">
-            @if(productForm.get('ExternaPkg')?.hasError('required')){
+            <!-- @if(productForm.get('ExternaPkg')?.hasError('required')){
             <span>Required</span>
-            }
+            } -->
           </div>
           }
         </div>
@@ -2621,13 +2621,21 @@
       </aside>
       }
       <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
-            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
-            max="9999999.999">
-          <label for="text-input" class="input-label">Volume <span class="text-danger"></span></label>
-        </div>
-      </aside>
+  <div class="custom-form-group">
+    @if (shouldCalculateVolume()) {
+      <!-- For LCL/AIR: Read-only calculated field -->
+      <input type="text" id="text-input" placeholder="" class="custom-input-field sm" 
+             formControlName="Volume" readonly>
+      <label for="text-input" class="input-label">Volume (CBM) <span class="text-danger"></span></label>
+    } @else {
+      <!-- For FCL: Editable text field -->
+      <input type="text" id="text-input" placeholder="" class="custom-input-field sm" 
+             formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="8" 
+             [DecimalPrecisionAfter]="digitsAfterDecimal" max="9999999.999">
+      <label for="text-input" class="input-label">Volume <span class="text-danger"></span></label>
+    }
+  </div>
+</aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
