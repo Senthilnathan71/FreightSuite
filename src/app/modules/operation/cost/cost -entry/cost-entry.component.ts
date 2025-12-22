@@ -24,6 +24,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ToastrService } from 'ngx-toastr';
 import { toNumber } from 'src/app/common/helper';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-cost-entry',
@@ -85,6 +86,7 @@ export class CostEntryComponent implements OnInit {
     displayLabels : ['Code', 'Name','Country'],
     labelFields :['currencyCode'],
   };
+  HSSACLookupConfig =DROPDOWN_CONFIGS.HSSAC_TAX;
 
   ppcc = [
     { id: 1, name: 'Prepaid' },
@@ -207,21 +209,10 @@ export class CostEntryComponent implements OnInit {
   }
 
   setParentData(value){
-    this.countryOfCompany = value.countryOfCompany;
     this.ParentSid = this.getParentSid();
     this.isEditMode = this.ParentSid !== null;
   }
 
-  private _stateList: any[] = [];
-
-@Input()
-set stateList(value: any[]) {
-  this._stateList = value || [];
-}
-
-get stateList(): any[] {
-  return this._stateList;
-}
 
 
   @Output() dataEmitter = new EventEmitter<any[]>();
@@ -255,6 +246,13 @@ get stateList(): any[] {
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
   @ViewChild('chargeSelectionModal') chargeSelectionModal!: TemplateRef<any>;
+  /** It is used to store the chargeTaxMapping for each charge */
+  chargeTaxMapping :any[][] = [];
+  voucherForm !: FormGroup;
+
+  invoiceGenerationPayload = {
+    
+  }
 
   // Voucher generation properties
   selectedBillingPartyIndex: number = -1;
@@ -281,7 +279,7 @@ get stateList(): any[] {
   billingGST_VAT: string = '';
   taxGroupList: any[] = [];
   currentCountry: Number;
-  currentCountryName:string;
+  currentBranchStateName : string;
   currentBranchstate:string;
   chargeTaxGroupMap: Map<number, any[]> = new Map(); // Map of BookingRatesSid to selected tax group
   /**
@@ -333,37 +331,13 @@ get stateList(): any[] {
   
   // Get user data first
   this.userData = this.appSettingService.getDecryptedUserProfile();
-  
-  // ✅ FIX: Follow the same pattern as OrganizationEntryComponent
-  if (this.currentCompany && this.userData?.userCompanyMaster) {
-    // Find the company record in user's company master list
-    const companyRecord = this.userData.userCompanyMaster.find(
-      (c: any) => c.CompanyMasterSid === this.currentCompany.CompanyMasterSid
-    );
-    // Update currentCompany with the full companyMaster object
-    this.currentCompany = companyRecord?.companyMaster || this.currentCompany;
-    
-    if (this.currentBranch && this.currentCompany?.userBranchMaster) {
-      const branchRecord = this.currentCompany.userBranchMaster.find(
-        (b: any) => b.BranchMasterSid === this.currentBranch.BranchMasterSid
-      );
-      this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
-    }
-    
-    // Now get the country information
-    this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
-    this.currentCountryName = this.currentCompany?.countryMaster?.countryName;
-  }
-  
-  console.log("CURRENT COUNTRY NAME", this.currentCountryName);
-  console.log("currentCountry", this.currentCountry);
+  this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+  this.countryOfCompany = (this.currentCompany?.countryMaster?.countryName || "").trim().toLowerCase();
+  this.currentBranch = this.appSettingService.getCurrentBranchInfo();
   
   this.isBooking = this.screenName === "Booking";
   this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
   
-  // The line below is redundant since we already updated currentCompany above
-  // Remove or keep as fallback:
-  // this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
 
   // Extract BookingHeaderSid from route parameter
   this.route.params.subscribe(params => {
@@ -403,13 +377,13 @@ get stateList(): any[] {
       charges: this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
       revenueParties : this.operationService.getAllDebtorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
       costParties : this.operationService.getAllCreditorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
-      states :this.operationService.getAllState().pipe(catchError(err => of([]))),
-    }).subscribe(({ allMasters , charges , revenueParties, costParties, states }) => {
+      state :this.operationService.getStateById(this.currentBranch?.StateMasterSid).pipe(catchError(err => of([]))),
+    }).subscribe(({ allMasters , charges , revenueParties, costParties, state }) => {
       this.chargeList = charges;
       this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
       this.uomList = allMasters.uoms;
       this.docTypeList = allMasters.docTypes;
-      this.stateList = states?.data || states || [];
+      this.currentBranchStateName = state?.stateName || "";
       this.vouchers= allMasters.Vouchers;
       this.billingParties = revenueParties.data;
       this.parties = costParties.data;
@@ -1661,6 +1635,7 @@ createRateFormGroup(data?: any): FormGroup {
    |--------------------------------------------------
    */
 
+
   openVoucherTypeModal() {
     if (!this.isEditMode || !this.rateFormArray?.length) {
       this.appSettingService.showWarning('No rates available for voucher generation');
@@ -1837,8 +1812,95 @@ createRateFormGroup(data?: any): FormGroup {
 
   private proceedToInvoiceGeneration(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
     // Show charge selection modal
+    console.log("Pending Charge at the time of Invoice Generation",pendingCharges);
+    pendingCharges.forEach((charge,index) =>{
+      this.chargeTaxMapping[index] = charge?.ChargeMaster?.chargeTaxMaster || [];
+    })
     this.showChargeSelectionModal(billingPartySid, pendingCharges);
   }
+
+ async onTaxMappingChange(charge: any,selectedTax: any){
+    if(!selectedTax){
+      this.chargeTaxGroupMap.delete(charge.RateSid);
+      this.calculateChargeSelectionTax();
+      return;
+    }
+
+    console.log('HSN/SAC changed:', {
+      rateSid: charge.RateSid,
+      hsn: selectedTax.HSNCode,
+      taxGroupSid: selectedTax.TaxGroupSid
+    });
+
+    this.chargeTaxGroupMap.delete(charge.RateSid);
+    await this.revalidateSingleChargeTax(charge, selectedTax.TaxGroupSid);
+    this.calculateChargeSelectionTax();
+  }
+
+  private async revalidateSingleChargeTax(charge: any, taxGroupSid: number) {
+    const companyCountry = (this.countryOfCompany || '').trim().toLowerCase();
+    const customerCountry = this.getCustomerCountryFromCharge(
+      charge,
+      this.selectedVoucherType === 'Invoice'
+    );
+
+    // UAE cross-border skip rule
+    if (
+      companyCountry === 'united arab emirates' &&
+      companyCountry !== customerCountry
+    ) {
+      return;
+    }
+
+    const TaxCategory = this.determineTaxCategory(
+      this.getCompanyState(),
+      this.placeOfSupply,
+      customerCountry
+    );
+
+    try {
+      const response = await firstValueFrom(
+        this.operationService.getLedgerForTaxGroup({
+          taxGroup: taxGroupSid,
+          InputOrOutput: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output',
+          TaxCategory,
+          CountryMasterSid: Number(this.currentCompany?.CountryMasterSid)
+        })
+      );
+
+      if (!response?.status) {
+        throw new Error('Tax ledger not found');
+      }
+
+      const taxMasters =
+        response.data?.find(tg => tg.TaxGroupSid === taxGroupSid)?.taxMaster || [];
+
+      if (!taxMasters.length) {
+        throw new Error('No tax master mapped for selected HSN/SAC');
+      }
+
+      // ✅ Store tax masters against RateSid
+      this.chargeTaxGroupMap.set(charge.RateSid, taxMasters);
+
+    } catch (err: any) {
+      console.error('Tax revalidation failed:', err);
+      this.appSettingService.showError(err.message || 'Tax revalidation failed');
+    }
+  }
+
+  searchTaxFn = (term: string, item: any): boolean => {
+    if (!term) return true;
+
+    const value = term.toLowerCase().trim();
+
+    return (
+      item?.HSNCode?.toLowerCase().includes(value) ||
+      item?.TaxType?.toLowerCase().includes(value) ||
+      item?.TaxRate?.toString().includes(value)
+    );
+  };
+
+
 
   private async showChargeSelectionModal(
     billingPartySid: number,
@@ -1857,6 +1919,7 @@ createRateFormGroup(data?: any): FormGroup {
 
       this.availableCharges = pendingCharges.map(charge => ({
         ...charge,
+        selectedTaxMapping: charge?.ChargeMaster?.chargeTaxMaster?.[0],
         isSelected: true
       }));
 
@@ -1995,64 +2058,7 @@ createRateFormGroup(data?: any): FormGroup {
     console.log('=== INITIALIZING TAX GROUPS FOR CHARGES ===');
 
     this.chargeTaxGroupMap.clear();
-
-    // Get place of supply for tax category determination
-    const placeOfSupplyState = this.placeOfSupply;
-    const companyState = this.getCompanyState();
-    const customerCountry = this.getCustomerCountryFromCharge(this.availableCharges[0], this.selectedVoucherType === 'Invoice');
-    const TaxCategory = this.determineTaxCategory(companyState, placeOfSupplyState, customerCountry);
-
-    for (const charge of this.availableCharges) {
-      const taxGroupSid = this.getTaxGroupSidFromCharge(charge);
-
-      if (taxGroupSid) {
-        try {
-          // Fetch actual tax data from API immediately
-          const response = await firstValueFrom(this.operationService.getLedgerForTaxGroup({
-            taxGroup: taxGroupSid,
-            InputOrOutput: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output',
-            TaxCategory,
-            CountryMasterSid: Number(this.currentCompany?.CountryMasterSid)
-          }));
-
-          console.log("Tax Group Fetch response",response);
-          if(!response.status){
-            throw new Error("Error finding tax masters.")
-          }
-
-          const taxMasters = (response?.data || []).find(tg => tg.TaxGroupSid === taxGroupSid)?.taxMaster || [];
-
-          console.log("Tax Masters", taxMasters);
-
-          if (taxMasters && taxMasters.length > 0) {
-            if (this.chargeTaxGroupMap.has(charge.RateSid)) {
-              console.log('📋 Existing tax group found for rate SID:', charge.RateSid);
-              const prev = this.chargeTaxGroupMap.get(charge.RateSid);
-              console.log('📋 Previous tax group:', prev);
-              this.chargeTaxGroupMap.set(charge.RateSid, [...prev, ...taxMasters]);
-            } else {
-              console.log('📋 No existing tax group found from Map:', charge.RateSid);
-              this.chargeTaxGroupMap.set(charge.RateSid, taxMasters);
-            }
-            console.log('🔍 Updated tax group map:', {
-              size: this.chargeTaxGroupMap.size,
-              entries: Array.from(this.chargeTaxGroupMap.entries())
-            });
-            
-          } else {
-            throw new Error(`No Tax Master has been mapped for charge : ${charge.ChargeDescription}.`)
-          }
-        } catch (error) {
-          this.appSettingService.showError(error.message)
-          console.error(`Error initializing tax group for charge ${charge.RateSid}:`, error);
-        }
-      } else {
-        this.appSettingService.showError(`No Tax Group found for charge : ${charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC }.`)
-        console.log(`No TaxGroupSid found for charge: ${charge.ChargeDescription}`);
-      }
-    }
-
-    this.calculateChargeSelectionTax();
+    await this.revalidateTaxForHSSAC();
     // Now open modal AFTER tax is ready
     this.chargeSelectionModalRef = this.modalService.open(
       this.chargeSelectionModal,
@@ -2067,6 +2073,79 @@ createRateFormGroup(data?: any): FormGroup {
       size: this.chargeTaxGroupMap.size,
       entries: this.chargeTaxGroupMap
     });
+  }
+
+  async revalidateTaxForHSSAC() {
+
+    // Company related info
+    const companyCountry = (this.countryOfCompany || '').trim().toLowerCase();
+    const companyState = this.getCompanyState();
+
+    // Customer related info
+    const customerCountry = this.getCustomerCountryFromCharge(this.availableCharges[0], this.selectedVoucherType === 'Invoice');
+    const placeOfSupplyState = this.placeOfSupply;
+
+    const TaxCategory = this.determineTaxCategory(companyState, placeOfSupplyState, customerCountry);
+
+    // Check if UAE and company country is not same as customer country
+    let skipChargeGroup: boolean = false;
+    if (companyCountry === 'united arab emirates' && companyCountry !== customerCountry) {
+      skipChargeGroup = true;
+    }
+
+    console.log("DEBUG COUNTRY", {
+      companyCountry,
+      customerCountry,
+      skipChargeGroup
+    })
+    if (!skipChargeGroup) {
+      let chargeIndex = 0;
+      for (const charge of this.availableCharges) {
+        console.log("Inside Validate Tax For HSSAC", charge)
+        const taxGroupSid = this.getTaxGroupSidFromCharge(charge);
+
+        if (taxGroupSid) {
+          try {
+            // Fetch actual tax data from API immediately
+            const response = await firstValueFrom(this.operationService.getLedgerForTaxGroup({
+              taxGroup: taxGroupSid,
+              InputOrOutput: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output',
+              TaxCategory,
+              CountryMasterSid: Number(this.currentCompany?.CountryMasterSid)
+            }));
+
+            console.log("Tax Group Fetch response", response);
+            if (!response.status) {
+              throw new Error("Error finding tax masters.")
+            }
+
+            const taxMasters = (response?.data || []).find(tg => tg.TaxGroupSid === taxGroupSid)?.taxMaster || [];
+
+            console.log("Tax Masters", taxMasters);
+
+            if (taxMasters && taxMasters.length > 0) {
+              if (this.chargeTaxGroupMap.has(charge.RateSid)) {
+                const prev = this.chargeTaxGroupMap.get(charge.RateSid);
+                this.chargeTaxGroupMap.set(charge.RateSid, [...prev, ...taxMasters]);
+              } else {
+                this.chargeTaxGroupMap.set(charge.RateSid, taxMasters);
+              }
+
+            } else {
+              throw new Error(`No Tax Master has been mapped for charge : ${charge.ChargeDescription}.`)
+            }
+          } catch (error) {
+            this.appSettingService.showError(error.message)
+            console.error(`Error initializing tax group for charge ${charge.RateSid}:`, error);
+          }
+        } else {
+          this.appSettingService.showError(`No Tax Group found for charge : ${charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC}.`)
+          console.log(`No TaxGroupSid found for charge: ${charge.ChargeDescription}`);
+        }
+      }
+    }
+
+    this.calculateChargeSelectionTax();
   }
 
   onHeaderCurrencyChange() {
@@ -2689,14 +2768,14 @@ getChargeTaxPercentage(charge: any): string {
     } else if (isUAE) {
       // For UAE - display as VAT
       const vatTax = selectedTaxGroup.find(t => t.TaxCode === 'VAT');
-      return `VAT ${vatTax.TaxRate}%`;
+      return `VAT ${vatTax?.TaxRate || 0}%`;
     } else {
       const vatTax = selectedTaxGroup.find(t => t.TaxCode === 'VAT');
       if (vatTax) {
-        return `VAT ${vatTax.TaxRate}%`;
+        return `VAT ${vatTax?.TaxRate || 0}%`;
       } else {
         const tax = selectedTaxGroup[0];
-        return `Tax ${tax.TaxRate}%`;
+        return `Tax ${tax?.TaxRate || 0}%`;
       }
     }
   }
@@ -2708,7 +2787,7 @@ getChargeTaxPercentage(charge: any): string {
   }
 
   const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
-    item => item.description === charge.ChargeDescription
+    item => item.RateSid === charge.RateSid
   );
 
   if (!lineItem) return '-';
@@ -2726,19 +2805,19 @@ getChargeTaxPercentage(charge: any): string {
     }
   } else if (isUAE) {
     const vatItem = lineItem as any;
-    return `VAT ${vatItem.vatRate}%`;
+    return `VAT ${vatItem?.vatRate}%`;
   } else {
     // Other countries
     if (this.chargeSelectionTaxResult.type === 'GST') {
       const gstItem = lineItem as any;
       if (gstItem.igstRate > 0) {
-        return `IGST ${gstItem.igstRate}%`;
-      } else if (gstItem.cgstRate > 0) {
-        return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
+        return `IGST ${gstItem?.igstRate}%`;
+      } else if (gstItem?.cgstRate > 0) {
+        return `CGST ${gstItem?.cgstRate}% + SGST ${gstItem?.sgstRate}%`;
       }
     } else if (this.chargeSelectionTaxResult.type === 'VAT') {
       const vatItem = lineItem as any;
-      return `VAT ${vatItem.vatRate}%`;
+      return `VAT ${vatItem?.vatRate}%`;
     }
   }
 
@@ -2992,7 +3071,9 @@ getChargeTaxPercentage(charge: any): string {
           ChargeDescription: chargeInfo.ChargeDescription || chargeInfo.ChargeMaster?.chargeName || "",
           LedgerMasterSid: chargeSubledger?.SubledgerMasterSid ?? null,
           COAMasterSid: chargeSubledger?.COAMasterSid ?? null,
-          HSSACMasterSid: chargeInfo.ChargeMaster?.chargeTaxMaster?.[0]?.HSSACMasterSid || chargeInfo.ChargeMaster?.HSNSAC || null,
+          HSSACMasterSid: chargeInfo.selectedTaxMapping?.HSSACMasterSid
+            ?? chargeInfo.ChargeMaster?.chargeTaxMaster?.[0]?.HSSACMasterSid
+            ?? null,
           DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid ?? null,
           HouseJobSid: this.screenName === 'House Job' || this.screenName === 'House Air Waybill' ? this.getParentSid() : null,
           MasterJobSid: 
@@ -3124,29 +3205,29 @@ getChargeTaxPercentage(charge: any): string {
     this.selectedCharges.clear();
     this.availableCharges = [];
   }
-  private getDepartmentMasterSid(): number | null {
-  // Priority 1: Try to get from parent form value
-  if (this.parentFormValue?.DepartmentMasterSid) {
-    return Number(this.parentFormValue.DepartmentMasterSid);
-  }
+//   private getDepartmentMasterSid(): number | null {
+//   // Priority 1: Try to get from parent form value
+//   if (this.parentFormValue?.DepartmentMasterSid) {
+//     return Number(this.parentFormValue.DepartmentMasterSid);
+//   }
 
-  // Priority 2: Try to get from departmentName in parent form
-  if (this.parentFormValue?.departmentName) {
-    // If departmentName is a string, you might need to convert it to DepartmentMasterSid
-    // This depends on your data structure - you may need to map department name to ID
-    console.log('Department name found:', this.parentFormValue.departmentName);
-    // You might need to implement a mapping logic here based on your department list
-  }
+//   // Priority 2: Try to get from departmentName in parent form
+//   if (this.parentFormValue?.departmentName) {
+//     // If departmentName is a string, you might need to convert it to DepartmentMasterSid
+//     // This depends on your data structure - you may need to map department name to ID
+//     console.log('Department name found:', this.parentFormValue.departmentName);
+//     // You might need to implement a mapping logic here based on your department list
+//   }
 
-  // Priority 3: Try to get from current company/branch settings
-  if (this.currentCompany?.DefaultDepartmentSid) {
-    return Number(this.currentCompany.DefaultDepartmentSid);
-  }
+//   // Priority 3: Try to get from current company/branch settings
+//   if (this.currentCompany?.DefaultDepartmentSid) {
+//     return Number(this.currentCompany.DefaultDepartmentSid);
+//   }
 
-  // Priority 4: Return null if not found
-  console.warn('DepartmentMasterSid not found in parent form or company settings');
-  return null;
-}
+//   // Priority 4: Return null if not found
+//   console.warn('DepartmentMasterSid not found in parent form or company settings');
+//   return null;
+// }
 
   /**
    * Validates exchange rates for both Cost and Revenue sides.
@@ -3214,84 +3295,34 @@ getChargeTaxPercentage(charge: any): string {
     });
  
   }
+
   private getCompanyState(): string {
-  if (!this.currentCompany) {
-    console.warn('No current company data available');
-    return '';
-  }
+    if (!this.currentCompany) {
+      console.warn('No current company data available');
+      return '';
+    }
 
-  console.log('=== COMPANY STATE DEBUG ===');
-  console.log('Current Company:', this.currentCompany);
-  console.log('Current Branch:', this.currentBranch);
-  console.log('User Data:', this.userData);
+    // Method 1: Return already fetched name first (Mostly passed here itself)
+    if (this.currentBranchStateName) {
+      return this.currentBranchStateName;
+    }
 
-  // Method 1: Check currentBranch stateMaster first
-  if (this.userData && this.userData.userCompanyMaster) {
-    const userCompanies = this.userData.userCompanyMaster;
-    
-    // Find the current company in user companies
-    const currentUserCompany = userCompanies.find((uc: any) => 
-      uc.CompanyMasterSid === this.currentCompany.CompanyMasterSid
-    );
-    
-    if (currentUserCompany && currentUserCompany.companyMaster) {
-      const companyMaster = currentUserCompany.companyMaster;
-      
-      // Check company master's userBranchMaster
-      if (companyMaster.userBranchMaster && Array.isArray(companyMaster.userBranchMaster)) {
-        // Find the current branch
-        const currentUserBranch = companyMaster.userBranchMaster.find((ub: any) => 
-          ub.BranchMasterSid === this.currentBranch.BranchMasterSid
-        );
-        
-        if (currentUserBranch && currentUserBranch.branchMaster) {
-          const branchMaster = currentUserBranch.branchMaster;
-          
-          // Method 5a: Check branchMaster's stateMaster
-          if (branchMaster.stateMaster) {
-            const state = branchMaster.stateMaster.stateName || branchMaster.stateMaster.StateName;
-            if (state) {
-              console.log('Company State from userData->branchMaster->stateMaster:', state);
-              return state;
-            }
-          }
-          
-          // Method 5b: Check branchMaster's StateMasterSid
-          if (branchMaster.StateMasterSid && this.stateList.length > 0) {
-            const state = this.stateList.find(s => 
-              s.StateMasterSid === branchMaster.StateMasterSid || 
-              s.stateMasterSid === branchMaster.StateMasterSid
-            );
-            if (state) {
-              const stateName = state.stateName || state.StateName;
-              console.log('Company State from userData->branchMaster->StateMasterSid lookup:', stateName);
-              return stateName;
-            }
-          }
-        }
-      }
-      
-      // Method 6: Check company master's StateMasterSid
-      if (companyMaster.StateMasterSid && this.stateList.length > 0) {
-        const state = this.stateList.find(s => 
-          s.StateMasterSid === companyMaster.StateMasterSid || 
-          s.stateMasterSid === companyMaster.StateMasterSid
-        );
-        if (state) {
-          const stateName = state.stateName || state.StateName;
-          console.log('Company State from userData->companyMaster->StateMasterSid lookup:', stateName);
-          return stateName;
-        }
+
+    // Method 2 : Get State Name from currentBranch itself
+    if (this.currentBranch) {
+      this.currentBranchStateName = this.currentBranch.stateMaster.stateName;
+      if (this.currentBranchStateName) {
+        return this.currentBranchStateName;
       }
     }
+
+    // None of them passed
+    this.currentBranchStateName = '';
+    console.error('No company state found');
+    return this.currentBranchStateName;
   }
 
-  console.log('No company state found after all attempts');
-  return '';
-}
-
   private determineGSTTypeAndPlaceOfSupply() {
-  console.log('=== DETERMINING GST TYPE AND PLACE OF SUPPLY ===');
    const isIndia = this.isIndianCompany();
    if (!isIndia) {
     // For non-India companies, don't set GST Type
@@ -3512,59 +3543,24 @@ onGSTTypeChange() {
 //   }
 // }
 private getCustomerCountryFromCharge(charge: any, isRevenue: boolean): string {
-  if (isRevenue) {
-    // For Revenue (Invoice) - get from customer
-    const customerMaster = charge?.customerMasterBP;
-    const customerBranch = charge?.customerBranch;
-    
-    const country = customerMaster?.countryMaster?.countryCode || 
-                   customerMaster?.Country ||
-                   customerBranch?.countryMaster?.countryCode ||
-                   customerBranch?.Country ||
-                   '';
-    
-    console.log('Customer Country (Revenue):', {
-      customerName: customerMaster?.CustomerName,
-      countryFromMaster: customerMaster?.countryMaster?.countryCode,
-      countryFromBranch: customerBranch?.countryMaster?.countryCode,
-      finalCountry: country
-    });
-    
-    return country;
-  } else {
-    // For Cost (Vendor Invoice) - get from agent
-    const agentMaster = charge?.AgentMaster;
-    const agentBranch = charge?.AgentBranch;
-    
-    const country = agentMaster?.countryMaster?.countryCode || 
-                   agentMaster?.Country ||
-                   agentBranch?.countryMaster?.countryCode ||
-                   agentBranch?.Country ||
-                   '';
-    
-    console.log('Agent Country (Cost):', {
-      agentName: agentMaster?.CustomerName,
-      countryFromMaster: agentMaster?.countryMaster?.countryCode,
-      countryFromBranch: agentBranch?.countryMaster?.countryCode,
-      finalCountry: country
-    });
-    
-    return country;
+  if(!charge){
+    console.error("No charge provided to getCustomerCountryFromCharge");
+    return '';
   }
+  const countryName = isRevenue ? 
+    charge?.customerMasterBP?.countryMaster?.countryName :
+    charge?.AgentMaster?.countryMaster?.countryName;
+  return (countryName || '').trim().toLowerCase();
 }
 
 private getTaxGroupSidFromCharge(charge: any): number | null {
-  if (!charge?.ChargeMaster?.chargeTaxMaster?.length) {
-    return null;
-  }
 
-  const chargeTaxMaster = charge.ChargeMaster.chargeTaxMaster[0];
-  
-  // Try different possible field names for TaxGroupSid
-  const taxGroupSid = chargeTaxMaster.TaxGroupSid || 
-                     chargeTaxMaster.taxGroupSid || 
-                     chargeTaxMaster.TaxGroupMasterSid ||
-                     chargeTaxMaster.taxGroupMasterSid;
+  const chargeTaxMaster = charge.selectedTaxMapping || null;
+  console.log("Inside Get TaxGroupSid", {
+    charge,
+    chargeTaxMaster
+  });
+  const taxGroupSid = chargeTaxMaster.TaxGroupSid;
 
   return taxGroupSid ? Number(taxGroupSid) : null;
 }
@@ -3618,22 +3614,21 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
 
   // Add this method to check if company is in India
   isIndianCompany(): boolean {
-    const companyCountry = this.countryOfCompany?.toLowerCase() ||
-      this.currentCompany?.countryMaster?.countryCode?.toLowerCase() ||
-      this.currentCountryName?.toLowerCase() || '';
-
+    const companyCountry = this.countryOfCompany?.toLowerCase() || '';
     return companyCountry === 'india' || companyCountry === 'in';
   }
 
-  // Add this method to check if company is in UAE (or any specific country)
   isUAECompany(): boolean {
-    const companyCountry = this.countryOfCompany?.toLowerCase() ||
-      this.currentCompany?.countryMaster?.countryCode?.toLowerCase() ||
-      this.currentCountryName?.toLowerCase() || '';
-
+    const companyCountry = this.countryOfCompany?.toLowerCase() || '';
     return companyCountry.includes('united arab emirates') ||
       companyCountry === 'uae' ||
       companyCountry === 'ae';
   }
+
+  isUAECustomer(companyCountry: string): boolean {
+    const normalized = (companyCountry || '').trim().toLowerCase();
+    return normalized === 'united arab emirates' || normalized === 'uae' || normalized === 'ae';
+  }
+
 
 }

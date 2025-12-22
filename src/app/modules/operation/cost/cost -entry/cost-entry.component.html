@@ -1062,7 +1062,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let charge of availableCharges" [class.table-primary]="charge.isSelected">
+          <tr *ngFor="let charge of availableCharges ; let i = index" [class.table-primary]="charge.isSelected">
             <td>
               <input type="checkbox" class="form-check-input" [checked]="charge.isSelected"
                 (change)="toggleChargeSelection(charge)">
@@ -1073,9 +1073,68 @@
             <td>
              {{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}
             </td>
-            <td>
-             {{ charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode ||
-                charge.ChargeMaster?.HSNSAC || '-' }}
+            <td class="min-width-200">
+              <div class="custom-form-group mt-1 custom-form-group-select">
+                <ng-select 
+                  appendTo="body"
+                  class="ng-select"
+                  [items]="charge.ChargeMaster?.chargeTaxMaster || []"
+                  bindLabel ="HSNCode"
+                  [(ngModel)] = "charge.selectedTaxMapping"
+                  [clearable] = false
+                  (change)="onTaxMappingChange(charge,$event)"
+                ></ng-select>
+              </div>
+              <!-- <div class="custom-form-group mt-1 custom-form-group-select">
+              
+                <ng-select class="ng-select ngSize" appendTo="body" [items]="charge.ChargeMaster?.chargeTaxMaster || []"
+                  [(ngModel)]="charge.selectedTaxMapping" [searchable]="true" [clearable]="false" bindLabel="HSNCode" placeholder=""
+                   [searchFn]="searchTaxFn" (change)="onTaxMappingChange(charge, $event)">
+              
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item?.HSNCode }}
+                  </ng-template>
+              
+                  <ng-template ng-header-tmp>
+                    <div class="dropdown-header row g-0 fw-semibold border-bottom">
+                      <div class="col-5 text-truncate">HSN Code</div>
+                      <div class="col-5 text-truncate">Tax Group</div>
+                    </div>
+                  </ng-template>
+              
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="dropdown-row row g-0 align-items-center">
+                      <div class="col-6 text-truncate" [ngbTooltip]="item?.HSNCode" container="body">
+                        {{ item?.HSNCode }}
+                      </div>
+              
+                      <div class="col-6 text-truncate" [ngbTooltip]="item?.TaxGroup" container="body">
+                        {{ item?.TaxGroup }}
+                      </div>
+              
+                    </div>
+                  </ng-template>
+              
+                  <ng-template ng-loading-tmp>
+                    <div class="text-center py-2">
+                      Loading tax mappings...
+                    </div>
+                  </ng-template>
+              
+                </ng-select>
+              
+              </div> -->
+
+              <!-- <dofi-searchable-dropdown 
+                [items]="charge.ChargeMaster?.chargeTaxMaster || []" [(ngModel)]="charge.selectedTaxMapping"
+                [bindLabel]="'HSNCode'"
+                [displayFields]="HSSACLookupConfig.displayFields"
+                [displayLabels]="HSSACLookupConfig.displayLabels" [labelFields]="HSSACLookupConfig.labelFields" [clearable]="false"
+                (itemSelected)="onTaxMappingChange(charge, $event)">
+              </dofi-searchable-dropdown> -->
+
+             <!-- {{ charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode ||
+                charge.ChargeMaster?.HSNSAC || '-' }} -->
             </td>
             <td class="text-center">
               {{ charge.NoOfUnit || charge.NumberOfUnit || 1 }}

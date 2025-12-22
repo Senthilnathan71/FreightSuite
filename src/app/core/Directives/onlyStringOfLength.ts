@@ -24,8 +24,8 @@ export class OnlyTextDirective {
             return;
         }
 
-        // Allow only letters (a-z, A-Z)
-        if (!/^[a-zA-Z]$/.test(event.key)) {
+        // Allow only letters (a-z, A-Z,.)
+        if (!/^[a-zA-Z.]$/.test(event.key)) {
             event.preventDefault();
             return;
         }
@@ -57,7 +57,7 @@ export class OnlyTextDirective {
         let value: string = this.el.nativeElement.value;
 
         // Remove any non-letters (including numbers and symbols), but allow space
-        value = value.replace(/[^a-zA-Z\s]/g, '');
+        value = value.replace(/[^a-zA-Z.\s]/g, '');
 
         // Trim leading and trailing spaces
         value = value.trimStart();

@@ -265,7 +265,7 @@ export class CompanySettingsManagerService {
    * Clear company settings (call during logout)
    */
   clearCompanySettings(): void {
-    this.isLoggingOut = true;
+    // this.isLoggingOut = true;
     this.currentCompanyIdSubject.next(null);
     localStorage.removeItem('selectedCompanyId');
     localStorage.removeItem('companyDateFormat');
