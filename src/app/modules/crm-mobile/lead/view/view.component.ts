@@ -286,7 +286,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
 
 
   viewleads(lead: any): void {
-    this.route.navigate(['crm/lead', lead.PreCustomerMasterSid])
+    this.route.navigate(['crm/lead/entry', lead.PreCustomerMasterSid])
   }
 
   report(): void {
@@ -393,11 +393,11 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   }
 
   createNew() {
-    this.route.navigate(['crm/lead'])
+    this.route.navigate(['crm/lead/entry'])
   }
 
   viewLead(id) {
-    this.route.navigate(['crm/lead', id])
+    this.route.navigate(['crm/lead/entry', id])
   }
 
   deleteLead(PreCustomerMasterSid: number) {

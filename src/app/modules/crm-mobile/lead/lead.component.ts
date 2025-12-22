@@ -350,7 +350,10 @@ languagePrefValidator(): ValidatorFn {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message || 'Lead Created Successfully');
-            this.router.navigate(['crm/lead/list']);
+            this.PreCustomerMasterSid = resp.data?.PreCustomerMasterSid;
+            if(this.PreCustomerMasterSid){
+            this.router.navigate(['crm/lead/entry', this.PreCustomerMasterSid]);
+            }
           } else {
             this.appSettingService.showError(resp.message || "Internal Server Error");
           }

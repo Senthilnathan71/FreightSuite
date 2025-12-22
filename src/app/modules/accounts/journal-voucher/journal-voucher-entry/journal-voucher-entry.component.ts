@@ -21,6 +21,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { CommonService } from 'src/app/common/common.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 @Component({
   selector: 'app-journal-voucher-entry',
@@ -49,6 +50,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   currentClauseId: any;
   // Add these properties from vendor invoice component
   currentCompany: any;
+  filteredChargeList: any[][] = [];
   currentBranch: any;
   currentFinancialYear: number;
   currentCountry: number;
@@ -66,8 +68,8 @@ export class JournalVoucherEntryComponent implements OnInit {
   currencyList: any[] = [];
   departmentList: any[] = [];
   chargeList: any[] = [];
-  masterJobList: any[] = [];
-  houseJobList: any[] = [];
+  masterJobList: any[][] = [];
+  houseJobList: any[][] = [];
   costCenterList: any[] = [];
   profitCenterList: any[] = [];
   voucherData: any;
@@ -108,6 +110,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     private modalService : NgbModal,
     private commonService: CommonService,
     private masterService: MasterService,
+    private companySettings: CompanySettingsManagerService,
     private spinner: NgxSpinnerService // Add spinner service
   ) {}
 
@@ -231,7 +234,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   loadSubledgerList(): void {
-    this.maasterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid).subscribe({
+    this.maasterService.getSubledgerMasterByType('Charge', this.currentCompany?.CompanyMasterSid).subscribe({
       next: (response: any) => {
         this.subledgerList = response.data || [];
       },
@@ -326,6 +329,11 @@ export class JournalVoucherEntryComponent implements OnInit {
 
             this.setupDetailCalculations(detailGroup);
             this.details.push(detailGroup);
+            const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === detail.DepartmentMasterSid);
+            this.filterDetailsWithDept(dept, detail);
+            this.onMasterJobChange(detail, {
+            MasterJobSid: detail.MasterJobSid
+            })
           });
         }
 
@@ -345,6 +353,90 @@ export class JournalVoucherEntryComponent implements OnInit {
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
+  }
+
+  filterDetailsWithDept(dept: any, detailIndex: number) {
+    if (!dept) {
+      const row = this.details.at(detailIndex) as FormGroup;
+      row.patchValue({
+        ChargeDescription: '',
+        HSSACMasterSid: null,
+        ChargeUOMSid: null,
+        MasterJobSid: null,
+        HouseJobSid: null,
+        ledgerMasterSid: null,
+      filteredSubledgers: [],
+      chargeMasterSid: null, // Also clear charge since it's department-dependent
+      chargeDescription: '',
+      HSSACCode: '',
+      taxPercentage: 0,
+      taxAmount: 0
+      });
+      this.filteredChargeList[detailIndex] = [];
+      this.masterJobList[detailIndex] = [];
+      this.houseJobList[detailIndex] = [];
+      return;
+    }
+    this.filterChargeByDeptForARow(dept, detailIndex);
+    this.refreshSubledgerFiltersForRow(detailIndex);
+    this.accountsService.getMasterJobByDepartment({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentMasterSid: dept?.DepartmentMasterSid
+    }).subscribe({
+      next: (resp: any) => {
+        this.masterJobList[detailIndex] = resp;
+      },
+      error: (err) => {
+        console.error('Failed to load master jobs:', err);
+      }
+    });
+  }
+
+  onMasterJobChange(detailIndex: number, masterJob: any) {
+    if (!masterJob || !masterJob.MasterJobSid) {
+      this.houseJobList[detailIndex] = [];
+      return;
+    }
+    this.accountsService.getHouseJobByMasterJob({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MasterJobSid: masterJob?.MasterJobSid
+    }).subscribe({
+      next: (resp: any) => {
+        this.houseJobList[detailIndex] = resp;
+      },
+      error: (err) => {
+        console.error('Failed to load house jobs:', err);
+      }
+    });
+  }
+
+  filterChargeByDeptForAllRow() {
+    this.details.controls.forEach((group: FormGroup, index) => {
+      const deptId = group.get('DepartmentMasterSid')?.value;
+      const department = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
+      console.log("FILTER CHARGE BY DEPT FOR ALL ROW", {
+        deptId: deptId,
+        deptObj: department,
+        deptList: this.departmentList
+      });
+      if (department) {
+        this.filterChargeByDeptForARow(department, index);
+      }
+    })
+  }
+
+  filterChargeByDeptForARow(dept, rowIndex) {
+    console.log(`Filtering Dept from row ${rowIndex}`, {
+      department: dept,
+      chargeList: this.chargeList
+    });
+    const departmentName = dept.departmentName;
+    this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(charge => {
+      const allDepartmentNames = charge.DepartmentMasterSid || [];
+      return allDepartmentNames.includes(departmentName);
+    })
   }
 
   createDetailGroup(): FormGroup {
@@ -385,7 +477,8 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.calculateTotals();
   });
 
-  detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid)=>{
+  detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid) => {
+    console.log('COA value changed:', coaMasterSid);
     this.onCoaChange(detailGroup, coaMasterSid);
   });
 
@@ -404,8 +497,8 @@ export class JournalVoucherEntryComponent implements OnInit {
     }
   });
 
-  // Enhanced charge change handling
   detailGroup.get('chargeMasterSid')?.valueChanges.subscribe((chargeId) => {
+    console.log('Charge value changed:', chargeId);
     if (chargeId) {
       this.onChargeChange(detailGroup, chargeId);
     } else {
@@ -416,7 +509,18 @@ export class JournalVoucherEntryComponent implements OnInit {
         taxPercentage: 0,
         taxAmount: 0
       });
+      // Refresh subledger filters (SubledgerMappingSid filter removed)
+      this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
     }
+  });
+
+  detailGroup.get('departmentMasterSid')?.valueChanges.subscribe((deptId) => {
+    console.log('Department value changed:', deptId);
+    // Get department object
+    const dept = this.departmentList.find(d => d.DepartmentMasterSid === deptId);
+    
+    // Call filterDetailsWithDept which will handle all filtering
+    this.filterDetailsWithDept(dept, this.getRowIndex(detailGroup));
   });
 
   detailGroup.get('taxPercentage')?.valueChanges.subscribe(() => {
@@ -427,31 +531,48 @@ export class JournalVoucherEntryComponent implements OnInit {
 
   // NEW METHOD: Check if subledger matches the selected COA
   doesSubledgerMatchCOA(subledger: any, coaMasterSid: number): boolean {
-    return subledger.AccrualCOAMasterSid === coaMasterSid ||
-           subledger.CrCOAMasterSid === coaMasterSid ||
-           subledger.DrCOAMasterSid === coaMasterSid;
-  }
+  return this.doesSubledgerMatchCOAStrict(subledger, coaMasterSid);
+}
 
-  onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
-  // Ensure consistent type (numbers) if your COA values are numbers
+//   onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
+//   // Ensure consistent type (numbers) if your COA values are numbers
+//   const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
+
+//   // Build filtered list of subledgers for this COA
+//   const filtered = coaId
+//     ? this.subledgerList.filter(subledger => this.doesSubledgerMatchCOA(subledger, coaId))
+//     : this.subledgerList.slice(); // copy of full list when no COA
+
+//   // Patch filtered list into the detail row (template reads this)
+//   detailGroup.patchValue({ filteredSubledgers: filtered }, { emitEvent: false });
+
+//   // If an existing ledgerMasterSid is selected but does not belong to the new COA, clear it
+//   const currentSubledgerSid = detailGroup.get('ledgerMasterSid')?.value;
+//   if (currentSubledgerSid) {
+//     const currentSubledger = this.subledgerList.find(sl => sl.SubledgerMasterSid === currentSubledgerSid);
+//     if (!currentSubledger || !this.doesSubledgerMatchCOA(currentSubledger, coaId)) {
+//       detailGroup.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+//     }
+//   }
+// }
+
+getSubledgerFilterStatus(rowIndex: number): string {
+  const row = this.details.at(rowIndex) as FormGroup;
+  const deptId = row.get('departmentMasterSid')?.value;
+  const chargeId = row.get('chargeMasterSid')?.value;
+  const coaId = row.get('coaMasterSid')?.value;
+  const filteredCount = row.get('filteredSubledgers')?.value?.length || 0;
+  
+  return `Dept: ${deptId || 'Any'}, Charge: ${chargeId || 'Any'}, COA: ${coaId || 'Any'}, Matches: ${filteredCount}`;
+}
+
+onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
   const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
-
-  // Build filtered list of subledgers for this COA
-  const filtered = coaId
-    ? this.subledgerList.filter(subledger => this.doesSubledgerMatchCOA(subledger, coaId))
-    : this.subledgerList.slice(); // copy of full list when no COA
-
-  // Patch filtered list into the detail row (template reads this)
-  detailGroup.patchValue({ filteredSubledgers: filtered }, { emitEvent: false });
-
-  // If an existing ledgerMasterSid is selected but does not belong to the new COA, clear it
-  const currentSubledgerSid = detailGroup.get('ledgerMasterSid')?.value;
-  if (currentSubledgerSid) {
-    const currentSubledger = this.subledgerList.find(sl => sl.SubledgerMasterSid === currentSubledgerSid);
-    if (!currentSubledger || !this.doesSubledgerMatchCOA(currentSubledger, coaId)) {
-      detailGroup.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
-    }
-  }
+  
+  console.log(`COA changed to: ${coaId} for row ${this.getRowIndex(detailGroup)}`);
+  
+  // Refresh subledger filters (COA filter affects CrCOAMasterSid/DrCOAMasterSid matching)
+  this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
 }
 
 
@@ -486,15 +607,17 @@ export class JournalVoucherEntryComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode: currency?.currencyCode || '',
-      toCurrencyCode: this.currentUserCurrency || 'USD',
+      toCurrencyCode: this.companySettings.getCurrencySettings().code,
       EffectiveFrom : this.editMode ? this.voucherData?.VoucherDate : new Date(),
       segment : 'cost'
     };
 
     this.accountsService.getExchangeRate(payload).subscribe({
       next: (response: any) => {
-        const rate = response?.ExchangeRate || 1;
-        detailGroup.patchValue({ exchangeRate: rate });
+        if(response?.status) {
+          detailGroup.get('exchangeRate')?.enable();
+          detailGroup.patchValue({ exchangeRate: Number(response.data)})
+        }
       },
       error: (err) => {
         console.error('Error fetching exchange rate:', err);
@@ -563,7 +686,7 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
   
   if (charge) {
     const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
-    let hssacId = charge.HSSACMasterSid ?? charge.HSSACMasterSid ?? null;
+    let hssacId = charge.HSSACMasterSid ?? null;
     
     // Auto-set HSN/SAC code from ChargeTaxMaster
     if (!hssacId && Array.isArray(charge.ChargeTaxMaster) && charge.ChargeTaxMaster.length > 0) {
@@ -580,22 +703,28 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
       }
     }
     
-    const chargeUomId = charge.ChargeUOMSid ?? charge.UOM ?? charge.UOMMasterSid ?? null;
-
-    // Auto-set tax percentage
-    let taxPercentage = charge.TaxPercentage || 0;
-    if (hssacId) {
-      const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacId);
-      taxPercentage = hssac?.TaxRate || taxPercentage;
-    }
-
+    // Update the detail group with charge info
     detailGroup.patchValue({
       chargeDescription: description,
       HSSACCode: this.getHSSACCode(hssacId),
-      taxPercentage: taxPercentage
+      taxPercentage: charge.TaxPercentage || 0
     });
 
+    // Refresh subledger filters (charge change affects SubledgerMappingSid filter)
+    this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
+    
     this.calculateTaxAmount(detailGroup);
+  } else {
+    // Reset charge-related fields
+    detailGroup.patchValue({
+      chargeDescription: '',
+      HSSACCode: '',
+      taxPercentage: 0,
+      taxAmount: 0
+    });
+    
+    // Refresh subledger filters (charge is now null, so no SubledgerMappingSid filter)
+    this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
   }
 }
 
@@ -690,7 +819,8 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
         } else {
           this.spinner.hide();
           this.isSaving = false;
-          this.appSettingService.showError('Error saving journal voucher.');
+          const errorMessage = response?.message || 'Error saving journal voucher';
+          this.appSettingService.showError(errorMessage);
         }
       },
       error: (err) => {
@@ -896,5 +1026,84 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
   openFollowup() {
 
   }
+
+  refreshSubledgerFiltersForRow(rowIndex: number): void {
+  const row = this.details.at(rowIndex) as FormGroup;
+  
+  const deptId = row.get('departmentMasterSid')?.value;
+  const chargeId = row.get('chargeMasterSid')?.value;
+  const coaId = row.get('coaMasterSid')?.value;
+  
+  console.log(`Refreshing subledger filters for row ${rowIndex}:`, {
+    deptId,
+    chargeId,
+    coaId
+  });
+  
+  let filteredSubledgers: any[] = [];
+  
+  // Apply ALL filters in sequence
+  // Start with all subledgers
+  filteredSubledgers = this.subledgerList.slice();
+  
+  // Filter 1: By DepartmentMasterSid (if selected)
+  if (deptId) {
+    filteredSubledgers = filteredSubledgers.filter(subledger => 
+      subledger.DepartmentMasterSid === deptId
+    );
+    console.log(`After department filter (${deptId}):`, filteredSubledgers.length);
+  }
+  
+  // Filter 2: By SubledgerMappingSid (which must equal ChargeMasterSid if charge is selected)
+  if (chargeId) {
+    filteredSubledgers = filteredSubledgers.filter(subledger => 
+      subledger.SubledgerMappingSid === chargeId
+    );
+    console.log(`After charge/SubledgerMapping filter (${chargeId}):`, filteredSubledgers.length);
+  }
+  
+  // Filter 3: By COA - must match EITHER CrCOAMasterSid OR DrCOAMasterSid (if COA is selected)
+  if (coaId) {
+    filteredSubledgers = filteredSubledgers.filter(subledger => 
+      this.doesSubledgerMatchCOAStrict(subledger, coaId)
+    );
+    console.log(`After COA filter (${coaId}):`, filteredSubledgers.length);
+  }
+  
+  // Update the filtered subledgers for this row
+  row.patchValue({ filteredSubledgers }, { emitEvent: false });
+  
+  // Clear selected subledger if it doesn't match ALL current filters
+  const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
+  if (currentSubledgerSid) {
+    const currentSubledger = filteredSubledgers.find(
+      sl => sl.SubledgerMasterSid === currentSubledgerSid
+    );
+    if (!currentSubledger) {
+      console.log(`Clearing subledger selection for row ${rowIndex} - no longer matches filters`);
+      row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+    }
+  }
+  
+  console.log(`Final filtered subledgers for row ${rowIndex}:`, filteredSubledgers);
+}
+
+doesSubledgerMatchCOAStrict(subledger: any, coaMasterSid: number): boolean {
+  if (!subledger || !coaMasterSid) return true; // No filter if no COA selected
+  
+  const coaSid = Number(coaMasterSid);
+  
+  // Must match EITHER CrCOAMasterSid OR DrCOAMasterSid exactly
+  const matchesCrCOA = subledger.CrCOAMasterSid && Number(subledger.CrCOAMasterSid) === coaSid;
+  const matchesDrCOA = subledger.DrCOAMasterSid && Number(subledger.DrCOAMasterSid) === coaSid;
+  
+  return matchesCrCOA || matchesDrCOA;
+}
+
+// Add this method to your JournalVoucherEntryComponent class
+getRowIndex(detailGroup: FormGroup): number {
+  const index = this.details.controls.findIndex(control => control === detailGroup);
+  return index;
+}
   
 }

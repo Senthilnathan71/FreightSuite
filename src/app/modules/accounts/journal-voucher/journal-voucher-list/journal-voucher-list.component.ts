@@ -112,8 +112,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       page: Number(this.page),
       limit: Number(this.pageSize),
       searchTerm: this.filterValue.trim(),
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
     };
 
     return this.journalVoucherService.searchJournalVouchers(params).pipe(

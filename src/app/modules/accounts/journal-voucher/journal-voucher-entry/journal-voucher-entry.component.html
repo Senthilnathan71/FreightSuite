@@ -245,13 +245,13 @@
                         <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
                             <td>
                                 <ng-select formControlName="departmentMasterSid" [items]="departmentList"
-                                    bindLabel="departmentName" bindValue="DepartmentMasterSid" appendTo="body"
+                                    bindLabel="departmentName" bindValue="DepartmentMasterSid" appendTo="body" (change)="filterDetailsWithDept($event,i)"
                                     placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="chargeMasterSid" [items]="chargeList" bindLabel="chargeName"
-                                    bindValue="ChargeMasterSid" appendTo="body" placeholder="">
+                                <ng-select formControlName="chargeMasterSid" [items]="filteredChargeList[i]" bindLabel="chargeCode" 
+                                    bindValue="ChargeMasterSid" appendTo="body" placeholder="" >
                                 </ng-select>
                             </td>
                             <td>
@@ -261,12 +261,12 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="masterJobSid" [items]="masterJobList"
-                                    bindLabel="MasterJobNo" bindValue="MasterJobSid" appendTo="body" placeholder="">
+                                <ng-select formControlName="masterJobSid" [items]="masterJobList[i]" (change)="onMasterJobChange(i,$event)"
+                                    bindLabel="MasterJobNumber" bindValue="MasterJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="houseJobSid" [items]="houseJobList" bindLabel="HouseJobNo"
+                                <ng-select formControlName="houseJobSid" [items]="houseJobList[i]" bindLabel="HBLNo"
                                     bindValue="HouseJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>

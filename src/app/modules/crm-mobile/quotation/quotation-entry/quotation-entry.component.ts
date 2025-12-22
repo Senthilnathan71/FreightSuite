@@ -1669,6 +1669,7 @@ isRateLockDisabled(): boolean {
     const payload = {
       CompanyMasterSid: currentCompanyMasterSid,
       BranchMasterSid: currentBranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
       UserMasterSid: this.userData?.UserMasterSid,
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",

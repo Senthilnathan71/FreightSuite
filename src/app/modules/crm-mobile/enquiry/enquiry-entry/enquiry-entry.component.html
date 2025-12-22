@@ -1019,6 +1019,11 @@
                                                                 <label class="form-label mb-0">Height <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">CBM <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
                                                             <td class="bg-transparent text-light " style="width: 150px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Gross Weight <span
@@ -1084,22 +1089,28 @@
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
-                                                                    [onlyNumbers]="5" appendTo="body">
+                                                                    [onlyNumbers]="5" appendTo="body" (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="cbm"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
                                                             <td>
                                                                 <!-- <div class="custom-form-group"> -->
@@ -1416,6 +1427,11 @@
                                                                 <label class="form-label mb-0">Height <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">CBM <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
                                                             <td class="bg-transparent text-light " style="width: 150px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Gross Weight <span
@@ -1477,22 +1493,28 @@
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
-                                                                    [onlyNumbers]="5" appendTo="body">
+                                                                    [onlyNumbers]="5" appendTo="body" (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
                                                                     class="custom-input-field sm text-end"
-                                                                    [onlyNumbers]>
+                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="cbm"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
                                                              <td>
                                                                 <!-- <div class="custom-form-group"> -->

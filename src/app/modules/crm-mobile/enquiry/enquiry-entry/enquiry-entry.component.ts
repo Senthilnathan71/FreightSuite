@@ -791,6 +791,23 @@ ${this.userData.userName}`;
     return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
   }
 
+  calculateCBM(routeIndex: number, cargoIndex: number): void {
+  const cargoForm = this.routeCargo(routeIndex).at(cargoIndex) as FormGroup;
+  
+  const qty = Number(cargoForm.get('PackageQty')?.value) || 0;
+  const length = Number(cargoForm.get('length')?.value) || 0;
+  const width = Number(cargoForm.get('width')?.value) || 0;
+  const height = Number(cargoForm.get('height')?.value) || 0;
+  
+  // Calculate CBM: (qty * length * width * height) / 1000000
+  if (qty > 0 && length > 0 && width > 0 && height > 0) {
+    const cbm = (qty * length * width * height) / 1000000;
+    cargoForm.get('cbm')?.setValue(cbm.toFixed(3), { emitEvent: false });
+  } else {
+    cargoForm.get('cbm')?.setValue('1', { emitEvent: false });
+  }
+}
+
 
   addCargo(routeIndex: number) {
     const defaultWeightUnitSid = this.getDefaultWeightUnitSid();
@@ -814,6 +831,21 @@ ${this.userData.userName}`;
     });
     this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
     this.routeCargo(routeIndex).push(cargoForm);
+    cargoForm.get('PackageQty')?.valueChanges.subscribe(() => {
+    this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
+  });
+  
+  cargoForm.get('length')?.valueChanges.subscribe(() => {
+    this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
+  });
+  
+  cargoForm.get('width')?.valueChanges.subscribe(() => {
+    this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
+  });
+  
+  cargoForm.get('height')?.valueChanges.subscribe(() => {
+    this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
+  });
     cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
       cargoForm.get('GrossWeight')?.updateValueAndValidity();
     });
@@ -1332,7 +1364,7 @@ ${this.userData.userName}`;
         updatedBy: userEmail,
         ContactPerson:this.rateRequestForm.value.ContactPerson,
       ContactNumber:this.rateRequestForm.value.ContactNumber,
-        MenuMaster: this.currentMenuId,
+        MenuMasterSid: this.MenuMasterSid,
         approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,
@@ -1373,6 +1405,7 @@ ${this.userData.userName}`;
         createdBy: userEmail,
         DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
           ?.value,
+          MenuMasterSid: this.MenuMasterSid,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,

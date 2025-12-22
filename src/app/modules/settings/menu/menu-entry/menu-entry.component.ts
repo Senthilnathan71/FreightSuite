@@ -137,6 +137,19 @@ export class MenuEntryComponent implements OnInit {
     this.route.paramMap.subscribe(
       (param: any) => {
         this.MenuMasterSid = +param.get('id');
+        if (this.MenuMasterSid) {
+    // EDIT MODE
+    this.isEditMode = true;
+    this.menuForm.get('MenuName')?.disable(); // ✅ ensure disabled
+    this.menuForm.get('path')?.disable();
+    this.loadMenuData(this.MenuMasterSid);
+    this.loadMenuPermissions(this.MenuMasterSid);
+  } else {
+    // CREATE MODE
+    this.isEditMode = false;
+    this.menuForm.get('MenuName')?.enable(); // ✅ enable while creating
+    this.menuForm.get('path')?.enable();
+  }
         console.log(this.MenuMasterSid, 'MenuMasterSid')
         if (this.MenuMasterSid) {
           this.isEditMode = true;
