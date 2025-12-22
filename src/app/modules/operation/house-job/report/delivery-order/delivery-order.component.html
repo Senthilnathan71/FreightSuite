@@ -293,12 +293,11 @@
     </table>
   </div>
 
-         <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;font-size: 16px;">
-    <strong style="white-space:nowrap;min-width:150px;">Amount in Words   </strong>
-
-    <p style="margin:0; line-height:22px; word-break:break-word;">
-      :  <strong>{{ getAmountInWords() }}</strong>
-    </p>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;font-size: 16px;">
+  <strong style="white-space:nowrap;min-width:150px;">Amount in Words</strong>
+  <p style="margin:0; line-height:22px; word-break:break-word;">
+    : <strong>{{ getAmountInWords() || 'Zero' }}</strong>
+  </p>
 </div>
 
 

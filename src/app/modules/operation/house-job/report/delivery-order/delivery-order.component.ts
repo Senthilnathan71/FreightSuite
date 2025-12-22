@@ -8,6 +8,7 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
@@ -26,7 +27,9 @@ export class DeliveryOrderComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
-  currency:any[] = [];
+  companyCurrency: any;
+  currentCurrencyCode: string;
+  currency: any[] = [];
   @Input() housejobData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -40,7 +43,11 @@ export class DeliveryOrderComponent {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    console.log("CURRENT CURRENCY CODE", this.currentCurrencyCode);
+    console.log("CURRENT CURRENCY", this.companyCurrency);
     console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
@@ -49,11 +56,11 @@ export class DeliveryOrderComponent {
     this.loadCurrencyList();
   }
 
-  
- showPrintLogo: boolean = false;
+
+  showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
-    loadCityName(): void {
+  loadCityName(): void {
     if (!this.currentBranchCityId) return;
 
 
@@ -68,20 +75,20 @@ export class DeliveryOrderComponent {
           console.log("Final City Name:", this.currentBranchCityName);
         }
 
- 
+
       },
       error: (error) => {
         console.error("Failed to load city:", error);
-   
+
       }
     });
   }
 
 
-       loadCurrencyList(): void {
+  loadCurrencyList(): void {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
-        this.currency = response|| [];
+        this.currency = response || [];
         console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -92,10 +99,11 @@ export class DeliveryOrderComponent {
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
-      private masterService: MasterService,
-        private pdfService: PdfDownloadService,
-          private spinner: NgxSpinnerService,
-              private numberToWords: NumberToWordsService
+    private masterService: MasterService,
+    private pdfService: PdfDownloadService,
+    private spinner: NgxSpinnerService,
+    private numberToWords: NumberToWordsService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
   getUnitCode(ChargeUomSid: number) {
@@ -148,67 +156,67 @@ export class DeliveryOrderComponent {
 
   }
 
-    getPkgTypeName(PackageTypeMasterSid:number){
-    console.log("getPkgMame",{
+  getPkgTypeName(PackageTypeMasterSid: number) {
+    console.log("getPkgMame", {
       PackageTypeMasterSid,
-      pkgList:this.packageTypeList
+      pkgList: this.packageTypeList
     })
-    if(!PackageTypeMasterSid||this.packageTypeList.length===0){
+    if (!PackageTypeMasterSid || this.packageTypeList.length === 0) {
       return "";
     }
-    return this.packageTypeList.find(pkg=>pkg.UOMMasterSid===PackageTypeMasterSid)?.UOMName|| "";
+    return this.packageTypeList.find(pkg => pkg.UOMMasterSid === PackageTypeMasterSid)?.UOMName || "";
   }
 
-   getContainerName(ContainerTypeMasterSid:number){
+  getContainerName(ContainerTypeMasterSid: number) {
     console.log(ContainerTypeMasterSid);
-    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
+    if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) {
       return "";
     }
-    console.log("HERE",this.containerTypeList)
+    console.log("HERE", this.containerTypeList)
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 
-    modalClose() {
+  modalClose() {
     this.activeModal.close()
   }
 
 
-    async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
 
-  setTimeout(async () => {
-    this.spinner.show();
-     try {
-     const DONo = this.housejobData?.ShipmentNo || 'Receipt';
+    setTimeout(async () => {
+      this.spinner.show();
+      try {
+        const DONo = this.housejobData?.ShipmentNo || 'Receipt';
 
 
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Delivery_Order_${DONo}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-      );
-    }finally {
-      this.spinner.hide();
-    }
-  }, 50);
-}
-    
+        await this.pdfService.downloadBalancedPDF(
+          'printContent',
+          `Delivery_Order_${DONo}`,
+          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+        );
+      } finally {
+        this.spinner.hide();
+      }
+    }, 50);
+  }
 
-     
-printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
 
-  setTimeout(() => {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+  printDiv(divId: string): void {
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
+
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) return;
+
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <html>
           <head>
             <title>Print</title>
@@ -218,79 +226,150 @@ printDiv(divId: string): void {
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 50); // small timeout so Angular updates DOM
-}
-
-getAmountInWords(): string {
-    const total = this.TotalLocalAmount();
-    if (!total) return '';
-
-    const rupees = Math.floor(total);
-    const paise = Math.round((total - rupees) * 100);
-
-    const rupeesInWords = this.numberToWords.convert(rupees);
-    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
-
-    // Get currency code safely from first voucher
-    const selectedCode = this.housejobData?.voucherMatchings?.[0]?.CurrencyCode;
-    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
-
-    // Find currency in the list
-    const selectedCurrency = this.currency?.find(
-      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
-    );
-
-    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
-
-    return paise > 0
-      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
-      : `${rupeesInWords} ${currencyName} Only`;
+        popupWin.document.close();
+      }
+    }, 50); // small timeout so Angular updates DOM
   }
 
+ getAmountInWords(): string {
+  const total = this.TotalLocalAmount();
+  if (!total || isNaN(total)) return '';
 
-    async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
+  const wholePart = Math.floor(total);
+  const decimalPart = Math.round((total - wholePart) * 100); // Get cents/fils (2 decimal places)
+  
+  console.log('DEBUG - Amount in Words Calculation:', {
+    total,
+    wholePart,
+    decimalPart,
+    currentCurrencyCode: this.currentCurrencyCode,
+    currencyList: this.currency
+  });
+
+  // Convert whole part to words
+  const wholePartInWords = wholePart > 0 ? this.numberToWords.convert(wholePart) : 'Zero';
+  
+  // Find currency - check multiple possible property names
+  const selectedCurrency = this.currency?.find((c: any) => {
+    const code = c.currencyCode || c.CurrencyCode || c.code;
+    return code && String(code).trim().toUpperCase() === String(this.currentCurrencyCode).trim().toUpperCase();
+  });
+
+  console.log('DEBUG - Found currency:', selectedCurrency);
+
+  if (!selectedCurrency) {
+    // Fallback using currentCurrencyCode directly
+    const currencyMap: { [key: string]: { unit: string, subunit: string } } = {
+      'USD': { unit: 'Dollars', subunit: 'Cents' },
+      'AED': { unit: 'Dirhams', subunit: 'Fils' },
+      'INR': { unit: 'Rupees', subunit: 'Paise' },
+      'EUR': { unit: 'Euros', subunit: 'Cents' },
+      'GBP': { unit: 'Pounds', subunit: 'Pence' },
+      'SAR': { unit: 'Riyals', subunit: 'Halalas' }
+    };
+
+    const defaultCurrency = currencyMap[this.currentCurrencyCode?.toUpperCase()] || 
+                           { unit: this.currentCurrencyCode, subunit: 'Cents' };
+
+    if (decimalPart === 0) {
+      return `${wholePartInWords} ${defaultCurrency.unit} Only`;
+    } else {
+      const decimalInWords = this.numberToWords.convert(decimalPart);
+      return `${wholePartInWords} ${defaultCurrency.unit} and ${decimalInWords} ${defaultCurrency.subunit} Only`;
+    }
+  }
+
+  // Use found currency
+  const currencyName = selectedCurrency.CurrencyUnit || 
+                      selectedCurrency.currencyUnit || 
+                      selectedCurrency.currencyName || 
+                      this.getCurrencyNameFromCode(this.currentCurrencyCode);
+
+  const subCurrencyName = selectedCurrency.CurrencySubUnit || 
+                         selectedCurrency.currencySubUnit || 
+                         this.getSubCurrencyNameFromCode(this.currentCurrencyCode);
+
+  if (decimalPart === 0) {
+    return `${wholePartInWords} ${currencyName} Only`;
+  } else {
+    const decimalInWords = this.numberToWords.convert(decimalPart);
+    return `${wholePartInWords} ${currencyName} and ${decimalInWords} ${subCurrencyName} Only`;
+  }
+}
+
+// Helper method to get currency name from code
+getCurrencyNameFromCode(currencyCode: string): string {
+  const currencyNames: { [key: string]: string } = {
+    'USD': 'Dollars',
+    'AED': 'Dirhams',
+    'INR': 'Rupees',
+    'EUR': 'Euros',
+    'GBP': 'Pounds',
+    'SAR': 'Riyals',
+    'QAR': 'Qatari Riyals',
+    'OMR': 'Rials',
+    'KWD': 'Kuwaiti Dinars'
+  };
+  return currencyNames[currencyCode?.toUpperCase()] || currencyCode || 'Units';
+}
+
+// Helper method to get sub-currency name from code
+getSubCurrencyNameFromCode(currencyCode: string): string {
+  const subCurrencyNames: { [key: string]: string } = {
+    'USD': 'Cents',
+    'AED': 'Fils',
+    'INR': 'Paise',
+    'EUR': 'Cents',
+    'GBP': 'Pence',
+    'SAR': 'Halalas',
+    'QAR': 'Dirhams',
+    'OMR': 'Baisa',
+    'KWD': 'Fils'
+  };
+  return subCurrencyNames[currencyCode?.toUpperCase()] || 'Cents';
+}
 
 
-          
-        }
+  async generatePDFBlob(): Promise<Blob | null> {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
+    }
+
+    try {
+      const canvas = await html2canvas(printContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('blob');
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+
+
+
+  }
 }

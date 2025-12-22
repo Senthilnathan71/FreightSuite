@@ -399,6 +399,15 @@ getChargeName(ChargeMasterSid: number): string {
   return ':';
  
 }
+get totalRevenue(): number {
+  if (!this.customerWiseSummary?.revenue) return 0;
+  return this.customerWiseSummary.revenue.reduce((sum, item) => sum + (item.Amount || 0), 0);
+}
+
+get totalExpense(): number {
+  if (!this.customerWiseSummary?.cost) return 0;
+  return this.customerWiseSummary.cost.reduce((sum, item) => sum + (item.Amount || 0), 0);
+}
 
 // pdf download
 
