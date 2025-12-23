@@ -728,7 +728,7 @@ arapFilter = {
     const isIndianCompany = this.countryOfCompany === 'india';
     this.productForm = this.fb.group({
       BookingProductSid: [null],
-      ProductName: [null],
+      ProductName: [null,[Validators.required]],
       ShippingBillNo: [''],
       ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
@@ -736,15 +736,15 @@ arapFilter = {
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.required]],
       Volumetric: ['', [Validators.required]],
-      Volume: [''],
+      Volume: ['',[Validators.required]],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
-      Length: [''],
-      Width: [''],
-      Height: [''],
-      UomMasterSid: [2],
+      Length: ['',[Validators.required]],
+      Width: ['',[Validators.required]],
+      Height: ['',[Validators.required]],
+      UomMasterSid: [2,[Validators.required]],
       CargoRecDate: [null]
     });
     this.setupImmediateCBMCalculation();
@@ -944,7 +944,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   createBookingProductGroup(data?: any): FormGroup {
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
-      ProductName: [data?.ProductName || null],
+      ProductName: [data?.ProductName || null,[Validators.required]],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
@@ -956,11 +956,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
       UnNo: [{ value: data?.UnNo || '', disabled: true }],
       PkgGroup: [{ value: data?.PkgGroup || '', disabled: true }],
-      Length: [data?.Length || ''],
-      Width: [data?.Width || ''],
-      Height: [data?.Height || ''],
-      Volumetric: [data?.Volumetric|| ''],
-      UomMasterSid: [data?.UomMasterSid || 2],
+      Length: [data?.Length || '',[Validators.required]],
+      Width: [data?.Width || '',[Validators.required]],
+      Height: [data?.Height || '',[Validators.required]],
+      Volumetric: [data?.Volumetric|| '',[Validators.required]],
+      UomMasterSid: [data?.UomMasterSid || 2,[Validators.required]],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
@@ -1657,7 +1657,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-
+      let CarrierSid = null;
+  if (bookingFormValue.CarrierName) {
+    const selectedCarrier = this.carrierList.find(carrier => 
+      carrier.CustomerName === bookingFormValue.CarrierName
+    );
+    if (selectedCarrier) {
+      CarrierSid = selectedCarrier.CustomerMasterSid;
+    }
+  }
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1677,6 +1685,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       DestinationAgent: bookingFormValue.DestinationAgent,
       AgentAddress: bookingFormValue.AgentAddress || '',
       CarrierName: bookingFormValue.CarrierName || null,
+      CarrierSid: CarrierSid,
       QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
       HBLNo: bookingFormValue.HBLNo || '',
       MBLNo: bookingFormValue.MBLNo || '',
@@ -1889,31 +1898,27 @@ if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
     isValid = false;
   }
 
-  // Validate Products in FormArray
-// Validate Products ONLY when on the Products tab
-if (this.selectedTab === 'Products' && this.bookingProducts.length > 0) {
-  this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
-    if (productGroup.invalid) {
-      productGroup.markAllAsTouched();
-
-      Object.keys(productGroup.controls).forEach(key => {
-        const control = productGroup.get(key);
-
-        if (control?.errors) {
-          if (control.errors['required']) {
-            errorMessages.push(
-              `Product ${index + 1}: ${this.getFieldLabel(key)} is required`
-            );
+   // Validate Products in FormArray ONLY if at least one product exists
+  if (this.bookingProducts.length > 0) {
+    this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
+      if (productGroup.invalid) {
+        productGroup.markAllAsTouched();
+        
+        Object.keys(productGroup.controls).forEach(key => {
+          const control = productGroup.get(key);
+          if (control?.errors) {
+            if (control.errors['required']) {
+              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
+            }
           }
-        }
-      });
-
-      isValid = false;
-    }
-  });
-}
-
-
+        });
+        isValid = false;
+      }
+    });
+  } else {
+    // If no products exist, skip product validation entirely
+    console.log('No products in FormArray - skipping product validation');
+  }
   // Show error messages if any
   if (errorMessages.length > 0) {
     const errorMessage = errorMessages.join(',');
@@ -3655,7 +3660,6 @@ ${this.userData['userName']}`;
   const payload = {
     CreatedBy: userEmail,
     MenuMasterSid: currentMenuId,
-    BookingHeaderSid: this.BookingHeaderSid,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,

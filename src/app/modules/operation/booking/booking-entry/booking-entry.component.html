@@ -1472,7 +1472,7 @@
                 <tr class="bg-info text-center">
                   <th class="bg-transparent text-light" scope="col" *ngIf="bookingProducts.length > 0" width="2%">
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity
+                  <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity<span class="text-danger">*</span>
                   </th>
 
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No
@@ -1482,29 +1482,29 @@
                     
                   </th>
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg
-                    <span class="text-danger fs-4">*</span>
+                    <span class="text-danger">*</span>
                   </th>
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg
-                    <span class="text-danger fs-4">*</span>
+                    <span class="text-danger">*</span>
                   </th>
                   @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM</th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length</th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width</th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height</th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric</th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM</th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt</th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt</th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM<span class="text-danger"></span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger"></span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
                   }
                   @if(selectedFCLLCL === 'FCL'){
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt
-                    <span class="text-danger">*</span>
+                    <span class="text-danger"></span>
                   </th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt
-                    <span class="text-danger">*</span>
+                    <span class="text-danger"></span>
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span>
+                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger"></span>
                   </th>
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
