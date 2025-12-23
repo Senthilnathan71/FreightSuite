@@ -8,17 +8,18 @@ import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 
 @Component({
-  selector: 'app-statement-report',
+  selector: 'app-ledger-report',
   standalone: true,
   imports: [CustomDatePipe, CommonModule],
-  templateUrl: './statement-report.component.html',
+  templateUrl: './ledger-report.component.html',
   styles: ``
 })
-export class StatementReportComponent {
+export class LedgerReportComponent {
 
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
+
   orientation : 'portrait' | 'landscape' = 'portrait';
 
   constructor(
@@ -59,7 +60,6 @@ export class StatementReportComponent {
     }, 0);
   }
 
-
   trackByCurrencyCode(index: number, group: any): string {
     return group.CurrencyCode;
   }
@@ -85,7 +85,7 @@ export class StatementReportComponent {
     return total;
   }
 
-  
+
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherDate', label: 'Voucher Date' },
@@ -109,14 +109,14 @@ export class StatementReportComponent {
     const rows: ExcelRow[] = [];
     const transactions = this.fullData?.transactions || [];
 
-   
+
     transactions.forEach((item: any, index: number) => {
       const cells: ExcelCell[] = [
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.voucherType || '' },
         { value: item?.voucherNumber || '' },
         { value: item?.MasterJobNumber || '' },
-        { value: '' }, 
+        { value: '' },
         { value: item?.HouseJobNumber || '' },
         { value: item?.deptname || '' },
         { value: item?.naration || '' },
@@ -132,7 +132,7 @@ export class StatementReportComponent {
       rows.push({ cells, style: 'data' });
     });
 
-    
+
     const totalCells: ExcelCell[] = [
       { value: 'TOTAL', colspan: 11 },
       { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
@@ -144,11 +144,11 @@ export class StatementReportComponent {
     rows.push({ cells: totalCells, style: 'total' });
 
     return {
-      fileName: 'Statement-Report',
-      sheetName: 'StatementReport',
+      fileName: 'Ledger-Report',
+      sheetName: 'LedgerReport',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Customer Statement as on ${this.formatDate(this.params?.FromDate)}`,
+        reportTitle: `Ledger Report on ${this.formatDate(this.params?.FromDate)}`,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
@@ -163,14 +163,14 @@ export class StatementReportComponent {
     };
   }
 
- 
+
   private formatNumber(value: any): number | string {
     if (value === null || value === undefined) return '';
     const num = Number(value);
     return isNaN(num) ? '' : Number(num.toFixed(2));
   }
 
- 
+
   private formatDate(date: any): string {
     if (!date) return '';
     try {
