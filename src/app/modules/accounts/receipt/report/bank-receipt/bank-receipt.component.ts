@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { toNumber } from 'src/app/common/helper';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -35,6 +36,7 @@ export class BankReceiptComponent implements OnChanges {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
+    currentUserCountry: string;
 
    ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -47,6 +49,8 @@ export class BankReceiptComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.numberToWords.initializeCurrencies(this.currencyList);
+          this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+
   }
 
   
@@ -131,15 +135,29 @@ getTotalOriginalLocalAmount(): number {
   }, 0);
 }
 
-  getAmountInWords() : string{
-    const total = this.getTotalOriginalLocalAmount();
-    if(!total) return '';
-    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    if(!companyCurrency){
-      return '';
-    }
-    const amountInWords = this.numberToWords.convert(total,companyCurrency);
-    return amountInWords || '';
+getAmountInWords(): string {
+  const total = this.getTotalOriginalLocalAmount();
+  if (total == null) return '';
+
+  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  if (!currencySid) return '';
+
+  // 🔥 MAIN AMOUNT
+  let mainWords = this.numberToWords.convert(
+    toNumber(total),
+    currencySid
+  );
+
+  
+
+  return mainWords;
+}
+
+
+
+
+  shouldShowGSTTypeField(): boolean {
+    return this.currentUserCountry === 'india';
   }
 
   // getAmountInWords(): string {

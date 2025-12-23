@@ -3467,6 +3467,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobData = this.masterJobData;
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.TandCList = this.TandCList || [];
   }
 
   // sailing confirmation

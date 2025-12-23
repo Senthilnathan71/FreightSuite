@@ -25,7 +25,7 @@ export class PackingListComponent {
   @Input() masterJobData: any;
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] = [];
-
+  @Input() TandCList: any;
   
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
