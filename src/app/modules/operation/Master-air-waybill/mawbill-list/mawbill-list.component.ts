@@ -362,14 +362,14 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         tooltip: 'View',
         state: !this.mps.can('view')
       },
-      {
-            icon: 'fas fa-trash',
-            label: 'Delete',
-            action: 'delete',
-            tooltip: 'Delete ',
-            class: "text-danger",
-            state: !this.mps.can('delete')
-          }
+      // {
+      //       icon: 'fas fa-trash',
+      //       label: 'Delete',
+      //       action: 'delete',
+      //       tooltip: 'Delete ',
+      //       class: "text-danger",
+      //       state: !this.mps.can('delete')
+      //     }
     ],
     selectable: false,
     multiSelect: false,

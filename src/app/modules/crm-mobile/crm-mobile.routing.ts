@@ -35,7 +35,7 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'lead',
+                path: 'lead/entry',
                 component: LeadComponent,
                 data: {
                     title: 'Lead',
@@ -49,7 +49,7 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'lead/:id',
+                path: 'lead/entry/:id',
                 component: LeadComponent,
                 data: {
                     title: 'Lead',
