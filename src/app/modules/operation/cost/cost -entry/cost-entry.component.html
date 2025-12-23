@@ -1074,7 +1074,7 @@
              {{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}
             </td>
             <td class="min-width-200">
-              <div class="custom-form-group mt-1 custom-form-group-select">
+              <!-- <div class="custom-form-group mt-1 custom-form-group-select">
                 <ng-select 
                   appendTo="body"
                   class="ng-select"
@@ -1084,19 +1084,19 @@
                   [clearable] = false
                   (change)="onTaxMappingChange(charge,$event)"
                 ></ng-select>
-              </div>
-              <!-- <div class="custom-form-group mt-1 custom-form-group-select">
+              </div> -->
+              <div class="custom-form-group mt-1 custom-form-group-select">
               
                 <ng-select class="ng-select ngSize" appendTo="body" [items]="charge.ChargeMaster?.chargeTaxMaster || []"
                   [(ngModel)]="charge.selectedTaxMapping" [searchable]="true" [clearable]="false" bindLabel="HSNCode" placeholder=""
-                   [searchFn]="searchTaxFn" (change)="onTaxMappingChange(charge, $event)">
+                   [searchFn]="searchTaxFn" (change)="onTaxMappingChange(charge, $event)" (open)="setDropdownWidth()">
               
                   <ng-template ng-label-tmp let-item="item">
                     {{ item?.HSNCode }}
                   </ng-template>
               
                   <ng-template ng-header-tmp>
-                    <div class="dropdown-header row g-0 fw-semibold border-bottom">
+                    <div class="dropdown-header row g-0 fw-semibold">
                       <div class="col-5 text-truncate">HSN Code</div>
                       <div class="col-5 text-truncate">Tax Group</div>
                     </div>
@@ -1123,7 +1123,7 @@
               
                 </ng-select>
               
-              </div> -->
+              </div>
 
               <!-- <dofi-searchable-dropdown 
                 [items]="charge.ChargeMaster?.chargeTaxMaster || []" [(ngModel)]="charge.selectedTaxMapping"

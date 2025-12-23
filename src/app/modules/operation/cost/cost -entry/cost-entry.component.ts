@@ -3630,5 +3630,26 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
     return normalized === 'united arab emirates' || normalized === 'uae' || normalized === 'ae';
   }
 
+  setDropdownWidth() {
+    setTimeout(() => {
+      const panels = document.querySelectorAll('.ng-dropdown-panel');
+      const panel = panels[panels.length - 1] as HTMLElement;
+
+      if (!panel) return;
+
+      const header = panel.querySelector('.ng-dropdown-header .dropdown-header') as HTMLElement;
+      if (panel) {
+        panel.style.width = '200px';
+        panel.style.maxWidth = '200px';
+        if(header){
+        header.style.width = '200px';
+        header.style.minHeight = '20px';
+        header.style.display = 'flex';
+        }
+      }
+    });
+  }
+
+
 
 }
