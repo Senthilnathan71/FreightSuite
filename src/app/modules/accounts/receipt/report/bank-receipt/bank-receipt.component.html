@@ -70,7 +70,7 @@
                 <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Received From</strong></div><div>: {{receiptPrintData?.PartyName}}</div></div>
                 <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Receipt No.</strong></div><div>: {{receiptPrintData?.VoucherNumber}}</div></div>
                 <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Bank</strong></div><div>: {{ getBankName(receiptPrintData?.BankCOA) }}</div></div>
-                <div style="display:flex; margin-bottom:4px;"><div style="width:120px;"><strong>Bank Ref.</strong></div><div>: {{receiptPrintData?.InstrumentMode}} / {{receiptPrintData?.InstrumentNumber}} / {{receiptPrintData?.InstrumentDate | formatDate}}</div></div>
+               
             </div>
 
             <div style="width:50%; padding-bottom:6px;">
@@ -110,7 +110,7 @@
        <!-- Remittance section -->
 <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 16px;">
 
-    <h4 style="padding: 6px;padding-left: 20px; margin:0;text-align: start;font-weight: bold;"><strong>Remittance Details</strong></h4>
+    <h4 style="padding: 6px;padding-left: 20px; margin:0;text-align:center;font-weight: bold;"><strong>Remittance Details</strong></h4>
 
 <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;">
     <tbody>
@@ -130,8 +130,8 @@
             <td style="border:1px solid black; padding:4px; text-align:start;">{{ voucher?.VoucherType }}</td>
             <td style="border:1px solid black; padding:4px; text-align:center;">{{ voucher?.VoucherDate | formatDate }}</td>
             <td style="border:1px solid black; padding:4px; text-align:start;">{{ voucher?.CurrencyCode }}</td>
-            <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.OriginalCurrencyAmount | number:'1.2-2' }}</td>
-            <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.OriginalLocalAmount | number:'1.2-2' }}</td>
+            <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.MatchingAmount | number:'1.2-2' }}</td>
+            <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.MatchingLocalAmount | number:'1.2-2' }}</td>
             <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;"*ngIf="currentUserCountry === 'india'"></td>
         </tr>
 
@@ -140,10 +140,10 @@
                 <strong>Total</strong>
             </td>
             <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bold;">
-                <strong>{{ getTotalOriginalCurrencyAmount() | number:'1.2-2' }}</strong>
+                <strong>{{ getTotalMatchingAmount() | number:'1.2-2' }}</strong>
             </td>
             <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bold;">
-                <strong>{{ getTotalOriginalLocalAmount() | number:'1.2-2' }}</strong>
+                <strong>{{ getTotalMatchingLocalAmount() | number:'1.2-2' }}</strong>
             </td>
             <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;"*ngIf="currentUserCountry === 'india'"></td>
         </tr>

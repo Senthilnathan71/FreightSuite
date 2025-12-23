@@ -119,24 +119,24 @@ export class BankReceiptComponent implements OnChanges {
     // console.log(bank,"BANK")
     return bank ? bank.LedgerName : '';
   }
- getTotalOriginalCurrencyAmount(): number {
+ getTotalMatchingAmount(): number {
   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalCurrencyAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingAmount) || 0);
   }, 0);
 }
 
-getTotalOriginalLocalAmount(): number {
+getTotalMatchingLocalAmount(): number {
   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalLocalAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingLocalAmount) || 0);
   }, 0);
 }
 
 getAmountInWords(): string {
-  const total = this.getTotalOriginalLocalAmount();
+  const total = this.getTotalMatchingLocalAmount();
   if (total == null) return '';
 
   const currencySid = this.currentCompany?.CurrencyMasterSid;

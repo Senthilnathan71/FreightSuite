@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { toNumber } from 'src/app/common/helper';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -105,50 +106,39 @@ export class PaymentPrintComponent {
     this.activeModal.close()
   }
 
- getTotalOriginalCurrencyAmount(): number {
+ getTotalMatchingAmount(): number {
   if (!this.paymentDataPrint?.voucherMatchings) return 0;
 
   return this.paymentDataPrint.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalCurrencyAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingAmount) || 0);
   }, 0);
 }
 
-getTotalOriginalLocalAmount(): number {
+getTotalMatchingLocalAmount(): number {
   if (!this.paymentDataPrint?.voucherMatchings) return 0;
 
   return this.paymentDataPrint.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalLocalAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingLocalAmount) || 0);
   }, 0);
 }
 
-// Inside PaymentPrintComponent
-  getAmountInWords(): string {
-    const total = this.getTotalOriginalLocalAmount();
-    if (!total) return '';
+getAmountInWords(): string {
+  const total = this.getTotalMatchingLocalAmount();
+  if (total == null) return '';
 
-    const rupees = Math.floor(total);
-    const paise = Math.round((total - rupees) * 100);
+  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  if (!currencySid) return '';
 
-    const rupeesInWords = this.numberToWords.convert(rupees);
-    const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
+  // 🔥 MAIN AMOUNT
+  let mainWords = this.numberToWords.convert(
+    toNumber(total),
+    currencySid
+  );
 
-    // Get currency code safely from first voucher
-    const selectedCode = this.paymentDataPrint?.voucherMatchings?.[0]?.CurrencyCode;
-    if (!selectedCode) return `${rupeesInWords}${paise > 0 ? ' and ' + paiseInWords : ''} Only`;
+  
 
-    // Find currency in the list
-    const selectedCurrency = this.currency?.find(
-      (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
-    );
-
-    const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-    const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
-
-    return paise > 0
-      ? `${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`
-      : `${rupeesInWords} ${currencyName} Only`;
-  }
-
+  return mainWords;
+}
 
       
             
