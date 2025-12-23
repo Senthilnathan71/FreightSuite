@@ -44,14 +44,14 @@
           </button>
           
           <!-- Draft Save Button -->
-          <button type="button" *ngIf="!isEditMode" appPreventMultiClick class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onDraftSave()" [disabled]="vendorInvoiceForm.invalid || isPosted">
-            <i class="fas fa-save me-1"></i> Save
+          <button type="button" appPreventMultiClick class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onDraftSave()" [disabled]="isPosted">
+            <i class="fas fa-save me-1"></i> Draft
           </button>
           
           <!-- Final Save Button -->
-          <button type="button" *ngIf="isEditMode" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onFinalSave()" [disabled]="vendorInvoiceForm.invalid || details.length === 0 || isPosted">
+          <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onFinalSave()" [disabled]="details.length === 0 || isPosted">
             <i class="fas fa-check-circle me-1"></i> {{ isPosted ? 'Posted' : 'Post' }}
           </button>
 
@@ -278,6 +278,16 @@
               </div>
             </aside>
 
+            <!-- Bill No -->
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
+                  [class.is-invalid]="isFieldInvalid('BillNo')" />
+                <label for="BillNo" class="input-label">
+                  Bill No. <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
 
             <!-- Bill Date -->
             <aside class="col-md-2">
@@ -306,16 +316,6 @@
               </button>
             </ng-template>
 
-            <!-- Bill No -->
-            <aside class="col-md-2">
-              <div class="custom-form-group">
-                <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
-                  [class.is-invalid]="isFieldInvalid('BillNo')" />
-                <label for="BillNo" class="input-label">
-                  Bill No. <span class="text-danger">*</span>
-                </label>
-              </div>
-            </aside>
 
             <!-- MBL No -->
             <aside class="col-md-2">

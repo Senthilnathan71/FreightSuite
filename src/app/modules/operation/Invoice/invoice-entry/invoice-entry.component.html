@@ -565,7 +565,7 @@
                             <div class="input-group input-group-sm">
                                 <div class="d-flex">
                                     <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                                        (input)="onDetailChange(i, 'TaxPercentage1')">
+                                        (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
                                     <span class="" style="font-weight: 600; color: black;">%</span>
                                 </div>
                             </div>
@@ -584,7 +584,7 @@
                     
                     <!-- Party Amount -->
                     <td class="text-center">
-                        <span style="font-weight: 600; color: black;">{{ getPartyAmount(row.value) }}</span>
+                        <span style="font-weight: 600; color: black;">{{ getPartyAmount(i) }}</span>
                     </td>
 
                     <!-- MasterJobSid -->

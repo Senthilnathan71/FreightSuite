@@ -1086,6 +1086,15 @@ getHouseJobARAPData(HouseJobSid: number) {
       })
     );
   }
+
+  getStateById(id: number) {
+    return this.http.get<{ data: State }>(`state/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   
   updateHouseById(HouseJobSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`house-job/update/${HouseJobSid}`, payload).pipe(

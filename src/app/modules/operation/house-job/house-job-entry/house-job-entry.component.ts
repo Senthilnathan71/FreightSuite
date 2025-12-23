@@ -4279,6 +4279,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
       VesselName: masterJobData.VesselName || '',
       VoyageNo: masterJobData.VoyageNo || '',
       CarrierName: masterJobData.CarrierName || '',
+      HBLDate: masterJobData.MBLDate ? new Date(masterJobData.MBLDate) : null,
     }, { emitEvent: false });
     
     // Disable department field since it's from master job
@@ -4324,7 +4325,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
       this.loadMasterJobDetails(masterJobData.MasterJobSid);
     }
     
-    this.appSettingService.showSuccess('Master job data loaded successfully');
+    // this.appSettingService.showSuccess('Master job data loaded successfully');
   }, 300); // Increased timeout to ensure department change completes
 }
 
