@@ -1086,14 +1086,14 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
       if (!currentCompany || !currentBranch || !currentFinancialYear || !currentCountry || !currentCurrency) {
         throw new Error('Company, branch, financial year, or currency information is missing');
       }
-
+      const companyCurrency = this.companySettings.getCurrencySettings();
       const postPayload = {
         VoucherHeaderSid: voucherHeaderSid,
         CompanyMasterSid: currentCompany.CompanyMasterSid,
         BranchMasterSid: currentBranch.BranchMasterSid,
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
-        LocalCurrencyCode: this.currentCompany.CurrencyCode,
+        LocalCurrencyCode: companyCurrency.code,
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCountry,
@@ -1105,7 +1105,7 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
       };
 
       // Use journalVoucherService for posting
-      const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
+      const result = await firstValueFrom(this.operationService.postJournalVoucher(postPayload));
       
       this.spinner.hide();
       this.isSaving = false;
