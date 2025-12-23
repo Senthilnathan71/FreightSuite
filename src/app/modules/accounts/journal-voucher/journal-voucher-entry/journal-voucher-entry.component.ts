@@ -73,7 +73,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   costCenterList: any[] = [];
   profitCenterList: any[] = [];
   voucherData: any;
-  hssacList: any[] = [];
+  hssacList: any[][] = [];
   uomList: any[] = [];
   HSSACLookupConfig = {
   displayFields: ['HSSACCode', 'HSSACName'],
@@ -198,7 +198,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       }),
       costCenters: this.accountsService.getAllCostCenters(),
       profitCenters: this.accountsService.getAllProfitCenters(),
-       hssac: this.operationService.getAllHssac(), // Add HSSAC
+      //  hssac: this.operationService.getAllHssac(), // Add HSSAC
       uom: this.operationService.getAllUom(),
     }).subscribe({
       next: (result) => {
@@ -206,7 +206,7 @@ export class JournalVoucherEntryComponent implements OnInit {
         this.departmentList = result.departments;
         this.costCenterList = result.costCenters.data;
         this.profitCenterList = result.profitCenters.data;
-        this.hssacList = result.hssac || [];
+        // this.hssacList = result.hssac || [];
         this.uomList = result.uom?.data || [];
         this.loadCOAList();
         this.loadSubledgerList();
@@ -268,88 +268,188 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   loadVoucherForEdit(id: number): void {
-    this.journalVoucherService.getJournalVoucherById(id).subscribe({
-      next: (response) => {
-        
-        const voucher = response.data;
-        this.voucherData = voucher;
-        if (!voucher) {
-          this.appSettingService.showError('Voucher not found', 'Error');
-          this.router.navigate(['/accounts/journal-voucher/list']);
-          return;
-        }
+  this.journalVoucherService.getJournalVoucherById(id).subscribe({
+    next: (response) => {
+      const voucher = response.data;
+      this.voucherData = voucher;
+      if (!voucher) {
+        this.appSettingService.showError('Voucher not found', 'Error');
+        this.router.navigate(['/accounts/journal-voucher/list']);
+        return;
+      }
 
-        this.isPosted = voucher.PostStatus === 'P';
+      this.isPosted = voucher.PostStatus === 'P';
 
-        const voucherDate = new Date(voucher.VoucherDate);
-        const voucherDateStruct: NgbDateStruct = {
-          year: voucherDate.getFullYear(),
-          month: voucherDate.getMonth() + 1,
-          day: voucherDate.getDate(),
-        };
+      const voucherDate = new Date(voucher.VoucherDate);
+      const voucherDateStruct: NgbDateStruct = {
+        year: voucherDate.getFullYear(),
+        month: voucherDate.getMonth() + 1,
+        day: voucherDate.getDate(),
+      };
 
-        this.form.patchValue({
-          voucherNumber: voucher.VoucherNumber,
-          voucherDate: voucherDateStruct,
-          narration: voucher.Narration,
-          remarks: voucher.Remarks,
-          Status: voucher.Status,
-          postStatus: voucher.PostStatus === 'P' ? 'Posted' : 'Unposted',
-          postDate: voucher.PostDate ? new Date(voucher.PostDate).toLocaleDateString() : '',
+      this.form.patchValue({
+        voucherNumber: voucher.VoucherNumber,
+        voucherDate: voucherDateStruct,
+        narration: voucher.Narration,
+        remarks: voucher.Remarks,
+        Status: voucher.Status,
+        postStatus: voucher.PostStatus === 'P' ? 'Posted' : 'Unposted',
+        postDate: voucher.PostDate ? new Date(voucher.PostDate).toLocaleDateString() : '',
+      });
+
+      this.details.clear();
+
+      if (voucher.VoucherDetail && Array.isArray(voucher.VoucherDetail)) {
+        // Load all details first, then handle async operations
+        const detailPromises = voucher.VoucherDetail.map(async (detail: any) => {
+          const detailGroup = this.createDetailGroup();
+          
+          // Patch basic values first
+          detailGroup.patchValue({
+            VoucherDetailSid: detail.VoucherDetailSid,
+            coaMasterSid: detail.COAMasterSid,
+            ledgerMasterSid: detail.LedgerMasterSid,
+            currencyMasterSid: detail.CurrencyMasterSid,
+            currencyCode: detail.CurrencyCode,
+            exchangeRate: parseFloat(detail.ExchangeRate) || 1,
+            currencyAmount: parseFloat(detail.Amount) || 0,
+            localAmount: parseFloat(detail.LocalAmount) || 0,
+            drCr: detail.DrCr,
+            narration: detail.Narration,
+            departmentMasterSid: detail.DepartmentMasterSid,
+            chargeMasterSid: detail.ChargeMasterSid,
+            chargeDescription: detail.ChargeDescription || '',
+            HSSACCode: detail.hSSACMaster?.HSSACCode || detail.HSSACCode || '',
+            hssacMasterSid: detail.HSSACMasterSid || null, // Add this line
+            masterJobSid: detail.MasterJobSid,
+            houseJobSid: detail.HouseJobSid,
+            taxPercentage: parseFloat(detail.TaxPercentage1) || 0,
+            taxAmount: parseFloat(detail.TaxAmount1) || 0,
+            costCenterMasterSid: detail.CostCenter,
+            profitCenterMasterSid: detail.ProfitCenter,
+          });
+
+          this.setupDetailCalculations(detailGroup);
+          this.details.push(detailGroup);
+          
+          const index = this.details.length - 1;
+          const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === detail.DepartmentMasterSid);
+          
+          // Set department first (this will trigger filters)
+          if (dept) {
+            this.filterDetailsWithDept(dept, index);
+          }
+
+          // Handle charge and HSSAC
+          if (detail.ChargeMasterSid) {
+            await this.handleChargeForEdit(detailGroup, detail);
+          }
+
+          // Handle master job and house job
+          if (detail.MasterJobSid) {
+            await this.handleJobsForEdit(detailGroup, detail, index);
+          }
+
+          // Refresh subledger filters after all data is loaded
+          setTimeout(() => {
+            this.refreshSubledgerFiltersForRow(index);
+          }, 100);
+
+          return detailGroup;
         });
 
-        this.details.clear();
+        // Wait for all async operations to complete
+        Promise.all(detailPromises).then(() => {
+          this.calculateTotals();
+          
+          if (this.isPosted) {
+            this.form.disable();
+          }
+        });
+      }
 
-        if (voucher.VoucherDetail && Array.isArray(voucher.VoucherDetail)) {
-          voucher.VoucherDetail.forEach((detail: any) => {
-            const detailGroup = this.createDetailGroup();
-            
-            detailGroup.patchValue({
-              VoucherDetailSid: detail.VoucherDetailSid,
-              coaMasterSid: detail.COAMasterSid,
-              ledgerMasterSid: detail.LedgerMasterSid,
-              currencyMasterSid: detail.CurrencyMasterSid,
-              currencyCode: detail.CurrencyCode,
-              exchangeRate: parseFloat(detail.ExchangeRate) || 1,
-              currencyAmount: parseFloat(detail.Amount) || 0,
-              localAmount: parseFloat(detail.LocalAmount) || 0,
-              drCr: detail.DrCr,
-              narration: detail.Narration,
-              departmentMasterSid: detail.DepartmentMasterSid,
-              chargeMasterSid: detail.ChargeMasterSid,
-              chargeDescription: detail.ChargeDescription,
-              HSSACCode: detail.HSSACCode,
-              masterJobSid: detail.MasterJobSid,
-              houseJobSid: detail.HouseJobSid,
-              taxPercentage: parseFloat(detail.TaxPercentage1) || 0,
-              taxAmount: parseFloat(detail.TaxAmount1) || 0,
-              costCenterMasterSid: detail.CostCenter,
-              profitCenterMasterSid: detail.ProfitCenter,
-            });
+      this.calculateTotals();
 
-            this.setupDetailCalculations(detailGroup);
-            this.details.push(detailGroup);
-            const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === detail.DepartmentMasterSid);
-            this.filterDetailsWithDept(dept, detail);
-            this.onMasterJobChange(detail, {
-            MasterJobSid: detail.MasterJobSid
-            })
-          });
-        }
+      if (this.isPosted) {
+        this.form.disable();
+      }
+    },
+    error: (err) => {
+      console.error('Error loading voucher:', err);
+      this.appSettingService.showError('Failed to load voucher details', 'Error');
+      this.router.navigate(['/accounts/journal-voucher/list']);
+    },
+  });
+}
 
-        this.calculateTotals();
-
-        if (this.isPosted) {
-          this.form.disable();
-        }
-      },
-      error: (err) => {
-        console.error('Error loading voucher:', err);
-        this.appSettingService.showError('Failed to load voucher details', 'Error');
-        this.router.navigate(['/accounts/journal-voucher/list']);
-      },
-    });
+async handleChargeForEdit(detailGroup: FormGroup, detail: any): Promise<void> {
+  const chargeId = detail.ChargeMasterSid;
+  const rowIndex = this.getRowIndex(detailGroup);
+  
+  // First, update the filtered charge list for this department
+  if (detail.DepartmentMasterSid) {
+    const dept = this.departmentList.find(d => d.DepartmentMasterSid === detail.DepartmentMasterSid);
+    if (dept) {
+      this.filterChargeByDeptForARow(dept, rowIndex);
+    }
   }
+
+  // Fetch HSSAC details for this charge
+  if (chargeId) {
+    try {
+      const res = await firstValueFrom(this.operationService.getChargeTaxForChargeId(chargeId));
+      if (res) {
+        this.hssacList[rowIndex] = res.data || [];
+        
+        // Patch HSSAC data
+        detailGroup.patchValue({
+          hssacMasterSid: detail.HSSACMasterSid || null,
+          hssacCode: detail.HSSACCode || ''
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching HSSAC for edit:', err);
+      detailGroup.patchValue({
+        hssacMasterSid: detail.HSSACMasterSid || null,
+        hssacCode: detail.HSSACCode || ''
+      });
+    }
+  }
+}
+
+async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): Promise<void> {
+  // Load master jobs for this department
+  if (detail.DepartmentMasterSid) {
+    try {
+      const masterJobsResp = await firstValueFrom(
+        this.accountsService.getMasterJobByDepartment({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          DepartmentMasterSid: detail.DepartmentMasterSid
+        })
+      );
+      
+      this.masterJobList[rowIndex] = masterJobsResp || [];
+      
+      // Now load house jobs for this master job
+      if (detail.MasterJobSid) {
+        const houseJobsResp = await firstValueFrom(
+          this.accountsService.getHouseJobByMasterJob({
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            BranchMasterSid: this.currentBranch?.BranchMasterSid,
+            MasterJobSid: detail.MasterJobSid
+          })
+        );
+        
+        this.houseJobList[rowIndex] = houseJobsResp || [];
+      }
+    } catch (err) {
+      console.error('Error loading jobs for edit:', err);
+      this.masterJobList[rowIndex] = [];
+      this.houseJobList[rowIndex] = [];
+    }
+  }
+}
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
@@ -404,10 +504,11 @@ export class JournalVoucherEntryComponent implements OnInit {
       MasterJobSid: masterJob?.MasterJobSid
     }).subscribe({
       next: (resp: any) => {
-        this.houseJobList[detailIndex] = resp;
+        this.houseJobList[detailIndex] = resp || [];
       },
       error: (err) => {
         console.error('Failed to load house jobs:', err);
+        this.houseJobList[detailIndex] = [];
       }
     });
   }
@@ -432,6 +533,9 @@ export class JournalVoucherEntryComponent implements OnInit {
       department: dept,
       chargeList: this.chargeList
     });
+        if (!this.filteredChargeList[rowIndex]) {
+        this.filteredChargeList[rowIndex] = [];
+    }
     const departmentName = dept.departmentName;
     this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(charge => {
       const allDepartmentNames = charge.DepartmentMasterSid || [];
@@ -443,7 +547,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     return this.fb.group({
       VoucherDetailSid: [null],
       coaMasterSid: [null, Validators.required],
-      ledgerMasterSid: [null],
+      ledgerMasterSid: [{value:null, disabled:true}],
       currencyMasterSid: [null, Validators.required],
       currencyCode: [''],
       exchangeRate: [1, [Validators.required, Validators.min(0)]],
@@ -454,6 +558,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       departmentMasterSid: [null],
       chargeMasterSid: [null],
       chargeDescription: [''],
+      hssacMasterSid: [null],
       HSSACCode: [''],
       masterJobSid: [null],
       houseJobSid: [null],
@@ -469,7 +574,14 @@ export class JournalVoucherEntryComponent implements OnInit {
     const detailGroup = this.createDetailGroup();
     this.setupDetailCalculations(detailGroup);
     this.details.push(detailGroup);
-  }
+    
+    // Initialize arrays for the new row
+    const newIndex = this.details.length - 1;
+    this.filteredChargeList[newIndex] = [];
+    this.masterJobList[newIndex] = [];
+    this.houseJobList[newIndex] = [];
+    this.hssacList[newIndex] = [];
+}
 
   setupDetailCalculations(detailGroup: FormGroup): void {
   detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
@@ -627,105 +739,231 @@ onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
   }
 
   fetchChargeDetails(detailGroup: FormGroup, chargeId: number): void {
+  const rowIndex = this.getRowIndex(detailGroup);
   const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
   
   if (charge) {
     const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
-    let hssacId = charge.HSSACMasterSid ?? charge.HSSACMasterSid ?? null;
     
-    // Auto-set HSN/SAC code from ChargeTaxMaster (same logic as vendor invoice)
-    if (!hssacId && Array.isArray(charge.ChargeTaxMaster) && charge.ChargeTaxMaster.length > 0) {
-      const firstTax = charge.ChargeTaxMaster[0];
-      const hsnCode = firstTax?.HSNCode;
-      
-      // Find matching HSSAC from hssacList using HSNCode
-      if (hsnCode) {
-        const matchingHssac = this.hssacList.find(h => 
-          h.HSSACCode === hsnCode || h.HSNCode === hsnCode
-        );
-        if (matchingHssac) {
-          hssacId = matchingHssac.HSSACMasterSid;
+    // Fetch HSSAC details using API
+    this.operationService.getChargeTaxForChargeId(chargeId).subscribe({
+      next: (res: any) => {
+        if (res.status) {
+          this.hssacList[rowIndex] = res.data || [];
+          
+          let hssacId = null;
+          let hssacCode = '';
+          
+          // Auto-select the first HSSAC
+          if (res.data && res.data.length > 0) {
+            hssacId = res.data[0]?.HSSACMasterSid || null;
+            hssacCode = res.data[0]?.HSSACCode || res.data[0]?.HSNCode || '';
+          }
+          
+          const chargeUomId = charge.ChargeUOMSid ?? charge.UOM ?? charge.UOMMasterSid ?? null;
+          
+          // Auto-set tax percentage from HSSAC
+          let taxPercentage = charge.TaxPercentage || 0;
+          if (hssacId) {
+            const hssac = res.data.find((h: any) => h.HSSACMasterSid === hssacId);
+            taxPercentage = hssac?.TaxRate || taxPercentage;
+          }
+
+          // Update the detail group
+          detailGroup.patchValue({
+            chargeDescription: description,
+            hssacMasterSid: hssacId,
+            hssacCode: hssacCode,
+            taxPercentage: taxPercentage,
+            ChargeUOMSid: chargeUomId || null
+          });
+          
+          this.calculateTaxAmount(detailGroup);
         }
+      },
+      error: (err) => {
+        console.error('Error fetching HSSAC details:', err);
+        // Fallback to basic charge info
+        detailGroup.patchValue({
+          chargeDescription: description,
+          hssacMasterSid: null,
+          hssacCode: '',
+          taxPercentage: charge.TaxPercentage || 0,
+          ChargeUOMSid: charge.ChargeUOMSid || null
+        });
       }
-    }
-    
-    const chargeUomId = charge.ChargeUOMSid ?? charge.UOM ?? charge.UOMMasterSid ?? null;
-    
-    // Auto-set tax percentage from HSSAC
-    let taxPercentage = charge.TaxPercentage || 0;
-    if (hssacId) {
-      const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacId);
-      taxPercentage = hssac?.TaxRate || taxPercentage;
-    }
-
-    // Update the detail group with all charge information
-    detailGroup.patchValue({
-      chargeDescription: description,
-      HSSACCode: this.getHSSACCode(hssacId), // Set HSSAC code for display
-      taxPercentage: taxPercentage,
-      // Note: We're storing HSSACMasterSid in a separate field if needed
     });
-
-    // Store HSSAC Master SID in a custom property if needed for calculations
-    detailGroup.get('HSSACCode')?.setValue(this.getHSSACCode(hssacId));
-    
-    // Recalculate tax amount after setting tax percentage
-    this.calculateTaxAmount(detailGroup);
   }
 }
-getHSSACCode(hssacMasterSid: number): string {
-  if (!hssacMasterSid) return '';
-  const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacMasterSid);
-  return hssac?.HSSACCode || hssac?.HSNCode || '';
-}
-onChargeChange(detailControl: AbstractControl, event: any): void {
-  const detailGroup = detailControl as FormGroup;
-  const chargeId = event;
-  
-  const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeId);
-  
-  if (charge) {
-    const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
-    let hssacId = charge.HSSACMasterSid ?? null;
-    
-    // Auto-set HSN/SAC code from ChargeTaxMaster
-    if (!hssacId && Array.isArray(charge.ChargeTaxMaster) && charge.ChargeTaxMaster.length > 0) {
-      const firstTax = charge.ChargeTaxMaster[0];
-      const hsnCode = firstTax?.HSNCode;
-      
-      if (hsnCode) {
-        const matchingHssac = this.hssacList.find(h => 
-          h.HSSACCode === hsnCode || h.HSNCode === hsnCode
-        );
-        if (matchingHssac) {
-          hssacId = matchingHssac.HSSACMasterSid;
-        }
-      }
-    }
-    
-    // Update the detail group with charge info
-    detailGroup.patchValue({
-      chargeDescription: description,
-      HSSACCode: this.getHSSACCode(hssacId),
-      taxPercentage: charge.TaxPercentage || 0
-    });
 
-    // Refresh subledger filters (charge change affects SubledgerMappingSid filter)
-    this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
+fetchHSSACForExistingDetail(detailGroup: FormGroup, chargeId: number, rowIndex: number, detail: any): void {
+  this.operationService.getChargeTaxForChargeId(chargeId).subscribe({
+    next: (res: any) => {
+      if (res.status) {
+        this.hssacList[rowIndex] = res.data || [];
+        
+        // Find matching HSSAC
+        let hssacId = detail.HSSACMasterSid || null;
+        let hssacCode = detail.HSSACCode || '';
+        
+        // If we have an HSSACMasterSid, use it
+        if (hssacId && res.data.length > 0) {
+          const matchingHssac = res.data.find((h: any) => h.HSSACMasterSid === hssacId);
+          if (matchingHssac) {
+            hssacCode = matchingHssac.HSSACCode || matchingHssac.HSNCode || hssacCode;
+          }
+        }
+        // If no HSSACMasterSid but have HSSACCode, find by code
+        else if (hssacCode && res.data.length > 0) {
+          const matchingHssac = res.data.find((h: any) => 
+            h.HSSACCode === hssacCode || h.HSNCode === hssacCode
+          );
+          if (matchingHssac) {
+            hssacId = matchingHssac.HSSACMasterSid;
+            hssacCode = matchingHssac.HSSACCode || matchingHssac.HSNCode || '';
+          }
+        }
+        // Otherwise, use the first one
+        else if (!hssacId && res.data.length > 0) {
+          hssacId = res.data[0]?.HSSACMasterSid || null;
+          hssacCode = res.data[0]?.HSSACCode || res.data[0]?.HSNCode || '';
+        }
+        
+        // Update the form group
+        detailGroup.patchValue({
+          hssacMasterSid: hssacId,
+          hssacCode: hssacCode
+        });
+        
+        console.log('HSSAC patched:', { rowIndex, hssacId, hssacCode, hssacList: res.data });
+      }
+    },
+    error: (err) => {
+      console.error('Error fetching HSSAC for existing detail:', err);
+      detailGroup.patchValue({
+        hssacMasterSid: detail.HSSACMasterSid || null,
+        hssacCode: detail.HSSACCode || ''
+      });
+    }
+  });
+}
+
+onChargeChange(detailGroup: FormGroup, chargeId: number): void {
+  console.log('Charge value changed:', chargeId);
+  
+  if (chargeId) {
+    const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
     
-    this.calculateTaxAmount(detailGroup);
+    if (charge) {
+      const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
+      
+      // Fetch HSSAC details using API (same as invoice component)
+      this.fetchHSSACForCharge(detailGroup, chargeId, description);
+      
+    }
   } else {
-    // Reset charge-related fields
+    // Reset charge-related fields when charge is cleared
     detailGroup.patchValue({
       chargeDescription: '',
-      HSSACCode: '',
+      hssacMasterSid: null,
+      hssacCode: '',
       taxPercentage: 0,
-      taxAmount: 0
+      taxAmount: 0,
+      ChargeUOMSid: null
     });
     
-    // Refresh subledger filters (charge is now null, so no SubledgerMappingSid filter)
+    // Refresh subledger filters
     this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
   }
+}
+
+// New method to fetch HSSAC details using API
+fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription: string): void {
+  const rowIndex = this.getRowIndex(detailGroup);
+      if (!this.hssacList[rowIndex]) {
+        this.hssacList[rowIndex] = [];
+    }
+  const chargeName = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeId)?.chargeName || '';
+  
+  // Call API to get HSSAC details for this charge
+  this.operationService.getChargeTaxForChargeId(chargeId).subscribe({
+    next: (res: any) => {
+      if (res.status) {
+        // Store the HSSAC list for this row (similar to invoice component)
+        this.hssacList[rowIndex] = res.data || [];
+        
+        let hssacId = null;
+        let hssacCode = '';
+        
+        // Auto-select the first HSSAC if available
+        if (res.data && res.data.length > 0) {
+          hssacId = res.data[0]?.HSSACMasterSid || null;
+          hssacCode = res.data[0]?.HSSACCode || res.data[0]?.HSNCode || '';
+          
+          console.log('DEBUG - HSSAC details fetched from API:', {
+            rowIndex,
+            hssacList: res.data,
+            selectedHssacId: hssacId,
+            selectedHssacCode: hssacCode
+          });
+        }
+        
+        const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
+        const chargeUomId = charge?.ChargeUOMSid ?? charge?.UOM ?? charge?.UOMMasterSid ?? null;
+        
+        // Auto-set tax percentage from HSSAC
+        let taxPercentage = charge?.TaxPercentage || 0;
+        if (hssacId) {
+          const hssac = res.data.find((h: any) => h.HSSACMasterSid === hssacId);
+          taxPercentage = hssac?.TaxRate || taxPercentage;
+        }
+        
+        // Update the detail group
+        detailGroup.patchValue({
+          chargeDescription: chargeDescription,
+          hssacMasterSid: hssacId,
+          hssacCode: hssacCode,
+          taxPercentage: taxPercentage,
+          ChargeUOMSid: chargeUomId || null
+        });
+        
+        // Recalculate tax amount
+        this.calculateTaxAmount(detailGroup);
+        
+      } else {
+        console.warn('No HSSAC data returned from API for charge:', chargeId);
+        this.appSettingService.showError(`Error fetching HSSAC details for ${chargeName}`);
+        this.hssacList[rowIndex] = [];
+        
+        // Update with basic charge info
+        detailGroup.patchValue({
+          chargeDescription: chargeDescription,
+          hssacMasterSid: null,
+          hssacCode: '',
+        });
+      }
+      
+      // Refresh subledger filters
+      this.refreshSubledgerFiltersForRow(rowIndex);
+    },
+    error: (err: any) => {
+      console.error('Error fetching HSSAC details:', err);
+      this.appSettingService.showError(`Error fetching HSSAC details for ${chargeName}`);
+      this.hssacList[rowIndex] = [];
+      
+      // Update with basic charge info
+      const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
+      detailGroup.patchValue({
+        chargeDescription: chargeDescription,
+        hssacMasterSid: null,
+        hssacCode: '',
+        taxPercentage: charge?.TaxPercentage || 0,
+        ChargeUOMSid: charge?.ChargeUOMSid || null
+      });
+      
+      this.refreshSubledgerFiltersForRow(rowIndex);
+    }
+  });
 }
 
   deleteDetailLine(index: number): void {
@@ -914,7 +1152,7 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
       DepartmentMasterSid: detail.departmentMasterSid || null,
       ChargeMasterSid: detail.chargeMasterSid || null,
       ChargeDescription: detail.chargeDescription || null,
-      HSSACCode: detail.HSSACCode || null,
+      HSSACCode: detail.hssacMasterSid || null,
       MasterJobSid: detail.masterJobSid || null,
       HouseJobSid: detail.houseJobSid || null,
       TaxPercentage1: detail.taxPercentage || null,
@@ -1073,19 +1311,40 @@ onChargeChange(detailControl: AbstractControl, event: any): void {
   // Update the filtered subledgers for this row
   row.patchValue({ filteredSubledgers }, { emitEvent: false });
   
-  // Clear selected subledger if it doesn't match ALL current filters
-  const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
-  if (currentSubledgerSid) {
-    const currentSubledger = filteredSubledgers.find(
-      sl => sl.SubledgerMasterSid === currentSubledgerSid
-    );
-    if (!currentSubledger) {
-      console.log(`Clearing subledger selection for row ${rowIndex} - no longer matches filters`);
-      row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+   if (filteredSubledgers.length === 1) {
+    const singleSubledger = filteredSubledgers[0];
+    console.log(`Auto-selecting subledger for row ${rowIndex}:`, singleSubledger);
+    
+    // Disable the subledger field and auto-patch the value
+    row.get('ledgerMasterSid')?.disable();
+    row.patchValue({
+      ledgerMasterSid: singleSubledger.SubledgerMasterSid
+    }, { emitEvent: false });
+    
+  } else if (filteredSubledgers.length === 0) {
+    // No matching subledgers - clear and enable field
+    console.log(`No matching subledgers for row ${rowIndex}`);
+    row.get('ledgerMasterSid')?.disable();
+    row.patchValue({
+      ledgerMasterSid: null
+    }, { emitEvent: false });
+    
+  } else {
+    // Multiple matching subledgers - enable field for manual selection
+    console.log(`Multiple subledgers (${filteredSubledgers.length}) found for row ${rowIndex}`);
+    row.get('ledgerMasterSid')?.disable();
+    
+    // If current selection is not in filtered list, clear it
+    const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
+    if (currentSubledgerSid) {
+      const currentSubledger = filteredSubledgers.find(
+        sl => sl.SubledgerMasterSid === currentSubledgerSid
+      );
+      if (!currentSubledger) {
+        row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+      }
     }
   }
-  
-  console.log(`Final filtered subledgers for row ${rowIndex}:`, filteredSubledgers);
 }
 
 doesSubledgerMatchCOAStrict(subledger: any, coaMasterSid: number): boolean {
