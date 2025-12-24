@@ -140,6 +140,15 @@ export class JournalVoucherService {
   );
 }
 
+getAllVoucher() {
+    return this.http.get<{ status: boolean; data: any[] }>('accounts/journal-voucher').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   /**
    * Delete journal voucher (unposted only)
    */

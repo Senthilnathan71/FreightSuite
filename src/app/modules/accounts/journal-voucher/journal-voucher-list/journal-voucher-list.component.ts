@@ -101,32 +101,27 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     })
     // Initialize base component
     super.ngOnInit();
+    this.loadJournalVouchers();
+  }
+
+  loadJournalVouchers(){
+    this.journalVoucherService.getAllVoucher().subscribe({
+      next: (resp:any) => {
+        this.JournalVoucherList = resp?.data || resp || [];
+        this.searchJournalVoucher();
+      },
+      error:(err)=> {
+        console.error('Error loading',err);
+        this.JournalVoucherList = [];
+        this.searchJournalVoucher();
+      }
+    })
   }
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
-    this.tableLoading = true;
     this.spinner.show();
-
-    const params = {
-      page: Number(this.page),
-      limit: Number(this.pageSize),
-      searchTerm: this.filterValue.trim(),
-      activeCompanyId: this.currentCompany?.CompanyMasterSid,
-      activeBranchId: this.currentBranch?.BranchMasterSid,
-    };
-
-    return this.journalVoucherService.searchJournalVouchers(params).pipe(
-      map((response: JournalVoucherSearchResponse) => {
-        return {
-          status: true,
-          data: {
-            items: response.data?.items || [],
-            totalCount: response.data?.totalCount 
-          }
-        };
-      })
-    );
+    return this.journalVoucherService.searchJournalVouchers(this.getSearchParams());
   }
 
   protected getSearchParams(): SearchParams {
@@ -142,7 +137,6 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
   }
 
   protected processSearchResults(response: any): void {
-    this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
       this.allItems = response.data.items.map((item: any) => ({
@@ -163,7 +157,6 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
   }
 
   protected override handleSearchError(error: any): void {
-    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error searching journal vouchers.');
     console.error('Error searching journal vouchers', error);
@@ -229,6 +222,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
 
   // Legacy methods for template compatibility
   searchJournalVoucher() {
+    this.page = 1;
     this.search();
   }
 

@@ -124,6 +124,9 @@ export class CompanyEntryComponent implements OnInit {
 	private bankModalRef: NgbModalRef;
 	modalDismissSubscription: Subscription;
 	isPanRequiredFlag = false;
+	currentTaxIdLabel: string = 'PAN Number'; // Add this
+    isPanAvailable: boolean = false; // Add this
+    isPanRequired: boolean = false; // Add this
 	branchPage = 1;
 	branchPageSize = 5;
 	totalBranches = 0;
@@ -281,8 +284,79 @@ export class CompanyEntryComponent implements OnInit {
 		this.companyForm.get('CountryMasterSid')?.valueChanges.subscribe((countryId) => {
 			const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
 			this.handlePanControl(country);
+			this.updateTaxIdLabelAndValidation(countryId);
 		});
+		  this.companyForm.get('Pan')?.valueChanges.subscribe((panValue) => {
+    this.isPanAvailable = !!panValue;
+  });
 	}
+
+	updateTaxIdLabelAndValidation(countryId: number): void {
+  if (!countryId) {
+    this.currentTaxIdLabel = 'PAN/TRN Number';
+    return;
+  }
+
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
+  const countryName = country?.countryName || '';
+
+  // Update label
+  if (countryName.toLowerCase().includes('india')) {
+    this.currentTaxIdLabel = 'PAN Number';
+  } else if (countryName.toLowerCase().includes('uae') ||
+             countryName.toLowerCase().includes('dubai') ||
+             countryName.toLowerCase().includes('united arab emirates')) {
+    this.currentTaxIdLabel = 'TRN Number';
+  } else {
+    this.currentTaxIdLabel = 'Tax Registration Number';
+  }
+
+  // Update validation
+  this.updatePanValidation(countryName);
+}
+
+updatePanValidation(countryName: string): void {
+  const panControl = this.companyForm.get('Pan');
+  if (!panControl) return;
+
+  // Clear existing validators
+  panControl.clearValidators();
+
+  if (countryName.toLowerCase().includes('india')) {
+    // India: PAN - 10 alphanumeric (5 letters + 4 digits + 1 letter)
+    panControl.setValidators([Validators.maxLength(20), this.panValidator]);
+  } else if (countryName.toLowerCase().includes('uae') ||
+             countryName.toLowerCase().includes('dubai') ||
+             countryName.toLowerCase().includes('united arab emirates')) {
+    // UAE: TRN - 15 digits only
+    panControl.setValidators([Validators.maxLength(20), this.trnValidator]);
+  } else {
+    // Other countries: basic validation
+    panControl.setValidators([Validators.maxLength(20)]);
+  }
+
+  panControl.updateValueAndValidity();
+}
+
+trnValidator(control: AbstractControl): ValidationErrors | null {
+  const trn = control.value;
+  if (!trn) return null;
+
+  // Remove any spaces
+  const cleanTrn = trn.toString().replace(/\s/g, '');
+  
+  // TRN must be exactly 15 digits, starting with 1-9
+  const TRN_REGEX = /^[1-9][0-9]{14}$/;
+  
+  if (!TRN_REGEX.test(cleanTrn)) {
+    return { 
+      invalidTRN: true,
+      message: 'TRN must be 15 digits starting with 1-9'
+    };
+  }
+
+  return null;
+}
 
 	initBranchForm() {
 		this.branchForm = this.fb.group({
@@ -406,6 +480,9 @@ export class CompanyEntryComponent implements OnInit {
     (resp) => {
       if (resp) {
         this.companyData = resp;
+		if (resp.CountryMasterSid) {
+          this.updateTaxIdLabelAndValidation(resp.CountryMasterSid);
+        }
         const config = resp.config || {};
 
 					// Patch main company form values
@@ -1636,36 +1713,30 @@ getTimezoneErrorMessage(): string {
 		this.cdRef.detectChanges();
 	}
 
-	isPanRequired(): boolean {
-		const countryControl = this.companyForm.get('CountryMasterSid');
-		if (!countryControl || !this.dropdownStore.countries()) return false;
-
-		const countryId = countryControl.value;
-		const country = this.dropdownStore.countries().find(c => c.CountryMasterSid === countryId);
-
-		return country?.countryName?.toLowerCase() === 'india';
-	}
-
 	handlePanControl(country: any): void {
-		if (!country || !this.dropdownStore.countries()) return;
+  if (!country || !this.dropdownStore.countries()) return;
 
-		const panControl = this.companyForm.get('Pan');
-		if (!panControl) return;
+  const panControl = this.companyForm.get('Pan');
+  if (!panControl) return;
 
-		const countryName = country.countryName ||
-			this.dropdownStore.countries().find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
+  const countryName = country.countryName ||
+    this.dropdownStore.countries().find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
 
-		const isIndia = countryName?.toLowerCase() === 'india';
-		this.isPanRequiredFlag = isIndia;
+  const isIndia = countryName?.toLowerCase().includes('india');
+  this.isPanRequiredFlag = isIndia;
 
-		if (isIndia) {
-			panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
-			// this.appSettingService.showInfo('PAN is required for Indian companies');
-		} else {
-			panControl.setValidators([Validators.maxLength(20), this.panValidator]);
-		}
-		panControl.updateValueAndValidity();
-	}
+  // Update label first
+  this.updateTaxIdLabelAndValidation(country.CountryMasterSid);
+
+  // Then update validators based on country
+  if (isIndia) {
+    panControl.setValidators([Validators.maxLength(20), this.panValidator]);
+  } else {
+    panControl.setValidators([Validators.maxLength(20)]);
+  }
+  
+  panControl.updateValueAndValidity();
+}
 
 	gstValidator(control: AbstractControl): ValidationErrors | null {
 		const gstin = control.value;
@@ -1676,12 +1747,67 @@ getTimezoneErrorMessage(): string {
 		return GST_REGEX.test(gstin) ? null : { invalidGST: true };
 	}
 	panValidator(control: AbstractControl): ValidationErrors | null {
-		const pan = control.value;
-		// 5 alphabets + 4 numbers + 1 alphabet
-		const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-		if (!pan) return null;
-		return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
-	}
+  const pan = control.value;
+  if (!pan) return null;
+
+  // Remove any spaces and convert to uppercase
+  const cleanPan = pan.toString().replace(/\s/g, '').toUpperCase();
+  
+  // PAN format: 5 letters + 4 digits + 1 letter
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  
+  if (!PAN_REGEX.test(cleanPan)) {
+    return { 
+      invalidPAN: true,
+      message: 'PAN must be in format: AAAAA9999A (5 letters + 4 digits + 1 letter)'
+    };
+  }
+
+  return null;
+}
+
+isIndianCountry(): boolean {
+  const countryId = this.companyForm.get('CountryMasterSid')?.value;
+  if (!countryId) return false;
+  
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
+  const countryName = country?.countryName?.toLowerCase() || '';
+  
+  return countryName.includes('india');
+}
+
+isUaeCountry(): boolean {
+  const countryId = this.companyForm.get('CountryMasterSid')?.value;
+  if (!countryId) return false;
+  
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
+  const countryName = country?.countryName?.toLowerCase() || '';
+  
+  return countryName.includes('uae') ||
+         countryName.includes('dubai') ||
+         countryName.includes('united arab emirates');
+}
+
+getTaxIdErrorMessage(): string {
+  const panControl = this.companyForm.get('Pan');
+  if (!panControl?.errors) return '';
+  
+  const errors = panControl.errors;
+  
+  if (errors['invalidPAN']) {
+    return 'Invalid PAN format. Format: AAAAA9999A (5 letters + 4 digits + 1 letter)';
+  }
+  
+  if (errors['invalidTRN']) {
+    return 'Invalid TRN format. Must be 15 digits starting with 1-9';
+  }
+  
+  if (errors['required']) {
+    return 'Required';
+  }
+  
+  return 'Invalid format';
+}
 
 	checkForBankDuplication() {
 		const bankArr = this.branchBanks(this.currentBranchIndex).getRawValue();

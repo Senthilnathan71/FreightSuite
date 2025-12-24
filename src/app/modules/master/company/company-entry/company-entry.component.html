@@ -417,21 +417,40 @@
             <!-- PAN -->
 
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="panInput" class="custom-input-field sm" formControlName="Pan" placeholder=""
-                  maxlength="20" />
-                <label for="panInput" class="input-label">
-                  PAN
-                  <span class="text-danger" *ngIf="isPanRequiredFlag"> *</span>
-                </label>
-
-                <div class="error-message" *ngIf="companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid">
-                  <span *ngIf="companyForm.get('Pan')?.hasError('required')">Required</span>
-                  <span *ngIf="companyForm.get('Pan')?.hasError('invalidPAN')">Provided PAN is invalid</span>
-                  <span *ngIf="companyForm.get('Pan')?.hasError('maxlength')">Max 20 Characters</span>
-                </div>
-              </div>
-            </aside>
+  <div class="custom-form-group">
+    @if (isUaeCountry()) {
+      <input type="text" 
+             id="Pan" 
+             formControlName="Pan" 
+             placeholder="" 
+             class="custom-input-field sm" 
+             maxlength="15"
+             [onlyNumbers]="15">
+    } @else {
+      <input type="text" 
+             id="Pan" 
+             formControlName="Pan" 
+             placeholder="" 
+             class="custom-input-field sm" 
+             maxlength="20"
+             [textWithNumbers]="20"
+             [style.text-transform]="isIndianCountry() ? 'uppercase' : 'none'">
+    }
+    
+    <label for="Pan" class="input-label">
+      {{ currentTaxIdLabel }}
+      @if (isIndianCountry() && isPanAvailable) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    
+    @if (companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid) {
+      <div class="error-message">
+        <span>{{ getTaxIdErrorMessage() }}</span>
+      </div>
+    }
+  </div>
+</aside>
 
 
 
