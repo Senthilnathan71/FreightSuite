@@ -536,6 +536,68 @@ export class ReportRegistryService {
       console.warn(' Ledger Report component not yet created:', error);
     }
 
+    // Balance Sheet Report
+    try {
+      const { BalanceSheetReportComponent } = await import(
+        '../components/reports/balance-sheet-report/balance-sheet-report.component'
+      );
+
+      this.registerReport({
+        id: 'balance-sheet',
+        title: 'Balance Sheet',
+        component: BalanceSheetReportComponent,
+        filenameTemplate: 'Balance_Sheet_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Balance_Sheet',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Balance_Sheet</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Ledger Report component not yet created:', error);
+    }
+
+    // VAT Report
+    try {
+      const { VatReportComponent } = await import(
+        '../components/reports/vat-report/vat-report.component'
+      );
+
+      this.registerReport({
+        id: 'vat-receivable-report',
+        title: 'VAT Report',
+        component: VatReportComponent,
+        filenameTemplate: 'VAT_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'VAT_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> VAT_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Ledger Report component not yet created:', error);
+    }
+
 // ======================================================
     // operation report
 

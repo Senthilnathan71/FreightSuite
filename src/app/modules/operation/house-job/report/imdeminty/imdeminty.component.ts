@@ -116,7 +116,7 @@ async downloadPDF() {
   setTimeout(async () => {
     this.spinner.show();
    try {
-  const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
+  const HouseJob = this.housejobData?.ShipmentNo || '';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
          `Indemnity_${HouseJob}`,
