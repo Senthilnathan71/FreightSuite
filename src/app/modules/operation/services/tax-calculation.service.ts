@@ -26,15 +26,17 @@ export interface BookingRateDetails {
   CustomerMasterSid: number;
   CustomerBranchSid: number;
   VoucherHeaderSid?: number;
-  chargeMaster?: {
+  ChargeMaster?: {
     chargeName: string;
     HSNSAC?: string;
-    chargeTaxMapping?: Array<{
-      hSSACMaster: {
-        TaxRate: number;
-        TaxType: string;
-        HSSACCode: string;
-      }
+    chargeTaxMaster?: Array<{    
+      ChargeTaxMasterSid : number;
+      HSNCode : string;
+      HSSACMasterSid : number;
+      TaxGroup : string;
+      TaxGroupSid : number;
+      TaxRate : string;
+      description : string;
     }>;
   };
   customerMaster?: BillingPartyDetails;
@@ -333,10 +335,10 @@ export class TaxCalculationService {
 
   private getChargeTaxRate(charge: BookingRateDetails): number {
     // Try to get tax rate from charge master tax mapping
-    if (charge.chargeMaster?.chargeTaxMapping?.length > 0) {
-      const taxMapping = charge.chargeMaster.chargeTaxMapping[0];
-      if (taxMapping.hSSACMaster?.TaxRate) {
-        return Number(taxMapping.hSSACMaster.TaxRate);
+    if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
+      const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
+      if (taxMapping.TaxRate) {
+        return Number(taxMapping.TaxRate);
       }
     }
 
@@ -356,15 +358,15 @@ export class TaxCalculationService {
 
   private getChargeHSN(charge: BookingRateDetails): string {
     // Try to get HSN from charge master
-    if (charge.chargeMaster?.HSNSAC) {
-      return charge.chargeMaster.HSNSAC;
+    if (charge.ChargeMaster?.HSNSAC) {
+      return charge.ChargeMaster.HSNSAC;
     }
 
     // Try to get from tax mapping
-    if (charge.chargeMaster?.chargeTaxMapping?.length > 0) {
-      const taxMapping = charge.chargeMaster.chargeTaxMapping[0];
-      if (taxMapping.hSSACMaster?.HSSACCode) {
-        return taxMapping.hSSACMaster.HSSACCode;
+    if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
+      const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
+      if (taxMapping.HSNCode) {
+        return taxMapping.HSNCode;
       }
     }
 
