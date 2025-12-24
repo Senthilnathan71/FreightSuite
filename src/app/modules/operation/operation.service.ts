@@ -234,6 +234,14 @@ export class OperationService {
     );
   }
 
+  getSubledgerMasterById(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/find-subledger', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
   getBookingByBookingNumber(BookingNumber: string) {
     return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch/${BookingNumber}`).pipe(
       map((resp) => {
