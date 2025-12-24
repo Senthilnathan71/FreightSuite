@@ -22,10 +22,12 @@ export class PackingListComponent {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currentDate = new Date();
+ 
   @Input() masterJobData: any;
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] = [];
   @Input() TandCList: any;
+  @Input() selectedFCLLCL: string = 'LCL';
   
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;

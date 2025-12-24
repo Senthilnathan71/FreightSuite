@@ -27,106 +27,107 @@
      style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; 
             border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;">
             
-
-   <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-0">
-       <div style="display: flex; flex-direction: column; width: 100%; padding-left: 25px; padding-top: 10px;" class="fs-3 p-3">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; flex-direction: column;">
-            <!-- Print logo -->
-            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-            <!-- Pdf logo -->
-   
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-        </div>
-
-        <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 15px;">
-                {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
-                - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
-            </p>
-            <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-        </div>
-    </div>
-</div>
-</div>
+  <!-- Company Info -->
+                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; flex-direction: column;">
+                            <!-- Print logo -->
+                            <img *ngIf="showPrintLogo"
+                                src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+                            <!-- Pdf logo -->
+                            <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                style="width:50px; height:50px; object-fit:contain;">
+                            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
+                            </h4>
+                        </div>
+                        <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                            <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                            </h3>
+                            <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+                            </h5>
+                            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+                                currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City ||
+                                ''
+                                }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                                currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
 
 
     <!-- Title Separator -->
     <div style="height:1px; background:black; width:100%; margin:1rem 0;"></div>
 
-    <h5 style="text-align:center; font-weight:600; margin-bottom:1rem;">RELEASE LETTER</h5>
+    <h3 style="text-align:center;  margin-bottom:1rem;font-weight: bold;"><strong>RELEASE LETTER</strong></h3>
 
 
     <!-- Details Box -->
     <div class="row" 
-         style="display:flex; flex-wrap:wrap; padding:15px 30px; margin:0; border:1px solid black;">
+         style="display:flex; flex-wrap:wrap; padding-top: 10px; margin:0; border:1px solid black;">
 
         <!-- Left -->
-        <div class="col-md-6" style="flex:0 0 50%; max-width:50%;">
+        <div  style="flex:0 0 50%; max-width:50%;font-size: 16px;">
             
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">CFS</strong>
+                <strong style="width:130px;font-weight: bold;">CFS</strong>
                 <p style="margin:0;">: {{ getCfsValue(masterJobData?.others?.[0]?.CFS) }}</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Attn</strong>
+                <strong style="width:130px;font-weight: bold;">Attn</strong>
                 <p style="margin:0;">:</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Shipper</strong>
+                <strong style="width:130px;font-weight: bold;">Shipper</strong>
                 <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.ShipperName}}</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Vessel</strong>
+                <strong style="width:130px;font-weight: bold;">Vessel</strong>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
             </div>
 
             <div style="display:flex;">
-                <strong style="width:130px;">Voyage</strong>
+                <strong style="width:130px;font-weight: bold;">Voyage</strong>
                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
             </div>
 
         </div>
 
         <!-- Right -->
-        <div class="col-md-6" style="flex:0 0 50%; max-width:50%;">
+        <div  style="flex:0 0 50%; max-width:50%;font-size: 16px;">
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Date</strong>
+                <strong style="width:130px;font-weight: bold;">Date</strong>
                 <p style="margin:0;">: {{ masterJobData.MasterJobDate | formatDate }}</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Your Booking Ref.</strong>
+                <strong style="width:130px;font-weight: bold;">Your Booking Ref.</strong>
                 <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Our Booking Ref.</strong>
+                <strong style="width:130px;font-weight: bold;">Our Booking Ref.</strong>
                 <p style="margin:0;">:</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Port Of Discharge</strong>
+                <strong style="width:130px;font-weight: bold;">Port Of Discharge</strong>
                 <p style="margin:0;">: {{ masterJobData.POD }}</p>
             </div>
 
             <div style="display:flex; margin-bottom:2px;">
-                <strong style="width:130px;">Final Destination</strong>
+                <strong style="width:130px;font-weight: bold;">Final Destination</strong>
                 <p style="margin:0;">: {{ masterJobData.FPD }}</p>
             </div>
 
             <div style="display:flex;">
-                <strong style="width:130px;">Final Destination</strong>
+                <strong style="width:130px;font-weight: bold;">Final Destination</strong>
                 <p style="margin:0;">: {{ masterJobData.MarksandNumber }}</p>
             </div>
 
@@ -136,15 +137,15 @@
 
 
     <!-- Cargo Details -->
-    <h6 style="font-weight:600; margin-top:12px; text-align:center;">CARGO DETAILS</h6>
+    <h4 style=" margin-top:12px; text-align:center;"><strong>CARGO DETAILS</strong></h4>
 
-    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border:1px solid black;">
+    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px; border:1px solid black;">
         <thead>
             <tr>
-                <th style="border:1px solid black; padding:4px; text-align:center;">Package Type</th>
-                <th style="border:1px solid black; padding:4px; text-align:center;">No of Pkgs</th>
-                <th style="border:1px solid black; padding:4px; text-align:center;">Gross Weight</th>
-                <th style="border:1px solid black; padding:4px; text-align:center;">Volume</th>
+                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bold;"><strong>Package Type</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bold;"><strong>No. of Pkgs</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bold;"><strong>Gross Weight</strong></th>
+                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bold;"><strong>Volume</strong></th>
             </tr>
         </thead>
 

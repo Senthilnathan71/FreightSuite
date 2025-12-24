@@ -3629,6 +3629,7 @@ ${this.userData['userName']}`;
         // modalRef.componentInstance.cfsList=this.cfsList || [];
         modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
         modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
       }
 
   reportReleaseOrder() {

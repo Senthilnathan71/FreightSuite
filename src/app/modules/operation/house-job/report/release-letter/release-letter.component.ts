@@ -30,6 +30,7 @@ export class ReleaseLetterComponent {
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] = [];
   @Input() masterJobData: any;
+  @Input() containerTypeList: any;
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
@@ -107,6 +108,14 @@ get totalVolume(): number {
   }, 0) || 0;
 }
 
+ getContainerName(ContainerTypeMasterSid: number) {
+    console.log(ContainerTypeMasterSid);
+    if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) {
+      return "";
+    }
+    console.log("HERE", this.containerTypeList)
+    return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
+  }
 
   getPackageTypeName(pkgTypeSid: number): string {
     if (!pkgTypeSid) return 'Unknown';
