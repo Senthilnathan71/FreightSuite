@@ -95,6 +95,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   debitTotal = 0;
   creditTotal = 0;
   difference = 0;
+  private showWarningFlags: boolean[] = [];
 
   constructor(
     private router: Router,
@@ -121,6 +122,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.setTodayDate();
     this.loadMasterData();
     this.checkEditMode();
+    this.subledgerTypes = [];
   }
 
   loadUserAndCompanyData(): void {
@@ -234,7 +236,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   loadSubledgerList(): void {
-    this.maasterService.getSubledgerMasterByType('Charge', this.currentCompany?.CompanyMasterSid).subscribe({
+    this.maasterService.getAllSuledgermaster().subscribe({
       next: (response: any) => {
         this.subledgerList = response.data || [];
       },
@@ -300,6 +302,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       this.details.clear();
 
       if (voucher.VoucherDetail && Array.isArray(voucher.VoucherDetail)) {
+        this.subledgerTypes = new Array(voucher.VoucherDetail.length).fill('');
         // Load all details first, then handle async operations
         const detailPromises = voucher.VoucherDetail.map(async (detail: any) => {
           const detailGroup = this.createDetailGroup();
@@ -350,11 +353,25 @@ export class JournalVoucherEntryComponent implements OnInit {
             await this.handleJobsForEdit(detailGroup, detail, index);
           }
 
-          // Refresh subledger filters after all data is loaded
-          setTimeout(() => {
-            this.refreshSubledgerFiltersForRow(index);
-          }, 100);
-
+          if (detail.COAMasterSid && this.currentCompany?.CompanyMasterSid) {
+                        const payload = {
+                            CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+                            COAMasterSid: detail.COAMasterSid
+                        };
+                        
+                        try {
+                            const subledgerResp = await firstValueFrom(
+                                this.operationService.getSubledgerMasterById(payload)
+                            );
+                            
+                            if (subledgerResp && subledgerResp.data) {
+                                this.subledgerTypes[index] = subledgerResp.data.SubledgerType || '';
+                            }
+                        } catch (err) {
+                            console.error('Error fetching subledger type for edit:', err);
+                        }
+                    }
+                     await this.handleSubledgerForEdit(detailGroup, detail, index);
           return detailGroup;
         });
 
@@ -457,41 +474,45 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
 
   filterDetailsWithDept(dept: any, detailIndex: number) {
     if (!dept) {
-      const row = this.details.at(detailIndex) as FormGroup;
-      row.patchValue({
-        ChargeDescription: '',
-        HSSACMasterSid: null,
-        ChargeUOMSid: null,
-        MasterJobSid: null,
-        HouseJobSid: null,
-        ledgerMasterSid: null,
-      filteredSubledgers: [],
-      chargeMasterSid: null, // Also clear charge since it's department-dependent
-      chargeDescription: '',
-      HSSACCode: '',
-      taxPercentage: 0,
-      taxAmount: 0
-      });
-      this.filteredChargeList[detailIndex] = [];
-      this.masterJobList[detailIndex] = [];
-      this.houseJobList[detailIndex] = [];
-      return;
+        const row = this.details.at(detailIndex) as FormGroup;
+        row.patchValue({
+            ChargeDescription: '',
+            HSSACMasterSid: null,
+            ChargeUOMSid: null,
+            MasterJobSid: null,
+            HouseJobSid: null,
+            ledgerMasterSid: null,
+            filteredSubledgers: [],
+            chargeMasterSid: null, // Also clear charge since it's department-dependent
+            chargeDescription: '',
+            HSSACCode: '',
+            taxPercentage: 0,
+            taxAmount: 0
+        });
+        this.filteredChargeList[detailIndex] = [];
+        this.masterJobList[detailIndex] = [];
+        this.houseJobList[detailIndex] = [];
+        return;
     }
+    
     this.filterChargeByDeptForARow(dept, detailIndex);
+    
+    // IMPORTANT: Refresh subledger filters which will trigger auto-patching
     this.refreshSubledgerFiltersForRow(detailIndex);
+    
     this.accountsService.getMasterJobByDepartment({
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: dept?.DepartmentMasterSid
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        DepartmentMasterSid: dept?.DepartmentMasterSid
     }).subscribe({
-      next: (resp: any) => {
-        this.masterJobList[detailIndex] = resp;
-      },
-      error: (err) => {
-        console.error('Failed to load master jobs:', err);
-      }
+        next: (resp: any) => {
+            this.masterJobList[detailIndex] = resp;
+        },
+        error: (err) => {
+            console.error('Failed to load master jobs:', err);
+        }
     });
-  }
+}
 
   onMasterJobChange(detailIndex: number, masterJob: any) {
     if (!masterJob || !masterJob.MasterJobSid) {
@@ -547,7 +568,7 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
     return this.fb.group({
       VoucherDetailSid: [null],
       coaMasterSid: [null, Validators.required],
-      ledgerMasterSid: [{value:null, disabled:true}],
+      ledgerMasterSid: [{value:null}],
       currencyMasterSid: [null, Validators.required],
       currencyCode: [''],
       exchangeRate: [1, [Validators.required, Validators.min(0)]],
@@ -581,6 +602,16 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
     this.masterJobList[newIndex] = [];
     this.houseJobList[newIndex] = [];
     this.hssacList[newIndex] = [];
+    this.subledgerTypes[newIndex] = '';
+}
+
+hasChargeTypeRows(): boolean {
+    // Check if any subledgerType is 'Charge'
+    // Make sure subledgerTypes is initialized as an array
+    if (!this.subledgerTypes || this.subledgerTypes.length === 0) {
+        return false;
+    }
+    return this.subledgerTypes.some(type => type === 'Charge');
 }
 
   setupDetailCalculations(detailGroup: FormGroup): void {
@@ -624,6 +655,9 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
       // Refresh subledger filters (SubledgerMappingSid filter removed)
       this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
     }
+     if (this.subledgerTypes[this.getRowIndex(detailGroup)] === 'Charge') {
+        this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
+    }
   });
 
   detailGroup.get('departmentMasterSid')?.valueChanges.subscribe((deptId) => {
@@ -633,6 +667,9 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
     
     // Call filterDetailsWithDept which will handle all filtering
     this.filterDetailsWithDept(dept, this.getRowIndex(detailGroup));
+    if (this.subledgerTypes[this.getRowIndex(detailGroup)] === 'Charge') {
+        this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
+    }
   });
 
   detailGroup.get('taxPercentage')?.valueChanges.subscribe(() => {
@@ -677,14 +714,71 @@ getSubledgerFilterStatus(rowIndex: number): string {
   
   return `Dept: ${deptId || 'Any'}, Charge: ${chargeId || 'Any'}, COA: ${coaId || 'Any'}, Matches: ${filteredCount}`;
 }
+subledgerTypes: string[] = [];
+
+showChargeSection(rowIndex: number): boolean {
+    return this.subledgerTypes[rowIndex] === 'Charge';
+}
 
 onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
-  const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
-  
-  console.log(`COA changed to: ${coaId} for row ${this.getRowIndex(detailGroup)}`);
-  
-  // Refresh subledger filters (COA filter affects CrCOAMasterSid/DrCOAMasterSid matching)
-  this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
+    const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
+    const rowIndex = this.getRowIndex(detailGroup);
+    
+    console.log(`COA changed to: ${coaId} for row ${rowIndex}`);
+    
+    // Clear previous subledger type
+    this.subledgerTypes[rowIndex] = '';
+    
+    // Fetch subledger details when COA changes
+    if (coaId && this.currentCompany?.CompanyMasterSid) {
+        const payload = {
+            CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+            COAMasterSid: coaId
+        };
+        
+        this.operationService.getSubledgerMasterById(payload).subscribe({
+            next: (response: any) => {
+                if (response && response.data) {
+                    const subledger = response.data;
+                    // Store the subledger type for this row
+                    this.subledgerTypes[rowIndex] = subledger.SubledgerType || '';
+                    
+                    console.log(`Subledger type for row ${rowIndex}:`, this.subledgerTypes[rowIndex]);
+                    
+                    // IMPORTANT: Don't disable or auto-patch here anymore
+                    // Let refreshSubledgerFiltersForRow handle it based on all conditions
+                    detailGroup.get('ledgerMasterSid')?.enable();
+                    
+                    // Refresh filters - this will handle auto-patching if conditions are met
+                    this.refreshSubledgerFiltersForRow(rowIndex);
+                } else {
+                    // No subledger found
+                    this.subledgerTypes[rowIndex] = '';
+                    detailGroup.get('ledgerMasterSid')?.enable();
+                    detailGroup.patchValue({
+                        ledgerMasterSid: null
+                    }, { emitEvent: false });
+                    this.refreshSubledgerFiltersForRow(rowIndex);
+                }
+            },
+            error: (err) => {
+                console.error('Error fetching subledger:', err);
+                this.subledgerTypes[rowIndex] = '';
+                detailGroup.get('ledgerMasterSid')?.enable();
+                detailGroup.patchValue({
+                    ledgerMasterSid: null
+                }, { emitEvent: false });
+                this.refreshSubledgerFiltersForRow(rowIndex);
+            }
+        });
+    } else {
+        this.subledgerTypes[rowIndex] = '';
+        detailGroup.get('ledgerMasterSid')?.enable();
+        detailGroup.patchValue({
+            ledgerMasterSid: null
+        }, { emitEvent: false });
+        this.refreshSubledgerFiltersForRow(rowIndex);
+    }
 }
 
 
@@ -849,32 +943,38 @@ fetchHSSACForExistingDetail(detailGroup: FormGroup, chargeId: number, rowIndex: 
 }
 
 onChargeChange(detailGroup: FormGroup, chargeId: number): void {
-  console.log('Charge value changed:', chargeId);
-  
-  if (chargeId) {
-    const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
+    console.log('Charge value changed:', chargeId);
     
-    if (charge) {
-      const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
-      
-      // Fetch HSSAC details using API (same as invoice component)
-      this.fetchHSSACForCharge(detailGroup, chargeId, description);
-      
+    if (chargeId) {
+        const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
+        
+        if (charge) {
+            const description = charge.ChargeDescription || charge.chargeName || charge.ChargeName || '';
+            
+            // Fetch HSSAC details using API (same as invoice component)
+            this.fetchHSSACForCharge(detailGroup, chargeId, description);
+            
+        }
+    } else {
+        // Reset charge-related fields when charge is cleared
+        detailGroup.patchValue({
+            chargeDescription: '',
+            hssacMasterSid: null,
+            hssacCode: '',
+            taxPercentage: 0,
+            taxAmount: 0,
+            ChargeUOMSid: null
+        });
+        
+        // Refresh subledger filters - this will clear auto-patched subledger
+        this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
     }
-  } else {
-    // Reset charge-related fields when charge is cleared
-    detailGroup.patchValue({
-      chargeDescription: '',
-      hssacMasterSid: null,
-      hssacCode: '',
-      taxPercentage: 0,
-      taxAmount: 0,
-      ChargeUOMSid: null
-    });
     
-    // Refresh subledger filters
-    this.refreshSubledgerFiltersForRow(this.getRowIndex(detailGroup));
-  }
+    // Always refresh subledger filters when charge changes (for auto-patching)
+    const rowIndex = this.getRowIndex(detailGroup);
+    if (this.subledgerTypes[rowIndex] === 'Charge') {
+        this.refreshSubledgerFiltersForRow(rowIndex);
+    }
 }
 
 // New method to fetch HSSAC details using API
@@ -1266,85 +1366,181 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
   }
 
   refreshSubledgerFiltersForRow(rowIndex: number): void {
-  const row = this.details.at(rowIndex) as FormGroup;
-  
-  const deptId = row.get('departmentMasterSid')?.value;
-  const chargeId = row.get('chargeMasterSid')?.value;
-  const coaId = row.get('coaMasterSid')?.value;
-  
-  console.log(`Refreshing subledger filters for row ${rowIndex}:`, {
-    deptId,
-    chargeId,
-    coaId
-  });
-  
-  let filteredSubledgers: any[] = [];
-  
-  // Apply ALL filters in sequence
-  // Start with all subledgers
-  filteredSubledgers = this.subledgerList.slice();
-  
-  // Filter 1: By DepartmentMasterSid (if selected)
-  if (deptId) {
-    filteredSubledgers = filteredSubledgers.filter(subledger => 
-      subledger.DepartmentMasterSid === deptId
-    );
-    console.log(`After department filter (${deptId}):`, filteredSubledgers.length);
-  }
-  
-  // Filter 2: By SubledgerMappingSid (which must equal ChargeMasterSid if charge is selected)
-  if (chargeId) {
-    filteredSubledgers = filteredSubledgers.filter(subledger => 
-      subledger.SubledgerMappingSid === chargeId
-    );
-    console.log(`After charge/SubledgerMapping filter (${chargeId}):`, filteredSubledgers.length);
-  }
-  
-  // Filter 3: By COA - must match EITHER CrCOAMasterSid OR DrCOAMasterSid (if COA is selected)
-  if (coaId) {
-    filteredSubledgers = filteredSubledgers.filter(subledger => 
-      this.doesSubledgerMatchCOAStrict(subledger, coaId)
-    );
-    console.log(`After COA filter (${coaId}):`, filteredSubledgers.length);
-  }
-  
-  // Update the filtered subledgers for this row
-  row.patchValue({ filteredSubledgers }, { emitEvent: false });
-  
-   if (filteredSubledgers.length === 1) {
-    const singleSubledger = filteredSubledgers[0];
-    console.log(`Auto-selecting subledger for row ${rowIndex}:`, singleSubledger);
+    const row = this.details.at(rowIndex) as FormGroup;
     
-    // Disable the subledger field and auto-patch the value
-    row.get('ledgerMasterSid')?.disable();
-    row.patchValue({
-      ledgerMasterSid: singleSubledger.SubledgerMasterSid
-    }, { emitEvent: false });
+    const deptId = row.get('departmentMasterSid')?.value;
+    const chargeId = row.get('chargeMasterSid')?.value;
+    const coaId = row.get('coaMasterSid')?.value;
+    const subledgerType = this.subledgerTypes[rowIndex];
     
-  } else if (filteredSubledgers.length === 0) {
-    // No matching subledgers - clear and enable field
-    console.log(`No matching subledgers for row ${rowIndex}`);
-    row.get('ledgerMasterSid')?.disable();
-    row.patchValue({
-      ledgerMasterSid: null
-    }, { emitEvent: false });
+    console.log(`Refreshing subledger filters for row ${rowIndex}:`, {
+        deptId,
+        chargeId,
+        coaId,
+        subledgerType
+    });
     
-  } else {
-    // Multiple matching subledgers - enable field for manual selection
-    console.log(`Multiple subledgers (${filteredSubledgers.length}) found for row ${rowIndex}`);
-    row.get('ledgerMasterSid')?.disable();
+    let filteredSubledgers: any[] = [];
     
-    // If current selection is not in filtered list, clear it
-    const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
-    if (currentSubledgerSid) {
-      const currentSubledger = filteredSubledgers.find(
-        sl => sl.SubledgerMasterSid === currentSubledgerSid
-      );
-      if (!currentSubledger) {
-        row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
-      }
+    // Start with all subledgers
+    filteredSubledgers = this.subledgerList.slice();
+    
+    // Filter 1: By DepartmentMasterSid (if selected)
+    if (deptId) {
+        filteredSubledgers = filteredSubledgers.filter(subledger => 
+            subledger.DepartmentMasterSid === deptId
+        );
+        console.log(`After department filter (${deptId}):`, filteredSubledgers.length);
     }
-  }
+    
+    // Filter 2: By SubledgerMappingSid (which must equal ChargeMasterSid if charge is selected)
+    if (chargeId) {
+        filteredSubledgers = filteredSubledgers.filter(subledger => 
+            subledger.SubledgerMappingSid === chargeId
+        );
+        console.log(`After charge/SubledgerMapping filter (${chargeId}):`, filteredSubledgers.length);
+    }
+    
+    // Filter 3: By COA - must match EITHER CrCOAMasterSid OR DrCOAMasterSid (if COA is selected)
+    if (coaId) {
+        filteredSubledgers = filteredSubledgers.filter(subledger => 
+            this.doesSubledgerMatchCOAStrict(subledger, coaId)
+        );
+        console.log(`After COA filter (${coaId}):`, filteredSubledgers.length);
+    }
+    
+    // Update the filtered subledgers for this row
+    row.patchValue({ filteredSubledgers }, { emitEvent: false });
+    
+    // SPECIAL LOGIC FOR CHARGE TYPE
+    if (subledgerType === 'Charge') {
+        // AUTO-PATCHING: If exactly one subledger matches, auto-select it
+        if (filteredSubledgers.length === 1) {
+            const singleSubledger = filteredSubledgers[0];
+            console.log(`Auto-patching subledger for Charge type in row ${rowIndex}:`, singleSubledger);
+            
+            row.patchValue({
+                ledgerMasterSid: singleSubledger.SubledgerMasterSid
+            }, { emitEvent: false });
+            
+            // Disable the field since it's auto-selected
+            row.get('ledgerMasterSid')?.disable();
+            this.showWarningFlags[rowIndex] = false;
+            
+        } else if (filteredSubledgers.length === 0) {
+            // Show warning if no subledger exists for the selected combination
+            if (deptId && chargeId && coaId) {
+                if (!this.showWarningFlags[rowIndex]) {
+                    this.showSubledgerWarning(rowIndex);
+                    this.showWarningFlags[rowIndex] = true;
+                    
+                    // Reset flag after 2 seconds to allow showing again if needed
+                    setTimeout(() => {
+                        this.showWarningFlags[rowIndex] = false;
+                    }, 2000);
+                }
+            }
+            // Clear any existing selection and enable field
+            row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+            row.get('ledgerMasterSid')?.enable();
+            
+        } else if (filteredSubledgers.length > 1) {
+            // Multiple options available - enable selection
+            console.log(`Multiple subledgers (${filteredSubledgers.length}) found for Charge type in row ${rowIndex}`);
+            
+            // If current selection is not in filtered list, clear it
+            const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
+            if (currentSubledgerSid) {
+                const currentSubledger = filteredSubledgers.find(
+                    sl => sl.SubledgerMasterSid === currentSubledgerSid
+                );
+                if (!currentSubledger) {
+                    row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+                }
+            }
+            row.get('ledgerMasterSid')?.enable();
+            this.showWarningFlags[rowIndex] = false;
+        }
+    } else {
+        // For non-Charge types, always enable the field for manual selection
+        row.get('ledgerMasterSid')?.enable();
+        
+        // If current selection is not in filtered list, clear it
+        const currentSubledgerSid = row.get('ledgerMasterSid')?.value;
+        if (currentSubledgerSid) {
+            const currentSubledger = filteredSubledgers.find(
+                sl => sl.SubledgerMasterSid === currentSubledgerSid
+            );
+            if (!currentSubledger) {
+                row.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+            }
+        }
+        this.showWarningFlags[rowIndex] = false;
+    }
+}
+
+// New method to show warning when subledger doesn't exist
+showSubledgerWarning(rowIndex: number): void {
+    const row = this.details.at(rowIndex) as FormGroup;
+    const deptId = row.get('departmentMasterSid')?.value;
+    const chargeId = row.get('chargeMasterSid')?.value;
+    const coaId = row.get('coaMasterSid')?.value;
+    
+    const departmentName = this.departmentList.find(d => d.DepartmentMasterSid === deptId)?.departmentName || 'N/A';
+    const chargeName = this.chargeList.find(c => c.ChargeMasterSid === chargeId)?.chargeName || 'N/A';
+    const coaName = this.coaList.find(c => c.COAMasterSid === coaId)?.LedgerName || 'N/A';
+    
+    const warningMessage = `No subledger exists for the selected combination:
+    -  ${departmentName}
+    -  ${chargeName}
+    -  ${coaName}`;
+    
+    this.appSettingService.showWarning(warningMessage, 'Subledger Not Found');
+}
+
+async handleSubledgerForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): Promise<void> {
+    // Fetch subledger details for this COA
+    if (detail.COAMasterSid && this.currentCompany?.CompanyMasterSid) {
+        try {
+            const payload = {
+                CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+                COAMasterSid: detail.COAMasterSid
+            };
+            
+            const subledgerResp = await firstValueFrom(
+                this.operationService.getSubledgerMasterById(payload)
+            );
+            
+            if (subledgerResp && subledgerResp.data) {
+                const subledger = subledgerResp.data;
+                this.subledgerTypes[rowIndex] = subledger.SubledgerType || '';
+                
+                // For Charge type in edit mode, check if we should auto-patch
+                if (this.subledgerTypes[rowIndex] === 'Charge') {
+                    // Don't auto-patch yet - wait for all filters to be applied
+                    detailGroup.get('ledgerMasterSid')?.enable();
+                    
+                    // The refreshSubledgerFiltersForRow will be called after department and charge are set
+                    // It will handle auto-patching if conditions are met
+                } else {
+                    // For non-Charge types, just enable the field
+                    detailGroup.get('ledgerMasterSid')?.enable();
+                }
+                
+                // If we have an existing value from edit mode, keep it temporarily
+                // The refreshSubledgerFiltersForRow will validate it later
+                if (detail.LedgerMasterSid) {
+                    detailGroup.patchValue({
+                        ledgerMasterSid: detail.LedgerMasterSid
+                    }, { emitEvent: false });
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching subledger for edit:', err);
+            this.subledgerTypes[rowIndex] = '';
+            detailGroup.get('ledgerMasterSid')?.enable();
+        }
+    }
 }
 
 doesSubledgerMatchCOAStrict(subledger: any, coaMasterSid: number): boolean {

@@ -145,7 +145,8 @@
     <div class="bg-white">
         <div class="split-table-container d-flex" formArrayName="details">
             <!-- Fixed Left Table -->
-            <div class="table-fixed table-borderless" style="flex: 0 0 auto; max-width: 1000px; overflow: hidden;">
+            <div class="table-fixed table-borderless" [style]="!hasChargeTypeRows() ? 'flex: 1 1 auto; max-width: 100% !important;' : 'flex: 0 0 auto; max-width: 1000px;'"
+             style="overflow: hidden;">
                 <table class="table table-hover align-middle no-wrap table-sm mb-0">
                     <thead class="bg-info">
                         <tr>
@@ -187,7 +188,7 @@
                             <td>
                                 <ng-select formControlName="ledgerMasterSid"
                                     [items]="(row.get('filteredSubledgers')?.value || [])" bindLabel="SubledgerName"
-                                    bindValue="SubledgerMasterSid" appendTo="body" placeholder="" [readonly]>
+                                    bindValue="SubledgerMasterSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
@@ -225,7 +226,7 @@
             </div>
 
             <!-- Scrollable Right Table -->
-            <div class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
+            <div *ngIf="hasChargeTypeRows()" class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
                 <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
                     <thead class="bg-info">
                         <tr>
