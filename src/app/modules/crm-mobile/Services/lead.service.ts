@@ -228,6 +228,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
       })
     )
   }
+  getUOMByCode(UOMCode : string){
+    return this.http.get(`uom/uom-by-code/${UOMCode}`).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response.data;
+      })
+    )
+  }
 
   getAllWeightUnits() {
     return this.http.get('unit/weight').pipe(

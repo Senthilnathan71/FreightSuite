@@ -627,6 +627,8 @@
                        <aside class="col-md-3">
 
                       </aside> -->
+                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL' || route.value.segmentType === 'AIR'">
+                      </aside>
                       <aside class="col-md-2 d-md-block d-none"
                         *ngIf="route.value.segmentType === 'LCL'|| route.value.segmentType === 'AIR'"></aside>
                       <aside class="col-md-2 d-md-block d-none" *ngIf="route.value.segmentType === 'LCL'"></aside>

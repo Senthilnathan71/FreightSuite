@@ -1524,8 +1524,8 @@ ${this.userData.userName}`;
 
   navigateQuotation() {
     const response = this.rateRequestData;
-    const polList = response.enquiryRoute.map(route => route.POLSid);
-    const podList = response.enquiryRoute.map(route => route.PODSid);
+    const polList = (response.enquiryRoute || []).map(route => route.POLSid);
+    const podList = (response.enquiryRoute || []).map(route => route.PODSid);
 
     let cargoTypeList: string[] = [];
 
@@ -1551,39 +1551,41 @@ ${this.userData.userName}`;
 
     let routeDetails = (response.enquiryRoute || []).flatMap(route => {
       return (route.enquiryCargo || []).map(cargo => {
-        const containerTypeCode = this.containerTypes.find(
+        const containerTypeCode = (this.containerTypes || []).find(
           con => con.ContainerName === cargo.ContainerType
         )?.ContainerCode || null;
         let packageTypeId = null;
-    
-    if (cargo.PackageType) {
-      
-      // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
-      if (typeof cargo.PackageType === 'string') {
-        // First try to find by UOMCode (this is likely what you need)
-        const packageTypeByCode = this.packageTypes.find(uom => 
-          uom.UOMCode === cargo.PackageType
-        );
-        
-        // If not found by code, try by name
-        const packageTypeByName = this.packageTypes.find(uom => 
-          uom.UOMName === cargo.PackageType
-        );
-        
-        // Use whichever is found
-        const foundPackageType = packageTypeByCode || packageTypeByName;
-        
-        if (foundPackageType) {
-          packageTypeId = foundPackageType.UOMMasterSid;
-          console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
-        } else {
-          console.warn(`No package type found for: "${cargo.PackageType}"`);
-          console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
+
+        const packageType = this.packageTypes.find(uom => uom.UOMCode === cargo.PackageType);
+        if (packageType) {
+          packageTypeId = packageType?.UOMMasterSid;
         }
-      }
-    } 
     
-    console.log('Final PackageType ID:', packageTypeId);
+    // if (cargo.PackageType) {
+      
+    //   if (typeof cargo.PackageType === 'string') {
+    //     // First try to find by UOMCode (this is likely what you need)
+    //     const packageTypeByCode = this.packageTypes.find(uom => 
+    //       uom.UOMCode === cargo.PackageType
+    //     );
+        
+    //     // If not found by code, try by name
+    //     const packageTypeByName = this.packageTypes.find(uom => 
+    //       uom.UOMName === cargo.PackageType
+    //     );
+        
+    //     // Use whichever is found
+    //     const foundPackageType = packageTypeByCode || packageTypeByName;
+        
+    //     if (foundPackageType) {
+    //       packageTypeId = foundPackageType.UOMMasterSid;
+    //       console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
+    //     } else {
+    //       console.warn(`No package type found for: "${cargo.PackageType}"`);
+    //       console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
+    //     }
+    //   }
+    // } 
         return {
           PORSid: route.PORSid,
           POLSid: route.POLSid,
@@ -1594,9 +1596,11 @@ ${this.userData.userName}`;
           NetWeight: cargo.NetWeight,
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
+          ContainerQty : cargo.Qty,
           ChargeableWeight: cargo.ChargeableWeight,
           PackageQty: cargo.PackageQty,
           PackageType: cargo.PackageType,
+          PackageTypeId : packageTypeId,
           ServiceLevel: response.IncoTerms,
           ProductName : cargo.ProductName,
           length: cargo.length,

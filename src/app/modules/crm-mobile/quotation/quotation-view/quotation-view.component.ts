@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule } from '@angular/forms';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
-import { forkJoin, Observable } from 'rxjs';
+import { firstValueFrom, forkJoin, Observable } from 'rxjs';
 import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
@@ -324,85 +324,117 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  navigateToQuotation(response: any) {
-    const dataId = response.EnquiryHeaderSid;
-    if (!dataId) {
-      return;
-    }
+  async navigateToQuotation(response: any) {
+    const dataId = response?.EnquiryHeaderSid;
+    if (!dataId) return;
 
-    const polList = (response.enquiryRoute || []).map(route => route.POLSid);
-    const podList = (response.enquiryRoute || []).map(route => route.PODSid);
+    const enquiryRoutes = response.enquiryRoute || [];
 
-    let cargoTypeList: string[] = [];
+    const polList = enquiryRoutes.map(r => r.POLSid);
+    const podList = enquiryRoutes.map(r => r.PODSid);
+
+    /* ---------------- Cargo Types ---------------- */
+    const cargoTypeList: string[] = [];
 
     if (Array.isArray(response.enquiryCargo)) {
-      cargoTypeList.push(...response.enquiryCargo.map(cargo => cargo.CargoType));
+      cargoTypeList.push(...response.enquiryCargo.map(c => c.CargoType));
     }
 
-    (response.enquiryRoute || []).forEach(route => {
+    enquiryRoutes.forEach(route => {
       if (Array.isArray(route.enquiryCargo)) {
-        cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
+        cargoTypeList.push(...route.enquiryCargo.map(c => c.CargoType));
       }
     });
-    console.log(response);
-    const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-    let selectedFCLLCL;
-    if (dept?.departmentType === "Sea") {
-      selectedFCLLCL = dept?.FCLLCL;
-    } else {
-      selectedFCLLCL = dept?.departmentType?.toUpperCase();
-    }
 
-    let routeDetails = (response.enquiryRoute || []).flatMap(route => {
-      return (route.enquiryCargo || []).map(cargo => {
-        const containerTypeCode = this.containerTypes.find(
-          con => con.ContainerName === cargo.ContainerType
-        )?.ContainerCode || null;
-        return {
-          PORSid: route.PORSid,
-          POLSid: route.POLSid,
-          PODSid: route.PODSid,
-          FPODSid: route.FDPSid,
-          CargoType: cargo.CargoType,
-          GrossWeight : cargo.GrossWeight,
-          NetWeight : cargo.NetWeight,
-          Volume: cargo.Volume,
-          ContainerType: containerTypeCode,
-          ChargeableWeight: cargo.ChargeableWeight,
-          ContainerQty: cargo.Qty,
-          ServiceLevel: response.IncoTerms
-        };
-      });
-    });
+    /* ---------------- Department Logic ---------------- */
+    const dept = this.departments.find(
+      dep => dep.DepartmentMasterSid === response.DepartmentMasterSid
+    );
 
+    const selectedFCLLCL =
+      dept?.departmentType === 'Sea'
+        ? dept?.FCLLCL
+        : dept?.departmentType?.toUpperCase();
+
+    /* ---------------- Route & Cargo Mapping ---------------- */
+    const routeDetails = await Promise.all(
+      enquiryRoutes.flatMap(route =>
+        (route.enquiryCargo || []).map(async cargo => {
+
+          const containerTypeCode =
+            this.containerTypes?.find(
+              con => con.ContainerName === cargo.ContainerType
+            )?.ContainerCode ?? null;
+
+          let packageTypeId = null;
+          if (cargo.PackageType) {
+            const packageType = await firstValueFrom(
+              this.leadService.getUOMByCode(cargo.PackageType)
+            );
+            console.log('Package Type:',{
+              PackageTypeCode : cargo.PackageType,
+              packageType
+            });
+            packageTypeId = packageType?.UOMMasterSid ?? null;
+          }
+
+          return {
+            PORSid: route.PORSid,
+            POLSid: route.POLSid,
+            PODSid: route.PODSid,
+            FPODSid: route.FDPSid,
+            CargoType: cargo.CargoType,
+            GrossWeight: cargo.GrossWeight,
+            NetWeight: cargo.NetWeight,
+            Volume: cargo.Volume,
+            ContainerType: containerTypeCode,
+            ContainerQty: cargo.Qty,
+            ChargeableWeight: cargo.ChargeableWeight,
+            PackageQty: cargo.PackageQty,
+            PackageType: cargo.PackageType,
+            PackageTypeId : packageTypeId,
+            ServiceLevel: response.IncoTerms,
+            ProductName: cargo.ProductName,
+            length: cargo.length,
+            width: cargo.width,
+            height: cargo.height,
+          };
+        })
+      )
+    );
+
+    /* ---------------- Final Payload ---------------- */
     const enqData = {
-      EnquirySid: response?.EnquiryHeaderSid,
+      EnquirySid: response.EnquiryHeaderSid,
       EnquiryNumber: response.EnquiryNumber,
-      CustomerAddress: response.CustomerAddress,
       CustomerName: response.CustomerName,
+      CustomerAddress: response.CustomerAddress,
       Email: response.Email,
-      LeadOrCustomer : response.LeadOrCustomer === "C",
-      CustomerMasterSid: response.CustomerMasterSid,
-      CustomerBranchSid: response.CustomerBranchSid,
-      CustomerRef: response.CustomerRef,
       ContactNumber: response.ContactNumber,
       ContactPerson: response.ContactPerson,
-      FreightPPCC: response.FreightPPCC,
+      LeadOrCustomer: response.LeadOrCustomer === 'C',
+      CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
+      PreCustomerMasterSid: response.PreCustomerMasterSid,
+      CustomerRef: response.CustomerRef,
       SalesmanSid: response.UserMasterSid,
-      PreCustomerMasterSid : response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
-      polList: polList,
-      podList: podList,
-      status: response.status,
-      cargoTypeList: cargoTypeList,
+      FreightPPCC: response.FreightPPCC,
       ShipmentType: selectedFCLLCL,
+      polList,
+      podList,
+      cargoTypeList,
+      status: response.status,
       rateRequest: true,
       quoteRoutes: routeDetails,
     };
+
+    /* ---------------- Navigation ---------------- */
     this.leadService.clearQuotationData();
     this.leadService.setQuotationData(enqData);
-    this.route.navigate(['crm/quotation/entry']);
+    await this.route.navigate(['crm/quotation/entry']);
   }
+
 
   onEnquiryTableRowClick(row: any): void {
     // Row clicking can be handled by the table component if needed

@@ -406,7 +406,11 @@ patchEnqPageValues(enqData: any) {
   );
 
 
-  headerFields.forEach(field => this.quotationForm.get(field)?.disable());
+  headerFields.forEach(field => {
+    if (enqData?.[field]) {
+      this.quotationForm.get(field)?.disable()
+    }
+  });
 
   // --- Routes array check ---------------------------------
   const routes = Array.isArray(enqData?.quoteRoutes)
@@ -467,33 +471,33 @@ patchEnqPageValues(enqData: any) {
     this.addQuoteCarrier(lastAddedQuote);
 
     console.log("TESTING",this.quotationForm.getRawValue())
-    let packageTypeId = null;
-    if (route?.PackageType) {
+    // let packageTypeId = null;
+    // if (route?.PackageType) {
       
-      // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
-      if (typeof route?.PackageType === 'string') {
-        // First try to find by UOMCode (this is likely what you need)
-        const packageTypeByCode = this.packageTypes.find(uom => 
-          uom.UOMCode === route?.PackageType
-        );
+    //   // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
+    //   if (typeof route?.PackageType === 'string') {
+    //     // First try to find by UOMCode (this is likely what you need)
+    //     const packageTypeByCode = this.packageTypes.find(uom => 
+    //       uom.UOMCode === route?.PackageType
+    //     );
         
-        // If not found by code, try by name
-        const packageTypeByName = this.packageTypes.find(uom => 
-          uom.UOMName === route?.PackageType
-        );
+    //     // If not found by code, try by name
+    //     const packageTypeByName = this.packageTypes.find(uom => 
+    //       uom.UOMName === route?.PackageType
+    //     );
         
-        // Use whichever is found
-        const foundPackageType = packageTypeByCode || packageTypeByName;
+    //     // Use whichever is found
+    //     const foundPackageType = packageTypeByCode || packageTypeByName;
         
-        if (foundPackageType) {
-          packageTypeId = foundPackageType.UOMMasterSid;
-          console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
-        } else {
-          console.warn(`No package type found for: "${route?.PackageType}"`);
-          console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
-        }
-      }
-    } 
+    //     if (foundPackageType) {
+    //       packageTypeId = foundPackageType.UOMMasterSid;
+    //       console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
+    //     } else {
+    //       console.warn(`No package type found for: "${route?.PackageType}"`);
+    //       console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
+    //     }
+    //   }
+    // } 
     
     this.addQuoteProduct(lastAddedQuote,{
       Sno : 1,
@@ -505,12 +509,12 @@ patchEnqPageValues(enqData: any) {
       NetWeight: route?.NetWeight,
       ChargeableWeight: route?.ChargeableWeight,
       Volume: route?.Volume || route?.CBM,
-      ExternalPkg:packageTypeId,
+      ExternalPkg: route?.PackageTypeId,
       ExternalQty: route?.PackageQty,
       Length: route?.length,
       Width: route?.width,
       Height: route?.height,
-      ProductUnit: packageTypeId,
+      ProductUnit: route?.PackageTypeId,
     })
 
     // Handle additional logic
@@ -1880,8 +1884,12 @@ isRateLockDisabled(): boolean {
         if (control) {
           const newValidators = [Validators.required];
 
-          if (fieldName !== 'ContainerType') {
+          if (fieldName !== 'ContainerType' && fieldName !== 'Volume') {
             newValidators.push(Validators.min(1));
+          }
+
+          if(fieldName === 'Volume'){
+            newValidators.push(Validators.min(0.001));
           }
 
           control.setValidators(newValidators);
@@ -3697,7 +3705,7 @@ checkRateLockPermissions(): void {
 
   // Parse the ConfigurationValue to get allowed emails
   const configValue = this.rateLockConfig.ConfigurationValue;
-  console.log('Raw ConfigurationValue:', configValue);
+  // console.log('Raw ConfigurationValue:', configValue);
   
   if (!configValue || typeof configValue !== 'string') {
     console.log('Invalid ConfigurationValue - disabling rate lock');
@@ -3719,8 +3727,8 @@ checkRateLockPermissions(): void {
     .map((email: string) => email.trim().toLowerCase())
     .filter((email: string) => email.length > 0); // Remove empty strings
   
-  console.log('Allowed Emails:', allowedEmails);
-  console.log('Current User Email (lowercase):', this.currentUserEmail.toLowerCase());
+  // console.log('Allowed Emails:', allowedEmails);
+  // console.log('Current User Email (lowercase):', this.currentUserEmail.toLowerCase());
 
   // Check if current user's email is in the allowed list
   this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
