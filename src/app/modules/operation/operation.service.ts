@@ -1253,6 +1253,14 @@ getHouseJobARAPData(HouseJobSid: number) {
     )
   }
 
+  postJournalVoucher(payload: any) {
+    return this.http.post<{ data: any }>('accounts/journal-voucher/post-voucher', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
   //BOE
 
   createBoe(payload: any) {

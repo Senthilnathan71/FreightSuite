@@ -186,8 +186,8 @@
                             </td>
                             <td>
                                 <ng-select formControlName="ledgerMasterSid"
-                                    [items]="row.get('filteredSubledgers')?.value || []" bindLabel="SubledgerName"
-                                    bindValue="SubledgerMasterSid" appendTo="body" placeholder="">
+                                    [items]="(row.get('filteredSubledgers')?.value || [])" bindLabel="SubledgerName"
+                                    bindValue="SubledgerMasterSid" appendTo="body" placeholder="" [readonly]>
                                 </ng-select>
                             </td>
                             <td>
@@ -250,14 +250,13 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="chargeMasterSid" [items]="filteredChargeList[i]" bindLabel="chargeCode" 
+                                <ng-select formControlName="chargeMasterSid" [items]="(filteredChargeList[i] || [])" bindLabel="chargeCode" 
                                     bindValue="ChargeMasterSid" appendTo="body" placeholder="" >
                                 </ng-select>
                             </td>
                             <td>
-                                <!-- <input type="text" formControlName="hsnsac" class="form-control" readonly /> -->
-                                <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
-                                    placeholder="" formControlName="HSSACCode" appendTo="body">
+                                <ng-select [items]="(hssacList[i] || [])" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                                    placeholder="" formControlName="hssacMasterSid" appendTo="body">
                                 </ng-select>
                             </td>
                             <td>
@@ -266,7 +265,7 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="houseJobSid" [items]="houseJobList[i]" bindLabel="HBLNo"
+                                <ng-select formControlName="houseJobSid" [items]="(houseJobList[i] || [])" bindLabel="HBLNo"
                                     bindValue="HouseJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>

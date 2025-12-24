@@ -393,7 +393,9 @@ patchEnqPageValues(enqData: any) {
     'ContactNumber',
     'Email',
     'FreightPPCC',
-    'SalesmanSid'
+    'SalesmanSid',
+    'ClearanceBy',
+    'TransportBy'
   ];
 
   this.quotationForm.patchValue(
@@ -1665,6 +1667,8 @@ isRateLockDisabled(): boolean {
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     let userEmail = this.userData?.userEmail;
     console.log(this.authorizerDetails);
+    const transportBy = this.dataFromEnqPage?.TransportBy || null;
+    const clearanceBy = this.dataFromEnqPage?.ClearanceBy || null;
 
     const payload = {
       CompanyMasterSid: currentCompanyMasterSid,
@@ -1684,6 +1688,8 @@ isRateLockDisabled(): boolean {
       ContactPerson:formValue.ContactPerson,
       ContactNumber:formValue.ContactNumber,
       SalesmanSid: formValue.SalesmanSid,
+      TransportBy: transportBy,
+      ClearanceBy: clearanceBy,
       CustomerName: formValue.CustomerName,
       QuoteNumber: formValue.QuoteNumber,
       QuoteDate: formValue.QuoteDate,
