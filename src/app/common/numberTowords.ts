@@ -1,66 +1,145 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
+import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NumberToWordsService {
 
   private ones = [
-    '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six',
-    'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve',
-    'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-    'Seventeen', 'Eighteen', 'Nineteen'
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
   ];
 
   private tens = [
-    '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty',
-    'Sixty', 'Seventy', 'Eighty', 'Ninety'
+    '',
+    '',
+    'Twenty',
+    'Thirty',
+    'Forty',
+    'Fifty',
+    'Sixty',
+    'Seventy',
+    'Eighty',
+    'Ninety',
   ];
 
-  private scalesInternational = ['', 'Thousand', 'Million', 'Billion'];
   private scalesIndian = ['', 'Thousand', 'Lakh', 'Crore'];
 
-  private currencyList : any[] = [];
+  private currencyList: any[] = [];
 
   constructor() {}
 
-  initializeCurrencies(currenies : any[]){
-    this.currencyList = currenies;
-    console.log("Inside Number to Words service",{
-      currencies : this.currencyList
-    })
+  /* ---------------------------------------------
+   * Initialize currency master
+   * --------------------------------------------- */
+  initializeCurrencies(currencies: any[]) {
+    this.currencyList = currencies || [];
   }
 
-  convert(num: number, CurrencyMasterSid?: number): string {
-    if (num === 0) return 'Zero';
+  /* ---------------------------------------------
+   * MAIN CONVERTER
+   * --------------------------------------------- */
+  convert(amount: number | null | undefined, CurrencyMasterSid?: number | null): string {
 
-    let words = '';
-    let scaleIndex = 0;
+    if (amount == null || isNaN(amount)) {
+      return 'Zero';
+    }
 
-    // Indian Numbering System
-    const chunks = this.splitIndian(num);
+    const isNegative = amount < 0;
+    amount = Math.abs(amount);
 
-    for (let i = chunks.length - 1; i >= 0; i--) {
-      const chunk = chunks[i];
-      if (chunk !== 0) {
-        words += this.convertChunk(chunk) + ' ' + this.scalesIndian[i] + ' ';
+    if (amount >= 1e15) {
+      return 'Amount too large';
+    }
+
+    /* ---------------- Currency ---------------- */
+    const currency = this.currencyList.find(
+      c => c?.CurrencyMasterSid === CurrencyMasterSid
+    );
+
+    const unit = currency?.CurrencyUnit?.trim() || '';
+    const subUnit = currency?.CurrencySubUnit?.trim() || '';
+    const subUnitIn = this.parseSubUnitIn(currency?.SubUnitIn);
+
+    /* ---------------- Integer Part ---------------- */
+    const integerNum = Math.floor(amount);
+    let result = '';
+    if (unit) {
+      result = `${unit} `;
+    }
+    result += this.convertInteger(integerNum);
+
+
+    /* ---------------- Decimal Part (FIXED) ---------------- */
+    if (subUnitIn > 0 && subUnit) {
+      const multiplier = Math.pow(10, subUnitIn);
+      const decimalNum = Math.round((amount - integerNum) * multiplier);
+
+      if (decimalNum > 0) {
+        console.log(decimalNum)
+        const decimalWords = this.convertSmallNumber(decimalNum);
+        result += ` and ${decimalWords} ${subUnit}`;
       }
     }
 
-    const ourCurrency = (this.currencyList || []).find(c => c.CurrencyMasterSid === CurrencyMasterSid);
-    const unit = ourCurrency?.CurrencyUnit;
-    const subUnit = ourCurrency?.CurrencySubUnit;
-    return `${unit} ${words.trim()} ${subUnit}`;
+    result += ' only'
+
+    if (isNegative) {
+      result = 'Minus ' + result;
+    }
+
+    return result.trim();
   }
 
+  /* ---------------------------------------------
+   * Integer conversion (Indian system)
+   * --------------------------------------------- */
+  private convertInteger(num: number): string {
+    if (num === 0) return 'Zero';
 
+    const chunks = this.splitIndian(num);
+    let words = '';
+
+    for (let i = chunks.length - 1; i >= 0; i--) {
+      if (chunks[i] !== 0) {
+        words +=
+          this.convertChunk(chunks[i]) +
+          (this.scalesIndian[i] ? ' ' + this.scalesIndian[i] : '') +
+          ' ';
+      }
+    }
+
+    return words.trim();
+  }
+
+  /* ---------------------------------------------
+   * Convert numbers < 1000
+   * --------------------------------------------- */
   private convertChunk(num: number): string {
     let words = '';
 
     if (num >= 100) {
-      words += this.ones[Math.floor(num / 100)] + ' Hundred ';
+      words += this.ones[Math.floor(num / 100)] + ' Hundred';
       num %= 100;
+      if (num > 0) words += ' and ';
     }
 
     if (num >= 20) {
@@ -75,19 +154,48 @@ export class NumberToWordsService {
     return words.trim();
   }
 
-  // Split number according to Indian Numbering System
+  /* ---------------------------------------------
+   * Convert decimal numbers
+   * --------------------------------------------- */
+  private convertSmallNumber(num: number): string {
+    if (num === 0) return 'Zero';
+
+    let words = '';
+    const chunks = this.splitIndian(num);
+
+    for (let i = chunks.length - 1; i >= 0; i--) {
+      if (chunks[i] !== 0) {
+        words += this.convertChunk(chunks[i]) + ' ';
+      }
+    }
+
+    return words.trim();
+  }
+
+
+  /* ---------------------------------------------
+   * Indian number split
+   * --------------------------------------------- */
   private splitIndian(num: number): number[] {
     const chunks: number[] = [];
-    // first 3 digits
+
     chunks.push(num % 1000);
     num = Math.floor(num / 1000);
 
-    // then groups of 2 digits
     while (num > 0) {
       chunks.push(num % 100);
       num = Math.floor(num / 100);
     }
 
     return chunks;
+  }
+
+  /* ---------------------------------------------
+   * Safe SubUnitIn parsing
+   * --------------------------------------------- */
+  private parseSubUnitIn(value: any): number {
+    const parsed = Number(value);
+    if (isNaN(parsed) || parsed < 0) return 0;
+    return Math.min(parsed, 10);
   }
 }

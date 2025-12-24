@@ -41,8 +41,8 @@
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
                     <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
-                        </h4>
+                        <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h3>
                         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
                         </h5>
                         <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
@@ -58,54 +58,54 @@
 
     <!-- Cash Receipt Section -->
     <section style="display:flex; flex-direction:column;  border-top: 1px solid black;">
-        <h4 style="text-align:center; margin:5px auto 12px auto;padding-left:100px;"><strong>Cash Receipt</strong></h4>
+        <h3 style="text-align:center; margin:5px auto 12px auto;padding-left:100px;font-weight: bold;"><strong>Cash Receipt</strong></h3>
 
-        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;font-size: 14px;">
+        <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;">
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top: 10px;">
-                <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:120px; white-space:nowrap;"><strong>Receipt No.</strong></div>
+                <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="width:120px; white-space:nowrap;font-weight: bold;"><strong>Receipt No.</strong></div>
                     <div>: {{receiptPrintData?.VoucherNumber}}</div>
                 </div>
-                <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:120px; white-space:nowrap;"><strong>Received From</strong></div>
+                <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="width:120px; white-space:nowrap;font-weight: bold;"><strong>Received From</strong></div>
                     <div>: {{receiptPrintData?.PartyName}}</div>
                 </div>
             </div>
 
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top:10px;">
-                <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:120px; white-space:nowrap;"><strong>Receipt Date</strong></div>
+                <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="width:120px; white-space:nowrap;font-weight: bold;"><strong>Receipt Date</strong></div>
                     <div>: {{receiptPrintData?.VoucherDate | formatDate}}</div>
                 </div>
-                <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:120px; white-space:nowrap;"><strong>Currency</strong></div>
+                <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="width:120px; white-space:nowrap;font-weight: bold;"><strong>Currency</strong></div>
                     <div>: {{receiptPrintData?.CurrencyCode}}</div>
                 </div>
             </div>
         </div>
 
         <!-- Voucher Table -->
-        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 14px; ">
+        <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 16px; ">
             <tbody>
-                <tr>
+                <tr style="font-weight: bold;">
                     <th style="width:60%; border:1px solid black; padding:2px 8px; text-align:center; border-left: none; "><strong>Description</strong></th>
                     <th style="width:5%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Curr.</strong></th>
                     <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Ex.Rate</strong></th>
                     <th style="width:20%; border:1px solid black; padding:2px 8px; text-align:center; border-right:none;"><strong>Amount</strong></th>
                 </tr>
                 <tr>
-                    <td style="width:60%; border:1px solid black; padding:2px 8px;text-align:center;border-left:none;">{{receiptPrintData?.Narration}}</td>
-                    <td style="width:10%; border:1px solid black; padding:2px 8px;text-align:center ;">{{receiptPrintData?.CurrencyCode}}</td>
-                    <td style="width:10%; border:1px solid black; padding:2px 8px; text-align:right;">{{receiptPrintData?.ExchangeRate | number:'1.2-2'}}</td>
-                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;border-right:none">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.3-3'}}</td>
+                    <td style="width:60%; border:1px solid black; padding:2px 8px;text-align:start;border-left:none;width:40%;">{{receiptPrintData?.Narration}}</td>
+                    <td style="width:10%; border:1px solid black; padding:2px 8px;text-align:start ;width:3%;">{{receiptPrintData?.CurrencyCode}}</td>
+                    <td style="width:10%; border:1px solid black; padding:2px 8px; text-align:right;width:5%;">{{receiptPrintData?.ExchangeRate | number:'1.2-2'}}</td>
+                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;border-right:none;width:5%;">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.3-3'}}</td>
                 </tr>
             </tbody>
         </table>
 
-        <h5 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="text-align: start;margin-top:0px;margin-bottom:0px;padding-left:15px;"><strong>Remittance Details</strong></h5>
+        <h4 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="text-align: center;margin-top:0px;margin-bottom:0px;padding-left:17px;font-weight: bold;"><strong>Remittance Details</strong></h4>
 
         <!-- Remittance Table -->
-        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 14px; ">
+        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 16px; ">
             <tbody>
                 <tr>
                     <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; border-left:none"><strong>Voucher No.</strong></th>
@@ -114,31 +114,31 @@
                     <th style="width:7%; border:1px solid black; padding:2px 8px; text-align:center;"><strong>Curr.</strong></th>
                     <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center;"><strong>Curr. Amt</strong></th>
                     <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; "><strong>Local Amount</strong></th>
-                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; border-right:none "><strong>TDS Amount</strong></th>
+                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; border-right:none "*ngIf="currentUserCountry === 'india'"><strong>TDS Amount</strong></th>
                 </tr>
                 <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
-                    <td style="border:1px solid black; padding:2px 8px;text-align:center;border-left:none">{{voucher?.VoucherNumber}}</td>
-                    <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherType}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align:start;border-left:none">{{voucher?.VoucherNumber}}</td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align:start;">{{voucher?.VoucherType}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherDate | formatDate}}</td>
-                    <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.CurrencyCode}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalCurrencyAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.OriginalLocalAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"></td>
+                    <td style="border:1px solid black; padding:2px 8px;text-align:start;">{{voucher?.CurrencyCode}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"*ngIf="currentUserCountry === 'india'"></td>
                 </tr>
                 <tr>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;border-left:none" colspan="4"><strong>Total</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalCurrencyAmount() | number:'1.2-2'}}</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalOriginalLocalAmount() | number:'1.2-2'}}</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalMatchingAmount() | number:'1.2-2'}}</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;"><strong>{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"*ngIf="currentUserCountry === 'india'"></td>
                 </tr>
             </tbody>
         </table>
 
-        <p  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="margin:4px 0;padding-left: 15px;"><strong>Amount in Words : </strong>
+        <p  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="margin:4px 0;padding-left: 17px;font-size: 16px;font-weight: bold;"><strong>Amount in Words : </strong>
             <strong> {{ getAmountInWords() }}</strong>
         </p>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;padding: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;padding: 20px;font-size: 16px;">
             <div>
                 <p style="padding-bottom:0.5rem; margin:0;"><strong>Checked By</strong></p>
             </div>
@@ -150,7 +150,7 @@
 
   <!-- Footer -->
 <footer style="position: absolute; bottom:0; left:0; width:100%; text-align:center; font-size:10pt; padding:0.5rem; background:#fff;  box-sizing:border-box;">
-    <div style="display:flex; justify-content:space-between; font-size:14px;">
+    <div style="display:flex; justify-content:space-between; font-size:16px;">
         <div>Printed By: {{userData.userName}}</div>
         <span>This document is computer-generated and does not require a signature.</span>
         <div>Printed On: {{ currentDate | formatDate }}</div>

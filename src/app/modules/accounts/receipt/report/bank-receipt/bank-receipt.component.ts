@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { toNumber } from 'src/app/common/helper';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -35,6 +36,7 @@ export class BankReceiptComponent implements OnChanges {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
+    currentUserCountry: string;
 
    ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -47,6 +49,8 @@ export class BankReceiptComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.numberToWords.initializeCurrencies(this.currencyList);
+          this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+
   }
 
   
@@ -115,31 +119,45 @@ export class BankReceiptComponent implements OnChanges {
     // console.log(bank,"BANK")
     return bank ? bank.LedgerName : '';
   }
- getTotalOriginalCurrencyAmount(): number {
+ getTotalMatchingAmount(): number {
   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalCurrencyAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingAmount) || 0);
   }, 0);
 }
 
-getTotalOriginalLocalAmount(): number {
+getTotalMatchingLocalAmount(): number {
   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.OriginalLocalAmount) || 0);
+    return sum + (parseFloat(voucher?.MatchingLocalAmount) || 0);
   }, 0);
 }
 
-  getAmountInWords() : string{
-    const total = this.getTotalOriginalLocalAmount();
-    if(!total) return '';
-    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    if(!companyCurrency){
-      return '';
-    }
-    const amountInWords = this.numberToWords.convert(total,companyCurrency);
-    return amountInWords || '';
+getAmountInWords(): string {
+  const total = this.getTotalMatchingLocalAmount();
+  if (total == null) return '';
+
+  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  if (!currencySid) return '';
+
+  // 🔥 MAIN AMOUNT
+  let mainWords = this.numberToWords.convert(
+    toNumber(total),
+    currencySid
+  );
+
+  
+
+  return mainWords;
+}
+
+
+
+
+  shouldShowGSTTypeField(): boolean {
+    return this.currentUserCountry === 'india';
   }
 
   // getAmountInWords(): string {

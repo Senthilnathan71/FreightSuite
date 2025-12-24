@@ -1,5 +1,5 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-  <h5 class="modal-title text-white mb-0">Shipment Profit and Loss</h5>
+  <h5 class="modal-title text-white mb-0">House Profit and Loss</h5>
   <div class="d-flex gap-2 align-items-center">
 
     <div class="spinner-overlay">
@@ -331,7 +331,7 @@
 
   <!-- <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div> -->
 
-  <h4 style="text-align: center;  padding:10px 0;border-top: 1px solid black;margin-bottom:5px;"><strong>Shipment Profit and Loss / Shipment No - {{housejobData?.ShipmentNo}}</strong></h4>
+  <h4 style="text-align: center;  padding:10px 0;border-top: 1px solid black;margin-bottom:5px;"><strong>House Profit and Loss / Shipment No - {{housejobData?.ShipmentNo}}</strong></h4>
 
   <div style="display: flex; padding: 0px; margin-bottom: 10px;font-size: 16px;">
    <div style="flex: 1; border: 1px solid black; padding: 5px;">
@@ -369,10 +369,10 @@
 
    <div style="flex: 1; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black; padding: 5px;">
   <div>
-    <div><strong>Forwarder</strong></div>
+    <div><strong>Notify</strong></div>
     <div style="margin-top: 5px;margin-left: 30px; min-height: 100px;">
-      {{housejobData?.Others?.[0]?.Forwarder}} <br>
-      {{housejobData?.Others?.[0]?.ForwarderAddress}}
+      {{housejobData?.Notify}} <br>
+      {{housejobData?.NotifyAddress}}
     </div>
   </div>
 </div>
@@ -409,7 +409,7 @@
         <tr>
           @if(selectedFCLLCL === "FCL"){
           <th style="border: 1px solid black; text-align: center;"><strong>Container</strong></th>
-          <th style="border: 1px solid black; text-align: center;"><strong>Type</strong></th>
+          <th style="border: 1px solid black; text-align: center;width: 13%;"><strong>Type</strong></th>
           }
           <th style="border: 1px solid black; text-align: center;"><strong>Description</strong></th>
           <th style="border: 1px solid black; text-align: center;"><strong>No. of Pkg</strong></th>
@@ -420,20 +420,20 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr *ngFor="let item of housejobData?.Products">
           @if(selectedFCLLCL === "FCL"){
-          <td style="border: 1px solid black; text-align: right;">{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
-          <td style="border: 1px solid black; text-align: center;">{{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}</td>
+          <td style="border: 1px solid black; text-align: right;">{{item?.ContainerNo}}</td>
+          <td style="border: 1px solid black; text-align: start;">{{ getContainerName(item.ContainerType) }}</td>
           }
           <td style="border: 1px solid black; text-align: start;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-          <td style="border: 1px solid black; text-align: right;">{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
-          <td style="border: 1px solid black; text-align: right;">{{housejobData?.Cargo?.[0]?.GrossWeight | number : '1.3-3' }}</td>
-          <td style="border: 1px solid black; text-align: right;">{{housejobData?.Cargo?.[0]?.NetWeight | number : '1.3-3' }}</td>
-          <td style="border: 1px solid black; text-align: right;">{{housejobData?.Cargo?.[0]?.Volume | number : '1.3-3' }}</td>
+          <td style="border: 1px solid black; text-align: right;">{{item?.ExternlQty}}</td>
+          <td style="border: 1px solid black; text-align: right;">{{item?.GrossWeight | number : '1.3-3' }}</td>
+          <td style="border: 1px solid black; text-align: right;">{{item?.NetWeight | number : '1.3-3' }}</td>
+          <td style="border: 1px solid black; text-align: right;">{{item?.Volume | number : '1.3-3' }}</td>
 
         </tr>
       </tbody>
-      <tfoot>
+      <!-- <tfoot>
         <tr style="font-weight: bold;">
           @if(selectedFCLLCL === "FCL"){
           <td colspan="4" style="border: 1px solid black; text-align: right;"><strong>Total</strong></td>
@@ -444,7 +444,7 @@
           <td style="border: 1px solid black; text-align: right;"><strong>{{ totalVolume | number : '1.3-3'}}</strong></td>
           <td style="border: 1px solid black; text-align: right;"><strong>{{ totalNetWeight | number : '1.3-3'}}</strong></td>
         </tr>
-      </tfoot>
+      </tfoot> -->
     </table>
   </div>
 
@@ -493,7 +493,7 @@
         <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; margin-bottom: 5px;">
           <thead style="background-color: #f8f9fa;">
             <tr>
-              <th style="border: 1px solid black; text-align: center;"><strong>Sales Organization</strong></th>
+              <th style="border: 1px solid black; text-align: center;"><strong>Sales Organization(Local)</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Amt</strong></th>
             </tr>
           </thead>
@@ -519,7 +519,7 @@
         <table style="width: 100%; border-collapse: collapse;  border: 1px solid black; margin-bottom: 5px;text-align: center;">
           <thead style="background-color: #f8f9fa;">
             <tr>
-              <th style="border: 1px solid black; text-align: center;"><strong>Cost Organization</strong></th>
+              <th style="border: 1px solid black; text-align: center;"><strong>Cost Organization(Local)</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Amt</strong></th>
             </tr>
           </thead>

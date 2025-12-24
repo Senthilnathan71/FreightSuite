@@ -310,7 +310,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
           label: 'View',
           action: 'view',
           tooltip: 'View Receipt',
-          state: !this.mps.can('view')
+          // state: !this.mps.can('view')
         },
         // {
         //   icon: 'fas fa-undo',
