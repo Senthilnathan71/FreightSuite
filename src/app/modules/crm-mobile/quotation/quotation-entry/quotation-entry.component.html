@@ -103,8 +103,9 @@
       </div>
     </div>
 
-    <div class="ms-auto" *ngIf="isEditMode && quotationApproved && !bookingCreatedAgainstThisQuotation">
-      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" (click)="goForBookingCreation()">
+    <div class="ms-auto"  *ngIf="isEditMode && quotationApproved && (f['IsContract']?.value || !bookingCreatedAgainstThisQuotation)"> 
+      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" (click)="goForBookingCreation()"           [disabled]="!isContractValid()"
+          [ngbTooltip]="!isContractValid() ? 'Contract has expired' : ''">
         <i class="fas fa-plus me-1"></i> Create Booking
       </button>
     </div>
@@ -1182,7 +1183,7 @@
                                         </td>
                                         }
                                         <td class="bg-transparent text-light text-center dofi-min-w-150">
-                                          <label class="form-label mb-0">Party <span
+                                          <label class="form-label mb-0">Billing Party <span
                                               class="text-danger">*</span></label>
                                         </td>
                                         <!-- <td class="bg-transparent text-light text-center dofi-min-w-80"
@@ -1215,7 +1216,7 @@
                                         </td>
                                         }
                                         <td class="bg-transparent text-light text-center dofi-min-w-150">
-                                          <label class="form-label mb-0">Vendor <span
+                                          <label class="form-label mb-0">Party <span
                                               class="text-danger"></span></label>
                                         </td>
                                       </tr>

@@ -958,6 +958,29 @@ private extractCargoData(enquiryCargo: any[]): any {
     return this.quoteCarriers(routeIndex).at(carrierIndex).get('quoteCharges') as FormArray;
   }
 
+  isContractValid(): boolean {
+  // If not a contract, return true (no expiration check needed)
+  if (!this.f['IsContract']?.value) {
+    return true;
+  }
+  
+  // Check all routes for expiration dates
+  if (this.quoteRoutes && this.quoteRoutes.length > 0) {
+    const currentDate = new Date();
+    
+    // Check if any route has a valid expiration date
+    return this.quoteRoutes.controls.some((route: FormGroup) => {
+      const expDate = route.get('expDate')?.value;
+      if (!expDate) return false;
+      
+      const expirationDate = new Date(expDate);
+      return currentDate <= expirationDate;
+    });
+  }
+  
+  return false;
+}
+
   addQuoteCharge(routeIndex: number,carrierIndex:number, data?: any) {
     const chargeForm = this.fb.group({
       QuoteChargeSid : [data?.QuoteChargeSid || null],
