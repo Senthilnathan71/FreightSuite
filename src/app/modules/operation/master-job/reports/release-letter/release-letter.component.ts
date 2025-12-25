@@ -27,6 +27,8 @@ export class ReleaseLetterComponent {
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] = [];
 
+  showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
   constructor(
      private appSettingsService: AppSettingsService,
      private activeModal: NgbActiveModal,
@@ -117,40 +119,51 @@ export class ReleaseLetterComponent {
     this.activeModal.close();
   }
 
-    async downloadPDF() {
-    this.spinner.show();
-    try {
-      const quotationNumber = this.masterJobData?.MasterJobNumber;
+  async downloadPDF() {
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
 
+  setTimeout(async () => {
+    this.spinner.show();
+   try {
+          const quotationNumber = this.masterJobData?.MasterJobNumber;
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Release_Letter`,
+       `Release_Letter`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
     } finally {
       this.spinner.hide();
     }
-  }
-
-   printDiv(divId: string): void {
-  const printContents = document.getElementById(divId)?.innerHTML;
-  if (!printContents) return;
-
-  const popupWin = window.open('', '_blank', 'width=900,height=600');
-  if (popupWin) {
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print</title>
-        </head>
-        <body onload="window.print(); window.close();">
-          ${printContents}
-        </body>
-      </html>
-    `);
-    popupWin.document.close();
-  }
+  }, 50);
 }
+
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); 
+}
+
+
 }

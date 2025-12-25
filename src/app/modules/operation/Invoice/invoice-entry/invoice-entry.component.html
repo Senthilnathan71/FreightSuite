@@ -784,7 +784,7 @@
                             style="width:50px; height:50px; object-fit:contain;">
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
                         <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
                         </h4>
                         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -800,7 +800,7 @@
         
         <!-- Invoice Title -->
         <div style="text-align:center; border-top:1px solid black; padding-top:4px;">
-          <h4 style="margin:2px 0; font-weight:700;">{{ getInvoiceTitle() }}</h4>
+          <h4 style="margin:2px 0; font-weight:bold;">{{ getInvoiceTitle() }}</h4>
           <p style="font-size:12px; margin:2px 0;" *ngIf="currentUserCountry === 'india'">
             <strong>GST Code :</strong> {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
           </p>
@@ -808,7 +808,7 @@
         
         <!-- Billing Info -->
         <div style="display:flex; justify-content:space-between; border-bottom:1px solid black; margin-top:8px; padding-bottom:8px;font-size: 16px;">
-          <div style="flex:0 0 50%; max-width:50%;">
+          <div style="flex:0 0 50%; max-width:50%;font-weight: bold;">
             <strong>BILLED TO</strong><br />
              <div style="padding-left: 30px;">
             <span>{{ getCustomerName(invoiceForm.get('CustomerMasterSid')?.value) }}</span><br />

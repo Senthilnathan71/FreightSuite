@@ -3364,19 +3364,19 @@ getContainerMappingCount(containerSid: number): number {
 
   reportPreAlertModel() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if any products have ContainerMasterSid mapped
-    const hasContainerMapping = this.masterJobData?.Products?.some(
-      (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
     );
-    
-    if (!hasContainerMapping) {
+   
+    if (!hasValidContainers) {
       this.appSettingService.showWarning(
-        'ContainerNo is required. '
-        
+        'ContainerNo is required.'
       );
       return;
-    } 
+    }
   }
+ 
     const modalRef = this.modalService.open(PreAlertComponent, {
       size: 'xl',
       scrollable: true,
@@ -3440,6 +3440,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
+
   }
 
   reportjobCard() {
@@ -3468,6 +3469,8 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.TandCList = this.TandCList || [];
+     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+ 
   }
 
   // sailing confirmation

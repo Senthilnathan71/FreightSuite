@@ -40,9 +40,9 @@
                             style="width:50px; height:50px; object-fit:contain;">
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
-                        </h4>
+                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                        <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h3>
                         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
                         </h5>
                         <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
@@ -55,71 +55,80 @@
             </div>
 
     <!-- Title -->
-    <h4 style="text-align:center;font-weight:700;padding:8px 0;border-top:1px solid black;">RELEASE LETTER</h4>
+    <h4 style="text-align:center;font-weight:bold;padding:8px 0;border-top:1px solid black;  margin-top:10px;"><strong>RELEASE LETTER</strong></h4>
 
     <!-- Info Grid -->
-    <div style="display:flex;flex-wrap:wrap;border:1px solid black;padding:15px 25px;margin:0;font-size: 14px;">
+    <div style="display:flex;flex-wrap:wrap;border:1px solid black;padding:8px 25px;margin:0;font-size: 16px;">
         <div style="flex:0 0 50%;max-width:50%;">
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:130px;">CFS</strong><span>: {{ housejobData?.Others?.[0]?.YardCFS }}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:130px;">Attn.</strong><span>:</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:130px;">Shipper</strong><span>: {{housejobData?.ShipperName}}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:130px;">Vessel</strong><span>: {{housejobData?.VesselName}}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:130px;">Voyage</strong><span>: {{housejobData?.VoyageNo}}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:110px;font-weight: bold;">CFS</strong><span>: {{ housejobData?.Others?.[0]?.YardCFS }}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:110px;font-weight: bold;">Attn.</strong><span>:</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:110px;font-weight: bold;">Shipper</strong><span>: {{housejobData?.ShipperName}}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:110px;font-weight: bold;">Vessel</strong><span>: {{housejobData?.VesselName}}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:110px;font-weight: bold;">Voyage</strong><span>: {{housejobData?.VoyageNo}}</span></div>
         </div>
 
         <div style="flex:0 0 50%;max-width:50%;">
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Date</strong><span>: {{ housejobData?.MBLDate | formatDate }}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Date</strong><span>: {{ housejobData?.HBLDate | formatDate }}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Your Booking Ref.</strong><span>: {{housejobData?.Others?.[0]?.CustomerRefNo}}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Our Booking Ref.</strong><span>: {{housejobData?.BookingNo}}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Port Of Discharge</strong><span>: {{housejobData.POD}}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Final Destination</strong><span>: {{housejobData.FPD}}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;">Mark and Number</strong><span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</span></div>
+
         </div>
     </div>
 
     <!-- Cargo Details -->
-    <h4 style="font-weight:700;margin:6px 0;">CARGO DETAILS</h4>
+    <h4 style="font-weight:bold;margin-top: 10px;margin-left: 25px;margin-bottom: 0;"><strong>CARGO DETAILS</strong></h4>
 
-    <table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;border:1px solid black;font-size: 14px;">
+    <table style="width:100%;border-collapse:collapse;margin:5px 0;border:1px solid black;font-size: 16px;">
         <thead>
             <tr>
-                <th style="border:1px solid black;text-align:center;padding:4px;"><strong>Package Type</strong></th>
-                <th style="border:1px solid black;text-align:center;padding:4px;"><strong>No. of Pkgs</strong></th>
-                <th style="border:1px solid black;text-align:center;padding:4px;"><strong>Gross Weight</strong></th>
-                <th style="border:1px solid black;text-align:center;padding:4px;"><strong>Volume</strong></th>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bold;"><strong>Container No.</strong></th>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bold;"><strong>Container Type</strong></th>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bold;"><strong>No. of Pkgs</strong></th>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bold;"><strong>Gross Weight</strong></th>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bold;"><strong>Volume</strong></th>
             </tr>
         </thead>
 
         <tbody>
             <tr>
-                <td style="border:1px solid black;padding:4px;text-align:center;">{{ housejobData?.Products?.[0]?.ExternaPkg }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;"> {{ housejobData?.Cargo?.[0]?.NoofContainers }}</td>
+              <td style="border:1px solid black;padding:4px;text-align:start;">
+  {{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}
+</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3' }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number:'1.3-3' }}</td>
             </tr>
 
-            <tr style="font-weight:700;">
-                <td style="border:1px solid black;padding:4px;text-align:right;"><strong>Total</strong></td>
+            <!-- <tr style="font-weight:700;">
+                <td style="border:1px solid black;padding:4px;text-align:right;font-weight: bold;"><strong>Total</strong></td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ totalNoOfPkg }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ totalGrossWeight | number:'1.3-3' }}</td>
                 <td style="border:1px solid black;padding:4px;text-align:right;">{{ totalVolume | number:'1.3-3' }}</td>
-            </tr>
+            </tr> -->
         </tbody>
     </table>
 
-    <p style="margin-bottom:6px;font-size: 16px;"><strong>Please release the above mentioned booking to </strong></p>
+    <p style="margin-bottom:6px;font-size: 16px;font-weight: bold;margin-left: 25px;"><strong>Please release the above mentioned booking to </strong></p>
 
-    <div style="display:flex;padding-bottom:30px;font-size: 14px;">
-        <strong style="width:130px;">Remarks</strong>
+
+    <div style="display:flex;margin-bottom:4px;font-size: 16px;margin-top: 30px;margin-left: 25px;"><strong style="width:110px;font-weight: bold;">Mark and No.</strong><span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</span></div>
+
+    <div style="display:flex;padding-bottom:30px;font-size: 16px;margin-left: 25px;margin-top: 30px;">
+        <strong style="width:110px;">Remarks</strong>
         <p style="margin:0;">: {{housejobData?.InternalNote}}</p>
     </div>
 
-    <p style="margin-bottom:6px;">YOUR'S SINCERELY</p>
-    <p style="font-weight:700;margin-bottom:25px;">{{ currentCompany?.companyName || 'Company Name' }}</p>
+   <div style="margin-top: 30px;margin-left: 28px;font-weight: bold;font-size: 16px;">
+         <p style="margin-bottom:6px;">YOUR'S SINCERELY</p>
+        <p style="font-weight:700;margin-bottom:25px;">{{ currentCompany?.companyName || 'Company Name' }}</p>
+   </div>
 
      <!-- Footer -->
-  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;" class="mx-2">
-    <div style="display:flex; justify-content:space-between;">
+  <footer style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt;padding:0.5rem;" >
+    <div style="display:flex; justify-content:space-between;font-size: 16px;">
       <div>Printed By: {{userData.userName}}</div>
       <span>This document is computer-generated and does not require a signature.</span>
       <div>Printed On: {{ currentDate | formatDate }}</div>

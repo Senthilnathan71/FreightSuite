@@ -81,19 +81,19 @@
         <!-- Right -->
         <div style="width:50%;">
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;"><strong>Bank</strong></div>
+                <div style="width:110px; font-weight:bold;"><strong>Bank</strong></div>
                 <div>: {{getBankName(paymentDataPrint?.BankCOA)}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;"><strong>Bank Ref.</strong></div>
+                <div style="width:110px; font-weight:bold;"><strong>Bank Ref.</strong></div>
                 <div>: {{paymentDataPrint?.InstrumentMode}} / {{paymentDataPrint?.InstrumentNumber}} / {{paymentDataPrint?.InstrumentDate | formatDate}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;"><strong>Currency</strong></div>
+                <div style="width:110px; font-weight:bold;"><strong>Currency</strong></div>
                 <div>: {{paymentDataPrint?.CurrencyCode}}</div>
             </div>
             <div style="display:flex; margin-bottom:4px;">
-                <div style="width:150px; font-weight:bold;"><strong>Ex. Rate</strong></div>
+                <div style="width:110px; font-weight:bold;"><strong>Ex. Rate</strong></div>
                 <div>: {{paymentDataPrint?.ExchangeRate| number:'1.3-3'}}</div>
             </div>
         </div>
@@ -121,6 +121,19 @@
         </tr>
     </table>
 
+
+        <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style=" display:flex;
+    align-items:center;
+    margin-top:10px;
+    padding-left:20px;
+    font-size:16px;
+    white-space:nowrap;
+    ">
+        <strong>Amount in Words   </strong>
+        <span style="font-style:italic;"> : {{ getAmountInWords() }} </span>
+    </div>
+
+
    <!-- Remittance Details Header -->
 <div
   *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"
@@ -130,6 +143,7 @@
     align-items:center;
     padding-left:20px;
     text-align: center;
+    margin-top: 30px;
   "
 >
   <h4 style="margin:0; font-weight:bold;">
@@ -166,16 +180,7 @@
         </tr>
     </table>
 
-    <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style=" display:flex;
-    align-items:center;
-    margin-top:10px;
-    padding-left:20px;
-    font-size:16px;
-    white-space:nowrap;
-    ">
-        <strong>Amount in Words   </strong>
-        <span style="font-style:italic;"> : {{ getAmountInWords() }} </span>
-    </div>
+
 
     <div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 16px;font-weight: bold;">
         <strong>Checked By </strong>
