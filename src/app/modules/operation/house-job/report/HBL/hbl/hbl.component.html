@@ -117,52 +117,61 @@
         </div>
       </div>
 
-      <!-- Ports & Job Details -->
-      <div style="display: flex; margin-bottom: 0;font-size: 16px;">
-        <div
-          style="width: 25%; border: 1px solid black; border-right: none;border-top: none;border-left: none; text-align: center; padding: 5px;">
-          <strong>Place of Receipt</strong><br />
-          {{ housejobData?.POO}}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black; border-right: none;border-top: none; text-align: center; padding: 5px;">
-          <strong>Port of Loading</strong><br />
-          {{ housejobData?.POL }}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black;border-top: none;border-right: none; text-align: center; padding: 5px;">
-          <strong>Job No.</strong><br />
-          {{ housejobData?.HBLNo }}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black;border-top: none;border-right: none; text-align: center; padding: 5px;">
-          <strong>Job ref.</strong><br />
-          {{ housejobData?.Others?.[0]?.CustomerRefNo }}
-        </div>
-      </div>
+    <!-- Ports & Job Details - Row 1 -->
+<div style="
+  display:flex;
+  font-size:16px;
+  border-bottom:1px solid black;
+">
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Place of Receipt</strong><br />
+    {{ housejobData?.POO }}
+  </div>
 
-      <div style="display: flex;  margin-bottom: 0;font-size: 16px;">
-       <div
-          style="width: 25%; border: 1px solid black; border-right: none;border-top: none;border-left: none; text-align: center; padding: 5px;">
-          <strong>Vessel / Voyage No.</strong><br />
-          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black; border-right: none;border-top: none; text-align: center; padding: 5px;">
-          <strong>Port of Discharge</strong><br />
-          {{ housejobData?.POD }}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black; border-right: none;border-top: none; text-align: center; padding: 5px;">
-          <strong>Place of Delivery</strong><br />
-          {{ housejobData?.Others?.[0]?.DeliveryPlace }}
-        </div>
-        <div
-          style="width: 25%; border: 1px solid black;border-top: none;border-right: none; text-align: center; padding: 5px;">
-          <strong>No of Bill of Lading</strong><br />
-          {{ housejobData?.masterJob?.NoofOriginal }}
-        </div>
-      </div>
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Port of Loading</strong><br />
+    {{ housejobData?.POL }}
+  </div>
+
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Job No.</strong><br />
+    {{ housejobData?.HBLNo }}
+  </div>
+
+  <div style="width:25%; text-align:center; padding:5px;">
+    <strong>Job Ref.</strong><br />
+    {{ housejobData?.Others?.[0]?.CustomerRefNo }}
+  </div>
+</div>
+
+
+    <!-- Ports & Job Details - Row 2 -->
+<div style="
+  display:flex;
+  font-size:16px;
+  border-bottom:1px solid black;
+">
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Vessel / Voyage No.</strong><br />
+    {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+  </div>
+
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Port of Discharge</strong><br />
+    {{ housejobData?.POD }}
+  </div>
+
+  <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+    <strong>Place of Delivery</strong><br />
+    {{ housejobData?.Others?.[0]?.DeliveryPlace }}
+  </div>
+
+  <div style="width:25%; text-align:center; padding:5px;">
+    <strong>No of Bill of Lading</strong><br />
+    {{ housejobData?.masterJob?.NoofOriginal }}
+  </div>
+</div>
+
 
       <!-- Product Table -->
       <div style="overflow-x:auto; margin-top: 5px;">

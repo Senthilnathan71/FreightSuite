@@ -45,13 +45,13 @@
                             </h4>
                         </div>
                         <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
-                            <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                            <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
                             </h3>
-                            <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+                            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
                             </h5>
                             <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
                             <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-                                currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City ||
+                                currentBranch?.cityMaster?.cityName || currentCompany?.City ||
                                 ''
                                 }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
                                 currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
@@ -204,58 +204,105 @@
                     </div>
                 </div>
  
-                <!-- Commodity Table -->
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:16px; ">
-                        <thead style="background-color:#f8f9fa;">
-                            <tr>
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;border-left:none;">
-                                    <strong>Commodity Description</strong></th>
-                                    @if (selectedFCLLCL === 'LCL') {
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;"><strong>Length x
-                                        Width x Height(cm)</strong></th>}
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;"><strong>Package
-                                        Type</strong></th>
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;"><strong>No. of
-                                        Package</strong></th>
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;"><strong>Gross
-                                        Weight</strong></th>
-                                <th style="border:1px solid black; padding:4px;font-weight: bold; text-align: center;border-right:none;">
-                                    <strong>Volume</strong></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for(item of masterJobContainers; track $index){
-                            <tr>
-                                <td style="border:1px solid black; padding:4px; text-align: start;border-left: none;">
-                                    {{ item?.CommodityDescription }}</td>
-                                @if (selectedFCLLCL === 'LCL') {
-                                <td style="border:1px solid black; padding:4px; text-align: center;">{{ item?.Length }}
-                                    {{ item?.Width }} {{ item?.Height }} </td>}
-                                 <td style="border:1px solid black; padding:4px; text-align:start;">{{
-                                    getPackageTypeName(item?.PkgType) }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{ item?.NoOfPkg || 0
-                                    }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{ item?.GrossWeight
-                                    | number:'1.3-3' }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">{{
-                                    item?.Volume | number:'1.3-3' }}</td>
-                            </tr>
-                            }
-                            <tr style="font-weight: bold;">
-                                <td colspan="3"
-                                    style="border:1px solid black; padding:4px; text-align:right;border-left: none;">
-                                    <strong>Total</strong></td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{ totalNoOfPkg }}
-                                </td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{ totalGrossWeight |
-                                    number:'1.3-3' }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">{{
-                                    totalVolume | number:'1.3-3' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+   <!-- Commodity Table -->
+<div style="overflow-x:auto;">
+  <table style="
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:16px;
+  ">
+
+    <!-- TABLE HEADER -->
+    <thead style="background-color:#f8f9fa;">
+      <tr>
+        <th style="border:1px solid black; padding:4px; text-align:center; border-left:none;width:40%;">
+          <strong>Commodity Description</strong>
+        </th>
+
+        <!-- LCL ONLY -->
+        @if (selectedFCLLCL === 'LCL') {
+        <th style="border:1px solid black; padding:4px; text-align:center;width:23%;">
+          <strong>Length × Width × Height (cm)</strong>
+        </th>
+        }
+
+        <th style="border:1px solid black; padding:4px; text-align:center;width: 15%;">
+          <strong>Pkgs Type</strong>
+        </th>
+
+        <th style="border:1px solid black; padding:4px; text-align:center;">
+          <strong>No. of Pkgs</strong>
+        </th>
+
+        <th style="border:1px solid black; padding:4px; text-align:center;">
+          <strong>Gross Wt.</strong>
+        </th>
+
+        <th style="border:1px solid black; padding:4px; text-align:center; border-right:none;">
+          <strong>Volume</strong>
+        </th>
+      </tr>
+    </thead>
+
+    <!-- TABLE BODY -->
+    <tbody>
+      @for (item of masterJobContainers; track $index) {
+      <tr>
+        <td style="border:1px solid black; padding:4px; text-align:left; border-left:none;">
+          {{ item?.CommodityDescription }}
+        </td>
+
+        <!-- LCL ONLY -->
+        @if (selectedFCLLCL === 'LCL') {
+        <td style="border:1px solid black; padding:4px; text-align:center;">
+          {{ item?.Length }} × {{ item?.Width }} × {{ item?.Height }}
+        </td>
+        }
+
+        <td style="border:1px solid black; padding:4px; text-align:left;">
+          {{ getPackageTypeName(item?.PkgType) }}
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right;">
+          {{ item?.NoOfPkg || 0 }}
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right;">
+          {{ item?.GrossWeight | number:'1.3-3' }}
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+          {{ item?.Volume | number:'1.3-3' }}
+        </td>
+      </tr>
+      }
+
+      <!-- TOTAL ROW -->
+      <tr style="font-weight:bold;">
+        <td
+          [attr.colspan]="selectedFCLLCL === 'LCL' ? 3 : 2"
+          style="border:1px solid black; padding:4px; text-align:right; border-left:none;"
+        >
+          <strong>Total</strong>
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right;">
+          {{ totalNoOfPkg }}
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right;">
+          {{ totalGrossWeight | number:'1.3-3' }}
+        </td>
+
+        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+          {{ totalVolume | number:'1.3-3' }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
  
                 <!-- Remarks -->
                 <div style="display:flex; align-items:center; margin-top:10px; padding-left:18px;font-size:16px;">
