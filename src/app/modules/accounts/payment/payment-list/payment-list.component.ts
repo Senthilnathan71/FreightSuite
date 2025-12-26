@@ -239,12 +239,22 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           cellClass: 'text-truncate'
         },
         {
+            key: 'PostDate',
+            label: 'Posted Date',
+            sortable: true,
+            filterable: true,
+            visible: true,
+            width: '140px'
+        },
+        {
           key: 'PostStatus',
           label: 'Post Status',
           sortable: true,
           filterable: true,
           visible: true,
-          width: '120px'
+          width: '120px',
+          template: 'status',
+          dataType: 'string',
         },
         {
           key: 'Status',
@@ -310,6 +320,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         LocalAmount : Number(item.VoucherDetail[0]?.LocalAmount || 0).toFixed(2),
         VoucherDate : this.datePipe.transform(item.VoucherDate),
+        PostDate: this.datePipe.transform(item.PostDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));

@@ -494,7 +494,6 @@ jobStatusOptions = [
       ATA: this.formatDate(formValue.ATA),
       ATD: this.formatDate(formValue.ATD),
       DestinationATA: this.formatDate(formValue.DestinationATA),
-      CarrierSid: formValue.CarrierMasterSid,
       CarrierName: formValue.CarrierName,
     };
 
@@ -1350,7 +1349,6 @@ jobStatusOptions = [
       ATA: data.ATA ? new Date(data.ATA) : null,
       ATD: data.ATD ? new Date(data.ATD) : null,
       DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
-      CarrierMasterSid: data.CarrierMasterSid || null,
       CarrierName: data.CarrierName || '',
       PortCutoffDate: data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
       SiCutoffDate: data.SiCutoffDate ? new Date(data.SiCutoffDate) : null,
@@ -1448,7 +1446,6 @@ jobStatusOptions = [
         ATA: voyage.ATA ? new Date(voyage.ATA) : null,
         ATD: voyage.ATD ? new Date(voyage.ATD) : null,
         DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
-        CarrierMasterSid: voyage.CarrierSid,
         CarrierName: voyage.CarrierName || '',
         PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
           voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
@@ -1459,15 +1456,15 @@ jobStatusOptions = [
 
 
     // ✅ Fixed: Populate carrier dropdown for edit mode
-    if (data.CarrierName && data.CarrierMasterSid) {
-      const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
-      if (!existingCarrier) {
-        this.carrierList.push({
-          CarrierMasterSid: data.CarrierMasterSid,
-          CarrierName: data.CarrierName
-        });
-      }
-    }
+    // if (data.CarrierName && data.CarrierMasterSid) {
+    //   const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
+    //   if (!existingCarrier) {
+    //     this.carrierList.push({
+    //       CarrierMasterSid: data.CarrierMasterSid,
+    //       CarrierName: data.CarrierName
+    //     });
+    //   }
+    // }
 
     // Patch connection, containers, rates, edocs, emails, container activities
     this.masterjobConnectionArr = (data.masterJobConnection || []).map(connection => {
@@ -2083,6 +2080,15 @@ jobStatusOptions = [
 
     const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
+    let CarrierSid = null;
+  if (formValue.CarrierName) {
+    const selectedCarrier = this.carrierList.find(carrier => 
+      carrier.CustomerName === formValue.CarrierName
+    );
+    if (selectedCarrier) {
+      CarrierSid = selectedCarrier.CustomerMasterSid;
+    }
+  }
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
       VoyageMasterSid: formValue.VoyageMasterSid,
@@ -2093,7 +2099,6 @@ jobStatusOptions = [
       ATA: this.formatDate(formValue.ATA),
       ATD: this.formatDate(formValue.ATD),
       DestinationATA: this.formatDate(formValue.DestinationATA),
-      CarrierSid: formValue.CarrierMasterSid,
       CarrierName: formValue.CarrierName,
     };
 
@@ -2129,6 +2134,7 @@ jobStatusOptions = [
       POL: getPortCode(formValue.POL),
       POD: getPortCode(formValue.POD),
       FPD: getPortCode(formValue.FPD),
+      CarrierSid: CarrierSid,
 
       // Add the others data as a separate object
       others: othersData,

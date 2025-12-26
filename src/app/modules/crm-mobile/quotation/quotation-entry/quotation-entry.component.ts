@@ -111,6 +111,7 @@ export class QuotationEntryComponent implements OnInit {
   // SECTION1 - VARIABLE DECLARATION
   @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChild('customerCreatedModal') customerCreatedModal!: TemplateRef<any>
+  @ViewChild('bookingConfirmationModal') bookingConfirmationModal!: TemplateRef<any>;
   currentDate = new Date()
   selectedCurrency : any;
   MenuMasterSid:any
@@ -907,23 +908,43 @@ private extractCargoData(enquiryCargo: any[]): any {
     if(!data || data === undefined){
       this.addQuoteCharge(routeIndex,this.quoteCarriers(routeIndex).length - 1);
     }
+    this.updateCarrierValidationBasedOnStatus(carrierForm);
 
     this.subscription.add(
       carrierForm.get('authorizerStatus')?.valueChanges.subscribe(value => {
-        if(value === 'Approved' || value === 'Rejected'){
-          carrierForm.get('ApprovedBy').setValidators(Validators.required);
-        } else {
-          carrierForm.get('ApprovedBy').clearValidators();
-        }
-        if(value === 'Counter'){
-          carrierForm.get('authorizerRemarks').setValidators(Validators.required);
-        } else {
-          carrierForm.get('authorizerRemarks').clearValidators();
-        }
+       this.updateCarrierValidationBasedOnStatus(carrierForm);
       })
     )
     carrierForm.updateValueAndValidity();
   }
+
+  updateCarrierValidationBasedOnStatus = (form: FormGroup) => {
+  const status = form.get('authorizerStatus')?.value;
+  const approvedByControl = form.get('ApprovedBy');
+  const remarksControl = form.get('authorizerRemarks');
+  
+  // Clear existing validators first
+  approvedByControl?.clearValidators();
+  remarksControl?.clearValidators();
+  
+  if (status === 'Approved' || status === 'Rejected') {
+    approvedByControl?.setValidators([Validators.required]);
+    approvedByControl?.enable();
+  } else {
+    approvedByControl?.disable();
+  }
+  
+  if (status === 'Counter') {
+    remarksControl?.setValidators([Validators.required]);
+    remarksControl?.enable();
+  } else {
+    remarksControl?.disable();
+  }
+  
+  approvedByControl?.updateValueAndValidity();
+  remarksControl?.updateValueAndValidity();
+  form.updateValueAndValidity();
+};
 
   handleCarrierChange(carrier: any, routeIndex: number, carrierIndex: number) {
     const routeForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
@@ -1654,7 +1675,35 @@ isRateLockDisabled(): boolean {
       this.appSettingService.showWarning("Please select approval status");
       return;
     }
+    let hasCarrierValidationErrors = false;
+      this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+    const carrierArr = this.quoteCarriers(routeIndex);
+    carrierArr.controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+      // Force validation update
+      carrier.updateValueAndValidity();
+      carrier.markAllAsTouched();
+      
+      const status = carrier.get('authorizerStatus')?.value;
+      const approvedBy = carrier.get('ApprovedBy')?.value;
+      const remarks = carrier.get('authorizerRemarks')?.value;
+      
+      // Manual validation check
+      if ((status === 'Approved' || status === 'Rejected') && !approvedBy?.trim()) {
+        hasCarrierValidationErrors = true;
+        this.appSettingService.showWarning(`Approved By is required`);
+      }
+      
+      if (status === 'Counter' && !remarks?.trim()) {
+        hasCarrierValidationErrors = true;
+        this.appSettingService.showWarning(`Remarks are required for Counter`);
+      }
+    })
+  });
 
+  if (hasCarrierValidationErrors) {
+    this.selectedTab1 = 'Route Details';
+    return;
+  }
     if (this.quoteRoutes.invalid) {
       this.appSettingService.showWarning("Please fill all the Route details correctly");
       this.quoteRoutes.markAllAsTouched();
@@ -3426,45 +3475,239 @@ ${this.userData.userName}`;
   }
 
 
-  async goForBookingCreation() {
+//   async goForBookingCreation() {
+//   const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
+//   if (!customerHasBranch) {
+//     this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+//     return;
+//   }
+
+//   try {
+//     // Fetch full quote details with enquiry data using the new service method
+//     const quoteResponse = await firstValueFrom(
+//       this.leadService.getQuote(this.selectedItem.QuoteHeaderSid)
+//     );
+
+//     if (!quoteResponse) {
+//       this.appSettingService.showError("Error loading quotation details");
+//       return;
+//     }
+
+//     const QuoteData = quoteResponse.data;
+//     console.log('Full Quotation Data with Enquiry:', QuoteData);
+
+//     // TODO: need to fix this after completion of Authorization
+//     // const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
+//     //   route.quoteCarrier.some(carrier => carrier.ApprovalStatus === "A")
+//     // ) || {};
+//     const approvedRoute = QuoteData.quoteRoute?.[0] || [];
+//     const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
+//     const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
+//     const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
+//     const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
+
+//     // TODO: need to fix this after completion of Authorization
+//     // const approvedCarrier = (approvedRoute?.quoteCarrier || []).find(
+//     //   carrier => carrier.ApprovalStatus === "A"
+//     // ) || {};
+//     const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
+
+//     const cargo = approvedRoute?.quoteCargo?.[0] || {};
+//     const containerTypeId = this.containerTypeList.find(type => type.ContainerCode === cargo.ContainerType)?.ContainerTypeMasterSid;
+
+//     // Extract shipper and consignee from enquiry if available
+//     const enquiryData = QuoteData.EnquiryHeader;
+//     const enquiryOther = enquiryData?.enquiryOther?.[0];
+//     const shipperName = enquiryOther?.ShipperName || "";
+//     const shipperAddress = enquiryOther?.ShipperAddress || "";
+//     const consigneeName = enquiryOther?.ConsigneeName || "";
+//     const consigneeAddress = enquiryOther?.ConsigneeAddress || "";
+
+
+//     const data = {
+//       quotation: true,
+//       DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
+//       IncoTerms: approvedRoute.ServiceLevel,
+//       CustomerMasterSid: QuoteData.CustomerMasterSid || null,
+//       CustomerBranchSid: QuoteData.CustomerBranchSid || null,
+//       CustomerName: QuoteData.CustomerName || "",
+//       CustomerAddress: QuoteData.CustomerAddress || "",
+//       SalesmanSid: QuoteData.SalesmanSid || null,
+//       FreightTerms: QuoteData.FreightPPCC || "",
+//       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
+//       CarrierName: approvedCarrier?.CarrierName || "",
+//       status: 'A',
+
+//       // Shipper and Consignee from Enquiry
+//       ShipperName: shipperName,
+//       ShipperAddress: shipperAddress,
+//       ConsigneeName: consigneeName,
+//       ConsigneeAddress: consigneeAddress,
+
+//       // Port details
+//       POO: POO?.PortCode || null,
+//       POL: POL?.PortCode || null,
+//       POD: POD?.PortCode || null,
+//       FPD: FPD?.PortCode || null,
+
+//       // Cargo details
+//       bookingCargo: cargo ? [
+//         {
+//           CargoType: cargo.CargoType,
+//           GrossWeight: cargo.GrossWeight,
+//           NetWeight: cargo.NetWeight,
+//           Volume: cargo.Volume,
+//           ChargeableWeight: cargo.ChargeableWeight,
+//           ContainerType: containerTypeId,
+//           NoofContainers: cargo.Qty,
+//         }
+//       ] : [],
+
+//       // Product details
+//       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
+//         ProductName: product.ProductName,
+//         ExternaPkg: product.PackageType,
+//         ExternlQty: product.ExternalQty,
+//         GrossWeight: product.GrossWeight,
+//         NetWeight: product.NetWeight,
+//         Volume: product.Volume,
+//         IsHaz: product.IsHaz,
+//         ImcoClass: product.ImcoClass,
+//         UnNo: product.UnNo,
+//         PkgGroup: product.PkgGroup,
+//         Length: product.Length,
+//         Width: product.Width,
+//         Height: product.Height,
+//         UomMasterSid: product.UomMasterSid,
+//       })),
+
+//       // Rate details
+//       bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
+//         CompanyMasterSid: charge.CompanyMasterSid,
+//         BranchMasterSid: charge.BranchMasterSid,
+//         SerialNumber: index + 1,
+//         ChargeMasterSid: charge.ChargeUomSid,
+//         ChargeDescription: charge.ChargeDisplayName,
+//         NoOfUnit: charge.Qty,
+
+//         CostChargeUomSid: charge.CostChargeUomSid,
+//         CostPrepaidCollect: charge.CostPrepaidCollect,
+//         CostDrCr: charge.CostDrCr,
+//         CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
+//         CostExchangeRate: charge.CostExchangeRate,
+//         CostRate: charge.CostRate,
+//         CostAmount: charge.CostAmount,
+//         CostLocalAmount: charge.CostLocalAmount,
+//         AgentMasterSid: charge.CostAgentMasterSid,
+
+//         RevenueChargeUomSid: charge.RevenueChargeUomSid,
+//         RevenuePrepaidCollect: charge.RevenuePrepaidCollect,
+//         RevenueDrCr: charge.RevenueDrCr,
+//         RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+//         RevenueExchangeRate: charge.RevenueExchangeRate,
+//         RevenueRate: charge.RevenueRate,
+//         RevenueAmount: charge.RevenueAmount,
+//         RevenueLocalAmount: charge.RevenueLocalAmount,
+//         CustomerMasterSid: charge.RevenueCustomerMasterSid,
+//         QuoteChargeSid: charge.QuoteChargeSid,
+//         TariffDetailSid: charge.TariffDetailSid,
+//       }))
+//     };
+
+//     console.log('Booking Data with Shipper/Consignee:', data);
+
+//     this.router.navigate(['operation/booking/entry'], {
+//       state: {
+//         dataFromQuotation: data
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching quotation details:', error);
+//     this.appSettingService.showError("Failed to load quotation details for booking");
+//   }
+// }
+
+async goForBookingCreation() {
   const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
   if (!customerHasBranch) {
     this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
     return;
   }
 
+  // Check if booking already exists
+  if (this.selectedItem.BookingHeaderSid) {
+    // Show confirmation modal
+    const confirmed = await this.showBookingConfirmationModal();
+    
+    if (!confirmed) {
+      // User cancelled
+      this.appSettingService.showInfo('Booking creation cancelled');
+      return;
+    }
+  }
+
+  // Proceed with booking creation
+  await this.createBookingFromQuotation();
+}
+
+private showBookingConfirmationModal(): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const modalRef = this.ngbModal.open(this.bookingConfirmationModal, {
+      size: 'md',
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.result.then(
+      (result) => {
+        // result will be true if user clicked "Create New Booking"
+        resolve(result);
+      },
+      (dismissReason) => {
+        // User dismissed the modal (clicked outside or X button)
+        resolve(false);
+      }
+    );
+  });
+}
+
+private async createBookingFromQuotation() {
   try {
-    // Fetch full quote details with enquiry data using the new service method
+    this.spinner.show();
+    
+    // Fetch full quote details
     const quoteResponse = await firstValueFrom(
       this.leadService.getQuote(this.selectedItem.QuoteHeaderSid)
     );
 
     if (!quoteResponse) {
+      this.spinner.hide();
       this.appSettingService.showError("Error loading quotation details");
       return;
     }
 
     const QuoteData = quoteResponse.data;
-    console.log('Full Quotation Data with Enquiry:', QuoteData);
-
-    // TODO: need to fix this after completion of Authorization
-    // const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
-    //   route.quoteCarrier.some(carrier => carrier.ApprovalStatus === "A")
-    // ) || {};
+    
     const approvedRoute = QuoteData.quoteRoute?.[0] || [];
     const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
     const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
     const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
     const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
 
-    // TODO: need to fix this after completion of Authorization
-    // const approvedCarrier = (approvedRoute?.quoteCarrier || []).find(
-    //   carrier => carrier.ApprovalStatus === "A"
-    // ) || {};
     const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
-
     const cargo = approvedRoute?.quoteCargo?.[0] || {};
-    const containerTypeId = this.containerTypeList.find(type => type.ContainerCode === cargo.ContainerType)?.ContainerTypeMasterSid;
+    
+    // Find container type ID if it exists
+    let containerTypeId = null;
+    if (cargo?.ContainerType) {
+      const containerType = this.containerTypeList.find(type => 
+        type.ContainerCode === cargo.ContainerType || 
+        type.ContainerName === cargo.ContainerType
+      );
+      containerTypeId = containerType?.ContainerTypeMasterSid || null;
+    }
 
     // Extract shipper and consignee from enquiry if available
     const enquiryData = QuoteData.EnquiryHeader;
@@ -3473,10 +3716,25 @@ ${this.userData.userName}`;
     const shipperAddress = enquiryOther?.ShipperAddress || "";
     const consigneeName = enquiryOther?.ConsigneeName || "";
     const consigneeAddress = enquiryOther?.ConsigneeAddress || "";
-
-
-    const data = {
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === approvedRoute.DepartmentMasterSid);
+    let jobType = '';
+    if (selectedDept) {
+      const departmentName = selectedDept.departmentName?.toLowerCase() || '';
+      const exportImport = selectedDept.ExportImport;
+      
+      if (departmentName.includes('fcl') || departmentName.includes('lcl') || departmentName.includes('air')) {
+        if (exportImport === 'Export') {
+          jobType = 'Export';
+        } else if (exportImport === 'Import') {
+          jobType = 'Import';
+        }
+      }
+    }
+    // Prepare booking data
+    const bookingData = {
       quotation: true,
+      // Clear BookingHeaderSid to ensure new booking creation
+      BookingHeaderSid: null,
       DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
       IncoTerms: approvedRoute.ServiceLevel,
       CustomerMasterSid: QuoteData.CustomerMasterSid || null,
@@ -3488,6 +3746,11 @@ ${this.userData.userName}`;
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
       status: 'A',
+      JobType: jobType,
+      
+      // Additional contract info
+      IsContract: QuoteData.IsContract || "N",
+      ContractExpired: QuoteData.expDate ? new Date(QuoteData.expDate) < new Date() : false,
 
       // Shipper and Consignee from Enquiry
       ShipperName: shipperName,
@@ -3502,17 +3765,15 @@ ${this.userData.userName}`;
       FPD: FPD?.PortCode || null,
 
       // Cargo details
-      bookingCargo: cargo ? [
-        {
-          CargoType: cargo.CargoType,
-          GrossWeight: cargo.GrossWeight,
-          NetWeight: cargo.NetWeight,
-          Volume: cargo.Volume,
-          ChargeableWeight: cargo.ChargeableWeight,
-          ContainerType: containerTypeId,
-          NoofContainers: cargo.Qty,
-        }
-      ] : [],
+      bookingCargo: cargo ? [{
+        CargoType: cargo.CargoType || "General",
+        GrossWeight: cargo.GrossWeight || 0,
+        NetWeight: cargo.NetWeight || 0,
+        Volume: cargo.Volume || 0,
+        ChargeableWeight: cargo.ChargeableWeight || 0,
+        ContainerType: containerTypeId,
+        NoofContainers: cargo.Qty || 0,
+      }] : [],
 
       // Product details
       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
@@ -3539,43 +3800,47 @@ ${this.userData.userName}`;
         SerialNumber: index + 1,
         ChargeMasterSid: charge.ChargeUomSid,
         ChargeDescription: charge.ChargeDisplayName,
-        NoOfUnit: charge.Qty,
+        NoOfUnit: charge.Qty || 1,
 
         CostChargeUomSid: charge.CostChargeUomSid,
-        CostPrepaidCollect: charge.CostPrepaidCollect,
-        CostDrCr: charge.CostDrCr,
+        CostPrepaidCollect: charge.CostPrepaidCollect || "Prepaid",
+        CostDrCr: charge.CostDrCr || "D",
         CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
-        CostExchangeRate: charge.CostExchangeRate,
-        CostRate: charge.CostRate,
-        CostAmount: charge.CostAmount,
-        CostLocalAmount: charge.CostLocalAmount,
+        CostExchangeRate: charge.CostExchangeRate || 1,
+        CostRate: charge.CostRate || 0,
+        CostAmount: charge.CostAmount || 0,
+        CostLocalAmount: charge.CostLocalAmount || 0,
         AgentMasterSid: charge.CostAgentMasterSid,
 
         RevenueChargeUomSid: charge.RevenueChargeUomSid,
-        RevenuePrepaidCollect: charge.RevenuePrepaidCollect,
-        RevenueDrCr: charge.RevenueDrCr,
+        RevenuePrepaidCollect: charge.RevenuePrepaidCollect || "Prepaid",
+        RevenueDrCr: charge.RevenueDrCr || "C",
         RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
-        RevenueExchangeRate: charge.RevenueExchangeRate,
-        RevenueRate: charge.RevenueRate,
-        RevenueAmount: charge.RevenueAmount,
-        RevenueLocalAmount: charge.RevenueLocalAmount,
+        RevenueExchangeRate: charge.RevenueExchangeRate || 1,
+        RevenueRate: charge.RevenueRate || 0,
+        RevenueAmount: charge.RevenueAmount || 0,
+        RevenueLocalAmount: charge.RevenueLocalAmount || 0,
         CustomerMasterSid: charge.RevenueCustomerMasterSid,
         QuoteChargeSid: charge.QuoteChargeSid,
         TariffDetailSid: charge.TariffDetailSid,
       }))
     };
 
-    console.log('Booking Data with Shipper/Consignee:', data);
-
+    this.spinner.hide();
+    
+    // Navigate to booking page
     this.router.navigate(['operation/booking/entry'], {
       state: {
-        dataFromQuotation: data
+        dataFromQuotation: bookingData,
+        isNewBooking: true,
+        existingBookingId: this.selectedItem.BookingHeaderSid
       }
     });
 
   } catch (error) {
-    console.error('Error fetching quotation details:', error);
-    this.appSettingService.showError("Failed to load quotation details for booking");
+    this.spinner.hide();
+    console.error('Error creating booking from quotation:', error);
+    this.appSettingService.showError("Failed to create booking from quotation");
   }
 }
 

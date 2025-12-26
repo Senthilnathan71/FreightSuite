@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateStruct, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -48,6 +48,9 @@ export class JournalVoucherEntryComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[]=[];
   currentClauseId: any;
+  // Add with other properties
+defaultCurrencyId: number | null = null;
+defaultCurrencyCode: string = '';
   // Add these properties from vendor invoice component
   currentCompany: any;
   filteredChargeList: any[][] = [];
@@ -74,6 +77,8 @@ export class JournalVoucherEntryComponent implements OnInit {
   voucherData: any;
   hssacList: any[][] = [];
   uomList: any[] = [];
+  companyCurrency: any;
+  currentCurrencyCode: string = '';
   HSSACLookupConfig = {
   displayFields: ['HSSACCode', 'HSSACName'],
   displayLabels: ['Code', 'Name'],
@@ -90,10 +95,11 @@ export class JournalVoucherEntryComponent implements OnInit {
     { id: 'C', name: 'C' },
   ];
 
-  // Calculations
-  debitTotal = 0;
-  creditTotal = 0;
-  difference = 0;
+  // REMOVE THESE PROPERTIES - We'll use getters instead
+  // debitTotal = 0;
+  // creditTotal = 0;
+  // difference = 0;
+  
   private showWarningFlags: boolean[] = [];
 
   constructor(
@@ -111,7 +117,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     private commonService: CommonService,
     private masterService: MasterService,
     private companySettings: CompanySettingsManagerService,
-    private spinner: NgxSpinnerService // Add spinner service
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -123,6 +129,59 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.checkEditMode();
     this.subledgerTypes = [];
   }
+
+  // ========== ADD THESE GETTERS ==========
+  
+  // Real-time debit total calculation
+  get debitTotal(): number {
+    if (!this.details || this.details.length === 0) {
+      return 0;
+    }
+    
+    return this.details.controls.reduce((total, control) => {
+      if (control.get('drCr')?.value === 'D') {
+        const localAmount = control.get('localAmount')?.value || 0;
+        const taxAmount = control.get('taxAmount')?.value || 0;
+        return total + localAmount + taxAmount;
+      }
+      return total;
+    }, 0);
+  }
+
+  // Real-time credit total calculation
+  get creditTotal(): number {
+    if (!this.details || this.details.length === 0) {
+      return 0;
+    }
+    
+    return this.details.controls.reduce((total, control) => {
+      if (control.get('drCr')?.value === 'C') {
+        const localAmount = control.get('localAmount')?.value || 0;
+        const taxAmount = control.get('taxAmount')?.value || 0;
+        return total + localAmount + taxAmount;
+      }
+      return total;
+    }, 0);
+  }
+
+  // Real-time difference calculation
+  get difference(): number {
+    return Math.abs(this.debitTotal - this.creditTotal);
+  }
+
+  // Optional: Get formatted totals for display
+  get formattedDebitTotal(): string {
+    return this.debitTotal.toFixed(2);
+  }
+
+  get formattedCreditTotal(): string {
+    return this.creditTotal.toFixed(2);
+  }
+
+  get formattedDifference(): string {
+    return this.difference.toFixed(2);
+  }
+  // ========== END OF GETTERS ==========
 
   loadUserAndCompanyData(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -141,7 +200,8 @@ export class JournalVoucherEntryComponent implements OnInit {
       this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
       this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
       this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
-
+      this.companyCurrency = this.companySettings.getCurrencySettings();
+      this.currentCurrencyCode = this.companyCurrency.code;
       console.log('=== JOURNAL VOUCHER COMPANY DATA ===');
       console.log('Current Company:', this.currentCompany);
       console.log('Current Branch:', this.currentBranch);
@@ -171,14 +231,31 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
       voucherDate: [null, Validators.required],
-      narration: ['', Validators.maxLength(200)],
+      narration: ['', [Validators.required,Validators.maxLength(200)]],
       remarks: ['', Validators.maxLength(200)],
       Status: ['A'],
       postStatus: [{ value: 'Unposted', disabled: true }],
       postDate: [{ value: '', disabled: true }],
       details: this.fb.array([]),
     });
+      if (!this.editMode) {
+    this.initializeDefaultCurrency();
   }
+
+  }
+
+  initializeDefaultCurrency(): void {
+  // Get company currency ID (from user company data or company settings)
+  const companyCurrencyId = this.currentCompany?.CurrencyMasterSid || this.companyCurrency?.currencyMasterSid;
+  
+  if (companyCurrencyId) {
+    console.log('Initializing default currency with ID:', companyCurrencyId);
+    
+    // This will be applied when currency list is loaded
+    this.defaultCurrencyId = companyCurrencyId;
+    this.defaultCurrencyCode = this.currentCurrencyCode;
+  }
+}
 
   setTodayDate(): void {
     const today = new Date();
@@ -191,34 +268,95 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   loadMasterData(): void {
-    forkJoin({
-      currencies: this.dropdownStore.loadCurrencies(),
-      departments: this.dropdownStore.loadDepartments({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid: this.currentBranch?.BranchMasterSid
-      }),
-      costCenters: this.accountsService.getAllCostCenters(),
-      profitCenters: this.accountsService.getAllProfitCenters(),
-      //  hssac: this.operationService.getAllHssac(), // Add HSSAC
-      uom: this.operationService.getAllUom(),
-    }).subscribe({
-      next: (result) => {
-        this.currencyList = result.currencies;
-        this.departmentList = result.departments;
-        this.costCenterList = result.costCenters.data;
-        this.profitCenterList = result.profitCenters.data;
-        // this.hssacList = result.hssac || [];
-        this.uomList = result.uom?.data || [];
-        this.loadCOAList();
-        this.loadSubledgerList();
-        this.loadChargeList();
-      },
-      error: (err) => {
-        console.error('Error loading master data:', err);
-        this.appSettingService.showError('Failed to load master data', 'Error');
-      },
-    });
-  }
+  this.spinner.show();
+  
+  forkJoin({
+    currencies: this.dropdownStore.loadCurrencies(),
+    departments: this.dropdownStore.loadDepartments({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid
+    }),
+    costCenters: this.accountsService.getAllCostCenters(),
+    profitCenters: this.accountsService.getAllProfitCenters(),
+    uom: this.operationService.getAllUom(),
+    coa: this.accountsService.getAllCoaWithLedgerCategory({
+      LedgerCategory: 'Ledger',
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+    }),
+    subledger: this.maasterService.getAllSuledgermaster(),
+    charges: this.accountsService.getAllCharges(this.currentCompany?.CompanyMasterSid)
+  }).subscribe({
+    next: (result) => {
+      this.currencyList = result.currencies;
+      this.departmentList = result.departments;
+      this.costCenterList = result.costCenters.data;
+      this.profitCenterList = result.profitCenters.data;
+      this.uomList = result.uom?.data || [];
+      this.coaList = result.coa?.data || [];
+      this.subledgerList = result.subledger?.data || [];
+      this.chargeList = result.charges || [];
+
+            console.log('Currency List loaded:', this.currencyList);
+      
+      // Find the company currency in the loaded list
+      const companyCurrency = this.currencyList.find(
+        currency => currency.CurrencyMasterSid === this.currentCurrency
+      );
+      
+      if (companyCurrency) {
+        console.log('Found company currency in list:', companyCurrency);
+        this.companyCurrency = companyCurrency;
+        this.currentCurrencyCode = companyCurrency.currencyCode;
+      }
+      
+      // Apply default currency to all detail lines (for new entries only)
+      if (!this.editMode) {
+        this.patchDefaultCurrencyToAllDetails();
+      }
+      
+      // After all data is loaded, load voucher if in edit mode
+      if (this.editMode && this.voucherHeaderSid) {
+        this.loadVoucherForEdit(this.voucherHeaderSid);
+      } else {
+        this.spinner.hide();
+      }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Error loading master data:', err);
+      this.appSettingService.showError('Failed to load master data', 'Error');
+    },
+  });
+}
+
+patchDefaultCurrencyToAllDetails(): void {
+  // Only patch for new entries (not edit mode)
+  if (this.editMode || !this.companyCurrency || !this.currencyList.length) return;
+  
+  console.log('Patching default currency to all detail lines:', {
+    currencyId: this.companyCurrency.CurrencyMasterSid,
+    currencyCode: this.companyCurrency.currencyCode
+  });
+  
+  // Patch currency to all existing detail lines
+  this.details.controls.forEach((control, index) => {
+    const detailGroup = control as FormGroup;
+    const currentCurrencyId = detailGroup.get('currencyMasterSid')?.value;
+    
+    // Only patch if no currency is selected
+    if (!currentCurrencyId) {
+      console.log(`Patching currency to detail line ${index}`);
+      
+      detailGroup.patchValue({
+        currencyMasterSid: this.companyCurrency.CurrencyMasterSid,
+        currencyCode: this.companyCurrency.currencyCode
+      }, { emitEvent: false });
+      
+      // Fetch exchange rate for the company currency
+      this.fetchExchangeRate(detailGroup, this.companyCurrency.CurrencyMasterSid);
+    }
+  });
+}
 
   loadCOAList(): void {
     this.accountsService.getAllCoaWithLedgerCategory({
@@ -257,16 +395,15 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   checkEditMode(): void {
-    this.route.params.subscribe((params) => {
-      if (params['id']) {
-        this.editMode = true;
-        this.voucherHeaderSid = +params['id'];
-        this.loadVoucherForEdit(this.voucherHeaderSid);
-      } else {
-        this.addDetailLine();
-      }
-    });
-  }
+  this.route.params.subscribe((params) => {
+    if (params['id']) {
+      this.editMode = true;
+      this.voucherHeaderSid = +params['id'];
+    } else {
+      this.addDetailLine();
+    }
+  });
+}
 
   loadVoucherForEdit(id: number): void {
   this.journalVoucherService.getJournalVoucherById(id).subscribe({
@@ -435,7 +572,7 @@ export class JournalVoucherEntryComponent implements OnInit {
 
         // Wait for all async operations to complete
         Promise.all(detailPromises).then(() => {
-          this.calculateTotals();
+          // REMOVED: this.calculateTotals(); - Not needed with getters
           
           // DEBUG: Check what's actually in the form
           console.log('Form details after loading:', this.details.value);
@@ -444,10 +581,12 @@ export class JournalVoucherEntryComponent implements OnInit {
           if (this.isPosted) {
             this.form.disable();
           }
+          
+          this.spinner.hide();
         });
+      } else {
+        this.spinner.hide();
       }
-
-      this.calculateTotals();
 
       if (this.isPosted) {
         this.form.disable();
@@ -457,6 +596,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       console.error('Error loading voucher:', err);
       this.appSettingService.showError('Failed to load voucher details', 'Error');
       this.router.navigate(['/accounts/journal-voucher/list']);
+      this.spinner.hide();
     },
   });
 }
@@ -627,13 +767,24 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
   }
 
   createDetailGroup(): FormGroup {
-    return this.fb.group({
+      let defaultCurrencyId = null;
+      let defaultCurrencyCode = '';
+        if (!this.editMode && this.companyCurrency) {
+    // For new entries, use company currency as default
+    defaultCurrencyId = this.companyCurrency.CurrencyMasterSid;
+    defaultCurrencyCode = this.companyCurrency.currencyCode;
+  } else if (this.editMode) {
+    // For edit mode, use whatever is already set or header currency
+    defaultCurrencyId = this.companyCurrency?.CurrencyMasterSid || null;
+    defaultCurrencyCode = this.companyCurrency?.currencyCode || '';
+  }
+    const detailGroup = this.fb.group({
       VoucherDetailSid: [null],
       coaMasterSid: [null, Validators.required],
       ledgerMasterSid: [{value:null}],
-      currencyMasterSid: [null, Validators.required],
-      currencyCode: [''],
-      exchangeRate: [1, [Validators.required, Validators.min(0)]],
+      currencyMasterSid: [defaultCurrencyId, Validators.required],
+      currencyCode: [defaultCurrencyCode],
+      exchangeRate: [{value:1,disabled: true}, [Validators.required, Validators.min(0)]],
       currencyAmount: [0, [Validators.required, Validators.min(0.01)]],
       localAmount: [0, [Validators.required, Validators.min(0)]],
       drCr: ['D', Validators.required],
@@ -652,6 +803,8 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
       filteredSubledgers: [[]],
       IsAutoGenerated: ['N'],
     });
+    return detailGroup;
+
   }
 
   addDetailLine(): void {
@@ -666,6 +819,10 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
     this.houseJobList[newIndex] = [];
     this.hssacList[newIndex] = [];
     this.subledgerTypes[newIndex] = '';
+      const currencyId = detailGroup.get('currencyMasterSid')?.value;
+  if (currencyId) {
+    this.fetchExchangeRate(detailGroup, currencyId);
+  }
 }
 
 hasChargeTypeRows(): boolean {
@@ -678,9 +835,9 @@ hasChargeTypeRows(): boolean {
 }
 
   setupDetailCalculations(detailGroup: FormGroup): void {
+  // Simplified: Only update the local amount, tax will be recalculated automatically
   detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
     this.calculateLocalAmount(detailGroup);
-    this.calculateTotals();
   });
 
   detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid) => {
@@ -696,12 +853,12 @@ hasChargeTypeRows(): boolean {
 
   detailGroup.get('exchangeRate')?.valueChanges.subscribe(() => {
     this.calculateLocalAmount(detailGroup);
-    this.calculateTotals();
   });
 
-  detailGroup.get('drCr')?.valueChanges.subscribe(() => {
-    this.calculateTotals();
-  });
+  // REMOVED: drCr value change subscription - not needed with getters
+  // detailGroup.get('drCr')?.valueChanges.subscribe(() => {
+  //   this.calculateTotals();
+  // });
 
   detailGroup.get('currencyMasterSid')?.valueChanges.subscribe((currencyId) => {
     if (currencyId) {
@@ -759,28 +916,6 @@ hasChargeTypeRows(): boolean {
   doesSubledgerMatchCOA(subledger: any, coaMasterSid: number): boolean {
   return this.doesSubledgerMatchCOAStrict(subledger, coaMasterSid);
 }
-
-//   onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
-//   // Ensure consistent type (numbers) if your COA values are numbers
-//   const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
-
-//   // Build filtered list of subledgers for this COA
-//   const filtered = coaId
-//     ? this.subledgerList.filter(subledger => this.doesSubledgerMatchCOA(subledger, coaId))
-//     : this.subledgerList.slice(); // copy of full list when no COA
-
-//   // Patch filtered list into the detail row (template reads this)
-//   detailGroup.patchValue({ filteredSubledgers: filtered }, { emitEvent: false });
-
-//   // If an existing ledgerMasterSid is selected but does not belong to the new COA, clear it
-//   const currentSubledgerSid = detailGroup.get('ledgerMasterSid')?.value;
-//   if (currentSubledgerSid) {
-//     const currentSubledger = this.subledgerList.find(sl => sl.SubledgerMasterSid === currentSubledgerSid);
-//     if (!currentSubledger || !this.doesSubledgerMatchCOA(currentSubledger, coaId)) {
-//       detailGroup.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
-//     }
-//   }
-// }
 
 getSubledgerFilterStatus(rowIndex: number): string {
   const row = this.details.at(rowIndex) as FormGroup;
@@ -917,13 +1052,16 @@ onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
     this.accountsService.getExchangeRate(payload).subscribe({
       next: (response: any) => {
         if(response?.status) {
-          detailGroup.get('exchangeRate')?.enable();
+          detailGroup.get('exchangeRate')?.disable();
           detailGroup.patchValue({ exchangeRate: Number(response.data)})
+          // Recalculate local amount after exchange rate is set
+          this.calculateLocalAmount(detailGroup);
         }
       },
       error: (err) => {
         console.error('Error fetching exchange rate:', err);
         detailGroup.patchValue({ exchangeRate: 1 });
+        this.calculateLocalAmount(detailGroup);
       },
     });
   }
@@ -1165,29 +1303,35 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
   deleteDetailLine(index: number): void {
     if (this.details.length > 1) {
       this.details.removeAt(index);
-      this.calculateTotals();
+      // REMOVED: this.calculateTotals(); - Not needed with getters
     } else {
       this.appSettingService.showWarning('At least one detail line is required', 'Warning');
     }
   }
 
-   calculateTotals(): void {
-    this.debitTotal = 0;
-    this.creditTotal = 0;
+  // REMOVED: calculateTotals() method - Replaced by getters above
+  // calculateTotals(): void {
+  //   this.debitTotal = 0;
+  //   this.creditTotal = 0;
+  // 
+  //   this.details.controls.forEach((control) => {
+  //     const drCr = control.get('drCr')?.value;
+  //     const localAmount = control.get('localAmount')?.value || 0;
+  //     const taxAmount = control.get('taxAmount')?.value || 0;
+  //     
+  //     // Calculate total amount including tax
+  //     const totalAmount = localAmount + taxAmount;
+  // 
+  //     if (drCr === 'D') {
+  //       this.debitTotal += totalAmount;
+  //     } else if (drCr === 'C') {
+  //       this.creditTotal += totalAmount;
+  //     }
+  //   });
+  // 
+  //   this.difference = Math.abs(this.debitTotal - this.creditTotal);
+  // }
 
-    this.details.controls.forEach((control) => {
-      const drCr = control.get('drCr')?.value;
-      const localAmount = control.get('localAmount')?.value || 0;
-
-      if (drCr === 'D') {
-        this.debitTotal += localAmount;
-      } else if (drCr === 'C') {
-        this.creditTotal += localAmount;
-      }
-    });
-
-    this.difference = Math.abs(this.debitTotal - this.creditTotal);
-  }
   isFormValid(): boolean {
     if (!this.form.valid) {
       this.appSettingService.showError('Please fill all required fields', 'Validation Error');
@@ -1199,6 +1343,7 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
       return false;
     }
 
+    // Use the getter for difference
     if (this.difference > 0.01) {
       this.appSettingService.showError(
         `Debit and Credit totals must be equal. Difference: ${this.difference.toFixed(2)}`,
@@ -1213,8 +1358,6 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
     if (!this.isFormValid()) return;
-
-    this.calculateTotals(); // Ensure totals are up to date
     
     this.saveJournalVoucher(true); // true indicates final save with posting
   }
@@ -1364,8 +1507,8 @@ fetchHSSACForCharge(detailGroup: FormGroup, chargeId: number, chargeDescription:
       PostStatus: 'U', // Unposted for draft
       PartyName: 'System Journal Entry',
       DocumentNumber: `JV-${new Date().getTime()}`,
-      Amount: this.debitTotal,
-      LocalAmount: this.debitTotal,
+      Amount: this.debitTotal, // Using getter
+      LocalAmount: this.debitTotal, // Using getter
       VoucherDetail,
       // Add company context for new vouchers
       ...(!this.voucherHeaderSid && {
