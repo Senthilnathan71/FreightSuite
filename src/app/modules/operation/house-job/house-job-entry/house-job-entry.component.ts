@@ -3640,6 +3640,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
         modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
          modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+         modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
       }
 
   reportReleaseOrder() {
