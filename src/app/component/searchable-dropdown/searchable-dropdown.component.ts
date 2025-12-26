@@ -32,11 +32,28 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   @Input() isLoading: boolean = false;
   @Input() control: FormControl | null = null;
   @ViewChild('ngSelect', { static: false, read: ElementRef }) ngSelectRef!: ElementRef;
+  @ViewChild(NgSelectComponent) ngSelect!: NgSelectComponent;
+
   @Input() width : number[] = [];
   @Output() itemSelected = new EventEmitter<any>();
 
   columnWidths: number[] = [];
   internalControl: FormControl = new FormControl(null);
+  isOpen = false; // or whatever you already use internally
+
+  public open(): void {
+  if (this.ngSelect) {
+    this.ngSelect.open();   // ✅ REAL OPEN
+  }
+}
+
+
+  public close(): void {
+  if (this.ngSelect) {
+    this.ngSelect.close();
+  }
+}
+
 
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};

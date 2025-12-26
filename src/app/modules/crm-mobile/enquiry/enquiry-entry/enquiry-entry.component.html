@@ -28,6 +28,26 @@
                         (click)="openPrint()">
                         <i class="fas fa-print me-1"></i> Print
                 </button>
+<!-- <div class="voice-indicator" *ngIf="spokenText">
+  🎤 {{ currentFieldName }} → {{ spokenText }}
+</div> -->
+
+                           <!-- Add near other action buttons in enquiry-entry.component.html -->
+<!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
+        *ngIf="isVoiceSupported && !isEditMode"
+        (click)="startVoiceNavigation()"
+        [ngClass]="{'btn-danger': voiceRecognitionService.isContinuous, 'btn-info': !voiceRecognitionService.isContinuous}">
+  <i class="fas" [ngClass]="voiceRecognitionService.isContinuous ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+  {{ voiceRecognitionService.isContinuous ? 'Stop Voice' : 'Start Voice Guide' }}
+</button> -->
+
+
+<!-- Voice command help modal trigger -->
+<!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+        *ngIf="isVoiceSupported"
+        (click)="openVoiceHelp(voiceHelpModal)">
+  <i class="fas fa-question-circle me-1"></i> Voice Help
+</button> -->
 
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -218,12 +238,20 @@
                 <div class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
-                        <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
-                            [displayFields]="departmentLookupConfig.displayFields"
-                            [displayLabels]="departmentLookupConfig.displayLabels"
-                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
-                            (itemSelected)="onSegmentChange($event)">
-                        </dofi-searchable-dropdown>
+                       <dofi-searchable-dropdown 
+                       #segmentDd
+  
+    [items]="departments" 
+    formControlName="Segment" 
+    id="segmentDropdown"
+    placeholder=""
+    [displayFields]="departmentLookupConfig.displayFields"
+    [displayLabels]="departmentLookupConfig.displayLabels"
+    [labelFields]="departmentLookupConfig.labelFields" 
+    bindValue="DepartmentMasterSid"
+    (itemSelected)="onSegmentChange($event)"
+   >
+</dofi-searchable-dropdown>
                         <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
                             Required
@@ -297,8 +325,8 @@
                 <aside class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
-                        <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="name" placeholder="" appendTo="body">
+                        <ng-select  #enquiryTypeNg formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
+                            bindValue="id" placeholder="" appendTo="body">
                         </ng-select>
                         <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
@@ -310,12 +338,12 @@
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
+                            <input class="form-control" id="shipmentDateExpected" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                #shipmentDp="ngbDatepicker" (keydown.arrowDown)="shipmentDp.open()" (click)="shipmentDp.toggle()"
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
                                 [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected" />
                             <div>
-                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="d1.toggle()" type="button">
+                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="shipmentDp.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
 
@@ -332,10 +360,10 @@
                 <ng-template #footerTemplateShip>
                     <hr class="my-0" />
                     <button class="btn btn-info btn-sm m-2 float-start"
-                        (click)="f['shipmentDate'].setValue(todayDate); d1.close()">
+                        (click)="f['shipmentDate'].setValue(todayDate); shipmentDp.close()">
                         Today
                     </button>
-                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="shipmentDp.close()">
                         Close
                     </button>
                 </ng-template>
@@ -404,7 +432,9 @@
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <dofi-searchable-dropdown [items]="customers"
+                                                <dofi-searchable-dropdown 
+                                                     #CustomerDP
+                                                    [items]="customers"
                                                     formControlName="CustomerBranchSid" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -424,7 +454,7 @@
                                         <aside class="col-md-6" *ngIf="!rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('PreCustomerMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="leadList"
+                                                <ng-select #leadNg class="ng-select" [items]="leadList"
                                                     bindLabel="preCustomerName" bindValue="PreCustomerMasterSid"
                                                     formControlName="PreCustomerMasterSid" appendTo="body"
                                                     (change)="onSelectionChange($event)"></ng-select>
@@ -495,7 +525,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
-                                                <ng-select class="ng-select" formControlName="ClearanceBy"
+                                                <ng-select class="ng-select" #ClearanceByNg formControlName="ClearanceBy"
                                                     placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
@@ -507,7 +537,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
-                                                <ng-select formControlName="UserMasterSid" [items]="salesmanList"
+                                                <ng-select #SalesmanNg formControlName="UserMasterSid" [items]="salesmanList"
                                                     bindLabel="userName" bindValue="UserMasterSid" appendTo="body">
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Salesman<span
@@ -517,7 +547,7 @@
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
-                                                <ng-select [items]="modeOfAddtionalService" bindLabel="name"
+                                                <ng-select #AdditionalServiceNg [items]="modeOfAddtionalService" bindLabel="name"
                                                     bindValue="name" formControlName="AdditionalService" placeholder=""
                                                     appendTo="body">
                                                 </ng-select>
@@ -528,7 +558,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
-                                                <ng-select class="ng-select" formControlName="TransportBy"
+                                                <ng-select #TransportByNg class="ng-select" formControlName="TransportBy"
                                                     placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
@@ -603,7 +633,7 @@
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
 
-                                                <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms"
+                                                <dofi-searchable-dropdown #IncoNameDd [items]="incoList" formControlName="IncoTerms"
                                                     placeholder="" [displayFields]="incoLookupConfig.displayFields"
                                                     [displayLabels]="incoLookupConfig.displayLabels"
                                                     [labelFields]="incoLookupConfig.labelFields" bindValue="IncoName"
@@ -628,10 +658,14 @@
                                         </aside> -->
 
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
                                                 <input type="text" id="freightTerms"
                                                     class="form-control custom-input-field sm"
-                                                    formControlName="FreightPPCC" placeholder="">
+                                                    formControlName="FreightPPCC" placeholder="" readyonly>
+                                                    <!-- <ng-select #freightTermsNg formControlName="FreightPPCC" [items]="freightTermsList"
+                                                    bindLabel="FreightTerms" bindValue="FreightTerms" placeholder=""
+                                                    [appendTo]="'body'"> </ng-select> -->
                                                 <label for="freightTerms" class="input-label">Freight PP/CC</label>
                                             </div>
                                         </aside>
@@ -644,7 +678,7 @@
                                                     bindValue="CustomerName" bindLabel="CustomerName" placeholder=""
                                                     formControlName="ShipperName" (change)="onShipperChange($event)"
                                                     (clear)="onShipperChange(null)" appendTo="body"></ng-select> -->
-                                                <dofi-searchable-dropdown [items]="finalShipperList"
+                                                <dofi-searchable-dropdown #ShipperNameDd [items]="finalShipperList"
                                                     formControlName="ShipperName" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -682,7 +716,7 @@
                                                     bindLabel="CustomerName" bindValue="CustomerName" placeholder=""
                                                     formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
                                                     (clear)="onConsigneeChange(null)" appendTo="body"></ng-select> -->
-                                                <dofi-searchable-dropdown [items]="finalConsigneeList"
+                                                <dofi-searchable-dropdown #ConsigneeNameDd [items]="finalConsigneeList"
                                                     formControlName="ConsigneeName" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
