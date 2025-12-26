@@ -6,8 +6,8 @@
       <div
         *ngFor="let param of parameters"
         [ngClass]="{
-          'col-md-6': parameters.length > 4,
-          'col-md-4': parameters.length <= 4,
+          'col-md-4': parameters.length > 4,
+          'col-md-3': parameters.length <= 4,
           'col-12': parameters.length === 1
         }"
       >
@@ -15,7 +15,8 @@
             class="custom-form-group" 
             [class.custom-form-group-select]="
               param.ParameterFieldType === 'DROPDOWN' || 
-              param.ParameterFieldType === 'DROPDOWN M'
+              param.ParameterFieldType === 'DROPDOWN M' ||
+              param.ParameterFieldType === 'NUMBER'
             "
             [class.custom-form-group-select-date]="
               param.ParameterFieldType === 'DATE'

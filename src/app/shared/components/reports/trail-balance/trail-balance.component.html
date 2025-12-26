@@ -1,10 +1,19 @@
 <div class="print-a4">
-    <h3 class="text-center fw-bold py-2" style="margin: 0;">
-        {{ currentCompany?.companyName }}
-    </h3>
+    <div style="text-align: center;">
+        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+        </h4>
+        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+        </h5>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+    </div>
+
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-         Trail Balance  on {{ params?.fromDate | formatDate }}
+         Trail Balance Report
     </h4>
 
 
@@ -57,7 +66,7 @@
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody style="white-space: nowrap;">
 
                         <!-- SUBGROUP LOOP -->
                         <ng-container *ngFor="let group of groupedData">

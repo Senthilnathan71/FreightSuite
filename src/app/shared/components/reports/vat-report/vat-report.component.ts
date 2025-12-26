@@ -20,7 +20,7 @@ export class VatReportComponent {
   currentBranch: any;
   selectedData: any[];
   orientation: 'portrait' | 'landscape' = 'portrait';
-    viewMode: 'receviable' | 'payable' = 'receviable';
+  viewMode: 'receviable' | 'payable' = 'receviable';
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
@@ -47,5 +47,118 @@ export class VatReportComponent {
 
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
+  }
+
+
+  getExcelData(): ComplexReportExportConfig {
+
+  const tableHeaders: ExcelHeader[] = [
+    { key: 'date', label: 'Date' },
+    { key: 'particulars', label: 'Particulars' },
+    { key: 'trn', label: 'TRN' },
+    { key: 'voucherType', label: 'Voucher Type' },
+    { key: 'voucherNo', label: 'Voucher No' },
+    { key: 'supplierRef', label: 'Supplier Inv / Ref No / Date' },
+    { key: 'taxableAmt', label: 'Taxable Amt' },
+    { key: 'taxAmt', label: 'Tax Amt' }
+  ];
+
+  const rows: ExcelRow[] = [];
+
+  const data =
+    this.viewMode === 'receviable'
+      ? this.fullData?.data?.inputTax || []
+      : this.fullData?.data?.outputTax || [];
+
+  data.forEach((item: any) => {
+    const cells: ExcelCell[] = [
+      { value: this.formatDate(item?.voucherDate) },
+      { value: item?.subledgerName || '' },
+      { value: item?.panType || '' },
+      {
+        value:
+          this.viewMode === 'receviable'
+            ? item?.voucherType1 || ''
+            : item?.voucherType2 || ''
+      },
+      { value: item?.voucherNo || '' },
+      {
+        value:
+          item?.documentNo && item?.documentDate
+            ? `${item.documentNo} - ${this.formatDate(item.documentDate)}`
+            : item?.documentNo || this.formatDate(item?.documentDate) || ''
+      },
+      { value: this.formatNumber(item?.taxableAmt) },
+      { value: this.formatNumber(item?.taxAmt) }
+    ];
+
+    rows.push({ cells, style: 'data' });
+  });
+
+  /* TOTAL ROW */
+  const totalTaxable = data.reduce(
+    (sum: number, x: any) => sum + Number(x?.taxableAmt || 0),
+    0
+  );
+
+  const totalTax = data.reduce(
+    (sum: number, x: any) => sum + Number(x?.taxAmt || 0),
+    0
+  );
+
+  rows.push({
+    cells: [
+      { value: 'TOTAL', colspan: 6 },
+      { value: this.formatNumber(totalTaxable) },
+      { value: this.formatNumber(totalTax) }
+    ],
+    style: 'total'
+  });
+
+  return {
+    fileName:
+      this.viewMode === 'receviable'
+        ? 'VAT-Receivable-Report'
+        : 'VAT-Payable-Report',
+
+    sheetName:
+      this.viewMode === 'receviable'
+        ? 'VAT Receivable'
+        : 'VAT Payable',
+
+    reportHeader: {
+      companyName: this.currentCompany?.companyName || 'Company',
+      reportTitle:
+        this.viewMode === 'receviable'
+          ? 'VAT Receivable Report'
+          : 'VAT Payable Report',
+
+      additionalInfo: [
+        { label: 'From Date', value: this.formatDate(this.params?.VoucherFromDate) },
+        { label: 'To Date', value: this.formatDate(this.params?.VoucherToDate) },
+        { label: 'Branch', value: this.currentBranch?.branchName || '' }
+      ]
+    },
+
+    tableHeaders,
+    rows,
+    columnWidths: [12, 20, 10, 14, 14, 28, 15, 15]
+  };
+}
+
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
+
+
+    private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 }

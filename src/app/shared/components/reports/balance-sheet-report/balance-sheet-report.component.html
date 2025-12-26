@@ -1,75 +1,189 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-    <h3 class="text-center fw-bold py-2" style="margin: 0;">
-        {{ currentCompany?.companyName }}
-    </h3>
+
+    <div style="text-align: center;">
+        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+        </h4>
+        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+        </h5>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+    </div>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Balance Sheet as on {{ params?.FromDate | formatDate }} - {{ params?.ToDate | formatDate }}
+        Balance Sheet Report
     </h4>
 
     <div style="margin-top: 1rem;">
-        <div style="display: flex; justify-content:space-between;">
-            <div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
-                    <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
-                    <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
-                </div>
+
+        <div>
+            <div class="d-flex align-items-center">
+                <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
+                <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
             </div>
-        </div>
-        <div *ngFor="let cat of processedFunds" class="mt-2">
-            <h5 class="mb-1">{{ cat.category === 'Asset' ? 'Application of Funds' : 'Source of Funds' }}</h5>
-            <div class="table-responsive">
-                <table class="table tablebordered table-sm" style="margin:0; font-size:12px; border-collapse:collapse;">
-                    <thead>
-                        <tr>
-                            <th colspan="4" style="font-weight:700;">{{ cat.category }}</th>
-                        </tr>
-                        <tr class="bg-info text-light text-center">
-                            <th class="bg-transparent text-light">Group</th>
-                            <th class="bg-transparent text-light">SubGroup</th>
-                            <th class="bg-transparent text-light">Ledger</th>
-                            <th class="bg-transparent text-light">Balance</th>
-                        </tr>
-                    </thead>
-                  <tbody>
-  <tr *ngFor="let item of cat.items">
-    <td *ngIf="item.showGroup" [attr.rowspan]="item.groupRowSpan"
-        style="font-weight:700; vertical-align:middle;">
-      {{ item.groupName }}
-    </td>
-    <td *ngIf="item.showSubGroup" [attr.rowspan]="item.subGroupRowSpan"
-        style="font-weight:600; vertical-align:middle;">
-      {{ item.subgroupName }}
-    </td>
-    <td>{{ item.ledgerName }}</td>
-    <td style="text-align:right;">{{ item.LocalAmt | number:'1.2-2' }}</td>
-  </tr>
-
-  <tr>
-    <td colspan="3" style="font-weight:700; text-align:right;">Category Total</td>
-    <td style="font-weight:700; text-align:right;">{{ cat.categoryTotal | number:'1.2-2' }}</td>
-  </tr>
-  <tr>
-    <td colspan="3" style="font-weight:700; text-align:right;">Total</td>
-    <td style="font-weight:700; text-align:right;">{{ cat.categoryTotal | number:'1.2-2' }}</td>
-  </tr>
-</tbody>
-
-                </table>
+            <div class="d-flex align-items-center">
+                <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
+                <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
+                <p class="ms-1">: {{ fullData?.branchNames }}</p>
             </div>
         </div>
 
+        <div style="display:flex; gap:2px; width:100%;">
 
+            
+            <div style="flex:1;">
+                <div *ngFor="let cat of processedFunds">
+                    <ng-container *ngIf="cat.category !== 'Asset'">
 
+                        <h5 class="mb-1">Source of Funds</h5>
 
+                        <!-- Equity Table -->
+                        <div class="table-responsive mb-1">
+                            <table class="table tablebordered table-sm"
+                                style="margin:0; font-size:12px; border-collapse:collapse; width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4" style="font-weight:700;">Equity</th>
+                                    </tr>
+                                    <tr class="bg-info text-light text-center">
+                                        <th class="bg-transparent text-light">Group</th>
+                                        <th class="bg-transparent text-light">SubGroup</th>
+                                        <th class="bg-transparent text-light">Ledger</th>
+                                        <th class="bg-transparent text-light">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:700;">Reserve & Surplus</td>
+                                        <td style="font-weight:600;">Retained Earning</td>
+                                        <td>Retained Earning 2024</td>
+                                        <td style="text-align:right; font-weight:700;">
+                                            {{ (data?.incomeTotal - data?.expenseTotal) | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" style="font-weight:700; text-align:right;">
+                                            Category Total
+                                        </td>
+                                        <td style="font-weight:700; text-align:right;">
+                                            {{ (data?.incomeTotal - data?.expenseTotal) | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Other Source of Funds -->
+                        <div class="table-responsive">
+                            <table class="table tablebordered table-sm"
+                                style="margin:0; font-size:12px; border-collapse:collapse; width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4" style="font-weight:700;">{{ cat.category }}</th>
+                                    </tr>
+                                    <tr class="bg-info text-light text-center">
+                                        <th class="bg-transparent text-light">Group</th>
+                                        <th class="bg-transparent text-light">SubGroup</th>
+                                        <th class="bg-transparent text-light">Ledger</th>
+                                        <th class="bg-transparent text-light">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of cat.items">
+                                        <td *ngIf="item.showGroup" [attr.rowspan]="item.groupRowSpan"
+                                            style="font-weight:700;">
+                                            {{ item.groupName }}
+                                        </td>
+
+                                        <td *ngIf="item.showSubGroup" [attr.rowspan]="item.subGroupRowSpan"
+                                            style="font-weight:600;">
+                                            {{ item.subgroupName }}
+                                        </td>
+
+                                        <td>{{ item.ledgerName }}</td>
+                                        <td style="text-align:right;">
+                                            {{ item.LocalAmt | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="3" style="font-weight:700; text-align:right;">
+                                            Category Total
+                                        </td>
+                                        <td style="font-weight:700; text-align:right;">
+                                            {{ cat.categoryTotal | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </ng-container>
+                </div>
+            </div>
+
+           
+            <div style="flex:1;">
+                <div *ngFor="let cat of processedFunds">
+                    <ng-container *ngIf="cat.category === 'Asset'">
+
+                        <h5 class="mb-1">Application of Funds</h5>
+
+                        <div class="table-responsive">
+                            <table class="table tablebordered table-sm"
+                                style="margin:0; font-size:12px; border-collapse:collapse; width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4" style="font-weight:700;">{{ cat.category }}</th>
+                                    </tr>
+                                    <tr class="bg-info text-light text-center">
+                                        <th class="bg-transparent text-light">Group</th>
+                                        <th class="bg-transparent text-light">SubGroup</th>
+                                        <th class="bg-transparent text-light">Ledger</th>
+                                        <th class="bg-transparent text-light">Balance</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr *ngFor="let item of cat.items">
+                                        <td *ngIf="item.showGroup" [attr.rowspan]="item.groupRowSpan"
+                                            style="font-weight:700;">
+                                            {{ item.groupName }}
+                                        </td>
+
+                                        <td *ngIf="item.showSubGroup" [attr.rowspan]="item.subGroupRowSpan"
+                                            style="font-weight:600;">
+                                            {{ item.subgroupName }}
+                                        </td>
+
+                                        <td>{{ item.ledgerName }}</td>
+                                        <td style="text-align:right;">
+                                            {{ item.LocalAmt | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="3" style="font-weight:700; text-align:right;">
+                                            Category Total
+                                        </td>
+                                        <td style="font-weight:700; text-align:right;">
+                                            {{ cat.categoryTotal | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </ng-container>
+                </div>
+            </div>
+
+        </div>
 
     </div>
 </div>

@@ -1,9 +1,20 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-    <h3 class="text-center fw-bold py-2" style="margin: 0;">
-        {{ currentCompany?.companyName }}
-    </h3>
+     <div style="text-align: center;">
+        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+        </h4>
+        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+        </h5>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+    </div>
+
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        VAT Report on {{ params?.VoucherFromDate | formatDate }}
+        {{
+        viewMode === 'receviable' ? 'VAT Receivable Report' : 'VAT Payable Report'
+        }}
     </h4>
     <div style="margin-top: 1rem;">
 
@@ -20,12 +31,12 @@
             </div>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="detailRadio" name="viewMode"
+            <input class="form-check-input" type="radio" id="receviable" name="viewMode"
                 (change)="viewMode = 'receviable'" [checked]="viewMode === 'receviable'">
             <label class="form-check-label" for="detailRadio">Tax Receivable</label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="summaryRadio" name="viewMode"
+            <input class="form-check-input" type="radio" id="payableRadio" name="viewMode"
                 (change)="viewMode = 'payable'" [checked]="viewMode === 'payable'">
             <label class="form-check-label" for="summaryRadio">Tax Payable</label>
         </div>
@@ -48,12 +59,12 @@
                     <tr *ngFor="let item of fullData?.data?.inputTax">
                         <td>{{item.voucherDate | formatDate}}</td>
                         <td>{{item.subledgerName}}</td>
-                        <td></td>
-                        <td>{{ item.vouchertype }}</td>
+                        <td>{{item.panType}}</td>
+                        <td>{{ item.voucherType1 }}</td>
                         <td>{{ item.voucherNo }}</td>
                         <td></td>
-                        <td>{{item.taxableAmt}}</td>
-                        <td>{{item.taxAmt}}</td>
+                        <td class="text-end">{{item.taxableAmt | number:'1.2-2' }}</td>
+                        <td class="text-end">{{item.taxAmt | number:'1.2-2' }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -76,12 +87,17 @@
                     <tr *ngFor="let item of fullData?.data?.outputTax">
                         <td>{{ item.voucherDate | date:'dd-MM-yyyy' }}</td>
                         <td>{{ item.subledgerName }}</td>
-                        <td></td>
-                        <td>{{ item.vouchertype }}</td>
+                        <td>{{item.panType}}</td>
+                        <td>{{ item.voucherType2 }}</td>
                         <td>{{ item.voucherNo }}</td>
-                        <td></td>
-                        <td>{{ item.taxableAmt }}</td>
-                        <td>{{ item.taxAmt }}</td>
+                        <td>
+                            {{ item.documentNo && item.documentDate
+                            ? (item.documentNo + ' - ' + (item.documentDate | formatDate))
+                            : (item.documentNo || item.documentDate || '') }}
+                        </td>
+
+                        <td class="text-end">{{ item.taxableAmt | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.taxAmt | number:'1.2-2' }}</td>
                     </tr>
                 </tbody>
             </table>
