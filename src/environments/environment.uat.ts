@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://uat.dofi.co:3009/'
+    apiUrl: 'https://uatapi.dofi.co/'
 };
