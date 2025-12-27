@@ -40,11 +40,11 @@
              style="width:50px; height:50px; object-fit:contain;">
         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
       </div>
-      <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
+      <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
         <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
         <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
       </div>
     </div>
   </div>

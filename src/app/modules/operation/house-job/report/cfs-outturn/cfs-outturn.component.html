@@ -38,12 +38,12 @@
         </div>
 
         <div style="flex: 1; text-align: center; padding-right: 12%;">
-            <h3 style="margin: 0; font-weight: 700;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-            <h4 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
+            <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+            <h4 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h4>
             <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.addressLine1 || '' }}</p>
             <p style="margin: 2px 0; font-size: 15px;">
                 {{ currentBranch?.addressLine2 || '' }} ,  
-                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
+                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} 
                 - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
             </p>
             <p style="margin: 2px 0; font-size: 15px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>

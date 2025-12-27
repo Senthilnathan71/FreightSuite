@@ -31,6 +31,7 @@ export class ReleaseLetterComponent {
   @Input() packageTypeList: any[] = [];
   @Input() masterJobData: any;
   @Input() containerTypeList: any;
+  @Input() selectedFCLLCL: any;
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
