@@ -2007,36 +2007,201 @@
     <!-- Title -->
     <h3 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;"><strong>ENQUIRY</strong></h3>
 
-    <!-- Enquiry Details -->
-    <div style="display: flex; flex-wrap: wrap; margin-top: 0; padding:10px;">
-        <div style="width: 50%; padding-right: 0rem; box-sizing: border-box;font-size: 16px;">
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Dept</strong></div><div>: {{ enquiryData?.ShipmentType || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Number</strong></div><div>: {{ enquiryData?.EnquiryNumber || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Party Name</strong></div><div>: {{ enquiryData?.CustomerName || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Party Address</strong></div><div>: {{ enquiryData?.CustomerAddress || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Received Date</strong></div><div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Port Of Origin</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Port Of Loading</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Job Type</strong></div><div>: </div></div>
+<!-- Enquiry Details -->
+<div style="
+    display:flex;
+    flex-wrap:wrap;
+    margin:0;
+    padding:4px 10px;
+    border-top:1px solid black;
+    border-bottom:1px solid black;
+    box-sizing:border-box;
+    line-height:1.2;
+">
 
-        </div>
+   <!-- LEFT COLUMN -->
+<div style="
+    width:50%;
+    padding-left:3rem;
+    box-sizing:border-box;
+    font-size:16px;
+    margin:0;
+">
 
-        <div style="width: 50%; padding-left: 2rem; box-sizing: border-box;font-size: 16px;">
-                        <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Shipper Name</strong></div><div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Shipper Address</strong></div><div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Created By</strong></div><div>: {{ enquiryData?.createdBy || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Created Date</strong></div><div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Contact / Number</strong></div><div>: {{ enquiryData?.ContactPerson || '' }} / {{ enquiryData?.ContactNumber || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Expected Shipment Date</strong></div><div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Final Destination</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Port of Discharge</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Inco Terms</strong></div><div>: {{ enquiryData?.IncoTerms || '' }}</div></div>
+    <!-- Dept -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Dept</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.ShipmentType || '' }}</div>
+    </div>
+
+    <!-- Enquiry Number -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Number</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.EnquiryNumber || '' }}</div>
+    </div>
+
+    <!-- Party Name -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Name</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.CustomerName || '' }}</div>
+    </div>
+
+    <!-- Party Address -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Address</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.CustomerAddress || '' }}</div>
+    </div>
+
+    <!-- Received Date -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Received Date</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ (enquiryData?.EnquiryDate | formatDate) || '' }}
         </div>
     </div>
 
+    <!-- Port Of Origin -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Origin</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ getPort(enquiryData?.enquiryRoute[0]?.PORSid) }}
+        </div>
+    </div>
+
+    <!-- Port Of Loading -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Loading</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ getPort(enquiryData?.enquiryRoute[0]?.POLSid) }}
+        </div>
+    </div>
+
+     <!-- Inco Terms -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Inco Terms</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.IncoTerms || '' }}</div>
+    </div>
+
+</div>
+
+
+    <!-- RIGHT COLUMN -->
+<div style="
+    width:50%;
+    padding-left:2rem;
+    box-sizing:border-box;
+    font-size:16px;
+    margin:0;
+">
+
+    <!-- Shipper Name -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper Name</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperName || '' }}</div>
+    </div>
+
+    <!-- Shipper Address -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper Address</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}</div>
+    </div>
+
+    <!-- Enquiry Created By -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created By</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">{{ enquiryData?.createdBy || '' }}</div>
+    </div>
+
+    <!-- Enquiry Created Date -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created Date</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ (enquiryData?.EnquiryDate | formatDate) || '' }}
+        </div>
+    </div>
+
+  <!-- Contact / Number -->
+<div style="display:flex; margin-bottom:2px;">
+    <div style="width:190px; white-space:nowrap; font-weight:bolder;">
+        <strong>Contact / Number</strong>
+    </div>
+    <div style="width:10px; text-align:center;">:</div>
+    <div style="padding-left:6px;">
+
+        <!-- Contact Person -->
+        <span *ngIf="enquiryData?.ContactPerson">
+            {{ enquiryData.ContactPerson }}
+        </span>
+
+        <!-- Slash only if BOTH exist -->
+        <span *ngIf="enquiryData?.ContactPerson && enquiryData?.ContactNumber">
+            &nbsp;/&nbsp;
+        </span>
+
+        <!-- Contact Number -->
+        <span *ngIf="enquiryData?.ContactNumber">
+            {{ enquiryData.ContactNumber }}
+        </span>
+
+    </div>
+</div>
+
+
+    <!-- Expected Shipment Date -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Expected Shipment Date</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '' }}
+        </div>
+    </div>
+
+    <!-- Final Destination -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Final Destination</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
+        </div>
+    </div>
+
+    <!-- Port of Discharge -->
+    <div style="display:flex; margin-bottom:2px;">
+        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Port of Discharge</strong></div>
+        <div style="width:10px; text-align:center;">:</div>
+        <div style="padding-left:6px;">
+            {{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
+        </div>
+    </div>
+
+   
+
+</div>
+
+
+</div>
+
+
     <!-- Product Table -->
     <div style="margin-top: 0;">
-        <h4 style="font-weight: bolder; margin-bottom:5px; padding-left:10px;"><strong>Product Details</strong></h4>
+        <div style=" padding-top:8px;padding-bottom: 8px;">
+    <h3 style="margin:0; padding-left:55px;text-align: center; font-weight:bolder;">
+        <strong>Product Details</strong>
+    </h3>
+</div>
+
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; margin: 0; font-size: 16px;">
                 <thead>
@@ -2046,112 +2211,227 @@
                         <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Product Name</strong></th>
                         @if(selectedFCLLCL === "AIR"){
                         <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Chargeable Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Qty.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Length</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Width</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Height</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>CBM</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Gross Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Net Weight</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Pkg Type</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Qty.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Gross Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;border-right: none;"><strong>CBM</strong></th>
                      
                         }
                         @if(selectedFCLLCL === "FCL"){
                         <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;"><strong>Container Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;width: 13%;"><strong>No. of Container</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;width: 13%;font-weight: bolder;"><strong>No. of Container</strong></th>
                         
                         }
                         @if(selectedFCLLCL === "LCL"){
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Qty.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Weight Unit</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Gross Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Net Weight</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>CBM</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Chargeable Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;"><strong>Weight Unit</strong></th>
                         }
                         @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Pkg Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Gross Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Net Wt</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>CBM</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;border-right:none;width: 13%;"><Strong>Shipment Terms</Strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;"><strong>Pkg Type</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Qty.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;"><strong>Gross Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;border-right: none;"><strong>CBM</strong></th>
                         }
                     </tr>
                 </thead>
-                <tbody class="fs-4">
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px;border-left:none;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoDescription || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '' }}</td>
-                        @if(selectedFCLLCL === "AIR"){
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ChargeableWeight || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageQty || '' | number:'1.2-2' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.length || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.width || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.height || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.3-3' }}</td>
+              <tbody>
 
-                        }
-                        @if(selectedFCLLCL === "FCL"){
-                        <td style="border: 1px solid #000; padding: 4px;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '' }}</td>
-                        }
-                        @if(selectedFCLLCL === "LCL"){
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageQty || '' | number:'1.2-2' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ getUOMCode(enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.WeightUnitSid) }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.3-3' }}</td>
-                        }
-                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
-                        <td style="border: 1px solid #000; padding: 4px;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '' }}</td>
-                                                <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px;border-right:none;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ShipmentTerms || '' }}</td>
-                        
-                        }
-                    </tr>
+  <!-- ROUTE LOOP -->
+  <ng-container *ngFor="let route of enquiryData?.enquiryRoute">
 
-                    @if(selectedFCLLCL === "LCL"){
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px;border-left:none;"></td>
-                        <td style="border: 1px solid #000; padding: 4px;"></td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;"><strong>Total</strong></td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">{{ calculateTotalPackageQty() | number:'1.2-2' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px;"></td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">{{ calculateTotalGrossWeight() | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">{{ calculateTotalNetWeight() | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">{{ calculateTotalCBM() | number:'1.3-3' }}</td>
-                        <td style="border: 1px solid #000; padding: 4px;"></td>
-                        <td style="border: 1px solid #000; padding: 4px;border-right:none;"></td>
-                    </tr>
-                    }
+    <!-- CARGO LOOP -->
+    <ng-container *ngFor="let cargo of route?.enquiryCargo">
 
-                </tbody>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;border-left:none;text-align:start;">
+          {{ cargo?.CargoType || '' }}
+        </td>
+
+        <td style="border:1px solid #000;padding:4px;text-align:start;">
+          {{ cargo?.CargoDescription || '' }}
+        </td>
+
+        <td style="border:1px solid #000;padding:4px;text-align:start;">
+          {{ cargo?.ProductName || '' }}
+        </td>
+
+        <!-- AIR -->
+        @if (selectedFCLLCL === 'AIR') {
+          <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.ChargeableWeight || '-' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:start;">
+            {{ cargo?.PackageType || '' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.PackageQty | number:'1.2-2' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.GrossWeight | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;border-right:none;">
+            {{ cargo?.Volume | number:'1.3-3' }}
+          </td>
+        }
+
+        <!-- FCL -->
+        @if (selectedFCLLCL === 'FCL') {
+
+          <td style="border:1px solid #000;padding:4px;">
+            {{ cargo?.ContainerType || '' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.PackageQty || '' }}
+          </td>
+        }
+
+        <!-- LCL -->
+        @if (selectedFCLLCL === 'LCL') {
+              <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.ChargeableWeight || '-' }}
+          </td>
+            <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ getUOMCode(cargo?.WeightUnitSid) }}
+          </td>
+        
+        }
+
+        <!-- FCL + LCL COMMON -->
+        @if (selectedFCLLCL === 'FCL' || selectedFCLLCL === 'LCL') {
+          <td style="border:1px solid #000;padding:4px;">
+            {{ cargo?.PackageType || '' }}
+          </td>
+           <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.PackageQty | number:'1.2-2' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;">
+            {{ cargo?.GrossWeight | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;border-right: none;">
+            {{ cargo?.Volume | number:'1.3-3' }}
+          </td>
+         
+        }
+      </tr>
+
+    </ng-container>
+  </ng-container>
+
+  <!-- LCL TOTAL ROW -->
+  @if (selectedFCLLCL === 'LCL') {
+    <tr>
+      <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
+      <td style="border:1px solid #000;padding:4px;"></td>
+       <td style="border:1px solid #000;padding:4px;"></td>
+        <td style="border:1px solid #000;padding:4px;"></td>
+         <td style="border:1px solid #000;padding:4px;"></td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">Total</td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalPackageQty() | number:'1.2-2' }}
+      </td>
+      
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+      </td>
+      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalNetWeight() | number:'1.3-3' }}
+      </td> -->
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
+        {{ calculateTotalCBM() | number:'1.3-3' }}
+      </td>
+ 
+    </tr>
+  }
+
+   @if (selectedFCLLCL === 'FCL') {
+    <tr>
+      <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
+      <td style="border:1px solid #000;padding:4px;"></td>
+       <td style="border:1px solid #000;padding:4px;"></td>
+        <td style="border:1px solid #000;padding:4px;"></td>
+         <td style="border:1px solid #000;padding:4px;"></td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">Total</td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalPackageQty() | number:'1.2-2' }}
+      </td>
+      
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+      </td>
+      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalNetWeight() | number:'1.3-3' }}
+      </td> -->
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
+        {{ calculateTotalCBM() | number:'1.3-3' }}
+      </td>
+
+    </tr>
+  }
+
+     @if (selectedFCLLCL === 'AIR') {
+    <tr>
+      <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
+      <td style="border:1px solid #000;padding:4px;"></td>
+       <td style="border:1px solid #000;padding:4px;"></td>
+        <td style="border:1px solid #000;padding:4px;"></td>
+         <td style="border:1px solid #000;padding:4px;"></td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">Total</td>
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalPackageQty() | number:'1.2-2' }}
+      </td>
+      
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+      </td>
+      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+        {{ calculateTotalNetWeight() | number:'1.3-3' }}
+      </td> -->
+      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
+        {{ calculateTotalCBM() | number:'1.3-3' }}
+      </td>
+
+    </tr>
+  }
+
+</tbody>
+
             </table>
         </div>
+        
     </div>
 
     <!-- Remarks -->
-    <div style="margin-top: 1rem; margin-bottom: 2rem; padding:10px;" class="fs-4">
-        <p style="font-weight: bold;"><strong>Enquiry Remarks</strong></p>
-        <div>{{ enquiryData?.Remarks || '' }}</div>
+<div style="
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    margin-top:8px;
+    margin-bottom:12px;
+    padding:6px 10px;
+    font-size:16px;
+">
+    <div style="white-space:nowrap; font-weight:bolder;width: 185px;">
+       <strong>Enquiry Remarks</strong>
     </div>
+    <div style="flex:1;">
+        : {{ enquiryData?.Remarks || '' }}
+    </div>
+</div>
 
-    <!-- Terms & Conditions -->
-    <div  style=" padding:10px;">
-        <h5 style="font-weight: bold;">Terms and Conditions:</h5>
-        <ul>
-            @for(term of TandCList; track term){
-            <li>{{ term.TandC }}</li>
-            }
-        </ul>
-    </div>
+
+  <!-- Terms & Conditions -->
+    <!-- <div style="margin-top: 1rem;font-size: 16px;padding-left: 15px;">
+      <h5 style=" margin-bottom: 0.5rem;"><strong>Terms and Conditions</strong></h5>
+      <ul style="margin-top: 0; padding-left: 1.2rem;">
+        @for(term of TandCList; track term){
+          <li>{{ term.TandC }}</li>
+        }
+      </ul>
+    </div> -->
 
     <!-- Footer -->
-      <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;"class="fs-4">
-    <div style="display:flex; justify-content:space-between; font-size:12px;">
+      <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;">
+    <div style="display:flex; justify-content:space-between; font-size:16px;">
       <div>Printed By: {{ userData.userName }}</div>
       <span>This document is computer-generated and does not require a signature.</span>
       <div>Printed On: {{ currentDate | formatDate }}</div>

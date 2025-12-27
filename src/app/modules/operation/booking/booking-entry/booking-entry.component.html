@@ -3166,39 +3166,39 @@
 <!-- Top Border -->
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
-<h4 style="text-align:center; font-size:17px; font-weight:700; margin:6px 0;">
-  Booking Confirmation - {{ selectedDepartment?.departmentName }}
-</h4>
+<h3 style="text-align:center; font-size:20px; font-weight:bolder; margin:6px 0;">
+  <strong>Booking Confirmation - {{ selectedDepartment?.departmentName }}</strong>
+</h3>
 
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
 <!-- Main Info Table -->
-<table style="width:100%; border-collapse:collapse; font-size:14px;">
+<table style="width:100%; border-collapse:collapse; font-size:16px;">
   <tr>
     <!-- LEFT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding-top:6px;">
-      <div style="font-weight:700; margin-bottom:4px;">Customer </div>
-      <div>{{ bookingHeader?.CustomerName }}</div>
-      <div>{{ bookingHeader?.CustomerAddress }}</div>
+    <td style="width:50%; vertical-align:top; padding-top:6px;padding-left: 60px;font-weight: 17px;">
+      <div style=" margin-bottom:4px;font-weight: bolder;"><strong>Customer</strong> </div>
+      <div style="font-weight: bolder;">{{ bookingHeader?.CustomerName }}</div>
+      <div style="font-weight: bolder;">{{ bookingHeader?.CustomerAddress }}</div>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding-top:6px;">
+    <td style="width:50%; vertical-align:top; padding-top:6px;padding-left: 80px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
-          <td style="width:140px; font-weight:700;">Booking No.</td>
+          <td><strong style="font-weight: bolder;width:120px;">Booking No.</strong></td>
           <td>: {{ bookingHeader?.BookingNo }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Booking Date</td>
+          <td><strong style="font-weight: bolder;width:120px;">Booking Date</strong></td>
           <td>: {{ bookingHeader?.BookingDateTime | formatDate }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Cut Off Date</td>
+          <td><strong style="font-weight: bolder;width:120px;">Cut Off Date</strong></td>
           <td>: {{ bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</td>
         </tr>
         <tr *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
-          <td style="font-weight:700;">Quotation No.</td>
+          <td><strong style="font-weight: bolder;">Quotation No.</strong></td>
           <td>: {{ bookingHeader?.quotationHeader?.QuoteNumber }}</td>
         </tr>
       </table>
@@ -3210,17 +3210,17 @@
 <div style="border-top:1px solid #000; margin:12px 0;"></div>
 
   <!-- Booking Details -->
-<p style="font-weight:800; margin:10px 0 8px 0;">
+<p style="font-weight:bolder; margin-left: 60px;margin-top: 5px;margin-bottom: 5px;  font-size: 16px;">
   We are pleased to confirm your booking as below :
 </p>
 
-<table style="width:100%; border-collapse:collapse; font-size:14px;">
+<table style="width:100%; border-collapse:collapse; font-size:16px;border: 1px solid black;">
   <tr>
     <!-- LEFT COLUMN -->
-    <td style="width:50%; vertical-align:top;">
+    <td style="width:50%; vertical-align:top;padding-left: 60px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
-          <td style="width:160px; font-weight:700;">Vessel/Voyage</td>
+          <td style="width:160px; font-weight:bolder;"><strong>Vessel/Voyage</strong></td>
           <td>
             : {{
               bookingHeader?.VesselName && bookingHeader?.VoyageNo
@@ -3230,83 +3230,83 @@
           </td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Port of Loading</td>
+          <td style="font-weight:bolder;"><strong>Port of Loading</strong></td>
           <td>: {{ bookingHeader?.POL }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Port of Discharge</td>
+          <td style="font-weight:bolder;"><strong>Port of Discharge</strong></td>
           <td>: {{ bookingHeader?.POD }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Final Destination</td>
+          <td style="font-weight:bolder;"><strong>Final Destination</strong></td>
           <td>: {{ bookingHeader?.FPD }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Shipper Name</td>
+          <td style="font-weight:bolder;"><strong>Shipper Name</strong></td>
           <td>: {{ bookingHeader?.ShipperName }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Shipping Bill No.</td>
+          <td style="font-weight:bolder;"><strong>Shipping Bill No.</strong></td>
           <td>: {{ bookingHeader?.bookingProduct[0]?.ShippingBillNo || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Inco Terms</td>
+          <td style="font-weight:bolder;"><strong>Inco Terms</strong></td>
           <td>: {{ bookingHeader?.IncoTerms || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Hand Over To.</td>
+          <td style="font-weight:bolder;"><strong>Hand Over To.</strong></td>
           <td>: {{ bookingHeader?.bookingOthers[0]?.YardCFS || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Remarks</td>
+          <td style="font-weight:bolder;"><strong>Remarks</strong></td>
           <td>: {{ bookingHeader?.InternalNote || '' }}</td>
         </tr>
       </table>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top;">
+    <td style="width:50%; vertical-align:top;padding-left: 80px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
-          <td style="width:140px; font-weight:700;">
+          <td style="width:140px; font-weight:bolder;">
             {{ selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No' }}
           </td>
           <td>: {{ bookingHeader?.HBLNo || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">POD ETA</td>
+          <td style="font-weight:bolder;"><strong>POD ETA</strong></td>
           <td>: {{ bookingHeader?.ETA | formatDate }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">FPD ETA</td>
+          <td style="font-weight:bolder;"><strong>FPD ETA</strong></td>
           <td>: {{ getFPDETA() | formatDate }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Commodity</td>
+          <td style="font-weight:bolder;"><strong>Commodity</strong></td>
           <td>: {{ bookingHeader?.bookingCargo[0]?.CargoType || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Freight</td>
+          <td style="font-weight:bolder;"><strong>Freight</strong></td>
           <td>: {{ bookingHeader?.FreightTerms || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Destination Agent</td>
+          <td style="font-weight:bolder;"><strong>Destination Agent</strong></td>
           <td>: {{ getDestinationAgent(bookingHeader?.DestinationAgent) || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Consignee Name</td>
+          <td style="font-weight:bolder;"><strong>Consignee Name</strong></td>
           <td>: {{ bookingHeader?.ConsigneeName || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Carrier</td>
+          <td style="font-weight:bolder;"><strong>Carrier</strong></td>
           <td>: {{ bookingHeader?.CarrierName || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Carrier Booking</td>
+          <td style="font-weight:bolder;"><strong>Carrier Booking</strong></td>
           <td>: {{ bookingHeader?.bookingOthers[0]?.CarrierBookingRef || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">Shipment Terms</td>
+          <td style="font-weight:bolder;"><strong>Shipment Terms</strong></td>
           <td>: {{ bookingHeader?.bookingCargo[0]?.ShipmentTerms || '' }}</td>
         </tr>
       </table>
@@ -3315,32 +3315,39 @@
 </table>
 
 
-    <!-- Product Table -->
-    <h4 style="font-weight:bold; margin-top:15px;">Product Details</h4>
+<h3 style="
+    font-weight:bolder;
+    margin-left: 60px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size:18px;
+">
+    <strong>Cargo Details</strong>
+</h3>
+
 
     <div style="width:100%; overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:14px;">
+      <table style="width:100%; border-collapse:collapse; font-size:16px;">
         <thead>
           <tr>
-            <th style="border:1px solid #000; padding:5px;font-weight: 700;">Commodity</th>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;"><strong>Cargo Type</strong></th>
 
             <!-- Conditional Columns -->
             @if(selectedFCLLCL === "FCL"){
-              <th style="border:1px solid #000; padding:5px;font-weight: 700;">Container Type</th>
-              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: 700;">No. of Containers</th>
+              <th style="border:1px solid #000; padding:5px;font-weight: bolder;"><strong>Container Type</strong></th>
+              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>No. of Containers</strong></th>
             }
-
-            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: 700;">Gross Weight</th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Gross Weight</strong></th>
 
             @if(selectedFCLLCL === "LCL"){
-              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: 700;">No. of Pkg</th>
+              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>No. of Pkg</strong></th>
             }
 
             @if(selectedFCLLCL === "AIR"){
-              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: 700;">Chargeable Weight</th>
+              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Chargeable Weight</strong></th>
             }
 
-            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: 700;">Volume (CBM)</th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Volume (CBM)</strong></th>
           </tr>
         </thead>
 
@@ -3391,12 +3398,13 @@
   bottom:15px;
   left:0;
   width:100%;
-  font-size:14px;
+  font-size:16px;
+  font-weight: bolder;
 ">
 
   <!-- Left: Signature -->
   <div style="margin-left:10px;">
-    <div style="font-weight:700;">Your's Sincerely</div>
+    <div>Your's Sincerely</div>
     <div style="margin-top:2px;">{{ userData?.userName || '' }}</div>
   </div>
 
@@ -3411,7 +3419,7 @@
   </div>
 
   <!-- Bottom Line -->
-  <table style="width:100%; border-collapse:collapse; font-size:14px;">
+  <table style="width:100%; border-collapse:collapse; font-size:16px;">
     <tr>
       <td style="text-align:left; padding-left:10px;">
         Printed By: {{ userData?.userName }}
