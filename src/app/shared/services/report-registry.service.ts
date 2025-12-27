@@ -950,6 +950,38 @@ export class ReportRegistryService {
       console.warn(' Profit_Summary_Reportt component not yet created:', error);
     }
 
+
+        // Lost_Customer_Report
+    try {
+      const { LostCustomerReportComponent } = await import(
+        '../components/reports/lost-customer-report/lost-customer-report.component'
+      );
+
+      this.registerReport({
+        id: 'lost-customer-report',
+        title: 'Lost_Customer_Report',
+        component: LostCustomerReportComponent,
+        filenameTemplate: 'Lost_Customer_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Lost_Customer_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Lost_Customer_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Lost_Customer_Reportt component not yet created:', error);
+    }
+
     // 
   }
 

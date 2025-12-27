@@ -42,9 +42,9 @@
                 <thead>
                     <tr class="bg-info" style="white-space: nowrap;">
                         <th class="bg-transparent text-light text-center">Branch</th>
+                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light">Voucher Date</th>
                         <th class="bg-transparent text-light text-center">Voucher Type</th>
-                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light">Party</th>
                         <th class="bg-transparent text-light text-center">Created On</th>
                         <th class="bg-transparent text-light text-center">Created Date</th>
@@ -54,9 +54,17 @@
 
                 <tbody>
 
-                    <tr>
-
+                    <tr *ngFor="let item of fullData?.tableData;" style="white-space: nowrap;">
+                        <td>{{ item.branch }}</td>
+                        <td>{{ item.voucherNo }}</td>
+                        <td>{{ item.voucherDate | formatDate }}</td>
+                        <td>{{ item.voucherType }}</td>
+                        <td>{{ item.party }}</td>
+                        <td>{{ item.createdBy }}</td>
+                        <td>{{ item.createdOn | formatDate }}</td>
+                        <td class="text-center">{{ item.postStatus }}</td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
