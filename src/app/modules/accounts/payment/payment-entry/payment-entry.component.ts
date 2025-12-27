@@ -42,6 +42,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 /**
  * Payment Entry Component
@@ -179,6 +180,8 @@ export class PaymentEntryComponent implements OnInit {
 
   allPendingCosts: any[] = [];
   selectedCosts: any[] = [];
+  companyCurrency : any;
+  currentCurrencyCode : string = '';
   private destroy$ = new Subject<void>();
 
 
@@ -197,7 +200,8 @@ export class PaymentEntryComponent implements OnInit {
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
     private spinner : NgxSpinnerService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private companySettings: CompanySettingsManagerService,
   ) { }
 
   ngOnInit(): void {
@@ -206,6 +210,10 @@ export class PaymentEntryComponent implements OnInit {
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+    this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    console.log('Company Currency:', this.currentCurrencyCode); 
+    console.log('Company Currency:', this.companyCurrency);
     this.getCurrentCompanyBranches();
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
@@ -297,8 +305,31 @@ export class PaymentEntryComponent implements OnInit {
     this.setupBillMatchingValidation()
     this.paymentForm.setValidators(consistentExchangeRatesValidator());
     this.paymentForm.updateValueAndValidity();
+    const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    this.paymentForm.patchValue({
+      CurrencyMasterSid: companyCurrencySid
+    });
+    this.setCurrencyCode(companyCurrencySid);
+    this.handleHeaderExchangeRate(companyCurrencySid);
   }
-
+  
+  handleHeaderExchangeRate(currencySid: number) {
+    const exCtrl = this.paymentForm.get('ExchangeRate');
+    
+    if (!currencySid) return;
+    
+    // SAME CURRENCY
+    if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+      exCtrl?.setValue(1);
+      exCtrl?.disable({ emitEvent: false });
+      return;
+    }
+    
+    // DIFFERENT CURRENCY
+    exCtrl?.enable({ emitEvent: false });
+    
+    this.patchCurrencyExchangeRate(); // existing API call
+  } 
   
   /**
    * Setup form value change listeners
@@ -926,9 +957,16 @@ export class PaymentEntryComponent implements OnInit {
       COAMasterSid: [data?.COAMasterSid || null, [Validators.required]],
       LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
       DrCr: [data?.DrCr || 'D', Validators.required],
-      CurrencyMasterSid: [data?.CurrencyMasterSid || null, Validators.required],
-      CurrencyCode: [data?.CurrencyCode || 'INR', Validators.required],
-      ExchangeRate: [data?.ExchangeRate || 1.000, Validators.required],
+      CurrencyMasterSid: [
+  data?.CurrencyMasterSid || this.currentCompany?.CurrencyMasterSid,
+  Validators.required
+],
+CurrencyCode: [
+  data?.CurrencyCode || this.currentCurrencyCode,
+  Validators.required
+],
+ExchangeRate: [1, Validators.required],
+
       NumberOfUnit: [data?.NumberOfUnit || 1.000],
       Rate: [data?.Rate || 1],
       Amount: [data?.Amount || 0.000, Validators.required],
@@ -989,6 +1027,8 @@ export class PaymentEntryComponent implements OnInit {
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
     const lastAddedRow = this.detailItems.length - 1;
+    const currencySid = newRow.get('CurrencyMasterSid')?.value;
+    this.handleDetailExchangeRate(currencySid, lastAddedRow);
     const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
     localAmountTriggeringCtrls.forEach(ctrl => {
       newRow.get(ctrl)?.valueChanges.subscribe(() => {
@@ -1170,14 +1210,14 @@ export class PaymentEntryComponent implements OnInit {
 
   onCurrencyChangeForEachRow(selected: any, index: number) {
     const row = this.detailItems.at(index) as FormGroup;
-    if (!selected || selected === undefined) {
-      row.get('CurrencyCode')?.setValue('');
-      row.get('ExchangeRate')?.setValue('');
-      return;
-    }
-    row.get('CurrencyCode')?.setValue(selected.currencyCode);
-    this.patchCurrencyExchangeRateForDetail(selected.CurrencyMasterSid, index);
-    this.calculateLocalAmount(index);
+    if (!selected) return;
+    
+    row.patchValue({
+      CurrencyMasterSid: selected.CurrencyMasterSid,
+      CurrencyCode: selected.currencyCode
+    });
+    
+    this.handleDetailExchangeRate(selected.CurrencyMasterSid, index);
   }
 
   patchCurrencyExchangeRateForDetail(currencySid: number, detailIndex: number) {
@@ -1625,18 +1665,36 @@ export class PaymentEntryComponent implements OnInit {
   }
 
   onCurrencyChange(selected: any) {
-    if (!selected) {
-      this.paymentForm.patchValue({
-        CurrencyCode: null
-      })
-      return;
-    } else {
-      this.paymentForm.patchValue({
-        CurrencyCode: selected.currencyCode
-      })
-    }
-    this.patchCurrencyExchangeRate();
+    if (!selected) return;
+    
+    const currencySid = selected.CurrencyMasterSid;
+    
+    this.paymentForm.patchValue({
+      CurrencyMasterSid: currencySid,
+      CurrencyCode: selected.currencyCode
+    });
+    
+    this.handleHeaderExchangeRate(currencySid);
   }
+  handleDetailExchangeRate(currencySid: number, index: number) {
+  const row = this.detailItems.at(index) as FormGroup;
+  const exCtrl = row.get('ExchangeRate');
+
+  if (!currencySid) return;
+
+  // SAME CURRENCY
+  if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+    exCtrl?.setValue(1);
+    exCtrl?.disable({ emitEvent: false });
+    this.calculateLocalAmount(index);
+    return;
+  }
+
+  // DIFFERENT CURRENCY
+  exCtrl?.enable({ emitEvent: false });
+  this.patchCurrencyExchangeRateForDetail(currencySid, index);
+}
+
 
   patchCurrencyExchangeRate() {
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.value;

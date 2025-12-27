@@ -44,6 +44,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 /**
  * Receipt Entry Component
@@ -185,6 +186,8 @@ export class ReceiptEntryComponent implements OnInit {
   TandCList : any[] = [];
   allPendingCosts: any[] = [];
   selectedCosts: any[] = [];
+  companyCurrency : any;
+  currentCurrencyCode : string = '';
   private destroy$ = new Subject<void>();
 
 
@@ -202,7 +205,8 @@ export class ReceiptEntryComponent implements OnInit {
     private accountService: AccountsService,
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
-    private spinner : NgxSpinnerService
+    private spinner : NgxSpinnerService,
+    private companySettings: CompanySettingsManagerService,
   ) { }
 
   ngOnInit(): void {
@@ -212,6 +216,10 @@ export class ReceiptEntryComponent implements OnInit {
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+     this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    console.log('Company Currency:', this.currentCurrencyCode);
+    console.log('Company Currency:', this.companyCurrency);
     this.getCurrentCompanyBranches();
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
@@ -305,9 +313,34 @@ export class ReceiptEntryComponent implements OnInit {
     // this.setupBillMatchingValidation()
     this.receiptForm.setValidators(consistentExchangeRatesValidator());
     this.receiptForm.updateValueAndValidity();
+    const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
+
+this.receiptForm.patchValue({
+  CurrencyMasterSid: companyCurrencySid
+});
+
+this.setCurrencyCode(companyCurrencySid);
+this.handleHeaderExchangeRate(companyCurrencySid);
   }
 
-  
+  handleHeaderExchangeRate(currencySid: number) {
+  const exCtrl = this.receiptForm.get('ExchangeRate');
+
+  if (!currencySid) return;
+
+  // SAME CURRENCY
+  if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+    exCtrl?.setValue(1);
+    exCtrl?.disable({ emitEvent: false });
+    return;
+  }
+
+  // DIFFERENT CURRENCY
+  exCtrl?.enable({ emitEvent: false });
+
+  this.patchCurrencyExchangeRate(); // existing API call
+}
+
   /**
    * Setup form value change listeners
    */
@@ -937,9 +970,16 @@ export class ReceiptEntryComponent implements OnInit {
       COAMasterSid: [data?.COAMasterSid || null, [Validators.required]],
       LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
       DrCr: [data?.DrCr || 'D', Validators.required],
-      CurrencyMasterSid: [data?.CurrencyMasterSid || null, Validators.required],
-      CurrencyCode: [data?.CurrencyCode || 'INR', Validators.required],
-      ExchangeRate: [data?.ExchangeRate || 1.000, Validators.required],
+      CurrencyMasterSid: [
+  data?.CurrencyMasterSid || this.currentCompany?.CurrencyMasterSid,
+  Validators.required
+],
+CurrencyCode: [
+  data?.CurrencyCode || this.currentCurrencyCode,
+  Validators.required
+],
+ExchangeRate: [1, Validators.required],
+
       NumberOfUnit: [data?.NumberOfUnit || 1.000],
       Rate: [data?.Rate || 1],
       Amount: [data?.Amount || 0.000, Validators.required],
@@ -985,6 +1025,7 @@ export class ReceiptEntryComponent implements OnInit {
       voucherTransaction: [data?.voucherTransaction || null],
       yearMaster: [data?.yearMaster || null],
     });
+    
     detailItem.get('CurrencyMasterSid')?.valueChanges.subscribe((val) => {
       if(!val || this.currencyList.length === 0){
         detailItem.get('CurrencyCode')?.setValue('');
@@ -999,7 +1040,10 @@ export class ReceiptEntryComponent implements OnInit {
   addDetailRow(data?: any) {
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
+    
     const lastAddedRow = this.detailItems.length - 1;
+     const currencySid = newRow.get('CurrencyMasterSid')?.value;
+  this.handleDetailExchangeRate(currencySid, lastAddedRow);
     const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
     localAmountTriggeringCtrls.forEach(ctrl => {
       newRow.get(ctrl)?.valueChanges.subscribe(() => {
@@ -1180,16 +1224,18 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   onCurrencyChangeForEachRow(selected: any, index: number) {
-    const row = this.detailItems.at(index) as FormGroup;
-    if (!selected || selected === undefined) {
-      row.get('CurrencyCode')?.setValue('');
-      row.get('ExchangeRate')?.setValue('');
-      return;
-    }
-    row.get('CurrencyCode')?.setValue(selected.currencyCode);
-    this.patchCurrencyExchangeRateForDetail(selected.CurrencyMasterSid, index);
-    this.calculateLocalAmount(index);
-  }
+  const row = this.detailItems.at(index) as FormGroup;
+
+  if (!selected) return;
+
+  row.patchValue({
+    CurrencyMasterSid: selected.CurrencyMasterSid,
+    CurrencyCode: selected.currencyCode
+  });
+
+  this.handleDetailExchangeRate(selected.CurrencyMasterSid, index);
+}
+
 
   patchCurrencyExchangeRateForDetail(currencySid: number, detailIndex: number) {
     this.getExchangeRate(currencySid).subscribe(
@@ -1680,18 +1726,36 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   onCurrencyChange(selected: any) {
-    if (!selected) {
-      this.receiptForm.patchValue({
-        CurrencyCode: null
-      })
-      return;
-    } else {
-      this.receiptForm.patchValue({
-        CurrencyCode: selected.currencyCode
-      })
-    }
-    this.patchCurrencyExchangeRate();
+  if (!selected) return;
+
+  const currencySid = selected.CurrencyMasterSid;
+
+  this.receiptForm.patchValue({
+    CurrencyMasterSid: currencySid,
+    CurrencyCode: selected.currencyCode
+  });
+
+  this.handleHeaderExchangeRate(currencySid);
+}
+
+handleDetailExchangeRate(currencySid: number, index: number) {
+  const row = this.detailItems.at(index) as FormGroup;
+  const exCtrl = row.get('ExchangeRate');
+
+  if (!currencySid) return;
+
+  // SAME CURRENCY
+  if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+    exCtrl?.setValue(1);
+    exCtrl?.disable({ emitEvent: false });
+    this.calculateLocalAmount(index);
+    return;
   }
+
+  // DIFFERENT CURRENCY
+  exCtrl?.enable({ emitEvent: false });
+  this.patchCurrencyExchangeRateForDetail(currencySid, index);
+}
 
   patchCurrencyExchangeRate() {
     const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
