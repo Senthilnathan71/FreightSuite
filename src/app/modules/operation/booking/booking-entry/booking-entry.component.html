@@ -1493,18 +1493,18 @@
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM<span class="text-danger"></span></th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger"></span></th>
-                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger">*</span></th>
                   }
                   @if(selectedFCLLCL === 'FCL'){
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt
-                    <span class="text-danger"></span>
+                    <span class="text-danger">*</span> 
                   </th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt
-                    <span class="text-danger"></span>
+                    <span class="text-danger">*</span>
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger"></span>
+                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span>
                   </th>
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
@@ -3140,10 +3140,11 @@
   position:relative;        /* REQUIRED for bottom footer */
 ">  <div>
 
-<!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+ <!-- Company Info -->
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+    padding-left: 20px">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;padding-left: 20px;">
+            <div style="display: flex;  flex-direction: column; align-items: center;">
                  <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
@@ -3152,14 +3153,12 @@
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+            <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+  
             </div>
         </div>
     </div>

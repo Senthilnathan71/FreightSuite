@@ -462,12 +462,12 @@
                                 <td>
                                     @if(i === detailItems.length - 1){
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
-                                        (click)="addDetailRow()">
+                                        (click)="addDetailRow()" [disabled]="isPosted">
                                         <i class="fas fa-plus text-info fs-2"></i>
                                     </button>
                                     }
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
-                                        (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)">
+                                        (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)" [disabled]="isPosted">
                                         <i class="fas fa-trash text-danger" name="trash-2"></i>
                                     </button>
                                 </td>

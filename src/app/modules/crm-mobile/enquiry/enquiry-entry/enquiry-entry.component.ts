@@ -19,8 +19,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectComponent, NgSelectModule } from '@ng-select/ng-select';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbInputDatepicker, NgbModal, NgbModalRef, NgbNavModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -50,6 +50,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { VoiceRecognitionService } from '../voice-recognition.service';
+import {  VoiceParserService } from '../voice-parser.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -151,6 +153,66 @@ export class EnquiryEntryComponent implements OnInit {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+  @ViewChild('enquiryTypeNg', { static: false }) enquiryTypeNg!: any;
+  @ViewChild('leadNg', { static: false }) leadNg!: any;
+  @ViewChild('ClearanceByNg', { static: false }) ClearanceByNg!: NgSelectComponent;
+  @ViewChild('TransportByNg', { static: false }) TransportByNg!: any;
+  @ViewChild('SalesmanNg', { static: false }) SalesmanNg!: any;
+  @ViewChild('AdditionalServiceNg', { static: false }) AdditionalServiceNg!: any;
+  @ViewChild('freightTermsNg', { static: false }) freightTermsNg!: any;
+  @ViewChild('shipmentDp', { static: false })
+  shipmentDp!: NgbInputDatepicker;
+  
+  @ViewChild('segmentDd')
+  segmentDd!: SearchableDropdown;
+  @ViewChild('CustomerDP')
+  CustomerDP!: SearchableDropdown;
+  @ViewChild('IncoNameDd') IncoNameDd!: SearchableDropdown;
+  @ViewChild('ShipperNameDd') ShipperNameDd!: SearchableDropdown;
+  @ViewChild('ConsigneeNameDd') ConsigneeNameDd!: SearchableDropdown;
+
+  //voice Recognition
+   
+
+  isVoiceSupported = false;
+  voiceStartedOnce: boolean = false;
+  isListening = false;
+  voiceCommands: string[] = [];
+  spokenText = '';
+
+
+  // Voice Navigation Properties
+  currentFieldIndex = 0;
+  // In initializeVoiceNavigation() or in the voiceFieldOrder array:
+voiceFieldOrder: string[] = [
+  
+  'Segment',
+  'EnquiryType',
+  'shipmentDate',
+  'LeadOrCustomer',
+  'CustomerBranchSid',
+  'PreCustomerMasterSid',
+  'CustomerAddress',
+  'Email',
+  'ContactPerson',
+  'ContactNumber',
+  'ClearanceBy',
+  'UserMasterSid',
+  'AdditionalService',
+  'TransportBy',
+  'PickupAddress',
+  'IncoTerms',
+  'ShipperName',
+  
+  'ShipperAddress',
+  'ConsigneeName',
+  'ConsigneeAddress',
+  'CustomerRef',
+  'Remarks'
+];
+currentFieldName: string = '';
+isDropdownOpen = false;
+dropdownOptions: any[] = [];
   modeOfEnquiry = [
     { id: 1, name: "Email" },
     { id: 2, name: "Phone" },
@@ -267,6 +329,10 @@ export class EnquiryEntryComponent implements OnInit {
     private commonService: CommonService,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
+    public voiceRecognitionService: VoiceRecognitionService,
+private voiceParserService: VoiceParserService,
+private toastr: ToastrService,
+private cdRef: ChangeDetectorRef,
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -280,6 +346,8 @@ export class EnquiryEntryComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
+     this.initializeVoiceNavigation();
+     this.setupVoiceSubscriptions(); 
     this.mps.init().subscribe();
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company') );
@@ -297,7 +365,7 @@ export class EnquiryEntryComponent implements OnInit {
       // Check for voice enquiry data first
       this.activatedRoute.queryParams.subscribe(queryParams => {
         if (queryParams['voice'] === 'true') {
-          this.handleVoiceEnquiryData();
+          // this.handleVoiceEnquiryData();
         }
       });
 
@@ -1889,24 +1957,24 @@ ${this.userData.userName}`;
       this.commonService.documentData.set(data)
   }
 
-  private handleVoiceEnquiryData(): void {
-    const voiceData = this.leadService.getVoiceEnquiryData();
+  // private handleVoiceEnquiryData(): void {
+  //   const voiceData = this.leadService.getVoiceEnquiryData();
 
-    if (!voiceData || Object.keys(voiceData).length === 0) {
-      return;
-    }
+  //   if (!voiceData || Object.keys(voiceData).length === 0) {
+  //     return;
+  //   }
 
-    console.log('Voice enquiry data received:', voiceData);
+  //   console.log('Voice enquiry data received:', voiceData);
 
-    // Clear voice data after use
-    this.leadService.clearVoiceEnquiryData();
+  //   // Clear voice data after use
+  //   this.leadService.clearVoiceEnquiryData();
 
-    // Pre-fill form with voice data
-    this.prefillFormWithVoiceData(voiceData);
+  //   // Pre-fill form with voice data
+  //   this.prefillFormWithVoiceData(voiceData);
 
-    // Show notification about voice data
-    this.appSettingsService.showSuccess('Form pre-filled with voice input data. Please review and complete any missing fields.');
-  }
+  //   // Show notification about voice data
+  //   this.appSettingsService.showSuccess('Form pre-filled with voice input data. Please review and complete any missing fields.');
+  // }
 
   private prefillFormWithVoiceData(voiceData: any): void {
     // Set basic form values
@@ -2260,5 +2328,1024 @@ printDiv(divId: string): void {
   // Default message
   return 'Please fill all the required fields correctly.';
 }
+
+
+// Voice Recognition
+
+private initializeVoiceNavigation(): void {
+  this.isVoiceSupported = this.voiceRecognitionService.isSupported();
+  if (this.isVoiceSupported) {
+    this.voiceCommands = [
+      'CustomerBranchSid',
+      'pol', 'pod', 'fdc', 'poo',
+      'cargo type',
+      'gross weight',
+      'net weight',
+      'cbm',
+      'shipper',
+      'consignee',
+      'remarks',
+      'email',
+      'phone',
+      'save',
+      'reset',
+      'back',
+      'print',
+      'email tab',
+      'route tab',
+      'other tab',
+      'add route',
+      'add cargo',
+      'remove route',
+      'clear field'
+    ];
+  }
+}
+
+private setupVoiceSubscriptions(): void {
+  // Subscribe to navigation commands
+  this.voiceRecognitionService.navigationCommand.subscribe(command => {
+     this.spokenText = command; 
+    this.handleNavigationCommand(command);
+  });
+
+  // Subscribe to voice input completion
+  this.voiceRecognitionService.voiceInputComplete.subscribe(transcript => {
+    this.spokenText = transcript;
+    this.handleVoiceInput(transcript);
+  });
+
+  // Subscribe to listening state
+  // this.voiceRecognitionService.listeningState.subscribe(isListening => {
+  //   if (isListening && this.voiceRecognitionService.isContinuous) {
+  //     this.startVoiceNavigation();
+  //   }
+  // });
+}
+startVoiceNavigation(): void {
+  if (!this.isVoiceSupported) return;
+
+  // STOP voice
+  if (this.voiceRecognitionService.isContinuous) {
+    this.voiceRecognitionService.stopListening();
+    this.toastr.info('Voice guide stopped');
+    return;
+  }
+
+  // ✅ ONLY reset first time
+  if (!this.voiceStartedOnce) {
+    this.currentFieldIndex = this.currentFieldIndex || 0;
+    this.voiceStartedOnce = true;
+  }
+
+  this.voiceRecognitionService.startContinuous();
+
+  this.toastr.success('Voice guide started');
+
+  setTimeout(() => {
+    this.focusCurrentField();
+  }, 300);
+}
+
+
+private focusCurrentField(): void {
+  // Skip if we've reached the end
+  if (this.currentFieldIndex >= this.voiceFieldOrder.length) {
+    this.toastr.success('Form completed! Say "save" to submit.');
+    return;
+  }
+
+  this.currentFieldName = this.voiceFieldOrder[this.currentFieldIndex];
+  
+  console.log('Focusing field:', this.currentFieldName);
+
+  // Handle LeadOrCustomer radio button
+  if (this.currentFieldName === 'LeadOrCustomer') {
+    this.announceCurrentField();
+    return;
+  }
+
+  // Skip fields based on LeadOrCustomer selection
+  const isCustomerMode = this.rateRequestForm.get('LeadOrCustomer')?.value;
+  
+  if (isCustomerMode === true && this.currentFieldName === 'PreCustomerMasterSid') {
+    this.currentFieldIndex++;
+    this.focusCurrentField();
+    return;
+  }
+  
+  if (isCustomerMode === false && this.currentFieldName === 'CustomerBranchSid') {
+    this.currentFieldIndex++;
+    this.focusCurrentField();
+    return;
+  }
+
+  // Get the field element
+  const el = this.getFieldElement(this.currentFieldName);
+  if (el) {
+    el.focus();
+    
+    // Highlight for visual feedback
+    this.highlightActiveField(this.currentFieldName);
+
+    if (this.currentFieldName === 'shipmentDate') {
+      this.openDatePicker();
+    } else {
+      this.openDropdownForField(this.currentFieldName);
+    }
+
+    this.announceCurrentField();
+  } else {
+    // If element not found, move to next field
+    this.currentFieldIndex++;
+    this.focusCurrentField();
+  }
+}
+
+
+
+private highlightActiveField(fieldName: string): void {
+  document
+    .querySelectorAll('.voice-active')
+    .forEach(el => el.classList.remove('voice-active'));
+
+  const el = this.getFieldElement(fieldName);
+  el?.classList.add('voice-active');
+}
+
+
+private getFieldElement(fieldName: string): HTMLElement | null {
+  const fieldId = this.getFieldId(fieldName);
+  return document.getElementById(fieldId) || 
+         document.querySelector(`[formControlName="${fieldName}"]`) as HTMLElement;
+}
+
+private getFieldId(fieldName: string): string {
+  return fieldName === 'Segment'
+    ? 'segmentDropdown'
+    : fieldName.toLowerCase();
+}
+
+private isDropdownField(fieldName: string): boolean {
+  return [
+    'Segment',
+    'CustomerBranchSid',
+    'PreCustomerMasterSid',
+    'EnquiryType',
+    'IncoTerms',
+    'ClearanceBy',
+    'TransportBy',
+    'UserMasterSid',
+    'AdditionalService',
+    'ShipperName',
+    'ConsigneeName',
+    'status'
+  ].includes(fieldName);
+}
+
+private openDropdownForField(fieldName: string): void {
+
+  const dropdownMap: Record<string, any[]> = { 
+    Segment: this.departments, 
+    EnquiryType: this.modeOfEnquiry, 
+    CustomerBranchSid: this.customers,
+     PreCustomerMasterSid: this.leadList, 
+     UserMasterSid: this.salesmanList,
+      ClearanceBy: [{ name: 'Own' }, { name: 'CHA' }, { name: 'By us' }], TransportBy: [{ name: 'Own' }, { name: 'CHA' }, { name: 'By us' }] };
+
+  setTimeout(() => {
+    if (fieldName === 'Segment') this.segmentDd?.open();
+    if (fieldName === 'EnquiryType') this.enquiryTypeNg?.open();
+    if (fieldName === 'CustomerBranchSid') this.CustomerDP?.open();
+    if (fieldName === 'PreCustomerMasterSid') this.leadNg?.open();
+    if (fieldName === 'ClearanceBy') this.ClearanceByNg?.open();
+    if (fieldName === 'UserMasterSid') this.SalesmanNg?.open();
+    if (fieldName === 'AdditionalService') this.AdditionalServiceNg?.open();
+    if (fieldName === 'TransportBy') this.TransportByNg?.open();
+    if (fieldName === 'IncoTerms') this.IncoNameDd?.open();
+    if (fieldName === 'FreightPPCC') this.freightTermsNg?.open();
+    if (fieldName === 'ShipperName') this.ShipperNameDd?.open();
+    if (fieldName === 'ConsigneeName') this.ConsigneeNameDd?.open();
+  }, 120);
+}
+
+ 
+private normalizeDeptSpeech(text: string): string {
+  return text
+    .toLowerCase()
+    .replace('department', '')
+    .replace('dept', '')
+    .replace('select', '')
+    .trim();
+}
+
+
+
+
+
+
+private announceCurrentField(): void {
+  const fieldLabels: Record<string, string> = {
+    // Mode
+    LeadOrCustomer: 'Customer or Lead mode',
+
+    // Customer / Lead
+    CustomerBranchSid: 'Customer name',
+    PreCustomerMasterSid: 'Lead name',
+    CustomerAddress: 'Customer address',
+
+    // Core enquiry
+    Segment: 'Department',
+    EnquiryType: 'Enquiry type',
+    shipmentDate: 'Expected shipment date',
+
+    // Contact
+    Email: 'Email address',
+    ContactPerson: 'Contact person',
+    ContactNumber: 'Phone number',
+
+    // Logistics
+    IncoTerms: 'Inco terms',
+    FreightPPCC: 'Freight terms',
+    ClearanceBy: 'Clearance by',
+    TransportBy: 'Transport by',
+    PickupAddress: 'Pickup address',
+
+    // Shipper / Consignee  ✅ MISSING BEFORE
+    ShipperName: 'Customer name',
+    ShipperAddress: 'Shipper address',
+    ConsigneeName: 'Customer name',
+    ConsigneeAddress: 'Consignee address',
+
+    // Others
+    CustomerRef: 'Customer reference',
+    Remarks: 'Remarks'
+  };
+
+  const label = fieldLabels[this.currentFieldName] || this.currentFieldName;
+
+  this.toastr.info(
+    `Speak ${label}. Say "next" to skip or "stop" to end.`,
+    '',
+    {
+      timeOut: 4000,
+      positionClass: 'toast-top-center',
+      toastClass: 'ngx-toastr voice-guide-toast'
+    }
+  );
+}
+
+
+private handleNavigationCommand(command: string): void {
+  const parsedCommand = this.voiceParserService.parseNavigationCommand(command);
+  
+  switch (parsedCommand.type) {
+    case 'NAVIGATE':
+      this.handleNavigation(parsedCommand.direction!);
+      break;
+    case 'CONTROL':
+      this.handleControlCommand(parsedCommand.action!);
+      break;
+  }
+}
+
+private handleNavigation(direction: 'NEXT' | 'PREVIOUS' | 'SKIP'): void {
+  this.closeAllOpenControls();
+  switch (direction) {
+    case 'NEXT':
+      this.moveToNextField();
+      break;
+    case 'PREVIOUS':
+      this.moveToPreviousField();
+      break;
+    case 'SKIP':
+      this.skipCurrentField();
+      break;
+  }
+}
+
+private moveToNextField(): void {
+  this.closeAllOpenControls();
+  this.currentFieldIndex++;
+  this.focusCurrentField();
+}
+
+private moveToPreviousField(): void {
+  this.closeAllOpenControls();
+  if (this.currentFieldIndex > 0) {
+    this.currentFieldIndex--;
+    // const field = this.rateRequestForm.get(this.voiceFieldOrder[this.currentFieldIndex]);
+    // field?.reset();
+    this.focusCurrentField();
+  }
+}
+
+private skipCurrentField(): void {
+  this.closeAllOpenControls();
+  this.currentFieldIndex++;
+  this.focusCurrentField();
+}
+private openDatePicker(): void {
+  if (this.shipmentDp && !this.shipmentDp.isOpen()) {
+    this.shipmentDp.open();
+  }
+}
+
+
+private handleControlCommand(action: string): void {
+  switch (action) {
+    case 'STOP':
+      this.voiceRecognitionService.stopListening();
+      break;
+    case 'CLEAR':
+      this.clearCurrentField();
+      break;
+    case 'SELECT':
+      // Handle selection confirmation
+      break;
+  }
+}
+
+private handleVoiceInput(transcript: string): void {
+  if (!this.currentFieldName) return;
+
+  const text = transcript.toLowerCase().trim();
+
+  // ✅ Handle LeadOrCustomer radio button FIRST
+  if (this.currentFieldName === 'LeadOrCustomer') {
+    this.handleLeadOrCustomerRadio(text);
+    return;
+  }
+
+  // ✅ DATE HANDLING
+  if (this.currentFieldName === 'shipmentDate') {
+    this.handleDateVoiceInput(transcript);
+    return;
+  }
+
+  // ✅ DROPDOWN HANDLING
+  if (this.isDropdownField(this.currentFieldName)) {
+    this.handleDropdownVoiceInput(transcript);
+    return;
+  }
+
+  // ✅ TEXT INPUT HANDLING
+  this.handleTextVoiceInput(transcript);
+}
+
+private handleLeadOrCustomerRadio(text: string): void {
+  const isCustomer = text.includes('customer');
+  const isLead = text.includes('lead');
+
+  if (!isCustomer && !isLead) {
+    this.toastr.warning('Say "Customer" or "Lead"');
+    return;
+  }
+
+  // Set the radio button value
+  this.rateRequestForm.get('LeadOrCustomer')?.setValue(isCustomer);
+
+  // 🔴 IMPORTANT: Force UI update
+  this.cdRef.detectChanges();
+
+  // 🔴 Set the next field based on selection
+  setTimeout(() => {
+    if (isCustomer) {
+      // For Customer, move to Customer dropdown
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf('CustomerBranchSid');
+    } else {
+      // For Lead, move to Lead dropdown
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf('PreCustomerMasterSid');
+    }
+    
+    this.focusCurrentField();
+  }, 400);
+}
+
+private handleDropdownVoiceInput(transcript: string): void {
+  let spoken = transcript.toLowerCase().trim();
+  
+  spoken = this.normalizeSpelledAcronym(spoken);
+
+  /* =======================
+     DEPARTMENT
+     ======================= */
+  if (this.currentFieldName === 'Segment') {
+    const cleanText = this.normalizeDeptSpeech(this.normalizeSpelledAcronym(spoken));
+    const matched = this.voiceParserService.matchDropdownValue(
+      cleanText,
+      this.departments,
+      ['departmentName']
+    );
+
+    if (!matched) {
+      this.toastr.warning(`No department found for "${cleanText}"`);
+      return;
+    }
+
+    this.rateRequestForm.get('Segment')?.setValue(matched.DepartmentMasterSid);
+    this.segmentDd?.close();
+
+    setTimeout(() => {
+      this.onSegmentChange(matched);
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf('EnquiryType');
+      this.focusCurrentField();
+    }, 300);
+
+    return;
+  }
+
+  /* =======================
+     CUSTOMER DROPDOWN - FIXED
+     ======================= */
+  if (this.currentFieldName === 'CustomerBranchSid') {
+    const clean = this.normalizeCustomerSpeech(spoken);
+    
+    // Log for debugging
+    console.log('Searching customer for:', clean);
+    console.log('Available customers:', this.customers);
+
+    const match = this.customers.find(customer => 
+      customer.CustomerName.toLowerCase().includes(clean) ||
+      customer.CustomerName.toLowerCase().replace(/\s+/g, '') === clean.replace(/\s+/g, '')
+    );
+
+    if (!match) {
+      this.toastr.warning(`No customer found for "${clean}"`);
+      return;
+    }
+
+    console.log('Found customer match:', match);
+
+    // 🔴 IMPORTANT: Patch ALL required fields
+    this.rateRequestForm.patchValue({
+      CustomerBranchSid: match.CustomerBranchSid,
+      CustomerMasterSid: match.CustomerMasterSid,
+      customerName: match.CustomerName,
+      CustomerAddress: match.Address || '',
+      Email: match.Email || '',
+      ContactPerson: match.ContactPerson || '',
+      ContactNumber: match.ContactNumber || ''
+    });
+
+    // Manually trigger the selection change
+    this.onSelectionChange(match);
+    
+    // Close dropdown
+    this.CustomerDP?.close();
+    
+    // Move to next field
+    setTimeout(() => {
+  this.moveToFirstEmptyAfterCustomer();
+}, 300);
+
+    return;
+  }
+
+  /* =======================
+     LEAD DROPDOWN - FIXED
+     ======================= */
+  if (this.currentFieldName === 'PreCustomerMasterSid') {
+    const clean = this.normalizeCustomerSpeech(spoken);
+    
+    console.log('Searching lead for:', clean);
+    console.log('Available leads:', this.leadList);
+
+    const match = this.leadList.find(lead => 
+      lead.preCustomerName.toLowerCase().includes(clean) ||
+      lead.preCustomerName.toLowerCase().replace(/\s+/g, '') === clean.replace(/\s+/g, '')
+    );
+
+    if (!match) {
+      this.toastr.warning(`No lead found for "${clean}"`);
+      return;
+    }
+
+    console.log('Found lead match:', match);
+
+    // 🔴 IMPORTANT: Patch ALL required fields for lead
+    this.rateRequestForm.patchValue({
+      PreCustomerMasterSid: match.PreCustomerMasterSid,
+      customerName: match.preCustomerName,
+      CustomerAddress: match.preCustomerAddress1 || '',
+      Email: match.email || '',
+      ContactPerson: match.contactPerson || '',
+      ContactNumber: match.phone || ''
+    });
+
+    // Trigger salesperson loading
+    this.patchSalespersonOfLead(match);
+    
+    // Close dropdown
+    this.leadNg?.close();
+    
+    // Move to next field
+    setTimeout(() => {
+  this.moveToFirstEmptyAfterCustomer();
+}, 300);
+
+    return;
+  }
+
+  /* =======================
+     ENQUIRY TYPE DROPDOWN
+     ======================= */
+  if (this.currentFieldName === 'EnquiryType') {
+    const clean = spoken;
+    const option = this.modeOfEnquiry.find(item => 
+      item.name.toLowerCase() === clean
+    );
+
+    if (!option) {
+      this.toastr.warning(`No enquiry type found for "${clean}"`);
+      return;
+    }
+
+    this.rateRequestForm.get('EnquiryType')?.setValue(option.id);
+    this.enquiryTypeNg?.close();
+
+    setTimeout(() => {
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf('shipmentDate');
+      this.focusCurrentField();
+    }, 200);
+
+    return;
+  }
+
+  /* =======================
+   FREIGHT TERMS DROPDOWN - FIX
+   ======================= */
+  if (this.currentFieldName === 'FreightPPCC') {
+    const clean = spoken.replace(/\s+/g, ' ').trim();
+
+    const option = this.freightTermsList.find(item =>
+      item.FreightTerms.toLowerCase() === clean
+    );
+
+    if (!option) {
+      this.toastr.warning(`No freight terms found for "${clean}"`);
+      return;
+    }
+
+    this.rateRequestForm.get('FreightPPCC')?.setValue(option.FreightTerms);
+    this.freightTermsNg?.close();
+
+    setTimeout(() => {
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf('shipmentDate');
+      this.focusCurrentField();
+    }, 200);
+
+    return;
+  }
+   /* =======================
+   ADDITIONAL SERVICE - FIXED
+   ======================= */
+if (this.currentFieldName === 'AdditionalService') {
+  const clean = spoken.toLowerCase().trim();
+
+  // Map common spoken terms to service names
+  const serviceMap: {[key: string]: string} = {
+    'lashing': 'Lashing',
+    'las': 'Lashing',
+    'labeling': 'Labelling',
+    'label': 'Labelling',
+    'labelling': 'Labelling',
+    'choking': 'Choking',
+    'choke': 'Choking',
+    'fumigation': 'Fumigation',
+    'fumigate': 'Fumigation',
+    'pallet': 'Pallet',
+    'pallets': 'Pallet'
+  };
+
+  let serviceName = serviceMap[clean];
+  if (!serviceName) {
+    // Try direct match
+    const option = this.modeOfAddtionalService.find(o =>
+      o.name.toLowerCase() === clean
+    );
+    serviceName = option?.name;
+  }
+
+  if (!serviceName) {
+    this.toastr.warning(`Say: Lashing, Labelling, Choking, Fumigation, or Pallet`);
+    return;
+  }
+
+  this.enquiryOtherForm.get('AdditionalService')?.setValue(serviceName);
+this.AdditionalServiceNg. close();
+      
+
+
+  setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+
+
+ /* =======================
+   CLEARANCE BY - FIXED
+   ======================= */
+if (this.currentFieldName === 'ClearanceBy') {
+  const clean = spoken.replace(/\s+/g, ' ').trim().toLowerCase();
+  
+  // Map spoken words to valid values
+  let value = null;
+  
+  if (clean.includes('own') || clean === 'own') {
+    value = 'Own';
+  } else if (clean.includes('cha') || clean.includes('agent')) {
+    value = 'CHA';
+  } else if (clean.includes('by us') || clean.includes('our') || clean.includes('company')) {
+    value = 'By us';
+  }
+
+  if (!value) {
+    this.toastr.warning(`Say "Own", "CHA", or "By us" for Clearance By`);
+    return;
+  }
+
+  this.rateRequestForm.get('ClearanceBy')?.setValue(value);
+  this.ClearanceByNg?.close();
+  // ✅ MOVE NEXT
+  setTimeout(() => {
+  
+    this.moveToNextField();
+  }, 300);
+  return;
+}
+
+
+
+/* =======================
+   TRANSPORT BY DROPDOWN - FIXED
+   ======================= */
+if (this.currentFieldName === 'TransportBy') {
+  const clean = spoken.replace(/\s+/g, ' ').trim().toLowerCase();
+  
+  let value = null;
+  
+  if (clean.includes('own') || clean === 'own') {
+    value = 'Own';
+  } else if (clean.includes('cha') || clean.includes('agent')) {
+    value = 'CHA';
+  } else if (clean.includes('by us') || clean.includes('our') || clean.includes('company')) {
+    value = 'By us';
+  }
+
+  if (!value) {
+    this.toastr.warning(`Say "Own", "CHA", or "By us" for Transport By`);
+    return;
+  }
+
+  this.rateRequestForm.get('TransportBy')?.setValue(value);
+    this.TransportByNg.close();
+   
+  setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+
+  /* =======================
+   SALESMAN DROPDOWN - FIX
+   ======================= */
+if (this.currentFieldName === 'UserMasterSid') {
+  const clean = this.normalizeCustomerSpeech(spoken);
+
+  const match = this.salesmanList.find(user =>
+    user.userName.toLowerCase().includes(clean) ||
+    user.userName.toLowerCase().replace(/\s+/g, '') === clean.replace(/\s+/g, '')
+  );
+
+  if (!match) {
+    this.toastr.warning(`No salesman found for "${clean}"`);
+    return;
+  }
+
+  // ✅ PATCH CORRECT VALUE
+  this.rateRequestForm.get('UserMasterSid')?.setValue(match.UserMasterSid);
+
+  // ✅ Close dropdown if needed
+  
+  this.SalesmanNg?.close();
+
+  // ✅ Move forward
+  setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+/* =======================
+   INCOTERMS DROPDOWN - FIX
+   ======================= */
+if (this.currentFieldName === 'IncoTerms') {
+  const clean = this.normalizeIncoSpeech(spoken);
+
+  const match = this.incoList.find(inco =>
+    inco.IncoCode.toLowerCase() === clean ||
+    inco.IncoName.toLowerCase().replace(/\s+/g, '') === clean
+  );
+
+  if (!match) {
+    this.toastr.warning(`No IncoTerms found for "${spoken}"`);
+    return;
+  }
+
+  // ✅ PATCH FORM VALUE
+  this.rateRequestForm.get('IncoTerms')?.setValue(match.IncoName);
+
+  // ✅ CLOSE DROPDOWN
+  this.IncoNameDd?.close();
+
+  // ✅ MOVE NEXT
+  setTimeout(() => this.moveToNextField(), 200);
+  return;
+}
+
+
+
+  // Handle other dropdowns generically
+  const option = this.voiceParserService.matchDropdownValue(
+    spoken,
+    this.dropdownOptions,
+    ['name', 'CustomerName', 'userName']
+  );
+
+  if (!option) {
+    this.toastr.warning(`No match for "${spoken}"`);
+    return;
+  }
+/* =======================
+   SHIPPER NAME - FIXED
+   ======================= */
+if (this.currentFieldName === 'ShipperName') {
+  const clean = spoken.toLowerCase();
+
+  const option = this.finalShipperList.find(item =>
+    item.CustomerName.toLowerCase().includes(clean)
+  );
+
+  if (!option) {
+    this.toastr.warning(`No shipper found for "${spoken}"`);
+    return;
+  }
+
+  this.onShipperChange(option);
+  this.ShipperNameDd?.close();
+
+  setTimeout(() => {
+    this.currentFieldIndex = this.voiceFieldOrder.indexOf('ShipperAddress');
+    this.focusCurrentField();
+  }, 300);
+
+  return; // ✅ THIS WAS MISSING
+}
+
+/* =======================
+   CONSIGNEE NAME - FIXED
+   ======================= */
+if (this.currentFieldName === 'ConsigneeName') {
+  const clean = spoken.toLowerCase().trim();
+  
+  console.log('Searching consignee for:', clean);
+  console.log('Available consignees:', this.finalConsigneeList);
+  
+  // Try to find the consignee
+  const option = this.finalConsigneeList.find(item => {
+    if (!item || !item.CustomerName) return false;
+    const itemName = item.CustomerName.toLowerCase();
+    return itemName.includes(clean) || clean.includes(itemName);
+  });
+
+  if (!option) {
+    const availableNames = this.finalConsigneeList
+      .slice(0, 5)
+      .map(c => c?.CustomerName || '')
+      .filter(name => name)
+      .join(', ');
+    
+    this.toastr.warning(`No consignee found for "${spoken}". Available: ${availableNames || 'None'}`);
+    return;
+  }
+
+  console.log('Found consignee match:', option);
+
+  // ✅ Use the proper method to set consignee
+  this.onConsigneeChange(option);
+
+  // ✅ CLOSE DROPDOWN if it exists
+  if (this.ConsigneeNameDd) {
+    this.ConsigneeNameDd.close();
+  }
+
+  // ✅ MOVE TO CONSIGNEE ADDRESS FIELD
+  setTimeout(() => {
+    this.currentFieldIndex = this.voiceFieldOrder.indexOf('ConsigneeAddress');
+    this.focusCurrentField();
+  }, 300);
+  return;
+}
+
+  // Set value based on field type
+  const control = this.rateRequestForm.get(this.currentFieldName);
+  if (control) {
+    if (option.name) {
+      control.setValue(option.name);
+    } else if (option.CustomerName) {
+      control.setValue(option.CustomerName);
+    } else if (option.userName) {
+      control.setValue(option.userName);
+    }
+  }
+
+  // Close relevant dropdowns
+  this.shipmentDp?.close();
+  
+  // Move to next field
+  setTimeout(() => this.moveToNextField(), 300);
+}
+
+
+
+
+private handleTextVoiceInput(transcript: string): void {
+  const control = this.rateRequestForm.get(this.currentFieldName);
+
+  if (this.currentFieldName === 'Email') {
+  const email = transcript
+    .replace(/ at /g, '@')
+    .replace(/ dot /g, '.')
+    .replace(/\s+/g, '');
+
+  this.rateRequestForm.get('Email')?.setValue(email);
+  this.moveToNextField();
+  return;
+}
+
+
+  if (this.currentFieldName === 'ContactNumber') {
+    const number = transcript.replace(/\D/g, '');
+    control?.setValue(number);
+    this.moveToNextField();
+    return;
+  }
+
+  if (this.currentFieldName === 'shipmentDate') {
+    this.handleDateVoiceInput(transcript);
+    return;
+  }
+  if (this.currentFieldName === 'PickupAddress') {
+  this.enquiryOtherForm
+    .get('PickupAddress')
+    ?.setValue(transcript);
+
+  setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+if(this.currentFieldName ==='ShipperAddress') {
+  this.enquiryOtherForm
+    .get('ShipperAddress')
+    ?.setValue(transcript); 
+    
+    setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+if(this.currentFieldName ==='ConsigneeAddress') {
+  this.enquiryOtherForm
+    .get('ConsigneeAddress')
+    ?.setValue(transcript); 
+    
+    setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+if(this.currentFieldName ==='CustomerRef') {
+  this.enquiryOtherForm
+    .get('CustomerRef')
+    ?.setValue(transcript); 
+    
+    setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+if(this.currentFieldName ==='Remarks') {
+  this.enquiryOtherForm
+    .get('Remarks')
+    ?.setValue(transcript); 
+    
+    setTimeout(() => this.moveToNextField(), 300);
+  return;
+}
+
+
+  control?.setValue(transcript);
+  setTimeout(() => this.moveToNextField(), 300);
+}
+
+
+private handleDateVoiceInput(transcript: string): void {
+  const parsed = Date.parse(transcript);
+
+  if (isNaN(parsed)) {
+    this.toastr.warning('Could not understand date');
+    this.openDatePicker();
+    return;
+  }
+
+  const date = new Date(parsed);
+
+  const ngbDate = {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate()
+  };
+
+  // ✅ set value
+  this.rateRequestForm.get('shipmentDate')?.setValue(ngbDate);
+
+  // ✅ close the SAME datepicker instance
+  setTimeout(() => {
+    if (this.shipmentDp?.isOpen()) {
+      this.shipmentDp.close();
+    }
+  }, 0);
+
+  // ✅ move to LeadOrCustomer
+  setTimeout(() => {
+    this.moveToNextField();
+  }, 300);
+}
+
+private normalizeSpelledAcronym(text: string): string {
+  return text
+    // convert "a i" → "ai"
+    .replace(/\b([a-z])\s+([a-z])\b/g, '$1$2')
+    // convert "l c l" → "lcl"
+    .replace(/\b([a-z])\s+([a-z])\s+([a-z])\b/g, '$1$2$3')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+private clearCurrentField(): void {
+  const fieldControl = this.rateRequestForm.get(this.currentFieldName);
+  fieldControl?.reset();
+  this.toastr.info('Field cleared');
+}
+private normalizeCustomerSpeech(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\b(customer|client|lead|select|choose|please|set|enter)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+private normalizeIncoSpeech(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, '')     // "f a s" → "fas"
+    .replace('incode', '')
+    .replace('inco', '')
+    .replace('incoterm', '')
+    .trim();
+}
+
+private moveToFirstEmptyAfterCustomer(): void {
+  const autoFields = [
+    'CustomerAddress',
+    'Email',
+    'ContactPerson',
+    'ContactNumber'
+  ];
+
+  for (const field of autoFields) {
+    const control = this.rateRequestForm.get(field);
+    if (!control?.value) {
+      this.currentFieldIndex = this.voiceFieldOrder.indexOf(field);
+      this.focusCurrentField();
+      return;
+    }
+  }
+
+  // ✅ If all auto fields filled → jump to ClearanceBy
+  this.currentFieldIndex = this.voiceFieldOrder.indexOf('ClearanceBy');
+  this.focusCurrentField();
+}
+private closeAllOpenControls(): void {
+  // ng-selects
+  this.enquiryTypeNg?.close();
+  this.leadNg?.close();
+  this.ClearanceByNg?.close();
+  this.TransportByNg?.close();
+  this.SalesmanNg?.close();
+  this.AdditionalServiceNg?.close();
+  this.freightTermsNg?.close();
+
+  // searchable dropdowns
+  this.segmentDd?.close();
+  this.CustomerDP?.close();
+  this.IncoNameDd?.close();
+  this.ShipperNameDd?.close();
+  this.ConsigneeNameDd?.close();
+
+  // datepicker
+  if (this.shipmentDp?.isOpen()) {
+    this.shipmentDp.close();
+  }
+}
+
 
 }

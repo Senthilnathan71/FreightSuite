@@ -1854,6 +1854,15 @@ onCurrencyChange(event: any) {
   const houseJobFormValue = this.houseJobForm.getRawValue();
   const exportImportType = this.selectedDepartment?.ExportImport;
   const hblNo = houseJobFormValue.HBLNo;
+  let CarrierSid = null;
+  if (houseJobFormValue.CarrierName) {
+    const selectedCarrier = this.carrierList.find(carrier => 
+      carrier.CustomerName === houseJobFormValue.CarrierName
+    );
+    if (selectedCarrier) {
+      CarrierSid = selectedCarrier.CustomerMasterSid;
+    }
+  }
   if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
     this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
     
@@ -1934,6 +1943,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     AgentName: this.getAgentNameById(houseJobFormValue.AgentName) || houseJobFormValue.AgentName || null,
     AgentAddress: houseJobFormValue.AgentAddress || '',
     CarrierName: houseJobFormValue.CarrierName || null,
+    CarrierSid: CarrierSid,
     QuotationHeaderSid: houseJobFormValue.QuotationHeaderSid || null,
     HBLNo: houseJobFormValue.HBLNo || '',
     MBLNo: houseJobFormValue.MBLNo || '',
@@ -3630,6 +3640,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
         modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
          modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+         modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
       }
 
   reportReleaseOrder() {

@@ -28,6 +28,26 @@
                         (click)="openPrint()">
                         <i class="fas fa-print me-1"></i> Print
                 </button>
+<!-- <div class="voice-indicator" *ngIf="spokenText">
+  🎤 {{ currentFieldName }} → {{ spokenText }}
+</div> -->
+
+                           <!-- Add near other action buttons in enquiry-entry.component.html -->
+<!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
+        *ngIf="isVoiceSupported && !isEditMode"
+        (click)="startVoiceNavigation()"
+        [ngClass]="{'btn-danger': voiceRecognitionService.isContinuous, 'btn-info': !voiceRecognitionService.isContinuous}">
+  <i class="fas" [ngClass]="voiceRecognitionService.isContinuous ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+  {{ voiceRecognitionService.isContinuous ? 'Stop Voice' : 'Start Voice Guide' }}
+</button> -->
+
+
+<!-- Voice command help modal trigger -->
+<!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+        *ngIf="isVoiceSupported"
+        (click)="openVoiceHelp(voiceHelpModal)">
+  <i class="fas fa-question-circle me-1"></i> Voice Help
+</button> -->
 
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -218,12 +238,20 @@
                 <div class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
-                        <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
-                            [displayFields]="departmentLookupConfig.displayFields"
-                            [displayLabels]="departmentLookupConfig.displayLabels"
-                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
-                            (itemSelected)="onSegmentChange($event)">
-                        </dofi-searchable-dropdown>
+                       <dofi-searchable-dropdown 
+                       #segmentDd
+  
+    [items]="departments" 
+    formControlName="Segment" 
+    id="segmentDropdown"
+    placeholder=""
+    [displayFields]="departmentLookupConfig.displayFields"
+    [displayLabels]="departmentLookupConfig.displayLabels"
+    [labelFields]="departmentLookupConfig.labelFields" 
+    bindValue="DepartmentMasterSid"
+    (itemSelected)="onSegmentChange($event)"
+   >
+</dofi-searchable-dropdown>
                         <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
                             Required
@@ -297,8 +325,8 @@
                 <aside class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
-                        <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="name" placeholder="" appendTo="body">
+                        <ng-select  #enquiryTypeNg formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
+                            bindValue="id" placeholder="" appendTo="body">
                         </ng-select>
                         <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
@@ -310,12 +338,12 @@
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
+                            <input class="form-control" id="shipmentDateExpected" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                #shipmentDp="ngbDatepicker" (keydown.arrowDown)="shipmentDp.open()" (click)="shipmentDp.toggle()"
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
                                 [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected" />
                             <div>
-                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="d1.toggle()" type="button">
+                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="shipmentDp.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
 
@@ -332,10 +360,10 @@
                 <ng-template #footerTemplateShip>
                     <hr class="my-0" />
                     <button class="btn btn-info btn-sm m-2 float-start"
-                        (click)="f['shipmentDate'].setValue(todayDate); d1.close()">
+                        (click)="f['shipmentDate'].setValue(todayDate); shipmentDp.close()">
                         Today
                     </button>
-                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="shipmentDp.close()">
                         Close
                     </button>
                 </ng-template>
@@ -404,7 +432,9 @@
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <dofi-searchable-dropdown [items]="customers"
+                                                <dofi-searchable-dropdown 
+                                                     #CustomerDP
+                                                    [items]="customers"
                                                     formControlName="CustomerBranchSid" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -424,7 +454,7 @@
                                         <aside class="col-md-6" *ngIf="!rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('PreCustomerMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="leadList"
+                                                <ng-select #leadNg class="ng-select" [items]="leadList"
                                                     bindLabel="preCustomerName" bindValue="PreCustomerMasterSid"
                                                     formControlName="PreCustomerMasterSid" appendTo="body"
                                                     (change)="onSelectionChange($event)"></ng-select>
@@ -495,7 +525,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
-                                                <ng-select class="ng-select" formControlName="ClearanceBy"
+                                                <ng-select class="ng-select" #ClearanceByNg formControlName="ClearanceBy"
                                                     placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
@@ -507,7 +537,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
-                                                <ng-select formControlName="UserMasterSid" [items]="salesmanList"
+                                                <ng-select #SalesmanNg formControlName="UserMasterSid" [items]="salesmanList"
                                                     bindLabel="userName" bindValue="UserMasterSid" appendTo="body">
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Salesman<span
@@ -517,7 +547,7 @@
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
-                                                <ng-select [items]="modeOfAddtionalService" bindLabel="name"
+                                                <ng-select #AdditionalServiceNg [items]="modeOfAddtionalService" bindLabel="name"
                                                     bindValue="name" formControlName="AdditionalService" placeholder=""
                                                     appendTo="body">
                                                 </ng-select>
@@ -528,7 +558,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
-                                                <ng-select class="ng-select" formControlName="TransportBy"
+                                                <ng-select #TransportByNg class="ng-select" formControlName="TransportBy"
                                                     placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
@@ -603,7 +633,7 @@
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
 
-                                                <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms"
+                                                <dofi-searchable-dropdown #IncoNameDd [items]="incoList" formControlName="IncoTerms"
                                                     placeholder="" [displayFields]="incoLookupConfig.displayFields"
                                                     [displayLabels]="incoLookupConfig.displayLabels"
                                                     [labelFields]="incoLookupConfig.labelFields" bindValue="IncoName"
@@ -628,10 +658,14 @@
                                         </aside> -->
 
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
                                                 <input type="text" id="freightTerms"
                                                     class="form-control custom-input-field sm"
-                                                    formControlName="FreightPPCC" placeholder="">
+                                                    formControlName="FreightPPCC" placeholder="" readyonly>
+                                                    <!-- <ng-select #freightTermsNg formControlName="FreightPPCC" [items]="freightTermsList"
+                                                    bindLabel="FreightTerms" bindValue="FreightTerms" placeholder=""
+                                                    [appendTo]="'body'"> </ng-select> -->
                                                 <label for="freightTerms" class="input-label">Freight PP/CC</label>
                                             </div>
                                         </aside>
@@ -644,7 +678,7 @@
                                                     bindValue="CustomerName" bindLabel="CustomerName" placeholder=""
                                                     formControlName="ShipperName" (change)="onShipperChange($event)"
                                                     (clear)="onShipperChange(null)" appendTo="body"></ng-select> -->
-                                                <dofi-searchable-dropdown [items]="finalShipperList"
+                                                <dofi-searchable-dropdown #ShipperNameDd [items]="finalShipperList"
                                                     formControlName="ShipperName" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -682,7 +716,7 @@
                                                     bindLabel="CustomerName" bindValue="CustomerName" placeholder=""
                                                     formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
                                                     (clear)="onConsigneeChange(null)" appendTo="body"></ng-select> -->
-                                                <dofi-searchable-dropdown [items]="finalConsigneeList"
+                                                <dofi-searchable-dropdown #ConsigneeNameDd [items]="finalConsigneeList"
                                                     formControlName="ConsigneeName" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -1951,7 +1985,7 @@
      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; flex-direction: column;">
+            <div style="display: flex;  flex-direction: column; align-items: center;">
                  <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
@@ -1960,65 +1994,71 @@
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                <h4 style="margin: 0; font-weight: 600;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                <h5 style="margin: 0; font-weight: 600;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+            <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+  
             </div>
         </div>
     </div>
 
     <!-- Title -->
-    <h4 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;" class=""><strong>ENQUIRY</strong></h4>
+    <h3 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;"><strong>ENQUIRY</strong></h3>
 
     <!-- Enquiry Details -->
-    <div style="display: flex; flex-wrap: wrap; margin-top: 1rem; padding:10px;">
-        <div style="width: 50%; padding-right: 0rem; box-sizing: border-box;">
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Dept</strong></div><div class="fs-4">: {{ enquiryData?.ShipmentType || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Enquiry Number</strong></div><div  class="fs-4">: {{ enquiryData?.EnquiryNumber || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Party Name</strong></div><div class="fs-4">: {{ enquiryData?.CustomerName || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Party Address</strong></div><div  class="fs-4">: {{ enquiryData?.CustomerAddress || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Received Date</strong></div><div class="fs-4">: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Port Of Origin</strong></div><div class="fs-4">: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Port Of Loading</strong></div><div class="fs-4">: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Shipper Name</strong></div><div class="fs-4">: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong class="fs-4">Shipper Address</strong></div><div class="fs-4">: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '' }}</div></div>
+    <div style="display: flex; flex-wrap: wrap; margin-top: 0; padding:10px;">
+        <div style="width: 50%; padding-right: 0rem; box-sizing: border-box;font-size: 16px;">
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Dept</strong></div><div>: {{ enquiryData?.ShipmentType || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Number</strong></div><div>: {{ enquiryData?.EnquiryNumber || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Party Name</strong></div><div>: {{ enquiryData?.CustomerName || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Party Address</strong></div><div>: {{ enquiryData?.CustomerAddress || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Received Date</strong></div><div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Port Of Origin</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Port Of Loading</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 140px; white-space: nowrap;"><strong style="font-weight: bolder;">Job Type</strong></div><div>: </div></div>
+
         </div>
 
-        <div style="width: 50%; padding-left: 2rem; box-sizing: border-box;">
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Enquiry Created By</strong></div><div class="fs-4">: {{ enquiryData?.createdBy || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Enquiry Created Date</strong></div><div class="fs-4">: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Contact / Number</strong></div><div class="fs-4">: {{ enquiryData?.ContactPerson || '' }} / {{ enquiryData?.ContactNumber || '' }}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Expected Shipment Date</strong></div><div class="fs-4">: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || ''}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Final Destination</strong></div><div class="fs-4">: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Port of Discharge</strong></div><div class="fs-4">: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div></div>
-            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong class="fs-4">Inco Terms</strong></div><div class="fs-4">: {{ enquiryData?.IncoTerms || '' }}</div></div>
+        <div style="width: 50%; padding-left: 2rem; box-sizing: border-box;font-size: 16px;">
+                        <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Shipper Name</strong></div><div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Shipper Address</strong></div><div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Created By</strong></div><div>: {{ enquiryData?.createdBy || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Enquiry Created Date</strong></div><div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Contact / Number</strong></div><div>: {{ enquiryData?.ContactPerson || '' }} / {{ enquiryData?.ContactNumber || '' }}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Expected Shipment Date</strong></div><div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || ''}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Final Destination</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Port of Discharge</strong></div><div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div></div>
+            <div style="display: flex; margin-bottom: 0.25rem;"><div style="width: 200px; white-space: nowrap;"><strong style="font-weight: bolder;">Inco Terms</strong></div><div>: {{ enquiryData?.IncoTerms || '' }}</div></div>
         </div>
     </div>
 
     <!-- Product Table -->
-    <div style="margin-top: 1rem;">
-        <h4 style="font-weight: bold; margin-bottom: 10px; padding:10px;"class=""><strong>Product Details</strong></h4>
+    <div style="margin-top: 0;">
+        <h4 style="font-weight: bolder; margin-bottom:5px; padding-left:10px;"><strong>Product Details</strong></h4>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; margin: 0; font-size: 14px;" class="fs-4">
+            <table style="width: 100%; border-collapse: collapse; margin: 0; font-size: 16px;">
                 <thead>
                     <tr>
-                        <th style="border: 1px solid #000; padding: 4px;border-left:none;" class="text-center"><strong>Cargo Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;" class="text-center"><strong>Cargo Desc</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;" class="text-center"><strong>Product Name</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;border-left:none;text-align: center;font-weight: bolder;"><strong>Cargo Type</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Cargo Desc</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Product Name</strong></th>
                         @if(selectedFCLLCL === "AIR"){
-                        <th style="border: 1px solid #000; padding: 4px;" class="text-center" ><strong>Chargeable Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Length</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Width</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Height</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Chargeable Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>Qty.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Length</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Width</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;"><strong>Height</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>CBM</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>Gross Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>Net Weight</strong></th>
+                     
                         }
                         @if(selectedFCLLCL === "FCL"){
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>Container Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;"><strong>No. of Container</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;"><strong>Container Type</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;width: 13%;"><strong>No. of Container</strong></th>
+                        
                         }
                         @if(selectedFCLLCL === "LCL"){
                         <th style="border: 1px solid #000; padding: 4px;"><strong>Qty.</strong></th>
@@ -2029,7 +2069,10 @@
                         }
                         @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                         <th style="border: 1px solid #000; padding: 4px;"><strong>Pkg Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;border-right:none;"><Strong>Shipment Terms</Strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>Gross Wt.</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>Net Wt</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;"><strong>CBM</strong></th>
+                        <th style="border: 1px solid #000; padding: 4px;border-right:none;width: 13%;"><Strong>Shipment Terms</Strong></th>
                         }
                     </tr>
                 </thead>
@@ -2044,6 +2087,10 @@
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.length || '' }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.width || '' }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.height || '' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.3-3' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.3-3' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.3-3' }}</td>
+
                         }
                         @if(selectedFCLLCL === "FCL"){
                         <td style="border: 1px solid #000; padding: 4px;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }}</td>
@@ -2058,7 +2105,11 @@
                         }
                         @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                         <td style="border: 1px solid #000; padding: 4px;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '' }}</td>
+                                                <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.3-3' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.3-3' }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.3-3' }}</td>
                         <td style="border: 1px solid #000; padding: 4px;border-right:none;"class="text-center">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ShipmentTerms || '' }}</td>
+                        
                         }
                     </tr>
 

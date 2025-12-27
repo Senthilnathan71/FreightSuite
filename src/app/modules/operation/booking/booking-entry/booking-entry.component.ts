@@ -726,6 +726,7 @@ arapFilter = {
   // Product Form Initialization
   initProductForm() {
     const isIndianCompany = this.countryOfCompany === 'india';
+    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null,[Validators.required]],
@@ -733,18 +734,18 @@ arapFilter = {
       ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
-      GrossWeight: ['', [Validators.required]],
-      NetWeight: ['', [Validators.required]],
-      Volumetric: ['', [Validators.required]],
-      Volume: ['',[Validators.required]],
+      GrossWeight: ['', [Validators.required,Validators.min(0.001)]],
+      NetWeight: ['', [Validators.required,Validators.min(0.001)]],
+      Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
+      Volume: ['',[Validators.required,Validators.min(0.001)]],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
-      Length: ['',[Validators.required]],
-      Width: ['',[Validators.required]],
-      Height: ['',[Validators.required]],
-      UomMasterSid: [2,[Validators.required]],
+      Length: ['',isAirOrLCL ? [Validators.required] : []],
+      Width: ['',isAirOrLCL ? [Validators.required] : []],
+      Height: ['',isAirOrLCL ? [Validators.required] : []],
+      UomMasterSid: [2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [null]
     });
     this.setupImmediateCBMCalculation();
@@ -942,6 +943,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    */
 
   createBookingProductGroup(data?: any): FormGroup {
+    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
@@ -949,18 +951,18 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
-      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
-      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
-      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
+      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
+      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
+      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       IsHaz: [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
       UnNo: [{ value: data?.UnNo || '', disabled: true }],
       PkgGroup: [{ value: data?.PkgGroup || '', disabled: true }],
-      Length: [data?.Length || '',[Validators.required]],
-      Width: [data?.Width || '',[Validators.required]],
-      Height: [data?.Height || '',[Validators.required]],
-      Volumetric: [data?.Volumetric|| '',[Validators.required]],
-      UomMasterSid: [data?.UomMasterSid || 2,[Validators.required]],
+      Length: [data?.Length || '',isAirOrLCL ? [Validators.required] : []],
+      Width: [data?.Width || '',isAirOrLCL ? [Validators.required] : []],
+      Height: [data?.Height || '',isAirOrLCL ? [Validators.required] : []],
+      Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required] : []],
+      UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
 
@@ -1461,6 +1463,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       CustomerMasterSid: data.CustomerMasterSid,
       SalesmanSid: data.SalesmanSid,
       FreightTerms: data.FreightTerms,
+      JobType: data.JobType,
     });
   }
 
@@ -1865,23 +1868,20 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     isValid = false;
   }
 
-  // Validate Cargo Form
   // Validate Cargo Form ONLY when on Cargo tab
-if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
-  this.cargoForm.markAllAsTouched();
+  if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
+    this.cargoForm.markAllAsTouched();
 
-  Object.keys(this.cargoForm.controls).forEach(key => {
-    const control = this.cargoForm.get(key);
-    if (control?.errors) {
-      if (control.errors['required']) {
-        errorMessages.push(`${this.getFieldLabel(key)} is required`);
+    Object.keys(this.cargoForm.controls).forEach(key => {
+      const control = this.cargoForm.get(key);
+      if (control?.errors) {
+        if (control.errors['required']) {
+          errorMessages.push(`${this.getFieldLabel(key)} is required`);
+        }
       }
-    }
-  });
-
-  isValid = false;
-}
-
+    });
+    isValid = false;
+  }
 
   // Validate CRO Form
   if (this.selectedTab === 'CRO' && this.croForm.invalid) {
@@ -1898,9 +1898,10 @@ if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
     isValid = false;
   }
 
-   // Validate Products in FormArray ONLY if at least one product exists
+  // Validate Products in FormArray ONLY if at least one product exists
   if (this.bookingProducts.length > 0) {
     this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
+      // Check if product form is invalid
       if (productGroup.invalid) {
         productGroup.markAllAsTouched();
         
@@ -1908,26 +1909,69 @@ if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
           const control = productGroup.get(key);
           if (control?.errors) {
             if (control.errors['required']) {
-              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
+              // Special handling for AIR/LCL departments - make dimensions mandatory
+              const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+              const dimensionFields = ['Length', 'Width', 'Height', 'UomMasterSid', 'Volumetric'];
+              
+              if (isAirOrLCL && dimensionFields.includes(key)) {
+                errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required for ${this.selectedFCLLCL} shipments`);
+              } else {
+                errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
+              }
             }
           }
         });
         isValid = false;
       }
+
+      // ADD THIS: Check if weight fields are 0 (which shouldn't be allowed)
+      const grossWeight = Number(productGroup.get('GrossWeight')?.value) || 0;
+      const netWeight = Number(productGroup.get('NetWeight')?.value) || 0;
+      const volume = Number(productGroup.get('Volume')?.value) || 0;
+
+      // For LCL and AIR: GrossWeight and NetWeight must be greater than 0
+      if (this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR') {
+        if (grossWeight <= 0) {
+          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
+          productGroup.get('GrossWeight')?.setErrors({ min: true });
+          isValid = false;
+        }
+        if (netWeight <= 0) {
+          errorMessages.push(`Product ${index + 1}: Net Weight is required`);
+          productGroup.get('NetWeight')?.setErrors({ min: true });
+          isValid = false;
+        }
+      }
+
+      // For FCL: GrossWeight, NetWeight, and Volume must be greater than 0
+      if (this.selectedFCLLCL === 'FCL') {
+        if (grossWeight <= 0) {
+          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
+          productGroup.get('GrossWeight')?.setErrors({ min: true });
+          isValid = false;
+        }
+        if (netWeight <= 0) {
+          errorMessages.push(`Product ${index + 1}: Net Weight is required`);
+          productGroup.get('NetWeight')?.setErrors({ min: true });
+          isValid = false;
+        }
+        if (volume <= 0) {
+          errorMessages.push(`Product ${index + 1}: CBM is required`);
+          productGroup.get('Volume')?.setErrors({ min: true });
+          isValid = false;
+        }
+      }
     });
-  } else {
-    // If no products exist, skip product validation entirely
-    console.log('No products in FormArray - skipping product validation');
   }
+
   // Show error messages if any
   if (errorMessages.length > 0) {
-    const errorMessage = errorMessages.join(',');
+    const errorMessage = errorMessages.join(', ');
     this.appSettingService.showWarning(errorMessage, 'Validation Errors');
   }
 
   return isValid;
 }
-
   /**
     |--------------------------------------------------
     |   Section-5 : Helper Functions
@@ -1959,6 +2003,23 @@ if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+     if (this.bookingProducts.length > 0) {
+    this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
+      const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+      
+      // Update validators based on department
+      const dimensionFields = ['Length', 'Width', 'Height', 'UomMasterSid', 'Volumetric'];
+      dimensionFields.forEach(field => {
+        const control = productGroup.get(field);
+        if (isAirOrLCL) {
+          control?.setValidators([Validators.required]);
+        } else {
+          control?.clearValidators();
+        }
+        control?.updateValueAndValidity({ emitEvent: false });
+      });
+    });
+  }
      this.autoSetJobType(department);
     const isFCLDepartment = this.selectedFCLLCL === "FCL";
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
