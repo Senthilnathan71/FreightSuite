@@ -42,6 +42,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ToastrService } from 'ngx-toastr';
 import { getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -804,8 +805,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   addDetailRow() {
     const newRow = this.createDetailGroup();
-    this.onDetailChange(this.details.length - 1, 'CurrencyCode');
+    
     this.details.push(newRow);
+    this.onDetailChange(this.details.length - 1, 'CurrencyMasterSid');
     this.vendorInvoiceForm.updateValueAndValidity();
     // Subscribe to changes for auto-calculation
     // this.subscribeToRowChanges(newRow);
@@ -2016,6 +2018,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.vendorInvoiceForm.get('GSTNo')?.disable();
       this.vendorInvoiceForm.get('PlaceOfSupply')?.disable();
       this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();
+      this.vendorInvoiceForm.get('ExchangeRate')?.disable();
       this.details.controls.forEach(row => {
         row.disable();
       });
@@ -3036,52 +3039,52 @@ export class VendorInvoiceEntryComponent implements OnInit {
     datepicker.close();
   }
 
-  onCurrencyChange(event: any): void {
-    // console.log('=== onCurrencyChange START ===');
+  // onCurrencyChange(event: any): void {
+  //   // console.log('=== onCurrencyChange START ===');
 
-    if (!this.vendorInvoiceForm) {
-      console.warn('Form not initialized yet');
-      return;
-    }
+  //   if (!this.vendorInvoiceForm) {
+  //     console.warn('Form not initialized yet');
+  //     return;
+  //   }
 
-    let selectedCurrency: any;
+  //   let selectedCurrency: any;
 
-    if (typeof event === 'object' && event !== null) {
-      selectedCurrency = event;
-    } else {
-      const currencySid = event;
-      selectedCurrency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
-    }
+  //   if (typeof event === 'object' && event !== null) {
+  //     selectedCurrency = event;
+  //   } else {
+  //     const currencySid = event;
+  //     selectedCurrency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
+  //   }
 
-    if (!selectedCurrency) {
-      console.warn('No currency selected or found');
-      return;
-    }
+  //   if (!selectedCurrency) {
+  //     console.warn('No currency selected or found');
+  //     return;
+  //   }
 
-    // Update CurrencyMasterSid in the form
-    this.vendorInvoiceForm.patchValue({
-      CurrencyMasterSid: selectedCurrency.CurrencyMasterSid
-    }, { emitEvent: false });
+  //   // Update CurrencyMasterSid in the form
+  //   this.vendorInvoiceForm.patchValue({
+  //     CurrencyMasterSid: selectedCurrency.CurrencyMasterSid
+  //   }, { emitEvent: false });
 
-    // If currency is different from company currency, fetch exchange rate
-    if (this.companyCurrency?.currencyMasterSid !== selectedCurrency.CurrencyMasterSid) {
-      // Get currency code from selected currency for API call
-      const selectedCurrencyCode = selectedCurrency.currencyCode;
-      this.fetchExchangeRate(this.currentCurrencyCode, selectedCurrencyCode);
-    } else {
-      const exchangeRateControl = this.vendorInvoiceForm.get('ExchangeRate');
-      if (exchangeRateControl) {
-        exchangeRateControl.disable();
-      }
+  //   // If currency is different from company currency, fetch exchange rate
+  //   if (this.companyCurrency?.currencyMasterSid !== selectedCurrency.CurrencyMasterSid) {
+  //     // Get currency code from selected currency for API call
+  //     const selectedCurrencyCode = selectedCurrency.currencyCode;
+  //     this.fetchExchangeRate(this.currentCurrencyCode, selectedCurrencyCode);
+  //   } else {
+  //     const exchangeRateControl = this.vendorInvoiceForm.get('ExchangeRate');
+  //     if (exchangeRateControl) {
+  //       exchangeRateControl.disable();
+  //     }
 
-      this.vendorInvoiceForm.patchValue({
-        ExchangeRate: 1
-      }, { emitEvent: false });
-    }
+  //     this.vendorInvoiceForm.patchValue({
+  //       ExchangeRate: 1
+  //     }, { emitEvent: false });
+  //   }
 
-    // console.log('=== onCurrencyChange END ===');
-    this.recalculateAllRows();
-  }
+  //   // console.log('=== onCurrencyChange END ===');
+  //   this.recalculateAllRows();
+  // }
   // Add this new method to fetch exchange rate
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
 
@@ -3917,5 +3920,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
     if(!chargeSid || !this.chargeList) return '-';
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
     return charge?.chargeCode || '-';
+  }
+  showInfo() {
+    if (!this.vendorInvoiceData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.vendorInvoiceData;
+    modalRef.componentInstance.idLabel = 'Vendor Invoice Id';
+    modalRef.componentInstance.idValue = this.vendorInvoiceData?.VoucherHeaderSid;
   }
 }

@@ -8,6 +8,11 @@
       <div class="col-md-4 d-flex pb-1">
         <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
           'Create Vendor Invoice') }}</h5>
+          @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
       </div>
 
       <div class="col-md-8 pb-1">
