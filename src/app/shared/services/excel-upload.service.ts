@@ -46,11 +46,14 @@ export class ExcelUploadService {
             });
           }
 
-          if (!workbook.SheetNames.includes('House Jobs')) {
+          // Support both "House Job" (new template) and "House Jobs" (old template)
+          const houseJobSheetName = workbook.SheetNames.includes('House Job') ? 'House Job' :
+                                    workbook.SheetNames.includes('House Jobs') ? 'House Jobs' : null;
+          if (!houseJobSheetName) {
             errors.push({
               field: 'Sheet',
-              message: 'Required sheet "House Jobs" not found',
-              sheet: 'House Jobs'
+              message: 'Required sheet "House Job" or "House Jobs" not found',
+              sheet: 'House Job'
             });
           }
 
@@ -63,8 +66,8 @@ export class ExcelUploadService {
           const masterJobSheet = workbook.Sheets['Master Job'];
           const masterJobData = XLSX.utils.sheet_to_json(masterJobSheet, { defval: null });
 
-          // Parse House Jobs sheet
-          const houseJobsSheet = workbook.Sheets['House Jobs'];
+          // Parse House Jobs sheet (support both singular and plural names)
+          const houseJobsSheet = workbook.Sheets[houseJobSheetName!];
           const houseJobsData = XLSX.utils.sheet_to_json(houseJobsSheet, { defval: null });
 
           if (masterJobData.length === 0) {
@@ -78,8 +81,8 @@ export class ExcelUploadService {
           if (houseJobsData.length === 0) {
             errors.push({
               field: 'Data',
-              message: 'House Jobs sheet contains no data (at least one house job required)',
-              sheet: 'House Jobs'
+              message: 'House Job sheet contains no data (at least one house job required)',
+              sheet: houseJobSheetName || 'House Job'
             });
           }
 
@@ -91,10 +94,12 @@ export class ExcelUploadService {
           // Get first row as master job (only one master job per upload)
           const masterJob = this.mapMasterJobData(masterJobData[0]);
 
-          // Parse Containers sheet (optional)
+          // Parse Containers sheet (optional - support both "Container" and "Containers")
           let containers: any[] = [];
-          if (workbook.SheetNames.includes('Containers')) {
-            const containersSheet = workbook.Sheets['Containers'];
+          const containerSheetName = workbook.SheetNames.includes('Container') ? 'Container' :
+                                     workbook.SheetNames.includes('Containers') ? 'Containers' : null;
+          if (containerSheetName) {
+            const containersSheet = workbook.Sheets[containerSheetName];
             const containersData = XLSX.utils.sheet_to_json(containersSheet, { defval: null });
             containers = containersData.map(row => this.mapContainerData(row));
           }
@@ -132,10 +137,12 @@ export class ExcelUploadService {
             houseCargoData = XLSX.utils.sheet_to_json(houseCargoSheet, { defval: null });
           }
 
-          // Parse House Products sheet (optional)
+          // Parse House Products sheet (optional - support both "House Product" and "House Products")
           let houseProductsData: any[] = [];
-          if (workbook.SheetNames.includes('House Products')) {
-            const houseProductsSheet = workbook.Sheets['House Products'];
+          const houseProductSheetName = workbook.SheetNames.includes('House Product') ? 'House Product' :
+                                        workbook.SheetNames.includes('House Products') ? 'House Products' : null;
+          if (houseProductSheetName) {
+            const houseProductsSheet = workbook.Sheets[houseProductSheetName];
             houseProductsData = XLSX.utils.sheet_to_json(houseProductsSheet, { defval: null });
           }
 
