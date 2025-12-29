@@ -4129,6 +4129,16 @@ async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null
   }
 }
 
+
+ getContainerName(ContainerTypeMasterSid:number){
+    console.log(ContainerTypeMasterSid);
+    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
+      return "";
+    }
+    console.log("HERE",this.containerTypeList)
+    return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
+  }
+
 // Open CRO print modal
 openCroPrintModal(content: TemplateRef<any>) {
   if (!this.bookingData) {

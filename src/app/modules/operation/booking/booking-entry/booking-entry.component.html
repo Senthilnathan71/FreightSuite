@@ -3143,7 +3143,7 @@
  <!-- Company Info -->
      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;  margin-top:-10px;">
             <div style="display: flex;  flex-direction: column; align-items: center;">
                  <!-- Print logo -->
             <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
@@ -3153,7 +3153,7 @@
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+            <div style="flex: 1; text-align: center; font-size: 18px; padding-right: 12%; margin:0; line-height:1.2;">
                 <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
                 <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
@@ -3173,51 +3173,71 @@
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
 <!-- Main Info Table -->
-<table style="width:100%; border-collapse:collapse; font-size:16px;">
+<table style="width:100%; border-collapse:collapse; font-size:16px; margin:0; padding:0;">
   <tr>
     <!-- LEFT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding-top:6px;padding-left: 60px;font-weight: 17px;">
-      <div style=" margin-bottom:4px;font-weight: bolder;"><strong>Customer</strong> </div>
-      <div style="font-weight: bolder;">{{ bookingHeader?.CustomerName }}</div>
-      <div style="font-weight: bolder;">{{ bookingHeader?.CustomerAddress }}</div>
+    <td style="width:50%; vertical-align:top; padding:0 0 0 30px;">
+      <div style="margin:0 0 4px 0; font-weight:bolder;font-size:17px;">
+        <strong>Customer</strong>
+      </div>
+      <div style="margin:0; font-size:17px;padding-left: 30px;">
+        {{ bookingHeader?.CustomerName }}
+      </div>
+      <div style="margin:0; font-size:17px;padding-left: 30px;">
+        {{ bookingHeader?.CustomerAddress }}
+      </div>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding-top:6px;padding-left: 80px;">
-      <table style="width:100%; border-collapse:collapse;">
+    <td style="width:50%; vertical-align:top; padding:0 0 0 80px;">
+      <table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
         <tr>
-          <td><strong style="font-weight: bolder;width:120px;">Booking No.</strong></td>
-          <td>: {{ bookingHeader?.BookingNo }}</td>
+          <td style="width:140px; font-weight:bolder; padding:2px 0;"><strong>Booking No.</strong></td>
+          <td style="width:10px; padding:2px 0;">:</td>
+          <td style="padding:2px 0;">{{ bookingHeader?.BookingNo }}</td>
         </tr>
+
         <tr>
-          <td><strong style="font-weight: bolder;width:120px;">Booking Date</strong></td>
-          <td>: {{ bookingHeader?.BookingDateTime | formatDate }}</td>
+          <td style="font-weight:bolder; padding:2px 0;"><strong>Booking Date</strong></td>
+          <td style="padding:2px 0;">:</td>
+          <td style="padding:2px 0;">
+            {{ bookingHeader?.BookingDateTime | formatDate }}
+          </td>
         </tr>
+
         <tr>
-          <td><strong style="font-weight: bolder;width:120px;">Cut Off Date</strong></td>
-          <td>: {{ bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</td>
+          <td style="font-weight:bolder; padding:2px 0;"><strong>Cut Off Date</strong></td>
+          <td style="padding:2px 0;">:</td>
+          <td style="padding:2px 0;">
+            {{ bookingHeader?.voyageDetails?.PortCutoff | formatDate }}
+          </td>
         </tr>
+
         <tr *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
-          <td><strong style="font-weight: bolder;">Quotation No.</strong></td>
-          <td>: {{ bookingHeader?.quotationHeader?.QuoteNumber }}</td>
+          <td style="font-weight:bolder; padding:2px 0;"><strong>Quotation No.</strong></td>
+          <td style="padding:2px 0;">:</td>
+          <td style="padding:2px 0;">
+            {{ bookingHeader?.quotationHeader?.QuoteNumber }}
+          </td>
         </tr>
       </table>
     </td>
   </tr>
 </table>
 
+
 <!-- Bottom Border -->
-<div style="border-top:1px solid #000; margin:12px 0;"></div>
+<div style="border-top:1px solid #000; margin:8px 0;"></div>
 
   <!-- Booking Details -->
-<p style="font-weight:bolder; margin-left: 60px;margin-top: 5px;margin-bottom: 5px;  font-size: 16px;">
-  We are pleased to confirm your booking as below :
+<p style="font-weight:bolder; padding-left: 30px;margin-top: 0px;margin-bottom: 5px;  font-size: 16px;">
+  <strong>  We are pleased to confirm your booking as below :</strong>
 </p>
 
 <table style="width:100%; border-collapse:collapse; font-size:16px;border: 1px solid black;">
   <tr>
     <!-- LEFT COLUMN -->
-    <td style="width:50%; vertical-align:top;padding-left: 60px;">
+    <td style="width:50%; vertical-align:top;padding-left: 30px;padding-top: 5px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="width:160px; font-weight:bolder;"><strong>Vessel/Voyage</strong></td>
@@ -3257,30 +3277,38 @@
           <td style="font-weight:bolder;"><strong>Hand Over To.</strong></td>
           <td>: {{ bookingHeader?.bookingOthers[0]?.YardCFS || '' }}</td>
         </tr>
-        <tr>
-          <td style="font-weight:bolder;"><strong>Remarks</strong></td>
-          <td>: {{ bookingHeader?.InternalNote || '' }}</td>
+          <tr>
+          <td style="font-weight:bolder;"><strong>Shipment Terms</strong></td>
+          <td>: {{ bookingHeader?.bookingCargo[0]?.ShipmentTerms || '' }}</td>
         </tr>
       </table>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top;padding-left: 80px;">
+    <td style="width:50%; vertical-align:top;padding-left: 80px;padding-top: 5px;padding-bottom: 5px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="width:140px; font-weight:bolder;">
-            {{ selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No' }}
+            {{ selectedFCLLCL === 'AIR' ? 'HAWBL No.' : 'HBL No.' }}
           </td>
           <td>: {{ bookingHeader?.HBLNo || '' }}</td>
         </tr>
         <tr>
+          <td style="font-weight:bolder;"><strong>ETD</strong></td>
+          <td>: {{ bookingHeader?.ETD | formatDate }}</td>
+        </tr>
+         <!-- <tr>
           <td style="font-weight:bolder;"><strong>POD ETA</strong></td>
           <td>: {{ bookingHeader?.ETA | formatDate }}</td>
-        </tr>
+        </tr> -->
         <tr>
+          <td style="font-weight:bolder;"><strong>ETA</strong></td>
+          <td>: {{ bookingHeader?.ETA | formatDate }}</td>
+        </tr>
+        <!-- <tr>
           <td style="font-weight:bolder;"><strong>FPD ETA</strong></td>
           <td>: {{ getFPDETA() | formatDate }}</td>
-        </tr>
+        </tr> -->
         <tr>
           <td style="font-weight:bolder;"><strong>Commodity</strong></td>
           <td>: {{ bookingHeader?.bookingCargo[0]?.CargoType || '' }}</td>
@@ -3290,7 +3318,7 @@
           <td>: {{ bookingHeader?.FreightTerms || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Destination Agent</strong></td>
+          <td style="font-weight:bolder;"><strong>Dest Agent</strong></td>
           <td>: {{ getDestinationAgent(bookingHeader?.DestinationAgent) || '' }}</td>
         </tr>
         <tr>
@@ -3306,9 +3334,10 @@
           <td>: {{ bookingHeader?.bookingOthers[0]?.CarrierBookingRef || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Shipment Terms</strong></td>
-          <td>: {{ bookingHeader?.bookingCargo[0]?.ShipmentTerms || '' }}</td>
+          <td style="font-weight:bolder;"><strong>Remarks</strong></td>
+          <td>: {{ bookingHeader?.InternalNote || '' }}</td>
         </tr>
+      
       </table>
     </td>
   </tr>
@@ -3317,10 +3346,10 @@
 
 <h3 style="
     font-weight:bolder;
-    margin-left: 60px;
+    padding-left: 30px;
     margin-top: 5px;
     margin-bottom: 5px;
-    font-size:18px;
+    font-size:20px;
 ">
     <strong>Cargo Details</strong>
 </h3>
@@ -3330,21 +3359,22 @@
       <table style="width:100%; border-collapse:collapse; font-size:16px;">
         <thead>
           <tr>
-            <th style="border:1px solid #000; padding:5px;font-weight: bolder;"><strong>Cargo Type</strong></th>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;"><strong>Cargo Type</strong></th>
 
             <!-- Conditional Columns -->
             @if(selectedFCLLCL === "FCL"){
-              <th style="border:1px solid #000; padding:5px;font-weight: bolder;"><strong>Container Type</strong></th>
+              <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;"><strong>Container Type</strong></th>
               <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>No. of Containers</strong></th>
             }
             <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Gross Weight</strong></th>
 
             @if(selectedFCLLCL === "LCL"){
               <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>No. of Pkg</strong></th>
+              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Chargeable Weight</strong></th>
             }
 
             @if(selectedFCLLCL === "AIR"){
-              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Chargeable Weight</strong></th>
+              <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;width: 20%;"><strong>Chargeable Weight</strong></th>
             }
 
             <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Volume (CBM)</strong></th>
@@ -3359,7 +3389,7 @@
 
             @if(selectedFCLLCL === "FCL"){
               <td style="border:1px solid #000; padding:5px;">
-                {{bookingHeader?.bookingCargo[0]?.ContainerType || ''}}
+                {{getContainerName(bookingHeader?.bookingCargo[0]?.ContainerType) || ''}}
               </td>
               <td style="border:1px solid #000; padding:5px; text-align:right;">
                 {{bookingHeader?.bookingCargo[0]?.NoofContainers || ''}}
@@ -3367,12 +3397,15 @@
             }
 
             <td style="border:1px solid #000; padding:5px; text-align:right;">
-              {{bookingHeader?.bookingCargo[0]?.GrossWeight || ''}}
+              {{bookingHeader?.bookingCargo[0]?.GrossWeight  | number:'1.3-3'}}
             </td>
 
             @if(selectedFCLLCL === "LCL"){
               <td style="border:1px solid #000; padding:5px; text-align:right;">
                 {{bookingHeader?.bookingCargo[0]?.NoOfPackage || ''}}
+              </td>
+               <td style="border:1px solid #000; padding:5px; text-align:right;">
+                {{bookingHeader?.bookingCargo[0]?.ChargeableWeight | number:'1.3-3'}}
               </td>
             }
 
@@ -3383,7 +3416,7 @@
             }
 
             <td style="border:1px solid #000; padding:5px; text-align:right;">
-              {{bookingHeader?.bookingCargo[0]?.Volume || ''}}
+              {{bookingHeader?.bookingCargo[0]?.Volume  | number:'1.3-3'}}
             </td>
 
           </tr>
@@ -3412,7 +3445,7 @@
   <div style="
     text-align:center;
     margin:18px 40px 10px 40px;
-    font-weight:500;
+    font-weight:bolder;
   ">
     IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO<br>
     CONTACT US. THANK YOU FOR SHIPPING WITH US
@@ -3689,7 +3722,7 @@
             <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No.</div>
             <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
           </div>
         </div>
@@ -3755,10 +3788,15 @@
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
             <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
           </div>
+            <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+            <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+          </div>
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
             <div class="text-break">: {{getFPDETA() | formatDate}}</div>
           </div>
+          
           @if(selectedFCLLCL === "LCL"){
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Pkg</div>
