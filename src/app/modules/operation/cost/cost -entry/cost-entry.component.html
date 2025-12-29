@@ -1011,7 +1011,7 @@
                 <div class="custom-form-group">
                 <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
                   (ngModelChange)="onHeaderExchangeRateChange()" step="0.0001" min="0"
-                  placeholder="">
+                  placeholder="" [disabled]="disableHeaderExRate">
                    <label class="input-label">Exchange Rate</label>
                 </div>
               

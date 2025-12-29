@@ -36,7 +36,7 @@
         <div style="display:flex; gap:2px; width:100%;">
 
             
-            <div style="flex:1;">
+            <div style="flex:1;height:100%;">
                 <div *ngFor="let cat of processedFunds">
                     <ng-container *ngIf="cat.category !== 'Asset'">
 
@@ -136,7 +136,7 @@
 
                         <div class="table-responsive">
                             <table class="table tablebordered table-sm"
-                                style="margin:0; font-size:12px; border-collapse:collapse; width:100%;">
+                                style="margin:0; font-size:12px; border-collapse:collapse; width:100%; min-height: 211px;height: auto;">
                                 <thead>
                                     <tr>
                                         <th colspan="4" style="font-weight:700;">{{ cat.category }}</th>

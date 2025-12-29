@@ -46,60 +46,60 @@ export class BalanceSheetReportComponent {
   }
 
 
-processFunds() {
-  if (!this.fullData?.data?.length) return;
+  processFunds() {
+    if (!this.fullData?.data?.length) return;
 
-  // Group by category
-  const categoryMap = new Map<string, any[]>();
-  this.fullData.data.forEach(item => {
-    if (!categoryMap.has(item.category)) categoryMap.set(item.category, []);
-    categoryMap.get(item.category).push(item);
-  });
-
-  this.processedFunds = [];
-
-  categoryMap.forEach((items, category) => {
-    const categoryTotal = items.reduce((sum, item) => sum + item.LocalAmt, 0);
-
-    // Group by groupName
-    const groupMap = new Map<string, any[]>();
-    items.forEach(item => {
-      const groupKey = item.groupName || '';
-      if (!groupMap.has(groupKey)) groupMap.set(groupKey, []);
-      groupMap.get(groupKey).push(item);
+    // Group by category
+    const categoryMap = new Map<string, any[]>();
+    this.fullData.data.forEach(item => {
+      if (!categoryMap.has(item.category)) categoryMap.set(item.category, []);
+      categoryMap.get(item.category).push(item);
     });
 
-    const processedItems: any[] = [];
+    this.processedFunds = [];
 
-    groupMap.forEach((groupItems, groupName) => {
-      // Group by subgroupName inside group
-      const subgroupMap = new Map<string, any[]>();
-      groupItems.forEach(item => {
-        const subKey = item.subgroupName || '';
-        if (!subgroupMap.has(subKey)) subgroupMap.set(subKey, []);
-        subgroupMap.get(subKey).push(item);
+    categoryMap.forEach((items, category) => {
+      const categoryTotal = items.reduce((sum, item) => sum + item.LocalAmt, 0);
+
+      // Group by groupName
+      const groupMap = new Map<string, any[]>();
+      items.forEach(item => {
+        const groupKey = item.groupName || '';
+        if (!groupMap.has(groupKey)) groupMap.set(groupKey, []);
+        groupMap.get(groupKey).push(item);
       });
 
-      subgroupMap.forEach((subItems, subgroupName) => {
-        subItems.forEach((item, index) => {
-          processedItems.push({
-            ...item,
-            showGroup: index === 0 && groupItems[0] === subItems[0], // show group only for first in group
-            showSubGroup: index === 0, // show subgroup only for first in subgroup
-            groupRowSpan: groupItems.length,
-            subGroupRowSpan: subItems.length
+      const processedItems: any[] = [];
+
+      groupMap.forEach((groupItems, groupName) => {
+        // Group by subgroupName inside group
+        const subgroupMap = new Map<string, any[]>();
+        groupItems.forEach(item => {
+          const subKey = item.subgroupName || '';
+          if (!subgroupMap.has(subKey)) subgroupMap.set(subKey, []);
+          subgroupMap.get(subKey).push(item);
+        });
+
+        subgroupMap.forEach((subItems, subgroupName) => {
+          subItems.forEach((item, index) => {
+            processedItems.push({
+              ...item,
+              showGroup: index === 0 && groupItems[0] === subItems[0], // show group only for first in group
+              showSubGroup: index === 0, // show subgroup only for first in subgroup
+              groupRowSpan: groupItems.length,
+              subGroupRowSpan: subItems.length
+            });
           });
         });
       });
-    });
 
-    this.processedFunds.push({
-      category,
-      items: processedItems,
-      categoryTotal
+      this.processedFunds.push({
+        category,
+        items: processedItems,
+        categoryTotal
+      });
     });
-  });
-}
+  }
 
 
   isFirstGroup(index: number, data: any[]): boolean {
@@ -147,5 +147,6 @@ processFunds() {
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
+
 
 }

@@ -2223,14 +2223,16 @@ calculateTotalCBM(): number {
 }
 
 calculateTotalPackageQty(): number {
-  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
-  
-  let total = 0;
-  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
-    total += Number(cargo.PackageQty) || 0;
-  });
-  return total;
+  const cargos = this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo;
+
+  if (!Array.isArray(cargos)) return 0;
+
+  return cargos.reduce((sum: number, cargo: any) => {
+    const qty = Number(cargo?.PackageQty);
+    return sum + (isNaN(qty) ? 0 : qty);
+  }, 0);
 }
+
 
 openFollowup() {
     if (!this.enquiryData) return;

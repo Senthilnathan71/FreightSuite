@@ -249,6 +249,7 @@ export class CostEntryComponent implements OnInit {
   /** It is used to store the chargeTaxMapping for each charge */
   chargeTaxMapping :any[][] = [];
   voucherForm !: FormGroup;
+  disableHeaderExRate : boolean;
 
   invoiceGenerationPayload = {
     
@@ -1986,14 +1987,26 @@ createRateFormGroup(data?: any): FormGroup {
 
     this.invoiceHeaderCurrency = companyCurrency || chargeCurrency || null;
 
-    // Set default exchange rate to 1 (company home currency)
+    // Check if selected currency is same as company currency
+  const selectedCurrencyCode = this.invoiceHeaderCurrency?.currencyCode;
+  this.disableHeaderExRate = selectedCurrencyCode === companyHomeCurrency.code;
+  
+  // Set default exchange rate
+  if (this.disableHeaderExRate) {
     this.invoiceHeaderExchangeRate = 1;
+  } else {
+    // Start with 1, will be updated by onHeaderCurrencyChange()
+    this.invoiceHeaderExchangeRate = 1;
+    // Trigger currency change to fetch exchange rate
+    this.onHeaderCurrencyChange();
+  }
 
     console.log('Invoice header initialized:', {
       billingParty: this.billingPartyDetails,
       address: this.billingPartyAddress,
       currency: this.invoiceHeaderCurrency,
-      exchangeRate: this.invoiceHeaderExchangeRate
+      exchangeRate: this.invoiceHeaderExchangeRate,
+      disableHeaderExRate: this.disableHeaderExRate
     });
   }
 
@@ -2158,8 +2171,11 @@ createRateFormGroup(data?: any): FormGroup {
       // If selected currency is same as company currency, exchange rate is 1
       if (selectedCurrencyCode === companyHomeCurrency.code) {
         this.invoiceHeaderExchangeRate = 1;
+        this.disableHeaderExRate = true;
         this.calculateChargeSelectionTax();
       } else {
+        this.disableHeaderExRate = false;
+      }
         // Fetch exchange rate from CurrencyExchange table
         const payload = {
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2174,19 +2190,22 @@ createRateFormGroup(data?: any): FormGroup {
           next: (response: any) => {
             if (response?.status && response?.data) {
               this.invoiceHeaderExchangeRate = Number(response.data) || 1;
+              
             } else {
               console.warn('Exchange rate not found, defaulting to 1');
               this.invoiceHeaderExchangeRate = 1;
+             
             }
             this.calculateChargeSelectionTax();
           },
           error: (err) => {
             console.error('Error fetching exchange rate:', err);
             this.invoiceHeaderExchangeRate = 1;
+           
             this.calculateChargeSelectionTax();
           }
         });
-      }
+      
     }
   }
 
