@@ -179,6 +179,11 @@ export class QuotationEntryComponent implements OnInit {
   productLookupConfig = ['ProductCode','ProductName'];
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
+
+  // PDF caching properties for performance optimization
+  private cachedPdfBlob: Blob | null = null;
+  private cachedQuoteNumber: string | null = null;
+
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
@@ -1493,6 +1498,7 @@ isRateLockDisabled(): boolean {
           this.patchValues(resp.data)
           this.quotationData = resp.data;
           this.selectedItem = resp.data;
+          this.clearPdfCache(); // Clear cached PDF when new quotation is loaded
         } else {
           this.spinner.hide();
           this.appSettingService.showError("Error loading Quotation")
@@ -1660,6 +1666,7 @@ isRateLockDisabled(): boolean {
 
     // Approved Data for Quotation
     this.selectedItem = approvedData;
+    this.clearPdfCache(); // Clear cached PDF when quotation data changes
 
     console.log("Is it approved Quotation",this.quotationApproved);
     console.log("Only Approved Data",this.selectedItem);
@@ -3128,33 +3135,39 @@ ${this.userData.userName}`;
 
   async sendEmail() {
     try {
-      this.isLoading = true;
-      this.spinner.show();
-      const pdfBlob = await this.generatePDFBlob();
-
-      const formData = new FormData();
+      // Step 1: Validate email FIRST (before expensive PDF generation)
       const toEmailSet = new Set<string>();
 
       if (this.selectedItem?.Email) {
         toEmailSet.add(this.selectedItem.Email);
-        // toEmailSet.add('jdhineshjaisankar@gmail.com');
       }
 
       if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
-        // const resp: any = await firstValueFrom(
-        //   this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
-        // );
-        const customerEmail = this.customers.find(cus=> cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid)?.Email;
-        toEmailSet.add(customerEmail);
-
+        const customerEmail = this.customers.find(
+          cus => cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid
+        )?.Email;
+        if (customerEmail) {
+          toEmailSet.add(customerEmail);
+        }
       }
 
       if (toEmailSet.size === 0) {
-        this.appSettingService.showError('To Email is missing.')
-        this.isLoading = false;
-        this.spinner.hide();
-        return;
+        this.appSettingService.showError('To Email is missing.');
+        return; // Exit early - no email to send to
       }
+
+      // Step 2: Now show loader and generate PDF (only after validation passes)
+      this.isLoading = true;
+      this.spinner.show();
+
+      // Use cached PDF or generate new for better performance
+      const pdfBlob = await this.getOrGeneratePdfBlob();
+      if (!pdfBlob) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Step 3: Build FormData
+      const formData = new FormData();
 
       const toEmail = Array.from(toEmailSet);
       toEmail.forEach(email => {
@@ -3171,6 +3184,7 @@ ${this.userData.userName}`;
           formData.append("EmailCC[]", email);
         }
       });
+
       formData.append('Subject', `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`);
       formData.append('Mailbody', `
         <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
@@ -3179,7 +3193,7 @@ ${this.userData.userName}`;
           <p>Kindly review the details at your convenience.</p>
           <p>Looking forward to your feedback and the opportunity to work together.</p>
           <p>
-            Approval Hyperlink: 
+            Approval Hyperlink:
             <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
           </p>
           <p>Best Regards,</p>
@@ -3188,24 +3202,19 @@ ${this.userData.userName}`;
       `);
       formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
 
-      console.log(formData)
-      this.leadService.quotationReport(formData).subscribe((resp: any) => {
-        this.isLoading = false;
-        this.spinner.hide();
-        if (resp?.data) {
-          this.toastr.success('Report Email Sent successfully!');
-        }
-      }, error => {
-        this.isLoading = false;
-        this.spinner.hide();
-        this.toastr.error('Failed to send email.');
-      });
+      // Step 4: Use firstValueFrom for cleaner async handling
+      const response = await firstValueFrom(this.leadService.quotationReport(formData));
+
+      if (response?.data) {
+        this.toastr.success('Report Email Sent successfully!');
+      }
 
     } catch (err) {
+      console.error('Email send error:', err);
+      this.toastr.error('Failed to send email. Please try again.');
+    } finally {
       this.isLoading = false;
       this.spinner.hide();
-      console.error('PDF generation error:', err);
-      this.toastr.error('Error generating PDF.');
     }
   }
 
@@ -3213,64 +3222,106 @@ ${this.userData.userName}`;
 
 
   async downloadPDF() {
-      this.showPrintLogo = false;
-  this.showPdfLogo = true;
-  this.spinner.show();4
-   setTimeout(async () => {
-  try {
-    const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
-    
-    await this.pdfService.downloadBalancedPDF(
-      'printContent',
-      `Quotation_${quotationNumber}`,
-      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-    );
-  } finally {
-    this.spinner.hide();
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
+    this.spinner.show();
+
+    // Use requestAnimationFrame for DOM readiness instead of setTimeout
+    requestAnimationFrame(async () => {
+      try {
+        const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
+
+        // Use compressed PDF for faster download (scale: 1.5, quality: 0.6)
+        await this.pdfService.downloadCompressedPDF(
+          'printContent',
+          `Quotation_${quotationNumber}`,
+          () => {
+            this.spinner.hide(); // Hide AFTER success
+            this.appSettingService.showSuccess('PDF downloaded successfully!');
+          },
+          (error) => {
+            this.spinner.hide(); // Hide on error too
+            this.appSettingService.showError('Error generating PDF. Please try again.');
+          }
+        );
+      } catch (error) {
+        this.spinner.hide();
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+      }
+    });
   }
-  }, 50);
-}
   
-        async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
-        }
+  async generatePDFBlob(): Promise<Blob | null> {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
+    }
+
+    try {
+      // Use compressed settings for faster generation (scale: 1.5 instead of 2)
+      const canvas = await html2canvas(printContent, {
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      // Use JPEG with 0.6 quality for smaller file size and faster processing
+      const imgData = canvas.toDataURL('image/jpeg', 0.6);
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('blob');
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get cached PDF blob or generate a new one
+   * Improves performance when using both download and email features
+   */
+  private async getOrGeneratePdfBlob(): Promise<Blob | null> {
+    const currentQuoteNumber = this.quotationForm.get('QuoteNumber')?.value;
+
+    // Return cached if same quote
+    if (this.cachedPdfBlob && this.cachedQuoteNumber === currentQuoteNumber) {
+      return this.cachedPdfBlob;
+    }
+
+    // Generate new PDF blob
+    const blob = await this.generatePDFBlob();
+    if (blob) {
+      this.cachedPdfBlob = blob;
+      this.cachedQuoteNumber = currentQuoteNumber;
+    }
+    return blob;
+  }
+
+  /**
+   * Clear PDF cache when quotation data changes
+   */
+  clearPdfCache(): void {
+    this.cachedPdfBlob = null;
+    this.cachedQuoteNumber = null;
+  }
+
   getChargeUOMCodeById(UOMMasterSid) {
     if(!UOMMasterSid || this.chargeUnitMaster.length === 0){
       return '';
