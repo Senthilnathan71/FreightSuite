@@ -319,143 +319,176 @@
       'color': '#000',
       'page-break-after': 'always'
     }">
-      <h4 style="margin: 0;  padding-bottom: 8px;padding-left: 3px;margin-top: 2px;"><strong>Master Bill of Lading - {{ masterJobData?.BLReleaseType }}</strong></h4>
+      <h4 style="margin: 0;  padding-bottom: 2px;padding-left: 3px;"><strong>Master Bill of Lading - {{
+          masterJobData?.BLReleaseType }}</strong></h4>
 
       <!-- ROW 1 -->
-      <div style="display: flex;  margin-bottom: 0; font-size: 16px;">
-        <div
-          style="flex: 0 0 50%; max-width: 50%; border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0;">
-          <div style="display:flex; margin-bottom:5px; flex-direction: column;">
-            <div style="width:150px; padding-left: 3px;"><strong>Shipper</strong></div>
-           
-            <span style="min-height:70x; flex:1; padding-left: 30px;">
-              {{masterJobData?.allShipments?.[0]?.ShipperName}} <br>
-              {{masterJobData?.allShipments?.[0]?.ShipperAddress}}
+      <div style="display:flex; font-size:16px; align-items:stretch;">
+
+        <!-- LEFT -->
+        <div style="
+    flex:0 0 50%;
+    max-width:50%;
+    border-top:1px solid black;
+    border-bottom:1px solid black;
+    padding:0;
+    box-sizing:border-box;
+  ">
+          <div style="display:flex; flex-direction:column;">
+            <div style="width:150px; padding-left:3px;">
+              <strong>Shipper</strong>
+            </div>
+
+            <span style="min-height:70px; padding-left:30px;">
+              {{ masterJobData?.allShipments?.[0]?.ShipperName }} <br>
+              {{ masterJobData?.allShipments?.[0]?.ShipperAddress }}
             </span>
           </div>
         </div>
 
-        <div
-          style="flex: 0 0 50%; max-width: 50%; border-top:1px solid black; border-bottom:1px solid black; padding:0;">
-          <div style="display:flex; margin-bottom:5px; padding:0 8px; border-bottom:1px solid black;">
+        <!-- RIGHT -->
+        <div style="
+    flex:0 0 50%;
+    max-width:50%;
+    border-top:1px solid black;
+    border-bottom:1px solid black;
+    border-left:1px solid black;
+    padding:0;
+    box-sizing:border-box;
+  ">
+          <div style="display:flex; padding:0 8px; border-bottom:1px solid black;">
             <div style="width:150px;"><strong>MBL No.</strong></div>
-            <span style="flex:1;">: {{masterJobData.MBLNo}}</span>
+            <span style="flex:1;">: {{ masterJobData.MBLNo }}</span>
           </div>
 
-          <div style="display:flex; padding:0 8px; flex-direction: column;">
-            <div style="width:180px;"><strong>Delivery Agent  &amp;  Ref.</strong></div>
-            <span style="min-height:70px; flex:1; padding-left: 30px;"> {{ getAgentName(masterJobData?.DestinationAgent) }} <br>
-              {{masterJobData.DestinationAgentAddress}}
+          <div style="display:flex; padding:0 8px; flex-direction:column;">
+            <div style="width:180px;">
+              <strong>Delivery Agent &amp; Ref.</strong>
+            </div>
+            <span style="min-height:70px; padding-left:30px;">
+              {{ getAgentName(masterJobData?.DestinationAgent) }} <br>
+              {{ masterJobData.DestinationAgentAddress }}
             </span>
           </div>
         </div>
       </div>
 
       <!-- ROW 2 -->
-      <div style="display:flex;  font-size: 16px;">
-        <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;">
-          <div style="display:flex; border-bottom:1px solid black; border-right:1px solid black; padding:5px; flex-direction: column;">
-            <strong style="width:150px;padding-left: 3px;"><strong>Consignee</strong></strong>
-          
-            <span style="min-height:70px; flex:1;padding-left: 30px;">
+      <div style="display:flex; font-size:16px; align-items:stretch;">
+
+        <!-- LEFT -->
+        <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column; box-sizing:border-box;">
+
+          <div style="border-bottom:1px solid black; padding:5px;display: flex; flex-direction:column;">
+            <strong style="padding-left:3px;">Consignee</strong>
+            <span style="min-height:70px; padding-left:30px;">
               {{ masterJobData?.allShipments?.[0]?.ConsigneeName }} <br>
               {{ masterJobData?.allShipments?.[0]?.ConsigneeAddress }}
             </span>
           </div>
 
-          <div style="display:flex; border-bottom:1px solid black; border-right:1px solid black; padding:5px;flex-direction: column;">
-            <strong style="width:150px;padding-left: 3px;"><strong>Notify Party</strong></strong>
-
-            <span style="min-height:70px; flex:1;padding-left: 30px;">
-              {{masterJobData?.houseJob?.[0]?.Notify}} <br>
-              {{masterJobData?.houseJob?.[0]?.NotifyAddress}}
+          <div style="border-bottom:1px solid black; padding:5px; display: flex; flex-direction:column;">
+            <strong style="padding-left:3px;">Notify Party</strong>
+            <span style="min-height:70px; padding-left:30px;">
+              {{ masterJobData?.houseJob?.[0]?.Notify }} <br>
+              {{ masterJobData?.houseJob?.[0]?.NotifyAddress }}
             </span>
           </div>
         </div>
 
-         <div
-          style="width: 50%; border-bottom: 1px solid black; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <!-- RIGHT -->
+        <div style="
+    width:50%;
+    border-left:1px solid black;
+    border-bottom:1px solid black;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+  ">
           <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
-            alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-          <!-- Pdf logo -->
-          <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-            style="width:50px; height:50px; object-fit:contain;">
-          <div style="text-align: center;">
-            <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
-            </h3>
-            <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
-            </h5>
-            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-              currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
-              }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-              currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+            style="width:50px; height:50px; object-fit:contain; margin-bottom:6px;">
+
+          <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg"
+            style="width:50px; height:50px; object-fit:contain; margin-bottom:6px;">
+
+          <div style="text-align:center;">
+            <h3 style="margin:0; font-weight:800;">{{ currentCompany?.companyName }}</h3>
+            <h5 style="margin:0; font-weight:800;">{{ currentBranch?.branchName }}</h5>
+            <p style="margin:2px 0;">{{ currentBranch?.addressLine1 }}</p>
+            <p style="margin:2px 0;">
+              {{ currentBranch?.addressLine2 }},
+              {{ currentBranch?.cityMaster?.cityName }}
+              {{ currentBranch?.postalCode }},
+              {{ currentBranch?.phoneNumber }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- ROW 3 -->
-      <div style="display:flex;  font-size: 16px;">
-        <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;border-left: none;">
+      <div style="display:flex; font-size:16px;">
+        <div style="width:25%; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>Place of Receipt</strong><br>{{ masterJobData?.POO }}
         </div>
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>Port of Loading</strong><br>{{ masterJobData?.POL }}
         </div>
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>Job No.</strong><br>{{ masterJobData?.MasterJobNumber }}
         </div>
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black;border-top: none; text-align:center; padding:5px;border-right: none;">
-          <strong>Job Ref</strong> <br> {{ masterJobData?.houseJob?.Others?.[0]?.CustomerRefNo }}
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
+          <strong>Job Ref</strong><br>{{ masterJobData?.houseJob?.Others?.[0]?.CustomerRefNo }}
         </div>
       </div>
 
       <!-- ROW 4 -->
-      <div style="display:flex; font-size: 16px;">
-        <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px; border-left: none;">
+      <div style="display:flex; font-size:16px;">
+        <div style="width:25%; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>Vessel / Voyage No.</strong><br>
-          {{ masterJobData?.voyages?.[0]?.VesselName }} / {{ masterJobData?.voyages?.[0]?.VoyageNo }}
+          {{ masterJobData?.voyages?.[0]?.VesselName }} /
+          {{ masterJobData?.voyages?.[0]?.VoyageNo }}
         </div>
-
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>Port of Discharge</strong><br>{{ masterJobData?.POD }}
         </div>
-
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-right:none;border-top: none; text-align:center; padding:5px;">
-          <strong>Place of Delivery</strong><br> {{ masterJobData?.houseJob?.Others?.[0]?.DeliveryPlace }}
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
+          <strong>Place of Delivery</strong><br>{{ masterJobData?.houseJob?.Others?.[0]?.DeliveryPlace }}
         </div>
-
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; text-align:center;border-top: none; padding:5px;border-right: none;">
+          style="width:25%; border-left:1px solid black; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong>No. of Bill of Lading</strong><br>{{ masterJobData?.NoofOriginal }}
         </div>
       </div>
 
+
       <!-- TABLE -->
-      <div style="overflow-x:auto; margin: 0 10px;font-size: 16px;">
-        <table style="width:100%; border-collapse:collapse; border:1px solid black; margin:10px 0; font-size:16px;">
+      <div style="overflow-x:auto; font-size: 16px;">
+        <table style="width:100%; border-collapse:collapse;  margin:10px 0; font-size:16px;">
           <thead style="font-weight:700;">
             <tr>
-              <th style="border:1px solid black; padding:2px 8px;"><strong>Container No. / Seal No. / Marks &
+              <th style="border:1px solid black; padding:2px 8px;border-left: none;"><strong>Container No. / Seal No. /
+                  Marks &
                   No.</strong></th>
               <th style="border:1px solid black; padding:2px 8px;"><strong>No. of Pkg / Description / Shipping
                   Unit</strong></th>
               <th style="border:1px solid black; padding:2px 8px; text-align: center;"><strong>Gross Weight</strong>
               </th>
-              <th style="border:1px solid black; padding:2px 8px; text-align: center;"><strong>Volume</strong></th>
+              <th style="border:1px solid black; padding:2px 8px; text-align: center;border-right: none;">
+                <strong>Volume</strong></th>
             </tr>
           </thead>
 
           <tbody>
             <tr *ngFor="let container of masterJobData?.containers">
-              <td style="border:1px solid black; padding:2px 8px;">
+              <td style="border:1px solid black; padding:2px 8px; border-left: none;">
                 {{container?.ContainerNumber}} / {{ container?.LineSeal }}
               </td>
 
@@ -469,7 +502,7 @@
                 {{ container?.GrossWeight | number:'1.3-3' }}
               </td>
 
-              <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+              <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">
                 {{ container?.Volume | number:'1.3-3' }}
               </td>
             </tr>
@@ -477,12 +510,14 @@
 
           <tfoot>
             <tr>
-              <td colspan="2" style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;">TOTAL
+              <td colspan="2"
+                style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:right;border-left: none;">
+                TOTAL
               </td>
               <td style="border:1px solid black; padding:2px 8px; text-align:right;font-weight:700;">
                 {{ totalGrossWeight() | number:'1.3-3' }}
               </td>
-              <td style="border:1px solid black; padding:2px 8px; text-align:right;font-weight:700;">
+              <td style="border:1px solid black; padding:2px 8px; text-align:right;font-weight:700;border-right: none;">
                 {{ totalVolume() | number:'1.3-3' }}
               </td>
             </tr>

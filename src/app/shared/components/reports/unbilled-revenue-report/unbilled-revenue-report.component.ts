@@ -33,7 +33,7 @@ export class UnbilledRevenueReportComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.orientation = this.reportRegistryService.getReportConfig('ageing-report').pdfOrientation;
+    this.orientation = this.reportRegistryService.getReportConfig('unbilled-revenue-report').pdfOrientation;
   }
 
   get fullData(): any {

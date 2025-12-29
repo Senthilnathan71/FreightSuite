@@ -33,7 +33,7 @@ export class ShipmentSummaryDetailsComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.orientation = this.reportRegistryService.getReportConfig('ageing-report').pdfOrientation;
+    this.orientation = this.reportRegistryService.getReportConfig('shipment-summary-details').pdfOrientation;
   }
 
   get fullData(): any {

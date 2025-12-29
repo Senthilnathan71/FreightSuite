@@ -63,10 +63,11 @@
         <div style="flex:0 0 50%; max-width:50%; padding-right:10px; box-sizing:border-box;">
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>MBL No.</strong></div><div>: {{ masterJobData?.MasterJobNumber }}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>ETA</strong></div><div>: {{masterJobData?.voyages?.[0]?.ETA | formatDate }}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Container</strong></div><div>: {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Container</strong></div><div>: {{ masterJobData?.containers?.[0]?.ContainerNumber }}</div></div>
+            <!-- {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }} -->
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Shipment No</strong></div><div>: {{masterJobData?.allShipments?.[0]?.ShipmentNo }}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Place of Receipt</strong></div><div>:{{housejobData?.Others?.[0]?.PickupPlace}} </div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port Of Loading</strong></div><div>: {{masterJobData.POL}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Place of Receipt</strong></div><div>:{{masterJobData.POO}} </div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port of Loading</strong></div><div>: {{masterJobData.POL}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Final Destination</strong></div><div>: {{masterJobData.FPD}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Carrier</strong></div><div>: {{masterJobData?.voyages?.[0]?.CarrierName}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>PP/CC</strong></div><div>: {{ masterJobData?.houseJob?.[0]?.FreightTerms }}</div></div>
@@ -79,8 +80,8 @@
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Vessel</strong></div><div>: {{masterJobData?.voyages?.[0]?.VesselName}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Voyage</strong></div><div>: {{masterJobData?.voyages?.[0]?.VoyageNo}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Job No.</strong></div><div>: {{masterJobData.MasterJobNumber}}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port of Receipt</strong></div><div>: {{housejobData?.POR}}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port of Discharge</strong></div><div>: {{masterJobData.POD}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port of Receipt</strong></div><div>: {{housejobData?.POL}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Port of Discharge</strong></div><div>: {{masterJobData?.POD}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Place of Delivery</strong></div><div>: {{housejobData?.Others?.[0]?.DeliveryPlace}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:200px; white-space:nowrap;"><strong>Movement Type</strong></div><div>: {{ masterJobData?.houseJob?.[0]?.Cargo?.[0]?.MovementType }}</div></div>
         </div>
@@ -88,12 +89,18 @@
 
     <div style="margin:10px 0;">
         <p style="font-size:18px; margin:0;">Dear Sir,</p>
-        <p style="margin:5px 0;">MBL No : {{ masterJobData?.MasterJobNumber }}</p>
-    </div>
+        <p style="margin:5px 0;"> <strong>MBL No :</strong> {{ masterJobData?.MasterJobNumber }} Dear Sir, We are pleased to advice you the
+            dispatch of your shipment as undone.
+           <strong>MBL No :</strong>  {{ masterJobData?.MasterJobNumber }} , <strong>HBL No :</strong>  {{ masterJobData?.houseJob?.[0]?.HBLNo }} , <strong>Container No :</strong> {{ masterJobData?.containers?.[0]?.ContainerNumber }}
+            Sailed onboard on {{masterJobData?.voyages?.[0]?.ETA | formatDate }} <strong>Voyage No :</strong>
+            {{masterJobData?.voyages?.[0]?.VoyageNo}} expected to arrive in
+            {{masterJobData?.voyages?.[0]?.ETD | formatDate }} our invoice no amount would be obliged with your early payment.
+        </p>
+        </div>
 
     <!-- Footer -->
-    <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px; ">
-        <div style="display:flex; justify-content:space-between; font-size:12px;">
+    <footer style="margin-top:auto; text-align:center; padding:10px; ">
+        <div style="display:flex; justify-content:space-between;">
             <div>Printed By: {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div>Printed On: {{ currentDate | formatDate }}</div>

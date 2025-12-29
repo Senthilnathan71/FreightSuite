@@ -904,9 +904,12 @@
             <th style="border:1px solid black; padding:2px 8px;">VAT Amt</th>
           </ng-container>
 
-          <th style="border:1px solid black; padding:2px 8px;font-weight: 800;">
+                          <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{ creditNoteData?.CurrencyCode }}</strong></th>
+
+          <!-- <th style="border:1px solid black; padding:2px 8px;font-weight: 800;">
             Total 
-          </th>
+          </th> -->
         </tr>
       </thead>
 
@@ -948,13 +951,16 @@
             <td style="border:1px solid black; padding:2px 8px;">{{ detail.get('TaxAmount1')?.value }}</td>
           </ng-container>
 
+           <td style="border:1px solid black; padding:2px 8px;">
+            {{ detail.get('PartyAmount')?.value }}
+          </td>
           <td style="border:1px solid black; padding:2px 8px;">
             {{ getRowTotal(detail) | number:'1.2-2' }}
           </td>
         </tr>
 
         <tr>
-          <td [attr.colspan]="isIndiaGST ? 13 : 9"
+          <td [attr.colspan]="isIndiaGST ? 13 : 10"
               style="border:1px solid black; padding:2px 8px; text-align:right; font-weight:600;">
             Total
           </td>

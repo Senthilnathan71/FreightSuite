@@ -619,14 +619,14 @@
                                 </div>
 
                                 <div style=" text-align:center; margin-top: 5x; margin-bottom: 8px;">
-                                    <h4 style="margin:2px; padding:0; font-weight:600;">{{ currentCompany?.companyName
+                                    <h4 style="margin:2px; padding:0; font-weight:800;">{{ currentCompany?.companyName
                                         ||
                                         'Company Name' }}</h4>
-                                    <h5 style="margin:2px; padding:0; font-weight:600;">{{ currentBranch?.branchName ||
+                                    <h5 style="margin:2px; padding:0; font-weight:800;">{{ currentBranch?.branchName ||
                                         'Company Branch' }}</h5>
                                     <p style="margin:2px 0; font-size:14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                    <p style="margin:2px 0; ">{{ currentBranch?.addressLine2 || '' }} , {{
-                                        currentBranchCityName ||
+                                    <p style="margin:2px 0; ">{{ currentBranch?.addressLine2 || '' }}  {{
+                                        
                                         currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode ||
                                         currentBranch?.ZipCode || '' }} - {{ currentBranch?.phoneNumber ||
                                         currentBranch?.Phone || '' }}</p>

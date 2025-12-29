@@ -1,157 +1,166 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+  <h5 class="modal-title text-white mb-0">Indemnity</h5>
+  <div class="d-flex gap-2 align-items-center">
 
-  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Indemnity</h5>
-    <div class="d-flex gap-2 align-items-center">
-
-      <div class="spinner-overlay">
-        <div class="spinner"></div>
-      </div>
-       <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
-            <i class="fas fa-print me-1"></i> Print
-        </button>
-      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
-        <i class="fas fa-download me-1"></i> Download PDF
-      </button>
-      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
-        <i class="fas fa-envelope me-1"></i>Send Email
-      </button>
-
-      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
-
+    <div class="spinner-overlay">
+      <div class="spinner"></div>
     </div>
+    <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+      <i class="fas fa-print me-1"></i> Print
+    </button>
+    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+      <i class="fas fa-download me-1"></i> Download PDF
+    </button>
+    <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+      <i class="fas fa-envelope me-1"></i>Send Email
+    </button>
+
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
   </div>
-
-
-  <div class="modal-body">
-    <div id="printContent" class="p-2 pt-1">
-      
- <div *ngFor="let containerNo of containerList; let i = index" style="width:280mm; margin:20px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column; min-height:400mm;">
-
-  <!-- Company Info -->
-  <div style="display: flex; flex-direction: column; margin-bottom: 0; width: 100%; padding-top: 15px; padding-left: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-      <div style="display: flex; align-items: center; flex-direction: column;">
-        <!-- Print logo -->
-        <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
-             alt="Company Logo"
-             style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-        <!-- Pdf logo -->
-        <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-             style="width:50px; height:50px; object-fit:contain;">
-        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-      </div>
-      <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
-        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Title -->
-  <h4 style="text-align: center; font-weight: bold; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;">
-    Letter of Indemnity
-  </h4>
-
-  <!-- Greeting -->
-  <div style="margin-bottom: 10px;">
-    <h5 style="font-weight: 600; margin: 0 0 10px 0;">Dear Sir,</h5>
-
-    <!-- Vessel Details -->
-    <div style="border: 1px solid black; padding: 10px; font-size: 16px; margin-bottom: 15px;">
-      <div style="display: flex; gap: 40px;">
-        <!-- Left Column -->
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-          <div style="display: flex;">
-            <strong style="width: 150px;">Vessel Name</strong>: {{ housejobData?.VesselName }}
-          </div>
-          <div style="display: flex;">
-            <strong style="width: 150px;">ETA</strong>: {{ housejobData?.ETA | formatDate }}
-          </div>
-          <div style="display: flex;">
-            <strong style="width: 150px;">Container No.</strong>: {{ containerNo }}
-          </div>
-        </div>
-        <!-- Right Column -->
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-          <div style="display: flex;">
-            <strong style="width: 150px;">Voyage No.</strong>: {{ housejobData?.VoyageNo }}
-          </div>
-          <div style="display: flex;">
-            <strong style="width: 150px;">Date</strong>: {{ housejobData?.HBLDate | formatDate }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Intro Paragraph -->
-  <p style="margin-bottom: 10px; font-size: 16px;">
-    We should advise that according to the bill of lading, the details of the following consignment are as follows:
-  </p>
-
-  <!-- FIRST TABLE -->
-  <div style="overflow-x:auto; margin-bottom: 15px;">
-    <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;">
-      <thead>
-        <tr>
-          <th style="border: 1px solid black; padding: 5px;"><strong>HBL No.</strong></th>
-          <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
-          <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p style="margin-bottom: 10px; font-size: 14px;">
-    However, we have found that the cargo outturned with the following details:
-  </p>
-
-  <!-- SECOND TABLE -->
-  <div style="overflow-x:auto; margin-bottom: 15px;">
-    <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;">
-      <thead>
-        <tr>
-          <th style="border: 1px solid black; padding: 5px;"><strong>BL No.</strong></th>
-          <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
-          <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
-          <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Body Paragraph -->
-  <div style="flex: 1; margin-bottom: 20px;">
-    <p style="font-size: 16px; margin-top: 20px;">
-      We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor & client and any sums demanded by you for the defense of any proceeding brought against you by reason of the delivery aforesaid...
-    </p>
-  </div>
-
-  <!-- Footer -->
-  <footer style="text-align:center; font-size:10pt; padding:10px; border-top: 1px solid black; margin-top: auto;">
-    <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
-      <div>Printed By: {{ userData.userName }}</div>
-      <span>This document is computer-generated and does not require a signature.</span>
-      <div>Printed On: {{ currentDate | formatDate }}</div>
-    </div>
-  </footer>
-
 </div>
 
+
+<div class="modal-body">
+  <div id="printContent" class="p-2 pt-1">
+
+    <div *ngFor="let containerNo of containerList; let i = index"
+      style="width:280mm; margin:20px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column; min-height:401mm;">
+
+      <!-- Company Info -->
+      <div
+        style="display: flex; flex-direction: column; margin-bottom: 0; width: 100%; padding-top: 15px; padding-left: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; flex-direction: column;">
+            <!-- Print logo -->
+            <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+              alt="Company Logo" style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
+            <!-- Pdf logo -->
+            <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+              style="width:50px; height:50px; object-fit:contain;">
+            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+          </div>
+          <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+            <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+              currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }} {{ currentBranch?.postalCode ||
+              currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h4
+        style="text-align: center; font-weight: bold; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;">
+        Letter of Indemnity
+      </h4>
+
+      <!-- Greeting -->
+      <div style="margin-bottom: 10px;">
+        <h5 style="font-weight: 600; margin: 0 0 10px 0;">Dear Sir,</h5>
+
+        <!-- Vessel Details -->
+        <div style="border: 1px solid black; padding: 10px; font-size: 16px; margin-bottom: 15px;">
+          <div style="display: flex; gap: 40px;">
+            <!-- Left Column -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex;">
+                <strong style="width: 150px;">Vessel Name</strong>: {{ housejobData?.VesselName }}
+              </div>
+              <div style="display: flex;">
+                <strong style="width: 150px;">ETA</strong>: {{ housejobData?.ETA | formatDate }}
+              </div>
+              <div style="display: flex;">
+                <strong style="width: 150px;">Container No.</strong>: {{ containerNo }}
+              </div>
+            </div>
+            <!-- Right Column -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex;">
+                <strong style="width: 150px;">Voyage No.</strong>: {{ housejobData?.VoyageNo }}
+              </div>
+              <div style="display: flex;">
+                <strong style="width: 150px;">Date</strong>: {{ housejobData?.HBLDate | formatDate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intro Paragraph -->
+      <p style="margin-bottom: 10px; font-size: 16px;">
+        We should advise that according to the bill of lading, the details of the following consignment are as follows:
+      </p>
+
+      <!-- FIRST TABLE -->
+      <div style="overflow-x:auto; margin-bottom: 15px;">
+        <table
+          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid black; padding: 5px;"><strong>HBL No.</strong></th>
+              <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
+              <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-bottom: 10px; font-size: 14px;">
+        However, we have found that the cargo outturned with the following details:
+      </p>
+
+      <!-- SECOND TABLE -->
+      <div style="overflow-x:auto; margin-bottom: 15px;">
+        <table
+          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid black; padding: 5px;"><strong>BL No.</strong></th>
+              <th style="border: 1px solid black; padding: 5px;"><strong>Marks and Numbers</strong></th>
+              <th style="border: 1px solid black; padding: 5px;"><strong>Goods Description</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.HBLNo}}</td>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+              <td style="border: 1px solid black; padding: 5px;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Body Paragraph -->
+      <div style="flex: 1; margin-bottom: 20px;">
+        <p style="font-size: 16px; margin-top: 20px;">
+          We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
+          whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
+          payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor
+          & client and any sums demanded by you for the defense of any proceeding brought against you by reason of the
+          delivery aforesaid...
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <footer style="text-align:center; font-size:10pt; padding:10px; border-top: 1px solid black; margin-top: auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
+          <div>Printed By: {{ userData.userName }}</div>
+          <span>This document is computer-generated and does not require a signature.</span>
+          <div>Printed On: {{ currentDate | formatDate }}</div>
+        </div>
+      </footer>
+
     </div>
+
   </div>
+</div>

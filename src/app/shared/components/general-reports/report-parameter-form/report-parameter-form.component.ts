@@ -179,27 +179,97 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   /**
    * Handle parent dropdown value change
    */
-  private onParentValueChange(parentName: string, parentValue: any, childrenNames: string[]): void {
+  private onParentValueChange(
+    parentName: string,
+    parentValue: any,
+    childrenNames: string[]
+  ): void {
+
     childrenNames.forEach(childName => {
       const childControl = this.parameterForm.get(childName);
       const childParam = this.parameters.find(p => p.ParameterName === childName);
 
       if (!childControl || !childParam) return;
 
-      // Clear child value
-      childControl.setValue(null);
-      this.dropdownData.set(childName, []);
+      // 🔹 DATE dependency logic
+      if (childParam.ParameterFieldType === this.FIELD_TYPES.DATE) {
+        this.handleDateDependency(parentName, parentValue, childParam);
+        return;
+      }
 
-      if (parentValue === null || parentValue === undefined || parentValue === '') {
-        // Parent cleared - disable child
-        this.disabledDropdowns.set(childName, true);
-      } else {
-        // Parent has value - enable and reload child dropdown
-        this.disabledDropdowns.set(childName, false);
-        this.loadDynamicDropdownWithContext(childParam, parentName, parentValue);
+      // 🔹 Existing DROPDOWN logic
+      if (
+        childParam.ParameterFieldType === this.FIELD_TYPES.DROPDOWN ||
+        childParam.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M
+      ) {
+        childControl.setValue(null);
+        this.dropdownData.set(childName, []);
+
+        if (!parentValue) {
+          this.disabledDropdowns.set(childName, true);
+        } else {
+          this.disabledDropdowns.set(childName, false);
+          this.loadDynamicDropdownWithContext(childParam, parentName, parentValue);
+        }
       }
     });
   }
+
+
+  private handleDateDependency(
+    parentName: string,
+    parentValue: Date | null,
+    childParam: ReportParameter
+  ): void {
+
+    const childName = childParam.ParameterName;
+    const childControl = this.parameterForm.get(childName);
+    if (!childControl) return;
+
+    // Clear existing minDate
+    this.minDates.delete(childName);
+    this.maxDates.delete(childName);
+
+    if (!parentValue) {
+      // Parent cleared → reset validation
+      this.reinitializeDateValidation(childParam);
+      childControl.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    // 🔥 Set minDate = parent date
+    this.minDates.set(childName, toNgbDateStruct(parentValue));
+
+    // 🔥 Clear child date if invalid
+    const childValue = childControl.value
+    if (childValue && new Date(childValue) < new Date(parentValue)) {
+      childControl.setValue(null);
+    }
+
+    // 🔥 Reinitialize validators
+    this.reinitializeDateValidation(childParam);
+  }
+
+  private reinitializeDateValidation(param: ReportParameter): void {
+    const control = this.parameterForm.get(param.ParameterName);
+    if (!control) return;
+
+    const rules = typeof param.ValidationRules === 'string'
+      ? JSON.parse(param.ValidationRules)
+      : param.ValidationRules;
+
+    const validators: ValidatorFn[] = [];
+
+    if (rules?.required) validators.push(Validators.required);
+
+    control.clearValidators();
+    control.setValidators(validators);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+
+
+
 
   /**
    * Load dynamic dropdown with parent context for cascading

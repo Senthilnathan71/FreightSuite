@@ -33,7 +33,7 @@ export class ProfitSummaryComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.orientation = this.reportRegistryService.getReportConfig('house-job-loss-report').pdfOrientation;
+    this.orientation = this.reportRegistryService.getReportConfig('profit-summary').pdfOrientation;
   }
 
   get fullData(): any {

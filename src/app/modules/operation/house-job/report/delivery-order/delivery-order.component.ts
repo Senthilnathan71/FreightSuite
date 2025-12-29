@@ -290,7 +290,7 @@ export class DeliveryOrderComponent {
                          this.getSubCurrencyNameFromCode(this.currentCurrencyCode);
 
   if (decimalPart === 0) {
-    return `${wholePartInWords} ${currencyName} Only`;
+    return `${wholePartInWords} ${currencyName}`;
   } else {
     const decimalInWords = this.numberToWords.convert(decimalPart);
     return `${wholePartInWords} ${currencyName} and ${decimalInWords} ${subCurrencyName} Only`;

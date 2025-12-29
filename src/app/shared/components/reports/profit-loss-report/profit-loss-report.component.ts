@@ -36,7 +36,7 @@ export class ProfitLossReportComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.orientation = this.reportRegistryService.getReportConfig('ageing-report').pdfOrientation;
+    this.orientation = this.reportRegistryService.getReportConfig('profit-loss').pdfOrientation;
 
     if (this.fullData?.profitLoss?.length) {
 

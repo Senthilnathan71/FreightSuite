@@ -1,5 +1,5 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
- <div style="text-align: center;">
+    <div style="text-align: center;">
         <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
         </h4>
         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -12,7 +12,7 @@
     </div>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Top N Customer Report 
+        Top N Customer Report
     </h4>
     <div style="margin-top: 1rem;">
 
@@ -38,9 +38,19 @@
                     <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
                     <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
-                 <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Top N </strong>
                     <p class="ms-1">: {{ params?.TopN }}</p>
+                </div>
+
+                <div class="d-flex align-items-center d-none">
+                    <strong style="margin-bottom: 4px;width: 130px;">Volume</strong>
+                    <p class="ms-1">: {{ params?.Volume }}</p>
+                </div>
+
+                <div class="d-flex align-items-center d-none">
+                    <strong style="margin-bottom: 4px;width: 130px;">GP </strong>
+                    <p class="ms-1">: {{ params?.Gp }}</p>
                 </div>
             </div>
         </div>
@@ -61,17 +71,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data"> 
-                                <!-- <td class="text-end">{{ item.MBLNo }}</td>
+                    <tr *ngFor="let item of fullData?.data">
+                        <!-- <td class="text-end">{{ item.MBLNo }}</td>
                                 <td class="text-end">{{ item?.HBLNo || '' }}</td> -->
-                                <td>{{ item.customerName }}</td>
-                                <td class="text-end">{{ item.GP | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.totalRevenue | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.Vol | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.Weight | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.netwt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.noOfShipment }}</td>
+                        <td>{{ item.customerName }}</td>
+                        <td class="text-end">{{ item.GP | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.totalRevenue | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.Vol | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.Weight | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.netwt | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.noOfShipment }}</td>
                     </tr>
                 </tbody>
             </table>

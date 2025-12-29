@@ -21,8 +21,9 @@ export class TrailBalanceComponent {
   salesmanList: any[];
   branchList: any[];
   groupedData: any[] = [];
-
+  showSubTotal: boolean = false;
   COAList: any[] = [];
+  
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
@@ -30,6 +31,10 @@ export class TrailBalanceComponent {
     private masterService: MasterService,
   ) {
     console.log('Outstanding Report Data:', this.data);
+  }
+
+    get params(): any {
+    return this.data?.parameters || {};
   }
 
   ngOnInit(): void {
@@ -41,6 +46,7 @@ export class TrailBalanceComponent {
     this.prepareGroupedData();
     this.loadBranchName()
     this.loadCOA(this.currentCompany?.CompanyMasterSid);
+    this.showSubTotal = this.params?.showSubtotals === true;
   }
 
 
@@ -92,6 +98,11 @@ export class TrailBalanceComponent {
     return group ? group.GroupName : '';
   }
 
+  getSubGroupName(id: number): string {
+    if (!id || !this.COAList?.length) return '';
+    const group = this.COAList.find(b => b.COAMasterSid === id);
+    return group ? group.SubGroupName : '';
+  }
 
 
   prepareGroupedData(): void {
@@ -142,9 +153,7 @@ export class TrailBalanceComponent {
     return this.data || {};
   }
 
-  get params(): any {
-    return this.data?.parameters || {};
-  }
+
 
 
   get bucketLabels(): any {
