@@ -416,20 +416,28 @@
 
 
     <div class="nav-pills-container mt-1">
-        <div class="nav-pills">
+        <div class="nav-pills w-100">
             <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
                 (click)="selectTab(tab.name)">
                 <div class="pill-icon">
                     <i [class]="tab.icon"></i>
                 </div>
-                <span class="pill-label">{{ tab.name }}</span>
+                <span class="pill-label"style="font-size: 14px;">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
-            <div class="text-end">
-                <span class="error-message fw-bold" *ngIf="matchingError">
-                    {{ matchingError }}
-                </span>
-            </div>
+            <div class="d-flex gap-2 w-100 justify-content-end">
+
+      <span class="badge bg-success">
+        Sum of Credits :
+        <b>{{ totalCredits | number:'1.2-2' }}</b>
+      </span>
+
+      <span class="badge bg-danger">
+        Sum of Debits :
+        <b>{{ totalDebits | number:'1.2-2' }}</b>
+      </span>
+
+    </div>
         </div>
     </div>
 
@@ -573,7 +581,7 @@
                     <thead>
                         <tr class="bg-info  text-center">
                             <th class="bg-transparent text-light"style="font-size: 14px;">Voucher No.</th>
-                            <th class="bg-transparent text-light"style="font-size: 14px;">Voucher Type</th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">Type</th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Voucher Date</th>
                             <th class="bg-transparent text-light"style="font-size: 14px;"> Dr/Cr</th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Curr.</th>
@@ -594,6 +602,7 @@
                             @if(!isPosted){
                             <th class="bg-warning text-light"style="font-size: 14px;">Balance</th>
                             }
+                            <th class="bg-transparent text-light" *ngIf="!isEditMode" style="font-size: 14px;">✓</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="voucherMatchings">
@@ -606,8 +615,8 @@
                             </td>
 
                             <!-- Voucher Type -->
-                            <td class="dofi-min-w-120">
-                                <input type="text" formControlName="voucherType" class="custom-input-field sm" />
+                            <td >
+                                <input type="text" formControlName="voucherType" class="custom-input-field sm" style="width: 50px;"/>
                             </td>
 
                             <!-- Voucher Date -->
@@ -719,6 +728,9 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)" />
                             </td>
                             }
+                            <td *ngIf="!isEditMode" class="text-center">
+                                <input type="checkbox" (change)="onTickMatch(i, $event)" />
+                            </td>
 
                         </tr>
 

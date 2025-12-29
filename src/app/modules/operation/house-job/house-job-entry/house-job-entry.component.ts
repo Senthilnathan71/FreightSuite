@@ -1005,7 +1005,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       HouseJobOthersSid: [null],
       CustomerRefNo: [''],
       YardCFS: [''],
-      ReleaseType: [null],
+      ReleaseType: ['Original'],
       DeclaredValueOfCarriage: [null],
       DeclaredValueOfCustoms:[null],
       HBLNo: [{value :'', disabled: true}],
@@ -1528,6 +1528,26 @@ private loadMasterJobDetails(masterJobSid: number): void {
   this.onCustomerChange(selectedCustomer);
   this.handleDestAgentChange(delivery);
   this.handleOriginAgentChange(origin);
+  let vesselName = response.VesselName;
+  let voyageNo = response.VoyageNo;
+  let eta = response.ETA;
+  let etd = response.ETD;
+  
+  // If vessel/voyage data is empty in house job, check master job
+  if ((!vesselName || !voyageNo) && response.masterJob?.voyages?.[0]) {
+    const masterVoyage = response.masterJob.voyages[0];
+    vesselName = vesselName || masterVoyage.VesselName;
+    voyageNo = voyageNo || masterVoyage.VoyageNo;
+    eta = eta || masterVoyage.ETA;
+    etd = etd || masterVoyage.ETD;
+    
+    console.log('Using vessel/voyage data from master job:', {
+      vesselName,
+      voyageNo,
+      eta,
+      etd
+    });
+  }
   
   this.houseJobForm.patchValue({
     MasterJobSid : response.MasterJobSid,
@@ -1559,12 +1579,12 @@ private loadMasterJobDetails(masterJobSid: number): void {
     HouseStatus: response.HouseStatus,
     HBLCount: response.HBLCount,
    
-    VesselName: response.VesselName,
+    VesselName: vesselName,
     VoyageMasterSid: response.VoyageMasterSid,
-    VoyageNo: response.VoyageNo,
+    VoyageNo: voyageNo,
     HBLDate: response.HBLDate ? new Date(response.HBLDate) : null,
-    ETA: response.ETA ? new Date(response.ETA) : null,
-    ETD: response.ETD ? new Date(response.ETD) : null,
+     ETA: eta ? new Date(eta) : null,
+    ETD: etd ? new Date(etd) : null,
     POO: response.POO,
     POL: response.POL,
     POD: response.POD,
@@ -3563,6 +3583,37 @@ ${this.userData['userName']}`;
       );
       return;
     } 
+    const hasReleaseType = this.housejobData?.Others?.some(
+      (Others: any) => Others.ReleaseType && Others.ReleaseType.trim() !== ''
+    );
+    
+    if (!hasReleaseType) {
+      this.appSettingService.showWarning(
+        'Release Type is required.'
+      );
+      return;
+    }
+    
+    const hasVesselName = this.housejobData?.VesselName && 
+                         this.housejobData.VesselName.trim() !== '';
+    
+    if (!hasVesselName) {
+      this.appSettingService.showWarning(
+        'Vessel Name is required.'
+      );
+      return;
+    } 
+    
+    
+    const hasVoyageNo = this.housejobData?.VoyageNo && 
+                       this.housejobData.VoyageNo.trim() !== '';
+    
+    if (!hasVoyageNo) {
+      this.appSettingService.showWarning(
+        'Voyage No is required.'
+      );
+      return;
+    }
   }
         this.selectedReport = type;
         const modalRef = this.modalService.open(HblComponent,{

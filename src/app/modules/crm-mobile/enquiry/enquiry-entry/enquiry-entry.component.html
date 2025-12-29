@@ -326,7 +326,7 @@
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
                         <ng-select  #enquiryTypeNg formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="id" placeholder="" appendTo="body">
+                            bindValue="name" placeholder="" appendTo="body">
                         </ng-select>
                         <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
