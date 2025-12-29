@@ -796,5 +796,7 @@ private fromNgbDateStructToIso(n: any): string | null {
   const dt = new Date(n.year, n.month - 1, n.day);
   return dt.toISOString();
 }
-
+navigateToCreateCharge() {
+    this.router.navigate(['master/charge/entry']);
+  }
 }

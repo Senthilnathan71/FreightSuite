@@ -427,4 +427,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+ navigateToCreateUom() {
+    this.router.navigate(['master/uom-master/view'])
+  }
 }

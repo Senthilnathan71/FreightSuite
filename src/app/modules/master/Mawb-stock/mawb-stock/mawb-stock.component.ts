@@ -464,4 +464,8 @@ export class MawbStockComponent implements OnInit{
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
+   navigateToCreateGeneration() {
+    this.router.navigate(['master/mawb-stock/entry'])
+  }
+
 }

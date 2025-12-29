@@ -3349,5 +3349,8 @@ private closeAllOpenControls(): void {
   }
 }
 
+ createNew() {
+    this.router.navigate(['crm/enquiry/entry'])
+  }
 
 }

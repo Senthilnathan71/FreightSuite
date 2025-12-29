@@ -404,5 +404,8 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+navigateToCreateVessel() {
+    this.route.navigate(['master/vessel/entry'])
+  }
 
 }

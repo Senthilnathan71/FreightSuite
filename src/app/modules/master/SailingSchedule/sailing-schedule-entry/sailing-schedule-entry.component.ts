@@ -707,5 +707,7 @@ private patchFormData(scheduleData: any) {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+  navigateToCreate() {
+    this.route.navigate(['/master/sailing-schedule/entry']);
+  }
 }

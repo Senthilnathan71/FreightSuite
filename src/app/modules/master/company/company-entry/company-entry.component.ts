@@ -1919,6 +1919,9 @@ getCompanyStateGSTCode(StateMasterSid:number): string {
     return '';
   }
 }
+ navigateToCreateDepartment() {
+    this.route.navigate(['master/company/entry'])
+  }
 
 
 }
@@ -1931,4 +1934,4 @@ interface FieldSelection {
 interface ConfigModalData {
 	title: string;
 	fields: FieldSelection[];
-}
+} 

@@ -568,4 +568,8 @@ ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  navigateToCreatePort(): void {
+    this.router.navigate(['master/port-master/view']);
+  }
 }
+

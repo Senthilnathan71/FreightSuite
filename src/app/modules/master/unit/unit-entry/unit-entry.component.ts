@@ -417,4 +417,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+ navigateToCreateUnit() {
+    this.router.navigate(['master/unit/entry']);
+  }
 }
