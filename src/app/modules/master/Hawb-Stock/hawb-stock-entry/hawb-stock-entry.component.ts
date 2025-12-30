@@ -488,4 +488,8 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+ navigateToCreateGeneration() {
+    this.router.navigate(['master/hawbstock/entry'])
+  }
+
 }
