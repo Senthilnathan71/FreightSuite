@@ -39,12 +39,12 @@
                     <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
 
-                <div class="d-flex align-items-center d-none">
+                <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
                     <p class="ms-1">: {{ params?.Customer }}</p>
                 </div>
 
-                <div class="d-flex align-items-center d-none">
+                <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Salesman </strong>
                     <p class="ms-1">: {{ params?.Salesman }}</p>
                 </div>
@@ -77,6 +77,15 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="pt-2"> 
+            Note : 
+            <ul>
+                <li>
+                    Shipper/Customer who has booking earlier but no booking has been given between From and To Booking Date.
+                </li>
+            </ul>
         </div>
     </div>
 </div>

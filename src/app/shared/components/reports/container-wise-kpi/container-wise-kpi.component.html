@@ -20,11 +20,11 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@
                     <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
                         <td>{{ item.bookingNo || '' }}</td>
                         <td>{{ item.freightRevenue || '' }}</td>
-                        <td> {{ params?.FromHBLDt| date:'MMMM' }}</td>
+                        <td> {{ params?.FromHblDt| date:'MMMM' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.MBL || '' }}</td>
                         <td>{{ item.HBL || '' }}</td>
@@ -90,8 +90,8 @@
                         <td class="text-center">{{ item.dgDelaration || '' }}</td>
                         <td>{{ item.containerNo || '' }}</td>
                         <td>{{ item.containerName || '' }}</td>
-                        <td class="text-end">{{ item.vol || '' }}</td>
-                        <td class="text-end">{{ item.weight || '' }}</td>
+                        <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.weight | number:'1.3-3' }}</td>
                         <td>{{ item.bookingDate | formatDate }}</td>
                         <!-- <td>{{ item.ETA | formatDate}}</td> -->
                         <td>{{ item.ETD | formatDate }}</td>

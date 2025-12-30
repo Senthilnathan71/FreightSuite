@@ -13,7 +13,7 @@
 
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-         Trail Balance Report
+        Trail Balance Report
     </h4>
 
 
@@ -37,16 +37,16 @@
             </div>
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">SubGroup Name </strong>
-                    <p class="ms-1">: {{ getSubGroupName(params?.SubGroupName) }}</p>
+                    <strong style="margin-bottom: 4px;width: 150px;">Group Name </strong>
+                    <p class="ms-1">: {{ params?.GroupName }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Group Name </strong>
-                    <p class="ms-1">: {{ getGroupName(params?.GroupName) }}</p>
+                    <strong style="margin-bottom: 4px;width: 150px;">SubGroup Name </strong>
+                    <p class="ms-1">: {{ params?.SubGroupName }}</p>
                 </div>
-                 <div class="d-flex align-items-center" >
+                <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
-                    <p class="ms-1">: {{ params?.SubTotal }}</p>
+                    <p class="ms-1">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
                 </div>
             </div>
         </div>
@@ -72,12 +72,16 @@
 
                     <tbody style="white-space: nowrap;">
 
+
+
+
                         <!-- SUBGROUP LOOP -->
                         <ng-container *ngFor="let group of groupedData">
 
                             <!-- LEDGER ROWS -->
                             <tr *ngFor="let item of group.items">
-                                <td>{{item.Category}}</td>
+
+                              <td>{{item.Category}}</td>
                                 <td>{{item.GroupName}}</td>
                                 <td>{{item.SubGroupName}}</td>
                                 <td>{{item.LedgerName}}</td>
@@ -88,6 +92,7 @@
                                 <td class="text-end">{{item.ClosingDebit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{item.ClosingCredit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{item.ClosingNet | number:'1.2-2'}}</td>
+
                             </tr>
 
                             <!-- SUBGROUP TOTAL -->
