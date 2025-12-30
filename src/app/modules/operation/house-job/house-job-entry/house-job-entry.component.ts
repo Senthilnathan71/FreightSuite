@@ -57,6 +57,7 @@ import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
+import { PackingListComponent } from '../report/packing-list/packing-list.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3717,6 +3718,22 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.salesmanList = this.salesmanList || [];
   }
+
+
+    reportPackingList() {
+      const modalRef = this.modalService.open(PackingListComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      // modalRef.componentInstance.masterJobData = this.masterJobData;
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+      // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+          modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.TandCList = this.TandCList || [];
+       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+   
+    }
 
 
       reportMilestoneSummary() {

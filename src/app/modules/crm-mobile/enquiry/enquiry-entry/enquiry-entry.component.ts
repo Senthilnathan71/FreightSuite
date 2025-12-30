@@ -1212,16 +1212,17 @@ ${this.userData.userName}`;
   }
 
    formatDate(date: any): string {
-    if (!date) return '-';
-    // Handle NgbDateStruct
-    if (date.year && date.month && date.day) {
-      return `${date.day.toString().padStart(2, '0')}/${date.month.toString().padStart(2, '0')}/${date.year}`;
-    }
-    // Handle Date object or string
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return '-';
-    return d.toLocaleDateString('en-GB'); // DD/MM/YYYY format
-  }
+  if (!date) return '';
+ 
+  const d = new Date(date);
+ 
+  // Use UTC values to avoid timezone shift
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const year = d.getUTCFullYear();
+ 
+  return `${day}-${month}-${year}`;
+}
 
 
   patchValues(response: any) {
