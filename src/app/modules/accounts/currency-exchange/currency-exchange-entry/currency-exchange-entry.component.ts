@@ -394,5 +394,7 @@ openFollowup() {
     this.commonService.clearDocumentData()
  }
 
-
+ nagivateback() {
+    this.router.navigate(['accounts/currency-exchange/entry']);
+  }
 }

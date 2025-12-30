@@ -770,4 +770,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  navigateTocreatetdsSet() {
+        this.router.navigate(['master/tds-set/entry'])
+    }
 }

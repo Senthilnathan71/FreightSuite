@@ -158,9 +158,17 @@ export class CompanyConfigComponent implements OnInit {
       // Load existing configurations for existing company
       this.masterService.getAllCompanyConfigsByCompanyId(this.companyId).subscribe({
         next: (response: any) => {
-          this.currentConfigs = response || [];
-          this.initializeConfigurations();
-          this.isLoading = false;
+          if(response.status){
+            this.currentConfigs = response?.data || [];
+            console.log("Response", this.currentConfigs);
+            console.log("Before loading",this.isLoading);
+            this.initializeConfigurations();
+            this.isLoading = false;
+            console.log("After loading",this.isLoading);
+          } else {
+            this.isLoading = false;
+            this.initializeConfigurations();
+          }
         },
         error: (error) => {
           console.error('Error loading configurations:', error);
@@ -183,7 +191,7 @@ export class CompanyConfigComponent implements OnInit {
 
     // Create form groups for each template
     this.configTemplates.forEach(template => {
-      const existingConfig = this.currentConfigs.find(config => 
+      const existingConfig = (this.currentConfigs || []).find(config => 
         config.ConfigurationName === template.name
       );
       

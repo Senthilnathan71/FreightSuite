@@ -4195,4 +4195,7 @@ printDiv(divId: string): void {
     }
   }, 50); 
 }
+ createNew() {
+    this.router.navigate(['crm/quotation/entry']);  }
+
 }

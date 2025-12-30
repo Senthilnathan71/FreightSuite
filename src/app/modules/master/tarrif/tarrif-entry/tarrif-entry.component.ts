@@ -1380,5 +1380,10 @@ public getFormattedAmount(amount: number, CurrencyMasterSid: number) {
   }
   return this.currencyFormatter.formatAmount(input, false);
 }
+
+  navigateToCreateTariff() {
+    this.route.navigate(['master/tarrif/entry']);
+  }
+
   
 }

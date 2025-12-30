@@ -303,7 +303,7 @@ createNewRecord(): void {
 }
 navigateToaddNewContainerType() {
     this.router.navigate(['master/container-type/entry']);
-  }
+  }   
 resetForm(): void {
    
     this.containertypeForm.get('status')?.disable();
@@ -613,6 +613,5 @@ openEDoc() {
 ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }
-
-
 }
+

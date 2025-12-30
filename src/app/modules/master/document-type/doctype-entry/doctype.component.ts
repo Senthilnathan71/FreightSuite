@@ -535,6 +535,8 @@ openEDoc() {
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }
-
+ navigateToCreateDocType() {
+    this.router.navigate(['master/doctype/entry'])
+  }
 
 }

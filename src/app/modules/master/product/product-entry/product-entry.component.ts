@@ -436,4 +436,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+navigateTocreateProduct() {
+        this.route.navigate(["master/product/entry"])
+    }
 }

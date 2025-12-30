@@ -479,5 +479,7 @@ openEDoc() {
     this.commonService.clearDocumentData()
  }
 
-
+navigateToCreateCurrency() {
+    this.router.navigate(['master/currency/entry']);
+  }
 }

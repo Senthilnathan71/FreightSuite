@@ -493,5 +493,7 @@ dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors |
   
   return diffDays === 364 ? null : { dateRangeInvalid: true };
 }
-
+nagivateTocreateYear() {
+    this.router.navigate(['master/year/entry'])
+  }
 }

@@ -800,7 +800,9 @@ openEDoc() {
     }
   });
 }
-
+ createNew() {
+    this.router.navigate(['crm/lead/entry'])
+  }
   openFollowup() {
     if (!this.leadData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });

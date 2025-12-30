@@ -550,5 +550,8 @@ openEDoc() {
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }
+ navigateToCreateDepartment() {
+    this.router.navigate(['master/department/entry'])
+  }
 
 }

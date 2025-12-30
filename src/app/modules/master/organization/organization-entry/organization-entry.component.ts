@@ -3735,5 +3735,7 @@ private loadNetworks(): void {
     }
   });
 }
-  
+  navigateToCreateOrganization() {
+    this.router.navigate(['master/organization/entry'])
+  }
 }

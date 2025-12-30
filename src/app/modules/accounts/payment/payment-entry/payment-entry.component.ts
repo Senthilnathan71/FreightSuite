@@ -83,6 +83,9 @@ export class PaymentEntryComponent implements OnInit {
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
+  totalDebits: number = 0;
+totalCredits: number = 0;
+
   currentUserCountry: string;
   selectedTab = 'Detail';
   isSaving = false;
@@ -301,7 +304,13 @@ export class PaymentEntryComponent implements OnInit {
       this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
         this.updateDetailNarration();
       })
-    })
+    });
+    ["detailItems", "voucherMatchings"].forEach(ctrl => {
+  this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
+    this.validateAmount();
+  });
+});
+
     this.setupBillMatchingValidation()
     this.paymentForm.setValidators(consistentExchangeRatesValidator());
     this.paymentForm.updateValueAndValidity();
@@ -1164,8 +1173,8 @@ ExchangeRate: [1, Validators.required],
 
     partyCtrl?.patchValue({
       Narration : cashOrBank === "Bank" ?
-      `Being Bank Transfer Recd. ${instrumentMode} ${instrumentNumber}` :
-      `Being Cash Transfer Recd.`
+      `Being Bank Transfer  ${instrumentMode} ${instrumentNumber}` :
+      `Being Cash Transfer .`
     })
 
     bankCtrl?.patchValue({
@@ -1204,6 +1213,7 @@ ExchangeRate: [1, Validators.required],
     } else {
       ledgerCtrl.disable();
       ledgerCtrl.clearValidators();
+      ledgerCtrl.updateValueAndValidity();
     }
     console.log("LEDGER CTRL STATE", ledgerCtrl.enabled)
   }
@@ -2188,6 +2198,70 @@ ExchangeRate: [1, Validators.required],
   openFollowup() {
     const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
   }
+  getCurrencySidFromCode(code: string) {
+  if (!code || !this.currencyList) return null;
+
+  return this.currencyList.find(c => 
+      c.currencyCode?.toUpperCase() === code.toUpperCase()
+  )?.CurrencyMasterSid || null;
+}
+validateAmount() {
+  let totalCredits = 0;
+  let totalDebits = 0;
+
+  (this.detailItems.getRawValue() || []).forEach(vd => {
+    if (vd.DrCr === 'C') {
+      totalCredits += Number(vd.Amount) || 0;
+    } else {
+      totalDebits += Number(vd.Amount) || 0;
+    }
+  });
+
+  this.totalCredits = totalCredits || 0;
+  this.totalDebits = totalDebits || 0;
+}
+
+
+
+onTickMatch(index: number, event: any) {
+  const checked = event.target.checked;
+  const row = this.voucherMatchings.at(index) as FormGroup;
+
+  if (!checked) {
+    row.patchValue({
+      matchCurr: null,
+      matchExRate: null,
+      matchCurrAmt: null,
+      matchLocalAmt: null
+    });
+    return;
+  }
+
+  const originalCurr = row.get('curr')?.value;      
+  const osCurrAmt = Number(row.get('osCurrAmt')?.value);
+  const osLocalAmt = Number(row.get('osLocalAmt')?.value);
+  const exRate = Number(row.get('exRate')?.value);
+
+  console.log('originalCurr:', originalCurr);
+
+  // FIXED HERE
+  const currencySid = this.getCurrencySidFromCode(originalCurr);
+
+  console.log("✔ FIXED currencySid:", currencySid);
+
+  row.patchValue({
+    matchCurr: currencySid,      
+    matchExRate: exRate,
+    matchCurrAmt: osCurrAmt,
+    matchLocalAmt: osLocalAmt
+  });
+  row.get('isTicked')?.setValue(checked);
+
+
+  console.log("✔ PATCHED ROW:", row.value);
+
+  // this.calculateLocalAmountForMatchRow(index);
+}
 
   
 }

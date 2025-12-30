@@ -251,14 +251,14 @@ export class CompanyEntryComponent implements OnInit {
     // For new company - pass the form data to create config temporarily
     const companyFormData = this.companyForm.value;
     this.route.navigate(['master/company/config-new'], {
-      state: {
-        companyName: companyFormData.companyName,
-        companyData: companyFormData, // Pass entire form data
-        isCreateMode: true,
-        // Store temporary reference to link later
-        tempCompanyId: `temp_${Date.now()}`
-      }
-    });
+  state: {
+    companyName: companyFormData.companyName,
+    companyData: companyFormData,
+    isCreateMode: true,
+    tempCompanyId: `temp_${Date.now()}`
+  }
+});
+
   }
 }
 	// FORM INITIALIZATION
@@ -976,32 +976,31 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 		}
 	}
 private linkTemporaryConfigurations(companyId: number) {
-  // Look for temporary configurations in localStorage
-  const tempConfigKeys = Object.keys(localStorage).filter(key => key.startsWith('temp_company_config_'));
-  
+  const tempConfigKeys = Object.keys(localStorage)
+    .filter(key => key.startsWith('temp_company_config_'));
+
   tempConfigKeys.forEach(key => {
-    const configData = JSON.parse(localStorage.getItem(key));
-    
-    // Check if this config belongs to the current company (by name or other identifier)
-    if (configData.companyName === this.companyForm.get('companyName')?.value) {
-      // Update the configurations with the actual company ID
+    const configData = JSON.parse(localStorage.getItem(key)!);
+
+    // ✅ Match by tempCompanyId
+    if (key === `temp_company_config_${configData.tempCompanyId}`) {
+
       const updatedConfigs = configData.configurations.map((config: any) => ({
         ...config,
         CompanyMasterSid: companyId
       }));
 
-      // Save the configurations with the actual company ID
       if (updatedConfigs.length === 1) {
         this.masterService.createCompanyConfig(updatedConfigs[0]).subscribe();
-      } else if (updatedConfigs.length > 1) {
+      } else {
         this.masterService.createBulkCompanyConfigs(updatedConfigs).subscribe();
       }
 
-      // Remove temporary config
       localStorage.removeItem(key);
     }
   });
 }
+
 	loadAllFields() {
 		forkJoin({
 			cities: this.masterService.getAllCity(),
@@ -1920,6 +1919,9 @@ getCompanyStateGSTCode(StateMasterSid:number): string {
     return '';
   }
 }
+ navigateToCreateDepartment() {
+    this.route.navigate(['master/company/entry'])
+  }
 
 
 }
@@ -1932,4 +1934,4 @@ interface FieldSelection {
 interface ConfigModalData {
 	title: string;
 	fields: FieldSelection[];
-}
+} 

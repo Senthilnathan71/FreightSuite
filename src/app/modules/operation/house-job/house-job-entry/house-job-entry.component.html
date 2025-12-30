@@ -989,7 +989,7 @@
   <div class="custom-form-group custom-form-group-select-date inputChnages" [class.filled]="!!houseJobForm.get('ETA')?.value">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETAFreeText">
-      <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
+      <input class="form-control" placeholder="" name="dp" formControlName="ETA"
         container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
         (keydown.arrowDown)="d4.open()" (click)="d4.toggle()" readonly />
       <button class="btn bi bi-calendar3 px-0" (click)="d4.toggle()" type="button">
@@ -1968,7 +1968,7 @@
                 </aside>
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                       formControlName="HandlingInformation" [textWithNumbers]="200">
                     <label for="text-input" class="input-label">Handling Information<span
                         class="text-danger"></span></label>

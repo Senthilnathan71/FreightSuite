@@ -666,4 +666,7 @@ MenuMasterSid: any;
     console.log('Response data:', resp.data);
     console.log('Response message:', resp.message);
   }
+  navigateToAddNewContainerActivity() {
+    this.router.navigate(['master/container-activity/entry']);
+  }
 }

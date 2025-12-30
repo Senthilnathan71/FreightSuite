@@ -1340,18 +1340,18 @@ jobStatusOptions = [
       Status: data.Status === 'A' ? 'Active' : 'Suspended',
 
       // Voyage data
-      MasterJobVoyageSid: data.MasterJobVoyageSid || null,
-      VoyageMasterSid: data.VoyageMasterSid || null,
-      VesselName: data.VesselName || '',
-      VoyageNo: data.VoyageNo || '',
-      ETA: data.ETA ? new Date(data.ETA) : null,
-      ETD: data.ETD ? new Date(data.ETD) : null,
-      ATA: data.ATA ? new Date(data.ATA) : null,
-      ATD: data.ATD ? new Date(data.ATD) : null,
-      DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
-      CarrierName: data.CarrierName || '',
-      PortCutoffDate: data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
-      SiCutoffDate: data.SiCutoffDate ? new Date(data.SiCutoffDate) : null,
+      // MasterJobVoyageSid: data.MasterJobVoyageSid || null,
+      // VoyageMasterSid: data.VoyageMasterSid || null,
+      // VesselName: data.VesselName || '',
+      // VoyageNo: data.VoyageNo || '',
+      // ETA: data.ETA ? new Date(data.ETA) : null,
+      // ETD: data.ETD ? new Date(data.ETD) : null,
+      // ATA: data.ATA ? new Date(data.ATA) : null,
+      // ATD: data.ATD ? new Date(data.ATD) : null,
+      // DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
+      // CarrierName: data.CarrierName || '',
+      // PortCutoffDate: data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
+      // SiCutoffDate: data.SiCutoffDate ? new Date(data.SiCutoffDate) : null,
     });
     this.evaluateDropdownOrFreeText();
     if (data.others && data.others.length > 0) {
@@ -1422,39 +1422,39 @@ jobStatusOptions = [
     }
 
     // Patch voyage fields if voyage data exists
-    if (data.voyages && data.voyages.length > 0) {
-      const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
-      let voyage;
+if (data.voyages && data.voyages.length > 0) {
+  const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
+  let voyage;
 
-      if (validVoyages.length > 0) {
-        voyage = validVoyages.reduce((latest, current) =>
-          current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
-        );
-      } else {
-        voyage = data.voyages[0];
-      }
+  if (validVoyages.length > 0) {
+    voyage = validVoyages.reduce((latest, current) =>
+      current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
+    );
+  } else {
+    voyage = data.voyages[0];
+  }
 
-      console.log('Voyage data for patching PortCutoffDate:', voyage);
+  console.log('Voyage data for patching:', voyage);
 
-      this.masterJobForm.patchValue({
-        MasterJobVoyageSid: voyage.MasterJobVoyageSid,
-        VoyageMasterSid: voyage.VoyageMasterSid,
-        VesselName: voyage.VesselName || '',
-        VoyageNo: voyage.VoyageNo || '',
-        ETA: voyage.ETA ? new Date(voyage.ETA) : null,
-        ETD: voyage.ETD ? new Date(voyage.ETD) : null,
-        ATA: voyage.ATA ? new Date(voyage.ATA) : null,
-        ATD: voyage.ATD ? new Date(voyage.ATD) : null,
-        DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
-        CarrierName: voyage.CarrierName || '',
-        PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
-          voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
-            data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
-      });
-    }
-
-
-
+  // CRITICAL: Use the voyage variable that was just calculated above
+  this.masterJobForm.patchValue({
+    MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
+    VoyageMasterSid: voyage.VoyageMasterSid,
+    VesselName: voyage.VesselName || '',
+    VoyageNo: voyage.VoyageNo || '',
+    ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+    ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+    ATA: voyage.ATA ? new Date(voyage.ATA) : null,
+    ATD: voyage.ATD ? new Date(voyage.ATD) : null,
+    DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
+    CarrierName: voyage.CarrierName || '',
+    PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
+      voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
+        data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
+  });
+  
+  console.log('Final Payload after voyage patch:', this.masterJobForm.value);
+}
     // ✅ Fixed: Populate carrier dropdown for edit mode
     // if (data.CarrierName && data.CarrierMasterSid) {
     //   const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
@@ -3397,6 +3397,39 @@ getContainerMappingCount(containerSid: number): number {
   }
 
   reportcargomanifest() {
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+    );
+
+   
+    if (!hasValidContainers) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required.'
+      );
+      return;
+    }
+    const hasValidVessale = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+    );
+    if (!hasValidVessale) {
+      this.appSettingService.showWarning(
+        'Vessel Name is required.'
+      );
+      return;
+    } 
+    const hasValidVoyage = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+    );
+    if (!hasValidVoyage) {
+      this.appSettingService.showWarning(
+        'Voyage No is required.'
+      );
+      return;
+    }
+    
+  }
     const modalRef = this.modalService.open(CargoManifestComponent, {
       size: 'xl',
       scrollable: true,
@@ -3424,6 +3457,20 @@ getContainerMappingCount(containerSid: number): number {
   }
 
   reportCFSoutturn() {
+     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+    );
+
+   
+    if (!hasValidContainers) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required.'
+      );
+      return;
+    }
+  }
     const modalRef = this.modalService.open(CfsOutturnComponent, {
       size: 'xl',
       scrollable: true,
@@ -3495,6 +3542,38 @@ getContainerMappingCount(containerSid: number): number {
 
 
   reportMBLBill(type:'MBL' | 'MBLDraft') {
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+    );
+
+   
+    if (!hasValidContainers) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required.'
+      );
+      return;
+    }
+    const hasValidVessale = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+    );
+    if (!hasValidVessale) {
+      this.appSettingService.showWarning(
+        'Vessel Name is required.'
+      );
+      return;
+    } 
+    const hasValidVoyage = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+    );
+    if (!hasValidVoyage) {
+      this.appSettingService.showWarning(
+        'Voyage No is required.'
+      );
+      return;
+    }
+  }
     this.selectedReport = type;
     const modalRef = this.modalService.open(MblComponent, {
       size: 'xl',
