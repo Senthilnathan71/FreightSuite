@@ -2923,7 +2923,7 @@
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+            <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
                 <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
                 <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
                 <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
@@ -3067,7 +3067,7 @@
                 <th style="border: 1px solid #000; padding: 4px;text-align: center;border-left:none;width: 30%;font-weight: bolder;"><strong>Charge</strong></th>
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 10%;font-weight: bolder;"><strong>Unit</strong></td>
                 <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 8%;font-weight: bolder;"><strong>Qty.</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;text-align: start;width: 8%;font-weight: bolder;"><strong>Curr.</strong></td>
+                <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 8%;font-weight: bolder;"><strong>Curr.</strong></td>
                 @if(selectedItem.AgreedRate === "Y"){
                   <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 10%;font-weight: bolder;"><strong>Ex Rate</strong></td>
                 }
@@ -3103,17 +3103,39 @@
        
   
 
-    <!-- Terms & Conditions -->
-    <div style="font-size: 16px;padding-left: 25px;">
-      <h4 style=" margin-bottom: 0.5rem;font-weight: bolder;"><strong>Terms and Conditions</strong></h4>
-      <ul style="margin-top: 0; padding-left: 1.2rem;">
-        @for(term of TandCList; track term){
-          <li>{{ term.TandC }}</li>
-        }
-      </ul>
-    </div>
+   <!-- Terms & Conditions -->
+<div style="
+    font-size:16px;
+    padding-left:25px;
+    padding-top:0;       
+    margin-top:0;        
+">
 
-      <div style="margin-left: 25px;">
+    <h4 style="
+        margin:0;         
+        padding:0;
+        font-weight:bolder;
+        line-height:1.2;
+    ">
+        <strong>Terms and Conditions</strong>
+    </h4>
+
+    <ul style="
+        margin:4px 0 0 0;  
+        padding-left:1.2rem;
+        line-height:1.4;
+    ">
+        @for (term of TandCList; track term) {
+            <li style="margin:0; padding:0;">
+                {{ term.TandC }}
+            </li>
+        }
+    </ul>
+
+</div>
+
+
+      <div style="margin-left: 25px;margin-top: 18px;">
         <strong style="font-weight: bolder;font-size: 16px;">We kindly look forward to your valuable support regarding the above shipment.</strong>
     </div>
 

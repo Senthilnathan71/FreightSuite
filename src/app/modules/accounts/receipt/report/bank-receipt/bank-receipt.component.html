@@ -47,7 +47,7 @@
                             style="width:50px; height:50px; object-fit:contain;">
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
                         <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
                         </h3>
                         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -63,7 +63,7 @@
 
 <h3 style="
     text-align:center;
-    font-size:28px;
+    font-size:25px;
     line-height:1.2;
     border-top:1px solid black;
     padding-top:10px;
@@ -128,7 +128,7 @@
    <!-- Table -->
 <table style="width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; font-size:17px;">
     <tr>
-        <th style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:30%;"><strong style="font-weight: bolder;">Description</strong></th>
+        <th style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:25%;"><strong style="font-weight: bolder;">Description</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; width:3%;"><strong style="font-weight: bolder;">Curr.</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; width:7%;"><strong style="font-weight: bolder;">Ex.Rate</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:8%;"><strong style="font-weight: bolder;">Amount</strong></th>
@@ -155,9 +155,9 @@
        <!-- Remittance section -->
 <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 17px;">
 
-    <h3 style="padding: 6px;padding-left: 20px; margin:0;text-align:center;font-weight: bolder;"><strong>Remittance Details</strong></h3>
+    <h3 style="padding: 6px;padding-left: 20px; margin:0;text-align:center;font-weight: bolder;font-size: 17px;"><strong>Remittance Details</strong></h3>
 
-<table style="width:100%; border-collapse:collapse; font-size:17px; margin-top:5px;">
+<table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;">
     <tbody>
 
         <tr style="font-weight: bolder;">
@@ -166,7 +166,7 @@
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher Date</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr.</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr. Amt</strong></th>
-            <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Local Amount</strong></th>
+            <th style="border:1px solid black; padding:4px; text-align:center;border-right:none;"><strong>Local Amount</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center; border-right:none;"*ngIf="currentUserCountry === 'india'"><strong>TDS Amount</strong></th>
         </tr>
 
@@ -176,7 +176,7 @@
             <td style="border:1px solid black; padding:4px; text-align:center;">{{ voucher?.VoucherDate | formatDate }}</td>
             <td style="border:1px solid black; padding:4px; text-align:start;">{{ voucher?.CurrencyCode }}</td>
             <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.MatchingAmount | number:'1.2-2' }}</td>
-            <td style="border:1px solid black; padding:4px; text-align:right;">{{ voucher?.MatchingLocalAmount | number:'1.2-2' }}</td>
+            <td style="border:1px solid black; padding:4px; text-align:right;border-right:none;">{{ voucher?.MatchingLocalAmount | number:'1.2-2' }}</td>
             <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;"*ngIf="currentUserCountry === 'india'"></td>
         </tr>
 
@@ -202,7 +202,7 @@
     align-items:center;
     margin-top:10px;
     padding-left:20px;
-    font-size:16px;
+    font-size:17px;
     white-space:nowrap;
 ">
     <strong style="margin-right:6px;">Amount in Words :</strong>
@@ -215,7 +215,7 @@
 </div>
 
 <!-- Checked By -->
-<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 16px;font-weight: bold;">
+<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 17px;font-weight: bold;">
     <strong>Checked By</strong>
     <strong>Approved By</strong>
 </div>

@@ -3189,7 +3189,7 @@
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding:0 0 0 80px;">
+    <td style="width:50%; vertical-align:top; padding:0 0 0 80px;font-size: 17px;">
       <table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
         <tr>
           <td style="width:140px; font-weight:bolder; padding:2px 0;"><strong>Booking No.</strong></td>
@@ -3230,14 +3230,14 @@
 <div style="border-top:1px solid #000; margin:8px 0;"></div>
 
   <!-- Booking Details -->
-<p style="font-weight:bolder; padding-left: 30px;margin-top: 0px;margin-bottom: 5px;  font-size: 16px;">
-  <strong>  We are pleased to confirm your booking as below :</strong>
+<p style="font-weight:bolder; padding-left: 30px;margin-top: 0px;margin-bottom: 5px;  font-size: 17px;">
+  <strong>  We are pleased to confirm your booking as below </strong>
 </p>
 
-<table style="width:100%; border-collapse:collapse; font-size:16px;border: 1px solid black;">
+<table style="width:100%; border-collapse:collapse; font-size:17px;border: 1px solid black;">
   <tr>
     <!-- LEFT COLUMN -->
-    <td style="width:50%; vertical-align:top;padding-left: 30px;padding-top: 5px;">
+    <td style="width:50%; vertical-align:top;padding-left: 30px;padding-top: 15px;padding-bottom: 15px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="width:160px; font-weight:bolder;"><strong>Vessel/Voyage</strong></td>
@@ -3250,42 +3250,42 @@
           </td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Port of Loading</strong></td>
-          <td>: {{ bookingHeader?.POL }}</td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>POL</strong></td>
+         <td>: {{ getFormattedPort(bookingHeader?.POL) }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Port of Discharge</strong></td>
-          <td>: {{ bookingHeader?.POD }}</td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>POD</strong></td>
+          <td>: {{getFormattedPort(bookingHeader?.POD) }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Final Destination</strong></td>
-          <td>: {{ bookingHeader?.FPD }}</td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>FPD</strong></td>
+          <td style="white-space: nowrap;">: {{getFormattedPort(bookingHeader?.FPD) }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Shipper Name</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Shipper Name</strong></td>
           <td>: {{ bookingHeader?.ShipperName }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Shipping Bill No.</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;white-space: nowrap;"><strong>Shipping Bill No.</strong></td>
           <td>: {{ bookingHeader?.bookingProduct[0]?.ShippingBillNo || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Inco Terms</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Inco Terms</strong></td>
           <td>: {{ bookingHeader?.IncoTerms || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Hand Over To.</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Hand Over To</strong></td>
           <td>: {{ bookingHeader?.bookingOthers[0]?.YardCFS || '' }}</td>
         </tr>
           <tr>
-          <td style="font-weight:bolder;"><strong>Shipment Terms</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;white-space: nowrap;"><strong>Shipment Terms</strong></td>
           <td>: {{ bookingHeader?.bookingCargo[0]?.ShipmentTerms || '' }}</td>
         </tr>
       </table>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top;padding-left: 80px;padding-top: 5px;padding-bottom: 5px;">
+    <td style="width:50%; vertical-align:top;padding-left: 80px;padding-top: 15px;padding-bottom: 15px;font-size: 17px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="width:140px; font-weight:bolder;">
@@ -3294,7 +3294,7 @@
           <td>: {{ bookingHeader?.HBLNo || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>ETD</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>ETD</strong></td>
           <td>: {{ bookingHeader?.ETD | formatDate }}</td>
         </tr>
          <!-- <tr>
@@ -3302,44 +3302,45 @@
           <td>: {{ bookingHeader?.ETA | formatDate }}</td>
         </tr> -->
         <tr>
-          <td style="font-weight:bolder;"><strong>ETA</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>ETA</strong></td>
           <td>: {{ bookingHeader?.ETA | formatDate }}</td>
         </tr>
         <!-- <tr>
           <td style="font-weight:bolder;"><strong>FPD ETA</strong></td>
           <td>: {{ getFPDETA() | formatDate }}</td>
         </tr> -->
-        <tr>
+        <!-- <tr>
           <td style="font-weight:bolder;"><strong>Commodity</strong></td>
           <td>: {{ bookingHeader?.bookingCargo[0]?.CargoType || '' }}</td>
-        </tr>
+        </tr> -->
         <tr>
-          <td style="font-weight:bolder;"><strong>Freight</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Freight</strong></td>
           <td>: {{ bookingHeader?.FreightTerms || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Dest Agent</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Dest Agent</strong></td>
           <td>: {{ getDestinationAgent(bookingHeader?.DestinationAgent) || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Consignee Name</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Consignee Name</strong></td>
           <td>: {{ bookingHeader?.ConsigneeName || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Carrier</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Carrier</strong></td>
           <td>: {{ bookingHeader?.CarrierName || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Carrier Booking</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Carrier Booking</strong></td>
           <td>: {{ bookingHeader?.bookingOthers[0]?.CarrierBookingRef || '' }}</td>
         </tr>
         <tr>
-          <td style="font-weight:bolder;"><strong>Remarks</strong></td>
+          <td style="font-weight:bolder;padding-top: 3px;"><strong>Remarks</strong></td>
           <td>: {{ bookingHeader?.InternalNote || '' }}</td>
         </tr>
       
       </table>
     </td>
+    
   </tr>
 </table>
 
@@ -3356,7 +3357,7 @@
 
 
     <div style="width:100%; overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:16px;">
+      <table style="width:100%; border-collapse:collapse; font-size:17px;">
         <thead>
           <tr>
             <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;"><strong>Cargo Type</strong></th>
@@ -3423,6 +3424,38 @@
         </tbody>
       </table>
     </div>
+
+
+       <!-- Terms & Conditions -->
+<div style="
+    font-size:17px;
+    padding-left:25px;
+    padding-top:0;       
+    margin-top:40px;        
+">
+
+    <h4 style="
+        margin:0;         
+        padding:0;
+        font-weight:bolder;
+        line-height:1.2;
+    ">
+        <strong>Terms and Conditions</strong>
+    </h4>
+
+    <ul style="
+        margin:4px 0 0 0;  
+        padding-left:1.2rem;
+        line-height:1.4;
+    ">
+        @for (term of TandCList; track term) {
+            <li style="margin:0; padding:0;">
+                {{ term.TandC }}
+            </li>
+        }
+    </ul>
+
+</div>
 
     <!-- Footer -->
 <!-- Print Footer -->
