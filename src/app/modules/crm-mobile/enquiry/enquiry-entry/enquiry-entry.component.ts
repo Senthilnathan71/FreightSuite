@@ -2871,7 +2871,7 @@ private handleDropdownVoiceInput(transcript: string): void {
       return;
     }
 
-    this.rateRequestForm.get('EnquiryType')?.setValue(option.id);
+    this.rateRequestForm.get('EnquiryType')?.setValue(option.name);
     this.enquiryTypeNg?.close();
 
     setTimeout(() => {

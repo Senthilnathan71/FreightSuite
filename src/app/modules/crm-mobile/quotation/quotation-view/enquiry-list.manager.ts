@@ -75,8 +75,8 @@ export class EnquiryListManager {
             search: this.filterValue.trim(),
             page: this.page,
             pageSize: this.pageSize,
-            companyId: this.currentCompany?.CompanyMasterSid,
-            branchId: this.currentBranch?.BranchMasterSid,
+            activeCompanyId: this.currentCompany?.CompanyMasterSid,
+            activeBranchId: this.currentBranch?.BranchMasterSid,
             sortColumn: this.sortColumn,
             sortDirection: this.sortDirection,
         };

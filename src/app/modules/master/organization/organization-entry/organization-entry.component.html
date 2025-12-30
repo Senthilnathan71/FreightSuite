@@ -328,7 +328,7 @@
                 [class.filled]="customerForm.get('Network')?.value">
                  <dofi-searchable-dropdown  [items]="networkList" formControlName="Network" [placeholder]="''"
                                             [displayFields]=" ['NetworkName']" [displayLabels]="['NetworkName']"
-                                            [labelFields]="['NetworkName']" [bindValue]="'NetworkMasterSid'"  appendTo="body"></dofi-searchable-dropdown>
+                                            [labelFields]="['NetworkName']" [bindValue]="'NetworkName'"  appendTo="body"></dofi-searchable-dropdown>
                                         
                 <label for="Network" class="input-label">Network</label>
               </div>
@@ -446,94 +446,113 @@
                 </aside>
 
                 <!-- Company Type Field -->
-                <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select"
-                    [class.filled]="customerForm.get('CompanyType')?.value"
-                    [class.is-invalid]="customerForm.get('CompanyType')?.invalid && customerForm.get('CompanyType')?.touched">
-                    <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
-                      placeholder="Select Company Type" [searchable]="false" [clearable]="false" 
-                      (change)="onCompanyTypeChange()">
-                    </ng-select>
-                    <label class="input-label">Company Type</label>
+                <!-- Company Type Field - Only show for India -->
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="customerForm.get('CompanyType')?.value"
+    [class.is-invalid]="customerForm.get('CompanyType')?.invalid && customerForm.get('CompanyType')?.touched">
+    <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
+      placeholder="Select Company Type" [searchable]="false" [clearable]="false" 
+      (change)="onCompanyTypeChange()">
+    </ng-select>
+    <label class="input-label">Company Type</label>
 
-                    <!-- Error Message for Company Type -->
-                    @if (customerForm.get('CompanyType')?.touched && customerForm.get('CompanyType')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('CompanyType')?.hasError('required')) {
-                      <span>Company Type is required when PAN is available</span>
-                      }
-                    </div>
-                    }
-                  </div>
-                </aside>
+    <!-- Error Message for Company Type -->
+    @if (customerForm.get('CompanyType')?.touched && customerForm.get('CompanyType')?.invalid) {
+    <div class="error-message">
+      @if (customerForm.get('CompanyType')?.hasError('required')) {
+      <span>Company Type is required when PAN is available</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
 
-                <!-- PAN Available - Show for ALL countries -->
-                <aside class="col-md-4 d-flex align-items-center ps-md-0">
-                  <div class="form-check form-check-inline p-0">
-                    <div class="form-check d-flex align-items-center">
-                      <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
-                        class="form-check-input sm" />
-                      <label for="PanAvailable" class="form-check-label sm">
-                        {{ currentTaxIdLabel === 'PAN Number' ? 'PAN Available' :
-                        currentTaxIdLabel === 'VAT Number' ? 'VAT Available' : 'Tax ID Available' }}
-                      </label>
-                    </div>
-                  </div>
-                </aside>
+<!-- PAN Available - Show for ALL countries -->
+<aside class="col-md-4 d-flex align-items-center ps-md-0">
+  <div class="form-check form-check-inline p-0">
+    <div class="form-check d-flex align-items-center">
+      <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
+        class="form-check-input sm" (change)="onPanAvailableChange()" />
+      <label for="PanAvailable" class="form-check-label sm">
+        {{ getTaxIdLabel() }} Available
+      </label>
+    </div>
+  </div>
+</aside>
 
+<!-- VAT Number Field - Show for UAE/Dubai countries -->
+<aside class="col-md-4" *ngIf="isUaeCountry() && customerForm.get('PanAvailable')?.value">
+  <div class="custom-form-group">
+    <input type="text" formControlName="PanType" class="custom-input-field sm"
+      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
+      placeholder="" [onlyNumbers]="15" maxlength="15">
+    <label for="PanType" class="input-label sm">VAT Number</label>
 
-                <!-- VAT Number Field - Show for UAE countries -->
-                <aside class="col-md-4" *ngIf="isUaeCountry() && customerForm.get('PanAvailable')?.value">
-                  <div class="custom-form-group">
-                    <input type="text" formControlName="PanType" class="custom-input-field sm"
-                      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
-                      placeholder="" [onlyNumbers]="15" maxlength="15">
-                    <label for="PanType" class="input-label sm">VAT Number</label>
+    <!-- Error Messages for VAT Number -->
+    <div class="error-message"
+      *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
+      @if (customerForm.get('PanType')?.hasError('invalidVAT')) {
+      <span>VAT Number must be 15 digits starting with 1-9</span>
+      }
+      @if (customerForm.get('PanType')?.hasError('required')) {
+      <span>VAT Number is required</span>
+      }
+    </div>
+  </div>
+</aside>
 
-                    <!-- Error Messages for VAT Number -->
-                    <div class="error-message"
-                      *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
-                      @if (customerForm.get('PanType')?.hasError('invalidVAT')) {
-                      <span>VAT Number must be 15 digits starting with 1-9</span>
-                      }
-                      @if (customerForm.get('PanType')?.hasError('required')) {
-                      <span>VAT Number is required</span>
-                      }
-                    </div>
-                  </div>
-                </aside>
-                <!-- PAN Number Field - Show for India -->
-                <aside class="col-md-4" *ngIf="isIndianCountry() && customerForm.get('PanAvailable')?.value">
-                  <div class="custom-form-group">
-                    <input type="text" formControlName="PanType" class="custom-input-field sm"
-                      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
-                      placeholder="" style="text-transform: uppercase;" maxlength="10">
-                    <label for="PanType" class="input-label sm">PAN Number</label>
+<!-- PAN Number Field - Show for India -->
+<aside class="col-md-4" *ngIf="isIndianCountry() && customerForm.get('PanAvailable')?.value">
+  <div class="custom-form-group">
+    <input type="text" formControlName="PanType" class="custom-input-field sm"
+      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
+      placeholder="" style="text-transform: uppercase;" maxlength="10">
+    <label for="PanType" class="input-label sm">PAN Number</label>
 
-                    <!-- Error Messages for PAN Number -->
-                    <div class="error-message"
-                      *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
-                      @if (customerForm.get('PanType')?.hasError('invalidPANHolderType')) {
-                      <span><i class="fas fa-times-circle"></i> {{
-                        customerForm.get('PanType')?.errors?.['holderTypeMessage'] }}</span>
-                      }
-                      @if (customerForm.get('PanType')?.hasError('invalidPAN') &&
-                      !customerForm.get('PanType')?.hasError('invalidPANHolderType')) {
-                      <span><i class="fas fa-times-circle"></i> {{ customerForm.get('PanType')?.errors?.['message']
-                        }}</span>
-                      }
-                      @if (customerForm.get('PanType')?.hasError('required')) {
-                      <span><i class="fas fa-times-circle"></i> PAN Number is required</span>
-                      }
-                    </div>
-                  </div>
-                </aside>
-                <!-- Pan Name Field - Keep this one only -->
+    <!-- Error Messages for PAN Number -->
+    <div class="error-message"
+      *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
+      @if (customerForm.get('PanType')?.hasError('invalidPANHolderType')) {
+      <span><i class="fas fa-times-circle"></i> {{
+        customerForm.get('PanType')?.errors?.['holderTypeMessage'] }}</span>
+      }
+      @if (customerForm.get('PanType')?.hasError('invalidPAN') &&
+      !customerForm.get('PanType')?.hasError('invalidPANHolderType')) {
+      <span><i class="fas fa-times-circle"></i> {{ customerForm.get('PanType')?.errors?.['message']
+        }}</span>
+      }
+      @if (customerForm.get('PanType')?.hasError('required')) {
+      <span><i class="fas fa-times-circle"></i> PAN Number is required</span>
+      }
+    </div>
+  </div>
+</aside>
+
+<!-- Tax ID Number Field - Show for Other Countries -->
+<aside class="col-md-4" *ngIf="!isIndianCountry() && !isUaeCountry() && customerForm.get('PanAvailable')?.value">
+  <div class="custom-form-group">
+    <input type="text" formControlName="PanType" class="custom-input-field sm"
+      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
+      placeholder="" maxlength="50">
+    <label for="PanType" class="input-label sm">Tax ID Number</label>
+
+    <!-- Error Messages for Tax ID Number -->
+    <div class="error-message"
+      *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
+      @if (customerForm.get('PanType')?.hasError('required')) {
+      <span>Tax ID Number is required</span>
+      }
+    </div>
+  </div>
+</aside>
+
+<!-- Pan Name Field - Show for all countries when Tax ID/PAN/VAT is available -->
 <aside class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
   <div class="custom-form-group">
     <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
       formControlName="PanName" [textWithNumbers]="100" />
-    <label for="PanName" class="input-label">Name as per {{ currentTaxIdLabel }}</label>
+    <label for="PanName" class="input-label">Name as per {{ getTaxIdLabel() }}</label>
     @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
     customerForm.get('PanName')?.dirty)) {
     <div class="error-message">
