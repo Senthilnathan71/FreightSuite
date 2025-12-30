@@ -39,7 +39,7 @@
                         </td>
                         <td>{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
                         <td>{{ milestone.MilestoneName }}</td>
-                        <td>{{ milestone.MilestoneDate | formatDate }}</td>
+                        <td>{{ milestone.MilestoneDate | date : 'short' : 'UTC' }}</td>
                         <td>
                             <div class="form-check form-check-inline p-0 ps-2 mt-0">
                                 <div class="form-check d-flex align-items-center justify-content-center mt-0">
