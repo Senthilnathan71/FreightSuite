@@ -2193,14 +2193,17 @@ calculateTotalQty(): number {
 }
 
 calculateTotalGrossWeight(): number {
-  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
-  
   let total = 0;
-  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
-    total += Number(cargo.GrossWeight) || 0;
+
+  this.enquiryData?.enquiryRoute?.forEach((route: any) => {
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo.GrossWeight) || 0;
+    });
   });
+
   return total;
 }
+
 
 calculateTotalNetWeight(): number {
   if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
@@ -2213,25 +2216,30 @@ calculateTotalNetWeight(): number {
 }
 
 calculateTotalCBM(): number {
-  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
-  
   let total = 0;
-  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
-    total += Number(cargo.Volume) || 0;
+
+  this.enquiryData?.enquiryRoute?.forEach((route: any) => {
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo.Volume) || 0;
+    });
   });
+
   return total;
 }
 
+
 calculateTotalPackageQty(): number {
-  const cargos = this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo;
+  let total = 0;
 
-  if (!Array.isArray(cargos)) return 0;
+  this.enquiryData?.enquiryRoute?.forEach((route: any) => {
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo.PackageQty) || 0;
+    });
+  });
 
-  return cargos.reduce((sum: number, cargo: any) => {
-    const qty = Number(cargo?.PackageQty);
-    return sum + (isNaN(qty) ? 0 : qty);
-  }, 0);
+  return total;
 }
+
 
 
 openFollowup() {
