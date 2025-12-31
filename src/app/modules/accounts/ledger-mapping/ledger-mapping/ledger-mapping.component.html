@@ -92,7 +92,7 @@
 
     <!-- Party Tab Content -->
     <div class="col-12 px-0" [hidden]="selectedTab !== 'Party'">
-        <div class="row bg-white p-1 rounded  mx-auto" >
+        <div class="row bg-white p-1 rounded  mx-auto" style="height: 70vh;overflow-y: auto;" >
             <div class="col-12 p-0">
                 <div class="table-responsive table-borderless">
                     <table class="table table-hover align-middle no-wrap  mb-0">
@@ -186,7 +186,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
-                                        (change)="onCOAChange(item, $event, 'debtor')">
+                                        (change)="onCOAChange(item, $event, 'debtor')" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item">
                                             {{ item.LedgerCode }} - {{ item.LedgerName }}
                                         </ng-template>
@@ -202,7 +202,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
-                                        (change)="onCOAChange(item, $event, 'creditor')">
+                                        (change)="onCOAChange(item, $event, 'creditor')" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item">
                                             {{ item.LedgerCode }} - {{ item.LedgerName }}
                                         </ng-template>
@@ -213,7 +213,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('accrual')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditAccrualCOA" [(ngModel)]="item.AccrualCOAMasterSid"
-                                        (change)="onCOAChange(item, $event, 'accrual')">
+                                        (change)="onCOAChange(item, $event, 'accrual')" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item">
                                             {{ item.LedgerCode }} - {{ item.LedgerName }}
                                         </ng-template>
@@ -227,7 +227,7 @@
                                                bindValue="id"
                                                [compareWith]="compareWithStatus"
                                                [(ngModel)]="item.Status"
-                                               (change)="onStatusChange(item, $event)">
+                                               (change)="onStatusChange(item, $event)" appendTo="body">
                                     </ng-select>
                                 </td>
                             </tr>
@@ -264,7 +264,7 @@
 
     <!-- Charge Tab Content -->
     <div class="col-12 px-0" [hidden]="selectedTab !== 'Charge'">
-        <div class="row bg-white p-1 rounded  mx-auto" >
+        <div class="row bg-white p-1 rounded  mx-auto" style="height: 70vh;overflow-y: auto;">
             <div class="col-12 p-0">
                 <div class="table-responsive table-borderless">
                     <table class="table table-hover align-middle no-wrap  mb-0">
@@ -356,7 +356,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
-                                        (change)="onCOAChange(item, $event, 'creditor')">
+                                        (change)="onCOAChange(item, $event, 'creditor')" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item">
                                             {{ item.LedgerCode }} - {{ item.LedgerName }}
                                         </ng-template>
@@ -367,7 +367,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
-                                        (change)="onCOAChange(item, $event, 'debtor')">
+                                        (change)="onCOAChange(item, $event, 'debtor')" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item">
                                             {{ item.LedgerCode }} - {{ item.LedgerName }}
                                         </ng-template>
@@ -380,7 +380,7 @@
                                                bindValue="id"
                                                [compareWith]="compareWithStatus"
                                                [(ngModel)]="item.Status"
-                                               (change)="onStatusChange(item, $event)">
+                                               (change)="onStatusChange(item, $event)" appendTo="body">
                                     </ng-select>
                                 </td>
                             </tr>
@@ -416,7 +416,7 @@
     </div>
 <!-- Add Tax Tab Content -->
 <div class="col-12 px-0" [hidden]="selectedTab !== 'Tax'">
-    <div class="row bg-white p-1 rounded  mx-auto" >
+    <div class="row bg-white p-1 rounded  mx-auto" style="height: 70vh;overflow-y: auto;">
         <div class="col-12 p-0">
             <div class="table-responsive table-borderless">
                 <table class="table table-hover align-middle no-wrap  mb-0">
@@ -516,7 +516,7 @@
                                     [compareWith]="compareWithCOA" 
                                     [disabled]="!item.canEditInputTaxCOA" 
                                     [(ngModel)]="item.CrCOAMasterSid"
-                                    (change)="onCOAChange(item, $event, 'input')">
+                                    (change)="onCOAChange(item, $event, 'input')" appendTo="body">
                                     <ng-template ng-label-tmp let-item="item">
                                         {{ item.LedgerCode }} - {{ item.LedgerName }}
                                     </ng-template>
@@ -538,7 +538,7 @@
                                     [compareWith]="compareWithCOA" 
                                     [disabled]="!item.canEditOutputTaxCOA" 
                                     [(ngModel)]="item.DrCOAMasterSid"
-                                    (change)="onCOAChange(item, $event, 'output')">
+                                    (change)="onCOAChange(item, $event, 'output')" appendTo="body">
                                     <ng-template ng-label-tmp let-item="item">
                                         {{ item.LedgerCode }} - {{ item.LedgerName }}
                                     </ng-template>
@@ -553,7 +553,7 @@
                                            bindValue="id"
                                            [compareWith]="compareWithStatus"
                                            [(ngModel)]="item.Status"
-                                           (change)="onStatusChange(item, $event)">
+                                           (change)="onStatusChange(item, $event)" appendTo="body">
                                 </ng-select>
                             </td>
                         </tr>

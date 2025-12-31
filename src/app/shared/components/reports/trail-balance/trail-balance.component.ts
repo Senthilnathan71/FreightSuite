@@ -105,47 +105,57 @@ export class TrailBalanceComponent {
   }
 
 
-  prepareGroupedData(): void {
-    const rawItems = this.data?.items || [];
-    const items = Array.isArray(rawItems) ? rawItems : Object.values(rawItems);
+prepareGroupedData(): void {
+  const rawItems = this.data?.items || [];
+  const items = Array.isArray(rawItems) ? rawItems : Object.values(rawItems);
 
-    console.log("Converted items:", items);
+  items.sort((a, b) => {
+    const catA = categoryOrder[a.Category] || 99;
+    const catB = categoryOrder[b.Category] || 99;
 
-    const groups: any = {};
+    return (
+      catA - catB ||
+      (a.GroupName || '').localeCompare(b.GroupName || '') ||
+      (a.SubGroupName || '').localeCompare(b.SubGroupName || '') ||
+      (a.LedgerName || '').localeCompare(b.LedgerName || '')
+    );
+  });
 
-    items.forEach(item => {
-      const sub = item.SubGroupName || "NO SUBGROUP";
+  const groups: any = {};
 
-      if (!groups[sub]) {
-        groups[sub] = {
-          subGroupName: sub,
-          items: [],
-          totals: {
-            OpeningDebit: 0,
-            OpeningCredit: 0,
-            CurrentDebit: 0,
-            CurrentCredit: 0,
-            ClosingDebit: 0,
-            ClosingCredit: 0,
-            ClosingNet: 0
-          }
-        };
-      }
+  items.forEach(item => {
+    const sub = item.SubGroupName || 'NO SUBGROUP';
 
-      groups[sub].items.push(item);
+    if (!groups[sub]) {
+      groups[sub] = {
+        subGroupName: sub,
+        items: [],
+        totals: {
+          OpeningDebit: 0,
+          OpeningCredit: 0,
+          CurrentDebit: 0,
+          CurrentCredit: 0,
+          ClosingDebit: 0,
+          ClosingCredit: 0,
+          ClosingNet: 0
+        }
+      };
+    }
 
-      groups[sub].totals.OpeningDebit += Number(item.OpeningDebit) || 0;
-      groups[sub].totals.OpeningCredit += Number(item.OpeningCredit) || 0;
-      groups[sub].totals.CurrentDebit += Number(item.CurrentDebit) || 0;
-      groups[sub].totals.CurrentCredit += Number(item.CurrentCredit) || 0;
-      groups[sub].totals.ClosingDebit += Number(item.ClosingDebit) || 0;
-      groups[sub].totals.ClosingCredit += Number(item.ClosingCredit) || 0;
-      groups[sub].totals.ClosingNet += Number(item.ClosingNet) || 0;
-    });
+    groups[sub].items.push(item);
 
-    this.groupedData = Object.values(groups);
-    console.log("Grouped Data:", this.groupedData);
-  }
+    groups[sub].totals.OpeningDebit += Number(item.OpeningDebit) || 0;
+    groups[sub].totals.OpeningCredit += Number(item.OpeningCredit) || 0;
+    groups[sub].totals.CurrentDebit += Number(item.CurrentDebit) || 0;
+    groups[sub].totals.CurrentCredit += Number(item.CurrentCredit) || 0;
+    groups[sub].totals.ClosingDebit += Number(item.ClosingDebit) || 0;
+    groups[sub].totals.ClosingCredit += Number(item.ClosingCredit) || 0;
+    groups[sub].totals.ClosingNet += Number(item.ClosingNet) || 0;
+  });
+
+  this.groupedData = Object.values(groups);
+}
+
 
 // prepareGroupedData(): void {
 //   const rawItems = this.data?.items || [];
@@ -393,4 +403,12 @@ export class TrailBalanceComponent {
     }
   }
 }
+
+
+const categoryOrder: Record<string, number> = {
+  Asset: 1,
+  Liability: 2,
+  Expense: 3,
+  Income: 4
+};
 
