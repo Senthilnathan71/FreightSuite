@@ -147,6 +147,109 @@ export class TrailBalanceComponent {
     console.log("Grouped Data:", this.groupedData);
   }
 
+// prepareGroupedData(): void {
+//   const rawItems = this.data?.items || [];
+//   const items = Array.isArray(rawItems) ? rawItems : Object.values(rawItems);
+
+//   // 1️⃣ DEFINE CUSTOM CATEGORY ORDER
+//   const categoryOrder: Record<string, number> = {
+//     Asset: 1,
+//     Liability: 2,
+//     Expense: 3,
+//     Income: 4
+//   };
+
+//   // 2️⃣ SORT (Type → Group → SubGroup → Ledger)
+//   items.sort((a, b) => {
+//     // Category custom order
+//     const catA = categoryOrder[a.Category] || 99; // unknown categories go last
+//     const catB = categoryOrder[b.Category] || 99;
+
+//     return (
+//       catA - catB ||
+//       (a.GroupName || '').localeCompare(b.GroupName || '') ||
+//       (a.SubGroupName || '').localeCompare(b.SubGroupName || '') ||
+//       (a.LedgerName || '').localeCompare(b.LedgerName || '')
+//     );
+//   });
+
+//   // 3️⃣ ROWSPAN FLAGS (GLOBAL)
+//   let lastCategory = '';
+//   let lastGroup = '';
+//   let lastSubGroup = '';
+
+//   items.forEach(item => {
+//     item.showType = false;
+//     item.showGroup = false;
+//     item.showSubGroup = false;
+
+//     if (item.Category !== lastCategory) {
+//       item.showType = true;
+//       item.typeRowSpan = items.filter(x => x.Category === item.Category).length;
+//       lastCategory = item.Category;
+//       lastGroup = '';
+//       lastSubGroup = '';
+//     }
+
+//     if (item.GroupName !== lastGroup) {
+//       item.showGroup = true;
+//       item.groupRowSpan = items.filter(
+//         x => x.Category === item.Category && x.GroupName === item.GroupName
+//       ).length;
+//       lastGroup = item.GroupName;
+//       lastSubGroup = '';
+//     }
+
+//     if (item.SubGroupName !== lastSubGroup) {
+//       item.showSubGroup = true;
+//       item.subGroupRowSpan = items.filter(
+//         x =>
+//           x.Category === item.Category &&
+//           x.GroupName === item.GroupName &&
+//           x.SubGroupName === item.SubGroupName
+//       ).length;
+//       lastSubGroup = item.SubGroupName;
+//     }
+//   });
+
+//   // 4️⃣ GROUP BY SUBGROUP (FOR SUBTOTALS)
+//   const subGroupMap: any = {};
+
+//   items.forEach(item => {
+//     const key = item.SubGroupName || 'NO SUBGROUP';
+
+//     if (!subGroupMap[key]) {
+//       subGroupMap[key] = {
+//         subGroupName: key,
+//         items: [],
+//         totals: {
+//           OpeningDebit: 0,
+//           OpeningCredit: 0,
+//           CurrentDebit: 0,
+//           CurrentCredit: 0,
+//           ClosingDebit: 0,
+//           ClosingCredit: 0,
+//           ClosingNet: 0
+//         }
+//       };
+//     }
+
+//     subGroupMap[key].items.push(item);
+
+//     subGroupMap[key].totals.OpeningDebit += Number(item.OpeningDebit) || 0;
+//     subGroupMap[key].totals.OpeningCredit += Number(item.OpeningCredit) || 0;
+//     subGroupMap[key].totals.CurrentDebit += Number(item.CurrentDebit) || 0;
+//     subGroupMap[key].totals.CurrentCredit += Number(item.CurrentCredit) || 0;
+//     subGroupMap[key].totals.ClosingDebit += Number(item.ClosingDebit) || 0;
+//     subGroupMap[key].totals.ClosingCredit += Number(item.ClosingCredit) || 0;
+//     subGroupMap[key].totals.ClosingNet += Number(item.ClosingNet) || 0;
+//   });
+
+//   this.groupedData = Object.values(subGroupMap);
+// }
+
+
+
 
   get fullData(): any {
     console.log(this.data, "DATA")

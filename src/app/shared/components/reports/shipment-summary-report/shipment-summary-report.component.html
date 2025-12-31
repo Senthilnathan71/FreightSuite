@@ -25,11 +25,11 @@
 
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
-                    <p class="ms-1">: {{ params?.FromMBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.FromJobDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
-                    <p class="ms-1">: {{ params?.ToMBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.ToJobDt | formatDate }}</p>
                 </div>
             </div>
 
@@ -115,9 +115,9 @@
                         <td>{{ item.transhipmentShipment || '' }}</td>
                         <td>{{ item.localShipment || '' }}</td>
                         <td>{{ item.totalShipment || '' }}</td>
-                        <td>{{ item.weight || '' }}</td>
-                        <td>{{ item.volume || '' }}</td>
-                        <td>{{ item.chargeable || '' }}</td>
+                        <td class="text-end">{{ item.weight | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.volume | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
                         <td>{{ item.noOfContainers || '' }}</td>
                         <td>{{ item.numberOfTwentyFt || '' }}</td>
                         <td>{{ item.numberOfFourtyFt || '' }}</td>
@@ -125,8 +125,8 @@
                         <td>{{ item.shipper || '' }}</td>
                         <td>{{ item.containerNoList || '' }}</td>
                         <td>{{ item.consolStatus || '' }}</td>
-                        <td>{{ item.transhipmentVol | number:'1.2-2' }}</td>
-                        <td>{{ item.localShipmentVol | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.transhipmentVol | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.localShipmentVol | number:'1.2-2' }}</td>
                     </tr>
                 </tbody>
             </table>

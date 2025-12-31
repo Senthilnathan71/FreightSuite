@@ -6,8 +6,8 @@
       <div
         *ngFor="let param of parameters"
         [ngClass]="{
-          'col-md-4': parameters.length > 4,
-          'col-md-3': parameters.length <= 4,
+          'col-md-3': parameters.length > 4,
+          'col-md-2': parameters.length <= 4,
           'col-12': parameters.length === 1
         }"
       >

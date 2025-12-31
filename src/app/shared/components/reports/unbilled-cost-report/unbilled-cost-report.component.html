@@ -20,11 +20,11 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
                 <div>
 
@@ -82,9 +82,9 @@
                         <td>{{ item.bookingNo }}</td>
                         <td>{{ item.costRevenueDetails?.[0]?.chargeName }}</td>
                         <td>{{ item.PPCC }}</td>
-                        <td>{{ item.costRevenueDetails?.[0]?.CostDrCr }}</td>
-                        <td>{{item.CostAmount}}</td>
-                        <td>{{ item.costRevenueDetails?.[0]?.CostLocalAmount }}</td>
+                        <td class="text-center">{{ item.costRevenueDetails?.[0]?.CostDrCr }}</td>
+                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostAmount  | number:'1.2-2'}}</td>
+                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostLocalAmount | number:'1.2-2' }}</td>
                         <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
                     </tr>
                 </tbody>
@@ -113,8 +113,8 @@
                         <td>{{ item.HBLNo }}</td>
                         <td>{{ item.houseStatus }}</td>
                         <td>{{ item.bookingNo }}</td>
-                        <td>{{item.CostAmount}}</td>
-                        <td>{{ item.costRevenueDetails?.[0]?.CostLocalAmount }}</td>
+                       <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostAmount  | number:'1.2-2'}}</td>
+                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostLocalAmount | number:'1.2-2'}}</td>
                         <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
                     </tr>
                 </tbody>

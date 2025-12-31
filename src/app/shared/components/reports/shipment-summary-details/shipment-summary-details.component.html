@@ -20,11 +20,11 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHBLDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
@@ -41,7 +41,7 @@
 
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
-                    <p class="ms-1">: {{ fullData?.customerNames }}</p>
+                    <p class="ms-1">: {{ params?.Customer }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Salesperson </strong>
@@ -160,7 +160,7 @@
 
                         <td class="text-center">{{item.branchName}}</td>
                         <td>{{item.houseDepartment}}</td>
-                        <td> {{ params?.FromHBLDt| date:'MMMM' }}</td>
+                        <td> {{ params?.FromHblDt| date:'MMMM' }}</td>
                         <td>{{item.HBLDate | formatDate}}</td>
                         <td>{{ item.MBL || '' }}</td>
                         <td>{{item.importJobNo}}</td>
@@ -169,10 +169,10 @@
                         <td>{{ item.bookingDate | formatDate }}</td>
                         <td>{{ item.houseDepartment || '' }}</td>
                         <td>{{ item.HBL || '' }}</td>
-                        <td class="text-end">{{ item.grossWeight || '' }}</td>
-                        <td class="text-end">{{ item.volume || '' }}</td>
-                        <td class="text-end">{{ item.chargeable || '' }}</td>
-                        <td class="text-end">{{ item.netWeight || '' }}</td>
+                        <td class="text-end">{{ item.grossWeight | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.volume | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.netWeight | number:'1.3-3' }}</td>
                         <td>{{ item.customer || '' }}</td>
                         <td>{{getFilteredCustomerType(item.customerType)}}</td>
                         <td>{{ item.shipper || '' }}</td>

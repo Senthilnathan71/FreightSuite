@@ -1,12 +1,12 @@
 <div class="accounts-reports-container">
   <!-- Page Header -->
   <div class="page-header">
-    <div class="row align-items-center mt-1">
+    <div class="row align-items-center">
       <div class="col">
         <h4 class="page-title mb-0">
           <i class="mdi mdi-chart-bar"></i> Accounts Reports
         </h4>
-        <p class="text-muted">Select a report to view and export financial data</p>
+        <p class="text-muted mb-0">Select a report to view and export financial data</p>
       </div>
       <div class="col-auto" *ngIf="selectedReport">
         <button class="btn btn-secondary btn-sm" (click)="onReportSelected(selectedReport!)">
@@ -19,7 +19,7 @@
   <!-- Reports Grid Section -->
   <div class="reports-section" *ngIf="!selectedReport">
     <div class="card">
-      <div class="card-body">
+      <div class="card-body py-1">
         <app-report-card-list
           [reports]="reports"
           [loading]="loadingReports"
