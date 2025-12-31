@@ -2186,8 +2186,14 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
-      <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone"
-        [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
+      <app-milestone 
+        #milestoneComponent 
+        screenName="Booking" 
+        [resetTrigger]="resetTriggerMilestone"
+        [shipmentNo]="bookingHeader?.ShipmentNo" 
+        (dataEmitter)="handleMilestoneChange($event)"
+        
+      ></app-milestone>
     </div>
    <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
     <div class="modern-table-container">

@@ -51,6 +51,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -125,6 +126,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
   @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
+  @ViewChild('milestoneComponent') milestoneComponent!: MilestoneComponent;
 
   parsedBookings: BookingData[] = [];
   showParsedData = false;
@@ -299,6 +301,7 @@ arapFilter = {
   // Variable Declaration - Milestone Part
   resetTriggerMilestone: boolean;
   milestoneResult: any[] = [];
+  followupModalRef : NgbModalRef;
 
   today: any;
   minDate: any;
@@ -1214,7 +1217,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     })
   }
 
-  loadBookingById(BookingHeaderSid: number) {
+  loadBookingById(BookingHeaderSid: number,withMilestoneRefresh : boolean = false) {
     this.spinner.show();
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
@@ -1225,6 +1228,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           this.minDate = undefined;
           this.spinner.hide();
           this.captureInitialFormState();
+          if(withMilestoneRefresh){
+            this.milestoneComponent.loadShipmentMilestones(resp.data?.ShipmentNo);
+          }
         }
       }
     )
@@ -1570,6 +1576,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     console.log(allmilestones);
     if (allmilestones.length !== 0) {
       this.milestoneResult = [...allmilestones];
+      if (this.followupModalRef) {
+        this.initializeMilestoneContentForFollowup();
+      }
     }
   }
 
@@ -1818,7 +1827,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.otherForm.markAsPristine();
             this.croForm.markAsPristine(); 
             // this.router.navigate(['operation/booking/list']);
-            this.loadBookingById(this.BookingHeaderSid);
+            this.loadBookingById(this.BookingHeaderSid,true);
           } else {
             this.appSettingService.showError('Error updating booking.');
             console.error(resp.message);
@@ -2047,28 +2056,28 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   const departmentName = department.departmentName?.toLowerCase() || '';
   const exportImport = department.ExportImport;
   
-  let jobType = '';
+  let jobType : 'Import' | 'Export' | 'Transhipment' | '' = '';
   
-  // Determine JobType based on department name and export/import
-  if (departmentName.includes('fcl') || departmentName.includes('lcl')) {
-    if (exportImport === 'Export') {
-      jobType = 'Export';
-    } else if (exportImport === 'Import') {
-      jobType = 'Import';
-    }
-  }
+  // // Determine JobType based on department name and export/import
+  // if (departmentName.includes('fcl') || departmentName.includes('lcl')) {
+  //   if (exportImport === 'Export') {
+  //     jobType = 'Export';
+  //   } else if (exportImport === 'Import') {
+  //     jobType = 'Import';
+  //   }
+  // }
   
-  // Additional logic for other department types if needed
-  if (departmentName.includes('air')) {
-    if (exportImport === 'Export') {
-      jobType = 'Air Export';
-    } else if (exportImport === 'Import') {
-      jobType = 'Air Import';
-    }
-  }
+  // // Additional logic for other department types if needed
+  // if (departmentName.includes('air')) {
+  //   if (exportImport === 'Export') {
+  //     jobType = 'Air Export';
+  //   } else if (exportImport === 'Import') {
+  //     jobType = 'Air Import';
+  //   }
+  // }
   
   // Set the JobType value
-  this.b['JobType']?.setValue(jobType);
+  this.b['JobType']?.setValue(exportImport);
 }
 
   onRouteChange(): void {
@@ -3067,10 +3076,10 @@ ${this.userData['userName']}`;
     const formattedPOL = this.getFormattedPort(POL);
     const formattedPOD = this.getFormattedPort(POD);
     const formattedFPD = this.getFormattedPort(FPD);
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.documentSid = this.bookingData?.BookingHeaderSid;
-    modalRef.componentInstance.parentSubject = `__SUBJECT__ for Booking No."${this.bookingData.BookingNo}"`;
-    modalRef.componentInstance.parentMailbodyTemplate = `
+    this.followupModalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    this.followupModalRef.componentInstance.documentSid = this.bookingData?.BookingHeaderSid;
+    this.followupModalRef.componentInstance.parentSubject = `__SUBJECT__ for Booking No."${this.bookingData.BookingNo}"`;
+    this.followupModalRef.componentInstance.parentMailbodyTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
       <p>Dear Sir/Madam,</p>
       <p>Kindly do the needful for "__SUBJECT__" Booking No."${this.bookingData.BookingNo}" Dated:${new Date(this.bookingData.BookingDateTime).toLocaleDateString()} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
@@ -3078,16 +3087,67 @@ ${this.userData['userName']}`;
       <p>${this.userData['userEmail']}</p>
     </div>
   `;
- 
-  modalRef.componentInstance.followupSaved.subscribe((result) => {
-    console.log('Follow-up saved successfully:', result);
-    this.appSettingService.showSuccess('Follow-up created successfully');
-  });
- 
-  modalRef.result.then(
-    (result) => console.log('Modal closed:', result),
-    (dismissReason) => console.log('Modal dismissed:', dismissReason)
-  );
+
+    this.followupModalRef.componentInstance.followupSaved.subscribe((result) => {
+      console.log('Follow-up saved successfully:', result);
+      this.appSettingService.showSuccess('Follow-up created successfully');
+    });
+
+    this.initializeMilestoneContentForFollowup()
+
+    this.followupModalRef.result.then(
+      (result) => console.log('Modal closed:', result),
+      (dismissReason) => console.log('Modal dismissed:', dismissReason)
+    );
+
+  }
+
+  initializeMilestoneContentForFollowup() {
+    let validDepartment = false;
+    let validJobType = false;
+    if (this.selectedDepartment?.ExportImport === "Export") {
+      validDepartment = true;
+    }
+
+    const currentJobType = this.b['JobType']?.value;
+    if (currentJobType === "Export") {
+      validJobType = true;
+    }
+
+    const allMilestones = this.milestoneComponent.allMilestones || [];
+    const cfuMilestoneId = allMilestones.find(m => m.MilestoneCode === "CFU")?.MilestoneMasterSid;
+    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === cfuMilestoneId);
+    console.log("AutoInsert Or Not", {
+      ImportOrExport: this.selectedDepartment?.ExportImport,
+      validDepartment,
+      currentJobType,
+      validJobType,
+      allMilestones,
+      tabValue: this.milestoneResult,
+      existingMilestone,
+      validMilestone: existingMilestone ? false : true,
+      finalDecision: validDepartment && validJobType && !existingMilestone
+    })
+
+    this.followupModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
+
+    const milestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: currentJobType,
+      MilestoneCode: "CFU",
+      ShipmentNo: this.bookingData?.ShipmentNo,
+      createdBy: this.userData?.userEmail,
+      Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
+    };
+    console.log("Milestone Payload",milestonePayload);
+    this.followupModalRef.componentInstance.milestonePayload = milestonePayload;
+
+    this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
+      console.log("Reloading milestone...");
+      this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
+    });
   }
  
  
