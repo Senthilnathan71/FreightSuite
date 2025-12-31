@@ -3298,14 +3298,16 @@ ${this.userData['userName']}`;
     });
   }
 
+getFormattedPort(code: string): string {
+  if (!code) return '';
 
-  getFormattedPort(code: string) {
-    console.log(code);
-    if (!code) return '';
-    const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
-    console.log(ourPort);
-    return `${ourPort} (${code})`
-  }
+  const port = this.portList.find(p => p.PortCode === code);
+  const portName = port?.PortName;
+
+  return portName ? `${portName} - ${code}` : code;
+}
+
+  
 
   getFPDETA() {
     const POD = this.bookingHeader?.POD;
