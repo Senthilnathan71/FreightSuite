@@ -117,7 +117,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     });
     this.initializeModalDropdownItems();
     super.ngOnInit();
-    this.loadVendorInvoices();
+    // this.loadVendorInvoices();
   }
 
   

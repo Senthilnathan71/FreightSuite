@@ -121,6 +121,10 @@ defaultCurrencyCode: string = '';
   ) {}
 
   ngOnInit(): void {
+     this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    console.log('Company Currency:', this.currentCurrencyCode); 
+    console.log('Company Currency:', this.companyCurrency);
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();
     this.initializeForm();
@@ -784,7 +788,7 @@ async handleJobsForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): 
       ledgerMasterSid: [{value:null}],
       currencyMasterSid: [defaultCurrencyId, Validators.required],
       currencyCode: [defaultCurrencyCode],
-      exchangeRate: [{value:1,disabled: true}, [Validators.required, Validators.min(0)]],
+      exchangeRate: [{ value: 1, disabled: true }, Validators.required],
       currencyAmount: [0, [Validators.required, Validators.min(0.01)]],
       localAmount: [0, [Validators.required, Validators.min(0)]],
       drCr: ['D', Validators.required],
@@ -1030,41 +1034,62 @@ onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
 }
 
   fetchExchangeRate(detailGroup: FormGroup, currencyId: number): void {
-    const voucherDate = this.form.get('voucherDate')?.value;
-    if (!voucherDate) return;
+  if (!currencyId || !this.currencyList?.length) return;
 
-    const dateString = `${voucherDate.year}-${String(voucherDate.month).padStart(2, '0')}-${String(voucherDate.day).padStart(2, '0')}`;
+  const companyCurrencyCode = this.companySettings.getCurrencySettings().code;
+  const selectedCurrency = this.currencyList.find(
+    c => c.CurrencyMasterSid === currencyId
+  );
 
-    const currency = this.currencyList.find((c) => c.CurrencyMasterSid === currencyId);
-    if (currency) {
-      detailGroup.patchValue({ currencyCode: currency.currencyCode });
-    }
+  if (!selectedCurrency) return;
 
-    const payload = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      fromCurrencyCode: currency?.currencyCode || '',
-      toCurrencyCode: this.companySettings.getCurrencySettings().code,
-      EffectiveFrom : this.editMode ? this.voucherData?.VoucherDate : new Date(),
-      segment : 'cost'
-    };
+  const fromCurrencyCode = selectedCurrency.currencyCode;
+  const toCurrencyCode = companyCurrencyCode;
 
-    this.accountsService.getExchangeRate(payload).subscribe({
-      next: (response: any) => {
-        if(response?.status) {
-          detailGroup.get('exchangeRate')?.disable();
-          detailGroup.patchValue({ exchangeRate: Number(response.data)})
-          // Recalculate local amount after exchange rate is set
-          this.calculateLocalAmount(detailGroup);
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching exchange rate:', err);
-        detailGroup.patchValue({ exchangeRate: 1 });
-        this.calculateLocalAmount(detailGroup);
-      },
-    });
+  // ✅ SAME CURRENCY → Rate = 1 & DISABLE
+  if (fromCurrencyCode === toCurrencyCode) {
+    detailGroup.patchValue({
+      currencyCode: fromCurrencyCode,
+      exchangeRate: 1
+    }, { emitEvent: false });
+
+    detailGroup.get('exchangeRate')?.disable({ emitEvent: false });
+    this.calculateLocalAmount(detailGroup);
+    return;
   }
+
+  // ✅ DIFFERENT CURRENCY → ENABLE & FETCH RATE
+  detailGroup.get('exchangeRate')?.enable({ emitEvent: false });
+
+  const payload = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    fromCurrencyCode,
+    toCurrencyCode,
+    EffectiveFrom: this.editMode
+      ? new Date(this.voucherData?.VoucherDate)
+      : new Date(),
+    segment: 'cost'
+  };
+
+  this.accountsService.getExchangeRate(payload).subscribe({
+    next: (res: any) => {
+      if (res?.status) {
+        detailGroup.patchValue({
+          currencyCode: fromCurrencyCode,
+          exchangeRate: Number(res.data) || 1
+        }, { emitEvent: false });
+
+        this.calculateLocalAmount(detailGroup);
+      }
+    },
+    error: () => {
+      detailGroup.patchValue({ exchangeRate: 1 }, { emitEvent: false });
+      this.calculateLocalAmount(detailGroup);
+    }
+  });
+}
+
 
   fetchChargeDetails(detailGroup: FormGroup, chargeId: number): void {
   const rowIndex = this.getRowIndex(detailGroup);

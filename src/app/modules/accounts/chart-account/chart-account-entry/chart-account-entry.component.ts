@@ -641,6 +641,6 @@ openFollowup() {
   }
 
   nagivateback() {
-    this.route.navigate(['accounts/chart-accounts/entry']);
+     history.back();
   }
 }

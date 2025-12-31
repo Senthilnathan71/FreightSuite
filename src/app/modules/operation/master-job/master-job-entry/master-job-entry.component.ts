@@ -1260,16 +1260,7 @@ jobStatusOptions = [
             this.arapData = [];
           }
 
-          // Format the data for display (only if we have data)
-          if (this.arapData.length > 0) {
-            this.arapData = this.arapData.map(item => ({
-              ...item,
-              voucherType: this.getVoucherType(item.DocumentTypeCode),
-              status: this.getPaymentStatus(item),
-              amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
-              localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
-            }));
-          }
+         
         } else {
           this.arapData = [];
         }
@@ -3757,129 +3748,128 @@ getContainerMappingCount(containerSid: number): number {
     this.arapLoading = true;
     this.operationService.getMasterJobARAPData(this.masterJobSid).subscribe({
       next: (response: any) => {
-        let dataArray = [];
-
-        // Handle different response formats
-        if (Array.isArray(response)) {
-          dataArray = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-          dataArray = response.data;
-        } else if (response && Array.isArray(response)) {
-          dataArray = response;
-        } else if (response && response.status && response.data) {
-          dataArray = Array.isArray(response.data) ? response.data : [];
+            if (response.status) {
+                let rawData = response.data || response;
+                // Format the data for display
+                rawData = rawData.map(item => ({
+                    ...item,
+                    DocumentTypeCode: item.DocumentTypeCode,
+                    VoucherNumber: item.VoucherNumber,
+                    VoucherDate: item.VoucherDate,
+                    VoucherHeaderSid: item.VoucherHeaderSid,
+                    Amount: Number(item.Amount) || 0,
+                    CurrencyCode: item.CurrencyCode,
+                    LocalAmount: Number(item.LocalAmount) || 0,
+                    HBLNo: item.HBLNo || '-',
+                    PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
+                }));
+                
+                // Apply filters
+                this.arapData = this.applyFilters(rawData);
+            } else {
+                this.arapData = [];
+            }
+            this.arapLoading = false;
+        },
+        error: (error) => {
+            console.error('Error loading AR/AP data:', error);
+            this.arapData = [];
+            this.arapLoading = false;
+            this.appSettingService.showError('Failed to load AR/AP data');
         }
-
-        this.arapData = dataArray.map(item => ({
-          ...item,
-          voucherType: this.getVoucherType(item.DocumentTypeCode),
-          status: this.getPaymentStatus(item),
-          amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
-          localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
-        }));
-
-        this.arapLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading AR/AP data:', error);
-        this.arapData = [];
-        this.arapLoading = false;
-        this.appSettingsService.showError('Failed to load AR/AP data');
-      }
     });
-  }
+}
 
-  private getVoucherType(documentTypeCode: string): string {
-    const typeMap: { [key: string]: string } = {
-      'INV': 'Invoice',
-      'PAY': 'Payment',
-      'CRN': 'Credit Note',
-      'DRN': 'Debit Note',
-      'REC': 'Receipt',
-    };
-    return typeMap[documentTypeCode] || documentTypeCode;
-  }
+  getTotalAmount(): number {
+  return this.arapData.reduce(
+    (sum, item) => sum + Number(item.Amount || 0),
+    0
+  );
+}
 
-  private getPaymentStatus(voucher: any): string {
-    // You might need to fetch actual payment status from your payment tables
-    // This is a simplified version
-    if (voucher.Amount === voucher.LocalAmount) {
-      return 'Paid';
-    } else if (voucher.LocalAmount > 0 && voucher.LocalAmount < voucher.Amount) {
-      return 'Partial';
+getTotalLocalAmount(): number {
+  return this.arapData.reduce(
+    (sum, item) => sum + Number(item.LocalAmount || 0),
+    0
+  );
+}
+
+
+
+
+
+
+openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
+    if (documentTypeCode === 'INV') {
+        this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
+    } else if (documentTypeCode === 'VINV') {
+        this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
     }
-    return 'Unpaid';
-  }
+}
+getFilteredCount(): number {
+    return this.arapData.length;
+}
 
-  private formatCurrency(amount: number, currencyCode: string): string {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currencyCode || 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount || 0);
-    } catch (error) {
-      return `${currencyCode || ''} ${(amount || 0).toFixed(2)}`;
+private applyFilters(data: any[]): any[] {
+    let filtered = [...data];
+    
+    // Filter by voucher type
+    if (this.arapFilter.voucherType !== 'all') {
+        filtered = filtered.filter(item => 
+            item.DocumentTypeCode === this.arapFilter.voucherType
+        );
     }
-  }
-
-  getTotalAmount(): string {
-    const total = this.arapData.reduce((sum, item) => sum + (item.Amount || 0), 0);
-    if (this.arapData.length > 0) {
-      const currency = this.arapData[0].CurrencyCode;
-      return this.formatCurrency(total, currency);
+    
+    // Filter by status - Corrected: use PostStatus field
+    if (this.arapFilter.status !== 'all') {
+        filtered = filtered.filter(item => 
+            item.PostStatus === this.arapFilter.status
+        );
     }
-    return '0.00';
-  }
+    
+    return filtered;
+}
 
-  getTotalLocalAmount(): string {
-    const total = this.arapData.reduce((sum, item) => sum + (item.LocalAmount || 0), 0);
-    return this.formatCurrency(total, 'USD');
-  }
-
-  getCountByStatus(status: string): number {
-    return this.arapData.filter(item => item.status === status).length;
-  }
-
-  openVoucherDetails(voucherHeaderSid: number) {
-    // Navigate to voucher details page
-    this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-  }
 
   exportARAPReport() {
+    if (this.arapData.length === 0) {
+        this.appSettingService.showWarning('No data to export');
+        return;
+    }
+
     const dataForExport = this.arapData.map(item => ({
-      'Voucher No': item.VoucherNumber,
-      'Date': this.datePipe.transform(item.VoucherDate),
-      'Type': item.voucherType,
-      'Currency': item.CurrencyCode,
-      'Amount': item.Amount,
-      'Local Amount': item.LocalAmount,
-      'HBL No': item.HBLNo || '',
-      'Status': item.status
+        'Voucher No': item.VoucherNumber,
+        'Document Type': item.DocumentTypeCode,
+        'Date': this.datePipe.transform(item.VoucherDate),
+        'Currency': item.CurrencyCode,
+        'Amount': item.Amount,
+        'Local Amount': item.LocalAmount,
+        // 'HBL No': item.HBLNo || '',
+        'Post Status': item.PostStatus
     }));
 
     this.exportExcelService.exportAsExcel({
-      data: dataForExport,
-      headers: [
-        { key: 'Voucher No', label: 'Voucher No' },
-        { key: 'Date', label: 'Date' },
-        { key: 'Type', label: 'Type' },
-        { key: 'Currency', label: 'Currency' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'Local Amount', label: 'Local Amount' },
-        { key: 'HBL No', label: 'HBL No' },
-        { key: 'Status', label: 'Status' }
-      ],
-      fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
-      title: 'AR/AP Report'
+        data: dataForExport,
+        headers: [
+            { key: 'Voucher No', label: 'Voucher No' },
+            { key: 'Document Type', label: 'Document Type' },
+            { key: 'Date', label: 'Date' },
+            { key: 'Currency', label: 'Currency' },
+            { key: 'Amount', label: 'Amount' },
+            { key: 'Local Amount', label: 'Local Amount' },
+            // { key: 'HBL No', label: 'HBL No' },
+            { key: 'Post Status', label: 'Post Status' }
+        ],
+        fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
+        title: 'AR/AP Report'
     });
-  }
+}
 
-  printARAPReport() {
-    // Implement print functionality
-    window.print();
-  }
+
+  // printARAPReport() {
+  //   // Implement print functionality
+  //   window.print();
+  // }
 
  bookingCreateInMasterJob() {
   const bookingPayload = {
