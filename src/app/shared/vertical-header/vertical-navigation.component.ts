@@ -16,6 +16,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { DocumentSearchResult } from './document-search.interface';
 import { VerticalSidebarService } from '../vertical-sidebar/vertical-sidebar.service';
 import { RouteInfo } from '../vertical-sidebar/vertical-sidebar.metadata';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 declare var $: any;
 
@@ -92,6 +93,7 @@ branchList: any[] = [];
     private modalService: NgbModal,
     private cdr: ChangeDetectorRef,
     private companySettingsManager: CompanySettingsManagerService,
+    private logoService : LogoService,
     private masterService : MasterService,
     private verticalSidebarService : VerticalSidebarService
   ) {
@@ -189,6 +191,8 @@ ngOnInit(): void {
 
   // Setup document search subscription
   this.setupDocumentSearchSubscription();
+
+  this.logoService.loadInitialLogo();
 }
 
 
@@ -344,6 +348,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   this.userData = updatedUserData;
 
   this.appSettingsService.showSuccess('Switched to new branch and company');
+  this.logoService.refreshLogo();
 
   modalRef.close();
 }

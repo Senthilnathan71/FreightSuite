@@ -49,6 +49,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -311,6 +312,7 @@ dataFromEnqPage:any;
     private pdfService: PdfDownloadService,
     private commonService: CommonService,
     private masterService: MasterService,
+    public logoService : LogoService
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
