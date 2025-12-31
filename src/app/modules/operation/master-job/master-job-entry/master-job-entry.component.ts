@@ -1123,31 +1123,31 @@ jobStatusOptions = [
   }
 
   loadInitialData() {
-    const companySid = this.currentCompany?.CompanyMasterSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     return forkJoin({
-      seaDepartments: this.operationService.getDepartmentByType('Sea', companySid)
+      seaDepartments: this.operationService.getDepartmentByType('Sea', CompanyMasterSid)
         .pipe(catchError(err => of({ data: [] }))),
-      roadDepartments: this.operationService.getDepartmentByType('Road', companySid)
+      roadDepartments: this.operationService.getDepartmentByType('Road', CompanyMasterSid)
         .pipe(catchError(err => of({ data: [] }))),
-      transportDepartments: this.operationService.getDepartmentByType('Transport', companySid)
+      transportDepartments: this.operationService.getDepartmentByType('Transport', CompanyMasterSid)
         .pipe(catchError(err => of({ data: [] }))),
-      otherDepartments: this.operationService.getDepartmentByType('Others', companySid)
+      otherDepartments: this.operationService.getDepartmentByType('Others', CompanyMasterSid)
         .pipe(catchError(err => of({ data: [] }))),
       ports: this.operationService.getAllPorts()
         .pipe(catchError(err => of({ data: [] }))),
       vessels: this.operationService.getAllVessels()
         .pipe(catchError(err => of({ data: [] }))),
       // Replace individual API calls with getCustomerByItsType
-      agents: this.operationService.getCustomerByItsType({ companySid, types: ['vendor', 'transporter', 'agent'] })
+      agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['vendor', 'transporter', 'agent'] })
         .pipe(catchError(err => of([]))),
-      carriers: this.operationService.getCustomerByItsType({ companySid, types: ['carrier'] })
+      carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] })
         .pipe(catchError(err => of([]))),
-      forwarders: this.operationService.getCustomerByItsType({ companySid, types: ['forwarder'] })
+      forwarders: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] })
         .pipe(catchError(err => of({ data: [] }))),
-      cfsList: this.operationService.getCustomerByItsType({ companySid, types: ['cFS'] })
+      cfsList: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] })
         .pipe(catchError(err => of({ data: [] }))),
-      yards: this.operationService.getCustomerByItsType({ companySid, types: ['yard'] })
+      yards: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] })
         .pipe(catchError(err => of({ data: [] }))),
       containerTypes: this.operationService.getAllContainerTypes()
         .pipe(catchError(err => of({ data: [] }))),
@@ -1157,7 +1157,7 @@ jobStatusOptions = [
         .pipe(catchError(err => of([]))),
       customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
         .pipe(catchError(err => of([]))),
-      charges: this.operationService.getAllCharges(companySid)
+      charges: this.operationService.getAllCharges(CompanyMasterSid)
         .pipe(catchError(err => of([]))),
       // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
     }).pipe(tap(({

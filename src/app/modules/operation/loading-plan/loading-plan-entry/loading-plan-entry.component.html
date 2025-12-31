@@ -707,21 +707,37 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
-                                placeholder="" maxlength="11" [textWithNumbers]="11">
-                            <label class="input-label">Container No <span class="text-danger">*</span></label>
+  <div class="custom-form-group">
+    <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
+           maxlength="11" [textWithNumbers]="11" placeholder="" 
+           (blur)="formatContainerNumber()"
+           (input)="onContainerNumberInput($event)">
+    <label class="input-label">Container No <span class="text-danger">*</span></label>
 
-                            <div *ngIf="containerForm.get('ContainerNumber')?.touched && containerForm.get('ContainerNumber')?.invalid"
-                                class="error-message">
-                                <span *ngIf="containerForm.get('ContainerNumber')?.hasError('required')">
-                                    Required</span>
-                                <span *ngIf="containerForm.get('ContainerNumber')?.hasError('maxlength')">Container
-                                    Number cannot exceed 11 characters</span>
-                            </div>
+    <div *ngIf="containerForm.get('ContainerNumber')?.touched && 
+                containerForm.get('ContainerNumber')?.invalid"
+         class="error-message">
+      <span *ngIf="containerForm.get('ContainerNumber')?.hasError('required')">
+        Container number is required
+      </span>
+      <span *ngIf="containerForm.get('ContainerNumber')?.hasError('invalidFormat')">
+         ABCD1234567
+      </span>
+      <span *ngIf="containerForm.get('ContainerNumber')?.hasError('invalidContainerNumber')">
+        Invalid container number 
+      </span>
+    </div>
+    
+    <!-- Show valid container number message -->
+    <div *ngIf="containerForm.get('ContainerNumber')?.valid && 
+                containerForm.get('ContainerNumber')?.value &&
+                containerForm.get('ContainerNumber')?.value.length === 11"
+         class="success-message">
+      ✓ Valid container number
+    </div>
+  </div>
+</aside>
 
-                        </div>
-                    </aside>
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">

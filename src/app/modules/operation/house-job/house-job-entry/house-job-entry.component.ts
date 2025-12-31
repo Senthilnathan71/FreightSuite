@@ -57,6 +57,7 @@ import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
+import { PackingListComponent } from '../report/packing-list/packing-list.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -368,6 +369,8 @@ isVoyageFreeText: boolean = false;
   today : any;
   minDate : any;
   minDODate : any;
+  minSIConfirmationDate : any;
+  minDGConfirmationDate : any;
   minShippingBillDate : any;
   maxShippingBillDate : any;
   minCargoRecDate : any;
@@ -1042,6 +1045,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CarrierBookingDate : [''],
       DONo : [''],
       DODate : [''],
+      SIConfirmationDate : [''],
+      DGConfirmationDate : [''],
     })
   }
 
@@ -1443,6 +1448,8 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
           this.minDate = undefined;
           const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
           this.minDODate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
+          this.minSIConfirmationDate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
+          this.minDGConfirmationDate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
           this.setMinMaxDateConditions();
           // ✅ Update the formData for child components
           this.commonFormValue = {
@@ -1675,6 +1682,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
       CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
       DONo: otherData?.DONo || '',
       DODate: otherData?.DODate || '',
+      SIConfirmationDate: otherData?.SIConfirmationDate ? new Date(otherData?.SIConfirmationDate) : null,
+      DGConfirmationDate: otherData?.DGConfirmationDate ? new Date(otherData?.DGConfirmationDate) : null,
       InternalNote: otherData?.InternalNote || '',
       GeneralNote: otherData?.GeneralNote || ''
     })
@@ -1914,6 +1923,8 @@ onCurrencyChange(event: any) {
   console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
   console.log('DONo from form:', otherFormValue?.DONo);
   console.log('DODate from form:', otherFormValue?.DODate);
+  console.log('SIConfirmationDate from form:', otherFormValue?.SIConfirmationDate);
+  console.log('DGConfirmationDate from form:', otherFormValue?.DGConfirmationDate);
   console.log('SwitchBLShipper from form:', otherFormValue?.SwitchBLShipper);
   console.log('SwitchLocation from form:', otherFormValue?.SwitchLocation);
   console.log('Full otherForm value:', otherFormValue);
@@ -2061,6 +2072,8 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
       // FIXED: DONo and DODate handling
       DONo: otherFormValue?.DONo || '',
       DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
+      SIConfirmationDate: otherFormValue?.SIConfirmationDate ? new Date(otherFormValue?.SIConfirmationDate) : null,
+      DGConfirmationDate: otherFormValue?.DGConfirmationDate ? new Date(otherFormValue?.DGConfirmationDate) : null,
       InternalNote: otherFormValue?.InternalNote || '',
       GeneralNote: otherFormValue?.GeneralNote || ''
     },
@@ -2887,7 +2900,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
   //  Other Form Related Functions
 
   setAddressOthers(controlName: string, item: any) {
-    this.o[controlName]?.setValue(item ? item.CustomerAddress1 : '')
+    this.o[controlName]?.setValue(item ? item.Address : '')
   }
 
   handleCFSOrYard() {
@@ -3705,6 +3718,22 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.salesmanList = this.salesmanList || [];
   }
+
+
+    reportPackingList() {
+      const modalRef = this.modalService.open(PackingListComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      // modalRef.componentInstance.masterJobData = this.masterJobData;
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+      // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+          modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.TandCList = this.TandCList || [];
+       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+   
+    }
 
 
       reportMilestoneSummary() {

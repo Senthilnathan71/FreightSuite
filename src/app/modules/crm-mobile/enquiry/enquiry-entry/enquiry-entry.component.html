@@ -49,7 +49,7 @@
   <i class="fas fa-question-circle me-1"></i> Voice Help
 </button> -->
 <div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()">    
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()" [disabled]="!mps.can('insert')">    
                     <i class="fas fa-plus me-1"></i>
                     <span>Create </span>    
                     </button>
@@ -2029,7 +2029,7 @@
     width:50%;
     padding-left:3rem;
     box-sizing:border-box;
-    font-size:16px;
+    font-size:17px;
     margin:0;
 ">
 
@@ -2041,37 +2041,38 @@
     </div>
 
     <!-- Enquiry Number -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Number</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.EnquiryNumber || '' }}</div>
     </div>
 
     <!-- Party Name -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Name</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.CustomerName || '' }}</div>
     </div>
 
     <!-- Party Address -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Address</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.CustomerAddress || '' }}</div>
     </div>
 
     <!-- Received Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Received Date</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
-            {{ (enquiryData?.EnquiryDate | formatDate)  }}
+            <!-- {{ (enquiryData?.EnquiryDate | formatDate)  }} -->
+               {{ formatDate(enquiryData?.EnquiryDate )  }}
         </div>
     </div>
 
     <!-- Port Of Origin -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Origin</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2080,7 +2081,7 @@
     </div>
 
     <!-- Port Of Loading -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Loading</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2089,7 +2090,7 @@
     </div>
 
      <!-- Inco Terms -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
         <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Inco Terms</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.IncoTerms || '' }}</div>
@@ -2103,7 +2104,7 @@
     width:50%;
     padding-left:2rem;
     box-sizing:border-box;
-    font-size:16px;
+    font-size:17px;
     margin:0;
 ">
 
@@ -2115,21 +2116,21 @@
     </div>
 
     <!-- Shipper Address -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper Address</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}</div>
     </div>
 
     <!-- Enquiry Created By -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created By</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">{{ enquiryData?.createdBy || '' }}</div>
     </div>
 
     <!-- Enquiry Created Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created Date</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2138,7 +2139,7 @@
     </div>
 
   <!-- Contact / Number -->
-<div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+<div style="display:flex; margin-bottom:2px;margin-top: 7px;">
     <div style="width:190px; white-space:nowrap; font-weight:bolder;">
         <strong>Contact / Number</strong>
     </div>
@@ -2165,7 +2166,7 @@
 
 
     <!-- Expected Shipment Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Expected Shipment Date</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2175,7 +2176,7 @@
 
     
     <!-- Port of Discharge -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Port of Discharge</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2184,7 +2185,7 @@
     </div>
 
     <!-- Final Destination -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 5px;">
+    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
         <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Final Destination</strong></div>
         <div style="width:10px; text-align:center;">:</div>
         <div style="padding-left:6px;">
@@ -2210,7 +2211,7 @@
 </div>
 
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 16px;">
+            <table style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 17px;">
                 <thead>
                     <tr>
                         <th style="border: 1px solid #000; padding: 4px;border-left:none;text-align: center;font-weight: bolder;width: 9%;"><strong>Cargo Type</strong></th>

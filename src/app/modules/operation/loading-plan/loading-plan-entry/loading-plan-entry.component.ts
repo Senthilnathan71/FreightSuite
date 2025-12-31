@@ -708,7 +708,132 @@ export class LoadingPlanEntryComponent {
       IsSoc: [false]
     });
   }
+formatContainerNumber(): void {
+    const containerControl = this.containerForm.get('ContainerNumber');
+    if (!containerControl?.value) return;
 
+    // Convert to uppercase and remove all non-alphanumeric characters
+    let containerNumber = containerControl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Set the formatted value back to the control
+    containerControl.setValue(containerNumber, { emitEvent: false });
+
+    // Basic format validation: 4 letters + 6 digits + 1 check digit
+    const containerRegex = /^[A-Z]{4}\d{6}\d?$/;
+
+    // If we have 10 characters (4 letters + 6 digits), calculate check digit
+    if (containerNumber.length === 10 && containerRegex.test(containerNumber + '0')) {
+      // Calculate check digit and append it
+      const validation = this.validateContainerNumber(containerNumber + '0'); // Temporary append
+      if (validation.checkDigit !== undefined) {
+        containerNumber = containerNumber.substring(0, 10) + validation.checkDigit.toString();
+        containerControl.setValue(containerNumber);
+      }
+    }
+
+    // Validate the complete container number (should be 11 characters now)
+    if (containerNumber.length === 11) {
+      const validation = this.validateContainerNumber(containerNumber);
+
+      if (!validation.isValid) {
+        containerControl.setErrors({ 'invalidContainerNumber': true });
+        this.appSettingService.showError(`Invalid container number. Expected check digit: ${validation.checkDigit}`);
+      } else {
+        containerControl.setErrors(null);
+        // Show success message
+        setTimeout(() => {
+          // This will trigger the success message in the template
+          containerControl?.updateValueAndValidity({ onlySelf: true });
+        }, 0);
+      }
+    } else if (containerNumber.length > 0) {
+      containerControl.setErrors({ 'invalidFormat': true });
+      this.appSettingService.showError('Container number must be 11 characters: 4 letters + 6 digits + 1 check digit');
+    }
+  }
+  validateContainerNumber(containerNumber: string): { isValid: boolean, checkDigit?: number } {
+    if (!containerNumber || containerNumber.length !== 11) {
+      return { isValid: false };
+    }
+
+    // ISO 6346 character value mapping
+    const charMap: { [key: string]: number } = {
+      'A': 10, 'B': 12, 'C': 13, 'D': 14, 'E': 15, 'F': 16, 'G': 17, 'H': 18, 'I': 19,
+      'J': 20, 'K': 21, 'L': 23, 'M': 24, 'N': 25, 'O': 26, 'P': 27, 'Q': 28, 'R': 29,
+      'S': 30, 'T': 31, 'U': 32, 'V': 34, 'W': 35, 'X': 36, 'Y': 37, 'Z': 38
+    };
+
+    // Remove any spaces and convert to uppercase
+    const cleanNumber = containerNumber.toUpperCase().replace(/\s/g, '');
+
+    if (cleanNumber.length !== 11) {
+      return { isValid: false };
+    }
+
+    // Extract the base number (first 10 characters) and check digit (last character)
+    const baseNumber = cleanNumber.substring(0, 10);
+    const providedCheckDigit = parseInt(cleanNumber.substring(10, 11), 10);
+
+    let sum = 0;
+
+    // Calculate sum using ISO 6346 algorithm
+    for (let i = 0; i < 10; i++) {
+      const char = baseNumber[i];
+      let value: number;
+
+      // Check if character is a letter
+      if (/[A-Z]/.test(char)) {
+        value = charMap[char] || 0;
+      } else if (/[0-9]/.test(char)) {
+        value = parseInt(char, 10);
+      } else {
+        return { isValid: false };
+      }
+
+      // Weight factor: 2^i (power of 2)
+      const weight = Math.pow(2, i);
+      sum += value * weight;
+    }
+
+    // Calculate check digit
+    const remainder = sum % 11;
+    const calculatedCheckDigit = remainder === 10 ? 0 : remainder;
+
+    return {
+      isValid: calculatedCheckDigit === providedCheckDigit,
+      checkDigit: calculatedCheckDigit
+    };
+  }
+
+  // Getters for form arrays
+  get connections(): FormArray {
+    return this.containerForm.get('connections') as FormArray;
+  }
+
+
+
+  get costRevenueCharges(): FormArray {
+    return this.containerForm.get('costRevenueCharges') as FormArray;
+  }
+
+  get containerActivities(): FormArray {
+    return this.containerForm.get('containerActivities') as FormArray;
+  }
+   onContainerNumberInput(event: any): void {
+    const input = event.target.value;
+    // Auto-convert to uppercase as user types
+    const upperValue = input.toUpperCase();
+    if (input !== upperValue) {
+      event.target.value = upperValue;
+      this.containerForm.get('ContainerNumber')?.setValue(upperValue);
+    }
+
+    // Limit to 11 characters
+    if (input.length > 11) {
+      event.target.value = input.substring(0, 11);
+      this.containerForm.get('ContainerNumber')?.setValue(input.substring(0, 11));
+    }
+  }
   constructContainerForm(data: any) {
     const containerForm = this.fb.group({
       MasterJobContainerSid: data?.MasterJobContainerSid || null,
