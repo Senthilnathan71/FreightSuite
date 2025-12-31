@@ -65,6 +65,8 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.component';
+import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.component';
+import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -3575,6 +3577,102 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.selectedReport = type; 
+
+  }
+
+
+    reportHBLBill() {
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+    );
+
+   
+    if (!hasValidContainers) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required.'
+      );
+      return;
+    }
+    const hasValidVessale = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+    );
+    if (!hasValidVessale) {
+      this.appSettingService.showWarning(
+        'Vessel Name is required.'
+      );
+      return;
+    } 
+    const hasValidVoyage = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+    );
+    if (!hasValidVoyage) {
+      this.appSettingService.showWarning(
+        'Voyage No is required.'
+      );
+      return;
+    }
+  }
+    
+    const modalRef = this.modalService.open(AllHBLDraftComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+     modalRef.componentInstance.masterJobSid = this.masterJobSid
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.agentList = this.agentList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+   
+
+  }
+
+
+    reportHBL() {
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+    // Check if containers exist and have ContainerNumber
+    const hasValidContainers = this.masterJobData?.containers?.some(
+      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+    );
+
+   
+    if (!hasValidContainers) {
+      this.appSettingService.showWarning(
+        'ContainerNo is required.'
+      );
+      return;
+    }
+    const hasValidVessale = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+    );
+    if (!hasValidVessale) {
+      this.appSettingService.showWarning(
+        'Vessel Name is required.'
+      );
+      return;
+    } 
+    const hasValidVoyage = this.masterJobData?.voyages?.some(
+      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+    );
+    if (!hasValidVoyage) {
+      this.appSettingService.showWarning(
+        'Voyage No is required.'
+      );
+      return;
+    }
+  }
+   
+    const modalRef = this.modalService.open(AllHBLComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+     modalRef.componentInstance.masterJobSid = this.masterJobSid
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.agentList = this.agentList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+  
 
   }
 
