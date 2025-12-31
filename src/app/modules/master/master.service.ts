@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { Sector } from '../crm-mobile/Interfaces/sector.interface';
 import { State } from '../crm-mobile/Interfaces/state.interface';
 import { Country } from '../crm-mobile/Interfaces/country.interface';
@@ -1274,6 +1275,14 @@ export class MasterService {
       })
     );
   }
+
+ getCompanyLogo(logo: string) {
+  return this.http.get(
+    `company/logo/${logo}`,
+    { responseType: 'blob' }
+  );
+}
+
 
   createCompany(payload: any) {
     return this.http.post('company/create', payload).pipe(

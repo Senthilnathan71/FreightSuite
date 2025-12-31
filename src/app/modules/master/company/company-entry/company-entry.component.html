@@ -23,19 +23,19 @@
             (click)="openAuditLogs(auditLogModal)" appPreventMultiClick>
             <i class="fas fa-history me-1"></i>Logs
           </button>
-         
-<button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100"
-        (click)="openConfigCompany()" [hidden]="!isEditMode" appPreventMultiClick>
-  <i class="fas fa-cog me-1"></i> Valid Config
-</button>
-<div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateDepartment()">    
-                    <i class="fas fa-plus me-1"></i>
-                    <span>Create </span>    
-                    </button>
-</div>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="!isEditMode"
-            (click)="navigateBack()" appPreventMultiClick>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="openConfigCompany()"
+            [hidden]="!isEditMode" appPreventMultiClick>
+            <i class="fas fa-cog me-1"></i> Valid Config
+          </button>
+          <div class="action-group" *ngIf="isEditMode">
+            <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateDepartment()">
+              <i class="fas fa-plus me-1"></i>
+              <span>Create </span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="!isEditMode" (click)="navigateBack()" appPreventMultiClick>
             <i class="fas fa-chevron-left me-1"></i>
             Back
           </button>
@@ -45,28 +45,30 @@
             Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()"
-          [disabled]="((!mps.can('update')&& isEditMode)|| companyForm.invalid)" appPreventMultiClick>
+            [disabled]="((!mps.can('update')&& isEditMode)|| companyForm.invalid)" appPreventMultiClick>
             <i class="fas fa-save me-1"></i>
             Save
           </button>
           <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
-          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-            <i class="fas fa-ellipsis-v"></i>
-          </button>
-          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-               <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
-            <i class="fas fa-paperclip me-1"></i> Followup
-          </button>
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+              <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openFollowup()">
+                <i class="fas fa-paperclip me-1"></i> Followup
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -155,12 +157,11 @@
                 <!-- <ng-select class="ng-select" [items]="dropdownStore.countries()" bindLabel="countryName"
                   bindValue="CountryMasterSid" (change)="handlePanControl($event)" (clear)="handlePanControl(-1)"
                   formControlName="CountryMasterSid" placeholder=""></ng-select> -->
-                  <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
-                        [displayFields]="countryLookupConfig.displayFields"
-                        [displayLabels]="countryLookupConfig.displayLabels"
-                        [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
-                        (itemSelected)="handlePanControl($event)">                        
-                  </dofi-searchable-dropdown>
+                <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid"
+                  placeholder="" [displayFields]="countryLookupConfig.displayFields"
+                  [displayLabels]="countryLookupConfig.displayLabels" [labelFields]="countryLookupConfig.labelFields"
+                  bindValue="CountryMasterSid" (itemSelected)="handlePanControl($event)">
+                </dofi-searchable-dropdown>
                 <!-- <ng-select id="text-input" class="ng-select" placeholder="Select Country"
                   formControlName="CountryMasterSid" (change)="handlePanControl($event)">
                   <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
@@ -208,19 +209,21 @@
             </aside> -->
 
             <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select"
-                                        [class.filled]="!!companyForm.get('CurrencyMasterSid')?.value">
-                                        <dofi-searchable-dropdown  [items]="currencyResults" formControlName="CurrencyMasterSid" [placeholder]="''"
-                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
-                                        </dofi-searchable-dropdown>
-                                        <label class="input-label">Currency <span class="text-danger">*</span></label>
-                                        <div *ngIf="companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="companyForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
-                                        </div>
-                                    </div>
-                                </aside>
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!companyForm.get('CurrencyMasterSid')?.value">
+                <dofi-searchable-dropdown [items]="currencyResults" formControlName="CurrencyMasterSid"
+                  [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
+                  [displayLabels]="CurrencyLookupConfig.displayLabels" [labelFields]="CurrencyLookupConfig.labelFields"
+                  [bindValue]="'CurrencyMasterSid'">
+                </dofi-searchable-dropdown>
+                <label class="input-label">Currency <span class="text-danger">*</span></label>
+                <div
+                  *ngIf="companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid"
+                  class="error-message">
+                  <span *ngIf="companyForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
+                </div>
+              </div>
+            </aside>
 
             <!-- ADDRESS LINE 1 -->
 
@@ -423,40 +426,30 @@
             <!-- PAN -->
 
             <aside class="col-md-4">
-  <div class="custom-form-group">
-    @if (isUaeCountry()) {
-      <input type="text" 
-             id="Pan" 
-             formControlName="Pan" 
-             placeholder="" 
-             class="custom-input-field sm" 
-             maxlength="15"
-             [onlyNumbers]="15">
-    } @else {
-      <input type="text" 
-             id="Pan" 
-             formControlName="Pan" 
-             placeholder="" 
-             class="custom-input-field sm" 
-             maxlength="20"
-             [textWithNumbers]="20"
-             [style.text-transform]="isIndianCountry() ? 'uppercase' : 'none'">
-    }
-    
-    <label for="Pan" class="input-label">
-      {{ currentTaxIdLabel }}
-      @if (isIndianCountry() && isPanAvailable) {
-        <span class="text-danger">*</span>
-      }
-    </label>
-    
-    @if (companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid) {
-      <div class="error-message">
-        <span>{{ getTaxIdErrorMessage() }}</span>
-      </div>
-    }
-  </div>
-</aside>
+              <div class="custom-form-group">
+                @if (isUaeCountry()) {
+                <input type="text" id="Pan" formControlName="Pan" placeholder="" class="custom-input-field sm"
+                  maxlength="15" [onlyNumbers]="15">
+                } @else {
+                <input type="text" id="Pan" formControlName="Pan" placeholder="" class="custom-input-field sm"
+                  maxlength="20" [textWithNumbers]="20"
+                  [style.text-transform]="isIndianCountry() ? 'uppercase' : 'none'">
+                }
+
+                <label for="Pan" class="input-label">
+                  {{ currentTaxIdLabel }}
+                  @if (isIndianCountry() && isPanAvailable) {
+                  <span class="text-danger">*</span>
+                  }
+                </label>
+
+                @if (companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid) {
+                <div class="error-message">
+                  <span>{{ getTaxIdErrorMessage() }}</span>
+                </div>
+                }
+              </div>
+            </aside>
 
 
 
@@ -482,8 +475,8 @@
 
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks" [textWithNumbers]="500"
-                  rows="1"></textarea>
+                <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
+                  [textWithNumbers]="500" rows="1"></textarea>
                 <label for="text-input" class="input-label">Remarks </label>
 
                 <!--  Validation -->
@@ -1063,7 +1056,7 @@
                           <div class="custom-form-group">
                             <input type="text" id="branchPostalCode" placeholder="" class="custom-input-field sm"
                               formControlName="branchPostalCode" [onlyNumbers]="10">
-                            <label for="branchPostalCode" class="input-label">Postal Code  <span
+                            <label for="branchPostalCode" class="input-label">Postal Code <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchPostalCode')?.touched &&
                             branchForm.get('branchPostalCode')?.invalid){
@@ -1090,12 +1083,12 @@
                                 {{ country.countryName }}
                               </ng-option>
                             </ng-select> -->
-                            <dofi-searchable-dropdown [items]="countryResults" formControlName="branchCountryMasterSid" placeholder=""
-                        [displayFields]="countryLookupConfig.displayFields"
-                        [displayLabels]="countryLookupConfig.displayLabels"
-                        [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
-                        (itemSelected)="getStatesByCountry($event)">                        
-                      </dofi-searchable-dropdown>
+                            <dofi-searchable-dropdown [items]="countryResults" formControlName="branchCountryMasterSid"
+                              placeholder="" [displayFields]="countryLookupConfig.displayFields"
+                              [displayLabels]="countryLookupConfig.displayLabels"
+                              [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
+                              (itemSelected)="getStatesByCountry($event)">
+                            </dofi-searchable-dropdown>
                             <label for="branchCountryMasterSid" class="input-label">Country <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCountryMasterSid')?.touched &&
@@ -1118,12 +1111,12 @@
                                 {{ state.stateName }}
                               </ng-option>
                             </ng-select> -->
-                            <dofi-searchable-dropdown [items]="stateResults" formControlName="branchStateMasterSid" placeholder=""
-                        [displayFields]="stateLookupConfig.displayFields"
-                        [displayLabels]="stateLookupConfig.displayLabels"
-                        [labelFields]="stateLookupConfig.labelFields" bindValue="StateMasterSid"
-                        (itemSelected)="getCitiesByState($event)">                        
-                      </dofi-searchable-dropdown> 
+                            <dofi-searchable-dropdown [items]="stateResults" formControlName="branchStateMasterSid"
+                              placeholder="" [displayFields]="stateLookupConfig.displayFields"
+                              [displayLabels]="stateLookupConfig.displayLabels"
+                              [labelFields]="stateLookupConfig.labelFields" bindValue="StateMasterSid"
+                              (itemSelected)="getCitiesByState($event)">
+                            </dofi-searchable-dropdown>
                             <label for="branchStateMasterSid" class="input-label">State <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchStateMasterSid')?.touched &&
@@ -1155,57 +1148,55 @@
                           </div>
                         </aside> -->
                         <!-- Add after PAN field -->
-<ng-container *ngIf="shouldShowCompanyGSTFields()">
-    <!-- GSTIN -->
-    <aside class="col-md-4">
-  <div class="custom-form-group  gstin-group aos-horizontal">
+                        <ng-container *ngIf="shouldShowCompanyGSTFields()">
+                          <!-- GSTIN -->
+                          <aside class="col-md-4">
+                            <div class="custom-form-group  gstin-group aos-horizontal">
 
-    <!-- State Code -->
-    <input type="text"
-      class="custom-input-field sm gstin-fixed state-code"
-      [value]="getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)"
-      tabindex="-1" aria-label="State Code" disabled
-      [class.border-danger]="!getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)" />
+                              <!-- State Code -->
+                              <input type="text" class="custom-input-field sm gstin-fixed state-code"
+                                [value]="getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)"
+                                tabindex="-1" aria-label="State Code" disabled
+                                [class.border-danger]="!getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)" />
 
-    <!-- PAN -->
-    <input type="text"
-      class="custom-input-field sm gstin-fixed pan-code mx-1"
-      [value]="companyForm.get('Pan')?.value || ''"
-      disabled tabindex="-1" aria-label="PAN" style="border-bottom: 2px solid sandybrown;"/>
+                              <!-- PAN -->
+                              <input type="text" class="custom-input-field sm gstin-fixed pan-code mx-1"
+                                [value]="companyForm.get('Pan')?.value || ''" disabled tabindex="-1" aria-label="PAN"
+                                style="border-bottom: 2px solid sandybrown;" />
 
-    <!-- 13th Digit -->
-    <input type="text" id="company_thirteenthDigit" maxlength="1"
-      class="custom-input-field sm gstin-editable text-center digit-13"
-      (input)="generateCompanyGST()"
-      [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 12)"
-      aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;"/>
+                              <!-- 13th Digit -->
+                              <input type="text" id="company_thirteenthDigit" maxlength="1"
+                                class="custom-input-field sm gstin-editable text-center digit-13"
+                                (input)="generateCompanyGST()"
+                                [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 12)"
+                                aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;" />
 
-    <!-- 14th Digit -->
-    <input type="text"
-      class="custom-input-field sm gstin-fixed mx-1 text-center digit-14"
-      value="Z" disabled tabindex="-1"
-      aria-label="14th Digit" style="border-bottom: 2px solid purple;"/>
+                              <!-- 14th Digit -->
+                              <input type="text" class="custom-input-field sm gstin-fixed mx-1 text-center digit-14"
+                                value="Z" disabled tabindex="-1" aria-label="14th Digit"
+                                style="border-bottom: 2px solid purple;" />
 
-    <!-- 15th Digit -->
-    <input type="text" id="company_fifteenthDigit" maxlength="1"
-      class="custom-input-field sm gstin-editable text-center digit-15"
-      (input)="generateCompanyGST()"
-      aria-label="15th Digit"
-      [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 14)" style="border-bottom: 2px solid #b92b27;"/>
+                              <!-- 15th Digit -->
+                              <input type="text" id="company_fifteenthDigit" maxlength="1"
+                                class="custom-input-field sm gstin-editable text-center digit-15"
+                                (input)="generateCompanyGST()" aria-label="15th Digit"
+                                [value]="parseGST(branchForm.get('branchTaxRegistrationNo')?.value, 14)"
+                                style="border-bottom: 2px solid #b92b27;" />
 
-    <label class="input-label mt-1">GST</label>
+                              <label class="input-label mt-1">GST</label>
 
-    @if (branchForm.get('branchTaxRegistrationNo')?.touched && branchForm.get('branchTaxRegistrationNo')?.invalid) {
-        <div class="error-message">
-            @if (branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')) {
-                <span>Provided GST is invalid</span>
-            }
-        </div>
-    }
-  </div>
-</aside>
+                              @if (branchForm.get('branchTaxRegistrationNo')?.touched &&
+                              branchForm.get('branchTaxRegistrationNo')?.invalid) {
+                              <div class="error-message">
+                                @if (branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')) {
+                                <span>Provided GST is invalid</span>
+                                }
+                              </div>
+                              }
+                            </div>
+                          </aside>
 
-</ng-container>
+                        </ng-container>
                         <aside class="col-md-4 ">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!branchForm.get('branchCityMasterSid')?.value">
@@ -1215,12 +1206,11 @@
                                 {{city.cityName}}
                               </ng-option>
                             </ng-select> -->
-                            <dofi-searchable-dropdown [items]="branchCityList" formControlName="branchCityMasterSid" placeholder=""
-                        [displayFields]="cityLookupConfig.displayFields"
-                        [displayLabels]="cityLookupConfig.displayLabels"
-                        [labelFields]="cityLookupConfig.labelFields" bindValue="CityMasterSid"
-                        >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-                      </dofi-searchable-dropdown>             
+                            <dofi-searchable-dropdown [items]="branchCityList" formControlName="branchCityMasterSid"
+                              placeholder="" [displayFields]="cityLookupConfig.displayFields"
+                              [displayLabels]="cityLookupConfig.displayLabels"
+                              [labelFields]="cityLookupConfig.labelFields" bindValue="CityMasterSid">
+                            </dofi-searchable-dropdown>
                             <label for="branchCityMasterSid" class="input-label">City <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCityMasterSid')?.touched &&
@@ -1295,29 +1285,24 @@
                             }
                           </div>
                         </aside>
-           <aside class="col-md-4">
-  <div class="custom-form-group">
-    <input 
-      type="text" 
-      id="branchTimeZone" 
-      placeholder="" 
-      class="custom-input-field sm"
-      formControlName="branchTimeZone" 
-      (keydown)="validateTimezoneKey($event)"
-      (blur)="formatTimezoneOnBlur($event)"
-      maxlength="6"
-      [class.is-invalid]="branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched"
-    >
-    <label for="branchTimeZone" class="input-label">Time Zone <span class="text-danger">*</span></label>
+                        <aside class="col-md-4">
+                          <div class="custom-form-group">
+                            <input type="text" id="branchTimeZone" placeholder="" class="custom-input-field sm"
+                              formControlName="branchTimeZone" (keydown)="validateTimezoneKey($event)"
+                              (blur)="formatTimezoneOnBlur($event)" maxlength="6"
+                              [class.is-invalid]="branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched">
+                            <label for="branchTimeZone" class="input-label">Time Zone <span
+                                class="text-danger">*</span></label>
 
-       @if(branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched) {
-      <div class="error-message">
-        <span>{{ getTimezoneErrorMessage() }}</span>
-      </div>
-    }
+                            @if(branchForm.get('branchTimeZone')?.invalid && branchForm.get('branchTimeZone')?.touched)
+                            {
+                            <div class="error-message">
+                              <span>{{ getTimezoneErrorMessage() }}</span>
+                            </div>
+                            }
 
-  </div>
-</aside>
+                          </div>
+                        </aside>
 
                         <aside class="col-md-4">
                           <div class="custom-form-group">
@@ -1355,8 +1340,8 @@
 
                 </div>
 
-              
-             
+
+
                 <div ngbAccordionItem [ngbAccordionItem]="'branch-2'" class="" [collapsed]="true">
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
@@ -1370,16 +1355,46 @@
                         <aside class="col-md-12">
                           <div class="custom-form-group">
                             <input type="file" id="branchCompanyLogo" class="custom-input-field sm"
-                              formControlName="branchCompanyLogo">
+                              (change)="onCompanyLogoChange($event)" accept="image/*" />
                             <label for="branchCompanyLogo" class="input-label">Company Logo</label>
+
+                            <!-- Company Logo Preview -->
+                            <div class="logo-preview-container mt-2" *ngIf="companyLogoPreview || companyLogoUrl">
+                              <div class="d-flex align-items-center gap-2">
+                                <img
+                                  [src]="companyLogoPreview || companyLogoUrl"
+                                  alt="Company Logo Preview"
+                                  class="logo-preview-img"
+                                  style="max-width: 150px; max-height: 80px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; padding: 4px;"
+                                />
+                                <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearCompanyLogo()">
+                                  <i class="fas fa-times"></i> Remove
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </aside>
 
                         <aside class="col-md-12">
-                          <div class="custom-form-group ">
+                          <div class="custom-form-group">
                             <input type="file" id="branchReportLogo" class="custom-input-field sm"
-                              formControlName="branchReportLogo">
+                              (change)="onReportLogoChange($event)" accept="image/*" />
                             <label for="branchReportLogo" class="input-label">Report Logo</label>
+
+                            <!-- Report Logo Preview -->
+                            <div class="logo-preview-container mt-2" *ngIf="reportLogoPreview || reportLogoUrl">
+                              <div class="d-flex align-items-center gap-2">
+                                <img
+                                  [src]="reportLogoPreview || reportLogoUrl"
+                                  alt="Report Logo Preview"
+                                  class="logo-preview-img"
+                                  style="max-width: 150px; max-height: 80px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; padding: 4px;"
+                                />
+                                <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearReportLogo()">
+                                  <i class="fas fa-times"></i> Remove
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </aside>
                       </div>
@@ -1388,8 +1403,8 @@
 
                 </div>
 
-           
-              
+
+
                 <div ngbAccordionItem [ngbAccordionItem]="'branch-3'" class="" [collapsed]="true">
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton
@@ -1398,8 +1413,8 @@
                     </button>
                   </h2>
                   <div ngbAccordionCollapse [id]="'branch-3'">
-                      <div class="row p-1">
-                         <aside class="col-md-3">
+                    <div class="row p-1">
+                      <aside class="col-md-3">
                         <div class="custom-form-group">
                           <input type="text" id="BookingPrefix" placeholder="" class="custom-input-field sm"
                             formControlName="BookingPrefix" maxlength="20">
@@ -1555,7 +1570,7 @@
 
                 </div>
 
-              
+
               </div>
               <!-- <div class="col-md-6">
                 <div class="card ">
@@ -1758,11 +1773,11 @@
               </div>
 
               <div class="col-md-12 mt-md-0">
-                
-                    <div class="row">
-                      <ng-container *ngTemplateOutlet="nav2Template"></ng-container>
-                    </div>
-                  
+
+                <div class="row">
+                  <ng-container *ngTemplateOutlet="nav2Template"></ng-container>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1793,7 +1808,7 @@
             <div class="d-flex align-items-center text-center">
               <!-- Edit button -->
               <a class="text-info mx-2 cursor-pointer" (click)="openBranchEntryModal(branchEntryContent, branchIndex)">
-               <i class="fas fa-eye text-info"></i>
+                <i class="fas fa-eye text-info"></i>
               </a>
               <!-- Delete button -->
               <!-- <a class="text-danger mx-2 ps-3 border-start" 
@@ -1837,7 +1852,8 @@
     </table>
     <div>
       <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalBranches" [pageSize]="branchPageSize"
-        [(page)]="branchPage" (pageChange)="updateBranchPagination()" [rotate]="true" [ellipses]="false" [maxSize]="5" size="sm">
+        [(page)]="branchPage" (pageChange)="updateBranchPagination()" [rotate]="true" [ellipses]="false" [maxSize]="5"
+        size="sm">
       </ngb-pagination>
     </div>
   </div>
@@ -1854,45 +1870,45 @@
           <i class="fas fa-university"></i>
         </div>
         <h5 class="page-title mb-0 text-info pt-1">Bank</h5>
-    
+
       </div>
-    
+
       <button (click)="openBranchBankModal(bankEntryContent, currentBranchIndex)" class="btn  btn-sm btn-info">
         <i-feather name="plus-circle" class="feather-sm me-1"></i-feather>
         Add Bank
       </button>
     </div>
-    
+
 
     <div class="content-workspace">
-        <div class="workspace-content">
-           <div class="content-layout">
-                <!-- Bank List Section -->
-    <div class="row">
-      <!-- Info Alert (when no branch selected) -->
-      @if(setBranchErrorMessage) {
-      <ngb-alert [dismissible]="false" type="info" class="mt-3">
-        Select a branch to add bank details
-      </ngb-alert>
-      }
+      <div class="workspace-content">
+        <div class="content-layout">
+          <!-- Bank List Section -->
+          <div class="row">
+            <!-- Info Alert (when no branch selected) -->
+            @if(setBranchErrorMessage) {
+            <ngb-alert [dismissible]="false" type="info" class="mt-3">
+              Select a branch to add bank details
+            </ngb-alert>
+            }
 
-      <!-- Bank List Display -->
-      @if(currentBranchIndex !== null && branchBanks(currentBranchIndex).controls.length > 0) {
-      <div class="">
-       
-            <div class="row">
-              <ng-container *ngTemplateOutlet="bankListTemplate"></ng-container>
+            <!-- Bank List Display -->
+            @if(currentBranchIndex !== null && branchBanks(currentBranchIndex).controls.length > 0) {
+            <div class="">
+
+              <div class="row">
+                <ng-container *ngTemplateOutlet="bankListTemplate"></ng-container>
+              </div>
+
             </div>
-        
-      </div>
-      } @else if (!setBranchErrorMessage && currentBranchIndex !== null) {
-      <div class="text-center py-2 text-muted">
-        No banks added for this branch
-      </div>
-      }
-    </div>
-           </div>
+            } @else if (!setBranchErrorMessage && currentBranchIndex !== null) {
+            <div class="text-center py-2 text-muted">
+              No banks added for this branch
+            </div>
+            }
+          </div>
         </div>
+      </div>
     </div>
     <!-- Bank Tab Navigation -->
     <!-- <div class="row">
@@ -1940,7 +1956,7 @@
             <div class="d-flex align-items-center">
               <a class="text-info mx-2 ps-3 cursor-pointer"
                 (click)="openBranchBankModal(bankEntryContent, currentBranchIndex, $index)">
-               <i class="fas fa-eye text-info"></i>
+                <i class="fas fa-eye text-info"></i>
               </a>
               <!-- <a class="text-danger mx-2 ps-3 border-start" 
                    (click)="deleteBranchBankById(bankControl.value.BranchBankSid, $index)">
@@ -2031,8 +2047,8 @@
           <!-- Bank Code -->
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode" [textWithNumbers]="50"
-                >
+              <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode"
+                [textWithNumbers]="50">
               <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
               <div class="error-message">
@@ -2060,8 +2076,8 @@
           <!-- IFSC Code -->
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode" [textWithNumbers]="20"
-                >
+              <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode"
+                [textWithNumbers]="20">
               <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
               <div class="error-message">
@@ -2094,7 +2110,8 @@
           <aside class="col-md-4 d-flex align-items-center">
             <div class="form-check form-check-inline p-0">
               <div class="form-check d-flex align-items-center">
-                <input type="checkbox" formControlName="PrintOnInvoice" id="IsMSME" class="form-check-input sm" (change)="checkForBankDuplication()">
+                <input type="checkbox" formControlName="PrintOnInvoice" id="IsMSME" class="form-check-input sm"
+                  (change)="checkForBankDuplication()">
                 <label for="PrintOnInvoice" class="form-check-label sm">Print On Invoice</label>
               </div>
             </div>
@@ -2104,13 +2121,13 @@
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!branchBankForm.get('CurrencyMasterSid')?.value">
               <dofi-searchable-dropdown [items]="currencyResults" formControlName="CurrencyMasterSid" [placeholder]="''"
-                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
-                (itemSelected)="checkForBankDuplication()"
-              >
+                [displayFields]="CurrencyLookupConfig.displayFields"
+                [displayLabels]="CurrencyLookupConfig.displayLabels" [labelFields]="CurrencyLookupConfig.labelFields"
+                [bindValue]="'CurrencyMasterSid'" (itemSelected)="checkForBankDuplication()">
               </dofi-searchable-dropdown>
               <label class="input-label">Currency <span class="text-danger">*</span></label>
-              <div *ngIf="branchBankForm.get('CurrencyMasterSid')?.touched && branchBankForm.get('CurrencyMasterSid')?.invalid"
+              <div
+                *ngIf="branchBankForm.get('CurrencyMasterSid')?.touched && branchBankForm.get('CurrencyMasterSid')?.invalid"
                 class="error-message">
                 <span *ngIf="branchBankForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
               </div>

@@ -33,6 +33,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -83,6 +84,8 @@ export class CompanyEntryComponent implements OnInit {
     tabs1 = [
     { name: 'Bank', icon: 'fas fa-university' },
   ];
+  companyLogoUrl: string | null = null;
+  reportLogoUrl: string | null = null;
 	//  DECLARATIONS
 	CompanyMasterSid: number;
 	BranchMasterSid: number;
@@ -100,7 +103,12 @@ export class CompanyEntryComponent implements OnInit {
 	userData: any;
 	currentCompany: any;
     currentBranch: any;
-
+ companyLogoPath: string | null = null;
+ reportLogoPath: string | null = null;
+ companyLogoPreview: string | null = null;
+ reportLogoPreview: string | null = null;
+ existingCompanyLogo: string | null = null;
+ existingReportLogo: string | null = null;
 	companyForm!: FormGroup;
 	branchForm!: FormGroup;
 	branchBankForm!: FormGroup;
@@ -148,7 +156,8 @@ export class CompanyEntryComponent implements OnInit {
   stateLookupConfig = DROPDOWN_CONFIGS.STATE;
   cityLookupConfig = DROPDOWN_CONFIGS.CITY;
 	
-
+companyLogo: File | null = null;
+reportLogo: File | null = null;
 	// CONSTRUCTOR
 
 	constructor(
@@ -261,6 +270,80 @@ export class CompanyEntryComponent implements OnInit {
 
   }
 }
+
+
+onCompanyLogoChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.companyLogo = input.files[0];
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.companyLogoPreview = e.target.result;
+      this.cdRef.detectChanges();
+    };
+    reader.readAsDataURL(this.companyLogo);
+  }
+}
+
+onReportLogoChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.reportLogo = input.files[0];
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.reportLogoPreview = e.target.result;
+      this.cdRef.detectChanges();
+    };
+    reader.readAsDataURL(this.reportLogo);
+  }
+}
+
+// Load company logo image from API (called once when data loads)
+loadCompanyLogo(logoFilename: string) {
+  if (!logoFilename) return;
+  this.masterService.getCompanyLogo(logoFilename).subscribe({
+    next: (blob) => {
+      this.companyLogoUrl = URL.createObjectURL(blob);
+      this.cdRef.detectChanges();
+    },
+    error: (err) => {
+      console.error('Failed to load company logo:', err);
+      this.companyLogoUrl = null;
+    }
+  });
+}
+
+// Load report logo image from API (called once when data loads)
+loadReportLogo(logoFilename: string) {
+  if (!logoFilename) return;
+  this.masterService.getCompanyLogo(logoFilename).subscribe({
+    next: (blob) => {
+      this.reportLogoUrl = URL.createObjectURL(blob);
+      this.cdRef.detectChanges();
+    },
+    error: (err) => {
+      console.error('Failed to load report logo:', err);
+      this.reportLogoUrl = null;
+    }
+  });
+}
+
+clearCompanyLogo() {
+  this.companyLogo = null;
+  this.companyLogoPreview = null;
+  this.existingCompanyLogo = null;
+  this.companyLogoUrl = null;
+}
+
+clearReportLogo() {
+  this.reportLogo = null;
+  this.reportLogoPreview = null;
+  this.existingReportLogo = null;
+  this.reportLogoUrl = null;
+}
+
 	// FORM INITIALIZATION
 
 	initCompanyForm() {
@@ -492,8 +575,17 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 						status: resp.status === 'A' ? 'Active' : 'Suspended',
 						config: resp.config || {}
 					});
-					
-					
+
+					// Load existing logos for preview
+					if (resp.companyLogo) {
+						this.existingCompanyLogo = resp.companyLogo;
+						this.loadCompanyLogo(resp.companyLogo);
+					}
+					if (resp.reportLogo) {
+						this.existingReportLogo = resp.reportLogo;
+						this.loadReportLogo(resp.reportLogo);
+					}
+
 					this.handlePanControl({ CountryMasterSid: this.companyData?.CountryMasterSid });
 
 					// Clear existing branches
@@ -931,8 +1023,24 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			)
 		};
 
+		// ----------------------------
+// 2️⃣ CREATE FORMDATA (ADD HERE 👇)
+const formData = new FormData();
+
+// send JSON payload
+formData.append('data', JSON.stringify(payload));
+
+// append files
+if (this.companyLogo) {
+  formData.append('images', this.companyLogo);
+}
+
+if (this.reportLogo) {
+  formData.append('images', this.reportLogo);
+}
+
 		if (this.isEditMode) {
-			this.masterService.updateCompanyById(this.CompanyMasterSid, payload).subscribe(
+			this.masterService.updateCompanyById(this.CompanyMasterSid, formData).subscribe(
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);
@@ -953,7 +1061,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 				}
 			);
 		} else {
-			this.masterService.createCompany(payload).subscribe(
+			this.masterService.createCompany(formData).subscribe(
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess('Company created successfully.');
