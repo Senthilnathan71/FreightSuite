@@ -97,10 +97,14 @@
                     <td style="width:60%; border:1px solid black; padding:2px 8px;text-align:start;border-left:none;width:40%;">{{receiptPrintData?.Narration}}</td>
                     <td style="width:10%; border:1px solid black; padding:2px 8px;text-align:start ;width:3%;">{{receiptPrintData?.CurrencyCode}}</td>
                     <td style="width:10%; border:1px solid black; padding:2px 8px; text-align:right;width:5%;">{{receiptPrintData?.ExchangeRate | number:'1.2-2'}}</td>
-                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;border-right:none;width:5%;">{{receiptPrintData?.voucherMatchings?.[0]?.OriginalLocalAmount | number:'1.3-3'}}</td>
+                    <td style="width:20%; border:1px solid black; padding:2px 8px; text-align:right;border-right:none;width:5%;"> {{receiptPrintData?.VoucherDetail?.[0]?.Amount | number:'1.3-3'}}</td>
                 </tr>
             </tbody>
         </table>
+
+          <p   style="margin:4px 0;padding-left: 17px;font-size: 16px;font-weight: bold;"><strong>Amount in Words : </strong>
+            <strong> {{ getAmountInWords(receiptPrintData?.VoucherDetail?.[0]?.Amount) }}</strong>
+        </p>
 
         <h4 *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="text-align: center;margin-top:0px;margin-bottom:0px;padding-left:17px;font-weight: bold;"><strong>Remittance Details</strong></h4>
 
@@ -134,9 +138,7 @@
             </tbody>
         </table>
 
-        <p  *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="margin:4px 0;padding-left: 17px;font-size: 16px;font-weight: bold;"><strong>Amount in Words : </strong>
-            <strong> {{ getAmountInWords() }}</strong>
-        </p>
+      
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;padding: 20px;font-size: 16px;">
             <div>

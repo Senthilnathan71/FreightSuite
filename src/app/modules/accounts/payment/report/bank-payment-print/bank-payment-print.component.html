@@ -122,7 +122,7 @@
     </table>
 
 
-        <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style=" display:flex;
+        <div  style=" display:flex;
     align-items:center;
     margin-top:10px;
     padding-left:20px;
@@ -130,7 +130,7 @@
     white-space:nowrap;
     ">
         <strong>Amount in Words   </strong>
-        <span style="font-style:italic;"> : {{ getAmountInWords() }} </span>
+        <span style="font-style:italic;"> : {{ getAmountInWords(paymentDataPrint?.VoucherDetail?.[0]?.Amount) }} </span>
     </div>
 
 

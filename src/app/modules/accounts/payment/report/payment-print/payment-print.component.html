@@ -116,6 +116,16 @@
         </table>
 
 
+          <div  style="padding-bottom:10px;font-size:16px;">
+            <div style="display:flex; gap:4px;">
+                <strong>Amount in Words :</strong>
+                <div style="font-style:italic;">
+                <strong>   {{ getAmountInWords(paymentDataPrint?.VoucherDetail?.[0]?.Amount) }}</strong>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Remittance Details -->
         <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="font-weight:bold; padding:2px 0; text-decoration:underline;text-align: center;"><strong>Remittance Details</strong></h4>
 
@@ -151,14 +161,7 @@
 
 
         <!-- Words -->
-        <div *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="padding-bottom:10px;font-size:16px;">
-            <div style="display:flex; gap:4px;">
-                <strong>Amount in Words :</strong>
-                <div style="font-style:italic;">
-                <strong>   {{ getAmountInWords() }}</strong>
-                </div>
-            </div>
-        </div>
+      
 
 
         <!-- Signature -->
