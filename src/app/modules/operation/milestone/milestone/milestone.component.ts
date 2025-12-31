@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
@@ -14,7 +14,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 @Component({
   selector: 'app-milestone',
   standalone: true,
-  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule,NgbPagination],
+  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule,NgbPagination,DatePipe],
   templateUrl: './milestone.component.html',
   styleUrl: './milestone.component.scss',
   providers: [
@@ -140,6 +140,7 @@ export class MilestoneComponent implements OnInit {
   }
 
   patchValues(items: any[]) {
+    this.milestoneFormArray.clear();
     for (const item of items) {
       const formGroupWithData = this.createShipmentMilestone(item);
       this.milestoneFormArray.push(formGroupWithData);
@@ -147,6 +148,7 @@ export class MilestoneComponent implements OnInit {
     this.milestoneDataLength = items.length;
     this.milestoneFormArray.updateValueAndValidity();
     this.updateMilestonePagination();
+    this.syncDataWithParentComponent();
   }
 
   createShipmentMilestone(data?:any): FormGroup {

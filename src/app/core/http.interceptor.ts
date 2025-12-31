@@ -57,8 +57,7 @@ export class HttpInterceptorService implements HttpInterceptor {
         // Skip adding base URL only if request is full URL
         if (
             req.url.startsWith("http://") ||
-            req.url.startsWith("https://") ||
-            req.url.includes("118")
+            req.url.startsWith("https://")
         ) {
             baseUrl = "";
         }
