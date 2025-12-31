@@ -3732,6 +3732,9 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.packageTypeList = this.packageTypeList;
       modalRef.componentInstance.TandCList = this.TandCList || [];
        modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+         modalRef.componentInstance.portList = this.portList || [];
+
+       
    
     }
 
@@ -4540,6 +4543,7 @@ volumeAmount(): number {
  
   
 }
+
 
 
 
