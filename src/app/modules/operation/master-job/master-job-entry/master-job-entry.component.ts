@@ -239,6 +239,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     status: 'all' // 'all', 'unpaid', 'partial', 'paid'
   };
   currentMenuId: any;
+  selectedContainerFile: File | null = null;
+  containerUploadErrors: any[] = [];
+  isProcessingContainerUpload = false;
+  showContainerPreview = false;
+  parsedContainers: any[] = [];
+  containerValidationErrors: any[] = [];
 
   // Dirty tracking for unsaved changes detection
   isDirty = false;
@@ -4586,6 +4592,310 @@ getVoucherNumber(shipment: any): string {
   navigateToMasterJob() {
     this.router.navigate(['operation/master-job/entry']);
   }
+
+
+ /**
+ * Download Container Excel template
+ */
+downloadContainerTemplate(): void {
+    this.spinner.show();
+    this.operationService.downloadContainerTemplate().subscribe({
+        next: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Container_Template_${new Date().toISOString().slice(0,10)}.xlsx`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+            this.spinner.hide();
+            this.appSettingService.showSuccess('Container template downloaded successfully');
+        },
+        error: (error) => {
+            console.error('Error downloading container template:', error);
+            this.spinner.hide();
+            this.appSettingService.showError('Error downloading container template');
+        }
+    });
+}
+
+/**
+ * Handle container file selection
+ */
+onContainerFileSelected(event: any): void {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        return;
+    }
+    
+    // Validate file type
+    const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+        this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
+        return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+        this.appSettingService.showError('File size exceeds 5MB limit');
+        return;
+    }
+    
+    this.selectedContainerFile = file;
+    this.parseContainerExcelFile();
+}
+
+
+/**
+ * Parse container Excel file
+ */
+parseContainerExcelFile(): void {
+    if (!this.selectedContainerFile) {
+        return;
+    }
+    
+    this.isProcessingContainerUpload = true;
+    this.spinner.show();
+    this.containerUploadErrors = [];
+    this.parsedContainers = [];
+    
+    this.operationService.parseContainerExcel(this.selectedContainerFile).subscribe({
+        next: (response: any) => {
+            this.spinner.hide();
+            this.isProcessingContainerUpload = false;
+            
+            if (response.status) {
+                this.parsedContainers = response.data.containers || [];
+                
+                if (this.parsedContainers.length === 0) {
+                    this.appSettingService.showWarning('No valid container data found in the Excel file');
+                    return;
+                }
+                
+                // Show preview
+                this.showContainerPreview = true;
+                this.appSettingService.showSuccess(`Found ${this.parsedContainers.length} valid containers`);
+                
+                // Validate the parsed data
+                this.validateContainerData();
+                
+            } else {
+                if (response.data?.errors) {
+                    this.containerUploadErrors = response.data.errors;
+                }
+                this.appSettingService.showError(response.message || 'Error parsing Excel file');
+            }
+        },
+        error: (error) => {
+            console.error('Error parsing container Excel:', error);
+            this.spinner.hide();
+            this.isProcessingContainerUpload = false;
+            this.appSettingService.showError('Error parsing Excel file');
+        }
+    });
+}
+
+
+/**
+ * Validate container data
+ */
+validateContainerData(): void {
+    if (this.parsedContainers.length === 0) {
+        return;
+    }
+    
+    this.spinner.show();
+    
+    const payload = {
+        containers: this.parsedContainers,
+        masterJobSid: this.masterJobSid,
+        companyMasterSid: this.currentCompany?.CompanyMasterSid,
+        branchMasterSid: this.currentBranch?.BranchMasterSid,
+        createdBy: this.userData?.userEmail || ''
+    };
+    
+    this.operationService.validateContainerData(payload).subscribe({
+        next: (response: any) => {
+            this.spinner.hide();
+            
+            if (response.status) {
+                this.parsedContainers = response.data.containers || [];
+                this.containerValidationErrors = [];
+                this.appSettingService.showSuccess('Container data validated successfully');
+            } else {
+                if (response.data?.errors) {
+                    this.containerValidationErrors = response.data.errors;
+                    this.appSettingService.showWarning(`Found ${this.containerValidationErrors.length} validation errors`);
+                } else {
+                    this.appSettingService.showError(response.message || 'Validation failed');
+                }
+            }
+        },
+        error: (error) => {
+            console.error('Error validating container data:', error);
+            this.spinner.hide();
+            this.appSettingService.showError('Error validating container data');
+        }
+    });
+}
+/**
+ * Process container upload and add to form
+ */
+processContainerUpload(): void {
+    if (this.parsedContainers.length === 0) {
+        this.appSettingService.showWarning('No container data to process');
+        return;
+    }
+    
+    // Check for validation errors
+    if (this.containerValidationErrors.length > 0) {
+        this.appSettingService.showWarning('Please fix validation errors before proceeding');
+        return;
+    }
+    
+    // Check container limits for FCL
+    if (this.selectedFCLLCL === 'FCL') {
+        const currentContainerCount = this.masterJobContainers.length;
+        const newTotalCount = currentContainerCount + this.parsedContainers.length;
+        const totalAllowedContainers = this.getTotalAllowedContainers();
+        
+        if (newTotalCount > totalAllowedContainers && totalAllowedContainers > 0) {
+            const warningMsg = `Upload would exceed container limit. Current: ${currentContainerCount}, Adding: ${this.parsedContainers.length}, Limit: ${totalAllowedContainers}`;
+            this.appSettingService.showWarning(warningMsg);
+            return;
+        }
+    }
+    
+    // Add each container to the form
+    this.parsedContainers.forEach(container => {
+        // Check for duplicate container numbers
+        const existingContainer = this.masterJobContainers.controls.find(
+            control => control.value.ContainerNumber === container.ContainerNumber
+        );
+        
+        if (existingContainer) {
+            this.appSettingService.showWarning(`Container ${container.ContainerNumber} already exists. Skipping.`);
+            return;
+        }
+        
+        // Validate container number format
+        if (container.ContainerNumber) {
+            const validation = this.validateContainerNumber(container.ContainerNumber);
+            if (!validation.isValid) {
+                return;
+            }
+        }
+        
+        // Add the container
+        this.addContainer(container);
+    });
+    
+    // Reset upload state
+    this.resetContainerUpload();
+    
+    this.appSettingService.showSuccess(`Added ${this.parsedContainers.length} containers successfully`);
+    this.markAsDirty();
+}
+
+
+/**
+ * Reset container upload state
+ */
+resetContainerUpload(): void {
+    this.selectedContainerFile = null;
+    this.containerUploadErrors = [];
+    this.containerValidationErrors = [];
+    this.showContainerPreview = false;
+    this.parsedContainers = [];
+    this.isProcessingContainerUpload = false;
+    
+    // Reset file input
+    const fileInput = document.querySelector('#containerFileInput') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
+}
+
+/**
+ * Get container type name for display
+ */
+getContainerTypeDisplay(containerTypeId: number): string {
+    if (!containerTypeId || this.containerTypeList.length === 0) {
+        return containerTypeId?.toString() || 'N/A';
+    }
+    
+    const containerType = this.containerTypeList.find(
+        ct => ct.ContainerTypeMasterSid === containerTypeId
+    );
+    
+    return containerType ? containerType.ContainerName : containerTypeId.toString();
+}
+
+/**
+ * Get package type name for display
+ */
+getPackageTypeDisplay(packageTypeId: number): string {
+    if (!packageTypeId || this.packageTypeList.length === 0) {
+        return packageTypeId?.toString() || 'N/A';
+    }
+    
+    const packageType = this.packageTypeList.find(
+        pt => pt.UOMMasterSid === packageTypeId
+    );
+    
+    return packageType ? packageType.UOMName : packageTypeId.toString();
+}
+
+exportContainerData(): void {
+    if (this.masterJobContainers.length === 0) {
+        this.toastr.warning('No container data to export');
+        return;
+    }
+
+    // Format container data for export
+    const formattedData = this.masterJobContainers.value.map(container => ({
+        'Container Type': this.getContainerTypeName(container.ContainerType),
+        'Container Number': container.ContainerNumber,
+        'Line Seal': container.LineSeal,
+        'Customs Seal': container.CustomsSeal,
+        'HS Code': container.HsCode,
+        'Commodity Description': container.CommodityDescription,
+        'Package Type': this.getPackageTypeName(container.PkgType),
+        'No. of Pkg': container.NoOfPkg,
+        'Gross Weight': container.GrossWeight,
+        'Net Weight': container.NetWeight,
+        'Chargeable Weight': container.ChargeableWeight,
+        'Volume (CBM)': container.Volume,
+        'SOC': container.IsSoc ? 'Yes' : 'No'
+    }));
+
+    // Use the same ExcelExportService as your reports
+    this.exportExcelService.exportAsExcel({
+        data: formattedData,
+        headers: [
+            { key: 'Container Type', label: 'Container Type' },
+            { key: 'Container Number', label: 'Container Number' },
+            { key: 'Line Seal', label: 'Line Seal' },
+            { key: 'Customs Seal', label: 'Customs Seal' },
+            { key: 'HS Code', label: 'HS Code' },
+            { key: 'Commodity Description', label: 'Commodity Description' },
+            { key: 'Package Type', label: 'Package Type' },
+            { key: 'No. of Pkg', label: 'No. of Pkg' },
+            { key: 'Gross Weight', label: 'Gross Weight' },
+            { key: 'Net Weight', label: 'Net Weight' },
+            { key: 'Chargeable Weight', label: 'Chargeable Weight' },
+            { key: 'Volume (CBM)', label: 'Volume (CBM)' },
+            { key: 'SOC', label: 'SOC' }
+        ],
+        fileName: `Containers_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${new Date().toISOString().slice(0, 10)}`,
+        title: 'Container Details'
+    });
+}
+
 }
 
 

@@ -60,6 +60,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   tableConfig: TableConfig;
   modalDropdownItems: DropdownMenuItem[] = [];
 
+  
+
   tableLoading = false;
 
   protected config: ListComponentConfig = {
@@ -483,35 +485,7 @@ this.initializeTableConfig();
       title: companyName
     });
   }
-  // searchMasterJob() {
-  //   this.spinner.show();
-  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  //   const params = {
-  //     search: this.filterValue.trim() || '',
-  //     page: this.page,
-  //     pageSize: this.pageSize,
-  //     activeCompanyId: CompanyMasterSid,
-  //   }
-  //   this.operationService.searchMasterJobs(params).subscribe({
-  //     next: (response: any) => {
-  //       if (response.status) {
-  //         this.allMasterJob = response?.data?.items || [];
-  //         this.totalLengthOfCollection = this.allMasterJob.length;
-  //         this.searchPerformed = true;
-  //         this.applySorting();
-  //       } else {
-  //         this.allMasterJob = [];
-  //         this.totalLengthOfCollection = 0;
-  //         this.searchPerformed = true;
-  //         this.appSettingService.showError('Error fetching Master Job data');
-  //       }
-  //       this.spinner.hide();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error fetching Master Job data:', error);
-  //     }
-  //   });
-  // }
+ 
 
   deleteMasterJob(MasterJobSid: number) {
     const modalRef = this.modalService.open(DeleteWarningComponent, {
@@ -545,49 +519,7 @@ this.initializeTableConfig();
     );
   }
 
-  // Sorting related Function
-  // sort(column: string) {
-  //   if (this.sortColumn === column) {
-  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  //   } else {
-  //     this.sortColumn = column;
-  //     this.sortDirection = 'asc';
-  //   }
-  //   this.applySorting();
-  // }
-
-  // applySorting() {
-  //   this.allMasterJob.sort((a, b) => {
-  //     let valueA = a[this.sortColumn];
-  //     let valueB = b[this.sortColumn];
-  //     if (valueA == null) valueA = '';
-  //     if (valueB == null) valueB = '';
-  //     if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
-  //       valueA = valueA.toString().toLowerCase();
-  //       valueB = valueB.toString().toLowerCase();
-  //     }
-  //     if (valueA < valueB) {
-  //       return this.sortDirection === 'asc' ? -1 : 1;
-  //     }
-  //     if (valueA > valueB) {
-  //       return this.sortDirection === 'asc' ? 1 : -1;
-  //     }
-  //     return 0;
-  //   })
-  // }
-
-  updatePaginationData(): void {
-    this.searchMasterjob();
-  }
-
-  // trackBy(index: number, item: any): number {
-  //   return item.MasterJobSid || index;
-  // }
-
-  // clearFilterValue() {
-  //   this.filterValue = '';
-  //   this.searchMasterJob();
-  // }
+  
 
   navigateToMasterJob() {
     this.router.navigate(['operation/master-job/entry']);
