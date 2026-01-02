@@ -33,6 +33,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
 	selector: 'app-company-entry',
@@ -173,7 +174,7 @@ reportLogo: File | null = null;
 		private leadService: LeadService,
 		public dropdownStore:DropdownStore,
 		private commonService: CommonService,
-		
+		private logoService : LogoService
 	) {
 		effect(()=>{
 			const countryData = this.dropdownStore.countries();
@@ -1050,6 +1051,9 @@ if (this.reportLogo) {
 						if (companyId) {
 							this.CompanyMasterSid = companyId
 							this.loadCompanyData();
+							if(this.currentCompany?.CompanyMasterSid === companyId){
+								this.logoService.refreshLogo();
+							}
 						}
 					} else {
 						this.appSettingService.showError(resp.message);

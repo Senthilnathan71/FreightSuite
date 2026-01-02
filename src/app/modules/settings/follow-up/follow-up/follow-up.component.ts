@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Optional, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Optional, Output, SimpleChanges } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -19,6 +19,7 @@ import html2canvas from 'html2canvas';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-follow-up',
@@ -40,7 +41,7 @@ import { CommonModule } from '@angular/common';
           { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
       ],
 })
-export class FollowUpComponent implements OnInit {
+export class FollowUpComponent implements OnInit, OnChanges {
   @Input() parentEmail: string;     
   @Input() parentEmailCC?: string;
   @Input() parentSubject!: string;    
@@ -51,6 +52,32 @@ export class FollowUpComponent implements OnInit {
   @Input() resetTrigger: boolean = false;
   @Input() formData: any;
   @Input() FollowupSid?: number;
+
+  /**
+   * Inputs for auto inserting milestone
+   */
+
+  /**
+   * Indicates whether the milestone should be auto-inserted or not
+   * Decides by checking the department , job type.
+   */
+  @Input() autoInsertMilestone ?: boolean = false;
+  @Input() milestonePayload ?: {
+    MilestoneCode: string;
+    ShipmentNo: string;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+    DepartmentName: string;
+    JobType: string;
+    createdBy: string;
+    Remarks : string;
+  };
+  /**
+   * Output emitted after inserting followup milestone for milestone component to reload
+   */
+  @Output() reloadMilestone = new EventEmitter<void>();
+
+
   // @Output() closeModal = new EventEmitter<boolean>();
   @Output() closeModalEvent = new EventEmitter<boolean>();
   @Output() dataEmitter = new EventEmitter<any>();
@@ -98,6 +125,7 @@ export class FollowUpComponent implements OnInit {
     // private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
+    private shipmentMilestoneService : ShipmentMilestoneService,
      @Optional() public activeModal: NgbActiveModal
   ) {}
 
@@ -125,6 +153,24 @@ export class FollowUpComponent implements OnInit {
     }
   });
   }
+
+  ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes['autoInsertMilestone'] &&
+      !changes['autoInsertMilestone'].firstChange &&
+      changes['autoInsertMilestone'].previousValue !== changes['autoInsertMilestone'].currentValue) {
+
+      this.autoInsertMilestone = changes['autoInsertMilestone'].currentValue;
+    }
+
+    if (changes['milestonePayload'] &&
+      !changes['milestonePayload'].firstChange &&
+      changes['milestonePayload'].previousValue !== changes['milestonePayload'].currentValue) {
+
+      this.milestonePayload = changes['milestonePayload'].currentValue;
+    }
+  }
+
 
     private handleSaveResponse(resp: any): void {
     if (resp.status) {
@@ -286,6 +332,17 @@ export class FollowUpComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
+            const isCargoInvolved = followupCreate.FollowupAction === 'External' && this.subject.toLowerCase().includes('cargo');
+            console.log('Is cargo involved?', {
+              subject : this.subject,
+              contains : this.subject.toLowerCase().includes('cargo'),
+              FollowupAction : followupCreate.FollowupAction,
+              IsExternal : followupCreate.FollowupAction === 'External',
+              isCargoInvolved
+            });
+            if(isCargoInvolved && this.autoInsertMilestone){
+              this.handleAutoInsertMilestone()
+            }
             this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
@@ -300,6 +357,34 @@ export class FollowUpComponent implements OnInit {
       );
     }
   }
+}
+
+handleAutoInsertMilestone(){
+  console.log("payload from parent",this.milestonePayload);
+  const payload : SafeInsertShipmentMilestone = {
+    CompanyMasterSid: this.milestonePayload?.CompanyMasterSid || this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.milestonePayload?.BranchMasterSid || this.currentBranch?.BranchMasterSid,
+    DepartmentName: this.milestonePayload?.DepartmentName,
+    JobType: this.milestonePayload?.JobType,
+    MilestoneCode: this.milestonePayload?.MilestoneCode,
+    ShipmentNo: this.milestonePayload?.ShipmentNo,
+    createdBy : this.milestonePayload?.createdBy,
+    Remarks : this.milestonePayload?.Remarks
+  }
+  this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
+    next: (resp) => {
+      if (resp.status) {
+        this.appSettingService.showSuccess(resp.message);
+        this.reloadMilestone.emit();
+      } else {
+        this.appSettingService.showError(resp.message);
+      }
+    },
+    error: (error) => {
+      console.error('Error inserting milestone:', error);
+      this.appSettingService.showError(error.message);
+    }
+  });
 }
 
 

@@ -1,5 +1,6 @@
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { Port } from "../modules/crm-mobile/Interfaces/port.interface";
+import { FormArray, FormGroup } from "@angular/forms";
 
 export enum LeadStatus {
   Qualify = 'Qualify',
@@ -235,4 +236,36 @@ export function toNumber(value: any): number {
   }
   
   return parseFloat(value.toString()) || 0;
+}
+
+
+/**
+ * 
+ * @param form FormGroup you want to check
+ */
+export function errorLogger(form: FormGroup | FormArray): void {
+  console.log('Form Status:', form.status);
+  console.log('Form Value', form.value);
+  if (form.invalid) {
+    const invalid = findInvalidControlsRecursive(form);
+    console.log('Invalid controls:', invalid);
+  } else {
+    console.log('No invalid controls found.');
+  }
+}
+
+export function findInvalidControlsRecursive(form: FormGroup | FormArray): string[] {
+  let invalidControls: string[] = [];
+  Object.keys(form.controls).forEach(key => {
+    const control = (form as any).get(key);
+    if (control.invalid) {
+      invalidControls.push(key);
+    }
+    if (control instanceof FormGroup || control instanceof FormArray) {
+      invalidControls = invalidControls.concat(
+        findInvalidControlsRecursive(control).map(childKey => `${key}.${childKey}`)
+      );
+    }
+  });
+  return invalidControls;
 }
