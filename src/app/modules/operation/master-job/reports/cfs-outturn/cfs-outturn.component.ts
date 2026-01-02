@@ -5,6 +5,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
@@ -196,6 +197,7 @@ groupProductsByContainer(): void {
     private masterService: MasterService,
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
+    public logoService : LogoService
   ) { }
 
 

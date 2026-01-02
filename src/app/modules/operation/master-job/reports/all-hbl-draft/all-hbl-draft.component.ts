@@ -9,6 +9,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-all-hbl-draft',
@@ -93,6 +94,7 @@ export class AllHBLDraftComponent {
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     private operationService: OperationService,
+    public logoService : LogoService
   ) { }
 
 

@@ -10,6 +10,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { toNumber } from 'src/app/common/helper';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-cash-receipt',
@@ -65,7 +66,8 @@ export class CashReceiptComponent {
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
-    private numberToWords: NumberToWordsService
+    private numberToWords: NumberToWordsService,
+    public logoService : LogoService
   ) { }
 
   getBankName(COAMasterSid: number) {

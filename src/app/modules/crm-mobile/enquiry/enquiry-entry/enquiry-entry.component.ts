@@ -52,6 +52,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { VoiceRecognitionService } from '../voice-recognition.service';
 import {  VoiceParserService } from '../voice-parser.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -333,6 +334,7 @@ dropdownOptions: any[] = [];
 private voiceParserService: VoiceParserService,
 private toastr: ToastrService,
 private cdRef: ChangeDetectorRef,
+public logoService : LogoService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()

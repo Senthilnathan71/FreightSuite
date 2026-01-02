@@ -348,7 +348,7 @@
 
 
                   <aside class="col-md-6 ">
-                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                       [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
@@ -430,7 +430,7 @@
                   </aside> -->
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                       [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
@@ -515,7 +515,7 @@
                   </aside> -->
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                       [class.filled]="!!bookingForm.get('Notify')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
@@ -600,7 +600,7 @@
 
 
 
-                  <aside class="col-md-6 pe-0">
+                  <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="AgentAddress">
@@ -619,7 +619,7 @@
                   </aside> -->
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+                    <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                       [class.filled]="!!bookingForm.get('CarrierName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
@@ -1012,7 +1012,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group mt-1">
+                    <div class="custom-form-group mt-md-1">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="InternalNote">
                       <label for="text-input" class="input-label">Internal Note <span
@@ -1021,7 +1021,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group mt-md-1">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="GeneralNote">
                       <label for="text-input" class="input-label">General Note <span class="text-danger"></span></label>
@@ -3092,11 +3092,12 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;  margin-top:-10px;">
             <div style="display: flex;  flex-direction: column; align-items: center;">
                  <!-- Print logo -->
-            <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-            <!-- Pdf logo -->
-                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;">
+                                                           <img 
+                [src]="(logoService.reportLogo$ | async)" 
+                alt="Company Logo"
+                class="company-logo img-fluid" 
+                style="width: 50px;height: auto;" 
+              />
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
             </div>
             <div style="flex: 1; text-align: center; font-size: 18px; padding-right: 12%; margin:0; line-height:1.2;">
@@ -3485,7 +3486,12 @@
         <div class="row mb-3">
           <div class="company-header">
             <div class="company-logo">
-              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                                                              <img 
+                [src]="(logoService.reportLogo$ | async)" 
+                alt="Company Logo"
+                class="company-logo img-fluid" 
+                style="width: 50px;height: auto;" 
+              />
             </div>
             <div class="company-info">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>

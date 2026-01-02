@@ -7,6 +7,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-hawb',
@@ -117,7 +118,8 @@ export class HAWBComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private pdfService: PdfDownloadService,
-    private operationService : OperationService
+    private operationService : OperationService,
+    public logoService : LogoService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {

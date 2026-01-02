@@ -33,12 +33,12 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; flex-direction: column;">
                             <!-- Print logo -->
-                            <img *ngIf="showPrintLogo"
-                                src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                            <!-- Pdf logo -->
-                            <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                style="width:50px; height:50px; object-fit:contain;">
+                                                                 <img 
+                [src]="(logoService.reportLogo$ | async)" 
+                alt="Company Logo"
+                class="company-logo img-fluid" 
+                style="width: 50px;height: auto;" 
+              />
                             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
                             </h4>
                         </div>

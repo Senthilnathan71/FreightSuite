@@ -33,7 +33,6 @@
             </div>
 
             <div>
-
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
@@ -41,21 +40,17 @@
 
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Customer </strong>
-                    <p class="ms-1">: {{ params?.Customer }}</p>
+                    <p class="ms-1">: {{ fullData?.Customer }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Salesperson </strong>
-                    <p class="ms-1">: {{ params?.Salesperson }}</p>
+                    <p class="ms-1">: {{ fullData?.SalePerson }}</p>
                 </div>
-                <div class="d-flex align-items-center d-none">
+                <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Transhipment </strong>
-                    <p class="ms-1">: {{ params?.Transhipment }}</p>
+                    <p class="ms-1">: {{ params?.Transhipment === true ? 'Yes' : 'No'}}</p>
                 </div>
-
             </div>
-
-
-
         </div>
 
         <div class="table-responsive">

@@ -47,6 +47,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { ToastrService } from 'ngx-toastr';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -234,7 +235,8 @@ export class InvoiceEntryComponent implements OnInit {
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatter: CurrencyFormatService,
     private pdfService: PdfDownloadService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    public logoService : LogoService
   ) { }
 
   ngOnInit(): void {

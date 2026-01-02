@@ -98,15 +98,12 @@
                             </div>
                             <div class="company-branding">
                                 <!-- Print logo -->
-                                <img *ngIf="showPrintLogo"
-                                     src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
-                                     alt="Company Logo"
-                                     class="company-logo">
-                                <!-- PDF logo -->
-                                <img *ngIf="showPdfLogo"
-                                     src="assets/images/logos/xtreme-dark-icon.svg"
-                                     alt="Company Logo"
-                                     class="company-logo">
+                                                  <img 
+                [src]="(logoService.reportLogo$ | async)" 
+                alt="Company Logo"
+                class="company-logo img-fluid" 
+                style="width: 50px;height: auto;" 
+              />
                                 <div class="company-details">
                                     <h3>{{ currentCompany?.companyName || 'Company Name' }}</h3>
                                     <h4>{{ currentBranch?.branchName || 'Company Branch' }}</h4>

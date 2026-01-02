@@ -599,6 +599,38 @@ export class ReportRegistryService {
     }
 
 
+      // VAT-210 Report
+    try {
+      const { Vat210Component } = await import(
+        '../components/reports/vat-210/vat-210.component'
+      );
+
+      this.registerReport({
+        id: 'vat-report',
+        title: 'VAT-201 Report',
+        component: Vat210Component,
+        filenameTemplate: 'VAT_210_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'VAT_210_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> VAT_210_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' VAT-210 Report component not yet created:', error);
+    }
+
+
     // Unposted Voucher List Report
     try {
       const { UnpostedVoucherListReportComponent } = await import(

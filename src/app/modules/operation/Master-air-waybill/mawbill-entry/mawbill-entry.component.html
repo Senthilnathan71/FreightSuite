@@ -177,7 +177,7 @@
 
                                         </div>
                                     </aside>
-                                    <div class="col-md-6 mt-md-1">
+                                    <div class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -202,7 +202,7 @@
 
                                         </div>
                                     </div>
-                                    <aside class="col-md-6 mt-md-1">
+                                    <aside class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FreightPPCC')?.value">
                                             <ng-select [items]="modeOfFreightTerms" bindLabel="name" bindValue="id"
@@ -224,7 +224,7 @@
                                     </aside>
                                     <!-- Destination Agent Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('DestinationAgent')?.value">
                                             <!-- <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="DestinationAgent"
@@ -250,7 +250,7 @@
 
                                     <!-- Destination Agent Address Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group " style="margin-top: 3px;">
                                             <input type="text" formControlName="DestinationAgentAddress"
                                                 class="custom-input-field sm" placeholder="">
                                             <label class="input-label">Address</label>
@@ -283,7 +283,7 @@
                                         </div>
                                     </div>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('BLReleaseType')?.value">
                                             <ng-select [items]="modeOfBLReleaseType" bindLabel="name" bindValue="id"
                                                 formControlName="BLReleaseType" appendTo="body">
@@ -302,7 +302,7 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group mt-md-1">
                                             <input type="number" formControlName="NoofOriginal"
                                                 class="custom-input-field sm" min="0">
                                             <label class="input-label">No of Original <span
@@ -418,7 +418,7 @@
                                     </aside>
 
                                     <!-- FDC Field -->
-                                    <aside class="col-md-4 mt-md-1">
+                                    <aside class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FPD')?.value">
                                             <!-- <ng-select [items]="portList" bindLabel="PortCode"
@@ -467,8 +467,8 @@
         <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
     </div>
 </aside> -->
- <aside class="col-md-4 mt-md-1">
-                      <div class="custom-form-group custom-form-group-select inputChnages"
+ <aside class="col-md-4">
+                      <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                         [class.filled]="!!masterJobForm.get('VesselName')?.value">
                           <div class="d-flex align-items-center" *ngIf="!this.f['isVesselFreeText']?.value">
                             <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
@@ -492,7 +492,7 @@
                     </aside>
 
 <!-- Voyage No -->
-<aside class="col-md-4 mt-md-1">
+<aside class="col-md-4 ">
                         <div class="custom-form-group">
       <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
         formControlName="VoyageNo">
@@ -528,8 +528,8 @@
                                     </aside> -->
 
                                     <!-- Carrier Field -->
-                                    <aside class="col-md-4 mt-md-1">
-                                        <div class="custom-form-group custom-form-group-select"
+                                    <aside class="col-md-4 ">
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('CarrierName')?.value">
                                             <!-- <ng-select [items]="carrierList" bindLabel="CustomerName"
                                                 bindValue="CustomerName" formControlName="CarrierName" placeholder=""
@@ -553,8 +553,8 @@
                                     </aside>
 
                                     <!-- ETD Field -->
-                                    <div class="col-md-4 mt-md-1">
-                                        <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select-date mt-md-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETD" ngbDatepicker #etdPicker="ngbDatepicker"
@@ -569,8 +569,8 @@
                                     </div>
 
                                     <!-- ETA Field -->
-                                    <div class="col-md-4 mt-md-1">
-                                        <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="col-md-4 ">
+                                        <div class="custom-form-group custom-form-group-select-date mt-md-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETA" ngbDatepicker #etaPicker="ngbDatepicker"
@@ -588,7 +588,7 @@
 
                                     <!-- Cut Off Date Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select-date">
+                                        <div class="custom-form-group custom-form-group-select-date mt-md-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="PortCutoffDate" ngbDatepicker
@@ -606,7 +606,7 @@
 
                                     <!-- SI Cut Off Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select-date mt-1">
+                                        <div class="custom-form-group custom-form-group-select-date mt-md-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                      formControlName="SiCutoffDate" ngbDatepicker
@@ -634,7 +634,7 @@
                                         </div>
                                     </aside> -->
                                      <aside class="col-md-4">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group mt-md-1">
                                             <input type="textarea" formControlName="CommodityDescription"
                                                 id="text-input" class="custom-input-field sm" placeholder=""
                                                 [textWithNumbers]="1000">
@@ -648,7 +648,7 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group mt-1">
+                                        <div class="custom-form-group mt-md-1">
                                             <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                 class="custom-input-field sm" placeholder="" [textWithNumbers]="500">
                                             <label for="text-input" class="input-label">Marks and Number </label>

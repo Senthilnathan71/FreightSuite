@@ -7,6 +7,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-mawb',
@@ -141,6 +142,7 @@ export class MAWBComponent implements OnChanges {
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
     private operationService: OperationService,
+    public logoService : LogoService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {

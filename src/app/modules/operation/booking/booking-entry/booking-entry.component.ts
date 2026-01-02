@@ -52,6 +52,7 @@ import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -394,6 +395,7 @@ arapFilter = {
     private pdfService:PdfDownloadService,
     private commonService: CommonService,
     public mps: MenuPermissionService,
+    public logoService : LogoService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();

@@ -27,6 +27,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -153,7 +154,7 @@ export class LoadingPlanEntryComponent {
     private pdfService: PdfDownloadService,
     private appSettingsService: AppSettingsService,
     private masterService: MasterService,
-
+    public logoService : LogoService
 
 
 

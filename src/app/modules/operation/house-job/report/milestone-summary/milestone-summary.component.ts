@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-milestone-summary',
@@ -36,6 +37,7 @@ currentCompany: any
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
+    public logoService : LogoService
   ) { }
 
 

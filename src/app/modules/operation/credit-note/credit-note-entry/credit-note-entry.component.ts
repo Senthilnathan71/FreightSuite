@@ -29,6 +29,7 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -178,7 +179,8 @@ export class CreditNoteEntryComponent {
         private commonService: CommonService,
         private masterService: MasterService,
         private numberToWords: NumberToWordsService,
-        private currencyFormatter:CurrencyFormatService
+        private currencyFormatter:CurrencyFormatService,
+        public logoService : LogoService
       ) {}
       ngOnInit(): void {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
