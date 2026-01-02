@@ -2916,8 +2916,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div style="display: flex;  flex-direction: column; align-items: center;">
               <img 
-                [src]="(logoService.logo$ | async) || 
-                      'https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg'" 
+                [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
                 style="max-width: 120px;height: auto;" 

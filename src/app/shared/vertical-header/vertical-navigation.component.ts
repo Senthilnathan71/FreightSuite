@@ -192,7 +192,7 @@ ngOnInit(): void {
   // Setup document search subscription
   this.setupDocumentSearchSubscription();
 
-  this.logoService.loadInitialLogo();
+  this.logoService.loadInitialBothLogos();
 }
 
 
@@ -348,7 +348,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   this.userData = updatedUserData;
 
   this.appSettingsService.showSuccess('Switched to new branch and company');
-  this.logoService.refreshLogo();
+  this.logoService.refreshBothLogos();
 
   modalRef.close();
 }

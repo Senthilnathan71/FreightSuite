@@ -15,6 +15,7 @@ import { VerticalSidebarComponent } from '../../shared/vertical-sidebar/vertical
 import { HorizontalNavigationComponent } from '../../shared/horizontal-header/horizontal-navigation.component';
 import { HorizontalSidebarComponent } from '../../shared/horizontal-sidebar/horizontal-sidebar.component';
 import { AppService } from 'src/app/service/app.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
   selector: 'app-full-layout',
@@ -42,7 +43,7 @@ export class FullComponent implements OnInit {
 
   isMobile: boolean = false;
 
-  constructor(public router: Router, private appService:AppService) {}
+  constructor(public router: Router, private appService:AppService, public logoService : LogoService) {}
 
   tabStatus = 'justified';
 

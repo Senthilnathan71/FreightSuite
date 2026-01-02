@@ -1051,9 +1051,6 @@ if (this.reportLogo) {
 						if (companyId) {
 							this.CompanyMasterSid = companyId
 							this.loadCompanyData();
-							if(this.currentCompany?.CompanyMasterSid === companyId){
-								this.logoService.refreshLogo();
-							}
 						}
 					} else {
 						this.appSettingService.showError(resp.message);

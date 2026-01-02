@@ -26,9 +26,21 @@
           <b class="logo-icon">
             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
             <!-- Dark Logo icon -->
-            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="homepage" class="dark-logo" height="32" width="32" />
+            <img 
+              [src]="(logoService.companyLogo$ | async)"
+              alt="homepage" 
+              class="dark-logo" 
+              height="32" 
+              width="32" 
+              />
             <!-- Light Logo icon -->
-            <img src="assets/images/logos/xtreme-white-icon.svg" alt="homepage" class="light-logo" height="32" width="32" />
+            <img 
+              [src]="(logoService.companyLogo$ | async)"
+              alt="homepage" 
+              class="light-logo" 
+              height="32" 
+              width="32" 
+            />
           </b>
           <!--End Logo icon -->
           <!-- Logo text -->
