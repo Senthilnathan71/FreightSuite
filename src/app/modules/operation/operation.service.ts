@@ -562,6 +562,15 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
+// Master-job with All Houses
+    getAllHouseJobById(MasterJobSid:number) {
+    return this.http.post<{ data: any }>(`master-job/fetch/${MasterJobSid}`,{MasterJobSid}).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   updateMasterJob(payload: any) {
     return this.http.patch<{ data: any }>('master-job/update', payload).pipe(
       map((resp) => {

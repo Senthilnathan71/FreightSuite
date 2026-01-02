@@ -163,10 +163,10 @@ export class HblComponent {
   setTimeout(async () => {
     this.spinner.show();
    try {
-       const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
+       const HouseJob = this.housejobData?.HBLNo || 'Receipt';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `HBL`,
+        `HBL - ${HouseJob}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );

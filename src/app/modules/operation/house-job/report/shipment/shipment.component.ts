@@ -340,20 +340,26 @@ getChargeName(ChargeMasterSid: number): string {
   }
 
   get totalGrossWeight(): number {
-    return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.GrossWeight || 0), 0) || 0;
+    return this.housejobData?.Products?.reduce((sum, c) => sum + Number(c.GrossWeight || 0), 0) || 0;
   }
 
   get totalVolume(): number {
-    return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.Volume || 0), 0) || 0;
+    return this.housejobData?.Products?.reduce((sum, c) => sum + Number(c.Volume || 0), 0) || 0;
   }
 
   get totalChargeableWeight(): number {
-    return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.ChargeableWeight || 0), 0) || 0;
+    return this.housejobData?.Products?.reduce((sum, c) => sum + Number(c.ChargeableWeight || 0), 0) || 0;
   }
 
   get totalNetWeight(): number {
-    return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.NetWeight || 0), 0) || 0;
+    return this.housejobData?.Products?.reduce((sum, c) => sum + Number(c.NetWeight || 0), 0) || 0;
   }
+
+  get totalNoOfPackage(): number {
+    return this.housejobData?.Products?.reduce((sum, c) => sum + Number(c.ExternlQty || 0), 0) || 0;
+  }
+  
+ 
 
   modalClose() {
     this.activeModal.close()

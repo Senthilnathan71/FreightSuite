@@ -135,25 +135,17 @@ getTotalMatchingLocalAmount(): number {
   }, 0);
 }
 
-getAmountInWords(): string {
-  const total = this.getTotalMatchingLocalAmount();
-  if (total == null) return '';
+getAmountInWords(amount: number | null | undefined): string {
+  if (amount == null) return '';
 
   const currencySid = this.currentCompany?.CurrencyMasterSid;
   if (!currencySid) return '';
 
-  // 🔥 MAIN AMOUNT
-  let mainWords = this.numberToWords.convert(
-    toNumber(total),
-    currencySid
+  return this.numberToWords.convert(
+    Number(amount),
+    // currencySid
   );
-
-  
-
-  return mainWords;
 }
-
-
 
 
   shouldShowGSTTypeField(): boolean {
