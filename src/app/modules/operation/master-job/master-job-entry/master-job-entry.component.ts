@@ -246,6 +246,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   parsedContainers: any[] = [];
   containerValidationErrors: any[] = [];
 
+  // Add these properties
+selectedProductFile: File | null = null;
+productUploadErrors: any[] = [];
+productValidationErrors: any[] = [];
+parsedProducts: any[] = [];
+showProductPreview = false;
+isProcessingProductUpload = false;
+
   // Dirty tracking for unsaved changes detection
   isDirty = false;
   private initialConnectionsCount = 0;
@@ -4678,7 +4686,7 @@ parseContainerExcelFile(): void {
                 
                 // Show preview
                 this.showContainerPreview = true;
-                this.appSettingService.showSuccess(`Found ${this.parsedContainers.length} valid containers`);
+                this.appSettingService.showSuccess(`Found ${this.parsedContainers.length-1} valid containers`);
                 
                 // Validate the parsed data
                 this.validateContainerData();
@@ -4797,7 +4805,7 @@ processContainerUpload(): void {
     // Reset upload state
     this.resetContainerUpload();
     
-    this.appSettingService.showSuccess(`Added ${this.parsedContainers.length} containers successfully`);
+    // this.appSettingService.showSuccess(`Added ${this.parsedContainers.length} containers successfully`);
     this.markAsDirty();
 }
 
@@ -4894,6 +4902,261 @@ exportContainerData(): void {
         fileName: `Containers_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${new Date().toISOString().slice(0, 10)}`,
         title: 'Container Details'
     });
+}
+
+/**
+ * Download Product Excel template
+ */
+downloadProductTemplate(): void {
+    if (!this.masterJobSid) {
+        this.appSettingService.showWarning('Please select a master job first');
+        return;
+    }
+    
+    this.spinner.show();
+    this.operationService.downloadProductTemplate(this.masterJobSid).subscribe({
+        next: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Product_Template_MJ${this.masterJobSid}_${new Date().toISOString().slice(0,10)}.xlsx`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+            this.spinner.hide();
+            this.appSettingService.showSuccess('Product template downloaded successfully');
+        },
+        error: (error) => {
+            console.error('Error downloading product template:', error);
+            this.spinner.hide();
+            this.appSettingService.showError('Error downloading product template');
+        }
+    });
+}
+
+/**
+ * Handle product file selection
+ */
+onProductFileSelected(event: any): void {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        return;
+    }
+    
+    // Validate file type
+    const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+        this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
+        return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+        this.appSettingService.showError('File size exceeds 5MB limit');
+        return;
+    }
+    
+    this.selectedProductFile = file;
+    this.parseProductExcelFile();
+}
+
+/**
+ * Parse product Excel file
+ */
+parseProductExcelFile(): void {
+    if (!this.selectedProductFile) {
+        return;
+    }
+    
+    this.isProcessingProductUpload = true;
+    this.spinner.show();
+    this.productUploadErrors = [];
+    this.parsedProducts = [];
+    
+    this.operationService.parseProductExcel(this.selectedProductFile).subscribe({
+        next: (response: any) => {
+            this.spinner.hide();
+            this.isProcessingProductUpload = false;
+            
+            if (response.status) {
+                this.parsedProducts = response.data.products || [];
+                
+                if (this.parsedProducts.length === 0) {
+                    this.appSettingService.showWarning('No valid product data found in the Excel file');
+                    return;
+                }
+                
+                // Show preview
+                this.showProductPreview = true;
+                this.appSettingService.showSuccess(`Found ${this.parsedProducts.length-1} valid products`);
+                
+                // Validate the parsed data
+                this.validateProductData();
+                
+            } else {
+                if (response.data?.errors) {
+                    this.productUploadErrors = response.data.errors;
+                }
+                this.appSettingService.showError(response.message || 'Error parsing Excel file');
+            }
+        },
+        error: (error) => {
+            console.error('Error parsing product Excel:', error);
+            this.spinner.hide();
+            this.isProcessingProductUpload = false;
+            this.appSettingService.showError('Error parsing Excel file');
+        }
+    });
+}
+
+/**
+ * Validate product data
+ */
+validateProductData(): void {
+    if (this.parsedProducts.length === 0) {
+        return;
+    }
+    
+    this.spinner.show();
+    
+    const payload = {
+        products: this.parsedProducts,
+        masterJobSid: this.masterJobSid,
+        companyMasterSid: this.currentCompany?.CompanyMasterSid,
+        branchMasterSid: this.currentBranch?.BranchMasterSid
+    };
+    
+    this.operationService.validateProductData(payload).subscribe({
+        next: (response: any) => {
+            this.spinner.hide();
+            
+            if (response.status) {
+    this.productValidationErrors = response.data.errors || [];
+
+    if (this.productValidationErrors.length === 0) {
+        this.appSettingService.showSuccess('Product data validated successfully');
+    } else {
+        this.appSettingService.showWarning(
+            `Found ${this.productValidationErrors.length} validation errors`
+        );
+    }
+            } else {
+                if (response.data?.errors) {
+                    this.productValidationErrors = response.data.errors;
+                    this.appSettingService.showWarning(`Found ${this.productValidationErrors.length} validation errors`);
+                } else {
+                    this.appSettingService.showError(response.message || 'Validation failed');
+                }
+            }
+        },
+        error: (error) => {
+            console.error('Error validating product data:', error);
+            this.spinner.hide();
+            this.appSettingService.showError('Error validating product data');
+        }
+    });
+}
+
+/**
+ * Process product upload
+ */
+processProductUpload(): void {
+    if (this.parsedProducts.length === 0) {
+        this.appSettingService.showWarning('No product data to process');
+        return;
+    }
+    
+    // Check for validation errors
+    if (this.productValidationErrors.length > 0) {
+        this.appSettingService.showWarning('Please fix validation errors before proceeding');
+        return;
+    }
+     const filteredProducts = this.parsedProducts.filter(product => {
+        // Skip products with example HBL numbers
+        const exampleHblPatterns = ['HBL-001', 'HBL-', 'SAMPLE', 'EXAMPLE', 'DEMO'];
+        const hblNo = product.HBLNo?.toUpperCase();
+        if (hblNo && exampleHblPatterns.some(pattern => hblNo.includes(pattern))) {
+            console.log('Skipping example product with HBL:', product.HBLNo);
+            return false;
+        }
+        
+        // Skip products with example product names
+        const exampleProductPatterns = ['ELECTRONICS', 'SAMPLE', 'EXAMPLE', 'DEMO'];
+        const productName = product.ProductName?.toUpperCase();
+        if (productName && exampleProductPatterns.some(pattern => productName.includes(pattern))) {
+            console.log('Skipping example product with name:', product.ProductName);
+            return false;
+        }
+        
+        return true;
+    });
+    
+    if (filteredProducts.length === 0) {
+        this.appSettingService.showWarning('No valid product data to process after filtering example rows');
+        return;
+    }
+    
+    this.spinner.show();
+    
+    const payload = {
+        products: filteredProducts,
+       masterJobSid: this.masterJobSid,
+        companyMasterSid: this.currentCompany?.CompanyMasterSid,
+        branchMasterSid: this.currentBranch?.BranchMasterSid,
+        createdBy: this.userData?.userEmail || ''
+    };
+    console.log('PROCESS PAYLOAD:', payload);
+
+    
+    this.operationService.processProductUpload(payload).subscribe({
+        next: (response: any) => {
+            this.spinner.hide();
+            
+            if (response.status) {
+                this.appSettingService.showSuccess(response.message);
+                
+                // Reset upload state
+                this.resetProductUpload();
+                
+                // Refresh product data if needed
+                // if (this.HouseJobSid) {
+                //     this.loadHouseById(this.HouseJobSid);
+                // }
+                if (this.masterJobSid) {
+                    this.loadMasterJobData(this.masterJobSid);
+                }
+            } else {
+                this.appSettingService.showError(response.message || 'Failed to process product upload');
+            }
+        },
+        error: (error) => {
+            console.error('Error processing product upload:', error);
+            this.spinner.hide();
+            this.appSettingService.showError('Error processing product upload');
+        }
+    });
+}
+
+/**
+ * Reset product upload state
+ */
+resetProductUpload(): void {
+    this.selectedProductFile = null;
+    this.productUploadErrors = [];
+    this.productValidationErrors = [];
+    this.showProductPreview = false;
+    this.parsedProducts = [];
+    this.isProcessingProductUpload = false;
+    
+    // Reset file input
+    const fileInput = document.querySelector('#productFileInput') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
 }
 
 }
