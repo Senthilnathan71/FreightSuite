@@ -1585,7 +1585,6 @@ isRateLockDisabled(): boolean {
               'DepartmentMasterSid', 'POLSid', 'PODSid', 
               'effDate', 'expDate', 'PORSid', 'FPODSid'
             ];
-            
             fieldsToDisable.forEach(field => {
               const control = routeForm.get(field);
               if (control) {
@@ -1595,6 +1594,11 @@ isRateLockDisabled(): boolean {
           }
         }, 0);
       }
+      if (response.RateLock === "Y") {
+    setTimeout(() => {
+      this.lockAllRateFields();
+    }, 100); // Small delay to ensure form is fully initialized
+  }
       if (cargo) {
         (cargo.quoteProduct || []).forEach(product => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
@@ -4119,10 +4123,23 @@ checkRateLockPermissions(): void {
         const rateFieldsToDisable = [
           'RevenueRate', 'RevenueExchangeRate', 'RevenueCurrencyMasterSid',
           'CostRate', 'CostExchangeRate', 'CostCurrencyMasterSid',
-          'Qty', 'ChargeUomSid'
+          'Qty', 'ChargeUomSid', 'RevenueAmount', 'RevenueLocalAmount',
+          'CostAmount', 'CostLocalAmount', 'RevenueNumberOfUnit',
+          'CostNumberOfUnit', 'RevenuePrepaidCollect', 'CostPrepaidCollect',
+          'RevenueChargeUomSid', 'CostChargeUomSid'
         ];
+
         
         rateFieldsToDisable.forEach(field => {
+          const control = charge.get(field);
+          if (control && control.enabled) {
+            control.disable({ emitEvent: false });
+          }
+        });
+       const customerFields = ['RevenueCustomerMasterSid', 'RevenueCustomerBranchSid'];
+        const agentFields = ['CostAgentMasterSid', 'CostAgentBranchSid'];
+        
+        [...customerFields, ...agentFields].forEach(field => {
           const control = charge.get(field);
           if (control && control.enabled) {
             control.disable({ emitEvent: false });

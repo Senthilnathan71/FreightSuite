@@ -35,7 +35,7 @@
             </button>
           </div>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="!isEditMode" (click)="navigateBack()" appPreventMultiClick>
+           (click)="navigateBack()" appPreventMultiClick>
             <i class="fas fa-chevron-left me-1"></i>
             Back
           </button>
@@ -463,13 +463,39 @@
               </div>
             </aside>
 
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="CIN" [onlyText]="25">
+                <label for="text-input" class="input-label">CIN </label>
 
-            <!-- PAN -->
+                <!--  Validation -->
+                @if(companyForm.get('CIN')?.touched && companyForm.get('CIN')?.invalid){
+                <div class="error-message">
+                  @if(companyForm.get('CIN')?.hasError('maxlength')){
+                  <span>Max 25 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
 
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="TAN" [onlyText]="25">
+                <label for="text-input" class="input-label">TAN </label>
 
-
-            <!-- STATUS -->
-
+                <!--  Validation -->
+                @if(companyForm.get('TAN')?.touched && companyForm.get('TAN')?.invalid){
+                <div class="error-message">
+                  @if(companyForm.get('TAN')?.hasError('maxlength')){
+                  <span>Max 25 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
 
             <!-- REMARKS -->
 

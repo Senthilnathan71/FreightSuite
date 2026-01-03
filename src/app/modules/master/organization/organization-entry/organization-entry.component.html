@@ -350,6 +350,40 @@
               </div>
             </aside> -->
 
+             <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="CIN" [onlyText]="25">
+                <label for="text-input" class="input-label">CIN </label>
+
+                <!--  Validation -->
+                @if(customerForm.get('CIN')?.touched && customerForm.get('CIN')?.invalid){
+                <div class="error-message">
+                  @if(customerForm.get('CIN')?.hasError('maxlength')){
+                  <span>Max 25 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+
+             <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="TAN" [onlyText]="25">
+                <label for="text-input" class="input-label">TAN </label>
+
+                <!--  Validation -->
+                @if(customerForm.get('TAN')?.touched && customerForm.get('TAN')?.invalid){
+                <div class="error-message">
+                  @if(customerForm.get('TAN')?.hasError('maxlength')){
+                  <span>Max 25 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea rows="1" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="100"
