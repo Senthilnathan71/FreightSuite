@@ -27,6 +27,7 @@ export class JobCardComponent {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currentDate = new Date();
+  @Input() housejobData: any;
   @Input() masterJobData: any;
   @Input() containerTypeList: any[] = [];
   @Input() masterJobContainers: any[] = [];
@@ -38,7 +39,7 @@ export class JobCardComponent {
   @Input() chargeWiseSummary : any[] = [];
   @Input() chargeList: any[] =[];
   salemanList:any[] = [];
-
+  @Input() portList: any[] = []; // Add this input
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
 
@@ -213,6 +214,17 @@ export class JobCardComponent {
       return sum + value;
     }, 0);
   }
+
+  
+ getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
+
 
   modalClose() {
     this.activeModal.close();

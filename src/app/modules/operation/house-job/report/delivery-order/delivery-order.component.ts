@@ -238,66 +238,34 @@ export class DeliveryOrderComponent {
   if (!total || isNaN(total)) return '';
 
   const wholePart = Math.floor(total);
-  const decimalPart = Math.round((total - wholePart) * 100); // Get cents/fils (2 decimal places)
-  
-  console.log('DEBUG - Amount in Words Calculation:', {
-    total,
-    wholePart,
-    decimalPart,
-    currentCurrencyCode: this.currentCurrencyCode,
-    currencyList: this.currency
-  });
+  const decimalPart = Math.round((total - wholePart) * 100);
 
-  // Convert whole part to words
-  const wholePartInWords = wholePart > 0 ? this.numberToWords.convert(wholePart) : 'Zero';
-  
-  // Find currency - check multiple possible property names
-  const selectedCurrency = this.currency?.find((c: any) => {
-    const code = c.currencyCode || c.CurrencyCode || c.code;
-    return code && String(code).trim().toUpperCase() === String(this.currentCurrencyCode).trim().toUpperCase();
-  });
+  const currencyCode = this.currentCurrencyCode
+    ? this.currentCurrencyCode.toUpperCase()
+    : '';
 
-  console.log('DEBUG - Found currency:', selectedCurrency);
+  const amountInWords =
+    wholePart > 0
+      ? this.numberToWords.convert(wholePart)
+      : 'Zero';
 
-  if (!selectedCurrency) {
-    // Fallback using currentCurrencyCode directly
-    const currencyMap: { [key: string]: { unit: string, subunit: string } } = {
-      'USD': { unit: 'Dollars', subunit: 'Cents' },
-      'AED': { unit: 'Dirhams', subunit: 'Fils' },
-      'INR': { unit: 'Rupees', subunit: 'Paise' },
-      'EUR': { unit: 'Euros', subunit: 'Cents' },
-      'GBP': { unit: 'Pounds', subunit: 'Pence' },
-      'SAR': { unit: 'Riyals', subunit: 'Halalas' }
-    };
+  // Traditional currency names
+  const currencyMap: any = {
+    AED: 'Dirhams',
+    INR: 'Rupees',
+    USD: 'Dollars',
+    EUR: 'Euros',
+    GBP: 'Pounds',
+    SAR: 'Riyals'
+  };
 
-    const defaultCurrency = currencyMap[this.currentCurrencyCode?.toUpperCase()] || 
-                           { unit: this.currentCurrencyCode, subunit: 'Cents' };
+  const currencyName = currencyMap[currencyCode] || currencyCode;
 
-    if (decimalPart === 0) {
-      return `${wholePartInWords} ${defaultCurrency.unit} Only`;
-    } else {
-      const decimalInWords = this.numberToWords.convert(decimalPart);
-      return `${wholePartInWords} ${defaultCurrency.unit} and ${decimalInWords} ${defaultCurrency.subunit} Only`;
-    }
-  }
-
-  // Use found currency
-  const currencyName = selectedCurrency.CurrencyUnit || 
-                      selectedCurrency.currencyUnit || 
-                      selectedCurrency.currencyName || 
-                      this.getCurrencyNameFromCode(this.currentCurrencyCode);
-
-  const subCurrencyName = selectedCurrency.CurrencySubUnit || 
-                         selectedCurrency.currencySubUnit || 
-                         this.getSubCurrencyNameFromCode(this.currentCurrencyCode);
-
-  if (decimalPart === 0) {
-    return `${wholePartInWords} ${currencyName}`;
-  } else {
-    const decimalInWords = this.numberToWords.convert(decimalPart);
-    return `${wholePartInWords} ${currencyName} and ${decimalInWords} ${subCurrencyName} Only`;
-  }
+  // ✅ EXACT REQUIRED OUTPUT
+  return `${currencyCode} ${amountInWords} only ${currencyName}`;
 }
+  
+
 
 // Helper method to get currency name from code
 getCurrencyNameFromCode(currencyCode: string): string {

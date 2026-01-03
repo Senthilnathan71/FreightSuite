@@ -60,37 +60,37 @@
                 <!-- Container Details -->
                 <div style="display: flex; flex-wrap: nowrap; margin-top: 0.5rem; padding: 10px;">
                     <!-- Left Column -->
-                    <div style="width:50%;">
+                    <div style="width:50%; font-size: 15px;">
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;"><strong>Container No.</strong></div>
+                            <div style="width:150px; font-weight:bolder;"><strong><strong>Container No.</strong></strong></div>
                             <div>: <strong>{{ containerNo !== 'No Container Data' ? containerNo : '' }}</strong></div>
                         </div>
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">MasterJob No.(MBL)</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>MasterJob No.(MBL)</strong></div>
                             <div>: {{ masterJobData?.MasterJobNumber || '' }}</div>
                         </div>
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">Vessel/Voyage</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>Vessel/Voyage</strong></div>
                             <div>: {{ housejobData?.VesselName || '' }} {{ housejobData?.VoyageNo || '' }} </div>
                         </div>
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">Agent</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>Agent</strong></div>
                             <div>: {{ housejobData?.AgentName || '' }} </div>
                         </div>
                     </div>
 
                     <!-- Right Column -->
-                    <div style="width:50%;">
+                    <div style="width:50%;font-size:15px;">
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">Shed</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>Shed</strong></div>
                             <div>: {{ housejobData?.masterJobData?.Others?.[0]?.YardCFS || '' }} </div>
                         </div>
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">Seal</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>Seal</strong></div>
                             <div>: {{ masterJobData?.containers?.[0]?.LineSeal || '' }} </div>
                         </div>
                         <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:150px; font-weight:bold;">Remarks</div>
+                            <div style="width:150px; font-weight:bolder;"><strong>Remarks</strong></div>
                             <div>: {{ housejobData?.Remarks || '' }}</div>
                         </div>
                     </div>
