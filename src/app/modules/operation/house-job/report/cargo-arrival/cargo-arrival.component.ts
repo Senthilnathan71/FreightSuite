@@ -10,7 +10,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
-
+import { LogoService } from 'src/app/core/services/logo.service';
 @Component({
   selector: 'app-cargo-arrival',
   standalone: true,
@@ -88,8 +88,9 @@ export class CargoArrivalComponent {
     private masterService: MasterService,
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
-   private numberToWords: NumberToWordsService
-    
+    private numberToWords: NumberToWordsService,
+    public logoService : LogoService
+
   ) { }
 
 
