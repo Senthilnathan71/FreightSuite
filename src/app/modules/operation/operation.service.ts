@@ -506,6 +506,42 @@ validateContainerData(payload: {
         })
     );
 }
+downloadProductTemplate(masterJobSid: number) {
+    return this.http.get(`master-job/download-product-template?masterJobSid=${masterJobSid}`, {
+        responseType: 'blob'
+    });
+}
+parseProductExcel(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/parse-product-excel', formData).pipe(
+        map((resp) => {
+            return resp;
+        })
+    );
+}
+
+validateProductData(payload: any): Observable<any> {
+  return this .http.post<{ status: boolean; message: string; data: any }>(
+      'master-job/validate-product-data',
+      payload
+  ).pipe(
+      map((resp) => {
+          return resp;
+      })
+  );
+}
+processProductUpload(payload: any): Observable<any> {
+  return this .http.post<{ status: boolean; message: string; data: any }>(
+      'master-job/process-product-upload',
+      payload
+  ).pipe(
+      map((resp) => {
+          return resp;
+      })
+  );
+}
   //cargo-receipt
 
   getLCLExportBookingById(BookingHeaderSid: number) {
