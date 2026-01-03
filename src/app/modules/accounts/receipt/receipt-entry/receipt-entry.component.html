@@ -144,7 +144,7 @@
                             type="button" 
                             appPreventMultiClick 
                             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-                            (click)="onSubmit(undefined, true)"
+                            (click)="postVoucher(true)"
                             [disabled]="receiptForm.invalid || isPosted || (!mps.can('update') && isEditMode) || isDirty || isSaving"
                             [title]="isDirty ? 'Please save the draft first before posting' : ''">
                             <i class="fas fa-check-circle me-1"></i> 

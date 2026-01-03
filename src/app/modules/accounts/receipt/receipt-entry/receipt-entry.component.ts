@@ -193,6 +193,7 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
   private destroy$ = new Subject<void>();
 
   // Unsaved changes detection
+  private isLoading = false;
   isDirty = false;
   private initialDetailCount = 0;
   private initialMatchingCount = 0;
@@ -267,7 +268,7 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (!this.formSaved && !this.isSaving && this.receiptForm.dirty) {
+        if (!this.formSaved && !this.isSaving && this.receiptForm.dirty && !this.isLoading) {
           this.markAsDirty();
         }
       });
@@ -278,7 +279,7 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (!this.formSaved && !this.isSaving) {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
           this.markAsDirty();
         }
       });
@@ -290,7 +291,7 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (!this.formSaved && !this.isSaving) {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
           this.markAsDirty();
         }
       });
@@ -302,7 +303,7 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (!this.formSaved && !this.isSaving) {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
           this.markAsDirty();
         }
       });
@@ -704,6 +705,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
   // }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    this.isSaving = true;
     const formValue = this.receiptForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
 
@@ -852,10 +854,11 @@ this.handleHeaderExchangeRate(companyCurrencySid);
           this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess('Receipt updated successfully');
-            this.resetDirtyState();
+
             this.formSaved = true;
+            this.isDirty = false;
+
             if (resolve) resolve(true);
-            const id = resp.data?.voucherHeader?.VoucherHeaderSid;
             this.loadReceipt(this.headerId);
           } else {
             this.appSettingService.showError(resp.message);
@@ -1073,7 +1076,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
   // }
 
 
-  async postVoucher() {
+  async postVoucher(notFromSubmit: boolean = false) {
     try {
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
@@ -1126,10 +1129,13 @@ this.handleHeaderExchangeRate(companyCurrencySid);
 
       this.spinner.hide();
       if (result.status) {
-        this.appSettingService.showSuccess('Receipt Created and Posted successfully!');
+        this.appSettingService.showSuccess(result.message);
         this.receiptData.PostStatus = 'P';
+        if(notFromSubmit){
+          this.loadReceipt(this.headerId);
+        }
       } else {
-        this.appSettingService.showError(result.message || 'Receipt Created Successfully but Failed to post receipt.');
+        this.appSettingService.showError(result.message);
       }
     } catch (error) {
       this.spinner.hide();
@@ -1141,6 +1147,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
  * Load existing receipt for editing
  */
   loadReceipt(receiptId: number) {
+    this.isLoading = true;
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1154,7 +1161,12 @@ this.handleHeaderExchangeRate(companyCurrencySid);
           console.log(this.receiptPrintData,"PRINTDATA")
         } else {
           this.appSettingService.showError(resp.message);
+          this.isLoading = false;
         }
+      },
+      (error) => {
+        this.isLoading = false;
+        console.error('Error loading receipt:', error);
       }
     );
   }
@@ -1242,24 +1254,35 @@ this.handleHeaderExchangeRate(companyCurrencySid);
     })
     console.log("Detail",this.receiptForm.value);
     this.isPosted = response.PostStatus === 'P';
-    if(this.isPosted){
-      this.receiptForm.disable();
-    }
-
+    
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
     // console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
     const voucherMatchingRecords = response.voucherMatchings || [];
     console.log("VOUCHER MATCHING RECORDS", voucherMatchingRecords);
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
+    if(this.isPosted){
+      this.receiptForm.disable();
+    }
   setTimeout(() => {
-    this.resetDirtyState();
+    this.isDirty = false;
+    this.formSaved = true;
+    this.isLoading = false;
+
     this.receiptForm.markAsPristine();
+    this.receiptForm.markAsUntouched();
     this.detailItems.markAsPristine();
     this.voucherMatchings.markAsPristine();
-    console.log("Debug - BEFORE DETECTION",this.receiptForm.getRawValue())
-    this.setupFormChangeDetection();
-    this.formSaved = false;
+
+    this.initialDetailCount = this.detailItems?.length || 0;
+    this.initialMatchingCount = this.voucherMatchings?.length || 0;
+
+    console.log("✅ Form loaded and reset complete", {
+      isDirty: this.isDirty,
+      formSaved: this.formSaved,
+      isLoading: this.isLoading,
+      formStatus: this.receiptForm.status
+    });
   }, 100);
   }
 
@@ -1370,9 +1393,12 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
   addDetailRow(data?: any, syncExRate : boolean = true) {
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
-    if (!this.formSaved) {
+
+    const isNewRow = !data?.VoucherDetailSid;
+    if (isNewRow && !this.formSaved && !this.isLoading && this.initialDetailCount > 0) {
       this.markAsDirty();
     }
+
     const lastAddedRow = this.detailItems.length - 1;
      const currencySid = newRow.get('CurrencyMasterSid')?.value;
     if (syncExRate) {
@@ -1381,7 +1407,9 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
     const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
     localAmountTriggeringCtrls.forEach(ctrl => {
       newRow.get(ctrl)?.valueChanges.subscribe(() => {
-        this.calculateLocalAmount(lastAddedRow,true);
+        if (!this.isSaving && !this.isLoading) {
+          this.calculateLocalAmount(lastAddedRow, true);
+        }
       });
     });
   }
@@ -1416,7 +1444,7 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
       takeUntil(this.destroy$)
     ).subscribe(([partySid, bankCoaSid]) => {
       // Check if both are selected and if the details grid is empty
-      if (partySid && bankCoaSid) {
+      if (partySid && bankCoaSid && !this.isLoading) {
         this.populateInitialDetailRows(partySid, bankCoaSid);
       }
     });
