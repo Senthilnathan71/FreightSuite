@@ -26,6 +26,10 @@
 
     <div id="printContent">
 
+        <div *ngIf="printableHouseJobs?.length === 0" class="text-center p-2">
+            No Record Found
+        </div>
+
         <ng-container *ngFor="let housejobData of printableHouseJobs; let i = index">
             <div class="p-1">
                 <div style="  width: 280mm;
@@ -162,9 +166,15 @@
   font-size:16px;
   border-bottom:1px solid black;
 ">
-                        <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+                          <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
                             <strong>Vessel / Voyage No.</strong><br />
-                            {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+
+                            {{ housejobData?.VesselName }}
+                            <ng-container *ngIf="housejobData?.VesselName && housejobData?.VoyageNo">
+                                /
+                            </ng-container>
+                            {{ housejobData?.VoyageNo }}
+
                         </div>
 
                         <div style="width:25%; text-align:center; padding:5px;">
@@ -370,20 +380,6 @@
 
 
             </div>
-
-            <div *ngIf="printableHouseJobs.length === 0" class="text-center p-2">
-                No Record Found
-            </div>
-
-
         </ng-container>
-
-
-
     </div>
-
-
-
-
-
 </div>

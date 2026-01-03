@@ -66,6 +66,10 @@ export class Vat210Component {
   }
 
 
+   get payment() {
+    return this.fullData?.payment || {};
+  }
+
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
@@ -135,49 +139,49 @@ export class Vat210Component {
 
 
   get grandSalesTaxableTotal(): number {
-  return (
-    (this.localSalesTaxableTotal || 0) +
-    (this.overseasSalesTaxableTotal || 0)
-  );
-}
+    return (
+      (this.localSalesTaxableTotal || 0) +
+      (this.overseasSalesTaxableTotal || 0)
+    );
+  }
 
-get grandSalesTaxTotal(): number {
-  return (
-    (this.localSalesTaxTotal || 0) +
-    (this.overseasSalesTaxTotal || 0)
-  );
-}
-
-
-get grandPurchaseTaxableTotal(): number {
-  return (
-    (this.localPurchaseTaxableTotal || 0) +
-    (this.overseasPurchaseTaxableTotal || 0)
-  );
-}
-
-get grandPurchaseTaxTotal(): number {
-  return (
-    (this.localPurchaseTaxTotal || 0) +
-    (this.overseasPurchaseTaxTotal || 0)
-  );
-}
+  get grandSalesTaxTotal(): number {
+    return (
+      (this.localSalesTaxTotal || 0) +
+      (this.overseasSalesTaxTotal || 0)
+    );
+  }
 
 
-get vatPayableAmountLocal(): number {
-  return (
-    (this.grandSalesTaxableTotal || 0) -
-    (this.grandPurchaseTaxableTotal || 0)
-  );
-}
+  get grandPurchaseTaxableTotal(): number {
+    return (
+      (this.localPurchaseTaxableTotal || 0) +
+      (this.overseasPurchaseTaxableTotal || 0)
+    );
+  }
+
+  get grandPurchaseTaxTotal(): number {
+    return (
+      (this.localPurchaseTaxTotal || 0) +
+      (this.overseasPurchaseTaxTotal || 0)
+    );
+  }
 
 
-get vatPayableAmountOversea(): number {
-  return (
-    (this.grandSalesTaxTotal || 0) -
-    (this.grandPurchaseTaxTotal || 0)
-  );
-}
+  get vatPayableAmountLocal(): number {
+    return (
+      (this.grandSalesTaxableTotal || 0) -
+      (this.grandPurchaseTaxableTotal || 0)
+    );
+  }
+
+
+  get vatPayableAmountOversea(): number {
+    return (
+      (this.grandSalesTaxTotal || 0) -
+      (this.grandPurchaseTaxTotal || 0)
+    );
+  }
 
 
 }
