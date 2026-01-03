@@ -105,10 +105,52 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isPosted || (mps.can('update') && isEditMode)">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
+                    
+                    @if(isAutoPosting){
+                        <button 
+                            type="button" 
+                            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative" 
+                            [ngClass]="{'btn-info': !isDirty, 'btn-warning': isDirty}"
+                            (click)="onSubmit(undefined, true)" 
+                            [disabled]="isPosted || (mps.can('update') && isEditMode) || isSaving">
+                            <i class="fas fa-save me-1"></i>
+                            <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                            <span *ngIf="isDirty"
+                                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                title="You have unsaved changes">
+                                <span class="visually-hidden">unsaved changes</span>
+                            </span>
+                        </button>
+                    } @else {
+                        <!-- Draft Save Button -->
+                        <button 
+                            type="button" 
+                            appPreventMultiClick 
+                            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+                            [ngClass]="{'btn-warning': isDirty, 'btn-info': !isDirty}"
+                            (click)="onSubmit()"
+                            [disabled]="isPosted || (!mps.can('update') && isEditMode) || isSaving">
+                            <i class="fas fa-save me-1"></i>
+                            <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                            <span *ngIf="isDirty"
+                                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                title="You have unsaved changes">
+                                <span class="visually-hidden">unsaved changes</span>
+                            </span>
+                        </button>
+                        
+                        <!-- Final Save/Post Button -->
+                        <button 
+                            type="button" 
+                            appPreventMultiClick 
+                            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="postVoucher(true)"
+                            [disabled]="receiptForm.invalid || isPosted || (!mps.can('update') && isEditMode) || isDirty || isSaving"
+                            [title]="isDirty ? 'Please save the draft first before posting' : ''">
+                            <i class="fas fa-check-circle me-1"></i> 
+                            {{ isPosted ? 'Posted' : 'Post' }}
+                        </button>
+                    }
 
                     <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -471,6 +513,7 @@
                             <th class="bg-transparent text-light"style="font-size: 14px;">Ex. Rate <span class="text-danger">*</span></th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Curr. Amt <span class="text-danger">*</span></th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Local Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light"style="font-size: 14px;">{{r['CurrencyCode']?.getRawValue()}} Amt <span class="text-danger">*</span></th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Narration</th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Cost Center</th>
                             <th class="bg-transparent text-light"style="font-size: 14px;">Profit Center</th>
@@ -561,6 +604,17 @@
                                     <input 
                                         type="text" 
                                         formControlName="LocalAmount"
+                                        class="custom-input-field sm text-end"
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="9"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                        readonly
+                                    />
+                                </td>
+                                <td class="dofi-min-w-125">
+                                    <input 
+                                        type="text" 
+                                        formControlName="PartyAmount"
                                         class="custom-input-field sm text-end"
                                         DecimalPrecision
                                         [DecimalPrecisionBefore]="9"
@@ -681,7 +735,10 @@
                             <th class="bg-warning text-light"style="font-size: 14px;">Ex. Rate</th>
                             <th class="bg-warning text-light"style="font-size: 14px;">Curr Amt</th>
                             <th class="bg-warning text-light"style="font-size: 14px;">Local Amt</th>
+                            <th class="bg-warning text-light"style="font-size: 14px;">{{r['CurrencyCode']?.getRawValue()}} Amt</th>
+                            @if(isIndianCompany()){
                             <th class="bg-warning text-light"style="font-size: 14px;">TDS Amt</th>
+                            }
                             
                             @if(!isPosted){
                             <th class="bg-warning text-light">Balance</th>
@@ -780,7 +837,7 @@
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
                                     [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('matchCurr')?.value)"
-                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                    (input) = "calculateLocalAmountForMatchRow(i,true)"
                                     style="width: 70px;"
                                 />
                             </td>
@@ -795,7 +852,7 @@
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="9" 
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)" 
-                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                    (input) = "calculateLocalAmountForMatchRow(i,true)"
                                 />
                             </td>
 
@@ -812,8 +869,22 @@
                                     readonly
                                 />
                             </td>
+                            
+                            <!-- Match Party Amount -->
+                             <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchPartyAmt" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
+                                    readonly
+                                />
+                             </td>
 
                             <!-- TDS Amount -->
+                             @if(isIndianCompany()){
                             <td>
                                 <input 
                                     type="text" 
@@ -824,6 +895,7 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
                                 />
                             </td>
+                            }
                             @if(!isPosted){
                             <td>
                                 <input 
@@ -854,9 +926,12 @@
                             <td></td> <!-- matchCurr -->
                             <td></td> <!-- matchExRate -->
 
-                            <td>{{ getTotalMatchCurrAmt() }}</td>
+                            <td></td>
                             <td>{{ getTotalMatchLocalAmt() }}</td>
+                            <td>{{ getTotalMatchPartyAmt() }}</td>
+                            @if(isIndianCompany()){
                             <td>{{ getTotalTdsAmt() }}</td>
+                            }
                             
                             <td></td>
                             

@@ -3,6 +3,11 @@ import { CurrencyExchange } from '../crm-mobile/Interfaces/currency-exchange.int
 import { map } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
+export interface CheckVoucherPostingMechanism {
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  MenuName: string;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -372,6 +377,15 @@ export class AccountsService {
 
   postVoucherByVoucherSid(payload: any) {
     return this.http.post<{ data: any }>('voucher/post-voucher', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  
+  checkVoucherPostingMechanism(payload:CheckVoucherPostingMechanism){
+    return this.http.post<{ data: boolean }>('voucher/check-auto-posting', payload).pipe(
       map((resp: any) => {
         return resp;
       })

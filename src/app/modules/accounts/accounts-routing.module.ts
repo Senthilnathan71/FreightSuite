@@ -26,6 +26,7 @@ import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-l
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { VoucherMatchingListComponent } from './voucher-matching/voucher-matching-list/voucher-matching-list.component';
+import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 
 export const AccountRoutes: Routes = [
   {
@@ -195,6 +196,7 @@ export const AccountRoutes: Routes = [
       {
         path: "receipt/entry",
         component: ReceiptEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Add Receipt Voucher",
           urls: [
@@ -207,6 +209,7 @@ export const AccountRoutes: Routes = [
       {
         path: "receipt/entry/:id",
         component: ReceiptEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Receipt Voucher",
           urls: [
