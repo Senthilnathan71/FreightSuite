@@ -87,7 +87,7 @@
                         <strong>Information required for generating Audit File not provided</strong>
                     </div>
                     <div style="width:150px; padding:2px; text-align:right;">
-                        <span></span>
+                        <span>{{summary.unpostedVoucher || 0}}</span>
                     </div>
                 </div>
 
@@ -242,7 +242,7 @@
                 <div style="display:flex; border-bottom:1px solid black;">
                     <div style="flex:1; padding:2px; border-right:none;">
                         <strong>
-                            Outside GCC Supplies
+                            Outside GCC Purchases
                         </strong>
                     </div>
                 </div>
@@ -263,7 +263,7 @@
 
                 <div style="display:flex; font-weight:bold;border-bottom: 1px solid black;">
                     <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Total Overseas Purchases
+                        Total Outside GCC Purchases
                     </div>
                     <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
                         {{ overseasPurchaseTaxableTotal | number:'1.2-2' }}
@@ -308,7 +308,8 @@
             <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none;">
 
 
-                <div style="display:flex; border-bottom:1px solid black; font-weight:bold; justify-content: space-between;">
+                <div
+                    style="display:flex; border-bottom:1px solid black; font-weight:bold; justify-content: space-between;">
                     <div style=" padding:2px; border-right:none;">
                         <strong>Payment Details</strong>
                     </div>
@@ -327,7 +328,7 @@
                         <span>Tax payment (included)</span>
                     </div>
                     <div style="width:150px; padding:2px; text-align:right;">
-
+                        <span>{{payment.totalPaymentVoucher || 0}}</span>
                     </div>
                 </div>
 
@@ -336,7 +337,7 @@
                         <span>Tax payments (not included/uncertain)</span>
                     </div>
                     <div style="width:150px; padding:2px; text-align:right;">
-
+                        <span>{{payment.totalWithoutPayment || 0}}</span>
                     </div>
                 </div>
 
@@ -358,12 +359,19 @@
                     </div>
                 </div>
 
-                <div style="display:flex; border-bottom:1px solid black;">
+                <div style="display:flex; font-weight:bold; background:#e8e8e8; border-bottom:1px solid black;">
                     <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <strong>Balance VAT Payable</strong>
+                        <strong>
+                            Balance VAT Payable
+                        </strong>
                     </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
 
+                    <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
+                        {{ vatPayableAmountLocal | number:'1.2-2' }}
+                    </div>
+
+                    <div style="width:150px; padding:2px; text-align:right;">
+                        {{vatPayableAmountOversea | number:'1.2-2'}}
                     </div>
                 </div>
             </div>
