@@ -3916,6 +3916,14 @@ createReportMaster(payload: any) {
     )
   }
 
+  getAllMainMenus(){
+    return this.http.get<{data:any[]}>('menu/main-menus').pipe(
+      map((resp)=>{
+        return resp;
+      })
+    )
+  }
+
   //Mawb
   getAllMawbStocks(CompanyMasterSid: number, BranchMasterSid: number) {
     return this.http.post<{ data: any[] }>('mawb-stock',{CompanyMasterSid ,BranchMasterSid }).pipe(

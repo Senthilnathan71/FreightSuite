@@ -79,7 +79,7 @@ currentBranch: any;
 	]
 	currentMenuId: number;
 	TandCList: any;
-
+	menuList : any[];
 	auditLogs: any[] = []; // Stores audit logs
 	  auditLogModalRef!: NgbModalRef;
 
@@ -143,6 +143,8 @@ hasAnyDropdownPermission(): boolean {
 			DocumentTypeName: ['', [Validators.required]],
 			DocumentTypeCode: ['', [Validators.required]],
 			Type : [''],
+			IsAutoPosting : ['N'],
+			MenuMasterSid : [null],
 			CurrencyCode: [null, [Validators.required]],
 			COALedger: [''],
 			Subledger: [''],
@@ -173,13 +175,15 @@ hasAnyDropdownPermission(): boolean {
     forkJoin({
         companies: this.masterService.getAllCompanies(),
         currencies: this.masterService.getAllCurrencies(),
-        coa: this.masterService.getAllCoa(CompanyMasterSid) // Add this line to fetch COA data
-    }).subscribe(({ companies, currencies, coa }) => {
+        coa: this.masterService.getAllCoa(CompanyMasterSid), // Add this line to fetch COA data
+		menus : this.masterService.getAllMainMenus()
+    }).subscribe(({ companies, currencies, coa,menus }) => {
         this.companyList = companies;
         this.currencyList =  this.currencyList = (currencies || []).map(c => ({
           ...c,
           countryName: c.countryMaster?.countryName
         }));
+		this.menuList = menus.data || [];
         this.coaList = coa.map(item => ({
             COAMasterSid: item.COAMasterSid,
             LedgerName: item.LedgerName
