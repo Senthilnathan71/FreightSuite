@@ -517,13 +517,14 @@
         [displayLabels]="customerLookupConfig.displayLabels"
         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
         bindValue="CustomerName"
-        (itemSelected)="setAddress('NotifyAddress', $event)"  
+       (itemSelected)="setAddress('NotifyAddress', $event); notifyManuallyChanged = true" 
+       (clear)="notifyManuallyChanged = false"  
         style="width : 100%;">
       </dofi-searchable-dropdown>
       
       <!-- Swap icon -->
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
+         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
@@ -532,7 +533,7 @@
     <div class="input-group" *ngIf="this.b['isNotifyFreeText']?.value">
       <input type="text" formControlName="Notify" placeholder="" class="form-control" />
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
+        (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>

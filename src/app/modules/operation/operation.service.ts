@@ -474,6 +474,38 @@ getHouseJobARAPData(HouseJobSid: number) {
     });
   }
 
+  downloadContainerTemplate() {
+    return this.http.get('master-job/container/template', {
+      responseType: 'blob'
+    });
+  }
+
+  parseContainerExcel(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/container/bulk-upload/parse', formData).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+validateContainerData(payload: {
+    containers: any[];
+    masterJobSid?: number;
+    companyMasterSid: number;
+    branchMasterSid: number;
+    createdBy: string;
+}) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+        'master-job/container/bulk-upload/validate',
+        payload
+    ).pipe(
+        map((resp) => {
+            return resp;
+        })
+    );
+}
   //cargo-receipt
 
   getLCLExportBookingById(BookingHeaderSid: number) {

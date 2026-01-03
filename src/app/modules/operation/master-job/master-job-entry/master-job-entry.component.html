@@ -483,7 +483,7 @@
 
                                    <!-- Vessel Field -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select"
+  <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
     [class.filled]="!!masterJobForm.get('VesselName')?.value">
 
     <!-- Dropdown Mode -->
@@ -521,7 +521,7 @@
 
 <!-- Voyage Field -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select"
+  <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
     [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
 
     <!-- Dropdown Mode -->
@@ -566,7 +566,7 @@
 
 <!-- ETD Field -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select-date">
+  <div class="custom-form-group custom-form-group-select-date mt-md-1">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETDFreeText">
       <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETD" 
@@ -603,7 +603,7 @@
 
 <!-- ETA Field -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select-date">
+  <div class="custom-form-group custom-form-group-select-date mt-md-1">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETAFreeText">
       <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETA" 
@@ -640,7 +640,7 @@
 
                                     <!-- Carrier Field -->
                                     <aside class="col-md-4 ">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('CarrierName')?.value">
                                             <!-- <ng-select [items]="carrierList" bindLabel="CustomerName"
                                                 bindValue="CustomerName" formControlName="CarrierName" placeholder=""
@@ -669,7 +669,7 @@
 
                                    <!-- Cut Off Date Field -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select-date mt-1">
+  <div class="custom-form-group custom-form-group-select-date mt-md-1">
     <div class="input-group">
       <input class="form-control" placeholder="dd-mm-yyyy"
              formControlName="PortCutoffDate" bindValue="PortCutoffDate" ngbDatepicker
@@ -685,7 +685,7 @@
 </aside>
                                     <!-- SI Cut Off Field -->
                                    <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select-date mt-1">
+                                        <div class="custom-form-group custom-form-group-select-date mt-md-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                      formControlName="SiCutoffDate" ngbDatepicker
@@ -704,7 +704,7 @@
 
                                     <!-- Shipment Terms Field - Updated to Dropdown -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select mt-1"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('ShipmentTerms')?.value">
                                             <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="id"
                                                 formControlName="ShipmentTerms" placeholder="" appendTo="body">
@@ -715,7 +715,7 @@
                                     </aside>
                                     
                                     <aside class="col-md-3">
-                                        <div class="custom-form-group mt-1">    
+                                        <div class="custom-form-group mt-md-1">    
                                             <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                 class="custom-input-field sm" placeholder="" [textWithNumbers]="1000">
                                             <label for="text-input" class="input-label">Marks and Number </label>
@@ -727,7 +727,7 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-3">
-                                        <div class="custom-form-group mt-1">
+                                        <div class="custom-form-group mt-md-1">
                                             <input type="textarea" formControlName="CommodityDescription"
                                                 id="text-input" class="custom-input-field sm" placeholder=""
                                                 [textWithNumbers]="1000">
@@ -741,7 +741,7 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('JobStatus')?.value">
                                            <ng-select [items]="jobStatusOptions" bindLabel="name" bindValue="id" formControlName="JobStatus" placeholder="" class="ng-select" appendTo="body"></ng-select>
                                             <label class="input-label"> Job Status <span
@@ -1010,19 +1010,57 @@
                 <div>
                     <div class="table-toolbar">
                         <div class="toolbar-left">
-
+                            <div class="d-flex align-items-center gap-2">
+        <!-- Download Template Button -->
+        <button class="table-action-btn success" (click)="downloadContainerTemplate()"
+                [disabled]="isProcessingContainerUpload">
+            <i class="fas fa-download me-1"></i> Download Excel
+        </button>
+        
+        <!-- Upload Excel Button -->
+        <div class="file-upload-wrapper">
+            <input type="file" id="containerFileInput" #containerFileInput 
+                   accept=".xlsx,.xls" (change)="onContainerFileSelected($event)"
+                   style="display: none" [disabled]="isProcessingContainerUpload">
+            
+            <button class="table-action-btn primary" (click)="containerFileInput.click()"
+                    [disabled]="isProcessingContainerUpload">
+                <i class="fas fa-upload me-1"></i> Upload Excel
+            </button>
+            
+            <small *ngIf="selectedContainerFile" class="selected-file ms-2">
+                <i class="fas fa-file-excel text-success me-1"></i>
+                {{ selectedContainerFile.name }}
+            </small>
+        </div>
+        
+        <!-- Process Upload Button (shown when preview is available) -->
+        <button *ngIf="showContainerPreview" class="table-action-btn info" 
+                (click)="processContainerUpload()"
+                [disabled]="isProcessingContainerUpload || containerValidationErrors.length > 0">
+            <i class="fas fa-check me-1"></i> Add Containers
+        </button>
+        
+        <!-- Cancel Upload Button -->
+        <button *ngIf="showContainerPreview" class="table-action-btn danger" 
+                (click)="resetContainerUpload()">
+            <i class="fas fa-times me-1"></i> Cancel
+        </button>
+    </div>
                         </div>
                         <div class="toolbar-right">
                             <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
                              [disabled]="selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers()">
                                 <i class="fas fa-plus"></i> Add
                             </button>
-                            <button class="table-action-btn export">
+                            <button class="table-action-btn export"
+                             (click)="exportContainerData()"
+                             [disabled]="masterJobContainers.length === 0">
                                 <i class="fas fa-download"></i> Export
                             </button>
-                            <button class="table-action-btn print">
+                            <!-- <button class="table-action-btn print">
                                 <i class="fas fa-print"></i> Print
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                     <div class="modern-table-wrapper">

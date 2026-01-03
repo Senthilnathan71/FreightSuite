@@ -150,6 +150,7 @@ customsDataArray: any[] = [];        // for BOE data
 resetTriggerCustoms: boolean = false; // trigger flag for reset
 hssacList: any[] = [];
 selectedCustomer: any;
+notifyManuallyChanged = false;
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   userData : any;
@@ -2414,20 +2415,26 @@ validateHBLNo(): boolean {
  onConsigneeChange(consignee?: any) {
   if (!consignee) {
     this.filteredShipperList = [...this.shipperList];
-    this.houseJobForm.patchValue({
-      Notify: null,
-      NotifyAddress: ''
-    });
+    // Only clear Notify if it's not already set by user
+    if (!this.houseJobForm.get('Notify')?.value) {
+      this.houseJobForm.patchValue({
+        Notify: null,
+        NotifyAddress: ''
+      });
+    }
     return;
   }
   
   this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
   
-  // Auto-fill Notify with consignee details - SAME LOGIC AS BOOKING-ENTRY
-  this.houseJobForm.patchValue({
-    Notify: consignee.CustomerName,
-    NotifyAddress: consignee.Address
-  });
+  // Auto-fill Notify ONLY if Notify is currently empty
+  const currentNotify = this.houseJobForm.get('Notify')?.value;
+  if (!currentNotify || currentNotify === '') {
+    this.houseJobForm.patchValue({
+      Notify: consignee.CustomerName,
+      NotifyAddress: consignee.Address
+    });
+  }
 }
   handleDestAgentChange(agent?: any) {
     if (!agent) {
