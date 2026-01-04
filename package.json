@@ -6,6 +6,7 @@
     "start": "node --max_old_space_size=8192 ./node_modules/@angular/cli/bin/ng serve",
     "build": "ng build",
     "build-uat":"node --max_old_space_size=14273 ./node_modules/@angular/cli/bin/ng build --configuration=uat",
+    "build-awsprod":"node --max_old_space_size=14273 ./node_modules/@angular/cli/bin/ng build --configuration=awsprod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
