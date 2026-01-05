@@ -431,7 +431,9 @@ export class InvoiceEntryComponent implements OnInit {
       this.salesmanList = salesman || [];
       const userDefaultCurrency = this.currentCompany?.CurrencyMasterSid;
       this.companyCurrency = this.currencyList.find(c => c.CurrencyMasterSid === userDefaultCurrency);
-      this.onHeaderCurrencyChange(this.companyCurrency);
+      if(!this.isEditMode){
+        this.onHeaderCurrencyChange(this.companyCurrency);
+      }
       this.currentBranchCityName = userCity ? userCity.cityName : null;
       this.loadDepartments(company?.CompanyMasterSid).catch(e => {
         console.error('Error loading departments', e);
@@ -1155,8 +1157,8 @@ export class InvoiceEntryComponent implements OnInit {
       PostStatus: header.PostStatus || '',
       MasterJobSid: header.MasterJobSid || null,
       HBLNo: header.HouseJob || header.HBLNo || '',
-      CurrencyMasterSid :  currency.CurrencyMasterSid ||  header?.CurrencyMasterSid || null,
-      CurrencyCode: currency.CurrencyCode || header.currencyMaster?.currencyCode || header.CurrencyCode || null,
+      CurrencyMasterSid :  header?.CurrencyMasterSid || currency.CurrencyMasterSid || null,
+      CurrencyCode: header.CurrencyCode ||  currency.CurrencyCode || header.currencyMaster?.currencyCode || null,
       ExchangeRate: header.ExchangeRate || header.ExRate || 1,
       GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
@@ -1172,6 +1174,7 @@ export class InvoiceEntryComponent implements OnInit {
     // if(headerCurr){
     //   this.onHeaderCurrencyChange(headerCurr)
     // }
+    this.getBankDetails();
 
     if (data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid || this.isPosted) {
       this.invoiceForm.get('ExchangeRate')?.disable();
@@ -1292,11 +1295,7 @@ export class InvoiceEntryComponent implements OnInit {
         VoucherReverseSid: null
       });
     }
-    console.log("FORM VALUE AFTER PATCHING",this.invoiceForm.getRawValue())
-    setInterval(() => {
-      console.log("FORM VALUE AFTER PATCHING",this.details.getRawValue())
-      this.invoiceForm.updateValueAndValidity();
-    }, 1000);
+    console.log("FORM VALUE AFTER PATCHING",this.invoiceForm.getRawValue());
   }
 
   addDetailRow() {
@@ -2869,7 +2868,7 @@ getAmountInWords(): string {
 
   getBankDetails() {
     console.log('DEBUG - getBankDetails');
-    const currCode = this.invoiceForm.get('CurrencyCode')?.value;
+    const currCode = this.invoiceForm.get('CurrencyCode')?.getRawValue();
     const currentBranchId = this.currentBranch?.BranchMasterSid;
     const currency = this.currencyList.find(c => c.currencyCode === currCode)?.CurrencyMasterSid;
     console.log('DEBUG - getBankDetails - branch:', currentBranchId);
