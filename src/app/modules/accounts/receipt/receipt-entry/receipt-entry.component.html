@@ -72,7 +72,7 @@
      <!-- Button Section -->
 
             <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
-                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+                <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
 
                  <div class="col-md-4">
                         <div class="form-check form-check-inline p-0 mt-0">
@@ -428,40 +428,59 @@
         </div>
     </div>
 
-        <div class="nav-pills-container mt-1">
-        <div class="nav-pills w-100">
-            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                (click)="selectTab(tab.name)">
-                <div class="pill-icon">
-                    <i [class]="tab.icon"></i>
+    <div class="nav-pills-container mt-1">
+        <div class="nav-pills w-100 d-flex align-items-center gap-3">
+
+            <!-- Tabs -->
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                    (click)="selectTab(tab.name)">
+                    <div class="pill-icon">
+                        <i [class]="tab.icon"></i>
+                    </div>
+                    <span class="pill-label">{{ tab.name }}</span>
+                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
                 </div>
-                <span class="pill-label"style="font-size: 14px;">{{ tab.name }}</span>
-                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
-            <div class="d-flex gap-2 w-100 justify-content-end">
+
+            <!-- Voucher No (auto takes remaining space) -->
+            <div class="flex-grow-1 text-start">
+                @if(isEditMode && voucherMatchingInfo?.VoucherMatchingHeaderSid){
+                <a class="fw-bold px-2 text-decoration-underline" [routerLink]="[
+                '/accounts/voucher-matching/entry',
+                voucherMatchingInfo.VoucherMatchingHeaderSid
+            ]">
+                    {{ voucherMatchingInfo?.VoucherMatchingNo || '' }}
+                </a>
+                }
+            </div>
+
+            <!-- Totals / Warning (right aligned) -->
+            <div class="d-flex align-items-center gap-3 text-end flex-shrink-0">
                 @if(validatePartyMatchingAmount()){
-                <span>
-                    <span class="badge bg-warning">
-                        !! Matching Amount exceeds party amount
-                    </span>
+                <span class="text-warning fw-semibold">
+                    !! Matching Amount exceeds party amount
                 </span>
                 }
+
                 <span>
-                    <span class="badge bg-success">
-                        Sum of Credits : <b>{{totalCredits | number:'1.2-2'}}</b>
-                    </span>  
+                    Total Credits :
+                    <span class="fw-bold text-success">
+                        {{ totalCredits | number:'1.2-2' }}
+                    </span>
                 </span>
+
                 <span>
-                    <span class="badge bg-danger">
-                        Sum of Debits : <b>{{totalDebits | number:'1.2-2'}}</b>
-                    </span> 
+                    Total Debits :
+                    <span class="fw-bold text-danger">
+                        {{ totalDebits | number:'1.2-2' }}
+                    </span>
                 </span>
-                <!-- <span class="error-message fw-bold" *ngIf="matchingError">
-                    {{ matchingError }}
-                </span> -->
             </div>
+
         </div>
     </div>
+
 
     <!-- <div class="col-md-12">
         <div class="card h-100 mb-0">
@@ -752,7 +771,79 @@
 
                             <!-- Voucher No -->
                             <td>
-                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" />
+                                <!-- <div class="custom-form-group custom-form-group-select dofi-min-w-140">
+                                    <input *ngIf="!v.get('voucherNo')?.value" type="fw-bold px-2 text-decoration-underline"
+                                        [value]="v.get('voucherNo')?.value || ''" class="custom-input-field sm" readonly>
+                                    <a *ngIf="v.get('voucherNo')?.value"
+                                        [routerLink]="['/operation/invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                        class="fw-bold px-2 text-decoration-underline" title="View Invoice">
+                                        {{v.get('voucherNo')?.value }}
+                                    </a>
+                                </div> -->
+                                <div class="custom-form-group custom-form-group-select dofi-min-w-140" [ngSwitch]="v.get('voucherType')?.value">
+                                
+                                    <!-- When voucherNo is empty -->
+                                    <input *ngIf="!v.get('voucherNo')?.value" type="text"
+                                        class="custom-input-field sm fw-bold px-2 text-decoration-underline" [value]="v.get('voucherNo')?.value || ''"
+                                        readonly>
+                                
+                                    <!-- Show links only when voucherNo exists -->
+                                    <ng-container *ngIf="v.get('voucherNo')?.value">
+                                
+                                        <!-- Invoice -->
+                                        <a *ngSwitchCase="'INV'" [routerLink]="['/operation/invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Vendor Invoice (VIN / VN) -->
+                                        <a *ngSwitchCase="'VIN'" [routerLink]="['/operation/vendor-invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <a *ngSwitchCase="'VN'" [routerLink]="['/operation/vendor-invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Credit Note -->
+                                        <a *ngSwitchCase="'CRN'" [routerLink]="['/operation/credit-note/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Vendor Credit Note -->
+                                        <a *ngSwitchCase="'VCN'"
+                                            [routerLink]="['/operation/vendor-credit-note/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Receipt -->
+                                        <a *ngSwitchCase="'RPT'" [routerLink]="['/accounts/receipt/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Payment (if needed later) -->
+                                        <a *ngSwitchCase="'PMT'" [routerLink]="['/accounts/payment/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Journal Voucher -->
+                                        <a *ngSwitchCase="'JV'" [routerLink]="['/accounts/journal-voucher/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                    </ng-container>
+                                
+                                </div>
+
+
+                                <!-- <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" /> -->
                             </td>
 
                             <!-- Voucher Type -->
@@ -780,7 +871,7 @@
 
                             <!-- Currency -->
                             <td >
-                                <input type="text" formControlName="curr" class="custom-input-field sm" style="width: 50px;" />
+                                <input type="text" formControlName="curr" class="custom-input-field sm" style="width: 45px;" />
                             </td>
 
                             <!-- ExRate -->
