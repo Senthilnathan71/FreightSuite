@@ -101,7 +101,7 @@
                 "extractLicenses": false,
                 "buildOptimizer": true,
                 "optimization": true,
-                "sourceMap": true,
+                "sourceMap": false,
                 "namedChunks": false,
                 "aot": true,
                 "vendorChunk": false,
