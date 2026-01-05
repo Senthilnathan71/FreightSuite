@@ -98,9 +98,14 @@
                 ]
               },
               "awsprod": {
-                "optimization": false,
                 "extractLicenses": false,
+                "buildOptimizer": true,
+                "optimization": true,
                 "sourceMap": true,
+                "namedChunks": false,
+                "aot": true,
+                "vendorChunk": false,
+                "outputHashing": "all",
                 "fileReplacements": [
                   {
                     "replace": "src/environments/environment.ts",
