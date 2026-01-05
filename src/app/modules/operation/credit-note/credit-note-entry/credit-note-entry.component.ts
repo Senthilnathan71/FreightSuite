@@ -3082,35 +3082,15 @@ private normalizeParty(raw: any) {
 
 getAmountInWords(): string {
   const total = this.getGrandTotal();
+  if (!total) return '';
 
-  const rupees = Math.floor(total);
-  const paise = Math.round((total - rupees) * 100);
-
-  const rupeesInWords = this.numberToWords.convert(rupees);
-  const paiseInWords = paise > 0 ? this.numberToWords.convert(paise) : '';
-
-  const selectedCode = this.creditNoteForm.get('CurrencyCode')?.value;
-
-  // Make sure the find works
-  const selectedCurrency = this.currencyList.find(
-    (c: any) => String(c.CurrencyCode).trim() === String(selectedCode).trim()
-  );
-
-  const currencyName = selectedCurrency?.CurrencyUnit || 'Rupees';
-  const subCurrencyName = selectedCurrency?.CurrencySubUnit || 'Paise';
-  console.log(currencyName,"Currency Unit");
-  console.log(subCurrencyName,"SunCurrency Unit");
-
-  if (paise > 0) {
-    return ` ${rupeesInWords} ${currencyName} and ${paiseInWords} ${subCurrencyName} Only`;
-  }
-
-  return ` ${rupeesInWords} ${currencyName} Only`;
+  const currencySid = this.creditNoteData?.CurrencyMasterSid;
+  return this.numberToWords.convert(total, currencySid);
 }
 
   getCustomerName(CustomerMasterSid:number){
     if(!CustomerMasterSid || this.customerList.length === 0){
-      return 'N/A'
+      return ' '
     }
     return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
   }
@@ -3535,6 +3515,18 @@ calculateTotalColspan(): number {
     ].filter(x => x != null && x !== '');
     return values.join(' / ');
   }
+
+  getCurrencyExRate(): string {
+  const currency = this.creditNoteData?.VoucherDetail?.[0]?.CurrencyCode;
+  const exRate = this.creditNoteData?.ExchangeRate;
+
+  const values = [];
+
+  if (currency) values.push(currency);
+  if (exRate) values.push(exRate);
+
+  return values.join(' / ');
+}
 
 
        

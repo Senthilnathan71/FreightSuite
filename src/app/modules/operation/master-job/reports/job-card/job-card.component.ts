@@ -38,6 +38,7 @@ export class JobCardComponent {
   @Input() customerWiseSummary : summaryDTO;
   @Input() chargeWiseSummary : any[] = [];
   @Input() chargeList: any[] =[];
+  @Input() uomList: any[] = [];
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
    showPrintLogo: boolean = false;
@@ -126,12 +127,25 @@ export class JobCardComponent {
 
   getChargeName(ChargeMasterSid: number): string {
     if (!ChargeMasterSid || !this.chargeList || this.chargeList.length === 0) {
-      return 'N/A';
+      return ' ';
     }
     const charge = this.chargeList.find(
       (c) => c.ChargeMasterSid === ChargeMasterSid
     );
-    return charge ? charge.chargeCode || charge.ChargeCode || 'N/A' : 'N/A';
+    return charge ? charge.chargeName || charge.ChargeName || 'N/A' : 'N/A';
+  }
+
+  getUnitCode(ChargeUomSid: number):string {
+    console.log("GETUNITCODE", {
+      currentUOMId: ChargeUomSid,
+      uomList: this.uomList
+    })
+    if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
+      return '';
+    }
+    const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
+    console.log(uom);
+    return uom ? uom.UOMCode : '';
   }
 
   getCurrencyName(CurrencyMasterSid: number): string {
@@ -224,6 +238,47 @@ export class JobCardComponent {
     const port = this.portList.find(p => p.PortCode === portCode);
     return port ? `${port.PortCode} - ${port.PortName}` : portCode;
   }
+
+ getGroupedRevenueByParty() {
+  if (!this.masterJobData?.costRevenueCharges) return [];
+
+  const map = new Map<string, number>();
+
+  this.masterJobData.costRevenueCharges.forEach(item => {
+    const party = item?.revenueCustomerMaster?.CustomerName;
+    const amount = Number(item?.RevenueLocalAmount) || 0;
+
+    if (party && amount) {
+      map.set(party, (map.get(party) || 0) + amount);
+    }
+  });
+
+  return Array.from(map.entries()).map(([party, amount]) => ({
+    party,
+    amount
+  }));
+}
+
+getGroupedExpenseByParty() {
+  if (!this.masterJobData?.costRevenueCharges) return [];
+
+  const map = new Map<string, number>();
+
+  this.masterJobData.costRevenueCharges.forEach(item => {
+    const party = item?.costCustomerMaster?.CustomerName;
+    const amount = Number(item?.CostLocalAmount) || 0;
+
+    if (party && amount) {
+      map.set(party, (map.get(party) || 0) + amount);
+    }
+  });
+
+  return Array.from(map.entries()).map(([party, amount]) => ({
+    party,
+    amount
+  }));
+}
+
 
 
   modalClose() {
