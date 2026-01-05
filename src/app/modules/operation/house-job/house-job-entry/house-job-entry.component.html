@@ -2630,7 +2630,7 @@
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NetWeight"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
-          <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
+          <label for="text-input" class="input-label">Net Wt <span class="text-danger"></span></label>
           <!-- Validation Messages -->
     @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
     productForm.get('NetWeight')?.invalid) {

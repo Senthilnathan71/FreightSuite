@@ -360,6 +360,8 @@ clearReportLogo() {
 			Pan: ['', this.panValidator],
 			isHo: [false],
 			status: ['Active'],
+			CIN: [''],
+			TAN: [''],
 			remarks: [''],
 			// StateMasterSid: [2],
 			config: [{}],
@@ -946,6 +948,29 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 	}
 
 	submitCompanyForm() {
+		    if (this.isUaeCountry()) {
+    const trn = this.companyForm.get('Pan')?.value || '';
+    const panControl = this.companyForm.get('Pan');
+    
+    // Only validate if TRN is actually entered (not empty)
+    if (trn && trn.trim().length > 0) {
+      // Must be exactly 15 digits, starting with 1-9
+      const isValidTrn = /^[1-9][0-9]{14}$/.test(trn.replace(/\s/g, ''));
+      
+      if (!isValidTrn) {
+        panControl?.setErrors({ 
+          invalidTRN: true,
+          message: 'TRN must be exactly 15 digits starting with 1-9'
+        });
+        panControl?.markAsTouched();
+        return; // Stop here, don't save
+      }
+    }
+    // Clear errors if TRN is empty or valid
+    if (panControl?.hasError('invalidTRN') && (!trn || trn.trim().length === 0)) {
+      panControl?.setErrors(null);
+    }
+  }
 		console.log(this.companyForm.value);
 		if (this.companyForm.invalid) {
 			this.companyForm.markAllAsTouched();
@@ -1405,6 +1430,8 @@ openAuditLogs(modal: TemplateRef<any>) {
     isHo: false,
     status: 'Active',
     remarks: '',
+	CIN:'',
+	TAN: '',
     config: {}
     // note: branches excluded on purpose
   });
