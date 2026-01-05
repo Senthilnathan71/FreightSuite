@@ -1011,7 +1011,38 @@ export class ReportRegistryService {
       });
 
     } catch (error) {
-      console.warn(' Lost_Customer_Reportt component not yet created:', error);
+      console.warn(' Lost_Customer_Report component not yet created:', error);
+    }
+
+    // Destination_Report
+    try {
+      const { DestinationReportComponent } = await import(
+        '../components/reports/destination-report/destination-report.component'
+      );
+
+      this.registerReport({
+        id: 'destination-report',
+        title: 'Destination_Report',
+        component: DestinationReportComponent,
+        filenameTemplate: 'Destination_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Destination_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Destination_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Destination_Report component not yet created:', error);
     }
 
     // 

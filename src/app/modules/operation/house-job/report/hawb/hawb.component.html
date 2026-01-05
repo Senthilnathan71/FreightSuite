@@ -637,8 +637,8 @@
                         </div>
 
                         <div
-                            style="padding:2px; min-height:100px; height:auto; border-left: 1px solid black;  border-bottom:1px solid black;">
-                            <div style="display:flex;padding-left: 5px;">
+                            style="padding:2px; min-height:110px; height:auto; border-left: 1px solid black;  border-bottom:1px solid black;">
+                            <div style="display:flex;padding-left: 5px;padding-top: 10px;">
                                 <div style="width:200px; white-space:nowrap;"><strong>Job No.</strong></div>
                                 <div style="min-height:20px; height:auto;">:
                                     {{housejobData?.masterJob?.MasterJobNumber}}</div>
@@ -827,7 +827,10 @@
                     <tr>
                         <!-- Left Column -->
                         <td style="width:50%;  padding:8px; vertical-align:top;">
-                            <p style="margin:0 0 5px 0; font-weight:bold;">Handling Information</p>
+                            <p style="margin:0 0 5px 0; font-weight:bold;text-align: center;">Handling Information</p>
+                            <span>
+                                {{housejobData?.Others?.[0]?.HandlingInformation}}
+                            </span>
                             <table style="width:100%; border-collapse:collapse;">
                                 <tr>
                                     <td style="width:70px; font-weight:bold;">Total</td>

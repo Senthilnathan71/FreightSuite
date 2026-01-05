@@ -77,6 +77,8 @@
                             </button>
               <button class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
             </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
+            </button>
              <!-- <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
             </button> -->
              <!-- <button class="text-dark" ngbDropdownItem (click)="reportMilestoneSummary()">Milestone Summary
@@ -402,7 +404,7 @@
         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
         bindValue="CustomerName"
         (itemSelected)="setAddress('ShipperAddress',$event); onShipperChange($event)"
-        style="width : 100%;">
+        style="width : 85%;">
       </dofi-searchable-dropdown>
 
       <!-- Swap icon -->
@@ -450,7 +452,7 @@
                   </aside>
 
                   <aside class="col-md-6 pe-0">
-  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+  <div class="custom-form-group custom-form-group-select inputChnages mt-md-0"
     [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
@@ -491,7 +493,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value">
+                    <div class="custom-form-group  mt-md-1" [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
@@ -508,7 +510,7 @@
                   </aside>
 
                   <aside class="col-md-6 pe-0">
-  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+  <div class="custom-form-group custom-form-group-select inputChnages mt-md-0"
     [class.filled]="!!houseJobForm.get('Notify')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
@@ -542,7 +544,7 @@
 </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('NotifyAddress')?.value">
+                    <div class="custom-form-group mt-md-1" [class.filled]="!!houseJobForm.get('NotifyAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NotifyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
@@ -588,7 +590,7 @@
                   </aside> -->
 
                 <aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select inputChnages mt-1"
+  <div class="custom-form-group custom-form-group-select inputChnages mt-md-0"
     [class.filled]="!!houseJobForm.get('CarrierName')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
@@ -620,7 +622,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
+                    <div class="custom-form-group custom-form-group-select mt-md-1"
                       [class.filled]="!!houseJobForm.get('SalesmanSid')?.value">
                       <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
                         formControlName="SalesmanSid" placeholder="" appendTo="body">
@@ -629,7 +631,7 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
+                    <div class="custom-form-group custom-form-group-select mt-md-1"
                       [class.filled]="!!houseJobForm.get('DestinationAgent')?.value">
                       <!-- <ng-select [items]="deliveryAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="DestinationAgent" placeholder=""
@@ -662,7 +664,7 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
+                    <div class="custom-form-group custom-form-group-select mt-md-1"
                       [class.filled]="!!houseJobForm.get('AgentName')?.value">
                       <!-- <ng-select [items]="originAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="AgentName" placeholder=""
@@ -827,7 +829,7 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('POD')?.value" style="margin-top: 10px;">
+                      [class.filled]="!!houseJobForm.get('POD')?.value">
                       <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
@@ -883,7 +885,7 @@
                   </aside>
               <!-- Vessel Name -->
  <aside class="col-md-6">
-                      <div class="custom-form-group custom-form-group-select inputChnages"
+                      <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                         [class.filled]="!!houseJobForm.get('VesselName')?.value">
                         @if(selectedDepartmentType === "AIR"){
                           <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
@@ -954,7 +956,7 @@
 
 <!-- ETD -->
 <div class="col-md-6">
-  <div class="custom-form-group custom-form-group-select-date inputChnages"  [class.filled]="!!houseJobForm.get('ETD')?.value">
+  <div class="custom-form-group custom-form-group-select-date mt-md-1 "  [class.filled]="!!houseJobForm.get('ETD')?.value">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETDFreeText">
       <input class="form-control" placeholder="" name="dp" formControlName="ETD"
@@ -989,7 +991,7 @@
 
 <!-- ETA -->
 <div class="col-md-6">
-  <div class="custom-form-group custom-form-group-select-date inputChnages" [class.filled]="!!houseJobForm.get('ETA')?.value">
+  <div class="custom-form-group custom-form-group-select-date mt-md-1" [class.filled]="!!houseJobForm.get('ETA')?.value">
     <!-- Dropdown Mode (Readonly) -->
     <div class="input-group" *ngIf="!isETAFreeText">
       <input class="form-control" placeholder="" name="dp" formControlName="ETA"
@@ -1023,7 +1025,7 @@
 </div>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mt-1"
+                    <div class="custom-form-group custom-form-group-select mt-md-1"
                       [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
                       <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
@@ -1070,7 +1072,7 @@
                     </div>
                   </aside> -->
                   <aside class="col-md-6">
-                    <div class="custom-form-group mt-1">
+                    <div class="custom-form-group mt-md-1">
                       <input type="text" id="freightTerms" class="form-control custom-input-field sm"
                         formControlName="FreightTerms" placeholder="">
                       <label for="freightTerms" class="input-label">Freight PP/CC</label>
@@ -1591,7 +1593,7 @@
                   <div class="d-flex align-items-center justify-content-center">
                     <a class="text-info " class="link "
                       (click)="openProductModal(productModal,productIndex,product.value)">
-                      <i-feather class="feather-sm text-info pt-1" name="eye"></i-feather>
+                     <i class="fas fa-eye text-info fs-2"></i>
                     </a>
                     <a class="text-danger  ps-2"
                       (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)">
@@ -1627,7 +1629,7 @@
         </div>
         <div class="mt-2">
           <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength" [pageSize]="pageSize"
-            [(page)]="page" (pageChange)="updateProductPagination()">
+            [(page)]="page" (pageChange)="updateProductPagination()" size="sm">
           </ngb-pagination>
         </div>
         }@else {
@@ -2299,16 +2301,16 @@
                     }
                 </tbody>
                  <tfoot *ngIf="arapData.length > 0">
-                    <tr class="table-footer">
+                    <tr class="table-footer fs-3">
                       <td></td>
                       <td></td>
                       <td></td>
                     
-                        <td><strong>Totals:</strong></td>
-                        <td class=" fw-bold">
+                        <td><strong>Total :</strong></td>
+                        <td class=" fw-bold ps-1">
                             {{getTotalAmount()}}
                         </td>
-                        <td class="fw-bold">
+                        <td class="fw-bold ps-1">
                             {{getTotalLocalAmount()}}
                         </td>
                         <td colspan="2"></td>

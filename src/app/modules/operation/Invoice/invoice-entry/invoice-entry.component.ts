@@ -2861,7 +2861,7 @@ getAmountInWords(): string {
   }
   getCustomerName(CustomerMasterSid: number) {
     if (!CustomerMasterSid || this.customerList.length === 0) {
-      return 'N/A'
+      return ''
     }
     return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
   }

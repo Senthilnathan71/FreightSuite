@@ -306,12 +306,12 @@
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
                 <th rowspan="2" class="text-start bg-transparent text-light" style="min-width: 200px;">Description</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">HS/SAC</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Unit</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">No of Unit</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 60px;">Dr/Cr</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Curr</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Ex Rate</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
                 
@@ -345,7 +345,7 @@
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
                 <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
-                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Department</th>
+                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 60px;">Dept</th>
             </tr>
             
             <!-- Second Header Row for Tax Sub-headers -->
@@ -388,7 +388,7 @@
                         </button>
                     </td>
                     
-                    <td class="text-center"><span style="font-weight: 600; color: black;">{{ i + 1 }}</span></td>
+                    <td class="text-center pt-1"><span style="font-weight: 600; color: black;">{{ i + 1 }}</span></td>
 
                     <!-- Charge -->
                     <td class="text-center">
@@ -467,12 +467,12 @@
                     </td>
 
                     <!-- Amount -->
-                    <td class="text-center">
+                    <td class="text-center pt-1">
                         <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat }}</span>
                     </td>
 
                     <!-- Taxable Amount -->
-                    <td class="text-center">
+                    <td class="text-center pt-1">
                         <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                     </td>
 
@@ -494,7 +494,7 @@
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- CGST Amount -->
-                            <td class="text-center">
+                            <td class="text-center pt-1">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                             <!-- SGST Rate -->
@@ -509,7 +509,7 @@
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span> -->
                             </td>
                             <!-- SGST Amount -->
-                            <td class="text-center">
+                            <td class="text-center pt-1">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -528,7 +528,7 @@
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- IGST Amount -->
-                            <td class="text-center">
+                            <td class="text-center pt-1">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -547,7 +547,7 @@
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                             </td>
                             <!-- CGST Amount (for B2C) -->
-                            <td class="text-center">
+                            <td class="text-center pt-1">
                                 <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                             </td>
                         </ng-container>
@@ -566,24 +566,24 @@
                                 <div class="d-flex">
                                     <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                         (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
-                                    <span class="" style="font-weight: 600; color: black;">%</span>
+                                    <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                                 </div>
                             </div>
                             <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span> -->
                         </td>
                         <!-- VAT Amount -->
-                        <td class="text-center">
+                        <td class="text-center pt-1">
                             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                         </td>
                     </ng-container>
 
                     <!-- Local Amount -->
-                    <td class="text-center">
+                    <td class="text-center pt-1">
                         <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                     </td>
                     
                     <!-- Party Amount -->
-                    <td class="text-center">
+                    <td class="text-center pt-1">
                         <span style="font-weight: 600; color: black;">{{ getPartyAmount(i) }}</span>
                     </td>
 
@@ -624,7 +624,7 @@
                     </td>
                     
                     <!-- Department -->
-                    <td class="text-center" style="min-width:200px;">
+                    <td class="text-center">
                         <dofi-searchable-dropdown [items]="departmentList"
                             formControlName="DepartmentMasterSid" [placeholder]="''"
                             [displayFields]="departmentLookupConfig.displayFields"
@@ -649,45 +649,45 @@
 
             </div>
 
-            <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
+            <div class="row border border-bottom-0 pt-2 align-items-center text-nowrap">
             
               <div class="col d-flex justify-content-between border-end px-2">
-                <span class="text-secondary small">Total Credits</span>
+                <span class="small text-black fw-bold">Total Credit</span>
                 <span class="fw-semibold text-success">
                   {{ getTotalLocalCredits() }}
                 </span>
               </div>
             
               <div class="col d-flex justify-content-between border-end px-2">
-                <span class="text-secondary small">Total Debits</span>
+                <span class="small text-black fw-bold">Total Debit</span>
                 <span class="fw-semibold text-danger">
                   {{ getTotalLocalDebits() }}
                 </span>
               </div>
             
               <div class="col d-flex justify-content-between border-end px-2">
-                <span class="text-secondary small">Net (Cr - Dr)</span>
+                <span class="small text-black fw-bold">Net (Cr - Dr)</span>
                 <span class="fw-semibold text-primary">
                   {{ getNetCrDr() }}
                 </span>
               </div>
             
               <div class="col d-flex justify-content-between border-end px-2">
-                <span class="text-secondary small">Party Curr Credit</span>
+                <span class="small text-black fw-bold">Party Curr Credit</span>
                 <span class="fw-semibold">
                   {{ getPartyCurrCreditAmt() }}
                 </span>
               </div>
             
               <div class="col d-flex justify-content-between border-end px-2">
-                <span class="text-secondary small">Party Curr Debit</span>
+                <span class="small text-black fw-bold">Party Curr Debit</span>
                 <span class="fw-semibold">
                   {{ getPartyCurrDebitAmt() }}
                 </span>
               </div>
             
               <div class="col d-flex justify-content-between px-2">
-                <span class="text-secondary small">Tax Amount</span>
+                <span class="small text-black fw-bold">Tax Amount</span>
                 <span class="fw-semibold text-warning">
                   {{ getTotalTaxAmount() }}
                 </span>
@@ -767,7 +767,7 @@
   </div>
   <div class="modal-body">
     <div id="printContent" class="p-1">
-      <div style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;font-size:12pt;">
+      <div style="width:280mm; min-height:400mm; margin:10px; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always;font-size:16px;">
         
      
  <!-- Company Info -->
@@ -799,15 +799,15 @@
             </div>
         
         <!-- Invoice Title -->
-        <div style="text-align:center; border-top:1px solid black; padding-top:4px;">
-          <h4 style="margin:2px 0; font-weight:bold;">{{ getInvoiceTitle() }}</h4>
+        <div style="text-align:center; border-top:1px solid black; padding-top:4px;padding-left: 40px;">
+          <h4 style="margin:2px 0; font-weight:bolder;font-size: 20px;">{{ getInvoiceTitle() }}</h4>
           <p style="font-size:12px; margin:2px 0;" *ngIf="currentUserCountry === 'india'">
             <strong>GST Code :</strong> {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || ''}}
           </p>
         </div>
         
         <!-- Billing Info -->
-        <div style="display:flex; justify-content:space-between; border-bottom:1px solid black; margin-top:8px; padding-bottom:8px;font-size: 16px;">
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid black; margin-top:8px; padding-bottom:8px;font-size: 16px;padding: 0 20px;">
           <div style="flex:0 0 50%; max-width:50%;font-weight: bold;">
             <strong>BILLED TO</strong><br />
              <div style="padding-left: 30px;">
@@ -849,7 +849,7 @@
         </div>
         
         <!-- Shipment Details -->
-        <div style="display:flex; margin-top:8px;font-size: 16px;">
+        <div style="display:flex; margin-top:8px;font-size: 16px;padding: 0 20px;">
           <div style="flex:0 0 50%; max-width:50%;">
             <div style="display:flex;">
               <div style="width:180px;"><strong>Shipper</strong></div>
@@ -903,7 +903,7 @@
               <div>: {{ invoiceData?.masterJob?.MasterJobNumber }}</div>
             </div>
             <div style="display:flex;">
-              <div style="width:180px;"><strong>Freight</strong></div>
+              <div style="width:180px;"><strong>Freight Terms</strong></div>
               <div>: {{ invoiceData.houseJob?.FreightTerms || invoiceData?.bookingHeader?.FreightTerms }}</div>
             </div>
             <div style="display:flex;">
@@ -935,7 +935,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:16px;">
             <thead>
               <tr>
-                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;width: 20px;"><strong>S.No.</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;width: 20px;border-left: none;"><strong>S.No.</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; font-weight:700; text-align:left;"><strong>Particulars</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>HSN/SAC</strong></th>
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Curr.</strong></th>
@@ -966,60 +966,60 @@
                 </ng-container>
                 
                 <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{currentCurrencyCode}}</strong></th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left;"><strong>Amt In {{invoiceData?.CurrencyCode }}</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left;border-right: none;"><strong>Amt In {{invoiceData?.CurrencyCode }}</strong></th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let detail of filteredDetailItems; let i = index">
-                <td style="border:1px solid black; padding:2px 8px;">{{i + 1}}</td>
+                <td style="border:1px solid black; padding:2px 8px;border-left: none;">{{i + 1}}</td>
                 <td style="border:1px solid black; padding:2px 8px;">{{detail.ChargeDescription}}</td>
                 <td style="border:1px solid black; padding:2px 8px;">{{getHSSACCode(detail.HSSACMasterSid, i)}}</td>
                 <td style="border:1px solid black; padding:2px 8px;">{{detail.CurrencyCode}}</td>
                 <td style="border:1px solid black; padding:2px 8px;">{{detail.NumberOfUnit | number:'1.3-3'}}</td>
-                <td style="border:1px solid black; padding:2px 8px;">{{detail.Rate | number:'1.2-2'}}</td>
-                <td style="border:1px solid black; padding:2px 8px;">{{detail.ExchangeRate ?? 0 | number:'1.2-4'}}</td>
-                <td style="border:1px solid black; padding:2px 8px;">{{detail.TaxableAmount ?? 0 | number:'1.2-2'}}</td>
+                <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{detail.Rate | number:'1.2-2'}}</td>
+                <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{detail.ExchangeRate ?? 0 | number:'1.2-4'}}</td>
+                <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{detail.TaxableAmount ?? 0 | number:'1.2-2'}}</td>
                 
                 <!-- Dynamic Tax Values -->
                 <ng-container *ngIf="getTaxDisplayConfig().showCGST">
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxPercentageForDisplay(detail).cgstRate | number:'1.2-2' }}
                   </td>
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxAmountForDisplay(detail).cgstAmt | number:'1.2-2' }}
                   </td>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showSGST">
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxPercentageForDisplay(detail).sgstRate | number:'1.2-2' }}
                   </td>
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxAmountForDisplay(detail).sgstAmt | number:'1.2-2' }}
                   </td>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showIGST">
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxPercentageForDisplay(detail).igstRate | number:'1.2-2' }}
                   </td>
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxAmountForDisplay(detail).igstAmt | number:'1.2-2' }}
                   </td>
                 </ng-container>
                 
                 <ng-container *ngIf="getTaxDisplayConfig().showVAT">
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxPercentageForDisplay(detail).vatRate | number:'1.2-2' }}
                   </td>
-                  <td style="border:1px solid black; padding:2px 8px;">
+                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                     {{ getTaxAmountForDisplay(detail).vatAmt | number:'1.2-2' }}
                   </td>
                 </ng-container>
-                 <td style="border:1px solid black; padding:2px 8px;">
+                 <td style="border:1px solid black; padding:2px 8px;text-align: right;">
                   {{detail?.PartyAmount | number:'1.2-2'}}
                 </td>
-                <td style="border:1px solid black; padding:2px 8px;">
+                <td style="border:1px solid black; padding:2px 8px;border-right: none;text-align: right;">
                    {{ getPartyCurrDebitAmt() }}
                 </td>
                
@@ -1027,10 +1027,10 @@
               
               <!-- Total Row with dynamic colspan -->
               <tr>
-                <td [attr.colspan]="calculateTotalColspan()" style="border:1px solid black; padding:2px 8px; text-align:right;">
+                <td [attr.colspan]="calculateTotalColspan()" style="border:1px solid black; padding:2px 8px; text-align:right;border-left: none;">
                   <strong>Total</strong>
                 </td>
-                <td style="border:1px solid black; padding:2px 8px;">
+                <td style="border:1px solid black; padding:2px 8px;border-right: none;text-align: right;">
                   <strong> {{ getPartyCurrDebitAmt() }}</strong>
                 </td>
               </tr>
@@ -1039,24 +1039,24 @@
         </div>
         
         <!-- Amount in words -->
-        <div style="display:flex; margin-top:8px;font-size: 16px;">
+        <div style="display:flex; margin-top:8px;font-size: 16px;padding: 0 20px;">
           <p style="font-weight:600; width:180px; margin:0;"><strong>Amount In Words</strong></p>
           <p style="margin:0; font-style:italic;">: {{getAmountInWords()}}</p>
         </div>
         
         <!-- Remarks -->
-        <div style="display:flex; margin-top:8px;font-size: 16px;">
-          <p style="font-weight:600; width:180px; margin:0;">Remarks</p>
+        <div style="display:flex; margin-top:8px;font-size: 16px;padding: 0 20px;">
+          <p style="font-weight:800; width:180px; margin:0;">Remarks</p>
           <p style="margin:0;">: {{invoiceForm.get('Remarks')?.value || ''}}</p>
         </div>
         
         <!-- Bank Details -->
-        <div *ngIf="bankDetails">
-          <p style="font-weight:600; margin-top:12px; margin-bottom:0;">Bank Details</p>
-          <div style="display:flex;">
+        <div *ngIf="bankDetails" style="padding: 0 20px;">
+          <p style="font-weight:800; margin-top:12px; margin-bottom:0;">Bank Details</p>
+          <!-- <div style="display:flex;">
             <div style="width:180px; font-size:12px;"><strong>Account Name</strong></div>
             <div style="font-size:12px;">: {{bankDetails.BeneficiaryName}}</div>
-          </div>
+          </div> -->
           <div style="display:flex;">
             <div style="width:180px; font-size:12px;"><strong>Account No.</strong></div>
             <div style="font-size:12px;">: {{bankDetails.BankAccountNo}}</div>
@@ -1075,8 +1075,17 @@
           </div>
         </div>
         
+      <div style="margin-top: 1rem;font-size: 16px;padding: 0 20px;">
+        <h5 style=" margin-bottom: 0.5rem;font-weight: bolder;"><strong>Terms and Conditions</strong></h5>
+        <ul style="margin-top: 0; padding-left: 1.2rem;">
+          @for(term of TandCList; track term){
+          <li>{{ term.TandC }}</li>
+          }
+        </ul>
+      </div>
+        
         <!-- Footer -->
-        <div style="display:flex; flex-direction: column; margin-top:16px; text-align: end;">
+        <div style="display:flex; flex-direction: column; margin-top:16px; text-align: end;padding: 0 20px;">
           <strong>For {{ currentCompany?.companyName || 'Company Name' }}</strong>
           <p>Authorised Signatory</p>
         </div>
@@ -1084,9 +1093,9 @@
         <!-- Footer -->
         <footer style="position:absolute; bottom:0; left:0; width:100%; text-align:center; font-size:10pt; padding:10px; box-sizing:border-box;">
           <div style="display:flex; justify-content:space-between; font-size:16px;">
-            <div>Printed By: {{ userData.userName }}</div>
+            <div>Printed By : {{ userData.userName }}</div>
             <span>This document is computer-generated and does not require a signature.</span>
-            <div>Printed On: {{ currentDate | formatDate }}</div>
+            <div>Printed On : {{ currentDate | formatDate }}</div>
           </div>
         </footer>
       </div>

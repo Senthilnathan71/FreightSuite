@@ -287,13 +287,13 @@ getChargeName(ChargeMasterSid: number): string {
   getPCurrExpense(chargeData: any): string {
     if (!chargeData) return '-';
 
-    const localAmount = parseFloat(chargeData.CostLocalAmount || '0');
-    const exchangeRate = parseFloat(chargeData.CostExchangeRate || '1');
+    const localAmount = parseFloat(chargeData.CostAmount || '0');
+    // const exchangeRate = parseFloat(chargeData.CostExchangeRate || '1');
 
-    if (exchangeRate === 0) return '0.00';
+    // if (exchangeRate === 0) return '0.00';
 
-    const usdAmount = localAmount / exchangeRate;
-    return this.formatNumber(usdAmount);
+    // const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(localAmount);
   }
 
   // P.Curr GP (Gross Profit in USD)
@@ -306,13 +306,13 @@ getChargeName(ChargeMasterSid: number): string {
 
   // Local P.Revenue (in Local Currency)
   getLocalRevenue(chargeData: any): string {
-    if (!chargeData) return '-';
+    if (!chargeData) return ' ';
     return this.formatNumber(parseFloat(chargeData.RevenueLocalAmount || '0'));
   }
 
   // Local P.Expense (in Local Currency)
   getLocalExpense(chargeData: any): string {
-    if (!chargeData) return '-';
+    if (!chargeData) return ' ';
     return this.formatNumber(parseFloat(chargeData.CostLocalAmount || '0'));
   }
 
@@ -327,13 +327,13 @@ getChargeName(ChargeMasterSid: number): string {
   getPCurrRevenue(chargeData: any): string {
     if (!chargeData) return '-';
 
-    const localAmount = parseFloat(chargeData.RevenueLocalAmount || '0');
-    const exchangeRate = parseFloat(chargeData.RevenueExchangeRate || '1');
+    const localAmount = parseFloat(chargeData.RevenueAmount || '0');
+    // const exchangeRate = parseFloat(chargeData.RevenueExchangeRate || '1');
 
-    if (exchangeRate === 0) return '0.00';
+    // if (exchangeRate === 0) return '0.00';
 
-    const usdAmount = localAmount / exchangeRate;
-    return this.formatNumber(usdAmount);
+    // const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(localAmount);
   }
 
   private formatNumber(value: number): string {

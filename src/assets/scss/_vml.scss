@@ -1361,7 +1361,8 @@
         white-space: nowrap;
         color: black;
         vertical-align: middle;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
+        font-weight: 600;
       }
     }
   }
@@ -2668,7 +2669,8 @@
         white-space: nowrap;
         color: #374151;
         vertical-align: middle;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
+        font-weight: 600;
       }
     }
   }
@@ -2887,7 +2889,7 @@
   /* Compact Floating Action Button */
   .floating-actions {
     position: fixed;
-    bottom: 12px;
+    bottom: 2px;
     right: 12px;
     z-index: 1000;
   }

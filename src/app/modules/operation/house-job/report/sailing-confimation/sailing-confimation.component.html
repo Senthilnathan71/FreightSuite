@@ -1,0 +1,187 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Sailing Confirmation</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+            <i class="fas fa-print me-1"></i> Print
+        </button>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)=" modalClose()"></button>
+
+    </div>
+</div>
+
+<div class="modal-body">
+    <div id="printContent" class="p-1">
+        <div
+            style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:16px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always; ">
+
+            <!-- Company Info -->
+            <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; flex-direction: column;">
+                        <!-- Print logo -->
+                        <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
+                            style="width: 50px;height: auto;" />
+                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                    </div>
+                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
+                        <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h3>
+                        <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
+                        </h5>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+                            currentBranch?.cityMaster?.cityName || currentCompany?.City ||
+                            ''
+                            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Title -->
+            <h4
+                style="text-align:center;  margin:0 0 10px 0; padding:5px 0px; border-top: 1px solid black;font-weight: bolder;font-size: 20px;">
+                <strong>Sailing Confirmation</strong>
+            </h4>
+
+            <!-- Enquiry Details -->
+            <div style="display:flex; flex-wrap:wrap; border:1px solid black; padding:10px;margin-top: 0;">
+                <!-- Left Column -->
+                <div style="flex:0 0 50%; max-width:50%; padding-right:10px; box-sizing:border-box;font-size:16px;">
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>MBL No.</strong></div>
+                        <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>ETA</strong></div>
+                        <div>: {{housejobData?.ETA | formatDate }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; font-weight:bolder;">
+                            <strong>Container</strong>
+                        </div>
+                        <div>:
+                            <ng-container *ngFor="let item of housejobData?.Products; let last = last">
+                                <ng-container *ngIf="item?.ContainerNo">
+                                    {{ item.ContainerNo }}<span *ngIf="!last">, </span>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+
+                    <!-- {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }} -->
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Shipment No</strong>
+                        </div>
+                        <div>: {{housejobData?.ShipmentNo }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of
+                                Receipt</strong></div>
+                        <div> : {{housejobData.POO}} </div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
+                                Loading</strong></div>
+                        <div>: {{housejobData.POL}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Final
+                                Destination</strong></div>
+                        <div>: {{housejobData.FPD}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Carrier</strong></div>
+                        <div>: {{housejobData?.CarrierName}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>PP/CC</strong></div>
+                        <div>: {{ housejobData?.FreightTerms }}</div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div style="flex:0 0 50%; max-width:50%; padding-left:10px; box-sizing:border-box;font-size:16px;">
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>HBL No.</strong></div>
+                        <div>: {{ housejobData?.HBLNo }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>ETD</strong></div>
+                        <div>: {{housejobData?.ETD | formatDate }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Vessel</strong></div>
+                        <div>: {{housejobData?.VesselName}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Voyage</strong></div>
+                        <div>: {{housejobData?.VoyageNo}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Job No.</strong></div>
+                        <div>: {{ housejobData?.masterJob?.MasterJobNumber }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
+                                Receipt</strong></div>
+                        <div>: {{housejobData?.POL}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
+                                Discharge</strong></div>
+                        <div>: {{housejobData?.POD}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of
+                                Delivery</strong></div>
+                        <div>: {{housejobData?.Others?.[0]?.DeliveryAddress}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:5px;">
+                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Movement Type</strong>
+                        </div>
+                        <div>: {{ housejobData?.Cargo?.[0]?.MovementType }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin:10px 0;font-weight: bolder;">
+                <p style="font-size:17px; margin:0;"><strong>Dear Sir,</strong></p>
+                <p style="margin:5px 0;font-size: 17px;">We are pleased to advice you the dispatch of your shipment.
+                    <br>
+                    <strong>MBL No :</strong> {{housejobData?.masterJob?.MasterJobNumber}} , <strong>HBL No :</strong> {{
+                    housejobData?.HBLNo }} , <strong>Container No :</strong> {{
+                    masterJobData?.containers?.[0]?.ContainerNumber }}
+                    Sailed onboard on {{housejobData?.ETA | formatDate }} <strong>Voyage No :</strong>
+                    {{housejobData?.VoyageNo}} expected to arrive in
+                    {{housejobData?.ETD | formatDate }} our invoice no amount would be obliged with your
+                    early payment.
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <footer style="margin-top:auto; text-align:center; padding:10px; ">
+                <div style="display:flex; justify-content:space-between;">
+                    <div>Printed By: {{userData.userName}}</div>
+                    <span>This document is computer-generated and does not require a signature.</span>
+                    <div>Printed On: {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
+
+        </div>
+
+    </div>
+</div>

@@ -58,6 +58,7 @@ import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
+import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3767,6 +3768,21 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
         modalRef.componentInstance.agentList = this.agentList || [];
       }
+
+
+        // sailing confirmation
+      
+         reportSailingConfirmation() {
+          const modalRef = this.modalService.open(SailingConfimationComponent, {
+            size: 'xl',
+            scrollable: true,
+          });
+          modalRef.componentInstance.masterJobData = this.masterJobData;
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.containerTypeList = this.containerTypeList;
+          modalRef.componentInstance.packageTypeList = this.packageTypeList;
+        }
+      
 
 
       // Delivery Note
