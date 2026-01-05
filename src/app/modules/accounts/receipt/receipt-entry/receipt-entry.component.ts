@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -72,7 +72,8 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     DecimalPrecisionDirective,
     TextWithNumbersDirective,
     OnlyNumbersDirective,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    RouterModule
   ],
   templateUrl: './receipt-entry.component.html',
   styleUrl: './receipt-entry.component.scss',
@@ -143,6 +144,10 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
   selectedInvoices: OutstandingInvoice[] = [];
   paymentModes: { value: string; label: string }[] = [];
   isAutoPosting : boolean = false;
+  voucherMatchingInfo : {
+    VoucherMatchingHeaderSid : number,
+    VoucherMatchingNo : string
+  };
 
   // Outstanding invoices
 
@@ -378,12 +383,12 @@ export class ReceiptEntryComponent implements OnInit,HasUnsavedChanges {
     this.receiptForm.updateValueAndValidity();
     const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
 
-this.receiptForm.patchValue({
-  CurrencyMasterSid: companyCurrencySid
-});
+    this.receiptForm.patchValue({
+      CurrencyMasterSid: companyCurrencySid
+    });
 
-this.setCurrencyCode(companyCurrencySid);
-this.handleHeaderExchangeRate(companyCurrencySid);
+    this.setCurrencyCode(companyCurrencySid);
+    this.handleHeaderExchangeRate(companyCurrencySid);
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -712,6 +717,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
     if (this.detailItems.length === 0) {
       this.appSettingService.showError('Please add at least one receipt detail');
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -722,32 +728,37 @@ this.handleHeaderExchangeRate(companyCurrencySid);
       );
       this.appSettingService.showError(errorMsg);
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
-
+    
     const partyDetail = detailItems.find(d => d.LedgerMasterSid === formValue.PartyMasterSid);
     if (formValue.PartyMasterSid && !partyDetail) {
       this.appSettingService.showError('Please add a party detail for the alloted ledger.');
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
-
+    
     const hasBankDetail = detailItems.some(d => d.COAMasterSid === formValue.BankCOA);
     if (formValue.BankCOA && !hasBankDetail) {
       this.appSettingService.showError('Please add a bank detail for the alloted COA.');
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
-
+    
     if (this.totalDebits === 0 || this.totalCredits === 0) {
       this.appSettingService.showError('Please add at least one debit or credit amount.');
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
     if (this.totalDebits !== this.totalCredits) {
       this.appSettingService.showError('Please make sure the sum of debit amounts and credit amounts are equal.');
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -757,12 +768,14 @@ this.handleHeaderExchangeRate(companyCurrencySid);
       this.appSettingService.showError('Please make sure the matching amount does not exceed the party amount.');
       console.error('Party amount:', partyAmt, 'Matching amount:', matchingAmt,"comparison : ", toNumber(matchingAmt) > toNumber(partyAmt));
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
-
+    
     if (this.matchingError) {
       this.appSettingService.showError(this.matchingError);
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -771,10 +784,10 @@ this.handleHeaderExchangeRate(companyCurrencySid);
       this.appSettingService.showWarning('Please fill all required fields');
       this.receiptForm.markAllAsTouched();
       if(resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
-    this.isSaving = true;
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const voucherMatching = this.voucherMatchings.getRawValue()
@@ -1102,6 +1115,8 @@ this.handleHeaderExchangeRate(companyCurrencySid);
         else{
           interOrIntra = 'Intra';
         }
+      } else if(currentCompanyCountryName === 'united arab emirates' || currentCompanyCountryName === 'united states'){
+        interOrIntra = 'Inter';
       }
 
       if (!voucherHeaderSid || !currentCompany || !currentBranch || !currentFinancialYear || !currentCompanyCountry || !currentCurrency) {
@@ -1153,22 +1168,24 @@ this.handleHeaderExchangeRate(companyCurrencySid);
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherHeaderSid: receiptId
     }
-    this.accountService.getReceiptById(payload).subscribe(
-      (resp: any) => {
+    this.accountService.getReceiptById(payload).subscribe({
+      next :(resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
-          this.receiptPrintData = resp.data
+          this.receiptPrintData = resp.data;
+          this.voucherMatchingInfo = resp.data?.VoucherMatchingHeader[0];
           console.log(this.receiptPrintData,"PRINTDATA")
+          console.log(this.voucherMatchingInfo,"VOUCHER MATCHING INFO")
         } else {
           this.appSettingService.showError(resp.message);
           this.isLoading = false;
         }
       },
-      (error) => {
+      error : (error) => {
         this.isLoading = false;
         console.error('Error loading receipt:', error);
       }
-    );
+    });
   }
 
   patchValues(response: any) {
@@ -1276,7 +1293,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
 
     this.initialDetailCount = this.detailItems?.length || 0;
     this.initialMatchingCount = this.voucherMatchings?.length || 0;
-
+    
     console.log("✅ Form loaded and reset complete", {
       isDirty: this.isDirty,
       formSaved: this.formSaved,
@@ -1284,6 +1301,7 @@ this.handleHeaderExchangeRate(companyCurrencySid);
       formStatus: this.receiptForm.status
     });
   }, 100);
+  this.setupFormChangeDetection();
   }
 
   /**
@@ -1588,6 +1606,7 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
     } else {
       ledgerCtrl.disable();
       ledgerCtrl.clearValidators();
+      ledgerCtrl.updateValueAndValidity();
     }
     console.log("LEDGER CTRL STATE", ledgerCtrl.enabled)
   }
@@ -1730,8 +1749,8 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
 
     transactions.forEach(tx => {
       console.log("Transaction",tx)
-      const isMatchedRecord = !!tx.VoucherMatchingSid;  // <–– detect matched data
-
+      const isMatchedRecord = !!tx.MatchingDetailSid;  // <–– detect matched data
+      const matchCurrencyForThisTxn = this.currencyList.find(c => c.currencyCode === tx.CurrencyCode)?.CurrencyMasterSid;
       const form = this.fb.group({
         VoucherMatchingHeaderSid : [tx.VoucherMatchingHeaderSid || null],
         MatchingDetailSid : [tx.MatchingDetailSid || null],
@@ -1761,10 +1780,10 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
 
         // Matching values (either blank or existing)
         matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : currencyInHeader
+          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn
         ],
         matchExRate: [
-          isMatchedRecord ? tx.MatchingExRate : (exchangeRateInHeader || 1)
+          isMatchedRecord ? tx.MatchingExRate : (tx.ExchangeRate || 1)
         ],
         matchCurrAmt: [
           isMatchedRecord ? tx.MatchingAmount : (searchType === "Invoice" && !this.isEditMode ? tx.OutstandingCurrencyAmount : null )
@@ -1848,22 +1867,25 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
     const currencyInHeader = this.receiptForm.get('CurrencyMasterSid')?.getRawValue();
     const exRateInHeader = this.receiptForm.get('ExchangeRate')?.getRawValue();
 
-    const sourceValue = formGroup.get('matchLocalAmt')?.getRawValue();
+    const currAmt = formGroup.get('matchCurrAmt')?.getRawValue();
+    const localAmt = formGroup.get('matchLocalAmt')?.getRawValue();
     const currencyInMatchRow = formGroup.get('matchCurr')?.getRawValue();
     const target = formGroup.get('matchPartyAmt');
     console.log("DEBUG - Calculate Party Amount",{
       currencyInHeader,
       exRateInHeader,
-
-      sourceValue,
+      currAmt,
+      localAmt,
       currencyInMatchRow
     })
     if(currencyInHeader && currencyInMatchRow){
-      const amount = toNumber(sourceValue);
+      const normalizedCurrAmt = toNumber(currAmt);
+      const normalizedLocalAmt = toNumber(localAmt);
+
       if(currencyInHeader === currencyInMatchRow){
-        target.setValue(this.getFormattedAmount(amount, currencyInMatchRow));
+        target.setValue(this.getFormattedAmount(normalizedCurrAmt, currencyInMatchRow));
       } else {
-        const partyAmount = amount / toNumber(exRateInHeader);
+        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
         target.setValue(this.getFormattedAmount(partyAmount, currencyInMatchRow));
       }
     } else {
@@ -1882,23 +1904,39 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
   }
 
   getTotalCurrAmt() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('currAmt')?.value || 0), 0).toFixed(2);
+    return this.voucherMatchings.controls.reduce((total,control) => {
+      if(control.get('drCr')?.value === "Dr"){
+        return total + Number(control.get('currAmt')?.value || 0);
+      }
+      return total - Number(control.get('currAmt')?.value || 0);
+    },0).toFixed(2);
   }
 
   getTotalLocalAmt() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('localAmt')?.value || 0), 0).toFixed(2);
+    return this.voucherMatchings.controls.reduce((total,control) => {
+      if(control.get('drCr')?.value === "Dr"){
+        return total + Number(control.get('localAmt')?.value || 0);
+      }
+      return total - Number(control.get('localAmt')?.value || 0);
+    },0).toFixed(2);
   }
 
   getTotalOSCurrAmt() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('osCurrAmt')?.value || 0), 0).toFixed(2);
+    return this.voucherMatchings.controls.reduce((total,control) => {
+      if(control.get('drCr')?.value === "Dr"){
+        return total + Number(control.get('osCurrAmt')?.value || 0);
+      }
+      return total - Number(control.get('osCurrAmt')?.value || 0);
+    },0).toFixed(2);
   }
 
   getTotalOSLocalAmount() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('osLocalAmt')?.value || 0), 0).toFixed(2);
+    return this.voucherMatchings.controls.reduce((total,control) => {
+      if(control.get('drCr')?.value === "Dr"){
+        return total + Number(control.get('osLocalAmt')?.value || 0);
+      }
+      return total - Number(control.get('osLocalAmt')?.value || 0);
+    },0).toFixed(2);
   }
 
   getTotalMatchCurrAmt() {
@@ -1919,8 +1957,6 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
   }
 
   validatePartyMatchingAmount(): boolean {
-    const totalMatchingCurrentAmount = this.getTotalMatchCurrAmt();
-    const totalPartyAmount = this.getPartyDetailAmount();
     return Number(this.getTotalMatchCurrAmt()) > Number(this.getPartyDetailAmount());
   }
 
@@ -2081,7 +2117,11 @@ ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
     let total = 0;
     this.detailItems.controls.forEach((control) => {
       const matchedAmount = control.get('MatchedAmount')?.value || 0;
-      total += matchedAmount;
+      if(control.get('DrCr')?.value === "Dr"){
+        total += matchedAmount;
+      } else {
+        total -= matchedAmount;
+      }
     });
 
     this.receiptForm.patchValue({
@@ -2235,7 +2275,7 @@ handleDetailExchangeRate(currencySid: number, index: number) {
   onPartyChange(party: any) {
     console.log("Selected Party", party);
     const partyCountry = String(party?.countryMaster?.countryName).trim().toLowerCase();
-    this.errorLogger();
+    errorLogger(this.receiptForm);
     if (!party) {
       this.receiptForm.patchValue({
         PartyMasterSid: null,
@@ -2257,6 +2297,7 @@ handleDetailExchangeRate(currencySid: number, index: number) {
       LedgerMasterSid: party.SubledgerMasterSid,
       GST_VAT: partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo
     })
+    
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
     }
@@ -2312,17 +2353,6 @@ toggleCashOrBank(event: any) {
   const ctrl = this.receiptForm.get('CashOrBank');
   if (event instanceof KeyboardEvent && event.key === 'Enter') {
     element.checked = !element.checked;
-    console.log("KEYBOARD EVENT TRIGGERED", {
-      isCheckBoxTicked: element.checked,
-      prevValue: ctrl.value,
-      newValue: !ctrl.value
-    });
-  } else if (event instanceof PointerEvent) {
-    console.log("POINTER EVENT TRIGGERED", {
-      isCheckBoxTicked: element.checked,
-      prevValue: ctrl.value,
-      newValue: !ctrl.value
-    });
   }
 
   // Set the checkbox value in the form control
@@ -2330,6 +2360,10 @@ toggleCashOrBank(event: any) {
 
   // Reset the BankCOA field whenever the checkbox is toggled
   this.r['BankCOA']?.setValue(null);
+
+  const mode = this.receiptForm.get('InstrumentMode');
+  const number = this.receiptForm.get('InstrumentNumber');
+  const date = this.receiptForm.get('InstrumentDate');
 
   // Reset the other form values for the instrument section
   this.receiptForm.patchValue({
@@ -2339,9 +2373,6 @@ toggleCashOrBank(event: any) {
     ClearanceDate: null
   });
 
-  const mode = this.receiptForm.get('InstrumentMode');
-  const number = this.receiptForm.get('InstrumentNumber');
-  const date = this.receiptForm.get('InstrumentDate');
 
   // Conditionally clear/set validators based on the checkbox
   if (element.checked) {
@@ -2451,22 +2482,24 @@ toggleCashOrBank(event: any) {
     const currencyInHeader = this.receiptForm.get('CurrencyMasterSid')?.getRawValue();
     const exRateInHeader = this.receiptForm.get('ExchangeRate')?.getRawValue();
 
-    const sourceValue = formGroup.get('LocalAmount')?.getRawValue();
+    const amount = formGroup.get('Amount')?.getRawValue();
+    const localAmount = formGroup.get('LocalAmount')?.getRawValue();
     const currencyInMatchRow = formGroup.get('CurrencyMasterSid')?.getRawValue();
     const target = formGroup.get('PartyAmount');
     console.log("DEBUG - Calculate Party Amount",{
       currencyInHeader,
       exRateInHeader,
-
-      sourceValue,
+      amount,
+      localAmount,
       currencyInMatchRow
     })
     if(currencyInHeader && currencyInMatchRow){
-      const amount = toNumber(sourceValue);
+      const normalizedAmt = toNumber(amount);
+      const normalizedLocalAmt = toNumber(localAmount);
       if(currencyInHeader === currencyInMatchRow){
-        target.setValue(this.getFormattedAmount(amount, currencyInMatchRow));
+        target.setValue(this.getFormattedAmount(normalizedAmt, currencyInMatchRow));
       } else {
-        const partyAmount = amount / toNumber(exRateInHeader);
+        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
         target.setValue(this.getFormattedAmount(partyAmount, currencyInMatchRow));
       }
     } else {
@@ -2567,16 +2600,6 @@ toggleCashOrBank(event: any) {
     return invalidControls;
   }
 
-  public errorLogger(): void {
-    console.log('Form Status:', this.receiptForm.status);
-    console.log('Form Value', this.receiptForm.value);
-    if (this.receiptForm.invalid) {
-      const invalid = this.findInvalidControlsRecursive(this.receiptForm);
-      console.log('Invalid controls:', invalid);
-    } else {
-      console.log('No invalid controls found.');
-    }
-  }
 
   validateAmount() {
     let totalCredits = 0;
@@ -2584,60 +2607,15 @@ toggleCashOrBank(event: any) {
     (this.detailItems.getRawValue() || []).forEach( vd => {
       // console.log(vd)
       if(vd.DrCr === 'C'){
-        totalCredits += Number(vd.Amount) || 0;
+        totalCredits += Number(vd.PartyAmount) || 0;
       } else {
-        totalDebits += Number(vd.Amount) || 0;
+        totalDebits += Number(vd.PartyAmount) || 0;
       }
     })
     this.totalCredits = totalCredits || 0;
     this.totalDebits = totalDebits || 0;
-
-    // console.log("TOTAL CALCULATION", {
-    //   CreditAmt: this.totalCredits,
-    //   DebitAmt: this.totalDebits,
-    // });
   }
 
-
-  // private setupBillMatchingValidation(): void {
-  //   this.voucherMatchings.valueChanges
-  //     .subscribe(() => this.validateTotalMatchingAmount());
-  //   this.detailItems.valueChanges
-  //     .subscribe(() => this.validateTotalMatchingAmount());
-  // }
-
-  // private validateTotalMatchingAmount(): void {
-  //   // Find party detail (D) row: usually first or with party LedgerMasterSid
-  //   console.log("Validating");
-  //   const detailItems = this.detailItems.getRawValue();
-  //   const partyDetail = detailItems.find((d: any) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
-  //   if(!partyDetail) {
-  //     this.matchingError = null;
-  //     return;
-  //   }
-  //   const partyAmount = Number(partyDetail?.Amount ?? 0);
-  //   console.log("party info",{
-  //     partyDetail,
-  //     partyAmount
-  //   })
-
-  //   // Calculate sum of all matching amounts
-  //   const totalBillMatchingAmount = this.voucherMatchings.controls
-  //     .reduce((sum, c) => sum + Number(c.get('matchCurrAmt')?.value ?? 0), 0);
-
-  //   console.log("totalBillMatchingAmount",totalBillMatchingAmount);
-  //   console.log(totalBillMatchingAmount > partyAmount);
-  //   if (totalBillMatchingAmount > partyAmount) {
-  //      this.matchingError = 'Total bill matching amount cannot be greater than party detail amount.';
-  //   } else {
-  //     if (this.matchingError) {
-  //       // Remove the custom error if present and condition is not met
-  //        this.matchingError = null;
-  //     }
-  //   }
-  //   console.log("FINAL DECISION",this.matchingError);
-  //   this.receiptForm.updateValueAndValidity();
-  // }
 
   showInfo() {
     if (!this.receiptData) return;
@@ -2774,7 +2752,8 @@ toggleCashOrBank(event: any) {
       matchCurr: null,
       matchExRate: null,
       matchCurrAmt: null,
-      matchLocalAmt: null
+      matchLocalAmt: null,
+      matchPartyAmt : null
     });
     this.markAsDirty(); 
     return;
@@ -2798,6 +2777,7 @@ toggleCashOrBank(event: any) {
     matchCurrAmt: osCurrAmt,
     matchLocalAmt: osLocalAmt
   });
+  this.calculatePartyAmount(index);
   row.get('isTicked')?.setValue(checked);
   this.markAsDirty(); 
 

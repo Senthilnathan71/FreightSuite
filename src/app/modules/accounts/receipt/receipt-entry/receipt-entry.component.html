@@ -72,7 +72,7 @@
      <!-- Button Section -->
 
             <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
-                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+                <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
 
                  <div class="col-md-4">
                         <div class="form-check form-check-inline p-0 mt-0">
@@ -428,40 +428,59 @@
         </div>
     </div>
 
-        <div class="nav-pills-container mt-1">
-        <div class="nav-pills w-100">
-            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                (click)="selectTab(tab.name)">
-                <div class="pill-icon">
-                    <i [class]="tab.icon"></i>
+    <div class="nav-pills-container mt-1">
+        <div class="nav-pills w-100 d-flex align-items-center gap-3">
+
+            <!-- Tabs -->
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                    (click)="selectTab(tab.name)">
+                    <div class="pill-icon">
+                        <i [class]="tab.icon"></i>
+                    </div>
+                    <span class="pill-label">{{ tab.name }}</span>
+                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
                 </div>
-                <span class="pill-label"style="font-size: 14px;">{{ tab.name }}</span>
-                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
-            <div class="d-flex gap-2 w-100 justify-content-end">
+
+            <!-- Voucher No (auto takes remaining space) -->
+            <div class="flex-grow-1 text-start">
+                @if(isEditMode && voucherMatchingInfo?.VoucherMatchingHeaderSid){
+                <a class="fw-bold px-2 text-decoration-underline" [routerLink]="[
+                '/accounts/voucher-matching/entry',
+                voucherMatchingInfo.VoucherMatchingHeaderSid
+            ]">
+                    {{ voucherMatchingInfo?.VoucherMatchingNo || '' }}
+                </a>
+                }
+            </div>
+
+            <!-- Totals / Warning (right aligned) -->
+            <div class="d-flex align-items-center gap-3 text-end flex-shrink-0">
                 @if(validatePartyMatchingAmount()){
-                <span>
-                    <span class="badge bg-warning">
-                        !! Matching Amount exceeds party amount
-                    </span>
+                <span class="text-warning fw-semibold">
+                    !! Matching Amount exceeds party amount
                 </span>
                 }
+
                 <span>
-                    <span class="badge bg-success">
-                        Sum of Credits : <b>{{totalCredits | number:'1.2-2'}}</b>
-                    </span>  
+                    Total Credits :
+                    <span class="fw-bold text-success">
+                        {{ totalCredits | number:'1.2-2' }}
+                    </span>
                 </span>
+
                 <span>
-                    <span class="badge bg-danger">
-                        Sum of Debits : <b>{{totalDebits | number:'1.2-2'}}</b>
-                    </span> 
+                    Total Debits :
+                    <span class="fw-bold text-danger">
+                        {{ totalDebits | number:'1.2-2' }}
+                    </span>
                 </span>
-                <!-- <span class="error-message fw-bold" *ngIf="matchingError">
-                    {{ matchingError }}
-                </span> -->
             </div>
+
         </div>
     </div>
+
 
     <!-- <div class="col-md-12">
         <div class="card h-100 mb-0">
@@ -780,7 +799,7 @@
 
                             <!-- Currency -->
                             <td >
-                                <input type="text" formControlName="curr" class="custom-input-field sm" style="width: 50px;" />
+                                <input type="text" formControlName="curr" class="custom-input-field sm" style="width: 45px;" />
                             </td>
 
                             <!-- ExRate -->
