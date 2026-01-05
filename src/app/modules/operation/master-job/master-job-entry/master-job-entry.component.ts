@@ -350,9 +350,11 @@ jobStatusOptions = [
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
   @ViewChild('productModal') productModal!: TemplateRef<any>;
   @ViewChild('masterDocumentUploadComponent') MasterDocumentUploadComponent!: TemplateRef<any>;
+  @ViewChild('costEntryComponent') costEntryComponent : CostEntryComponent;
   selectedTab = 'Master';
   selectedTab1 = 'Product';
   countryOfCompany: string;
+  uomList: any;
 
   constructor(
     private router: Router,
@@ -3518,6 +3520,7 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.profitSummary = this.profitSummary || [];
     modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
     modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
+    modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
   }
 
   reportPackingList() {
