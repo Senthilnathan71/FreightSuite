@@ -1,6 +1,5 @@
-
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
 
@@ -22,38 +21,40 @@
                         (click)="openAuditLogs(auditLogModal)">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
-                  <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        *ngIf="isEditMode"
-                        [disabled]="!rateRequestData"
-                        (click)="openPrint()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        [disabled]="!rateRequestData" (click)="openPrint()">
                         <i class="fas fa-print me-1"></i> Print
-                </button>
-<!-- <div class="voice-indicator" *ngIf="spokenText">
-  🎤 {{ currentFieldName }} → {{ spokenText }}
-</div> -->
-
-                           <!-- Add near other action buttons in enquiry-entry.component.html -->
-<!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
-        *ngIf="isVoiceSupported && !isEditMode"
-        (click)="startVoiceNavigation()"
-        [ngClass]="{'btn-danger': voiceRecognitionService.isContinuous, 'btn-info': !voiceRecognitionService.isContinuous}">
-  <i class="fas" [ngClass]="voiceRecognitionService.isContinuous ? 'fa-microphone-slash' : 'fa-microphone'"></i>
-  {{ voiceRecognitionService.isContinuous ? 'Stop Voice' : 'Start Voice Guide' }}
-</button> -->
+                    </button>
 
 
-<!-- Voice command help modal trigger -->
-<!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                    <button type="button" class="btn btn-sm voice-assist-btn btn-info"
+                        *ngIf="isVoiceSupported && !isEditMode" (click)="startVoiceNavigation()"
+                        [ngClass]="voiceRecognitionService.isContinuous ? 'active' : ''">
+
+                        <i class="fas" [ngClass]="voiceRecognitionService.isContinuous
+       ? 'fa-wave-square'
+       : 'fa-microphone'"></i>
+
+                        {{ voiceRecognitionService.isContinuous
+                        ? 'Listening…'
+                        : 'Voice Assistant' }}
+                    </button>
+
+
+
+                    <!-- Voice command help modal trigger -->
+                    <!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
         *ngIf="isVoiceSupported"
         (click)="openVoiceHelp(voiceHelpModal)">
   <i class="fas fa-question-circle me-1"></i> Voice Help
 </button> -->
-<div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()" [disabled]="!mps.can('insert')">    
-                    <i class="fas fa-plus me-1"></i>
-                    <span>Create </span>    
-                    </button>
-</div>
+                    <div class="action-group" *ngIf="isEditMode">
+                        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()"
+                            [disabled]="!mps.can('insert')">
+                            <i class="fas fa-plus me-1"></i>
+                            <span>Create </span>
+                        </button>
+                    </div>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
@@ -66,10 +67,11 @@
                         Reset
                     </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-                        [disabled]="(disableAddButtons || quotationCreatedAgainstThisEnquiry) || (!mps.can('update') && isEditMode)" appPreventMultiClick>
+                        [disabled]="(disableAddButtons || quotationCreatedAgainstThisEnquiry) || (!mps.can('update') && isEditMode)"
+                        appPreventMultiClick>
                         <i class="fas fa-save me-1"></i> Save
                     </button>
-                     @if(isEditMode){
+                    @if(isEditMode){
                     <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                             ngbDropdownToggle>
@@ -81,23 +83,52 @@
                             <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem
                                 appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
                                 Condition</button>
-                            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem
-                                appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i>
+                            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i>
                                 Authorize</button>
-                            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem
-                                appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i>
+                            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEmail()"><i class="fas fa-envelope me-1"></i>
                                 Email</button>
-                                <button *ngIf="selectedFCLLCL === 'FCL'" class="text-dark" ngbDropdownItem
+                            <button *ngIf="selectedFCLLCL === 'FCL'" class="text-dark" ngbDropdownItem
                                 appPreventMultiClick (click)="openAgentEmail()"><i class="fas fa-envelope me-1"></i>
                                 Agent Email</button>
-                            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem
-                            appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i>
-                             Followup</button>
-                            
+                            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i>
+                                Followup</button>
+
                         </div>
                     </div>
-                }
+                    }
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- ✅ VOICE ASSISTANT PANEL (ADD THIS BLOCK) -->
+    <div class="col-12 px-0" *ngIf="voiceRecognitionService.isContinuous">
+
+        <div class="voice-assistant-panel">
+            <div class="va-header">
+                <div class="voice-wave-icon">
+                    <i class="fas fa-microphone-alt"></i>
+                    <span class="wave w1"></span>
+                    <span class="wave w2"></span>
+                    <span class="wave w3"></span>
+                </div>
+                <span>Voice Assistant is listening</span>
+            </div>
+
+            <div class="va-body">
+                <!-- <div class="va-row">
+        <label>Current field</label>
+        <span>{{ currentFieldName || 'Waiting for input…' }}</span>
+      </div> -->
+
+                <div class="va-row" *ngIf="spokenText">
+                    <label>You said</label>
+                    <span class="spoken">“{{ spokenText }}”</span>
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -243,20 +274,12 @@
                 <div class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
-                       <dofi-searchable-dropdown 
-                       #segmentDd
-  
-    [items]="departments" 
-    formControlName="Segment" 
-    id="segmentDropdown"
-    placeholder=""
-    [displayFields]="departmentLookupConfig.displayFields"
-    [displayLabels]="departmentLookupConfig.displayLabels"
-    [labelFields]="departmentLookupConfig.labelFields" 
-    bindValue="DepartmentMasterSid"
-    (itemSelected)="onSegmentChange($event)"
-   >
-</dofi-searchable-dropdown>
+                        <dofi-searchable-dropdown #segmentDd [items]="departments" formControlName="Segment"
+                            id="segmentDropdown" placeholder="" [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onSegmentChange($event)">
+                        </dofi-searchable-dropdown>
                         <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
                             Required
@@ -330,7 +353,7 @@
                 <aside class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
-                        <ng-select  #enquiryTypeNg formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
+                        <ng-select #enquiryTypeNg formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
                             bindValue="name" placeholder="" appendTo="body">
                         </ng-select>
                         <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
@@ -343,12 +366,14 @@
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
-                            <input class="form-control" id="shipmentDateExpected" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #shipmentDp="ngbDatepicker" (keydown.arrowDown)="shipmentDp.open()" (click)="shipmentDp.toggle()"
-                                formControlName="shipmentDate" [minDate]="minExpDate" readonly
-                                [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected" />
+                            <input class="form-control" id="shipmentDateExpected" placeholder="dd-mm-yyyy" name="dp"
+                                ngbDatepicker #shipmentDp="ngbDatepicker" (keydown.arrowDown)="shipmentDp.open()"
+                                (click)="shipmentDp.toggle()" formControlName="shipmentDate" [minDate]="minExpDate"
+                                readonly [footerTemplate]="footerTemplateShip" container="body"
+                                id="shipmentDateExpected" />
                             <div>
-                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="shipmentDp.toggle()" type="button">
+                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="shipmentDp.toggle()"
+                                    type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
 
@@ -437,9 +462,7 @@
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <dofi-searchable-dropdown 
-                                                     #CustomerDP
-                                                    [items]="customers"
+                                                <dofi-searchable-dropdown #CustomerDP [items]="customers"
                                                     formControlName="CustomerBranchSid" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
@@ -518,10 +541,11 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <input type="text" id="phone" placeholder=""
-                                                    class="custom-input-field sm" formControlName="ContactNumber" [onlyNumbers]="15">
+                                                    class="custom-input-field sm" formControlName="ContactNumber"
+                                                    [onlyNumbers]="15">
                                                 <label for="text-input" class="input-label">Phone <span
                                                         class="text-danger"></span></label>
-                                                        <div *ngIf="f['ContactNumber'].touched && f['ContactNumber'].invalid"
+                                                <div *ngIf="f['ContactNumber'].touched && f['ContactNumber'].invalid"
                                                     class="error-message">
                                                     Enter a Valid Phone Number
                                                 </div>
@@ -530,8 +554,8 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
-                                                <ng-select class="ng-select" #ClearanceByNg formControlName="ClearanceBy"
-                                                    placeholder="" appendTo="body">
+                                                <ng-select class="ng-select" #ClearanceByNg
+                                                    formControlName="ClearanceBy" placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
                                                     <ng-option value="By us">By us</ng-option>
@@ -542,8 +566,9 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
-                                                <ng-select #SalesmanNg formControlName="UserMasterSid" [items]="salesmanList"
-                                                    bindLabel="userName" bindValue="UserMasterSid" appendTo="body">
+                                                <ng-select #SalesmanNg formControlName="UserMasterSid"
+                                                    [items]="salesmanList" bindLabel="userName"
+                                                    bindValue="UserMasterSid" appendTo="body">
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>
@@ -552,9 +577,9 @@
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
-                                                <ng-select #AdditionalServiceNg [items]="modeOfAddtionalService" bindLabel="name"
-                                                    bindValue="name" formControlName="AdditionalService" placeholder=""
-                                                    appendTo="body">
+                                                <ng-select #AdditionalServiceNg [items]="modeOfAddtionalService"
+                                                    bindLabel="name" bindValue="name"
+                                                    formControlName="AdditionalService" placeholder="" appendTo="body">
                                                 </ng-select>
                                                 <label for="" class="input-label">Additional Service <span
                                                         class="text-danger"></span></label>
@@ -563,8 +588,8 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
-                                                <ng-select #TransportByNg class="ng-select" formControlName="TransportBy"
-                                                    placeholder="" appendTo="body">
+                                                <ng-select #TransportByNg class="ng-select"
+                                                    formControlName="TransportBy" placeholder="" appendTo="body">
                                                     <ng-option value="Own">Own</ng-option>
                                                     <ng-option value="CHA">CHA</ng-option>
                                                     <ng-option value="By us">By us</ng-option>
@@ -638,8 +663,9 @@
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
 
-                                                <dofi-searchable-dropdown #IncoNameDd [items]="incoList" formControlName="IncoTerms"
-                                                    placeholder="" [displayFields]="incoLookupConfig.displayFields"
+                                                <dofi-searchable-dropdown #IncoNameDd [items]="incoList"
+                                                    formControlName="IncoTerms" placeholder=""
+                                                    [displayFields]="incoLookupConfig.displayFields"
                                                     [displayLabels]="incoLookupConfig.displayLabels"
                                                     [labelFields]="incoLookupConfig.labelFields" bindValue="IncoName"
                                                     (itemSelected)="onIncoChange($event)" (clear)="onIncoChange(null)">
@@ -668,7 +694,7 @@
                                                 <input type="text" id="freightTerms"
                                                     class="form-control custom-input-field sm"
                                                     formControlName="FreightPPCC" placeholder="" readyonly>
-                                                    <!-- <ng-select #freightTermsNg formControlName="FreightPPCC" [items]="freightTermsList"
+                                                <!-- <ng-select #freightTermsNg formControlName="FreightPPCC" [items]="freightTermsList"
                                                     bindLabel="FreightTerms" bindValue="FreightTerms" placeholder=""
                                                     [appendTo]="'body'"> </ng-select> -->
                                                 <label for="freightTerms" class="input-label">Freight PP/CC</label>
@@ -755,15 +781,16 @@
                                         </aside>
                                         <div class="col-md-6">
                                             <div class="custom-form-group">
-                                                <input type="text" id="dept" class="form-control custom-input-field sm"
+                                                <input type="text" id="CustomerRef"
+                                                    class="form-control custom-input-field sm"
                                                     formControlName="CustomerRef" placeholder="">
                                                 <label for="dept" class="input-label">Customer Ref</label>
                                             </div>
                                         </div>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group mb-0">
-                                                <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
-                                                    formControlName="Remarks"></textarea>
+                                                <textarea id="Remarks" placeholder="" rows="1"
+                                                    class="custom-input-field sm" formControlName="Remarks"></textarea>
                                                 <label for="text-input" class="input-label">Remarks </label>
                                             </div>
                                         </aside>
@@ -926,7 +953,7 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="ports" formControlName="POO"
+                                            <dofi-searchable-dropdown #pooDd [items]="ports" formControlName="POO"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
@@ -939,7 +966,7 @@
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
 
-                                            <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
+                                            <dofi-searchable-dropdown #polDd [items]="filteredPOLPorts[routeIndex]"
                                                 formControlName="POL" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
@@ -961,7 +988,7 @@
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
 
-                                            <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
+                                            <dofi-searchable-dropdown #podDd [items]="filteredPODPorts[routeIndex]"
                                                 formControlName="POD" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
@@ -990,7 +1017,7 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="ports" formControlName="FDC"
+                                            <dofi-searchable-dropdown #fdcDd [items]="ports" formControlName="FDC"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
@@ -1073,7 +1100,7 @@
                                                                 <label for="" class="form-label mb-0">Net Weight <span
                                                                         class="text-danger"></span></label>
                                                             </td>
-                                                            
+
                                                             <td class="bg-transparent text-light" style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Shipment Terms <span
@@ -1092,8 +1119,8 @@
                                                         <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                             [formGroupName]="cargoIndex">
                                                             <td>
-                                                                <ng-select formControlName="CargoType" class="ng-select"
-                                                                    appendTo="body" placeholder=""
+                                                                <ng-select #CargoTypeNg formControlName="CargoType"
+                                                                    class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
                                                                     <ng-option *ngFor="let item of cargoTypes"
                                                                         [value]="item.name">
@@ -1106,9 +1133,9 @@
                                                                     class="custom-input-field sm w-100" appendTo="body">
                                                             </td>
                                                             <td>
-                                                                <ng-select name="product" formControlName="ProductName"
-                                                                    id="" class="ng-select" placeholder=""
-                                                                    appendTo="body"
+                                                                <ng-select name="product" #ProductNameNg
+                                                                    formControlName="ProductName" id=""
+                                                                    class="ng-select" placeholder="" appendTo="body"
                                                                     [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
                                                                     <ng-option *ngFor="let product of productList"
                                                                         [value]="product.ProductName">{{product.ProductName}}</ng-option>
@@ -1116,7 +1143,7 @@
                                                             </td>
 
                                                             <td>
-                                                                <ng-select formControlName="PackageType"
+                                                                <ng-select #PackageTypeNg formControlName="PackageType"
                                                                     class="ng-select " appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
                                                                     <ng-option *ngFor="let item of packageTypes"
@@ -1128,22 +1155,23 @@
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
-                                                                    [onlyNumbers]="5" appendTo="body" (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    [onlyNumbers]="5" appendTo="body"
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="cbm"
@@ -1171,10 +1199,11 @@
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
-                                                            
+
                                                             <td>
-                                                                <ng-select formControlName="ShipmentTerms"
-                                                                    class="ng-select " placeholder="" appendTo="body"
+                                                                <ng-select #ShipmentTermsNg
+                                                                    formControlName="ShipmentTerms" class="ng-select "
+                                                                    placeholder="" appendTo="body"
                                                                     [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
                                                                     <ng-option *ngFor="let item of terms"
                                                                         [value]="item.name">
@@ -1208,7 +1237,8 @@
                                         <div formArrayName="cargo" class="table-responsive table-borderless"
                                             style="overflow-x: auto;">
                                             <div>
-                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 " style="min-width: 1200px; width: 100%;">
+                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 "
+                                                    style="min-width: 1200px; width: 100%;">
                                                     <thead>
                                                         <tr class="bg-info text-center">
                                                             <td class="bg-transparent text-light" style="width: 200px;"
@@ -1258,7 +1288,7 @@
                                                             <label class="form-label mb-0">Net Weight <span
                                                                     class="text-danger">*</span></label>
                                                         </td> -->
-                                                        <td class="bg-transparent text-light " style="width: 150px;"
+                                                            <td class="bg-transparent text-light " style="width: 150px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Gross Weight <span
                                                                         class="text-danger">*</span></label>
@@ -1291,8 +1321,8 @@
                                                         <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                             [formGroupName]="cargoIndex">
                                                             <td>
-                                                                <ng-select formControlName="CargoType" class="ng-select"
-                                                                    appendTo="body" placeholder=""
+                                                                <ng-select #CargoTypeNg formControlName="CargoType"
+                                                                    class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
                                                                     <ng-option *ngFor="let item of cargoTypes"
                                                                         [value]="item.name">
@@ -1322,9 +1352,9 @@
                                                                     [DecimalPrecisionAfter]="0" appendTo="body">
                                                             </td>
                                                             <td>
-                                                                <ng-select name="product" formControlName="ProductName"
-                                                                    id="" class="ng-select" appendTo="body"
-                                                                    placeholder=""
+                                                                <ng-select name="product" #ProductNameNg
+                                                                    formControlName="ProductName" id=""
+                                                                    class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.get('ProductName')?.value">
                                                                     <ng-option *ngFor="let product of productList"
                                                                         [value]="product.ProductName">{{product.ProductName}}</ng-option>
@@ -1332,7 +1362,7 @@
                                                             </td>
 
                                                             <td>
-                                                                <ng-select formControlName="PackageType"
+                                                                <ng-select #PackageTypeNg formControlName="PackageType"
                                                                     class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
                                                                     <ng-option *ngFor="let item of packageTypes"
@@ -1357,7 +1387,7 @@
                                                                 class="form-control text-end" DecimalPrecision
                                                                 [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">
                                                         </td> -->
-                                                        <td>
+                                                            <td>
                                                                 <!-- <div class="custom-form-group"> -->
                                                                 <input type="text" formControlName="GrossWeight"
                                                                     class="custom-input-field sm text-end w-100"
@@ -1377,15 +1407,16 @@
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
-                                                             <td>
+                                                            <td>
                                                                 <input type="text" formControlName="cbm"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
                                                             <td>
-                                                                <ng-select formControlName="ShipmentTerms"
-                                                                    class="ng-select" placeholder="" appendTo="body"
+                                                                <ng-select #ShipmentTermsNg
+                                                                    formControlName="ShipmentTerms" class="ng-select"
+                                                                    placeholder="" appendTo="body"
                                                                     [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
                                                                     <ng-option *ngFor="let item of terms"
                                                                         [value]="item.name">
@@ -1419,7 +1450,8 @@
                                         <div formArrayName="cargo" class="table-responsive table-borderless"
                                             style="overflow-x: auto;">
                                             <div>
-                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 " style="min-width: 1200px; width: 100%;">
+                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 "
+                                                    style="min-width: 1200px; width: 100%;">
                                                     <thead>
                                                         <tr class="bg-info text-center">
                                                             <td class="bg-transparent text-light" style="width: 200px;"
@@ -1427,8 +1459,7 @@
                                                                 <label class="form-label mb-0">Cargo Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light"
-                                                                style="width: 200px;"
+                                                            <td class="bg-transparent text-light" style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Cargo Description
                                                                     <span class="text-danger"></span></label>
@@ -1496,8 +1527,8 @@
                                                             [formGroupName]="cargoIndex"
                                                             placeholder="Select Cargo Type">
                                                             <td>
-                                                                <ng-select formControlName="CargoType" class="ng-select"
-                                                                    appendTo="body" placeholder=""
+                                                                <ng-select #CargoTypeNg formControlName="CargoType"
+                                                                    class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
                                                                     <ng-option *ngFor="let item of cargoTypes"
                                                                         [value]="item.name">
@@ -1511,16 +1542,16 @@
                                                             </td>
 
                                                             <td>
-                                                                <ng-select name="product" formControlName="ProductName"
-                                                                    id="" class="ng-select" placeholder=""
-                                                                    appendTo="body"
+                                                                <ng-select name="product" #ProductNameNg
+                                                                    formControlName="ProductName" id=""
+                                                                    class="ng-select" placeholder="" appendTo="body"
                                                                     [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
                                                                     <ng-option *ngFor="let product of productList"
                                                                         [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                                 </ng-select>
                                                             </td>
                                                             <td>
-                                                                <ng-select formControlName="PackageType"
+                                                                <ng-select #PackageTypeNg formControlName="PackageType"
                                                                     class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
                                                                     <ng-option *ngFor="let item of packageTypes"
@@ -1532,22 +1563,23 @@
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
-                                                                    [onlyNumbers]="5" appendTo="body" (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    [onlyNumbers]="5" appendTo="body"
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
-                                                                    class="custom-input-field sm text-end"
-                                                                    [onlyNumbers] (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="cbm"
@@ -1555,7 +1587,7 @@
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
-                                                             <td>
+                                                            <td>
                                                                 <!-- <div class="custom-form-group"> -->
                                                                 <input type="text" formControlName="GrossWeight"
                                                                     class="custom-input-field sm text-end w-100"
@@ -1709,9 +1741,9 @@
         <h5 class="modal-title mb-0 text-white">Enquiry</h5>
 
         <div class="d-flex gap-2 align-items-center ">
-              <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
-            <i class="fas fa-download me-1"></i> Print
-        </button>
+            <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+                <i class="fas fa-download me-1"></i> Print
+            </button>
             <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
@@ -1730,7 +1762,7 @@
             <!-- <div class="print-a4">
 
                 <!-- Company Info -->
-                 <!-- <div class="row">
+            <!-- <div class="row">
                     <div class="company-header">
                         <div class="company-logo">
                             <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
@@ -1753,11 +1785,11 @@
                 </div> -->
 
 
-                <!-- Title -->
-                <!-- <h5 class="text-center fw-bold  py-2" style="margin: 0; border-top:1px solid black;">ENQUIRY</h5> -->
+            <!-- Title -->
+            <!-- <h5 class="text-center fw-bold  py-2" style="margin: 0; border-top:1px solid black;">ENQUIRY</h5> -->
 
-                <!-- Enquiry Details -->
-                <!-- <div class="row ">
+            <!-- Enquiry Details -->
+            <!-- <div class="row ">
                     <div class="col-12 col-md-6">
                         <div class="d-flex mb-1">
                             <div style="width: 200px; white-space: nowrap;"><strong> Enquiry Number</strong></div>
@@ -1832,8 +1864,8 @@
                     </div>
                 </div> -->
 
-                <!-- Cargo Summary -->
-                <!-- <div style="margin-top: 2rem;">
+            <!-- Cargo Summary -->
+            <!-- <div style="margin-top: 2rem;">
                 <p><strong>Cargo Type : </strong>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || ''
                     }} &nbsp; / <strong>
                         Container Type :
@@ -1848,8 +1880,8 @@
                 </p>
             </div> -->
 
-                <!-- Product Table -->
-                <!-- <div style="margin-top: 1rem;">
+            <!-- Product Table -->
+            <!-- <div style="margin-top: 1rem;">
                     <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
                     <div class="table-responsive ">
                         <table class="table tablebordered  table-sm" style="margin: 0;">
@@ -1942,7 +1974,7 @@
                                 </tr>
                                 } -->
 
-                                <!-- @if(selectedFCLLCL === "FCL"){
+            <!-- @if(selectedFCLLCL === "FCL"){
           <tr>
             <td></td>
             <td></td>
@@ -1952,13 +1984,13 @@
             <td colspan="5"></td>
           </tr>
         } -->
-                            <!-- </tbody>
+            <!-- </tbody>
                         </table>
                     </div>
                 </div> -->
 
-                <!-- Remarks with Bottom Space -->
-                <!-- <div style="margin-top: 1rem; margin-bottom: 3rem;">
+            <!-- Remarks with Bottom Space -->
+            <!-- <div style="margin-top: 1rem; margin-bottom: 3rem;">
                     <p style="font-weight: bold;"> Remarks :</p>
                     <div style="height: 80px; "> {{ enquiryData?.Remarks || '' }}</div>
                 </div>
@@ -1981,40 +2013,45 @@
                     </div>
                 </footer>
 
-            </div> --> 
+            </div> -->
 
-   <div style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
+            <div
+                style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
 
- <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+                <!-- Company Info -->
+                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex;  flex-direction: column; align-items: center;">
-                 <!-- Print logo -->
-               <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
-              />
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
-            </div>
-            <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
-                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-  
-            </div>
-        </div>
-    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex;  flex-direction: column; align-items: center;">
+                            <!-- Print logo -->
+                            <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
+                                class="company-logo img-fluid" style="width: 50px;height: auto;" />
+                            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
+                            </h4>
+                        </div>
+                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
+                            <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
+                            </h3>
+                            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
+                            </h5>
+                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
+                                currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
+                                currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
+                                currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
 
-    <!-- Title -->
-    <h3 style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;font-size: 20px;"><strong>ENQUIRY</strong></h3>
+                        </div>
+                    </div>
+                </div>
 
-<!-- Enquiry Details -->
-<div style="
+                <!-- Title -->
+                <h3
+                    style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;font-size: 20px;">
+                    <strong>ENQUIRY</strong></h3>
+
+                <!-- Enquiry Details -->
+                <div style="
     display:flex;
     flex-wrap:wrap;
     margin:0;
@@ -2025,8 +2062,8 @@
     line-height:1.2;
 ">
 
-   <!-- LEFT COLUMN -->
-<div style="
+                    <!-- LEFT COLUMN -->
+                    <div style="
     width:50%;
     padding-left:3rem;
     box-sizing:border-box;
@@ -2034,74 +2071,82 @@
     margin:0;
 ">
 
-    <!-- Dept -->
-    <div style="display:flex; margin-bottom:2px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Dept</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.ShipmentType || '' }}</div>
-    </div>
+                        <!-- Dept -->
+                        <div style="display:flex; margin-bottom:2px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Dept</strong>
+                            </div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.ShipmentType || '' }}</div>
+                        </div>
 
-    <!-- Enquiry Number -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Number</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.EnquiryNumber || '' }}</div>
-    </div>
+                        <!-- Enquiry Number -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry
+                                    Number</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.EnquiryNumber || '' }}</div>
+                        </div>
 
-    <!-- Party Name -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Name</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.CustomerName || '' }}</div>
-    </div>
+                        <!-- Party Name -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party
+                                    Name</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.CustomerName || '' }}</div>
+                        </div>
 
-    <!-- Party Address -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party Address</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.CustomerAddress || '' }}</div>
-    </div>
+                        <!-- Party Address -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party
+                                    Address</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.CustomerAddress || '' }}</div>
+                        </div>
 
-    <!-- Received Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Received Date</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            <!-- {{ (enquiryData?.EnquiryDate | formatDate)  }} -->
-               {{ formatDate(enquiryData?.EnquiryDate )  }}
-        </div>
-    </div>
+                        <!-- Received Date -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Received
+                                    Date</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                <!-- {{ (enquiryData?.EnquiryDate | formatDate)  }} -->
+                                {{ formatDate(enquiryData?.EnquiryDate ) }}
+                            </div>
+                        </div>
 
-    <!-- Port Of Origin -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Origin</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ getPort(enquiryData?.enquiryRoute[0]?.PORSid) }}
-        </div>
-    </div>
+                        <!-- Port Of Origin -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of
+                                    Origin</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ getPort(enquiryData?.enquiryRoute[0]?.PORSid) }}
+                            </div>
+                        </div>
 
-    <!-- Port Of Loading -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of Loading</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ getPort(enquiryData?.enquiryRoute[0]?.POLSid) }}
-        </div>
-    </div>
+                        <!-- Port Of Loading -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Port Of
+                                    Loading</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ getPort(enquiryData?.enquiryRoute[0]?.POLSid) }}
+                            </div>
+                        </div>
 
-     <!-- Inco Terms -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
-        <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Inco Terms</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.IncoTerms || '' }}</div>
-    </div>
+                        <!-- Inco Terms -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 8px;">
+                            <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Inco
+                                    Terms</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.IncoTerms || '' }}</div>
+                        </div>
 
-</div>
+                    </div>
 
 
-    <!-- RIGHT COLUMN -->
-<div style="
+                    <!-- RIGHT COLUMN -->
+                    <div style="
     width:50%;
     padding-left:2rem;
     box-sizing:border-box;
@@ -2109,338 +2154,380 @@
     margin:0;
 ">
 
-    <!-- Shipper Name -->
-    <div style="display:flex; margin-bottom:2px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper Name</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperName || '' }}</div>
-    </div>
+                        <!-- Shipper Name -->
+                        <div style="display:flex; margin-bottom:2px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper
+                                    Name</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperName || '' }}</div>
+                        </div>
 
-    <!-- Shipper Address -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper Address</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}</div>
-    </div>
+                        <!-- Shipper Address -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper
+                                    Address</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}
+                            </div>
+                        </div>
 
-    <!-- Enquiry Created By -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created By</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">{{ enquiryData?.createdBy || '' }}</div>
-    </div>
+                        <!-- Enquiry Created By -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created
+                                    By</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">{{ enquiryData?.createdBy || '' }}</div>
+                        </div>
 
-    <!-- Enquiry Created Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created Date</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ (enquiryData?.EnquiryDate | formatDate) || '' }}
-        </div>
-    </div>
+                        <!-- Enquiry Created Date -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Enquiry Created
+                                    Date</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ (enquiryData?.EnquiryDate | formatDate) || '' }}
+                            </div>
+                        </div>
 
-  <!-- Contact / Number -->
-<div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-    <div style="width:190px; white-space:nowrap; font-weight:bolder;">
-        <strong>Contact / Number</strong>
-    </div>
-    <div style="width:10px; text-align:center;">:</div>
-    <div style="padding-left:6px;">
+                        <!-- Contact / Number -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;">
+                                <strong>Contact / Number</strong>
+                            </div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
 
-        <!-- Contact Person -->
-        <span *ngIf="enquiryData?.ContactPerson">
-            {{ enquiryData.ContactPerson }}
-        </span>
+                                <!-- Contact Person -->
+                                <span *ngIf="enquiryData?.ContactPerson">
+                                    {{ enquiryData.ContactPerson }}
+                                </span>
 
-        <!-- Slash only if BOTH exist -->
-        <span *ngIf="enquiryData?.ContactPerson && enquiryData?.ContactNumber">
-            &nbsp;/&nbsp;
-        </span>
+                                <!-- Slash only if BOTH exist -->
+                                <span *ngIf="enquiryData?.ContactPerson && enquiryData?.ContactNumber">
+                                    &nbsp;/&nbsp;
+                                </span>
 
-        <!-- Contact Number -->
-        <span *ngIf="enquiryData?.ContactNumber">
-            {{ enquiryData.ContactNumber }}
-        </span>
+                                <!-- Contact Number -->
+                                <span *ngIf="enquiryData?.ContactNumber">
+                                    {{ enquiryData.ContactNumber }}
+                                </span>
 
-    </div>
-</div>
-
-
-    <!-- Expected Shipment Date -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Expected Shipment Date</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '' }}
-        </div>
-    </div>
-
-    
-    <!-- Port of Discharge -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Port of Discharge</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
-        </div>
-    </div>
-
-    <!-- Final Destination -->
-    <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-        <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Final Destination</strong></div>
-        <div style="width:10px; text-align:center;">:</div>
-        <div style="padding-left:6px;">
-            {{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
-        </div>
-    </div>
+                            </div>
+                        </div>
 
 
-   
+                        <!-- Expected Shipment Date -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Expected Shipment
+                                    Date</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '' }}
+                            </div>
+                        </div>
 
-</div>
+
+                        <!-- Port of Discharge -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Port of
+                                    Discharge</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
+                            </div>
+                        </div>
+
+                        <!-- Final Destination -->
+                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
+                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Final
+                                    Destination</strong></div>
+                            <div style="width:10px; text-align:center;">:</div>
+                            <div style="padding-left:6px;">
+                                {{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
+                            </div>
+                        </div>
 
 
-</div>
 
 
-    <!-- Product Table -->
-    <div style="margin-top: 0;">
-        <div style=" padding-top:8px;padding-bottom: 8px;">
-    <h3 style="margin:0; padding-left:55px;text-align: center; font-weight:bolder;">
-        <strong>Product Details</strong>
-    </h3>
-</div>
+                    </div>
 
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 17px;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #000; padding: 4px;border-left:none;text-align: center;font-weight: bolder;width: 9%;"><strong>Cargo Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 25%;"><strong>Cargo Desc</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 12%;"><strong>Product Name</strong></th>
-                        @if(selectedFCLLCL === "AIR"){
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;"><strong>Chargeable Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 8%;"><strong>Pkg Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;"><strong>Qty.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;"><strong>Gross Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;border-right: none;width: 10%;"><strong>CBM</strong></th>
-                     
-                        }
-                        @if(selectedFCLLCL === "FCL"){
-                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 12%;text-align: center;"><strong>Container Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;width: 13%;font-weight: bolder;text-align: center;"><strong>No. of Container</strong></th>
-                        
-                        }
-                        @if(selectedFCLLCL === "LCL"){
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;text-align: center;"><strong>Chargeable Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;text-align: center;"><strong>Qty.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;"><strong>Wt. Unit</strong></th>
-                        }
-                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
-                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 8%;text-align: center;"><strong>Pkg Type</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;width: 10%;"><strong>Gross Wt.</strong></th>
-                        <th style="border: 1px solid #000; padding: 4px;font-weight: bolder;border-right: none;text-align: center;"><strong>CBM</strong></th>
-                        }
-                    </tr>
-                </thead>
-              <tbody>
 
-  <!-- ROUTE LOOP -->
-  <ng-container *ngFor="let route of enquiryData?.enquiryRoute">
+                </div>
 
-    <!-- CARGO LOOP -->
-    <ng-container *ngFor="let cargo of route?.enquiryCargo">
 
-      <tr>
-        <td style="border:1px solid #000;padding:4px;border-left:none;text-align:start;">
-          {{ cargo?.CargoType || '' }}
-        </td>
+                <!-- Product Table -->
+                <div style="margin-top: 0;">
+                    <div style=" padding-top:8px;padding-bottom: 8px;">
+                        <h3 style="margin:0; padding-left:55px;text-align: center; font-weight:bolder;">
+                            <strong>Product Details</strong>
+                        </h3>
+                    </div>
 
-        <td style="border:1px solid #000;padding:4px;text-align:start;">
-          {{ cargo?.CargoDescription || '' }}
-        </td>
+                    <div style="overflow-x: auto;">
+                        <table
+                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 17px;">
+                            <thead>
+                                <tr>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;border-left:none;text-align: center;font-weight: bolder;width: 9%;">
+                                        <strong>Cargo Type</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 25%;">
+                                        <strong>Cargo Desc</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 12%;">
+                                        <strong>Product Name</strong></th>
+                                    @if(selectedFCLLCL === "AIR"){
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;">
+                                        <strong>Chargeable Wt.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 8%;">
+                                        <strong>Pkg Type</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;">
+                                        <strong>Qty.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;">
+                                        <strong>Gross Wt.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;border-right: none;width: 10%;">
+                                        <strong>CBM</strong></th>
 
-        <td style="border:1px solid #000;padding:4px;text-align:start;">
-          {{ cargo?.ProductName || '' }}
-        </td>
+                                    }
+                                    @if(selectedFCLLCL === "FCL"){
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 12%;text-align: center;">
+                                        <strong>Container Type</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;width: 13%;font-weight: bolder;text-align: center;">
+                                        <strong>No. of Container</strong></th>
 
-        <!-- AIR -->
-        @if (selectedFCLLCL === 'AIR') {
-          <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.ChargeableWeight || '' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:start;">
-            {{ cargo?.PackageType || '' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.PackageQty | number:'1.2-2' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.GrossWeight | number:'1.3-3' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:right;border-right:none;">
-            {{ cargo?.Volume | number:'1.3-3' }}
-          </td>
-        }
+                                    }
+                                    @if(selectedFCLLCL === "LCL"){
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;text-align: center;">
+                                        <strong>Chargeable Wt.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;text-align: center;">
+                                        <strong>Qty.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;">
+                                        <strong>Wt. Unit</strong></th>
+                                    }
+                                    @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 8%;text-align: center;">
+                                        <strong>Pkg Type</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;width: 10%;">
+                                        <strong>Gross Wt.</strong></th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;border-right: none;text-align: center;">
+                                        <strong>CBM</strong></th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
 
-        <!-- FCL -->
-        @if (selectedFCLLCL === 'FCL') {
+                                <!-- ROUTE LOOP -->
+                                <ng-container *ngFor="let route of enquiryData?.enquiryRoute">
 
-          <td style="border:1px solid #000;padding:4px;">
-            {{ cargo?.ContainerType || '' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.PackageQty || '' }}
-          </td>
-        }
+                                    <!-- CARGO LOOP -->
+                                    <ng-container *ngFor="let cargo of route?.enquiryCargo">
 
-        <!-- LCL -->
-        @if (selectedFCLLCL === 'LCL') {
-              <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.ChargeableWeight || '' }}
-          </td>
-            <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.PackageQty | number:'1.2-2' }}
-          </td>
-            <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ getUOMCode(cargo?.WeightUnitSid) }}
-          </td>
-        
-        }
+                                        <tr>
+                                            <td
+                                                style="border:1px solid #000;padding:4px;border-left:none;text-align:start;">
+                                                {{ cargo?.CargoType || '' }}
+                                            </td>
 
-        <!-- FCL + LCL COMMON -->
-        @if (selectedFCLLCL === 'FCL' || selectedFCLLCL === 'LCL') {
-          <td style="border:1px solid #000;padding:4px;">
-            {{ cargo?.PackageType || '' }}
-          </td>
-         
-          <td style="border:1px solid #000;padding:4px;text-align:right;">
-            {{ cargo?.GrossWeight | number:'1.3-3' }}
-          </td>
-          <td style="border:1px solid #000;padding:4px;text-align:right;border-right: none;">
-            {{ cargo?.Volume | number:'1.3-3' }}
-          </td>
-         
-        }
-      </tr>
+                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
+                                                {{ cargo?.CargoDescription || '' }}
+                                            </td>
 
-    </ng-container>
-  </ng-container>
+                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
+                                                {{ cargo?.ProductName || '' }}
+                                            </td>
 
-  <!-- LCL TOTAL ROW -->
-  @if (selectedFCLLCL === 'LCL') {
-    <tr>
-      <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
-      <td style="border:1px solid #000;padding:4px;"></td>
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">Total</td>
-       <td style="border:1px solid #000;padding:4px;"></td>
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalPackageQty() | number:'1.2-2' }}
-      </td>
-      <td style="border:1px solid #000;padding:4px;"></td>
-      <td style="border:1px solid #000;padding:4px;"></td>
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-      </td>
-      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                            <!-- AIR -->
+                                            @if (selectedFCLLCL === 'AIR') {
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.ChargeableWeight || '' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
+                                                {{ cargo?.PackageType || '' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.PackageQty | number:'1.2-2' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.GrossWeight | number:'1.3-3' }}
+                                            </td>
+                                            <td
+                                                style="border:1px solid #000;padding:4px;text-align:right;border-right:none;">
+                                                {{ cargo?.Volume | number:'1.3-3' }}
+                                            </td>
+                                            }
+
+                                            <!-- FCL -->
+                                            @if (selectedFCLLCL === 'FCL') {
+
+                                            <td style="border:1px solid #000;padding:4px;">
+                                                {{ cargo?.ContainerType || '' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.PackageQty || '' }}
+                                            </td>
+                                            }
+
+                                            <!-- LCL -->
+                                            @if (selectedFCLLCL === 'LCL') {
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.ChargeableWeight || '' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.PackageQty | number:'1.2-2' }}
+                                            </td>
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ getUOMCode(cargo?.WeightUnitSid) }}
+                                            </td>
+
+                                            }
+
+                                            <!-- FCL + LCL COMMON -->
+                                            @if (selectedFCLLCL === 'FCL' || selectedFCLLCL === 'LCL') {
+                                            <td style="border:1px solid #000;padding:4px;">
+                                                {{ cargo?.PackageType || '' }}
+                                            </td>
+
+                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
+                                                {{ cargo?.GrossWeight | number:'1.3-3' }}
+                                            </td>
+                                            <td
+                                                style="border:1px solid #000;padding:4px;text-align:right;border-right: none;">
+                                                {{ cargo?.Volume | number:'1.3-3' }}
+                                            </td>
+
+                                            }
+                                        </tr>
+
+                                    </ng-container>
+                                </ng-container>
+
+                                <!-- LCL TOTAL ROW -->
+                                @if (selectedFCLLCL === 'LCL') {
+                                <tr>
+                                    <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                        Total</td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                        {{ calculateTotalPackageQty() | number:'1.2-2' }}
+                                    </td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+                                    </td>
+                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
         {{ calculateTotalNetWeight() | number:'1.3-3' }}
       </td> -->
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
-        {{ calculateTotalCBM() | number:'1.3-3' }}
-      </td>
- 
-    </tr>
-  }
+                                    <td
+                                        style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
+                                        {{ calculateTotalCBM() | number:'1.3-3' }}
+                                    </td>
 
-   @if (selectedFCLLCL === 'FCL') {
-    <tr>
-      <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
-      <td style="border:1px solid #000;padding:4px;"></td>
-       <td style="border:1px solid #000;padding:4px;"></td>
-        <td style="border:1px solid #000;padding:4px;"></td>
-         <td style="border:1px solid #000;padding:4px;"></td>
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">Total</td>
-      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                </tr>
+                                }
+
+                                @if (selectedFCLLCL === 'FCL') {
+                                <tr>
+                                    <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;"></td>
+                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                        Total</td>
+                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
         {{ calculateTotalPackageQty() | number:'1.2-2' }}
       </td> -->
-      
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-      </td>
-      <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+
+                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
+                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+                                    </td>
+                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
         {{ calculateTotalNetWeight() | number:'1.3-3' }}
       </td> -->
-      <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
-        {{ calculateTotalCBM() | number:'1.3-3' }}
-      </td>
+                                    <td
+                                        style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
+                                        {{ calculateTotalCBM() | number:'1.3-3' }}
+                                    </td>
 
-    </tr>
-  }
-@if (selectedFCLLCL === 'AIR') {
-<tr>
-  <!-- MERGED EMPTY AREA -->
-   
-  <td
-    colspan="4"
-    style="
+                                </tr>
+                                }
+                                @if (selectedFCLLCL === 'AIR') {
+                                <tr>
+                                    <!-- MERGED EMPTY AREA -->
+
+                                    <td colspan="4" style="
       border:1px solid #000;
       border-left:none;
     ">
-  </td>
+                                    </td>
 
-  <!-- TOTAL LABEL -->
-  <td
-    style="
+                                    <!-- TOTAL LABEL -->
+                                    <td style="
       border:1px solid #000;
       text-align:right;
       font-weight:bold;
     ">
-    Total
-  </td>
+                                        Total
+                                    </td>
 
-  <!-- QTY TOTAL -->
-  <td
-    style="
+                                    <!-- QTY TOTAL -->
+                                    <td style="
       border:1px solid #000;
       text-align:right;
       font-weight:bold;
     ">
-    {{ calculateTotalPackageQty() | number:'1.2-2' }}
-  </td>
+                                        {{ calculateTotalPackageQty() | number:'1.2-2' }}
+                                    </td>
 
-  <!-- GROSS WT TOTAL -->
-  <td
-    style="
+                                    <!-- GROSS WT TOTAL -->
+                                    <td style="
       border:1px solid #000;
       text-align:right;
       font-weight:bold;
     ">
-    {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-  </td>
+                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
+                                    </td>
 
-  <!-- CBM TOTAL -->
-  <td
-    style="
+                                    <!-- CBM TOTAL -->
+                                    <td style="
       border:1px solid #000;
       border-right:none;
       text-align:right;
       font-weight:bold;
     ">
-    {{ calculateTotalCBM() | number:'1.3-3' }}
-  </td>
-</tr>
-}
+                                        {{ calculateTotalCBM() | number:'1.3-3' }}
+                                    </td>
+                                </tr>
+                                }
 
 
-</tbody>
+                            </tbody>
 
-            </table>
-        </div>
-        
-    </div>
+                        </table>
+                    </div>
 
-    <!-- Remarks -->
-<div style="
+                </div>
+
+                <!-- Remarks -->
+                <div style="
     display:flex;
     align-items:flex-start;
     gap:8px;
@@ -2449,17 +2536,17 @@
     padding:6px 10px;
     font-size:16px;
 ">
-    <div style="white-space:nowrap; font-weight:bolder;width: 185px;">
-       <strong>Enquiry Remarks</strong>
-    </div>
-    <div style="flex:1;">
-        : {{ enquiryData?.Remarks || '' }}
-    </div>
-</div>
+                    <div style="white-space:nowrap; font-weight:bolder;width: 185px;">
+                        <strong>Enquiry Remarks</strong>
+                    </div>
+                    <div style="flex:1;">
+                        : {{ enquiryData?.Remarks || '' }}
+                    </div>
+                </div>
 
 
-  <!-- Terms & Conditions -->
-    <!-- <div style="margin-top: 1rem;font-size: 16px;padding-left: 15px;">
+                <!-- Terms & Conditions -->
+                <!-- <div style="margin-top: 1rem;font-size: 16px;padding-left: 15px;">
       <h5 style=" margin-bottom: 0.5rem;"><strong>Terms and Conditions</strong></h5>
       <ul style="margin-top: 0; padding-left: 1.2rem;">
         @for(term of TandCList; track term){
@@ -2468,16 +2555,16 @@
       </ul>
     </div> -->
 
-    <!-- Footer -->
-      <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;">
-    <div style="display:flex; justify-content:space-between; font-size:16px;">
-      <div>Printed By: {{ userData.userName }}</div>
-      <span>This document is computer-generated and does not require a signature.</span>
-      <div>Printed On: {{ currentDate | formatDate }}</div>
-    </div>
-  </footer>
+                <!-- Footer -->
+                <footer style="margin-top:auto; text-align:center; font-size:10pt; padding:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:16px;">
+                        <div>Printed By: {{ userData.userName }}</div>
+                        <span>This document is computer-generated and does not require a signature.</span>
+                        <div>Printed On: {{ currentDate | formatDate }}</div>
+                    </div>
+                </footer>
 
-</div>
+            </div>
 
 
         </div>

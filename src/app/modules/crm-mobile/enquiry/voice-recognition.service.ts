@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { VoiceParserService } from './voice-parser.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,10 +24,17 @@ export class VoiceRecognitionService {
   private navigationCommands = [
     'next', 'previous', 'skip', 'forward', 'back', 
     'stop', 'pause', 'continue', 'clear', 'select',
-    'open', 'close', 'submit', 'save', 'reset'
+    'open', 'close', 'submit', 'save', 'reset',
+    'enquiry',
+  'enquiry tab',
+  'route',
+  'route details',
+  'route tab'
   ];
 
-  constructor(private toastr: ToastrService) {
+  constructor(private toastr: ToastrService,
+    private voiceParserService: VoiceParserService
+  ) {
     this.initializeRecognition();
   }
 
@@ -98,18 +106,18 @@ export class VoiceRecognitionService {
  private processVoiceInput(transcript: string): void {
   console.log('🎤 Final Voice Transcript:', transcript);
 
-  const isNavigation = this.navigationCommands.some(cmd =>
-    transcript.includes(cmd)
-  );
+  // ✅ SINGLE SOURCE OF TRUTH
+  const parsed = this.voiceParserService.parseNavigationCommand(transcript);
 
-  if (isNavigation) {
-    console.log('➡️ Navigation Command Detected:', transcript);
+  if (parsed.type === 'NAVIGATE' || parsed.type === 'CONTROL') {
+    console.log('➡️ Navigation / Control Detected:', parsed);
     this.navigationCommand.next(transcript);
   } else {
     console.log('📝 Field Input Detected:', transcript);
     this.voiceInputComplete.next(transcript);
   }
 }
+
 
 
     startContinuous(): void {

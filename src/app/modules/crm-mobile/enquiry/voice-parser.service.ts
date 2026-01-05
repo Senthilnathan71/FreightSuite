@@ -7,6 +7,35 @@ export class VoiceParserService {
   
   parseNavigationCommand(text: string): NavigationCommand {
   const lowerText = text.toLowerCase().trim();
+    /* =========================
+   SAVE / SUBMIT
+   ========================= */
+if (
+  lowerText === 'save' ||
+  lowerText === 'submit' ||
+  lowerText === 'save enquiry' ||
+  lowerText === 'save entry'
+) {
+  return { type: 'CONTROL', action: 'SAVE' };
+}
+
+   /* =========================
+     TAB NAVIGATION
+     ========================= */
+  if (
+    lowerText.includes('enquiry') ||
+    lowerText.includes('enquiry tab')
+  ) {
+    return { type: 'CONTROL', action: 'TAB_ENQUIRY' };
+  }
+
+  if (
+    lowerText.includes('route') ||
+    lowerText.includes('route details') ||
+    lowerText.includes('route tab')
+  ) {
+    return { type: 'CONTROL', action: 'TAB_ROUTE' };
+  }
 
   /* =========================
      NAVIGATION (NO DATA LOSS)
