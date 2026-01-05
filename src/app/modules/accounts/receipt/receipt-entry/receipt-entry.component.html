@@ -771,7 +771,79 @@
 
                             <!-- Voucher No -->
                             <td>
-                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" />
+                                <!-- <div class="custom-form-group custom-form-group-select dofi-min-w-140">
+                                    <input *ngIf="!v.get('voucherNo')?.value" type="fw-bold px-2 text-decoration-underline"
+                                        [value]="v.get('voucherNo')?.value || ''" class="custom-input-field sm" readonly>
+                                    <a *ngIf="v.get('voucherNo')?.value"
+                                        [routerLink]="['/operation/invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                        class="fw-bold px-2 text-decoration-underline" title="View Invoice">
+                                        {{v.get('voucherNo')?.value }}
+                                    </a>
+                                </div> -->
+                                <div class="custom-form-group custom-form-group-select dofi-min-w-140" [ngSwitch]="v.get('voucherType')?.value">
+                                
+                                    <!-- When voucherNo is empty -->
+                                    <input *ngIf="!v.get('voucherNo')?.value" type="text"
+                                        class="custom-input-field sm fw-bold px-2 text-decoration-underline" [value]="v.get('voucherNo')?.value || ''"
+                                        readonly>
+                                
+                                    <!-- Show links only when voucherNo exists -->
+                                    <ng-container *ngIf="v.get('voucherNo')?.value">
+                                
+                                        <!-- Invoice -->
+                                        <a *ngSwitchCase="'INV'" [routerLink]="['/operation/invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Vendor Invoice (VIN / VN) -->
+                                        <a *ngSwitchCase="'VIN'" [routerLink]="['/operation/vendor-invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <a *ngSwitchCase="'VN'" [routerLink]="['/operation/vendor-invoice/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Credit Note -->
+                                        <a *ngSwitchCase="'CRN'" [routerLink]="['/operation/credit-note/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Vendor Credit Note -->
+                                        <a *ngSwitchCase="'VCN'"
+                                            [routerLink]="['/operation/vendor-credit-note/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Receipt -->
+                                        <a *ngSwitchCase="'RPT'" [routerLink]="['/accounts/receipt/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Payment (if needed later) -->
+                                        <a *ngSwitchCase="'PMT'" [routerLink]="['/accounts/payment/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                        <!-- Journal Voucher -->
+                                        <a *ngSwitchCase="'JV'" [routerLink]="['/accounts/journal-voucher/entry', v.get('VoucherHeaderSid')?.value]"
+                                            class="fw-bold px-2 text-decoration-underline">
+                                            {{ v.get('voucherNo')?.value }}
+                                        </a>
+                                
+                                    </ng-container>
+                                
+                                </div>
+
+
+                                <!-- <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" /> -->
                             </td>
 
                             <!-- Voucher Type -->
