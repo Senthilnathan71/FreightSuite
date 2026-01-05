@@ -53,6 +53,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CargoManifestComponent } from '../../master-job/reports/cargo-manifest/cargo-manifest.component';
 import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { MasterService } from 'src/app/modules/master/master.service';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -193,6 +195,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   pageSize = 5;
   totalLengthOfAttachedBookings : number = 0;
   arapData: any[] = [];
+  TandCList: any[] = [];
   arapLoading = false;
   arapFilter = {
     voucherType: 'all',
@@ -286,6 +289,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     public mps: MenuPermissionService,
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
+    private masterService: MasterService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -1897,6 +1901,28 @@ handleEdocChange(event: any) {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
+
+  openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modelRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true,
+          });
+          modelRef.componentInstance.terms = this.TandCList;
+          modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+        } else {
+          this.appSettingsService.showError('Error loading Terms and Conditions');
+        }
+      }, (error) => {
+        this.appSettingsService.showError('Error loading Terms and Conditions', error);
+      });
+    }
 
   // exportAuditLogs() {
   //   if (this.auditLogs.length === 0) {

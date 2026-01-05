@@ -91,9 +91,9 @@
 
                     <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="postDate" class="custom-input-field sm"
-                                placeholder="" />
-                            <label class="input-label">Posted On</label>
+                            <input type="text" id="PostedOn" formControlName="PostedOn" class="custom-input-field sm"
+                                placeholder="" readonly/>
+                            <label for="PostedOn" class="input-label">Posted On</label>
                         </div>
                     </aside>
 
@@ -123,7 +123,7 @@
 
                     <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!form.get('status')?.value">
+                            [class.filled]="!!form.get('Status')?.value">
                             <ng-select formControlName="Status" [items]="statusList" bindLabel="name" bindValue="id"
                                 placeholder="">
                             </ng-select>

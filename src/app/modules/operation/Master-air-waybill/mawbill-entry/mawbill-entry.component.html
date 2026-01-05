@@ -78,8 +78,17 @@
                     <span>Save</span>
                 </button>
             </div>
-
-
+            <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          
+          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+         
+        </div>
+      </div>
 
 
         </div>
