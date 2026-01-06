@@ -77,6 +77,18 @@ currentBranch: any;
 		{ id: 1, name: 'Active' },
 		{ id: 2, name: 'Suspended' }
 	]
+
+	docTypeCodeDropdown = [
+		{ id : 1 , code : 'INV'},
+		{ id : 2 , code : 'VIN'},
+		{ id : 4 , code : 'RPT'},
+		{ id : 5 , code : 'PMT'},
+		{ id : 3 , code : 'CRN'},
+		{ id : 6 , code : 'VRN'},
+		{ id : 7 , code : 'JV'},
+		{ id : 8 , code : 'RJV'}
+	]
+
 	currentMenuId: number;
 	TandCList: any;
 	menuList : any[];

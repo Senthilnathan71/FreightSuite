@@ -132,12 +132,12 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="DocumentTypeCode" [textWithNumbers]="5"
-                                            style="text-transform: uppercase;">
-                                        <label for="text-input" class="input-label">Code <span
-                                                class="text-danger">*</span></label>
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!documentForm.get('DocumentTypeCode')?.value">
+                                        <ng-select formControlName="DocumentTypeCode" [items]="docTypeCodeDropdown"
+                                            bindLabel="code" bindValue="code" placeholder="">
+                                        </ng-select>
+                                        <label for="text-input" class="input-label">Code</label>
                                         @if(documentForm.get('DocumentTypeCode').touched &&
                                         documentForm.get('DocumentTypeCode').invalid){
                                         <div class="error-message">

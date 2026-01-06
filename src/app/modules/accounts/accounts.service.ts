@@ -429,7 +429,7 @@ export class AccountsService {
   }
 
   updatePaymentById(VoucherHeaderSid:number,payload:any){
-    return this.http.post<any>(`api/accounts/payment/update/${VoucherHeaderSid}`, payload).pipe(
+    return this.http.patch<any>(`api/accounts/payment/update/${VoucherHeaderSid}`, payload).pipe(
       map((response: any) => {
         return response;
       })

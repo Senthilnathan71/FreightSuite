@@ -1162,7 +1162,8 @@
             <td class="text-end" [ngClass]="{
               'indian-tax-label': isIndianCompany(),
               'uae-tax-label': isUAECompany(),
-              'other-tax-label': !isIndianCompany() && !isUAECompany()
+              'us-tax-label': isUSCompany(),
+              'other-tax-label': !isIndianCompany() && !isUAECompany() && !isUSCompany()
             }">
               {{ getChargeTaxPercentage(charge) }}
             </td>
@@ -1208,14 +1209,21 @@
                   </td>
                 </tr>
                 
-                <tr *ngIf="isUAECompany() && chargeSelectionTaxResult.type === 'VAT'">
+                <tr *ngIf="(isUAECompany()) && chargeSelectionTaxResult.type === 'VAT'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
                     <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%)</span>
                   </td>
                 </tr>
+
+                <tr *ngIf="(isUSCompany()) && chargeSelectionTaxResult.type === 'VAT'">
+                  <td><strong>Tax Type:</strong></td>
+                  <td class="text-end">
+                    <span class="badge bg-warning">TAX ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%)</span>
+                  </td>
+                </tr>
                 
-                <tr *ngIf="!isIndianCompany() && !isUAECompany()">
+                <tr *ngIf="!isIndianCompany() && !isUAECompany() && !isUSCompany()">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
                     <span class="badge bg-secondary">{{ chargeSelectionTaxResult.type || 'Standard Tax' }}</span>
@@ -1246,9 +1254,16 @@
                   <small>{{ chargeSelectionTaxResult.totalIGST | number:'1.2-2' }}</small>
                 </div>
               </div>
-
+              
+              <!-- TAX Details (For US company) -->
+              <div *ngIf="(isUSCompany() && chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
+                <div class="d-flex justify-content-between mb-1">
+                  <small>TAX ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%):</small>
+                  <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
+                </div>
+              </div>
               <!-- VAT Details (for UAE and other VAT countries) -->
-              <div *ngIf="(!isIndianCompany() || chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
+              <div *ngIf="(isUAECompany() && chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
                 <div class="d-flex justify-content-between mb-1">
                   <small>VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%):</small>
                   <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
