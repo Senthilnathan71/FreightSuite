@@ -48,6 +48,7 @@ import { ToastrService } from 'ngx-toastr';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -236,7 +237,8 @@ export class InvoiceEntryComponent implements OnInit {
     private currencyFormatter: CurrencyFormatService,
     private pdfService: PdfDownloadService,
     private toastr: ToastrService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    private numberToWords: NumberToWordsService,
   ) { }
 
   ngOnInit(): void {
@@ -424,6 +426,7 @@ export class InvoiceEntryComponent implements OnInit {
       this.subledgerList = customers.data || [];
       this.currencyList = currencies.data || [];
       this.currencyConfigService.initializeConfigurations(this.currencyList);
+      this.numberToWords.initializeCurrencies(this.currencyList);
       this.chargeList = charges.data || [];
       this.uomList = uom.data || [];
       this.currentBranchState = state;
@@ -2752,109 +2755,116 @@ export class InvoiceEntryComponent implements OnInit {
   //   return `${currency} ${words} Only`;
   // }
 
+// getAmountInWords(): string {
+//   const total = this.getPartyCurrDebitAmt();
+//   const currency = this.invoiceForm.get('CurrencyCode')?.value || '';
+
+//   const isIndian = this.bookingModeCountry === 'india';
+
+//   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+//   const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+//   const teens = [
+//     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+//     'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+//   ];
+
+//   const convertLessThanThousand = (n: number): string => {
+//     if (n === 0) return '';
+//     if (n < 10) return ones[n];
+//     if (n < 20) return teens[n - 10];
+//     if (n < 100)
+//       return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+//     return (
+//       ones[Math.floor(n / 100)] +
+//       ' Hundred' +
+//       (n % 100 ? ' and ' + convertLessThanThousand(n % 100) : '')
+//     );
+//   };
+
+//   const convertLessThanHundred = (n: number): string => {
+//     if (n === 0) return '';
+//     if (n < 10) return ones[n];
+//     if (n < 20) return teens[n - 10];
+//     return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+//   };
+
+//   // 🇮🇳 Indian numbering
+//   const convertIndianNumber = (num: number): string => {
+//     if (num === 0) return 'Zero';
+
+//     const crore = Math.floor(num / 10000000);
+//     const lakh = Math.floor((num % 10000000) / 100000);
+//     const thousand = Math.floor((num % 100000) / 1000);
+//     const remainder = Math.floor(num % 1000);
+
+//     let result = '';
+
+//     if (crore) result += convertLessThanHundred(crore) + ' Crore ';
+//     if (lakh) result += convertLessThanHundred(lakh) + ' Lakh ';
+//     if (thousand) result += convertLessThanHundred(thousand) + ' Thousand ';
+//     if (remainder) result += convertLessThanThousand(remainder);
+
+//     return result.trim();
+//   };
+
+//   // 🌍 International numbering
+//   const convertInternationalNumber = (num: number): string => {
+//     if (num === 0) return 'Zero';
+
+//     const billion = Math.floor(num / 1000000000);
+//     const million = Math.floor((num % 1000000000) / 1000000);
+//     const thousand = Math.floor((num % 1000000) / 1000);
+//     const remainder = Math.floor(num % 1000);
+
+//     let result = '';
+
+//     if (billion) result += convertLessThanThousand(billion) + ' Billion ';
+//     if (million) result += convertLessThanThousand(million) + ' Million ';
+//     if (thousand) result += convertLessThanThousand(thousand) + ' Thousand ';
+//     if (remainder) result += convertLessThanThousand(remainder);
+
+//     return result.trim();
+//   };
+
+//   const integerPart = Math.floor(total);
+//   const decimalPart = Math.round((total - integerPart) * 100);
+
+//   let words = isIndian
+//     ? convertIndianNumber(integerPart)
+//     : convertInternationalNumber(integerPart);
+
+//   // 💰 Currency words
+//   if (currency === 'INR') {
+//     words += ' Rupees';
+//     if (decimalPart > 0) {
+//       words += ' and ' + convertLessThanHundred(decimalPart) + ' Paise';
+//     }
+//   } else if (currency === 'USD') {
+//     words += ' Dollars';
+//     if (decimalPart > 0) {
+//       words += ' and ' + convertLessThanHundred(decimalPart) + ' Cents';
+//     }
+//   } else if (currency === 'AED') {
+//     words += ' Dirhams';
+//     if (decimalPart > 0) {
+//       words += ' and ' + convertLessThanHundred(decimalPart) + ' Fils';
+//     }
+//   } else {
+//     if (decimalPart > 0) {
+//       words += ' and ' + convertLessThanHundred(decimalPart) + ' Cents';
+//     }
+//   }
+
+//   return `${currency} ${words} Only`;
+// }
+
 getAmountInWords(): string {
   const total = this.getPartyCurrDebitAmt();
-  const currency = this.invoiceForm.get('CurrencyCode')?.value || '';
+  if (!total) return '';
 
-  const isIndian = this.bookingModeCountry === 'india';
-
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-  const teens = [
-    'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
-    'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
-  ];
-
-  const convertLessThanThousand = (n: number): string => {
-    if (n === 0) return '';
-    if (n < 10) return ones[n];
-    if (n < 20) return teens[n - 10];
-    if (n < 100)
-      return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
-    return (
-      ones[Math.floor(n / 100)] +
-      ' Hundred' +
-      (n % 100 ? ' and ' + convertLessThanThousand(n % 100) : '')
-    );
-  };
-
-  const convertLessThanHundred = (n: number): string => {
-    if (n === 0) return '';
-    if (n < 10) return ones[n];
-    if (n < 20) return teens[n - 10];
-    return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
-  };
-
-  // 🇮🇳 Indian numbering
-  const convertIndianNumber = (num: number): string => {
-    if (num === 0) return 'Zero';
-
-    const crore = Math.floor(num / 10000000);
-    const lakh = Math.floor((num % 10000000) / 100000);
-    const thousand = Math.floor((num % 100000) / 1000);
-    const remainder = Math.floor(num % 1000);
-
-    let result = '';
-
-    if (crore) result += convertLessThanHundred(crore) + ' Crore ';
-    if (lakh) result += convertLessThanHundred(lakh) + ' Lakh ';
-    if (thousand) result += convertLessThanHundred(thousand) + ' Thousand ';
-    if (remainder) result += convertLessThanThousand(remainder);
-
-    return result.trim();
-  };
-
-  // 🌍 International numbering
-  const convertInternationalNumber = (num: number): string => {
-    if (num === 0) return 'Zero';
-
-    const billion = Math.floor(num / 1000000000);
-    const million = Math.floor((num % 1000000000) / 1000000);
-    const thousand = Math.floor((num % 1000000) / 1000);
-    const remainder = Math.floor(num % 1000);
-
-    let result = '';
-
-    if (billion) result += convertLessThanThousand(billion) + ' Billion ';
-    if (million) result += convertLessThanThousand(million) + ' Million ';
-    if (thousand) result += convertLessThanThousand(thousand) + ' Thousand ';
-    if (remainder) result += convertLessThanThousand(remainder);
-
-    return result.trim();
-  };
-
-  const integerPart = Math.floor(total);
-  const decimalPart = Math.round((total - integerPart) * 100);
-
-  let words = isIndian
-    ? convertIndianNumber(integerPart)
-    : convertInternationalNumber(integerPart);
-
-  // 💰 Currency words
-  if (currency === 'INR') {
-    words += ' Rupees';
-    if (decimalPart > 0) {
-      words += ' and ' + convertLessThanHundred(decimalPart) + ' Paise';
-    }
-  } else if (currency === 'USD') {
-    words += ' Dollars';
-    if (decimalPart > 0) {
-      words += ' and ' + convertLessThanHundred(decimalPart) + ' Cents';
-    }
-  } else if (currency === 'AED') {
-    words += ' Dirhams';
-    if (decimalPart > 0) {
-      words += ' and ' + convertLessThanHundred(decimalPart) + ' Fils';
-    }
-  } else {
-    if (decimalPart > 0) {
-      words += ' and ' + convertLessThanHundred(decimalPart) + ' Cents';
-    }
-  }
-
-  return `${currency} ${words} Only`;
+  const currencySid = this.invoiceData?.CurrencyMasterSid;
+  return this.numberToWords.convert(total, currencySid);
 }
-
 
   getGrandTotal(): number {
     return this.round(this.getTotalCurrencyAmount() + toNumber(this.getTotalTaxAmount()));

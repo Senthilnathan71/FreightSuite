@@ -36,7 +36,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     FeatherModule,
     NgSelectModule,
     NgbDropdownModule,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
@@ -1923,6 +1923,36 @@ disableChargeFieldsForRow(row: FormGroup): void {
     row.get('taxPercentage')?.disable();
     row.get('costCenterMasterSid')?.disable();
     row.get('profitCenterMasterSid')?.disable();
+}
+
+        
+showPrintLogo: boolean = false;
+  showPdfLogo: boolean = true;
+
+printDiv(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const printContents = document.getElementById(divId)?.innerHTML;
+    if (!printContents) return;
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 50); // small timeout so Angular updates DOM
 }
 
   

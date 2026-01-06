@@ -43,7 +43,7 @@
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
+                style="width: 60px;height: auto;" 
               />
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
@@ -83,7 +83,6 @@
     font-size:17px;
     align-items:flex-start;
     justify-content:space-between;
-    font-weight: bolder;
 ">
 
     <!-- LEFT COLUMN -->
@@ -145,7 +144,7 @@
             {{receiptPrintData?.ExchangeRate | number:'1.3-3'}}
         </td>
         <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
-            {{receiptPrintData?.VoucherDetail?.[0]?.Amount | number:'1.3-3'}}
+            {{receiptPrintData?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}
         </td>
     </tr>
 </table>
@@ -169,14 +168,14 @@
        <!-- Remittance section -->
 <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 17px;">
 
-    <h3 style="padding: 6px;padding-left: 20px; margin:0;text-align:center;font-weight: bolder;font-size: 17px;"><strong>Remittance Details</strong></h3>
+    <h3 style="padding-top: 20px;padding-left: 20px; margin:0;text-align:start;font-weight: bolder;font-size: 20px;"><strong>Remittance Details</strong></h3>
 
 <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;">
     <tbody>
 
         <tr style="font-weight: bolder;">
             <th style="border:1px solid black; padding:4px; text-align:center;  border-left:none;"><strong>Voucher No.</strong></th>
-            <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher Type</strong></th>
+            <th style="border:1px solid black; padding:4px; text-align:center;width: 10%;"><strong>INV Type</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Voucher Date</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr.</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center;"><strong>Curr. Amt</strong></th>
@@ -195,13 +194,13 @@
         </tr>
 
         <tr>
-            <td colspan="4" style="text-align:right; font-weight:bold; border:1px solid black; padding:4px;border-left:none;">
+            <td colspan="4" style="text-align:right; font-weight:bolder; border:1px solid black; padding:4px;border-left:none;">
                 <strong>Total</strong>
             </td>
-            <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bold;">
+            <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder;">
                 <strong>{{ getTotalMatchingAmount() | number:'1.2-2' }}</strong>
             </td>
-            <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bold;">
+            <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder; border-right: none;">
                 <strong>{{ getTotalMatchingLocalAmount() | number:'1.2-2' }}</strong>
             </td>
             <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;"*ngIf="currentUserCountry === 'india'"></td>
@@ -216,7 +215,7 @@
 </div>
 
 <!-- Checked By -->
-<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 17px;font-weight: bold;">
+<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 17px;font-weight: bolder;">
     <strong>Checked By</strong>
     <strong>Approved By</strong>
 </div>

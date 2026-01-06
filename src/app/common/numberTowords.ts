@@ -82,10 +82,11 @@ export class NumberToWordsService {
     /* ---------------- Integer Part ---------------- */
     const integerNum = Math.floor(amount);
     let result = '';
+    
+    result = this.convertInteger(integerNum);
     if (unit) {
-      result = `${unit} `;
+      result += ` ${unit} `;
     }
-    result += this.convertInteger(integerNum);
 
 
     /* ---------------- Decimal Part (FIXED) ---------------- */
