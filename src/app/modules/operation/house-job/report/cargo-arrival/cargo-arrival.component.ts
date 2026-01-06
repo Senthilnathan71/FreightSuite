@@ -55,6 +55,7 @@ export class CargoArrivalComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.numberToWords.initializeCurrencies(this.currencyList);
+    
     this.loadCityName();
   }
 

@@ -90,8 +90,10 @@ export class DeliveryOrderComponent {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response || [];
+         this.numberToWords.initializeCurrencies(this.currency);
         console.log('Currency List:', this.currency);
       },
+      
       error: (error) => {
         console.error('Failed to load currencies:', error);
       }
@@ -140,9 +142,15 @@ export class DeliveryOrderComponent {
       .reduce((sum, rate) => sum + Number(rate.RevenueRate || 0), 0);
   }
 
-  TotalLocalAmount(): number {
+  TotalAmount(): number {
     return (this.housejobData?.costRevenueCharges || [])
       .reduce((sum, rate) => sum + Number(rate.RevenueAmount || 0), 0);
+
+  }
+
+  TotalLocalAmount(): number {
+    return (this.housejobData?.costRevenueCharges || [])
+      .reduce((sum, rate) => sum + Number(rate.RevenueLocalAmount || 0), 0);
 
   }
 
@@ -233,38 +241,50 @@ export class DeliveryOrderComponent {
     }, 50); // small timeout so Angular updates DOM
   }
 
- getAmountInWords(): string {
+//  getAmountInWords(): string {
+//   const total = this.TotalLocalAmount();
+//   if (!total || isNaN(total)) return '';
+
+//   const wholePart = Math.floor(total);
+//   const decimalPart = Math.round((total - wholePart) * 100);
+
+//   const currencyCode = this.currentCurrencyCode
+//     ? this.currentCurrencyCode.toUpperCase()
+//     : '';
+
+//   const amountInWords =
+//     wholePart > 0
+//       ? this.numberToWords.convert(wholePart)
+//       : 'Zero';
+
+//   // Traditional currency names
+//   const currencyMap: any = {
+//     AED: 'Dirhams',
+//     INR: 'Rupees',
+//     USD: 'Dollars',
+//     EUR: 'Euros',
+//     GBP: 'Pounds',
+//     SAR: 'Riyals'
+//   };
+
+//   const currencyName = currencyMap[currencyCode] || currencyCode;
+
+//   // ✅ EXACT REQUIRED OUTPUT
+//   return `${currencyCode} ${amountInWords} only ${currencyName}`;
+// }
+
+
+
+getAmountInWords(): string {
   const total = this.TotalLocalAmount();
-  if (!total || isNaN(total)) return '';
+  if (!total) return '';
 
-  const wholePart = Math.floor(total);
-  const decimalPart = Math.round((total - wholePart) * 100);
-
-  const currencyCode = this.currentCurrencyCode
-    ? this.currentCurrencyCode.toUpperCase()
-    : '';
-
-  const amountInWords =
-    wholePart > 0
-      ? this.numberToWords.convert(wholePart)
-      : 'Zero';
-
-  // Traditional currency names
-  const currencyMap: any = {
-    AED: 'Dirhams',
-    INR: 'Rupees',
-    USD: 'Dollars',
-    EUR: 'Euros',
-    GBP: 'Pounds',
-    SAR: 'Riyals'
-  };
-
-  const currencyName = currencyMap[currencyCode] || currencyCode;
-
-  // ✅ EXACT REQUIRED OUTPUT
-  return `${currencyCode} ${amountInWords} only ${currencyName}`;
+  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  return this.numberToWords.convert(total, currencySid);
 }
   
+
+
 
 
 // Helper method to get currency name from code

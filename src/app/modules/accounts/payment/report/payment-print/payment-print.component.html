@@ -41,10 +41,10 @@
               />
                         <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 14px; padding-right: 12%;">
-                        <h3 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
+                        <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
                         </h3>
-                        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+                        <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
                         </h5>
                         <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
                         <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
@@ -59,7 +59,7 @@
     <!-- Cash Payment -->
     <section >
 
-        <h3 style="text-align:center;border-top: 1px solid black; padding:10px auto;padding-top: 10px;font-weight: bold;"><strong>Cash Payment</strong></h3>
+        <h3 style="text-align:center;border-top: 1px solid black; padding:10px auto;padding-top: 10px;font-weight: bolder;"><strong>Cash Payment</strong></h3>
 
         <!-- Row -->
         <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:150px;font-size: 16px;">
@@ -67,11 +67,11 @@
             <!-- Left Column -->
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; margin-bottom:4px;padding-top: 10px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Payment No.</strong></div>
+                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment No.</strong></div>
                     <div>: {{paymentDataPrint?.VoucherNumber}}</div>
                 </div>
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Paid To</strong></div>
+                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Paid To</strong></div>
                     <div>: {{paymentDataPrint?.PartyName}}</div>
                 </div>
             </div>
@@ -79,11 +79,11 @@
             <!-- Right Column -->
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex; margin-bottom:4px;padding-top: 10px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Payment Date</strong></div>
+                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment Date</strong></div>
                     <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
                 </div>
                 <div style="display:flex; margin-bottom:4px;">
-                    <div style="width:150px; white-space:nowrap;"><strong>Currency</strong></div>
+                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Currency</strong></div>
                     <div>: {{paymentDataPrint?.CurrencyCode}}</div>
                 </div>
             </div>
@@ -94,11 +94,11 @@
         <table style="width:100%; border-collapse:collapse; margin:10px 0;font-size: 16px;">
             <tbody>
                 <tr>
-                    <th style="width:50%; border:1px solid black; padding:4px; text-align:center;border-left: none;"><strong>Description</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:4px; text-align:center;"><strong>MBL/HBL Ref</strong></th>
-                    <th style="width:10%; border:1px solid black; padding:4px; text-align:center;"><strong>Curr.</strong></th>
-                    <th style="width:10%; border:1px solid black; padding:4px; text-align:center;"><strong>Ex.Rate</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:4px; text-align:center;border-right: none;"><strong>Amount</strong></th>
+                    <th style="width:50%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>Description</strong></th>
+                    <th style="width:15%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>MBL/HBL Ref</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Ex.Rate</strong></th>
+                    <th style="width:15%; border:1px solid black; padding:4px; text-align:center;border-right: none;font-weight: bolder;"><strong>Amount</strong></th>
                 </tr>
 
                 <tr>
@@ -116,11 +116,11 @@
         </table>
 
 
-          <div  style="padding-bottom:10px;font-size:16px;">
+          <div  style="padding-bottom:10px;font-size:16px;font-weight: bolder;">
             <div style="display:flex; gap:4px;">
                 <strong>Amount in Words :</strong>
-                <div style="font-style:italic;">
-                <strong>   {{ getAmountInWords(paymentDataPrint?.VoucherDetail?.[0]?.Amount) }}</strong>
+                <div>
+                <strong>   {{ getAmountInWords() }}</strong>
                 </div>
             </div>
         </div>
@@ -132,13 +132,13 @@
         <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px;">
             <tbody>
                 <tr>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Voucher No.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Voucher Type</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Voucher Date</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Curr.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Ex. Rate</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Curr. Amt</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center;"><strong>Local Amount</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher No.</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher Type</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher Date</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Ex. Rate</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Local Amount</strong></th>
                 </tr>
 
                 <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
@@ -151,7 +151,7 @@
                     <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
                 </tr>
 
-                <tr>
+                <tr style="font-weight: bolder;">
                     <td colspan="5" style="border:1px solid black; padding:4px; text-align:right; "><strong>Total</strong></td>
                     <td style="border:1px solid black; padding:4px; text-align:right; font-weight:700;">{{getTotalMatchingAmount() | number:'1.2-2'}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right; font-weight:700;">{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</td>
@@ -165,7 +165,7 @@
 
 
         <!-- Signature -->
-        <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:16px;padding: 20px;">
+        <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:16px;padding: 20px;font-weight: bolder;">
             <div><strong>Checked By :</strong></div>
             <div><strong>Approved By :</strong></div>
         </div>

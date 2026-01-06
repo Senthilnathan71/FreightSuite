@@ -412,6 +412,7 @@ export class CreditNoteEntryComponent {
           try {
             const currencies: any = await firstValueFrom(this.operationService.getAllCurrencies().pipe());
             this.currencyList = (currencies && currencies.data) ? currencies.data : [];
+            this.numberToWords.initializeCurrencies(this.currencyList);
             const rawCurrencies = currencies.data || currencies || [];
          
           this.currencyList = rawCurrencies.map((c: any) => ({
@@ -421,6 +422,7 @@ export class CreditNoteEntryComponent {
             this.getBankDetails();
           } catch (e) {
             this.currencyList = [];
+            this.numberToWords.initializeCurrencies(this.currencyList);
           }
     
           try {

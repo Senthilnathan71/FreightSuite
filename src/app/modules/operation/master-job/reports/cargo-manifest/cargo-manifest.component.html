@@ -34,7 +34,7 @@
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
+                style="width: 60px;height: auto;" 
               />
                             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
                             </h4>
@@ -136,7 +136,7 @@
                             <div style="width:100px; white-space:nowrap; font-weight:bolder;">
                                 <strong>MBL Date</strong>
                             </div>
-                            <div>: {{ masterJobData.MasterJobDate | formatDate }}</div>
+                            <div>: {{ masterJobData.MBLDate | formatDate }}</div>
                         </div>
 
                     </div>

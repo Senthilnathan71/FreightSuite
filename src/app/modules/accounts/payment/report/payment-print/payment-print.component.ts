@@ -69,6 +69,7 @@ export class PaymentPrintComponent {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response|| [];
+        this.numberToWords.initializeCurrencies(this.currency);
         console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -144,16 +145,12 @@ getTotalMatchingLocalAmount(): number {
 
       
            
-  getAmountInWords(amount: number | null | undefined): string {
-  if (amount == null) return '';
+ getAmountInWords(): string {
+  const total = this.paymentDataPrint?.VoucherDetail?.[0]?.Amount
+  if (!total) return '';
 
   const currencySid = this.currentCompany?.CurrencyMasterSid;
-  if (!currencySid) return '';
-
-  return this.numberToWords.convert(
-    Number(amount),
-    // currencySid
-  );
+  return this.numberToWords.convert(total, currencySid);
 }
 
         

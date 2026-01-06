@@ -171,13 +171,17 @@
           </div>
         </div>
 
-        <div style="flex:1; padding-right:20px; margin-bottom:8px;margin-top: 5px;font-size: 16px;">
-          <strong style="display:block; margin-bottom:4px;font-weight: bolder;">Goods Available At</strong>
-          <div style="padding-left: 30px;">
+        <div style="flex:1; margin-bottom:8px; margin-top:5px; font-size:16px;">
+  <div style="display:flex; align-items:flex-start;">
+    <div style="width:150px; font-weight:bolder;">
+      Goods Available At
+    </div>
+    <div>
+      : {{ housejobData?.Others?.[0]?.YardCFS }}
+    </div>
+  </div>
+</div>
 
-            <span>{{ housejobData?.Others?.[0]?.YardCFS }}</span>
-          </div>
-        </div>
 
       </div>
 
@@ -219,12 +223,12 @@
 <h4 *ngIf="selectedFCLLCL === 'FCL'"
     style="
       margin:0;
-      padding:0 0 2px 10px;
+      padding:0 0 10px 10px;
       font-weight:bolder;
       font-size:16px;
       line-height:1.1;
     ">
-  ROUTING INFORMATION
+  <strong>ROUTING INFORMATION</strong>
 </h4>
 
 
@@ -338,46 +342,51 @@
       <div style="overflow-x:auto; margin-bottom:8px;">
         <table style="width:100%; border-collapse:collapse; table-layout:fixed;font-size: 16px;">
           <thead>
-            <tr class="fs-4">
+            <tr>
               <th style="border:1px solid black; text-align:center;border-left: none;font-weight: bolder;"><strong>Charge
                   Description</strong></th>
               <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Unit</strong></th>
               <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Curr.</strong></th>
               <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Per Unit</strong></th>
               <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;"><strong>Amount</strong></th>
-
+              <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;"><strong>Local Amount</strong></th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let rate of housejobData?.costRevenueCharges">
               <td style="border:1px solid black;border-left: none;">{{ rate.ChargeDescription }}</td>
-              <td style="border:1px solid black;text-align:center;">{{ getUnitCode(rate.ChargeUomSid) }}
+              <td style="border:1px solid black;text-align:start;">{{ getUnitCode(rate.ChargeUomSid) }}
               </td>
-              <td style="border:1px solid black;text-align:center; text-align: center;">{{
+              <td style="border:1px solid black;text-align:center; text-align:start;">{{
                 getCurrencyCode(rate.RevenueCurrencyMasterSid) }}</td>
               <td style="border:1px solid black; text-align:right;">{{ rate.RevenueRate | number:'1.2-2' }}
               </td>
               <td style="border:1px solid black; text-align:right; border-right: none;">{{ rate.RevenueAmount |
                 number:'1.2-2' }}</td>
-
+                <td style="border:1px solid black; text-align:right; border-right: none;">{{ rate.RevenueLocalAmount |
+                number:'1.2-2' }}</td>
             </tr>
-            <tr class="fs-4">
+            
+            <tr >
               <td colspan="3" style="border:1px solid black; text-align:right;border-left: none;"><strong>Total</strong>
               </td>
               <td style="border:1px solid black; text-align:right;border-right: none; "><strong>{{
                   getTotalLocalRevenuAmount() | number:'1.2-2' }}</strong></td>
-              <td style="border:1px solid black; text-align:right;border-right: none; "><strong>{{ TotalLocalAmount() |
+              <td style="border:1px solid black; text-align:right;border-right: none; "><strong>{{ TotalAmount() |
+                  number:'1.2-2' }}</strong></td>
+                  <td style="border:1px solid black; text-align:right;border-right: none; "><strong>{{ TotalLocalAmount() |
                   number:'1.2-2' }}</strong></td>
 
 
             </tr>
+
           </tbody>
         </table>
       </div>
 
       <div
         style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;font-size: 16px;">
-        <strong style="white-space:nowrap;min-width:150px;font-weight: bolder;">Amount in Words</strong>
+        <strong style="white-space:nowrap;min-width:155px;font-weight: bolder;">Amount in Words</strong>
         <p style="margin:0; line-height:22px; word-break:break-word;">
           : <strong>{{ getAmountInWords() || 'Zero' }}</strong>
         </p>
@@ -395,8 +404,8 @@
       </div>
 
 
-      <div style="width:100%; text-align:right; display:block; margin-top:10px; padding-right:40px;">
-        <h5 style="margin:0; padding:0;">
+      <div style="width:100%; text-align:right; display:block; margin-top:10px; ">
+        <h5 style="margin:0; padding-right:40px;">
           FOR <strong>
             {{ currentCompany?.companyName || 'Company Name' }}
             ({{ currentBranch?.branchName || 'Company Branch' }}) <br>
@@ -411,8 +420,8 @@
       <!-- Footer -->
       <footer style=" margin-top:auto;
   text-align:center;
-  font-size:10pt;
-  padding:10px 20px;" class="fs-4">
+  font-size:16px;
+  padding:10px 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
 
           <div style="text-align:left;">
