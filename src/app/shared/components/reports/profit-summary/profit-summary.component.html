@@ -125,7 +125,12 @@
                             <td class="text-end">{{ getHouseTotal(item,'aGp') | number:'1.2-2' }}</td>
                         </tr> -->
                     </ng-container>
-                    <tr style="font-weight: 800; background: #cfe2ff; white-space: nowrap;">
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="28" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                    <tr style="font-weight: 800; background: #cfe2ff; white-space: nowrap;" *ngIf="!fullData?.data || fullData.data.length !== 0">
                         <td colspan="21" class="text-end">GRAND TOTAL</td>
 
                         <td class="text-end">
@@ -147,6 +152,8 @@
                             {{ getGrandTotal('aGp') | number:'1.2-2' }}
                         </td>
                     </tr>
+
+                    
                 </tbody>
             </table>
         </div>

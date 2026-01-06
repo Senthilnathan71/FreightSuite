@@ -483,11 +483,11 @@
             <tr [formGroupName]="i">
               <!-- Delete Button -->
               <td>
-                <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
+                <button type="button" class="btn btn-sm pt-1" (click)="removeDetailRow(i)">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
               </td>
-              <td><span  style="color: black; font-weight: 600;">
+              <td class="pt-1"><span  style="color: black; font-weight: 600;">
                 {{ i + 1 }}
               </span></td>
 
@@ -501,7 +501,7 @@
               </td>
 
               <!-- Description -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('ChargeDescription')?.value || '-' }}</span>
               </td>
 
@@ -524,12 +524,12 @@
               </td>
 
               <!-- No of Unit -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
               </td>
 
               <!-- Dr/Cr -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('DrCr')?.value || '-' }}</span>
               </td>
 
@@ -567,12 +567,12 @@
               </td>
 
               <!-- Amount -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('Amount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Taxable Amount -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
               </td>
 
@@ -592,7 +592,7 @@
             <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
         </td>
         <!-- CGST Amount -->
-        <td>
+        <td class="pt-1">
             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
         </td>
         <!-- SGST Rate -->
@@ -607,7 +607,7 @@
             <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
         </td>
         <!-- SGST Amount -->
-        <td>
+        <td class="pt-1">
             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
         </td>
     </ng-container>
@@ -626,7 +626,7 @@
             <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
         </td>
         <!-- IGST Amount -->
-        <td>
+        <td class="pt-1"> 
             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
         </td>
     </ng-container>
@@ -645,7 +645,7 @@
             <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
         </td>
         <!-- CGST Amount (for B2C) -->
-        <td>
+        <td class="pt-1">
             <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
         </td>
     </ng-container>
@@ -670,18 +670,18 @@
         <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
     </td>
     <!-- VAT Amount -->
-    <td>
+    <td class="pt-1">
         <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
     </td>
 </ng-container>
 
               <!-- Local Amount -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
               </td>
 
               <!-- Party Amount -->
-              <td>
+              <td class="pt-1">
                 <span  style="color: black; font-weight: 600;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
               </td>
 
@@ -737,45 +737,45 @@
   </div>
 </div>
 
-          <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
+          <div class="row  border border-bottom-0 pt-2 align-items-center text-nowrap">
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Credits</span>
+              <span class="fw-bold small text-black">Total Credit</span>
               <span class="fw-semibold text-success">
                 {{ getTotalLocalCredits() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Debits</span>
+              <span class="fw-bold small text-black">Total Debit</span>
               <span class="fw-semibold text-danger">
                 {{ getTotalLocalDebits() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Net (Cr - Dr)</span>
+              <span class="fw-bold small text-black">Net (Cr - Dr)</span>
               <span class="fw-semibold text-primary">
                 {{ getNetCrDr() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Credit</span>
+              <span class="fw-bold small text-black">Party Curr Credit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrCreditAmt() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Debit</span>
+              <span class="fw-bold small text-black">Party Curr Debit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrDebitAmt() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between px-2">
-              <span class="text-secondary small">Tax Amount</span>
+              <span class="fw-bold small text-black">Tax Amount</span>
               <span class="fw-semibold text-warning">
                 {{ getTotalTaxAmount() }}
               </span>

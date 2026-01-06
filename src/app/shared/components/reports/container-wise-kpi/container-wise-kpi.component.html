@@ -106,6 +106,12 @@
                         <td></td>
 
                     </tr>
+
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="27" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

@@ -2,9 +2,9 @@
     <div class="col-12 px-0">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
-                <h4 class="page-title mb-0">Cargo Receipt</h4>
+                <h5 class="page-title mb-0">Cargo Receipt</h5>
                 @if(isEditMode){
-      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer ps-1" (click)="showInfo()">
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
@@ -58,7 +58,7 @@
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row">
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="bookingNo" placeholder="" class="custom-input-field sm"
                                 formControlName="BookingNo" readonly />
@@ -66,7 +66,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select-date">
                             <input type="text" id="bookingDateTime" placeholder="" class="custom-input-field sm"
                                 formControlName="BookingDateTime" readonly />
@@ -75,7 +75,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="DepartmentName" placeholder="" class="custom-input-field sm"
                                 formControlName="departmentName" readonly />
@@ -83,7 +83,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="customerName"  placeholder="" class="custom-input-field sm"
                                 formControlName="CustomerName" readonly />
@@ -92,49 +92,49 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="vesselName" placeholder="" class="custom-input-field sm"
                                 formControlName="VesselName" readonly />
                             <label for="vesselName" class="input-label">Vessel <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="voyageNo" placeholder="" class="custom-input-field sm"
                                 formControlName="VoyageNo" readonly />
                             <label for="voyageNo" class="input-label">Voyage <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="poo" placeholder="" class="custom-input-field sm"
                                 formControlName="POO" readonly />
                             <label for="poo" class="input-label">POO <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="pod" placeholder="" class="custom-input-field sm"
                                 formControlName="POD" readonly />
                             <label for="pod" class="input-label">POD <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="pol" placeholder="" class="custom-input-field sm"
                                 formControlName="POL" readonly />
                             <label for="pol" class="input-label">POL <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input id="fpd" type="text" placeholder="" class="custom-input-field sm"
                                 formControlName="FPD" readonly />
                             <label for="fpd" class="input-label">FPD <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input id="hbl" type="text" placeholder="" class="custom-input-field sm"
                                 formControlName="HBLNo" readonly />
@@ -154,7 +154,7 @@
                         <tr class="bg-info">
                             <th class="bg-transparent text-light  dofi-min-w-140" scope="col">Commodity</th>
                             <th class="bg-transparent text-light dofi-min-w-120" scope="col">Shipping Bill No</th>
-                            <th class="bg-transparent text-light" scope="col">Date</th>
+                            <th class="bg-transparent text-light dofi-min-w-100" scope="col">Date</th>
                             <th class="bg-transparent text-light" scope="col">External Pkg</th>
                             <th class="bg-transparent text-light text-center" scope="col">No of Pkg</th>
                             <th class="bg-transparent text-light" scope="col">Gross Weight</th>
@@ -168,16 +168,16 @@
                     <tbody formArrayName="bookingProducts">
                         <tr *ngFor="let prod of bookingProductsArray.controls; let i = index" [formGroupName]="i" class="py-0">
                             <td class="py-0">
-                                <div class="text-truncate">{{ prod.value.ProductName }}</div>
+                                <div class="text-truncate text-black">{{ prod.value.ProductName }}</div>
                             </td>
                             <td >
-                                <div class="text-truncate">{{ prod.value.ShippingBillNo }}</div>
+                                <div class="text-truncate text-black">{{ prod.value.ShippingBillNo }}</div>
                             </td>
                             <td >
-                                <div class="text-truncate">{{ prod.value.ShippingBillDate }}</div>
+                                <div class="text-truncate text-black">{{ prod.value.ShippingBillDate }}</div>
                             </td>
                             <td >
-                                <div class="text-truncate text-center">{{ prod.value.ExternaPkg }}</div>
+                                <div class="text-truncate text-center text-black">{{ prod.value.ExternaPkg }}</div>
                             </td>
 
                             <!-- Editable fields -->
@@ -201,12 +201,12 @@
                                     DecimalPrecisionAfter="3">
                             </td>
                             <td>
-                                            <div class="custom-form-group custom-form-group-select-date">
+                                            <div class="custom-form-group custom-form-group-select-date mt-0">
 
-              <div class="input-group">
+              <div class="d-flex align-items-center">
                 <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d2="ngbDatepicker"
                   (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()" [minDate]="today"   container="body"/>
-                <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                <button class="btn py-0" (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                     class="feather-sm"></i-feather></button>
               </div>
 

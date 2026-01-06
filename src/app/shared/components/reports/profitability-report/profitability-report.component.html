@@ -85,6 +85,11 @@
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
                          <td class="text-end">{{ item.space | number:'1.2-2' }}</td>
                     </tr>
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="18" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

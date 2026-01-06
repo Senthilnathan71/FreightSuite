@@ -72,6 +72,11 @@
                         <td>{{ item.POD || '' }}</td>
                         <td>{{item.jobStatus || ''}}</td>
                     </tr>
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="13" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

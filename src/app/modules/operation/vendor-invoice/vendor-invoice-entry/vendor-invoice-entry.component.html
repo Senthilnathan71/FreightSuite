@@ -360,6 +360,22 @@
               </div>
             </aside>
 
+            <aside class="col-md-2 d-md-block d-none"></aside>
+             <aside class="col-md-2 d-md-block d-none"></aside>
+             <aside class="col-md-2 d-md-block d-none"></aside>
+               <aside class="col-md-2 d-md-block d-none"></aside>
+             <aside class="col-md-2 mt-md-2 mb-md-0 mb-1">
+              
+               <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"></h5>
+            <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button"
+              [disabled]="vendorInvoiceData?.PostStatus=== 'P'">
+              <i class="fas fa-plus me-1"></i>Add Charge
+            </button>
+          </div>
+             </aside>
+             
+
           </div>
 
           <!-- Search Costs Button -->
@@ -370,13 +386,7 @@
             </button>
           </div> -->
 
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <h5 class="mb-0"></h5>
-            <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button"
-              [disabled]="vendorInvoiceData?.PostStatus=== 'P'">
-              <i class="fas fa-plus me-1"></i>Add Charge
-            </button>
-          </div>
+        
 
           <!-- Detail Grid -->
           <!-- Details Grid -->
@@ -396,11 +406,11 @@
                         Description</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode
                       </th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Unit</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">No of Unit
                       </th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Dr/Cr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Curr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate
                       </th>
@@ -483,12 +493,12 @@
                       <tr [formGroupName]="i">
                         <!-- Delete Button -->
                         <td>
-                          <button type="button" class="btn border-0 btn-sm pt-0" (click)="removeDetailRow(i)" [disabled]="isPosted">
+                          <button type="button" class="btn border-0 btn-sm pt-1" (click)="removeDetailRow(i)" [disabled]="isPosted">
                             <i class="fas fa-trash text-danger"></i>
                           </button>
                         </td>
                         <td>
-                          <span style="font-weight: 600; color: black;">
+                          <span style="font-weight: 600; color: black;" class="pt-1">
                             {{ i + 1 }}
                           </span>
                         </td>
@@ -569,13 +579,13 @@
                         </td>
 
                         <!-- Amount -->
-                        <td>
+                        <td class="pt-1">
                           <span style="font-weight: 600; color: black;">{{ row.get('Amount')?.value | numberFormat
                             }}</span>
                         </td>
 
                         <!-- Taxable Amount -->
-                        <td>
+                        <td class="pt-1">
                           <span style="font-weight: 600; color: black;">{{ row.get('TaxableAmount')?.value |
                             numberFormat }}</span>
                         </td>
@@ -590,13 +600,13 @@
                                 <div class="d-flex">
                                   <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                     (input)="onDetailChange(i, 'TaxPercentage1')"  readonly> 
-                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                  <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                                 </div>
                               </div>
                             </td>
                             <!-- CGST Amount -->
                             <td>
-                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                              <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
                                 numberFormat }}</span>
                             </td>
                             <!-- SGST Rate -->
@@ -605,13 +615,13 @@
                                 <div class="d-flex gap-1">
                                   <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                                     (input)="onDetailChange(i, 'TaxPercentage2')" readonly>
-                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                  <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                                 </div>
                               </div>
                             </td>
                             <!-- SGST Amount -->
                             <td>
-                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value |
+                              <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value |
                                 numberFormat }}</span>
                             </td>
                           </ng-container>
@@ -624,13 +634,13 @@
                                 <div class="d-flex gap-1">
                                   <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                     (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
-                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                  <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                                 </div>
                               </div>
                             </td>
                             <!-- IGST Amount -->
                             <td>
-                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                              <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
                                 numberFormat }}</span>
                             </td>
                           </ng-container>
@@ -643,13 +653,13 @@
                                 <div class="d-flex">
                                   <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                     (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
-                                  <span class="" style="font-weight: 600; color: black;">%</span>
+                                  <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                                 </div>
                               </div>
                             </td>
                             <!-- CGST Amount (for B2C) -->
                             <td>
-                              <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
+                              <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value |
                                 numberFormat }}</span>
                             </td>
                           </ng-container>
@@ -669,26 +679,26 @@
                               <div class="d-flex">
                                 <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                                   (input)="onDetailChange(i, 'TaxPercentage1')" readonly>
-                                <span class="" style="font-weight: 600; color: black;">%</span>
+                                <span class="pt-1" style="font-weight: 600; color: black;">%</span>
                               </div>
                             </div>
                           </td>
                           <!-- VAT Amount -->
                           <td>
-                            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat
+                            <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat
                               }}</span>
                           </td>
                         </ng-container>
 
                         <!-- Local Amount -->
                         <td>
-                          <span style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat
+                          <span class="pt-1" style="font-weight: 600; color: black;">{{ row.get('LocalAmount')?.value | numberFormat
                             }}</span>
                         </td>
 
                         <!-- Party Amount -->
                         <td>
-                          <span style="font-weight: 600; color: black;">{{ getPartyAmount(i) }}</span>
+                          <span class="pt-1" style="font-weight: 600; color: black;">{{ getPartyAmount(i) }}</span>
                         </td>
 
                         <!-- MasterJobSid column -->
@@ -736,45 +746,45 @@
           </div>
 
           <!-- Totals Section -->
-          <div class="row mt-3 border border-bottom-0 pt-2 align-items-center text-nowrap">
+          <div class="row border border-bottom-0 pt-2 align-items-center text-nowrap">
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Credits</span>
+              <span class="text-black small fw-bold">Total Credit</span>
               <span class="fw-semibold text-success">
                 {{ getTotalLocalCredits() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Total Debits</span>
+              <span class="text-black small fw-bold">Total Debit</span>
               <span class="fw-semibold text-danger">
                 {{ getTotalLocalDebits() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Net (Cr - Dr)</span>
+              <span class="text-black small fw-bold">Net (Cr - Dr)</span>
               <span class="fw-semibold text-primary">
                 {{ getNetCrDr() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Credit</span>
+              <span class="text-black small fw-bold">Party Curr Credit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrCreditAmt() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="text-secondary small">Party Curr Debit</span>
+              <span class="text-black small fw-bold">Party Curr Debit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrDebitAmt() }}
               </span>
             </div>
           
             <div class="col d-flex justify-content-between px-2">
-              <span class="text-secondary small">Tax Amount</span>
+              <span class="text-black fw-bold small">Tax Amount</span>
               <span class="fw-semibold text-warning">
                 {{ getTotalTaxAmount() }}
               </span>
