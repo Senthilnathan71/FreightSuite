@@ -683,7 +683,7 @@ private setupMBLDateListener(): void {
   initCargoForm() {
     this.cargoForm = this.fb.group({
       HouseJobCargoSid: [null],
-      CargoType: [null],
+      CargoType: ['General'],
       ContainerType: [null],
       NoofContainers: [''],
       GrossWeight: [''],
@@ -1621,7 +1621,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     console.log('Patching cargo form with HouseJobCargoSid:', cargoData.HouseJobCargoSid);
     this.cargoForm.patchValue({
       HouseJobCargoSid: cargoData.HouseJobCargoSid,  // This is the key fix
-      CargoType: cargoData.CargoType,
+      CargoType: cargoData.CargoType || 'General',
       ContainerType: cargoData.ContainerType,
       NoofContainers: cargoData.NoofContainers || 0,
       GrossWeight: cargoData.GrossWeight || 0,
@@ -2010,7 +2010,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     
     houseJobCargo: {
       HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
-      CargoType: cargoFormValue.CargoType || null,
+      CargoType: cargoFormValue.CargoType || 'General',
       ContainerType: cargoFormValue.ContainerType || null,
       NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
       GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,

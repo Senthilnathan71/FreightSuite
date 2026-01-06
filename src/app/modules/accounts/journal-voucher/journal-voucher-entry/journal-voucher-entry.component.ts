@@ -242,9 +242,15 @@ defaultCurrencyCode: string = '';
   }
 
   initializeForm(): void {
+      const today = new Date();
+  const todayStruct = {
+    year: today.getFullYear(),
+    month: today.getMonth() + 1,
+    day: today.getDate(),
+  };
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
-      voucherDate: [null, Validators.required],
+      voucherDate: [{ value: todayStruct, disabled: true }, Validators.required],
       narration: ['', [Validators.required,Validators.maxLength(200)]],
       remarks: ['', Validators.maxLength(200)],
       Status: ['A', Validators.required],
@@ -415,10 +421,12 @@ checkEditMode(): void {
       this.voucherHeaderSid = +params['id'];
       this.initializeForm();
       this.form.get('Status')?.enable(); // Enable for edit mode
+      this.form.get('voucherDate')?.disable();
     } else {
       this.editMode = false;
       this.initializeForm();
       this.form.get('Status')?.disable(); // Disable for create mode
+      this.form.get('voucherDate')?.disable();
       this.addDetailLine();
     }
   });
@@ -474,7 +482,6 @@ formatDateForDisplay(date: string | Date | null): string {
       // Instead, we'll handle field disabling at the individual control level
       if (this.isPosted) {
         // Disable the main form controls but keep subledger selection visible
-        this.form.get('voucherDate')?.disable();
         this.form.get('narration')?.disable();
         this.form.get('remarks')?.disable();
         this.form.get('Status')?.disable();

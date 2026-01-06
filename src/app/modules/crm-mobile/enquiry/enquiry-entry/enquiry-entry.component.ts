@@ -53,6 +53,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { VoiceRecognitionService } from '../voice-recognition.service';
 import { VoiceParserService } from '../voice-parser.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -115,6 +116,8 @@ export class EnquiryEntryComponent implements OnInit {
   filteredPorts = [];
   searchText = '';
   selectedPort: any;
+  decimalAfterPrecision = 3;
+  digitsAfterDecimal = 3;
   quotationEnquiryNumber: any;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day + 1);
@@ -328,6 +331,12 @@ export class EnquiryEntryComponent implements OnInit {
     totalNumberOfAuthorizers: 0
   };
 
+  measurementUnitList =[
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
+    { id: 3, name: 'Inch'}
+  ]
+
 
   constructor(
     public mps: MenuPermissionService,
@@ -351,6 +360,7 @@ export class EnquiryEntryComponent implements OnInit {
     private voiceParserService: VoiceParserService,
     private toastr: ToastrService,
     private cdRef: ChangeDetectorRef,
+    private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     public logoService: LogoService,
 
   ) {
@@ -907,7 +917,6 @@ ${this.userData.userName}`;
 
 
   addCargo(routeIndex: number) {
-    const defaultWeightUnitSid = this.getDefaultWeightUnitSid();
     const cargoForm = this.fb.group({
       CargoType: [null, [Validators.required]],
       ProductName: [null],
@@ -915,34 +924,23 @@ ${this.userData.userName}`;
       PackageType: [null],
       PackageQty: [''],
       Qty: ['1'],
-      WeightUnitSid: [defaultWeightUnitSid],
+      WeightUnitSid: [2],
       GrossWeight: ['', [this.weightValidator]],
       NetWeight: [''],
       ShipmentTerms: [null],
       cbm: ['1'],
       ContainerType: [null],
       ChargeableWeight: [''],
+      volumetric: [''],
       length: [''],
       width: [''],
       height: ['']
     });
     this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
     this.routeCargo(routeIndex).push(cargoForm);
-    cargoForm.get('PackageQty')?.valueChanges.subscribe(() => {
-      this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
-    });
-
-    cargoForm.get('length')?.valueChanges.subscribe(() => {
-      this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
-    });
-
-    cargoForm.get('width')?.valueChanges.subscribe(() => {
-      this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
-    });
-
-    cargoForm.get('height')?.valueChanges.subscribe(() => {
-      this.calculateCBM(routeIndex, this.routeCargo(routeIndex).length - 1);
-    });
+    const cargoArray = this.routeCargo(routeIndex);
+    const cargoIndex = cargoArray.length - 1;
+    this.setupCargoCalculations(cargoIndex, routeIndex);
     cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
       cargoForm.get('GrossWeight')?.updateValueAndValidity();
     });
@@ -953,6 +951,66 @@ ${this.userData.userName}`;
       this.setOrResetWeightError(cargoForm);
     });
   }
+
+  private setupCargoCalculations(cargoIndex: number, routeIndex: number): void {
+  const cargoForm = this.routeCargo(routeIndex).at(cargoIndex) as FormGroup;
+  const dimensionFields = ['PackageQty', 'length', 'width', 'height', 'WeightUnitSid'];
+  
+  dimensionFields.forEach(field => {
+    cargoForm.get(field)?.valueChanges.subscribe(() => {
+      this.calculateCargoValues(cargoForm);
+    });
+  });
+}
+
+private calculateCargoValues(cargoForm: FormGroup): void {
+  const packageQty = this.parseFloatSafe(cargoForm.get('PackageQty')?.value);
+  const length = this.parseFloatSafe(cargoForm.get('length')?.value);
+  const width = this.parseFloatSafe(cargoForm.get('width')?.value);
+  const height = this.parseFloatSafe(cargoForm.get('height')?.value);
+  const uomMasterSid = cargoForm.get('WeightUnitSid')?.value;
+  
+  if (packageQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
+    // For LCL and AIR: Calculate both CBM and Volumetric
+    if (this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR') {
+      const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
+        packageQty, length, width, height, uomMasterSid,
+        this.selectedFCLLCL as 'LCL' | 'AIR',
+        this.digitsAfterDecimal
+      );
+      
+      // Update CBM field
+      cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+      cargoForm.get('volumetric')?.setValue(volumetric > 0 ? volumetric: '', { emitEvent: false});
+      // Calculate chargeable weight
+      const chargeableWeight = this.volumetricAndCbmCalculationService.calculateChargeableWeight(
+        volumetric, cbm, this.digitsAfterDecimal
+      );
+      
+      cargoForm.get('ChargeableWeight')?.setValue(
+        chargeableWeight > 0 ? chargeableWeight : '', 
+        { emitEvent: false }
+      );
+    } else {
+      // For FCL: Calculate only CBM
+      const cbm = this.volumetricAndCbmCalculationService.calculateCBM(
+        packageQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
+      );
+      cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    }
+  } else {
+    cargoForm.get('cbm')?.setValue('', { emitEvent: false });
+    cargoForm.get('volumetric')?.setValue('', {emitEvent: false});
+    cargoForm.get('ChargeableWeight')?.setValue('', { emitEvent: false });
+  }
+}
+
+private parseFloatSafe(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 
   setOrResetWeightError(formGroup: FormGroup) {
     const grossCtrl = formGroup.get('GrossWeight');
@@ -1092,8 +1150,7 @@ ${this.userData.userName}`;
             ctrl.setValue('1');
           }
           if (f === 'WeightUnitSid' && !ctrl.value) {
-            const defaultWeightUnitSid = this.getDefaultWeightUnitSid();
-            ctrl.setValue(defaultWeightUnitSid);
+            ctrl.setValue(2);
           }
           ctrl.updateValueAndValidity();
         }
@@ -1391,7 +1448,8 @@ ${this.userData.userName}`;
             ChargeableWeight: [cargo.ChargeableWeight || null],
             length: [cargo.length || ''],
             width: [cargo.width || ''],
-            height: [cargo.height || '']
+            height: [cargo.height || ''],
+            volumetric: [cargo.Volumetric || '']
           })
         );
       });
@@ -1705,6 +1763,7 @@ ${this.userData.userName}`;
           length: cargo.length,
           width: cargo.width,
           height: cargo.height,
+          Volumetric: cargo.Volumetric
         };
       });
     });

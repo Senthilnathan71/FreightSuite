@@ -715,7 +715,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.customerList = customers.data;
 
     // default filtered ports
-    this.filteredPorts = [...this.portList];
+    this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
   }));
@@ -1092,7 +1092,9 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
       this.isAirDepartment = false;
-      this.filteredPorts = [];
+      this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
+      this.filteredPOL = [...this.filteredPorts];
+      this.filteredPOD = [...this.filteredPorts];
       this.masterJobForm.get('POO')?.setValue(null);
       this.masterJobForm.get('POL')?.setValue(null);
       this.masterJobForm.get('POD')?.setValue(null);
@@ -1186,6 +1188,9 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
+      if (!segment) {
+    return this.portList.filter(port => port.PortType === 'Air');
+  }
     if (segment === 'AIR') {
       return this.portList.filter(port => port.PortType === 'Air');
     } else if (segment === 'FCL' || segment === 'LCL') {

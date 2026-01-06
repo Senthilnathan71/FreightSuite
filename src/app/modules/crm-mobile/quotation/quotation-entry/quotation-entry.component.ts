@@ -520,6 +520,7 @@ patchEnqPageValues(enqData: any) {
       ExternalPkg: route?.PackageTypeId,
       ExternalQty: route?.PackageQty,
       Length: route?.length,
+      Volumetric: route?.Volumetric,
       Width: route?.width,
       Height: route?.height,
       ProductUnit: route?.PackageTypeId,
@@ -1228,6 +1229,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         0
       ],
       Length : [data?.Length || ''],
+      Volumetric: [data?.Volumetric || ''],
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       ProductUnit : [data?.ProductUnit || null],

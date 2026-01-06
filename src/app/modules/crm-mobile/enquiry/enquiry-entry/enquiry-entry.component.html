@@ -1049,7 +1049,7 @@
                                                                     <span class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light  "
-                                                                style="width: 200px;"
+                                                                style="width: 300px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Product <span
                                                                         class="text-danger"></span></label>
@@ -1060,6 +1060,12 @@
                                                                 style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Pkg Type <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light  "
+                                                                style="width: 100px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">UOM <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 90px;"
@@ -1088,6 +1094,16 @@
                                                             <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">CBM <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Volumetric <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Chargeable Weight <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 150px;"
@@ -1152,29 +1168,47 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
+                                                            <td >
+                                                                <ng-select class="ng-select" formControlName="WeightUnitSid" 
+                                                                [items]="measurementUnitList" bindLabel="name"
+                                                                    bindValue="id" appendTo="body">
+                                                                </ng-select>
+                                                             </td>  
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     [onlyNumbers]="5" appendTo="body"
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                   >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="cbm"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="volumetric"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="ChargeableWeight"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
@@ -1262,7 +1296,7 @@
                                                                 <label class="form-label mb-0">No. of Containers <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                            <td class="bg-transparent text-light" style="width: 300px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Product <span
                                                                         class="text-danger">*</span></label>
@@ -1464,7 +1498,7 @@
                                                                 <label for="" class="form-label mb-0">Cargo Description
                                                                     <span class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                            <td class="bg-transparent text-light" style="width: 300px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Product <span
                                                                         class="text-danger">*</span></label>
@@ -1472,6 +1506,12 @@
                                                             <td class="bg-transparent text-light" style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Pkg Type <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light  "
+                                                                style="width: 100px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">UOM <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 90px;"
@@ -1500,6 +1540,16 @@
                                                             <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">CBM <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Volumetric <span
+                                                                        class="text-danger">*</span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Chargeable Weight <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 150px;"
@@ -1560,29 +1610,47 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
+                                                            <td >
+                                                                <ng-select class="ng-select" formControlName="WeightUnitSid" 
+                                                                [items]="measurementUnitList" bindLabel="name"
+                                                                    bindValue="id" appendTo="body">
+                                                                </ng-select>
+                                                             </td>  
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     [onlyNumbers]="5" appendTo="body"
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                    >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
                                                                     class="custom-input-field sm text-end" [onlyNumbers]
-                                                                    (change)="calculateCBM(routeIndex, cargoIndex)">
+                                                                   >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="cbm"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="volumetric"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3" appendTo="body">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" formControlName="ChargeableWeight"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
