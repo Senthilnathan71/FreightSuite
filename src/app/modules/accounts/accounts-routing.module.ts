@@ -257,6 +257,7 @@ export const AccountRoutes: Routes = [
       {
         path: "payment/entry",
         component: PaymentEntryComponent,
+       canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Add Payment Voucher",
           urls: [
@@ -269,6 +270,7 @@ export const AccountRoutes: Routes = [
       {
         path: "payment/entry/:id",
         component: PaymentEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Payment Voucher",
           urls: [

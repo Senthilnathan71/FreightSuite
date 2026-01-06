@@ -104,6 +104,15 @@ export class AppSettingsService {
             ?.companyMaster || null;
     }
 
+    getCurrentCompanyCountry(){
+        const company = this.getCurrentCompanyInfo();
+        if(!company) return null;
+        return {
+            CountryMasterSid : company.CountryMasterSid,
+            countryName : company.countryMaster?.countryName,
+            countryCode : company.countryMaster?.countryCode
+        }
+    }
 
     getCurrentBranchInfo() {
         const encryptedBranch = localStorage.getItem('selected-branch');
@@ -119,6 +128,28 @@ export class AppSettingsService {
         return companyInfo.userBranchMaster
             ?.find(b => b.BranchMasterSid === BranchMasterSid)
             ?.branchMaster || null;
+    }
+
+    getCurrentBranchState(){
+        const branch = this.getCurrentBranchInfo();
+        if(!branch) return null;
+
+        return {
+            StateMasterSid : branch.StateMasterSid,
+            stateName : branch.stateMaster?.stateName,
+            stateCode : branch.stateMaster?.stateCode
+        }
+    }
+
+    getCurrentBranchCity(){
+        const branch = this.getCurrentBranchInfo();
+        if(!branch) return null;
+
+        return {
+            CityMasterSid : branch.CityMasterSid,
+            cityName : branch.cityMaster?.cityName,
+            cityCode : branch.cityMaster?.cityCode
+        }
     }
 
     getCurrentFinancialYear() {

@@ -1,26 +1,55 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import {
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDatepickerModule,
+  NgbDropdownModule,
+  NgbModal,
+} from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
 import { PaymentService } from '../../services/payment.service';
 import { OutstandingService } from '../../services/outstanding.service';
-import {
-  OutstandingInvoice,
-  PaymentMode,
-} from '../../models/receipt.model';
+import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
-import { catchError, combineLatest, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
 import { ConfirmationDialogComponent } from 'src/app/component/confirmation-modal/confirmation-modal.component';
-import { toNgbDateStruct } from 'src/app/common/helper';
+import { errorLogger, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -41,8 +70,12 @@ import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-pay
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
+import {
+  consistentExchangeRatesValidator,
+  getExchangeRateErrorMessage,
+} from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 /**
  * Payment Entry Component
@@ -69,44 +102,46 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
     TextWithNumbersDirective,
     OnlyNumbersDirective,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    RouterModule,
   ],
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    CustomDatePipe
+    CustomDatePipe,
   ],
 })
-export class PaymentEntryComponent implements OnInit {
+export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
   totalDebits: number = 0;
-totalCredits: number = 0;
-
-  currentUserCountry: string;
+  totalCredits: number = 0;
+  currentCompanyCountryCode: string;
   selectedTab = 'Detail';
   isSaving = false;
   isViewMode: boolean = false;
-  isPosted : boolean = false;
+  isPosted: boolean = false;
   /**
- * Calculate local amount before round off the Currency Amount
- * 
- * Yes, then Multiply "No.of Unit" with "Per Unit Rate"  before round off 99.1881 x 14.7978 =	 
- * 
- * No, then	Multiply "No.of Unit" with "Per Unit Rate" then after round off  round( 99.1881,2) x 14.7978 
- */
+   * Calculate local amount before round off the Currency Amount
+   *
+   * Yes, then Multiply "No.of Unit" with "Per Unit Rate"  before round off 99.1881 x 14.7978 =
+   *
+   * No, then	Multiply "No.of Unit" with "Per Unit Rate" then after round off  round( 99.1881,2) x 14.7978
+   */
   formatCurrencyAmountBeforeConcludingLocal: boolean = true;
   currentCompany: any;
   currentBranch: any;
   currentYearId: any;
+  currentMenuId: number;
   paymentData: any;
   userData: any;
   searchType: string = 'Party';
   selectedParty: any;
   filterText: any;
+
   matchingError: string | null = null;
 
   today = new Date();
@@ -114,7 +149,7 @@ totalCredits: number = 0;
   searchOutstandingForm!: FormGroup;
   paymentForm!: FormGroup;
   partyList: any[] = [];
-  onlyCustomerList : any[] = [];
+  onlyCustomerList: any[] = [];
   currencyList: any[] = [];
   coaList: any[] = [];
   ledgerList: any[][] = [];
@@ -128,10 +163,8 @@ totalCredits: number = 0;
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
-  currentMenuId: number;
-  TandCList: any;
+  paymentDataPrint: any;
+
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   COALookupConfig = DROPDOWN_CONFIGS.COA_LEDGER;
@@ -139,14 +172,18 @@ totalCredits: number = 0;
   outstandingInvoices: OutstandingInvoice[] = [];
   selectedInvoices: OutstandingInvoice[] = [];
   paymentModes: { value: string; label: string }[] = [];
-  paymentDataPrint:any;
+  isAutoPosting: boolean = false;
+  voucherMatchingInfo: {
+    VoucherMatchingHeaderSid: number;
+    VoucherMatchingNo: string;
+  };
   // Outstanding invoices
 
-  get isEditMode() { return !!this.headerId && !this.isViewMode; }
+  get isEditMode() {
+    return !!this.headerId && !this.isViewMode;
+  }
 
   @ViewChild('searchModal') searchModal!: TemplateRef<any>;
-
-
 
   // Tabs configuration
   tabs = [
@@ -156,9 +193,9 @@ totalCredits: number = 0;
   ];
 
   CrDr = [
-    { id: 1, name: "Cr", value: "C" },
-    { id: 2, name: "Dr", value: "D" }
-  ]
+    { id: 1, name: 'Cr', value: 'C' },
+    { id: 2, name: 'Dr', value: 'D' },
+  ];
   public searchTypes = [
     { label: 'Party', value: 'Party' },
     { label: 'Vendor Invoice', value: 'Invoice' },
@@ -171,64 +208,76 @@ totalCredits: number = 0;
   ];
 
   modalSearchType = [
-    { id: 1, name: "House No" },
-    { id: 2, name: "HBL No" },
-    { id: 3, name: "Master No" },
-    { id: 4, name: "MBL No" },
-    { id: 5, name: "HAWB" },
-    { id: 6, name: "MAWB" },
-    { id: 7, name: "Party" },
-    { id: 8, name: "Invoice" }
-  ]
+    { id: 1, name: 'House No' },
+    { id: 2, name: 'HBL No' },
+    { id: 3, name: 'Master No' },
+    { id: 4, name: 'MBL No' },
+    { id: 5, name: 'HAWB' },
+    { id: 6, name: 'MAWB' },
+    { id: 7, name: 'Party' },
+    { id: 8, name: 'Invoice' },
+  ];
 
+  TandCList: any[] = [];
   allPendingCosts: any[] = [];
   selectedCosts: any[] = [];
-  companyCurrency : any;
-  currentCurrencyCode : string = '';
+  companyCurrency: any;
+  currentCurrencyCode: string = '';
   private destroy$ = new Subject<void>();
 
+  private isLoading = false;
+  isDirty = false;
+  private initialDetailCount = 0;
+  private initialMatchingCount = 0;
+  private formSaved = false;
+  private markAsDirty(): void {
+    this.isDirty = true;
+    this.formSaved = false;
+  }
 
   constructor(
-    public mps : MenuPermissionService,
+    public mps: MenuPermissionService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private toastr: ToastrService,
-    private masterService: MasterService,
-    private paymentService : PaymentService,
-    private accountService : AccountsService,
+    private paymentService: PaymentService,
+    private accountService: AccountsService,
     private appSettingService: AppSettingsService,
     private dropdownStore: DropdownStore,
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
-    private spinner : NgxSpinnerService,
+    private spinner: NgxSpinnerService,
     private commonService: CommonService,
-    private companySettings: CompanySettingsManagerService,
-  ) { }
+    private companySettings: CompanySettingsManagerService
+  ) {}
 
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
-    this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    this.currentCompanyCountryCode = String(
+      this.appSettingService.getCurrentCompanyCountry()?.countryCode
+    ).toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+    this.currentMenuId = this.mps.getMenuId();
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
-    console.log('Company Currency:', this.currentCurrencyCode); 
+    console.log('Company Currency:', this.currentCurrencyCode);
     console.log('Company Currency:', this.companyCurrency);
     this.getCurrentCompanyBranches();
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
-    this.currentMenuId = this.mps.getMenuId();
+
+    console.log('USER DATA', this.userData);
+    console.log('CURRENT COMPANY', this.currentCompany);
+    console.log('CURRENT BRANCH', this.currentBranch);
+    console.log('CURRENT USER COUNTRY', this.currentCompanyCountryCode);
+    console.log('CURRENT YEAR ID', this.currentYearId);
+
     this.mps.init().subscribe();
-
-    console.log("USER DATA", this.userData);
-    console.log("CURRENT COMPANY", this.currentCompany);
-    console.log("CURRENT BRANCH", this.currentBranch);
-    console.log("CURRENT USER COUNTRY", this.currentUserCountry);
-    console.log("CURRENT YEAR ID", this.currentYearId);
-
+    this.checkVoucherPostingMechanism();
     this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
@@ -242,13 +291,63 @@ totalCredits: number = 0;
       this.loadPayment(this.headerId);
     } else {
       this.subscribeToPartyAndBankChanges();
+      this.setupFormChangeDetection();
     }
   }
 
+  private setupFormChangeDetection(): void {
+    this.paymentForm.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        if (
+          !this.formSaved &&
+          !this.isSaving &&
+          this.paymentForm.dirty &&
+          !this.isLoading
+        ) {
+          this.markAsDirty();
+        }
+      });
+
+    this.detailItems.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
+          this.markAsDirty();
+        }
+      });
+
+    // Track voucher matching changes
+    this.voucherMatchings.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
+          this.markAsDirty();
+        }
+      });
+
+    // Track inter-branch changes if applicable
+    this.interBranches.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.formSaved && !this.isSaving && !this.isLoading) {
+          this.markAsDirty();
+        }
+      });
+  }
 
   initSearchOutstandingForm() {
     this.searchOutstandingForm = this.fb.group({
-      CompanyMasterSid: [this.currentCompany?.CompanyMasterSid, Validators.required],
+      CompanyMasterSid: [
+        this.currentCompany?.CompanyMasterSid,
+        Validators.required,
+      ],
       SearchType: ['Party', Validators.required],
 
       LedgerMasterSid: [null],
@@ -256,24 +355,26 @@ totalCredits: number = 0;
       VendorInvoiceNumber: [''],
       HouseNumber: [''],
 
-      FilterText: [''],   // generic input for all NON-Party searches
-      IncludeFullyPaid: [false]
+      FilterText: [''], // generic input for all NON-Party searches
+      IncludeFullyPaid: [false],
     });
 
-    this.searchOutstandingForm.get('SearchType')?.valueChanges.subscribe(type => {
-      this.clearSearchFields(type);
-    });
+    this.searchOutstandingForm
+      .get('SearchType')
+      ?.valueChanges.subscribe((type) => {
+        this.clearSearchFields(type);
+      });
   }
 
-    /**
+  /**
    * Initialize the payment form with validation
    */
   private initializeForm(): void {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     this.paymentForm = this.fb.group({
-      VoucherNumber: [{ value: '', disabled: true }],  // Payment Number
+      VoucherNumber: [{ value: '', disabled: true }], // Payment Number
       VoucherDate: [new Date()], // Payment Date
-      MultiBranch: [{value : false, disabled: true}],
+      MultiBranch: [{ value: false, disabled: true }],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
       CurrencyMasterSid: [companyCurrency || null],
@@ -300,46 +401,110 @@ totalCredits: number = 0;
       voucherMatchings: this.fb.array([]), // voucherMatching formArray
       interBranches: this.fb.array([]), // interBranch formArray
     });
-    ['CashOrBank','InstrumentMode','InstrumentNumber','BankPartyName'].forEach(ctrl => {
+    [
+      'CashOrBank',
+      'InstrumentMode',
+      'InstrumentNumber',
+      'BankPartyName',
+    ].forEach((ctrl) => {
       this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
         this.updateDetailNarration();
-      })
+      });
     });
-    ["detailItems", "voucherMatchings"].forEach(ctrl => {
-  this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
-    this.validateAmount();
-  });
-});
+    ['detailItems', 'voucherMatchings'].forEach((ctrl) => {
+      this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
+        this.validateAmount();
+      });
+    });
 
-    this.setupBillMatchingValidation()
     this.paymentForm.setValidators(consistentExchangeRatesValidator());
     this.paymentForm.updateValueAndValidity();
     const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
+
     this.paymentForm.patchValue({
-      CurrencyMasterSid: companyCurrencySid
+      CurrencyMasterSid: companyCurrencySid,
     });
+
     this.setCurrencyCode(companyCurrencySid);
     this.handleHeaderExchangeRate(companyCurrencySid);
   }
-  
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue =
+        'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (this.formSaved) {
+      return false;
+    }
+
+    // Check if main form is dirty
+    if (this.paymentForm?.dirty) {
+      return true;
+    }
+
+    // Check if details changed
+    if (this.detailItems?.length !== this.initialDetailCount) {
+      return true;
+    }
+
+    // Check if matching count changed
+    if (this.voucherMatchings?.length !== this.initialMatchingCount) {
+      return true;
+    }
+
+    // Check if any detail item is dirty
+    const hasDetailChanges = this.detailItems?.controls.some(
+      (control) => control.dirty
+    );
+    if (hasDetailChanges) {
+      return true;
+    }
+
+    // Check if any voucher matching is dirty
+    const hasMatchingChanges = this.voucherMatchings?.controls.some(
+      (control) => control.dirty
+    );
+    if (hasMatchingChanges) {
+      return true;
+    }
+
+    // Check custom dirty flag
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Call the existing submit logic
+      this.onSubmit(resolve);
+    });
+  }
+
   handleHeaderExchangeRate(currencySid: number) {
     const exCtrl = this.paymentForm.get('ExchangeRate');
-    
+
     if (!currencySid) return;
-    
+
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
       exCtrl?.setValue(1);
       exCtrl?.disable({ emitEvent: false });
+      this.recalculateAllMatchingPartyAmounts();
+      this.recalcPartyAmtForAllDetails();
       return;
     }
-    
+
     // DIFFERENT CURRENCY
     exCtrl?.enable({ emitEvent: false });
-    
+
     this.patchCurrencyExchangeRate(); // existing API call
-  } 
-  
+  }
+
   /**
    * Setup form value change listeners
    */
@@ -395,38 +560,53 @@ totalCredits: number = 0;
   loadAllLookups() {
     const filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid
-    }
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    };
     forkJoin({
-      parties: this.accountService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
-      currencies: this.dropdownStore.loadCurrencies().pipe(catchError(err => of([]))),
-      bankTypedLedgers: this.accountService.getAllLedgersByItsType({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        LedgerType: 'Bank'
-      }).pipe(catchError(err => of([]))),
-      cashTypeLedgers: this.accountService.getAllLedgersByItsType({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        LedgerType: 'Cash'
-      }).pipe(catchError(err => of([]))),
-    }).subscribe(({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
-      this.partyList = parties.data;
-      this.currencyList = (currencies || []).map(c => ({ ...c, countryName: c?.countryMaster?.countryName }));
-      this.bankTypedLedgers = bankTypedLedgers.data;
-      this.cashTypeLedgers = cashTypeLedgers.data;
+      parties: this.accountService
+        .getAllCreditorWithCOAMapped(filterOption)
+        .pipe(catchError((err) => of([]))),
+      currencies: this.dropdownStore
+        .loadCurrencies()
+        .pipe(catchError((err) => of([]))),
+      bankTypedLedgers: this.accountService
+        .getAllLedgersByItsType({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          LedgerType: 'Bank',
+        })
+        .pipe(catchError((err) => of([]))),
+      cashTypeLedgers: this.accountService
+        .getAllLedgersByItsType({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          LedgerType: 'Cash',
+        })
+        .pipe(catchError((err) => of([]))),
+    }).subscribe(
+      ({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
+        this.partyList = parties.data;
+        this.currencyList = (currencies || []).map((c) => ({
+          ...c,
+          countryName: c?.countryMaster?.countryName,
+        }));
+        this.bankTypedLedgers = bankTypedLedgers.data;
+        this.cashTypeLedgers = cashTypeLedgers.data;
 
-      const companyCurrency = this.r['CurrencyMasterSid']?.value;
-      this.setCurrencyCode(companyCurrency)
+        const companyCurrency = this.r['CurrencyMasterSid']?.value;
+        this.setCurrencyCode(companyCurrency);
 
-      this.currencyConfigService.initializeConfigurations(this.currencyList);
-      console.log("CURRENCY CONFIG INITIALIZED", this.currencyConfigService.getAllCurrencyConfigs());
+        this.currencyConfigService.initializeConfigurations(this.currencyList);
+        console.log(
+          'CURRENCY CONFIG INITIALIZED',
+          this.currencyConfigService.getAllCurrencyConfigs()
+        );
 
-
-      const cusMap = new Map<number, any>();
-      this.partyList.forEach(customer => {
-        cusMap.set(customer.CustomerMasterSid, customer);
-      });
-      this.onlyCustomerList = Array.from(cusMap.values());
-    })
+        const cusMap = new Map<number, any>();
+        this.partyList.forEach((customer) => {
+          cusMap.set(customer.CustomerMasterSid, customer);
+        });
+        this.onlyCustomerList = Array.from(cusMap.values());
+      }
+    );
   }
 
   loadDetailLookups() {
@@ -434,30 +614,48 @@ totalCredits: number = 0;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const filterOption = {
       CompanyMasterSid,
-      BranchMasterSid
-    }
+      BranchMasterSid,
+    };
     forkJoin({
-      coaWithLedgerCategoryAsLedger: this.accountService.getAllCoaWithLedgerCategory({
-        LedgerCategory: 'Ledger',
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      }).pipe(catchError(err => of([]))),
-      costCenters: this.accountService.getAllCostCenters().pipe(catchError(err => of([]))),
-      profitCenters: this.accountService.getAllProfitCenters().pipe(catchError(err => of([]))),
-      depts: this.dropdownStore.loadDepartments(filterOption).pipe(catchError(err => of([]))),
-      charges: this.accountService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([])))
-    }).subscribe(({ coaWithLedgerCategoryAsLedger, costCenters, profitCenters, depts, charges }) => {
-      this.coaList = coaWithLedgerCategoryAsLedger.data;
-      this.costCenterList = costCenters.data;
-      this.profitCenterList = profitCenters.data;
-      this.deptList = depts
-      this.chargeList = charges;
-      this.filterChargeByDeptForAllRow();
-    })
+      coaWithLedgerCategoryAsLedger: this.accountService
+        .getAllCoaWithLedgerCategory({
+          LedgerCategory: 'Ledger',
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        })
+        .pipe(catchError((err) => of([]))),
+      costCenters: this.accountService
+        .getAllCostCenters()
+        .pipe(catchError((err) => of([]))),
+      profitCenters: this.accountService
+        .getAllProfitCenters()
+        .pipe(catchError((err) => of([]))),
+      depts: this.dropdownStore
+        .loadDepartments(filterOption)
+        .pipe(catchError((err) => of([]))),
+      charges: this.accountService
+        .getAllCharges(this.currentCompany?.CompanyMasterSid)
+        .pipe(catchError((err) => of([]))),
+    }).subscribe(
+      ({
+        coaWithLedgerCategoryAsLedger,
+        costCenters,
+        profitCenters,
+        depts,
+        charges,
+      }) => {
+        this.coaList = coaWithLedgerCategoryAsLedger.data;
+        this.costCenterList = costCenters.data;
+        this.profitCenterList = profitCenters.data;
+        this.deptList = depts;
+        this.chargeList = charges;
+        this.filterChargeByDeptForAllRow();
+      }
+    );
   }
 
   /**
- * Load payment modes
- */
+   * Load payment modes
+   */
   private loadPaymentModes(): void {
     this.paymentModes = this.paymentService.getInstrumentModes();
   }
@@ -468,10 +666,10 @@ totalCredits: number = 0;
 
   searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
-    console.log("FormValue", form);
+    console.log('FormValue', form);
     let payload: any = {
       CompanyMasterSid: form.CompanyMasterSid,
-      IncludeFullyPaid: form.IncludeFullyPaid
+      IncludeFullyPaid: form.IncludeFullyPaid,
     };
 
     switch (form.SearchType) {
@@ -492,32 +690,44 @@ totalCredits: number = 0;
         payload.VendorInvoiceNumber = form.FilterText;
     }
 
-    console.log("Payload Sent:", payload);
+    console.log('Payload Sent:', payload);
 
-    this.accountService.getPaymentOutstanding(payload).subscribe(
-      res => {
+    this.accountService.getPaymentOutstanding(payload).subscribe((res) => {
+      if (res && Array.isArray(res) && res.length > 0) {
         this.patchHeaderValue(res);
-        this.patchOutstandingFormArray(res)
+        this.patchOutstandingFormArray(res);
+      } else {
+        const searchType = this.searchOutstandingForm.get('SearchType')?.value;
+        this.appSettingService.showError(`No outstanding found for this ${searchType}.`)
+      }
     });
   }
 
   patchHeaderValue(res: any) {
-    console.log("RES",res);
-    if(res.length > 0 && res[0].LedgerMasterSid && this.searchOutstandingForm.get('SearchType')?.value === "Invoice"){ 
-      const party = this.partyList.find(p => p.SubledgerMasterSid === res[0].LedgerMasterSid);
+    console.log('RES', res);
+    if (
+      res.length > 0 &&
+      res[0].LedgerMasterSid &&
+      this.searchOutstandingForm.get('SearchType')?.value === 'Invoice'
+    ) {
+      const party = this.partyList.find(
+        (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
+      );
       this.onPartyChange(party);
-    } else if(
-      res.length > 0 && this.searchOutstandingForm.get('SearchType')?.value === "Party" 
-      && this.searchOutstandingForm.get('LedgerMasterSid')?.value
-    ){
-      const partyIdInSearch = this.searchOutstandingForm.get('LedgerMasterSid')?.value;
-      const party = this.partyList.find(p => p.SubledgerMasterSid === partyIdInSearch);
+    } else if (
+      res.length > 0 &&
+      this.searchOutstandingForm.get('SearchType')?.value === 'Party' &&
+      this.searchOutstandingForm.get('LedgerMasterSid')?.value
+    ) {
+      const partyIdInSearch =
+        this.searchOutstandingForm.get('LedgerMasterSid')?.value;
+      const party = this.partyList.find(
+        (p) => p.SubledgerMasterSid === partyIdInSearch
+      );
       this.onPartyChange(party);
     }
   }
 
-
-  
   /**
    * Save payment
    */
@@ -587,11 +797,15 @@ totalCredits: number = 0;
   //   }
   // }
 
-  onSubmit(isPostingTrue?: boolean) {
+  onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
     const formValue = this.paymentForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
+
     if (this.detailItems.length === 0) {
-      this.appSettingService.showError('Please add at least one payment detail');
+      this.appSettingService.showError(
+        'Please add at least one payment detail'
+      );
+      if (resolve) resolve(false);
       return;
     }
 
@@ -601,75 +815,110 @@ totalCredits: number = 0;
         this.currencyList
       );
       this.appSettingService.showError(errorMsg);
+      if (resolve) resolve(false);
       return;
     }
 
-
-    const hasPartyDetail = detailItems.some(d => d.LedgerMasterSid === formValue.LedgerMasterSid);
-    if (formValue.LedgerMasterSid && !hasPartyDetail) {
-      this.appSettingService.showError('Please add a party detail for the alloted ledger');
+    const partyDetail = detailItems.find(
+      (d) => d.LedgerMasterSid === formValue.PartyMasterSid
+    );
+    if (formValue.LedgerMasterSid && !partyDetail) {
+      this.appSettingService.showError(
+        'Please add a party detail for the alloted ledger'
+      );
+      if (resolve) resolve(false);
       return;
     }
 
-    const hasBankDetail = detailItems.some(d => d.COAMasterSid === formValue.BankCOA);
+    const hasBankDetail = detailItems.some(
+      (d) => d.COAMasterSid === formValue.BankCOA
+    );
     if (formValue.BankCOA && !hasBankDetail) {
-      this.appSettingService.showError('Please add a bank detail for the alloted COA');
+      this.appSettingService.showError(
+        'Please add a bank detail for the alloted COA'
+      );
+      if (resolve) resolve(false);
       return;
     }
 
-    const totalDebit = detailItems.filter(d => d.DrCr === 'D')
-      .reduce((sum, d) => sum + Number(d.LocalAmount || 0), 0);
+    if (this.totalDebits === 0 || this.totalCredits === 0) {
+      this.appSettingService.showError(
+        'Please add at least one debit or credit amount.'
+      );
+      if (resolve) resolve(false);
+      return;
+    }
 
-    const totalCredit = detailItems.filter(d => d.DrCr === 'C')
-      .reduce((sum, d) => sum + Number(d.LocalAmount || 0), 0);
+    if (this.totalDebits !== this.totalCredits) {
+      this.appSettingService.showError(
+        'Please make sure the sum of debit amounts and credit amounts are equal'
+      );
+      if (resolve) resolve(false);
+      return;
+    }
 
-
-    if (totalDebit !== totalCredit) {
-      this.appSettingService.showError('Please make sure the sum of debit amounts and credit amounts are equal');
+    const matchingAmt = this.getTotalMatchPartyAmt();
+    const partyAmt = partyDetail.PartyAmount;
+    if (toNumber(matchingAmt) > toNumber(partyAmt)) {
+      this.appSettingService.showError(
+        'Please make sure the matching amount does not exceed the party amount.'
+      );
+      console.error(
+        'Party amount:',
+        partyAmt,
+        'Matching amount:',
+        matchingAmt,
+        'comparison : ',
+        toNumber(matchingAmt) > toNumber(partyAmt)
+      );
+      if (resolve) resolve(false);
       return;
     }
 
     if (this.matchingError) {
       this.appSettingService.showError(this.matchingError);
+      if (resolve) resolve(false);
       return;
     }
 
     if (this.paymentForm.invalid) {
-      this; this.appSettingService.showError('Please fill all required fields');
+      errorLogger(this.paymentForm);
+      this.appSettingService.showError('Please fill all required fields');
       this.markFormGroupTouched(this.paymentForm);
+      if (resolve) resolve(false);
       return;
     }
+
     this.isSaving = true;
+    this.spinner.show();
 
-    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const voucherMatching = this.voucherMatchings.getRawValue()
-      .map((vm) => ({
-        VoucherHeaderSid: vm.VoucherHeaderSid,
-        VoucherDetailSid: vm.VoucherDetailSid,
-        VoucherTransactionSid: vm.VoucherTransactionSid,
-        VoucherType: vm.voucherType,
-        CurrencyCode: vm.curr,
-        ExchangeRate: vm.exRate || 1,
-        DrCr: vm.drCr,
-        Amount: vm.currAmt,
-        LocalAmount: vm.localAmt,
-        MatchingCurrency: vm.matchCurr,
-        MatchingExRate: vm.matchExRate,
-        MatchingAmount: vm.matchCurrAmt,
-        MatchingLocalAmount: vm.matchLocalAmt,
-        MatchingTDSAmount: vm.tdsAmt,
-        tdsAmt: vm.tdsAmt,
-      }));
+    const currentUserEmail =
+      this.appSettingService.userSettingSource.value['userEmail'];
+    const voucherMatching = this.voucherMatchings.getRawValue().map((vm) => ({
+      MatchingDetailSid: vm.MatchingDetailSid,
+      VoucherHeaderSid: vm.VoucherHeaderSid,
+      VoucherDetailSid: vm.VoucherDetailSid,
+      VoucherTransactionSid: vm.VoucherTransactionSid,
+      VoucherType: vm.voucherType,
+      CurrencyCode: vm.curr,
+      ExchangeRate: vm.exRate || 1,
+      DrCr: vm.drCr,
+      Amount: vm.currAmt,
+      LocalAmount: vm.localAmt,
+      MatchingCurrency: vm.matchCurr,
+      MatchingExRate: vm.matchExRate,
+      MatchingAmount: vm.matchCurrAmt,
+      MatchingLocalAmount: vm.matchLocalAmt,
+      PartyAmount: vm.matchPartyAmt,
+      MatchingTDSAmount: vm.tdsAmt,
+      tdsAmt: vm.tdsAmt,
+    }));
 
-    console.log("Only filled voucher matchings", voucherMatching);
-    const totalTDSAmount = voucherMatching.reduce((acc, curr) => acc + curr.tdsAmt, 0);
-    const totalAmount = voucherMatching.reduce((acc, curr) => acc + curr.MatchingAmount, 0);
-    const totalLocalAmount = voucherMatching.reduce((acc, curr) => acc + curr.MatchingLocalAmount, 0);
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      CashOrBank: formValue.CashOrBank ? "C" : "B",
-      MultiBranch: formValue.MultiBranch ? "Y" : "N",
+      CashOrBank: formValue.CashOrBank ? 'C' : 'B',
+      MultiBranch: formValue.MultiBranch ? 'Y' : 'N',
       VoucherDate: formValue.VoucherDate,
       YearMasterSid: this.currentYearId,
       Narration: formValue.Narration,
@@ -690,95 +939,150 @@ totalCredits: number = 0;
       CurrencyMasterSid: formValue.CurrencyMasterSid,
       CurrencyCode: formValue.CurrencyCode,
       ExchangeRate: formValue.ExchangeRate,
-      Amount: Number(totalAmount),
-      LocalAmount: Number(totalLocalAmount),
+      Amount: 0,
+      LocalAmount: 0,
       NetAmount: 0,
-      TaxType: this.currentUserCountry === 'india' ? 'GST' : (this.currentUserCountry === 'united arab emirates' ? 'VAT' : ''),
+      TaxType:
+        this.currentCompanyCountryCode === 'in'
+          ? 'GST'
+          : this.currentCompanyCountryCode === 'ae' ||
+            this.currentCompanyCountryCode === 'us'
+          ? 'VAT'
+          : '',
       InstrumentMode: formValue.InstrumentMode,
       InstrumentNumber: formValue.InstrumentNumber,
       InstrumentDate: formValue.InstrumentDate,
       ClearanceDate: formValue.ClearanceDate,
-      ...(isPostingTrue ? {
-        PostStatus: 'P'
-      } : {}),
-      detailItems: detailItems.map(d => {
+      detailItems: detailItems.map((d) => {
         const isBankRecord = d.COAMasterSid === formValue.BankCOA;
         return {
           ...d,
-        }
+        };
       }),
       voucherMatching: voucherMatching,
-      ...(this.isEditMode ? {
-        UpdatedBy: currentUserEmail
-      } : {
-        CreatedBy: currentUserEmail
-      })
-    }
+      ...(this.isEditMode
+        ? {
+            UpdatedBy: currentUserEmail,
+          }
+        : {
+            CreatedBy: currentUserEmail,
+          }),
+    };
 
-    console.log("PAYLOAD", payload);
+    console.log('PAYLOAD', payload);
 
     if (this.isEditMode) {
-      this.accountService.updatePaymentById(this.headerId, payload).subscribe(
-        (resp: any) => {
+      this.accountService.updatePaymentById(this.headerId, payload).subscribe({
+        next: (resp: any) => {
           if (resp.status) {
+            this.isSaving = false;
             this.appSettingService.showSuccess('Payment updated successfully');
-            const id = resp.data?.voucherHeader?.VoucherHeaderSid;
-            this.loadPayment(this.headerId)
+
+            this.formSaved = true;
+            this.isDirty = false;
+
+            if (resolve) resolve(true);
+            this.spinner.hide();
+            this.loadPayment(this.headerId);
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
+            this.spinner.hide();
           }
-        }
-      );
+        },
+        error: (error) => {
+          this.isSaving = false;
+          this.appSettingService.showError('Failed to update payment');
+          if (resolve) resolve(false);
+          this.spinner.hide();
+        },
+      });
     } else {
-      this.accountService.createPayment(payload).subscribe(
-        async (resp: any) => {
+      this.accountService.createPayment(payload).subscribe({
+        next: async (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
-            this.appSettingService.showSuccess('Payment created successfully');
             this.headerId = resp.data?.voucherHeader?.VoucherHeaderSid;
-            this.appSettingService.showInfo(`Autoposting Payment : ${resp.data?.voucherHeader?.VoucherNumber}`)
-            await this.postVoucher();
+            if (isPostingTrue) {
+              await this.postVoucher();
+            } else {
+              this.spinner.hide();
+            }
+            this.resetDirtyState();
+            this.formSaved = true;
+            if (resolve) resolve(true);
             if (this.headerId) {
               this.router.navigate(['accounts/payment/entry', this.headerId]);
             }
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
+            this.spinner.hide();
           }
-        }
-      )
+        },
+        error: (error) => {
+          this.isSaving = false;
+          this.appSettingService.showError('Failed to create payment');
+          if (resolve) resolve(false);
+          this.spinner.hide();
+        },
+      });
     }
   }
 
+  private resetDirtyState(): void {
+    this.isDirty = false;
+    this.formSaved = false;
+    this.paymentForm?.markAsPristine();
+    this.initialDetailCount = this.detailItems?.length || 0;
+    this.initialMatchingCount = this.voucherMatchings?.length || 0;
+  }
 
-  async postVoucher() {
+  async postVoucher(notFromSubmit: boolean = false) {
     try {
+      this.spinner.show();
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
       const currentBranch = this.currentBranch;
       const currentUserEmail = this.userData?.userEmail;
-      const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+      const currentFinancialYear = Number(
+        localStorage.getItem('current-year-id')
+      );
 
-      const currentCompanyCountry = Number(this.currentCompany?.CountryMasterSid);
-      const currentCompanyCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+      const currentCompanyCountry = Number(
+        this.currentCompany?.CountryMasterSid
+      );
       const currentCompanyState = Number(this.currentBranch?.StateMasterSid);
 
       const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
       const customerBranchFromForm = Number(this.r['CustomerBranchSid']?.value);
-      const customerState = this.partyList.find(c => c.CustomerBranchSid === customerBranchFromForm)?.StateMasterSid;
-
+      const customerState = this.partyList.find(
+        (c) => c.CustomerBranchSid === customerBranchFromForm
+      )?.StateMasterSid;
 
       let interOrIntra = 'Inter';
       // india
-      if(currentCompanyCountryName === 'india'){
-        if(currentCompanyState === customerState){
+      if (this.currentCompanyCountryCode === 'india') {
+        if (currentCompanyState === customerState) {
           interOrIntra = 'Inter';
-        }
-        else{
+        } else {
           interOrIntra = 'Intra';
         }
+      } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
+        interOrIntra = 'Inter';
       }
 
-      if (!voucherHeaderSid || !currentCompany || !currentBranch || !currentFinancialYear || !currentCompanyCountry || !currentCurrency) {
-        throw new Error('Payment Id ,Company, branch, or financial year or country information is missing');
+      if (
+        !voucherHeaderSid ||
+        !currentCompany ||
+        !currentBranch ||
+        !currentFinancialYear ||
+        !currentCompanyCountry ||
+        !currentCurrency
+      ) {
+        throw new Error(
+          'Payment Id ,Company, branch, or financial year or country information is missing'
+        );
       }
 
       const postPayload = {
@@ -791,21 +1095,29 @@ totalCredits: number = 0;
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
-          countryName: currentCompanyCountryName,
+          countryName: this.currentCompanyCountryCode,
           TaxCategory: interOrIntra,
           EffectiveFrom: new Date().toISOString(),
-          TaxType: 'Output'
-        }
+          TaxType: 'Output',
+        },
       };
 
-      const result = await firstValueFrom(this.paymentService.postPayment(postPayload));
+      const result = await firstValueFrom(
+        this.paymentService.postPayment(postPayload)
+      );
 
       this.spinner.hide();
       if (result.status) {
-        this.appSettingService.showSuccess('Payment posted successfully!');
+        this.appSettingService.showSuccess(result.message);
         this.paymentData.PostStatus = 'P';
+        if (notFromSubmit) {
+          this.loadPayment(this.headerId);
+        }
       } else {
-        this.appSettingService.showError(result.message || 'Failed to post payment.');
+        this.spinner.hide();
+        this.appSettingService.showError(
+          result.message || 'Failed to post payment.'
+        );
       }
     } catch (error) {
       this.spinner.hide();
@@ -814,56 +1126,73 @@ totalCredits: number = 0;
   }
 
   /**
- * Load existing payment for editing
- */
+   * Load existing payment for editing
+   */
   loadPayment(paymentId: number) {
+    this.isLoading = true;
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherHeaderSid: paymentId
-    }
-    this.accountService.getPaymentById(payload).subscribe(
-      (resp: any) => {
+      VoucherHeaderSid: paymentId,
+    };
+    this.accountService.getPaymentById(payload).subscribe({
+      next: (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
           this.paymentDataPrint = resp.data;
-          console.log(this.paymentDataPrint,"PAYMENT PRINT")
+          this.voucherMatchingInfo = resp.data?.VoucherMatchingHeader?.[0];
+          console.log(this.paymentDataPrint, 'PAYMENT PRINT');
+          console.log(this.voucherMatchingInfo, 'VOUCHER MATCHING INFO');
         } else {
           this.appSettingService.showError(resp.message);
+          this.isLoading = false;
         }
-      }
-    );
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error loading payment:', error);
+      },
+    });
   }
 
   patchValues(response: any) {
     this.paymentData = response;
-    const { VoucherDetail, VoucherTransaction, voucherMatchings, ...headerInfo } = response;
-    this.paymentForm.patchValue({
-      VoucherNumber: headerInfo.VoucherNumber,
-      CashOrBank: headerInfo.CashOrBank === "C",
-      MultiBranch: headerInfo.MultiBranch === "Y",
-      VoucherDate: headerInfo.VoucherDate,
-      BankCOA: headerInfo.BankCOA,
-      CurrencyMasterSid: headerInfo.CurrencyMasterSid,
-      CurrencyCode: headerInfo.CurrencyCode,
-      ExchangeRate: headerInfo.ExchangeRate,
-      PartyMasterSid: headerInfo.PartyMasterSid,
-      PartyName: headerInfo.PartyName,
-      PartyAddress: headerInfo.PartyAddress,
-      CustomerBranchSid: headerInfo.CustomerBranchSid,
-      COAMasterSid: headerInfo.COAMasterSid,
-      GST_VAT: headerInfo.GST_VAT,
-      BankPartyName: headerInfo.BankPartyName,
-      Narration: headerInfo.Narration,
-      Remarks: headerInfo.Remarks,
-      InstrumentMode: headerInfo.InstrumentMode,
-      InstrumentNumber: headerInfo.InstrumentNumber,
-      InstrumentDate: headerInfo.InstrumentDate,
-      ClearanceDate: headerInfo.ClearanceDate,
-    })
+    const {
+      VoucherDetail,
+      VoucherTransaction,
+      voucherMatchings,
+      ...headerInfo
+    } = response;
+    this.paymentForm.patchValue(
+      {
+        VoucherNumber: headerInfo.VoucherNumber,
+        CashOrBank: headerInfo.CashOrBank === 'C',
+        MultiBranch: headerInfo.MultiBranch === 'Y',
+        VoucherDate: headerInfo.VoucherDate,
+        BankCOA: headerInfo.BankCOA,
+        CurrencyMasterSid: headerInfo.CurrencyMasterSid,
+        CurrencyCode: headerInfo.CurrencyCode,
+        ExchangeRate: headerInfo.ExchangeRate,
+        PartyMasterSid: headerInfo.PartyMasterSid,
+        PartyName: headerInfo.PartyName,
+        PartyAddress: headerInfo.PartyAddress,
+        CustomerBranchSid: headerInfo.CustomerBranchSid,
+        COAMasterSid: headerInfo.COAMasterSid,
+        GST_VAT: headerInfo.GST_VAT,
+        BankPartyName: headerInfo.BankPartyName,
+        Narration: headerInfo.Narration,
+        Remarks: headerInfo.Remarks,
+        InstrumentMode: headerInfo.InstrumentMode,
+        InstrumentNumber: headerInfo.InstrumentNumber,
+        InstrumentDate: headerInfo.InstrumentDate,
+        ClearanceDate: headerInfo.ClearanceDate,
+      },
+      { emitEvent: false }
+    );
 
-    console.log("Header",this.paymentForm.value);
-    
+    console.log('Header', this.paymentForm.value);
+
+    this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
     detailItems.forEach((d, index) => {
       const detailRecord = {
@@ -901,37 +1230,65 @@ totalCredits: number = 0;
         TaxAmount2: d.TaxAmount2,
         InvoiceType: d.InvoiceType,
         Remarks: d.Remarks,
-        PartyAmount: d.PartyAmount
-      }
+        PartyAmount: d.PartyAmount,
+      };
 
-      this.addDetailRow(detailRecord);
-      this.handleCOAChange({
-        COAMasterSid: d.COAMasterSid,
-        SubledgerName: d.LedgerMasterSid !== null ? 'Y' : 'N'
-      }, index);
-      const dept = this.deptList.find(dep => dep.DepartmentMasterSid === d.DepartmentMasterSid);
+      this.addDetailRow(detailRecord, false);
+      this.handleCOAChange(
+        {
+          COAMasterSid: d.COAMasterSid,
+          SubledgerName: d.LedgerMasterSid !== null ? 'Y' : 'N',
+        },
+        index,
+        true
+      );
+      const dept = this.deptList.find(
+        (dep) => dep.DepartmentMasterSid === d.DepartmentMasterSid
+      );
       this.filterDetailsWithDept(dept, index);
       this.onMasterJobChange(index, {
-        MasterJobSid: d.MasterJobSid
-      })
-    })
-    console.log("Detail",this.paymentForm.value);
+        MasterJobSid: d.MasterJobSid,
+      });
+    });
+    console.log('Detail', this.paymentForm.value);
     this.isPosted = response.PostStatus === 'P';
-    if(this.isPosted){
-      this.paymentForm.disable();
-    }
 
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
     // console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
     const voucherMatchingRecords = response.voucherMatchings || [];
-    console.log("VOUCHER MATCHING RECORDS", voucherMatchingRecords);
+    console.log('VOUCHER MATCHING RECORDS', voucherMatchingRecords);
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
+    if (this.isPosted) {
+      this.paymentForm.disable();
+    }
+
+    setTimeout(() => {
+      this.isDirty = false;
+      this.formSaved = true;
+      this.isLoading = false;
+
+      this.paymentForm.markAsPristine();
+      this.paymentForm.markAsUntouched();
+      this.detailItems.markAsPristine();
+      this.voucherMatchings.markAsPristine();
+
+      this.initialDetailCount = this.detailItems?.length || 0;
+      this.initialMatchingCount = this.voucherMatchings?.length || 0;
+
+      console.log('✅ Form loaded and reset complete', {
+        isDirty: this.isDirty,
+        formSaved: this.formSaved,
+        isLoading: this.isLoading,
+        formStatus: this.paymentForm.status,
+      });
+    }, 100);
+    this.setupFormChangeDetection();
   }
 
   /**
- * Reset form
- */
+   * Reset form
+   */
   resetForm(): void {
     this.paymentForm.reset();
     this.detailItems.clear();
@@ -967,19 +1324,19 @@ totalCredits: number = 0;
       LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
       DrCr: [data?.DrCr || 'D', Validators.required],
       CurrencyMasterSid: [
-  data?.CurrencyMasterSid || this.currentCompany?.CurrencyMasterSid,
-  Validators.required
-],
-CurrencyCode: [
-  data?.CurrencyCode || this.currentCurrencyCode,
-  Validators.required
-],
-ExchangeRate: [1, Validators.required],
+        data?.CurrencyMasterSid || this.currentCompany?.CurrencyMasterSid,
+        Validators.required,
+      ],
+      CurrencyCode: [
+        data?.CurrencyCode || this.currentCurrencyCode,
+        Validators.required,
+      ],
+      ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
 
-      NumberOfUnit: [data?.NumberOfUnit || 1.000],
+      NumberOfUnit: [data?.NumberOfUnit || 1.0],
       Rate: [data?.Rate || 1],
-      Amount: [data?.Amount || 0.000, Validators.required],
-      LocalAmount: [data?.LocalAmount || 0.000, Validators.required],
+      Amount: [data?.Amount || 0.0, Validators.required],
+      LocalAmount: [data?.LocalAmount || 0.0, Validators.required],
 
       Narration: [data?.Narration || ''],
       CostCenter: [data?.CostCenter || null],
@@ -992,25 +1349,24 @@ ExchangeRate: [1, Validators.required],
       HouseJobSid: [data?.HouseJobSid || null],
       MasterJobSid: [data?.MasterJobSid || null],
 
-
       YearMasterSid: [data?.YearMasterSid || null],
       VoucherTransactionSid: [data?.VoucherTransactionSid || null],
 
       // Transaction details
       CostRevenue: [data?.CostRevenue || ''],
-      TaxableAmount: [data?.TaxableAmount || 0.000],
-      TaxPercentage1: [data?.TaxPercentage1 || 0.00],
-      TaxAmount1: [data?.TaxAmount1 || 0.000],
-      TaxPercentage2: [data?.TaxPercentage2 || 0.00],
-      TaxAmount2: [data?.TaxAmount2 || 0.000],
+      TaxableAmount: [data?.TaxableAmount || 0.0],
+      TaxPercentage1: [data?.TaxPercentage1 || 0.0],
+      TaxAmount1: [data?.TaxAmount1 || 0.0],
+      TaxPercentage2: [data?.TaxPercentage2 || 0.0],
+      TaxAmount2: [data?.TaxAmount2 || 0.0],
       InvoiceType: [data?.InvoiceType || ''],
       Remarks: [data?.Remarks || ''],
-      PartyAmount: [data?.PartyAmount || 0.000],
+      PartyAmount: [data?.PartyAmount || 0.0],
 
       // Relational objects (used for dropdowns or display)
-      coaMaster: [data?.coaMaster || null],              // COA reference
-      chargeMaster: [data?.chargeMaster || null],        // Charge reference
-      currencyMaster: [data?.currencyMaster || null],    // Currency reference
+      coaMaster: [data?.coaMaster || null], // COA reference
+      chargeMaster: [data?.chargeMaster || null], // Charge reference
+      currencyMaster: [data?.currencyMaster || null], // Currency reference
       departmentMaster: [data?.departmentMaster || null],
       hSSACMaster: [data?.hSSACMaster || null],
       houseJob: [data?.houseJob || null],
@@ -1026,81 +1382,114 @@ ExchangeRate: [1, Validators.required],
         detailItem.get('CurrencyCode')?.setValue('');
         return;
       } else {
-        detailItem.get('CurrencyCode')?.setValue(this.currencyList.find(c => c.CurrencyMasterSid === val)?.currencyCode);
+        detailItem
+          .get('CurrencyCode')
+          ?.setValue(
+            this.currencyList.find((c) => c.CurrencyMasterSid === val)
+              ?.currencyCode
+          );
       }
     });
     return detailItem;
   }
 
-  addDetailRow(data?: any) {
+  addDetailRow(data?: any, syncExRate: boolean = true) {
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
+
+    const isNewRow = !data?.VoucherDetailSid;
+    if (
+      isNewRow &&
+      !this.formSaved &&
+      !this.isLoading &&
+      this.initialDetailCount > 0
+    ) {
+      this.markAsDirty();
+    }
+
     const lastAddedRow = this.detailItems.length - 1;
     const currencySid = newRow.get('CurrencyMasterSid')?.value;
-    this.handleDetailExchangeRate(currencySid, lastAddedRow);
+
+    if (syncExRate) {
+      this.handleDetailExchangeRate(currencySid, lastAddedRow);
+    }
     const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
-    localAmountTriggeringCtrls.forEach(ctrl => {
+    localAmountTriggeringCtrls.forEach((ctrl) => {
       newRow.get(ctrl)?.valueChanges.subscribe(() => {
-        this.calculateLocalAmount(lastAddedRow);
+        if (!this.isSaving && !this.isLoading) {
+          this.calculateLocalAmount(lastAddedRow, true);
+        }
       });
     });
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
-
     // Case 1 : Row has VoucherDetailSid → call API first
     if (VoucherDetailSid) {
       this.accountService.softDeleteVoucherDetail(VoucherDetailSid).subscribe({
         next: (res) => {
           // On success, remove row from form array
           (this.detailItems as FormArray).removeAt(detailIndex);
+          this.markAsDirty();
         },
         error: (err) => {
           console.error('Error deleting voucher detail:', err);
-        }
+        },
       });
     }
     // Case 2 : New row (no VoucherDetailSid) → directly remove it
     else {
       (this.detailItems as FormArray).removeAt(detailIndex);
+      this.markAsDirty();
     }
   }
 
   private subscribeToPartyAndBankChanges(): void {
     combineLatest([
       this.paymentForm.get('CustomerBranchSid').valueChanges,
-      this.paymentForm.get('BankCOA').valueChanges
-    ]).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(([partySid, bankCoaSid]) => {
-      // Check if both are selected and if the details grid is empty
-      if (partySid && bankCoaSid) {
-        this.populateInitialDetailRows(partySid, bankCoaSid);
-      }
-    });
+      this.paymentForm.get('BankCOA').valueChanges,
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([partySid, bankCoaSid]) => {
+        // Check if both are selected and if the details grid is empty
+        if (partySid && bankCoaSid && !this.isLoading) {
+          this.populateInitialDetailRows(partySid, bankCoaSid);
+        }
+      });
   }
 
-  private populateInitialDetailRows(partySid: number, bankCoaSid: number): void {
+  private populateInitialDetailRows(
+    partySid: number,
+    bankCoaSid: number
+  ): void {
     this.detailItems.clear();
-    console.log("Selected ITEMS", {
+    console.log('Selected ITEMS', {
       SelectedPartyId: partySid,
-      SelectedBankCoaId: bankCoaSid
-    })
+      SelectedBankCoaId: bankCoaSid,
+    });
     // 1. Find the selected bank/cash ledger
     const isCashMode = this.paymentForm.get('CashOrBank')?.value;
-    const bankLedgerSource = isCashMode ? this.cashTypeLedgers : this.bankTypedLedgers;
-    const bankLedger = bankLedgerSource.find(ledger => ledger.COAMasterSid === bankCoaSid);
+    const bankLedgerSource = isCashMode
+      ? this.cashTypeLedgers
+      : this.bankTypedLedgers;
+    const bankLedger = bankLedgerSource.find(
+      (ledger) => ledger.COAMasterSid === bankCoaSid
+    );
 
     // 2. Find the selected party ledger
-    const partyLedger = this.partyList.find(p => p.CustomerBranchSid === partySid);
+    const partyLedger = this.partyList.find(
+      (p) => p.CustomerBranchSid === partySid
+    );
 
-    console.log("Selected Full ITEMS", {
+    console.log('Selected Full ITEMS', {
       SelectedParty: partyLedger,
-      SelectedBank: bankLedger
-    })
+      SelectedBank: bankLedger,
+    });
 
     if (!bankLedger || !partyLedger) {
-      console.error('Could not find the selected bank or party ledger details.');
+      console.error(
+        'Could not find the selected bank or party ledger details.'
+      );
       return;
     }
     const outstandingCurrencyAmount = this.getTotalOSCurrAmt();
@@ -1111,14 +1500,14 @@ ExchangeRate: [1, Validators.required],
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
       DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      CurrencyCode : this.r['CurrencyCode']?.value,
+      CurrencyCode: this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
-      Amount : outstandingCurrencyAmount,
-    }
-    console.log("PartyData", partyData);
+      Amount: outstandingCurrencyAmount,
+    };
+    console.log('PartyData', partyData);
     this.addDetailRow(partyData);
     this.fetchLedgerForCOA(partyLedger, 0);
-    this.calculateLocalAmount(0);
+    this.calculateLocalAmount(0, true);
 
     // 4. Create the Bank Row (Debit)
     const bankData = {
@@ -1127,25 +1516,27 @@ ExchangeRate: [1, Validators.required],
       LedgerMasterSid: bankLedger.LedgerMasterSid,
       DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      CurrencyCode : this.r['CurrencyCode']?.value,
+      CurrencyCode: this.r['CurrencyCode']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
-      Amount : outstandingCurrencyAmount,
-    }
-    console.log("BankData", bankData);
+      Amount: outstandingCurrencyAmount,
+    };
+    console.log('BankData', bankData);
     this.addDetailRow(bankData);
     this.fetchLedgerForCOA(bankLedger, 1);
-    this.calculateLocalAmount(1);
+    this.calculateLocalAmount(1, true);
 
     this.updateDetailNarration();
   }
 
-   handleCOAChange(coa: any, detailIndex: number) {
-    console.log("Handle COA Change", coa);
+  handleCOAChange(coa: any, detailIndex: number, isPatching: boolean = false) {
+    console.log('Handle COA Change', coa);
     if (!coa) {
-      this.detailItems.at(detailIndex).get('LedgerMasterSid')?.setValue(null);
+      if (!isPatching) {
+        this.detailItems.at(detailIndex).get('LedgerMasterSid')?.setValue(null);
+      }
       return;
     }
-    this.fetchLedgerForCOA(coa, detailIndex);
+    this.fetchLedgerForCOA(coa, detailIndex, isPatching);
   }
 
   /**
@@ -1153,94 +1544,108 @@ ExchangeRate: [1, Validators.required],
    * eg Party row -  Being Bank Transfer Recd. NEFT 7887
    * Bank row - Being NEFT 7887 from KRS Logistics
    */
-  updateDetailNarration(){
-
-
+  updateDetailNarration() {
     const allDetails = this.detailItems.getRawValue();
-    let partyDetailIndex = allDetails.findIndex(d => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
-    let bankDetailIndex = allDetails.findIndex(d => d.COAMasterSid === this.r['BankCOA']?.value);
+    let partyDetailIndex = allDetails.findIndex(
+      (d) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value
+    );
+    let bankDetailIndex = allDetails.findIndex(
+      (d) => d.COAMasterSid === this.r['BankCOA']?.value
+    );
     const partyCtrl = this.detailItems.at(partyDetailIndex) as FormGroup;
     const bankCtrl = this.detailItems.at(bankDetailIndex) as FormGroup;
-    if(partyDetailIndex === -1) partyCtrl?.setValue(null);
-    if(bankDetailIndex === -1) bankCtrl?.setValue(null);
-    
+    if (partyDetailIndex === -1) partyCtrl?.setValue(null);
+    if (bankDetailIndex === -1) bankCtrl?.setValue(null);
 
-    const cashOrBank = this.r['CashOrBank']?.value ? "Cash" : "Bank"
+    const cashOrBank = this.r['CashOrBank']?.value ? 'Cash' : 'Bank';
     console.log(cashOrBank);
     const instrumentMode = this.r['InstrumentMode']?.value;
     const instrumentNumber = this.r['InstrumentNumber']?.value;
     const bankPartyName = this.r['BankPartyName']?.value;
 
     partyCtrl?.patchValue({
-      Narration : cashOrBank === "Bank" ?
-      `Being Bank Transfer  ${instrumentMode} ${instrumentNumber}` :
-      `Being Cash Transfer .`
-    })
+      Narration:
+        cashOrBank === 'Bank'
+          ? `Being Bank Transfer  ${instrumentMode} ${instrumentNumber}`
+          : `Being Cash Transfer .`,
+    });
 
     bankCtrl?.patchValue({
-      Narration : cashOrBank === "Bank" ?
-      `Being ${instrumentMode} ${instrumentNumber} from ${bankPartyName}` :
-      `Being Cash Transfer Recd.`
-    })
-    
+      Narration:
+        cashOrBank === 'Bank'
+          ? `Being ${instrumentMode} ${instrumentNumber} from ${bankPartyName}`
+          : `Being Cash Transfer.`,
+    });
   }
 
-  fetchLedgerForCOA(coa: any, detailIndex: number) {
-    const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get('LedgerMasterSid');
+  fetchLedgerForCOA(
+    coa: any,
+    detailIndex: number,
+    isPatching: boolean = false
+  ) {
+    const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get(
+      'LedgerMasterSid'
+    );
     if (coa.SubledgerName === 'Y') {
       ledgerCtrl.enable();
       ledgerCtrl.setValidators([Validators.required]);
-      this.accountService.getLedgerByCOAMasterSid({
-        COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        DrCr : 'C'
-      }).subscribe(
-        (resp: any) => {
+      this.accountService
+        .getLedgerByCOAMasterSid({
+          COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          DrCr: 'C',
+        })
+        .subscribe((resp: any) => {
           if (resp.status) {
             this.ledgerList[detailIndex] = resp.data || [];
             const currentValue = ledgerCtrl.getRawValue();
-            const exist = this.ledgerList[detailIndex].find(l => l.SubledgerMasterSid === currentValue);
-            if (exist) {
-              ledgerCtrl.setValue(exist.SubledgerMasterSid);
-            } else {
-              ledgerCtrl.setValue(null);
+            const exist = this.ledgerList[detailIndex].find(
+              (l) => l.SubledgerMasterSid === currentValue
+            );
+            if (!isPatching) {
+              if (exist) {
+                ledgerCtrl.setValue(exist.SubledgerMasterSid);
+              } else {
+                ledgerCtrl.setValue(null);
+              }
             }
           } else {
             this.appSettingService.showError('Error fetching ledger for COA');
           }
-        }
-      )
+        });
     } else {
       ledgerCtrl.disable();
       ledgerCtrl.clearValidators();
       ledgerCtrl.updateValueAndValidity();
     }
-    console.log("LEDGER CTRL STATE", ledgerCtrl.enabled)
+    console.log('LEDGER CTRL STATE', ledgerCtrl.enabled);
   }
 
   onCurrencyChangeForEachRow(selected: any, index: number) {
     const row = this.detailItems.at(index) as FormGroup;
     if (!selected) return;
-    
+
     row.patchValue({
       CurrencyMasterSid: selected.CurrencyMasterSid,
-      CurrencyCode: selected.currencyCode
+      CurrencyCode: selected.currencyCode,
     });
-    
+
     this.handleDetailExchangeRate(selected.CurrencyMasterSid, index);
   }
 
   patchCurrencyExchangeRateForDetail(currencySid: number, detailIndex: number) {
-    this.getExchangeRate(currencySid).subscribe(
-      (resp: any) => {
-        const row = this.detailItems.at(detailIndex) as FormGroup;
-        const currencyCode = this.currencyList.find(c => c.CurrencyMasterSid === currencySid)?.currencyCode;
-        row.get('ExchangeRate')?.setValue(this.currencyFormatService.formatExchangeRate({
-          value : Number(resp || 1),
-          currencyCode
-        }));
-      }
-    )
+    this.getExchangeRate(currencySid).subscribe((resp: any) => {
+      const row = this.detailItems.at(detailIndex) as FormGroup;
+      const currencyCode = this.currencyList.find(
+        (c) => c.CurrencyMasterSid === currencySid
+      )?.currencyCode;
+      row.get('ExchangeRate')?.setValue(
+        this.currencyFormatService.formatExchangeRate({
+          value: Number(resp || 1),
+          currencyCode,
+        })
+      );
+    });
   }
 
   onChargeChange(detailIndex: number, charge: any) {
@@ -1257,7 +1662,7 @@ ExchangeRate: [1, Validators.required],
       ChargeDescription: charge.chargeName,
       HSSACMasterSid: charge.HSSACMasterSid || null,
       ChargeUOMSid: charge.UOM,
-    })
+    });
   }
 
   filterDetailsWithDept(dept: any, detailIndex: number) {
@@ -1276,18 +1681,20 @@ ExchangeRate: [1, Validators.required],
       return;
     }
     this.filterChargeByDeptForARow(dept, detailIndex);
-    this.accountService.getMasterJobByDepartment({
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: dept?.DepartmentMasterSid
-    }).subscribe({
-      next: (resp: any) => {
-        this.masterJobList[detailIndex] = resp;
-      },
-      error: (err) => {
-        console.error('Failed to load master jobs:', err);
-      }
-    });
+    this.accountService
+      .getMasterJobByDepartment({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        DepartmentMasterSid: dept?.DepartmentMasterSid,
+      })
+      .subscribe({
+        next: (resp: any) => {
+          this.masterJobList[detailIndex] = resp;
+        },
+        error: (err) => {
+          console.error('Failed to load master jobs:', err);
+        },
+      });
   }
 
   onMasterJobChange(detailIndex: number, masterJob: any) {
@@ -1295,45 +1702,51 @@ ExchangeRate: [1, Validators.required],
       this.houseJobList[detailIndex] = [];
       return;
     }
-    this.accountService.getHouseJobByMasterJob({
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MasterJobSid: masterJob?.MasterJobSid
-    }).subscribe({
-      next: (resp: any) => {
-        this.houseJobList[detailIndex] = resp;
-      },
-      error: (err) => {
-        console.error('Failed to load house jobs:', err);
-      }
-    });
+    this.accountService
+      .getHouseJobByMasterJob({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        MasterJobSid: masterJob?.MasterJobSid,
+      })
+      .subscribe({
+        next: (resp: any) => {
+          this.houseJobList[detailIndex] = resp;
+        },
+        error: (err) => {
+          console.error('Failed to load house jobs:', err);
+        },
+      });
   }
 
   filterChargeByDeptForAllRow() {
     this.detailItems.controls.forEach((group: FormGroup, index) => {
       const deptId = group.get('DepartmentMasterSid')?.value;
-      const department = this.deptList.find(dept => dept.DepartmentMasterSid === deptId);
-      console.log("FILTER CHARGE BY DEPT FOR ALL ROW", {
+      const department = this.deptList.find(
+        (dept) => dept.DepartmentMasterSid === deptId
+      );
+      console.log('FILTER CHARGE BY DEPT FOR ALL ROW', {
         deptId: deptId,
         deptObj: department,
-        deptList: this.deptList
+        deptList: this.deptList,
       });
       if (department) {
         this.filterChargeByDeptForARow(department, index);
       }
-    })
+    });
   }
 
   filterChargeByDeptForARow(dept, rowIndex) {
     console.log(`Filtering Dept from row ${rowIndex}`, {
       department: dept,
-      chargeList: this.chargeList
+      chargeList: this.chargeList,
     });
     const departmentName = dept.departmentName;
-    this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(charge => {
-      const allDepartmentNames = charge.DepartmentMasterSid || [];
-      return allDepartmentNames.includes(departmentName);
-    })
+    this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(
+      (charge) => {
+        const allDepartmentNames = charge.DepartmentMasterSid || [];
+        return allDepartmentNames.includes(departmentName);
+      }
+    );
   }
 
   // Section-3 Voucher Matching Related
@@ -1344,17 +1757,17 @@ ExchangeRate: [1, Validators.required],
 
   patchOutstandingFormArray(transactions: any[]) {
     this.voucherMatchings.clear();
-
-    const currencyInHeader = this.r['CurrencyMasterSid']?.value;
-    const exchangeRateInHeader = this.r['ExchangeRate']?.value;
     const searchType = this.searchOutstandingForm.get('SearchType')?.value;
 
-    transactions.forEach(tx => {
-      console.log("Transaction",tx)
-      const isMatchedRecord = !!tx.VoucherMatchingSid;  // <–– detect matched data
-
+    transactions.forEach((tx) => {
+      console.log('Transaction', tx);
+      const isMatchedRecord = !!tx.MatchingDetailSid; // <–– detect matched data
+      const matchCurrencyForThisTxn = this.currencyList.find(
+        (c) => c.currencyCode === tx.CurrencyCode
+      )?.CurrencyMasterSid;
       const form = this.fb.group({
-        VoucherMatchingHeaderSid : [tx.VoucherMatchingHeaderSid || null],
+        VoucherMatchingHeaderSid: [tx.VoucherMatchingHeaderSid || null],
+        MatchingDetailSid: [tx.MatchingDetailSid || null],
         VoucherMatchingSid: [tx.VoucherMatchingSid || null],
         VoucherTransactionSid: [tx.VoucherTransactionSid],
         VoucherHeaderSid: [tx.VoucherHeaderSid],
@@ -1363,11 +1776,18 @@ ExchangeRate: [1, Validators.required],
         COAMasterSid: [tx.COAMasterSid],
 
         // Voucher Info
-        voucherNo: [tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo],
+        voucherNo: [
+          tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo,
+        ],
         voucherTypeMasterSid: [tx.VoucherTypeMasterSid],
-        voucherType: [tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName || tx.VoucherType],
-        voucherDate: [new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate)],
-        drCr: [tx.DrCr === "C" ? "Cr" : "Dr"],
+        voucherType: [
+          tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName ||
+            tx.VoucherType,
+        ],
+        voucherDate: [
+          new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate),
+        ],
+        drCr: [tx.DrCr === 'C' ? 'Cr' : 'Dr'],
 
         // System amounts
         curr: [tx.CurrencyCode],
@@ -1381,61 +1801,85 @@ ExchangeRate: [1, Validators.required],
 
         // Matching values (either blank or existing)
         matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : currencyInHeader
+          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
         ],
-        matchExRate: [
-          isMatchedRecord ? tx.MatchingExRate : (exchangeRateInHeader || 1)
-        ],
+        matchExRate: [isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate],
         matchCurrAmt: [
-          isMatchedRecord ? tx.MatchingAmount : (searchType === "Invoice" && !this.isEditMode ? tx.OutstandingCurrencyAmount : null )
+          isMatchedRecord
+            ? tx.MatchingAmount
+            : searchType === 'Invoice' && !this.isEditMode
+            ? tx.OutstandingCurrencyAmount
+            : null,
         ],
         matchLocalAmt: [
-          isMatchedRecord ? tx.MatchingLocalAmount : (searchType === "Invoice" && !this.isEditMode ? tx.OutstandingLocalAmount : null )
+          isMatchedRecord
+            ? tx.MatchingLocalAmount
+            : searchType === 'Invoice' && !this.isEditMode
+            ? tx.OutstandingLocalAmount
+            : null,
         ],
-        tdsAmt: [
-          isMatchedRecord ? tx.MatchingTDSAmount ?? null : null
-        ],
+        tdsAmt: [isMatchedRecord ? tx.MatchingTDSAmount ?? null : null],
+        matchPartyAmt: [tx.PartyAmount ?? 0],
 
         balance: [
-          isMatchedRecord ? (tx.OutstandingLocalAmount - tx.LocalAmount) : null
-        ]
+          isMatchedRecord ? tx.OutstandingLocalAmount - tx.LocalAmount : null,
+        ],
+        isTicked: [false],
+        isLimitErrorShown: [false],
       });
 
       // Disable fields
       [
-        'voucherNo', 'voucherType', 'voucherDate', 'drCr',
-        'curr', 'exRate', 'currAmt', 'localAmt', 'osCurrAmt', 'osLocalAmt',
-        'balance'
-      ].forEach(field => form.get(field)?.disable());
-      form.get('matchLocalAmt').valueChanges.subscribe(val => {
+        'voucherNo',
+        'voucherType',
+        'voucherDate',
+        'drCr',
+        'curr',
+        'exRate',
+        'currAmt',
+        'localAmt',
+        'matchPartyAmt',
+        'osCurrAmt',
+        'osLocalAmt',
+        'balance',
+      ].forEach((field) => form.get(field)?.disable());
+      form.get('matchLocalAmt').valueChanges.subscribe((val) => {
         const osLocalAmt = form.get('osLocalAmt')?.value;
-        const balance = Number(osLocalAmt-val).toFixed(2);
+        const balance = Number(osLocalAmt - val).toFixed(2);
         form.get('balance')?.setValue(Number(balance));
       });
       this.voucherMatchings.push(form);
     });
 
-    console.log("Unified FormArray →", this.voucherMatchings.getRawValue());
+    console.log('Unified FormArray →', this.voucherMatchings.getRawValue());
   }
-
 
   patchExchangeRateForMatchRow(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
     const curr = row.get('matchCurr')?.value;
-    this.getExchangeRate(curr).subscribe(rate => {
+
+    this.getExchangeRate(curr).subscribe((rate) => {
       row.get('matchExRate')?.setValue(rate);
-    })
-    this.calculateLocalAmountForMatchRow(index);
+      this.calculateLocalAmountForMatchRow(index, true);
+    });
   }
 
-
-
-  calculateLocalAmountForMatchRow(index: number) {
+  calculateLocalAmountForMatchRow(
+    index: number,
+    recalPartyAmt: boolean = false
+  ) {
     const row = this.voucherMatchings.at(index) as FormGroup;
+
     const amount = Number(row.get('matchCurrAmt')?.value);
     const exchangeRate = Number(row.get('matchExRate')?.value);
-    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, row.get('matchCurr')?.value);
-    const formattedAmount = this.getFormattedAmount(amount, row.get('matchCurr')?.value);
+    const formattedExchangeRate = this.getFormattedExchangeRate(
+      exchangeRate,
+      row.get('matchCurr')?.value
+    );
+    const formattedAmount = this.getFormattedAmount(
+      amount,
+      row.get('matchCurr')?.value
+    );
 
     let finalAmount;
     if (this.formatCurrencyAmountBeforeConcludingLocal) {
@@ -1443,10 +1887,59 @@ ExchangeRate: [1, Validators.required],
     } else {
       finalAmount = Number(amount) * Number(formattedExchangeRate);
     }
-    row.get('matchLocalAmt')?.setValue(this.getFormattedAmount(finalAmount, row.get('matchCurr')?.value));
+    row
+      .get('matchLocalAmt')
+      ?.setValue(
+        this.getFormattedAmount(finalAmount, row.get('matchCurr')?.value)
+      );
+
+    if (recalPartyAmt) {
+      this.calculatePartyAmount(index);
+    }
   }
 
-  
+  recalculateAllMatchingPartyAmounts() {
+    this.voucherMatchings.controls.forEach((group, index) => {
+      this.calculatePartyAmount(index);
+    });
+  }
+
+  calculatePartyAmount(index: number) {
+    const formGroup = this.voucherMatchings.at(index) as FormGroup;
+    const currencyInHeader = this.paymentForm
+      .get('CurrencyMasterSid')
+      ?.getRawValue();
+    const exRateInHeader = this.paymentForm.get('ExchangeRate')?.getRawValue();
+
+    const currAmt = formGroup.get('matchCurrAmt')?.getRawValue();
+    const localAmt = formGroup.get('matchLocalAmt')?.getRawValue();
+    const currencyInMatchRow = formGroup.get('matchCurr')?.getRawValue();
+    const target = formGroup.get('matchPartyAmt');
+    console.log('DEBUG - Calculate Party Amount', {
+      currencyInHeader,
+      exRateInHeader,
+      currAmt,
+      localAmt,
+      currencyInMatchRow,
+    });
+    if (currencyInHeader && currencyInMatchRow) {
+      const normalizedCurrAmt = toNumber(currAmt);
+      const normalizedLocalAmt = toNumber(localAmt);
+      if (currencyInHeader === currencyInMatchRow) {
+        target.setValue(
+          this.getFormattedAmount(normalizedCurrAmt, currencyInMatchRow)
+        );
+      } else {
+        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
+        target.setValue(
+          this.getFormattedAmount(partyAmount, currencyInMatchRow)
+        );
+      }
+    } else {
+      target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
+    }
+  }
+
   /**
    * Remove voucher matching row
    */
@@ -1457,44 +1950,111 @@ ExchangeRate: [1, Validators.required],
 
   getTotalCurrAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('currAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('currAmt')?.value || 0);
+        }
+        return total - Number(control.get('currAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
   }
 
   getTotalLocalAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('localAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('localAmt')?.value || 0);
+        }
+        return total - Number(control.get('localAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
   }
 
   getTotalOSCurrAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('osCurrAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('osCurrAmt')?.value || 0);
+        }
+        return total - Number(control.get('osCurrAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
   }
 
   getTotalOSLocalAmount() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('osLocalAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('osLocalAmt')?.value || 0);
+        }
+        return total - Number(control.get('osLocalAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
   }
 
   getTotalMatchCurrAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('matchCurrAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('matchCurrAmt')?.value || 0);
+        }
+        return total - Number(control.get('matchCurrAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
+  }
+
+  getPartyDetailAmount() {
+    const partyDetail = this.detailItems
+      .getRawValue()
+      .find((d) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
+    const amount = Number(partyDetail?.PartyAmount || 0);
+    return amount.toFixed(2);
+  }
+
+  validatePartyMatchingAmount(): boolean {
+    const totalMatchPartyAmt = toNumber(this.getTotalMatchPartyAmt());
+    const partyDetailAmount = toNumber(this.getPartyDetailAmount());
+    return totalMatchPartyAmt > partyDetailAmount;
   }
 
   getTotalMatchLocalAmt() {
     return this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('matchLocalAmt')?.value || 0), 0).toFixed(2);
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('matchLocalAmt')?.value || 0);
+        }
+        return total - Number(control.get('matchLocalAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
+  }
+
+  getTotalMatchPartyAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('matchPartyAmt')?.value || 0);
+        }
+        return total - Number(control.get('matchPartyAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
   }
 
   getTotalTdsAmt() {
-    return (this.voucherMatchings.controls
-      .reduce((total, control) => total + Number(control.get('tdsAmt')?.value || 0), 0).toFixed(2));
+    return this.voucherMatchings.controls
+      .reduce(
+        (total, control) => total + Number(control.get('tdsAmt')?.value || 0),
+        0
+      )
+      .toFixed(2);
   }
 
   /**
- * Select invoices from outstanding modal
- */
+   * Select invoices from outstanding modal
+   */
   applySelectedInvoices(): void {
-    const selectedInvoices = this.outstandingInvoices.filter((inv) => inv.selected);
+    const selectedInvoices = this.outstandingInvoices.filter(
+      (inv) => inv.selected
+    );
 
     if (selectedInvoices.length === 0) {
       this.toastr.warning('Please select at least one invoice');
@@ -1516,32 +2076,37 @@ ExchangeRate: [1, Validators.required],
           VoucherDate: [invoice.VoucherDate],
           OriginalAmount: [invoice.OriginalAmount],
           OutstandingAmount: [invoice.OutstandingAmount],
-          MatchedAmount: [amountToApply, [Validators.required, Validators.min(0)]],
+          MatchedAmount: [
+            amountToApply,
+            [Validators.required, Validators.min(0)],
+          ],
           CurrencyCode: [invoice.CurrencyCode],
           DrCr: [invoice.DrCr],
           Narration: [''],
           IsAdvance: [false],
-        }),
+        })
       );
     });
 
     this.recalculateTotalAmount();
     this.modalService.dismissAll();
-    this.toastr.success(`${selectedInvoices.length} invoice(s) added`);
+    this.toastr.success(`${selectedInvoices.length} vendor invoice(s) added`);
   }
-
 
   // Section-4 Helper
   getCurrentCompanyBranches() {
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
-    const currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
-    this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
+    const currentCompany = (this.userData.userCompanyMaster || []).find(
+      (ucm) => ucm.CompanyMasterSid === currentCompanyId
+    ).companyMaster;
+    this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(
+      (ubm) => ubm.branchMaster
+    );
     console.log(this.currentCompanyBranches);
   }
 
-
   get r(): { [key: string]: AbstractControl } {
-    return this.paymentForm.controls || {}
+    return this.paymentForm.controls || {};
   }
 
   get interBranches(): FormArray {
@@ -1559,7 +2124,7 @@ ExchangeRate: [1, Validators.required],
         Amount: [0, [Validators.required, Validators.min(0)]],
         InterBranchJV: [''],
         VoucherType: [''],
-      }),
+      })
     );
   }
 
@@ -1584,12 +2149,6 @@ ExchangeRate: [1, Validators.required],
     this.modalService.open(content, { centered: true, size: 'xl' });
   }
 
-
-
-
-
-
-
   // async searchOutstanding(modal?: any): Promise<void> {
   //   const customerSid = this.paymentForm.get('LedgerMasterSid')?.value;
   //   if (!customerSid) {
@@ -1613,8 +2172,6 @@ ExchangeRate: [1, Validators.required],
   //   }
   // }
 
-
-
   /**
    * Calculate total invoice amount from vouchers
    */
@@ -1622,7 +2179,11 @@ ExchangeRate: [1, Validators.required],
     let total = 0;
     this.detailItems.controls.forEach((control) => {
       const matchedAmount = control.get('MatchedAmount')?.value || 0;
-      total += matchedAmount;
+      if (control.get('DrCr')?.value === 'Cr') {
+        total += matchedAmount;
+      } else {
+        total -= matchedAmount;
+      }
     });
 
     this.paymentForm.patchValue({
@@ -1643,7 +2204,10 @@ ExchangeRate: [1, Validators.required],
     const totalAmount = this.paymentForm.get('TotalInvoiceAmount')?.value || 0;
     const tdsPercentage = this.paymentForm.get('TDSPercentage')?.value || 0;
 
-    const tdsAmount = this.paymentService.calculateTDS(totalAmount, tdsPercentage);
+    const tdsAmount = this.paymentService.calculateTDS(
+      totalAmount,
+      tdsPercentage
+    );
     this.paymentForm.patchValue({ TDSAmount: tdsAmount });
   }
 
@@ -1676,83 +2240,91 @@ ExchangeRate: [1, Validators.required],
 
   onCurrencyChange(selected: any) {
     if (!selected) return;
-    
+
     const currencySid = selected.CurrencyMasterSid;
-    
+
     this.paymentForm.patchValue({
       CurrencyMasterSid: currencySid,
-      CurrencyCode: selected.currencyCode
+      CurrencyCode: selected.currencyCode,
     });
-    
+
     this.handleHeaderExchangeRate(currencySid);
   }
   handleDetailExchangeRate(currencySid: number, index: number) {
-  const row = this.detailItems.at(index) as FormGroup;
-  const exCtrl = row.get('ExchangeRate');
+    const row = this.detailItems.at(index) as FormGroup;
+    const exCtrl = row.get('ExchangeRate');
 
-  if (!currencySid) return;
+    if (!currencySid) return;
 
-  // SAME CURRENCY
-  if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-    exCtrl?.setValue(1);
-    exCtrl?.disable({ emitEvent: false });
-    this.calculateLocalAmount(index);
-    return;
+    // SAME CURRENCY
+    if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+      exCtrl?.setValue(1);
+      exCtrl?.disable({ emitEvent: false });
+      this.calculateLocalAmount(index);
+      return;
+    }
+
+    // DIFFERENT CURRENCY
+    exCtrl?.enable({ emitEvent: false });
+    this.patchCurrencyExchangeRateForDetail(currencySid, index);
   }
-
-  // DIFFERENT CURRENCY
-  exCtrl?.enable({ emitEvent: false });
-  this.patchCurrencyExchangeRateForDetail(currencySid, index);
-}
-
 
   patchCurrencyExchangeRate() {
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.value;
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     console.log('Entered patchCurrencyExchangeRate', {
       FromCurrencyId: currencySid,
-      toCurrencyId: companyCurrency
+      toCurrencyId: companyCurrency,
     });
 
     if (currencySid === companyCurrency && currencySid !== null) {
       this.paymentForm.patchValue({
-        ExchangeRate: 1
-      })
+        ExchangeRate: 1,
+      });
+      this.recalculateAllMatchingPartyAmounts();
+      this.recalcPartyAmtForAllDetails();
       return;
     }
 
     const fromCurrencyCode = this.paymentForm.get('CurrencyCode')?.value;
-    const toCurrencyCode = this.currencyList.find(c => c.CurrencyMasterSid === companyCurrency)?.currencyCode;
+    const toCurrencyCode = this.currencyList.find(
+      (c) => c.CurrencyMasterSid === companyCurrency
+    )?.currencyCode;
     if (!fromCurrencyCode || !toCurrencyCode) {
       return;
     }
     console.log('FINDING CURRENCY EXCHANGE', {
       fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode
-    })
+      toCurrencyCode: toCurrencyCode,
+    });
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
-      segment: 'cost'
+      EffectiveFrom: this.isEditMode
+        ? new Date(this.paymentData?.VoucherDate)
+        : new Date(),
+      segment: 'cost',
     };
-    this.accountService.getExchangeRate(payload).subscribe(
-      (resp: any) => {
-        if (resp?.status && resp.data) {
-          console.log('PATCHING EXCHANGE RATE', resp.data);
-          this.paymentForm.patchValue({
-            ExchangeRate: resp.data
-          })
-        }
+    this.accountService.getExchangeRate(payload).subscribe((resp: any) => {
+      if (resp?.status && resp.data) {
+        console.log('PATCHING EXCHANGE RATE', resp.data);
+        this.paymentForm.patchValue({
+          ExchangeRate: resp.data,
+        });
+        this.recalculateAllMatchingPartyAmounts();
+        this.recalcPartyAmtForAllDetails();
       }
-    )
+    });
   }
 
   onPartyChange(party: any) {
-    console.log("Selected Party", party);
-    this.errorLogger();
+    console.log('Selected Party', party);
+    const partyCountry = String(party?.countryMaster?.countryName)
+      .trim()
+      .toLowerCase();
+    errorLogger(this.paymentForm);
     if (!party) {
       this.paymentForm.patchValue({
         PartyMasterSid: null,
@@ -1761,8 +2333,8 @@ ExchangeRate: [1, Validators.required],
         CustomerBranchSid: null,
         COAMasterSid: null,
         LedgerMasterSid: null,
-        GST_VAT: ''
-      })
+        GST_VAT: '',
+      });
       return;
     }
     this.paymentForm.patchValue({
@@ -1772,12 +2344,13 @@ ExchangeRate: [1, Validators.required],
       CustomerBranchSid: party.CustomerBranchSid,
       COAMasterSid: party.COAMappedId,
       LedgerMasterSid: party.SubledgerMasterSid,
-      GST_VAT: party.GSTNo
-    })
+      GST_VAT:
+        partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo,
+    });
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
     }
-    console.log("FORM VALUE AFTER CUSTOMER SELECTED", this.paymentForm.value);
+    console.log('FORM VALUE AFTER CUSTOMER SELECTED', this.paymentForm.value);
   }
 
   // openSearchModal() {
@@ -1811,18 +2384,16 @@ ExchangeRate: [1, Validators.required],
     ctrl.setValue(element.checked);
     if (element.checked) {
       // Only add interBranch tab if not already present
-      if (!this.tabs.find(t => t.name === 'Interbranch')) {
+      if (!this.tabs.find((t) => t.name === 'Interbranch')) {
         this.tabs.push({ name: 'Interbranch', icon: 'fas fa-flag-checkered' });
       }
       // Do not auto-populate interBranches; only add rows when user clicks "Add"
     } else {
       // Remove interBranch tab and clear form array
-      this.tabs = this.tabs.filter(t => t.name !== 'Interbranch');
+      this.tabs = this.tabs.filter((t) => t.name !== 'Interbranch');
       this.interBranches.clear();
     }
   }
-
-
 
   toggleCashOrBank(event: any) {
     const element = event.target as HTMLInputElement;
@@ -1843,7 +2414,7 @@ ExchangeRate: [1, Validators.required],
       InstrumentMode: null,
       InstrumentNumber: '',
       InstrumentDate: null,
-      ClearanceDate: null
+      ClearanceDate: null,
     });
 
     if (element.checked) {
@@ -1861,33 +2432,40 @@ ExchangeRate: [1, Validators.required],
     date?.updateValueAndValidity();
   }
 
- 
-
   getExchangeRate(currency: number | string): Observable<number> {
     if (!currency) {
       return of(1);
     }
 
     if (typeof currency === 'string') {
-      currency = this.currencyList.find(curr => curr.currencyCode === currency)?.CurrencyMasterSid;
+      currency = this.currencyList.find(
+        (curr) => curr.currencyCode === currency
+      )?.CurrencyMasterSid;
     }
     const fromCurrencyId = currency as number;
     const toCurrencyId = this.currentCompany?.CurrencyMasterSid;
 
-    console.log("CURRENCY EXCHANGE IDS", { fromCurrencyId, toCurrencyId });
+    console.log('CURRENCY EXCHANGE IDS', { fromCurrencyId, toCurrencyId });
 
     if (fromCurrencyId === toCurrencyId) {
-      console.log("SAME CURRENCY FOUND ON EXCHANGE RATE");
+      console.log('SAME CURRENCY FOUND ON EXCHANGE RATE');
       return of(this.getFormattedExchangeRate(1, fromCurrencyId));
     }
 
-    const fromCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === fromCurrencyId)?.currencyCode;
-    const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrencyId)?.currencyCode;
+    const fromCurrencyCode = this.currencyList.find(
+      (curr) => curr.CurrencyMasterSid === fromCurrencyId
+    )?.currencyCode;
+    const toCurrencyCode = this.currencyList.find(
+      (curr) => curr.CurrencyMasterSid === toCurrencyId
+    )?.currencyCode;
 
-    console.log("CURRENCY EXCHANGE CODES", { fromCurrencyCode, toCurrencyCode });
+    console.log('CURRENCY EXCHANGE CODES', {
+      fromCurrencyCode,
+      toCurrencyCode,
+    });
 
     if (!fromCurrencyCode || !toCurrencyCode) {
-      console.log("NO CURRENCY CODE FOUND ON EXCHANGE RATE DEFAULTING TO 1");
+      console.log('NO CURRENCY CODE FOUND ON EXCHANGE RATE DEFAULTING TO 1');
       return of(this.getFormattedExchangeRate(1, fromCurrencyId));
     }
 
@@ -1896,34 +2474,41 @@ ExchangeRate: [1, Validators.required],
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom : this.isEditMode ? new Date(this.paymentData?.VoucherDate) : new Date(),
-      segment: 'cost'
+      EffectiveFrom: this.isEditMode
+        ? new Date(this.paymentData?.VoucherDate)
+        : new Date(),
+      segment: 'cost',
     };
 
     return this.accountService.getExchangeRate(payload).pipe(
       map((resp: any) => {
         if (resp.status && resp.data != null) {
-          console.log("EXCHANGE RATE FOUND", resp.data);
+          console.log('EXCHANGE RATE FOUND', resp.data);
           return this.getFormattedExchangeRate(resp.data, fromCurrencyId);
         } else {
-          console.log("Exchange rate not found, defaulting to 1");
+          console.log('Exchange rate not found, defaulting to 1');
           return this.getFormattedExchangeRate(1, fromCurrencyId);
         }
       }),
       catchError((err) => {
-        console.error("Error fetching exchange rate", err);
+        console.error('Error fetching exchange rate', err);
         return of(this.getFormattedExchangeRate(1, fromCurrencyId));
       })
     );
   }
 
-
-  calculateLocalAmount(index: number) {
+  calculateLocalAmount(index: number, recalcPartyAmount: boolean = false) {
     const row = this.detailItems.at(index) as FormGroup;
     const amount = Number(row.get('Amount')?.value);
     const exchangeRate = Number(row.get('ExchangeRate')?.value);
-    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, row.get('CurrencyMasterSid')?.value);
-    const formattedAmount = this.getFormattedAmount(amount, row.get('CurrencyMasterSid')?.value);
+    const formattedExchangeRate = this.getFormattedExchangeRate(
+      exchangeRate,
+      row.get('CurrencyMasterSid')?.value
+    );
+    const formattedAmount = this.getFormattedAmount(
+      amount,
+      row.get('CurrencyMasterSid')?.value
+    );
 
     let finalAmount;
     if (this.formatCurrencyAmountBeforeConcludingLocal) {
@@ -1931,16 +2516,71 @@ ExchangeRate: [1, Validators.required],
     } else {
       finalAmount = Number(amount) * Number(formattedExchangeRate);
     }
-    row.get('LocalAmount')?.setValue(this.getFormattedAmount(finalAmount, row.get('CurrencyMasterSid')?.value));
+    row
+      .get('LocalAmount')
+      ?.setValue(
+        this.getFormattedAmount(
+          finalAmount,
+          row.get('CurrencyMasterSid')?.value
+        )
+      );
+
+    if (recalcPartyAmount) {
+      this.recalcPartyAmtForDetail(index);
+    }
+  }
+
+  recalcPartyAmtForAllDetails() {
+    this.detailItems.controls.forEach((group, index) => {
+      this.recalcPartyAmtForDetail(index);
+    });
+  }
+
+  recalcPartyAmtForDetail(index: number) {
+    const formGroup = this.detailItems.at(index) as FormGroup;
+    const currencyInHeader = this.paymentForm
+      .get('CurrencyMasterSid')
+      ?.getRawValue();
+    const exRateInHeader = this.paymentForm.get('ExchangeRate')?.getRawValue();
+
+    const amount = formGroup.get('Amount')?.getRawValue();
+    const localAmount = formGroup.get('LocalAmount')?.getRawValue();
+    const currencyInMatchRow = formGroup
+      .get('CurrencyMasterSid')
+      ?.getRawValue();
+    const target = formGroup.get('PartyAmount');
+    console.log('DEBUG - Calculate Party Amount', {
+      currencyInHeader,
+      exRateInHeader,
+      amount,
+      localAmount,
+      currencyInMatchRow,
+    });
+    if (currencyInHeader && currencyInMatchRow) {
+      const normalizedAmt = toNumber(amount);
+      const normalizedLocalAmt = toNumber(localAmount);
+      if (currencyInHeader === currencyInMatchRow) {
+        target.setValue(
+          this.getFormattedAmount(normalizedAmt, currencyInMatchRow)
+        );
+      } else {
+        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
+        target.setValue(
+          this.getFormattedAmount(partyAmount, currencyInMatchRow)
+        );
+      }
+    } else {
+      target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
+    }
   }
 
   setCurrencyCode(CurrencyMasterSid: number) {
-    if(!CurrencyMasterSid || this.currencyList.length === 0) return;
-    const code = this.currencyList.find(c => c.CurrencyMasterSid === CurrencyMasterSid)?.currencyCode;
+    if (!CurrencyMasterSid || this.currencyList.length === 0) return;
+    const code = this.currencyList.find(
+      (c) => c.CurrencyMasterSid === CurrencyMasterSid
+    )?.currencyCode;
     this.r['CurrencyCode']?.setValue(code);
   }
-
-
 
   clearSearchFields(type: string) {
     this.searchOutstandingForm.patchValue({
@@ -1948,10 +2588,9 @@ ExchangeRate: [1, Validators.required],
       CustomerName: '',
       VendorInvoiceNumber: '',
       HouseNumber: '',
-      FilterText: ''
+      FilterText: '',
     });
   }
-
 
   /**
    * Get the number of decimal places allowed for amounts
@@ -1959,9 +2598,13 @@ ExchangeRate: [1, Validators.required],
    * Example: getAmountDecimalPlaces('USD') returns 2
    */
   public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
-    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+    );
     if (currency) {
-      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      const config = this.currencyConfigService.getCurrencyConfig(
+        currency.currencyCode
+      );
       return config?.amountDecimal;
     }
     return 2;
@@ -1969,26 +2612,45 @@ ExchangeRate: [1, Validators.required],
 
   /**
    * Get the number of decimal places allowed for exchange rates
-   * Example: getExchangeRateDecimalPlaces('USD') returns 3
+   * Example: getExchangeRateDecimalPlaces('12') returns 3
    */
-  public getExchangeRateDecimalPlaces(CurrencyMasterSid: string): number {
-    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+  public getExchangeRateDecimalPlaces(CurrencyMasterSid: number): number {
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+    );
     if (currency) {
-      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      const config = this.currencyConfigService.getCurrencyConfig(
+        currency.currencyCode
+      );
       return config?.exchangeDecimal;
     }
     return 2;
   }
   /**
- * Format an amount with currency symbol and comma separators
- * Example: getFormattedAmount(1234.56, 'USD') returns '$1,234.56'
- */
+   * Get the number of decimal places allowed for exchange rates
+   * Example: getExchangeRateDecimalPlaces('USD') returns 3
+   */
+  public getExchangeRateDecimalPlacesWithCode(CurrencyCode : string): number {
+    if (CurrencyCode) {
+      const config = this.currencyConfigService.getCurrencyConfig(
+       CurrencyCode
+      );
+      return config?.exchangeDecimal;
+    }
+    return 2;
+  }
+  /**
+   * Format an amount with currency symbol and comma separators
+   * Example: getFormattedAmount(1234.56, 'USD') returns '$1,234.56'
+   */
   public getFormattedAmount(amount: number, CurrencyMasterSid: number) {
-    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+    );
     const input = {
       value: amount,
-      currencyCode: currency?.currencyCode
-    }
+      currencyCode: currency?.currencyCode,
+    };
     return this.currencyFormatService.formatAmount(input, false);
   }
 
@@ -2000,114 +2662,63 @@ ExchangeRate: [1, Validators.required],
    * Format an exchange rate as a string
    * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
    */
-  public getFormattedExchangeRate(rate: number, CurrencyMasterSid: number): number {
-    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+  public getFormattedExchangeRate(
+    rate: number,
+    CurrencyMasterSid: number
+  ): number {
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+    );
     return this.currencyFormatService.formatExchangeRate({
       value: rate,
-      currencyCode: currency?.currencyCode
+      currencyCode: currency?.currencyCode,
     });
   }
 
-
-
-
-  private findInvalidControlsRecursive(form: FormGroup | FormArray): string[] {
-    let invalidControls: string[] = [];
-    Object.keys(form.controls).forEach(key => {
-      const control = (form as any).get(key);
-      if (control.invalid) {
-        invalidControls.push(key);
-      }
-      if (control instanceof FormGroup || control instanceof FormArray) {
-        invalidControls = invalidControls.concat(
-          this.findInvalidControlsRecursive(control).map(childKey => `${key}.${childKey}`)
-        );
+  validateAmount() {
+    let totalCredits = 0;
+    let totalDebits = 0;
+    (this.detailItems.getRawValue() || []).forEach((vd) => {
+      // console.log(vd)
+      if (vd.DrCr === 'D') {
+        totalCredits += Number(vd.PartyAmount) || 0;
+      } else {
+        totalDebits += Number(vd.PartyAmount) || 0;
       }
     });
-    return invalidControls;
+    this.totalCredits = totalCredits || 0;
+    this.totalDebits = totalDebits || 0;
   }
-
-  public errorLogger(): void {
-    console.log('Form Status:', this.paymentForm.status);
-    console.log('Form Value', this.paymentForm.value);
-    if (this.paymentForm.invalid) {
-      const invalid = this.findInvalidControlsRecursive(this.paymentForm);
-      console.log('Invalid controls:', invalid);
-    } else {
-      console.log('No invalid controls found.');
-    }
-  }
-
-  private setupBillMatchingValidation(): void {
-    this.voucherMatchings.valueChanges
-      .subscribe(() => this.validateTotalMatchingAmount());
-    this.detailItems.valueChanges
-      .subscribe(() => this.validateTotalMatchingAmount());
-  }
-
-  private validateTotalMatchingAmount(): void {
-    // Find party detail (D) row: usually first or with party LedgerMasterSid
-    console.log("Validating");
-    const detailItems = this.detailItems.getRawValue();
-    const partyDetail = detailItems.find((d: any) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
-    if(!partyDetail) {
-      this.matchingError = null;
-      return;
-    }
-    const partyAmount = Number(partyDetail?.Amount ?? 0);
-    console.log("party info",{
-      partyDetail,
-      partyAmount
-    })
-
-    // Calculate sum of all matching amounts
-    const totalBillMatchingAmount = this.voucherMatchings.controls
-      .reduce((sum, c) => sum + Number(c.get('matchCurrAmt')?.value ?? 0), 0);
-
-    console.log("totalBillMatchingAmount",totalBillMatchingAmount);
-    console.log(totalBillMatchingAmount > partyAmount);
-    if (totalBillMatchingAmount > partyAmount) {
-       this.matchingError = 'Total bill matching amount cannot be greater than party detail amount.';
-    } else {
-      if (this.matchingError) {
-        // Remove the custom error if present and condition is not met
-         this.matchingError = null;
-      }
-    }
-    console.log("FINAL DECISION",this.matchingError);
-    this.paymentForm.updateValueAndValidity();
-  }
-
-
-
-
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-
   reportPayment() {
     const modalRef = this.modalService.open(PaymentPrintComponent, {
       size: 'xl',
       scrollable: true,
-    })
+    });
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
   }
-       
+
   reportBankPayment() {
     const modalRef = this.modalService.open(BankPaymentPrintComponent, {
       size: 'xl',
       scrollable: true,
-    })
+    });
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
   }
 
- showInfo() {
+  showInfo() {
     if (!this.paymentData) return;
-    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    const modalRef = this.modalService.open(DetailsComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
     modalRef.componentInstance.item = this.paymentData;
     modalRef.componentInstance.idLabel = 'Payment ID';
     modalRef.componentInstance.idValue = this.paymentData?.VoucherHeaderSid;
@@ -2118,7 +2729,7 @@ ExchangeRate: [1, Validators.required],
     const modalRef = this.modalService.open(EdocComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
     });
     modalRef.componentInstance.screenName = 'Edoc';
     modalRef.componentInstance.formData = this.paymentData;
@@ -2127,9 +2738,9 @@ ExchangeRate: [1, Validators.required],
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       BranchMasterSid: this.currentBranch.BranchMasterSid,
       MenuMasterSid: this.currentMenuId,
-      DocumentSid: this.paymentData?.VoucherHeaderSid
-    }
-    this.commonService.documentData.set(data)
+      DocumentSid: this.paymentData?.VoucherHeaderSid,
+    };
+    this.commonService.documentData.set(data);
   }
 
   openTandC() {
@@ -2164,7 +2775,9 @@ ExchangeRate: [1, Validators.required],
         if (resp && resp.status) {
           return resp.data;
         }
-        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+        this.appSettingService.showError(
+          'Failed to load Terms and Conditions: Invalid response'
+        );
         return [];
       }),
       catchError((error) => {
@@ -2179,7 +2792,7 @@ ExchangeRate: [1, Validators.required],
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
     });
   }
 
@@ -2188,80 +2801,153 @@ ExchangeRate: [1, Validators.required],
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
     });
     modalRef.componentInstance.menuMasterSid = this.currentMenuId;
     modalRef.componentInstance.documentSid = this.headerId;
   }
 
-
   openFollowup() {
-    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    const modalRef = this.modalService.open(FollowUpComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
   }
   getCurrencySidFromCode(code: string) {
-  if (!code || !this.currencyList) return null;
+    if (!code || !this.currencyList) return null;
 
-  return this.currencyList.find(c => 
-      c.currencyCode?.toUpperCase() === code.toUpperCase()
-  )?.CurrencyMasterSid || null;
-}
-validateAmount() {
-  let totalCredits = 0;
-  let totalDebits = 0;
-
-  (this.detailItems.getRawValue() || []).forEach(vd => {
-    if (vd.DrCr === 'C') {
-      totalCredits += Number(vd.Amount) || 0;
-    } else {
-      totalDebits += Number(vd.Amount) || 0;
-    }
-  });
-
-  this.totalCredits = totalCredits || 0;
-  this.totalDebits = totalDebits || 0;
-}
-
-
-
-onTickMatch(index: number, event: any) {
-  const checked = event.target.checked;
-  const row = this.voucherMatchings.at(index) as FormGroup;
-
-  if (!checked) {
-    row.patchValue({
-      matchCurr: null,
-      matchExRate: null,
-      matchCurrAmt: null,
-      matchLocalAmt: null
-    });
-    return;
+    return (
+      this.currencyList.find(
+        (c) => c.currencyCode?.toUpperCase() === code.toUpperCase()
+      )?.CurrencyMasterSid || null
+    );
   }
 
-  const originalCurr = row.get('curr')?.value;      
-  const osCurrAmt = Number(row.get('osCurrAmt')?.value);
-  const osLocalAmt = Number(row.get('osLocalAmt')?.value);
-  const exRate = Number(row.get('exRate')?.value);
+  onTickMatch(index: number, event: any) {
+    const checked = event.target.checked;
+    const row = this.voucherMatchings.at(index) as FormGroup;
 
-  console.log('originalCurr:', originalCurr);
+    if (!checked) {
+      row.patchValue({
+        // matchCurr: null,
+        // matchExRate: null,
+        matchCurrAmt: null,
+        matchLocalAmt: null,
+        matchPartyAmt: null,
+      });
+      this.markAsDirty();
+      return;
+    }
 
-  // FIXED HERE
-  const currencySid = this.getCurrencySidFromCode(originalCurr);
+    const originalCurr = row.get('curr')?.value;
+    const osCurrAmt = Number(row.get('osCurrAmt')?.value);
+    const osLocalAmt = Number(row.get('osLocalAmt')?.value);
+    const exRate = Number(row.get('exRate')?.value);
 
-  console.log("✔ FIXED currencySid:", currencySid);
+    console.log('originalCurr:', originalCurr);
 
-  row.patchValue({
-    matchCurr: currencySid,      
-    matchExRate: exRate,
-    matchCurrAmt: osCurrAmt,
-    matchLocalAmt: osLocalAmt
-  });
-  row.get('isTicked')?.setValue(checked);
+    // FIXED HERE
+    const currencySid = this.getCurrencySidFromCode(originalCurr);
 
+    console.log('✔ FIXED currencySid:', currencySid);
 
-  console.log("✔ PATCHED ROW:", row.value);
+    row.patchValue({
+      matchCurr: currencySid,
+      matchExRate: exRate,
+      matchCurrAmt: osCurrAmt,
+      matchLocalAmt: osLocalAmt,
+    });
+    this.calculatePartyAmount(index);
+    row.get('isTicked')?.setValue(checked);
 
-  // this.calculateLocalAmountForMatchRow(index);
-}
+    console.log('✔ PATCHED ROW:', row.value);
 
-  
+    // this.calculateLocalAmountForMatchRow(index);
+  }
+
+  validateMatchLimits(index: number) {
+    const row = this.voucherMatchings.at(index) as FormGroup;
+
+    const osCurr = Number(row.get('osCurrAmt')?.value || 0);
+    const osLocal = Number(row.get('osLocalAmt')?.value || 0);
+
+    const currAmt = Number(row.get('matchCurrAmt')?.value || 0);
+    const localAmt = Number(row.get('matchLocalAmt')?.value || 0);
+
+    // Skip check if ticked
+    if (row.get('isTicked')?.value === true) return;
+
+    // CONDITION VIOLATION
+    const violatesCurr = currAmt > osCurr;
+    const violatesLocal = localAmt > osLocal;
+
+    if (violatesCurr || violatesLocal) {
+      // SHOW ERROR ONLY ONCE
+      if (!row.get('isLimitErrorShown')?.value) {
+        const msg = `
+        Matching Curr. Amount cannot be greater than OS Curr.
+        Matching Local Amount cannot be greater than OS Local Amount.
+      `;
+
+        this.toastr.error(msg, 'Validation Error');
+
+        row.patchValue({ isLimitErrorShown: true });
+
+        // Set field errors
+        row.get('matchCurrAmt')?.setErrors({ limitExceeded: true });
+        row.get('matchLocalAmt')?.setErrors({ limitExceeded: true });
+      }
+
+      return; // do not clear error until corrected
+    }
+
+    // IF VALUE NOW VALID → RESET FLAG
+    if (row.get('isLimitErrorShown')?.value) {
+      row.patchValue({ isLimitErrorShown: false });
+    }
+
+    // Clear errors
+    row.get('matchCurrAmt')?.setErrors(null);
+    row.get('matchLocalAmt')?.setErrors(null);
+  }
+
+  isUAECompany() {
+    return this.currentCompanyCountryCode === 'united arab emirates';
+  }
+
+  isUSACompany() {
+    return this.currentCompanyCountryCode === 'united states';
+  }
+
+  isIndianCompany() {
+    return this.currentCompanyCountryCode === 'india';
+  }
+
+  checkVoucherPostingMechanism() {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const menuName = 'Receipt';
+    if (!companyId || !branchId || !menuName) {
+      return;
+    }
+    this.accountService
+      .checkVoucherPostingMechanism({
+        CompanyMasterSid: companyId,
+        BranchMasterSid: branchId,
+        MenuName: 'Payment',
+      })
+      .subscribe({
+        next: (resp) => {
+          if (resp.status) {
+            this.isAutoPosting = Boolean(resp.data);
+          } else {
+            this.isAutoPosting = false;
+          }
+        },
+        error: (error: any) => {
+          console.error('Error checking voucher posting mechanism:', error);
+        },
+      });
+  }
 }
