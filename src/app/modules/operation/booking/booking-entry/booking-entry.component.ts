@@ -1310,7 +1310,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
       BookingCargoSid: cargoData?.BookingCargoSid,
-      CargoType: cargoData?.CargoType,
+      CargoType: cargoData?.CargoType || 'General',
       ContainerType: cargoData?.ContainerType,
       NoofContainers: cargoData?.NoofContainers,
       GrossWeight: cargoData?.GrossWeight,
@@ -1742,7 +1742,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
       bookingCargo: {
         BookingCargoSid: cargoFormValue.BookingCargoSid || null,
-        CargoType: cargoFormValue.CargoType || null,
+        CargoType: cargoFormValue.CargoType || 'General',
         ContainerType: cargoFormValue.ContainerType || null,
         NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
         GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
