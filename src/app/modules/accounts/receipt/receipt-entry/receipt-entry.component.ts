@@ -426,16 +426,15 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       });
     });
     // this.setupBillMatchingValidation()
-    this.receiptForm.setValidators(consistentExchangeRatesValidator());
+    this.receiptForm.setValidators(consistentExchangeRatesValidator(companyCurrency, this.currentCurrencyCode));
     this.receiptForm.updateValueAndValidity();
-    const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
 
     this.receiptForm.patchValue({
-      CurrencyMasterSid: companyCurrencySid,
+      CurrencyMasterSid: companyCurrency,
     });
 
-    this.setCurrencyCode(companyCurrencySid);
-    this.handleHeaderExchangeRate(companyCurrencySid);
+    this.setCurrencyCode(companyCurrency);
+    this.handleHeaderExchangeRate(companyCurrency);
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -707,7 +706,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         this.patchOutstandingFormArray(res);
       } else {
         const searchType = this.searchOutstandingForm.get('SearchType')?.value;
-        this.appSettingService.showError(`No outstanding found for this ${searchType}.`)
+        this.appSettingService.showError(
+          `No outstanding found for this ${searchType}.`
+        );
       }
     });
   }
@@ -820,15 +821,23 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       return;
     }
 
-    if (this.receiptForm.hasError('inconsistentExchangeRates')) {
-      const errorMsg = getExchangeRateErrorMessage(
-        this.receiptForm,
-        this.currencyList
-      );
-      this.appSettingService.showError(errorMsg);
-      if (resolve) resolve(false);
-      this.isSaving = false;
-      return;
+    // Enhanced exchange rate validation - checks all three error types
+    if (this.receiptForm.errors) {
+      const hasExchangeRateError =
+        this.receiptForm.errors['inconsistentExchangeRates'] ||
+        this.receiptForm.errors['foreignCurrencyRateOne'] ||
+        this.receiptForm.errors['exchangeRateZero'];
+
+      if (hasExchangeRateError) {
+        const errorMsg = getExchangeRateErrorMessage(
+          this.receiptForm,
+          this.currencyList
+        );
+        this.appSettingService.showError(errorMsg);
+        if (resolve) resolve(false);
+        this.isSaving = false;
+        return;
+      }
     }
 
     const partyDetail = detailItems.find(
@@ -1505,7 +1514,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         data?.CurrencyCode || this.currentCurrencyCode,
         Validators.required,
       ],
-      ExchangeRate: [data?.ExchangeRate || 1, Validators.required],
+      ExchangeRate: [data?.ExchangeRate || 0, Validators.required],
 
       NumberOfUnit: [data?.NumberOfUnit || 1.0],
       Rate: [data?.Rate || 1],
@@ -1587,14 +1596,14 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (syncExRate) {
       this.handleDetailExchangeRate(currencySid, lastAddedRow);
     }
-    const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
-    localAmountTriggeringCtrls.forEach((ctrl) => {
-      newRow.get(ctrl)?.valueChanges.subscribe(() => {
-        if (!this.isSaving && !this.isLoading) {
-          this.calculateLocalAmount(lastAddedRow, true);
-        }
-      });
-    });
+    // const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
+    // localAmountTriggeringCtrls.forEach((ctrl) => {
+    //   newRow.get(ctrl)?.valueChanges.subscribe(() => {
+    //     if (!this.isSaving && !this.isLoading) {
+    //       this.calculateLocalAmount(lastAddedRow, true);
+    //     }
+    //   });
+    // });
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
@@ -1649,7 +1658,8 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const bankLedger = bankLedgerSource.find(
       (ledger) => ledger.COAMasterSid === bankCoaSid
     );
-
+    const headerCurrencyId = this.r['CurrencyMasterSid']?.value;
+    const headerCurrencyCode = this.r['CurrencyCode']?.value;
     // 2. Find the selected party ledger
     const partyLedger = this.partyList.find(
       (p) => p.CustomerBranchSid === partySid
@@ -1673,13 +1683,16 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
       DrCr: 'C',
-      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      CurrencyCode: this.r['CurrencyCode']?.value,
+      CurrencyMasterSid: headerCurrencyId,
+      CurrencyCode: headerCurrencyCode,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount: outstandingCurrencyAmount,
     };
     console.log('PartyData', partyData);
-    this.addDetailRow(partyData);
+    this.addDetailRow(partyData,false);
+    if(headerCurrencyId === this.currentCompany?.CurrencyMasterSid){
+      this.detailItems.at(this.detailItems.length - 1).get('ExchangeRate')?.disable();
+    }
     this.fetchLedgerForCOA(partyLedger, 0);
     this.calculateLocalAmount(0, true);
 
@@ -1689,13 +1702,16 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
       DrCr: 'D',
-      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      CurrencyCode: this.r['CurrencyCode']?.value,
+      CurrencyMasterSid: headerCurrencyId,
+      CurrencyCode: headerCurrencyCode,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount: outstandingCurrencyAmount,
     };
     console.log('BankData', bankData);
-    this.addDetailRow(bankData);
+    this.addDetailRow(bankData,false);
+    if(headerCurrencyId === this.currentCompany?.CurrencyMasterSid){
+      this.detailItems.at(this.detailItems.length - 1).get('ExchangeRate')?.disable();
+    }
     this.fetchLedgerForCOA(bankLedger, 1);
     console.log('RAW VALUE', this.detailItems.at(1).getRawValue());
     this.calculateLocalAmount(1, true);
@@ -1817,10 +1833,11 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       )?.currencyCode;
       row.get('ExchangeRate')?.setValue(
         this.currencyFormatService.formatExchangeRate({
-          value: Number(resp || 1),
+          value: Number(resp),
           currencyCode,
         })
       );
+      this.calculateLocalAmount(detailIndex, true);
     });
   }
 
@@ -2105,16 +2122,21 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (currencyInHeader && currencyInMatchRow) {
       const normalizedCurrAmt = toNumber(currAmt);
       const normalizedLocalAmt = toNumber(localAmt);
+      const normalizedExRateInHeader = toNumber(exRateInHeader);
 
-      if (currencyInHeader === currencyInMatchRow) {
-        target.setValue(
-          this.getFormattedAmount(normalizedCurrAmt, currencyInMatchRow)
-        );
+      if (!normalizedExRateInHeader) {
+        target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
       } else {
-        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
-        target.setValue(
-          this.getFormattedAmount(partyAmount, currencyInMatchRow)
-        );
+        if (currencyInHeader === currencyInMatchRow) {
+          target.setValue(
+            this.getFormattedAmount(normalizedCurrAmt, currencyInMatchRow)
+          );
+        } else {
+          const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
+          target.setValue(
+            this.getFormattedAmount(partyAmount, currencyInMatchRow)
+          );
+        }
       }
     } else {
       target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
@@ -2506,13 +2528,22 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       segment: 'revenue',
     };
     this.accountService.getExchangeRate(payload).subscribe((resp: any) => {
-      if (resp?.status && resp.data) {
+      if (resp?.status) {
         console.log('PATCHING EXCHANGE RATE', resp.data);
-        this.receiptForm.patchValue({
-          ExchangeRate: resp.data,
-        });
+        if (resp.data) {
+          this.receiptForm.patchValue({
+            ExchangeRate: resp.data,
+          });
+        } else {
+          this.receiptForm.patchValue({
+            ExchangeRate: 0,
+          });
+          this.appSettingService.showError(resp.message);
+        }
         this.recalculateAllMatchingPartyAmounts();
         this.recalcPartyAmtForAllDetails();
+      } else {
+        this.appSettingService.showError('Error fetching exchange rate');
       }
     });
   }
@@ -2688,17 +2719,22 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     return this.accountService.getExchangeRate(payload).pipe(
       map((resp: any) => {
-        if (resp.status && resp.data != null) {
-          console.log('EXCHANGE RATE FOUND', resp.data);
-          return this.getFormattedExchangeRate(resp.data, fromCurrencyId);
+        if (resp.status) {
+          if (resp.data) {
+            console.log('EXCHANGE RATE FOUND', resp.data);
+            return this.getFormattedExchangeRate(resp.data, fromCurrencyId);
+          } else {
+            this.appSettingService.showError(resp.message);
+            return this.getFormattedExchangeRate(0, fromCurrencyId);
+          }
         } else {
-          console.log('Exchange rate not found, defaulting to 1');
-          return this.getFormattedExchangeRate(1, fromCurrencyId);
+          this.appSettingService.showError(resp.message);
+          return this.getFormattedExchangeRate(0, fromCurrencyId);
         }
       }),
       catchError((err) => {
         console.error('Error fetching exchange rate', err);
-        return of(this.getFormattedExchangeRate(1, fromCurrencyId));
+        return of(this.getFormattedExchangeRate(0, fromCurrencyId));
       })
     );
   }
@@ -2765,15 +2801,20 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (currencyInHeader && currencyInMatchRow) {
       const normalizedAmt = toNumber(amount);
       const normalizedLocalAmt = toNumber(localAmount);
-      if (currencyInHeader === currencyInMatchRow) {
-        target.setValue(
-          this.getFormattedAmount(normalizedAmt, currencyInMatchRow)
-        );
+      const normalizedExRateInHeader = toNumber(exRateInHeader);
+      if (!normalizedExRateInHeader) {
+        target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
       } else {
-        const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
-        target.setValue(
-          this.getFormattedAmount(partyAmount, currencyInMatchRow)
-        );
+        if (currencyInHeader === currencyInMatchRow) {
+          target.setValue(
+            this.getFormattedAmount(normalizedAmt, currencyInMatchRow)
+          );
+        } else {
+          const partyAmount = normalizedLocalAmt / toNumber(exRateInHeader);
+          target.setValue(
+            this.getFormattedAmount(partyAmount, currencyInMatchRow)
+          );
+        }
       }
     } else {
       target.setValue(this.getFormattedAmount(0, currencyInMatchRow));
@@ -2832,15 +2873,13 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     }
     return 2;
   }
-    /**
+  /**
    * Get the number of decimal places allowed for exchange rates
    * Example: getExchangeRateDecimalPlaces('USD') returns 3
    */
-  public getExchangeRateDecimalPlacesWithCode(CurrencyCode : string): number {
+  public getExchangeRateDecimalPlacesWithCode(CurrencyCode: string): number {
     if (CurrencyCode) {
-      const config = this.currencyConfigService.getCurrencyConfig(
-       CurrencyCode
-      );
+      const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
       return config?.exchangeDecimal;
     }
     return 2;

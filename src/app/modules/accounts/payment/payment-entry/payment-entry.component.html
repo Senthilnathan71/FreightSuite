@@ -595,10 +595,9 @@
                     {{
                       currentCompanyCountryCode === "in"
                         ? "GST No."
-                        : currentCompanyCountryCode === "ae" ||
-                          currentCompanyCountryCode === "us"
+                        : currentCompanyCountryCode === "ae"
                         ? "VAT No."
-                        : "GST No./VAT No."
+                        : "Tax No."
                     }}
                   </label>
                 </div>
@@ -913,6 +912,8 @@
                         d.get('CurrencyMasterSid')?.value
                       )
                     "
+                    (input)="calculateLocalAmount(i,true)"
+                    (blur)="calculateLocalAmount(i,true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -925,6 +926,8 @@
                     [DecimalPrecisionAfter]="
                       getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)
                     "
+                    (input)="calculateLocalAmount(i,true)"
+                    (blur)="calculateLocalAmount(i,true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -1170,41 +1173,6 @@
                       {{ v.get("voucherNo")?.value }}
                     </a>
 
-                    <a
-                      *ngSwitchCase="'VN'"
-                      [routerLink]="[
-                        '/operation/vendor-invoice/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 text-decoration-underline"
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Credit Note -->
-                    <a
-                      *ngSwitchCase="'CRN'"
-                      [routerLink]="[
-                        '/operation/credit-note/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 text-decoration-underline"
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Vendor Credit Note -->
-                    <a
-                      *ngSwitchCase="'VCN'"
-                      [routerLink]="[
-                        '/operation/vendor-credit-note/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 text-decoration-underline"
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
                     <!-- Receipt -->
                     <a
                       *ngSwitchCase="'RPT'"
@@ -1240,6 +1208,50 @@
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
+                    <!-- Reversal Journal Voucher -->
+                    <a
+                      *ngSwitchCase="'RJV'"
+                      [routerLink]="[
+                        '/accounts/reversal-voucher/entry',
+                        v.get('VoucherHeaderSid')?.value
+                      ]"
+                      class="fw-bold px-2 text-decoration-underline"
+                    >
+                      {{ v.get("voucherNo")?.value }}
+                    </a>
+
+                    
+                    <!-- Credit Note -->
+                    <a
+                      *ngSwitchCase="'CRN'"
+                      [routerLink]="[
+                        '/operation/credit-note/entry',
+                        v.get('VoucherHeaderSid')?.value
+                      ]"
+                      class="fw-bold px-2 text-decoration-underline"
+                    >
+                      {{ v.get("voucherNo")?.value }}
+                    </a>
+
+                    <!-- Vendor Credit Note -->
+                    <a
+                      *ngSwitchCase="'VRN'"
+                      [routerLink]="[
+                        '/operation/vendor-credit-note/entry',
+                        v.get('VoucherHeaderSid')?.value
+                      ]"
+                      class="fw-bold px-2 text-decoration-underline"
+                    >
+                      {{ v.get("voucherNo")?.value }}
+                    </a>
+
+                    <!-- Default case -->
+                    <span
+                      *ngSwitchDefault
+                      class="fw-bold px-2 text-decoration-underline"
+                    >
+                      {{ v.get("voucherNo")?.value }}
+                    </span>
                   </ng-container>
                 </div>
               </td>
