@@ -283,6 +283,13 @@ export class CostEntryComponent implements OnInit {
   currentBranchStateName : string;
   currentBranchstate:string;
   chargeTaxGroupMap: Map<number, any[]> = new Map(); // Map of BookingRatesSid to selected tax group
+  currentCompanyCountry : {
+    CountryMasterSid: number;
+    countryName: string;
+    countryCode : string;
+  }
+  currentCompanyCountryCode : string;
+  currentBranchCity : any;
   /**
    * Calculate local amount before round off the Currency Amount
    * 
@@ -328,12 +335,17 @@ export class CostEntryComponent implements OnInit {
   ngOnInit(): void {
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-  this.currentBranchstate = this.currentBranch?.StateMasterSid;
+  this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
+  this.currentCompanyCountryCode = String(this.currentCompanyCountry.countryCode).toLowerCase();
+  this.currentBranchstate = this.appSettingService.getCurrentBranchState()?.StateMasterSid;
+  this.currentBranchCity = this.appSettingService.getCurrentBranchCity()?.CityMasterSid;
+
   
   // Get user data first
   this.userData = this.appSettingService.getDecryptedUserProfile();
   this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
   this.countryOfCompany = (this.currentCompany?.countryMaster?.countryName || "").trim().toLowerCase();
+
   this.currentBranch = this.appSettingService.getCurrentBranchInfo();
   
   this.isBooking = this.screenName === "Booking";
@@ -2091,23 +2103,26 @@ createRateFormGroup(data?: any): FormGroup {
   async revalidateTaxForHSSAC() {
 
     // Company related info
-    const companyCountry = (this.countryOfCompany || '').trim().toLowerCase();
     const companyState = this.getCompanyState();
 
     // Customer related info
     const customerCountry = this.getCustomerCountryFromCharge(this.availableCharges[0], this.selectedVoucherType === 'Invoice');
     const placeOfSupplyState = this.placeOfSupply;
-
+    console.log("DETERMINING TAX CATEGORY",{
+      companyState,
+      placeOfSupplyState,
+      customerCountry
+    })
     const TaxCategory = this.determineTaxCategory(companyState, placeOfSupplyState, customerCountry);
 
     // Check if UAE and company country is not same as customer country
     let skipChargeGroup: boolean = false;
-    if (companyCountry === 'united arab emirates' && companyCountry !== customerCountry) {
+    if (['ae','us'].includes(this.currentCompanyCountryCode) && this.currentCompanyCountryCode !== customerCountry) {
       skipChargeGroup = true;
     }
 
     console.log("DEBUG COUNTRY", {
-      companyCountry,
+      companyCountry : this.currentCompanyCountry,
       customerCountry,
       skipChargeGroup
     })
@@ -2387,7 +2402,11 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
       };
 
       if (taxMasters && taxMasters.length > 0) {
-        if (this.isUAECompany()) {
+        console.log("Inside Tax Master Loop",{
+          taxMasters,
+          companyCountry : this.currentCompanyCountryCode
+        })
+        if (['ae','us'].includes(this.currentCompanyCountryCode)) {
           // UAE or VAT countries - apply full VAT rate 
           const vatTax = taxMasters.find(t => t.TaxCode === 'VAT');
           const vatAmount = (chargeAmount * Number(vatTax.TaxRate)) / 100;
@@ -2405,7 +2424,7 @@ private async calculateManualTax(charges: any[], isRevenue: boolean) {
           taxType = 'VAT';
           console.log('VAT Applied:', { vatAmount,taxRate : vatTax.TaxRate, chargeAmount });
         } 
-        else if (this.isIndianCompany()) {
+        else if (this.currentCompanyCountryCode === 'in') {
           // GST logic - determine IGST vs CGST+SGST
           const isIndianCustomer = customerCountry && 
                                   (customerCountry.toLowerCase() === 'india' || 
@@ -2760,6 +2779,7 @@ getChargeTaxPercentage(charge: any): string {
   if (selectedTaxGroup) {
     const isIndia = this.isIndianCompany();
     const isUAE = this.isUAECompany();
+    const isUS = this.isUSCompany();
 
     if (isIndia) {
       // For India - display as GST
@@ -2788,6 +2808,10 @@ getChargeTaxPercentage(charge: any): string {
       // For UAE - display as VAT
       const vatTax = selectedTaxGroup.find(t => t.TaxCode === 'VAT');
       return `VAT ${vatTax?.TaxRate || 0}%`;
+    } else if(isUS) {
+      // For US - display as TAX
+      const taxTax = selectedTaxGroup.find(t => t.TaxCode === 'VAT');
+      return `TAX ${taxTax?.TaxRate || 0}%`;
     } else {
       const vatTax = selectedTaxGroup.find(t => t.TaxCode === 'VAT');
       if (vatTax) {
@@ -2814,6 +2838,7 @@ getChargeTaxPercentage(charge: any): string {
   // Display based on company country
   const isIndia = this.isIndianCompany();
   const isUAE = this.isUAECompany();
+  const isUS = this.isUSCompany();
 
   if (isIndia) {
     const gstItem = lineItem as any;
@@ -2825,6 +2850,9 @@ getChargeTaxPercentage(charge: any): string {
   } else if (isUAE) {
     const vatItem = lineItem as any;
     return `VAT ${vatItem?.vatRate}%`;
+  } else if(isUS) {
+    const taxItem = lineItem as any;
+    return `TAX ${taxItem?.vatRate}%`;
   } else {
     // Other countries
     if (this.chargeSelectionTaxResult.type === 'GST') {
@@ -2864,7 +2892,7 @@ getChargeTaxPercentage(charge: any): string {
     const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
       item => item.RateSid === charge.RateSid
     );
-    if(this.isUAECompany()){
+    if(this.isUAECompany() || this.isUSCompany()){
       return toNumber(lineItem?.totalTaxAmount) + toNumber(lineItem?.amount) || 0;
     } else if(this.isIndianCompany()){
       const isSameState = this.currentBranch?.StateMasterSid === this.billingPartyDetails?.StateMasterSid;
@@ -3014,7 +3042,7 @@ getChargeTaxPercentage(charge: any): string {
         DocumentNumber: null,
         DocumentDate: null,
         SetoffStatus: null,
-        TaxType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : null),
+        TaxType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : (this.isUSCompany() ? 'TAX' : null)),
         BookingHeaderSid: this.screenName === 'Booking' ? this.getParentSid() : null,
         YearMasterSid : currentYearId ?? null,
       };
@@ -3070,7 +3098,7 @@ getChargeTaxPercentage(charge: any): string {
         const amount = isRevenue ? chargeInfo.RevenueLocalAmount : chargeInfo.CostLocalAmount;
         const chargeAmount = Number(amount ?? 0);
 
-        if (this.isUAECompany()) {
+        if (this.isUAECompany() || this.isUSCompany()) {
           taxPercentage1 = getTax('VAT');
           taxAmount1 = (chargeAmount * taxPercentage1) / 100;
 
@@ -3115,7 +3143,7 @@ getChargeTaxPercentage(charge: any): string {
           LocalAmount: localAmount,
           PartyAmount : toNumber(partyAmount),
           CostRevenue : this.selectedVoucherType === "Invoice" ? "Revenue" : "Cost",
-          InvoiceType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : null),
+          InvoiceType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : (this.isUSCompany() ? 'TAX' : null)),
           ChargeUOMSid: isRevenue ? chargeInfo.RevenueChargeUomSid : chargeInfo.CostChargeUomSid,
           IsAutoGenerated: 'N',
         });
@@ -3321,6 +3349,11 @@ getChargeTaxPercentage(charge: any): string {
       return '';
     }
 
+    const branchState = this.currentBranch?.stateMaster?.stateName;
+    if (branchState) {
+      return branchState;
+    }
+
     // Method 1: Return already fetched name first (Mostly passed here itself)
     if (this.currentBranchStateName) {
       return this.currentBranchStateName;
@@ -3421,7 +3454,7 @@ getChargeTaxPercentage(charge: any): string {
   console.log('Place of Supply:', this.placeOfSupply);
 
   // Determine GST Type based on business rules
-  if (this.countryOfCompany?.toLowerCase() === 'india' || 
+  if (this.currentCompanyCountryCode?.toLowerCase() === 'in' || 
       this.currentCompany?.countryMaster?.countryCode?.toLowerCase() === 'in') {
     
     if (this.billingGST_VAT && this.billingGST_VAT.trim() !== '') {
@@ -3454,12 +3487,16 @@ getChargeTaxPercentage(charge: any): string {
       this.selectedGSTType = 'EXWP';
       console.log('GST Type: EXWP (Export shipment)');
     }
-  } else if(this.countryOfCompany?.toLowerCase() === 'united arab emirates' || 
+  } else if(this.currentCompanyCountryCode === 'ae' || 
       this.currentCompany?.countryMaster?.countryCode?.toLowerCase() === 'ae'){
             // UAE - no GST only VAT
     this.selectedTaxCategory = "VAT";
     this.selectedGSTType = '';
     console.log('GST Type: Not applicable (Non-India company)');
+  } else if(this.currentCompanyCountryCode === 'us'){
+    this.selectedTaxCategory = "TAX";
+    this.selectedGSTType = '';
+    console.log('GST Type: Not applicable (US company)');
   } else {
     // Non-India - no GST
     this.selectedTaxCategory = "";
@@ -3567,8 +3604,8 @@ private getCustomerCountryFromCharge(charge: any, isRevenue: boolean): string {
     return '';
   }
   const countryName = isRevenue ? 
-    charge?.customerMasterBP?.countryMaster?.countryName :
-    charge?.AgentMaster?.countryMaster?.countryName;
+    charge?.customerMasterBP?.countryMaster?.countryCode :
+    charge?.AgentMaster?.countryMaster?.countryCode;
   return (countryName || '').trim().toLowerCase();
 }
 
@@ -3587,19 +3624,24 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
   /**
    * Determine tax category based on company state and place of supply
    */
-  private determineTaxCategory(companyState: string, billingPartyState: string, customerCountry: string): 'Inter' | 'Intra' {
+  private determineTaxCategory(companyState: string, billingPartyState: string, customerCountryCode: string): 'Inter' | 'Intra' {
+    console.log("DETERMINING TAX CATEGORY INSIDE", {
+      companyState,
+      billingPartyState,
+      customerCountryCode
+    })
     if (!companyState || !billingPartyState) {
       console.warn('Missing state information, defaulting to Inter');
       return 'Inter';
     }
 
     // Normalize country codes for comparison
-    const normalizedCustomerCountry = customerCountry?.toLowerCase() || '';
-    const isIndianCustomer = normalizedCustomerCountry === 'india' || normalizedCustomerCountry === 'in';
+    const normalizedCustomerCountry = customerCountryCode?.toLowerCase() || '';
+    const isIndianCustomer = normalizedCustomerCountry === 'in';
     const isInternationalCustomer = !isIndianCustomer && normalizedCustomerCountry !== '';
 
     console.log('Tax Category - Customer Country Analysis:', {
-      customerCountry,
+      customerCountryCode,
       normalizedCustomerCountry,
       isIndianCustomer,
       isInternationalCustomer
@@ -3607,7 +3649,7 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
 
     // For international customers (like Dubai), use 'Inter' category for VAT
     if (isInternationalCustomer) {
-      console.log('International transaction - Using Inter category for customer country:', customerCountry);
+      console.log('International transaction - Using Inter category for customer country:', customerCountryCode);
       return 'Inter'; // Use 'Inter' for international transactions (VAT)
     }
 
@@ -3638,10 +3680,11 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
   }
 
   isUAECompany(): boolean {
-    const companyCountry = this.countryOfCompany?.toLowerCase() || '';
-    return companyCountry.includes('united arab emirates') ||
-      companyCountry === 'uae' ||
-      companyCountry === 'ae';
+    return this.currentCompanyCountryCode === 'ae';
+  }
+
+  isUSCompany(): boolean {
+    return this.currentCompanyCountryCode === 'us';
   }
 
   isUAECustomer(companyCountry: string): boolean {

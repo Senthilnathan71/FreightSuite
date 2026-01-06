@@ -104,7 +104,7 @@ export class AppSettingsService {
             ?.companyMaster || null;
     }
 
-    getCurrentCompanyCountry(){
+    getCurrentCompanyCountry() : { CountryMasterSid: number, countryName: string, countryCode: string } {
         const company = this.getCurrentCompanyInfo();
         if(!company) return null;
         return {
