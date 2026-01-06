@@ -310,7 +310,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         },
             {
                 key: 'Dept',
-                label: 'Dept',
+                label: 'Dpt',
                 sortable: true,
                 filterable: true,
                 visible: true,
@@ -357,21 +357,21 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string',
                 cellClass: 'vessel-column'
             },
-            {
-                key: 'salesman',
-                label: 'Salesman',
-                sortable: true,
-                filterable: true,
-                visible: true,
-                dataType: 'string'
-            },
+            // {
+            //     key: 'salesman',
+            //     label: 'Salesman',
+            //     sortable: true,
+            //     filterable: true,
+            //     visible: true,
+            //     dataType: 'string'
+            // },
             {
                 key: 'BookingStatus',
                 label: 'Booking Status',
                 sortable: true,
                 filterable: true,
                 visible: true,
-                dataType: 'string'
+                dataType: 'string',
             },
             {
                 key: 'status',

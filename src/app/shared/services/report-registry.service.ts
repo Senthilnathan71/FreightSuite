@@ -1045,6 +1045,37 @@ export class ReportRegistryService {
       console.warn(' Destination_Report component not yet created:', error);
     }
 
+     //Export_Job_Volume_TEU_Report
+    try {
+      const { ExportJobVolumeTeuReportComponent } = await import(
+        '../components/reports/export-job-volume-teu-report/export-job-volume-teu-report.component'
+      );
+
+      this.registerReport({
+        id: 'export-job-volume-teu-report',
+        title: 'Export_Job_Volume_TEU_Report',
+        component: ExportJobVolumeTeuReportComponent,
+        filenameTemplate: 'Export_Job_Volume_TEU_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Export_Job_Volume_TEU_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Export_Job_Volume_TEU_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Export_Job_Volume_TEU_Report component not yet created:', error);
+    }
+
     // 
   }
 

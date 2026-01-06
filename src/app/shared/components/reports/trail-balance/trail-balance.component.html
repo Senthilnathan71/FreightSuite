@@ -70,7 +70,7 @@
                         </tr>
                     </thead>
 
-                    <tbody style="white-space: nowrap;">
+                    <tbody style="white-space: nowrap;" *ngIf="groupedData?.length > 0; else noRecords">
 
 
 
@@ -124,6 +124,15 @@
                         </tr>
 
                     </tbody>
+
+                    <ng-template #noRecords>
+    <tr>
+        <td colspan="11" class="text-center fw-bold py-1">
+            No Records Found
+        </td>
+    </tr>
+</ng-template>
+
                 </table>
             </div>
 

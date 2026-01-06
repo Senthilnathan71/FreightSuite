@@ -5979,10 +5979,10 @@
 
 <!-- Exit Form -->
 
-<div
-    style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
-
-    <!-- <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+    <div
+        style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
+    
+        <!-- <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; flex-direction: column;">
                             <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
@@ -6004,255 +6004,338 @@
                         </div>
                     </div>
                 </div> -->
-
-    <div style="display: flex; justify-content: space-between;padding:15px 20px;">
-        <div style="width: 300px;"></div>
-        <div style="text-align:center;">
-            <h2
-                style="margin:0; font-size:20px; font-weight:bold;border:2px solid #000; height:30px; padding: 3px 10px;">
-                CUSTOMS EXIT / ENTRY CERTIFICATE</h2>
-        </div>
-        <div style="display:flex; flex-direction:column;">
-            <div style="border:1px solid #000; height:45px;width: 230px;"></div>
-        </div>
-    </div>
-
-    <!-- Exporter & Date -->
-    <div style="display:flex; justify-content:space-between; padding:10px 20px; gap: 65px;">
-        <div style="flex:1; display:flex;  margin-right:10px; gap: 10px; align-items: center;">
-            <label style="font-weight:bold; ">Exporter</label>
-            <div style="border:1px solid #000; height:40px; width: 610px;"></div>
-        </div>
-        <div style="flex:1; display:flex; gap: 10px; align-items: center;">
-            <label style="font-weight:bold; ">Date</label>
-            <div style="border:1px solid #000; height:40px;width: 200px;"></div>
-        </div>
-    </div>
-
-    <!-- Bill & Manifest -->
-    <div style="display:flex;  padding:2px 20px;">
-        <div style="flex:1; display:flex; flex-direction:column; margin-top: 38px;">
-            <label style="font-weight:bold; ">Bill No.</label>
-            <div style="border:1px solid #000; height:40px;width: 340px;"></div>
-        </div>
-        <div style="display:flex; flex-direction: column;padding:0 60px; margin-top: 38px;">
-            <label style="font-weight:bold; ">Date</label>
-            <div style="border:1px solid #000; height:40px;width: 200px;"></div>
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column;">
-            <label style="font-weight:bold; font-size:13px; margin-bottom: 0;padding-left: 25px;">
-                <span class="mb-0">
-                    Export Bill
-                </span> <br> <span>
-                    Air way bill
-                </span> <br> <span>
-                    Manifest
-                </span></label>
-            <div style="display: flex;align-items: center; gap: 5px;">
-                <label for="">No.</label>
-                <div style="border:1px solid #000; height:40px;width: 300px;"></div>
+    
+        <div style="display: flex; justify-content: space-between;padding:15px 20px;">
+            <div style="width: 300px;"></div>
+            <div style="text-align:center;">
+                <h2
+                    style="margin:0; font-size:20px; font-weight:bold;border:2px solid #000; height:30px; padding: 3px 10px;">
+                    CUSTOMS EXIT / ENTRY CERTIFICATE</h2>
+            </div>
+            <div style="display:flex; flex-direction:column;">
+                <div style="border:1px solid #000; height:50px;width: 230px;"></div>
             </div>
         </div>
-    </div>
-
-    <!-- Country of Origin, Point of Exit & Destination -->
-    <div style="display:flex;  padding:10px 20px;">
-        <div style="flex:1; display:flex; flex-direction:column;">
-            <label style="font-weight:bold; ">Country of Origin</label>
-            <div style="border:1px solid #000; height:40px;width: 320px;"></div>
-        </div>
-        <div style=" display:flex; flex-direction:column; padding:0 20px;">
-            <label style="font-weight:bold; ">Point of Exit</label>
-            <div style="border:1px solid #000; height:40px;width: 320px;"></div>
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column;">
-            <label style="font-weight:bold; ">Destination</label>
-            <div style="border:1px solid #000; height:40px;width: 320px;"></div>
-        </div>
-    </div>
-
-
-    <div style="padding:5px 20px;">
-
-        <label style="font-weight:bold; padding-left: 280px;">Description of Goods</label>
-        <div style="display:flex; width:100%; border:1px solid #000;">
-
-
-            <div
-                style="width:150px; border-right:1px solid #000; height:350px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
-
-                <label style="font-weight:bold; ">Quantity</label>
-
-                <span></span>
-
+    
+        <!-- Exporter & Date -->
+        <div style="display:flex; justify-content:space-between; padding:10px 20px; gap: 65px;">
+            <div style="flex:1; display:flex;  margin-right:10px; gap: 10px; align-items: center;">
+                <label style="font-weight:bold; ">Exporter</label>
+                <div style="border:1px solid #000; height:45px; width: 610px;"></div>
             </div>
-
-
-            <div style="flex:1; height:350px;">
-                <span style="color: rgb(170, 166, 166);padding: 0 200px;">Description of goods must enable
-                    identification on original documents</span>
+            <div style="flex:1; display:flex; gap:10px; align-items:center;">
+                <label style="font-weight:bold;">Date</label>
+    
+                <div style="
+                        border:1px solid #000;
+                        height:45px;
+                        width:200px;
+                        display:flex;
+                        align-items:center;
+                      ">
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                    <div style="width:1px; height:60%; background:#000;"></div>
+    
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                    <div style="width:1px; height:60%; background:#000;"></div>
+    
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
+                </div>
             </div>
-
-
-
+    
         </div>
-
-        <div style="display: flex;">
-            <div style="display: flex;flex-direction: column;">
-                <div style="display:flex; align-items:flex-start; width:100%;">
-
-
-                    <div style="display:flex; gap:3px;">
-                        <label style="font-weight:bold;  text-align:right;">
-                            Total <br> quantity
-                        </label>
-                        <div style="border:1px solid black; border-top:none; width:180px; height: 40px;">
-                        </div>
-                    </div>
-
-
-                    <div style="display:flex; gap:3px;  padding:0 100px;">
-                        <label style="font-weight:bold;  text-align:right;">
-                            Total <br> weight
-                        </label>
-                        <div style="border:1px solid black; border-top:none; width:180px; height: 40px;">
-                        </div>
-                    </div>
-
-
-
-                </div>
-                <div style="display:flex;margin-top: 10px;">
-                    <div style="display:flex; flex-direction:column;">
-                        <label style="font-weight:bold; padding-left: 80px;">Container no. /
-                            Vehicle no.</label>
-                        <div style="border:1px solid #000; height:40px;width: 350px;"></div>
-                    </div>
-                    <div style="display:flex; flex-direction:column;padding-left: 30px;">
-                        <label style="font-weight:bold; padding-left: 50px;">Customs seal
-                            no.</label>
-                        <div style="border:1px solid #000; height:40px;width: 240px;"></div>
-                    </div>
-                </div>
-
-                <div style="border: 1px solid black;width:99%; height: 260px;margin-top: 10px; position: relative;">
-                    <span style="padding: 0 100px;">
-                        Customs certification at point of exit or country of destination
-                    </span>
-                    <div>
-
-                    </div>
-
-                    <footer style="display: flex;position:absolute; bottom: 0px;padding: 0 10px;">
-                        <div>
-                            <span>It is certified that the above <br>
-                                mentioned goods have been <br> cleared by Customs.</span>
-                        </div>
-                        <div style="padding-left: 80px;">
-                            <span>
-                                For Dubai Customs
-                            </span>
-                            <div style="display: flex;margin-top: 6px;">
-                                <span>Date</span>
-                                <div>
-
-                                </div>
-                            </div>
-                            <div></div>
-                        </div>
-                    </footer>
-                </div>
-
-                <div style="margin-top: 10px;">
-                    <span>
-                        The exporter needs this certificate <br>
-                        which proof that these goods have <br>
-                        left the United Arab Emirates or <br>
-                        arrived in a foreign country so that <br>
-                        the deposit paid may be refunded <br>
-                        by Dubai Customs
-                    </span>
-                </div>
-
-
+    
+        <!-- Bill & Manifest -->
+        <div style="display:flex;  padding:2px 20px;">
+            <div style="flex:1; display:flex; flex-direction:column; margin-top: 38px;">
+                <label style="font-weight:bold; ">Bill No.</label>
+                <div style="border:1px solid #000; height:45px;width: 340px;"></div>
             </div>
-
-            <div style="flex: 1;">
-                <div style="border: 1px solid black;height: 300px;border-top: none;position: relative;padding: 10px;">
-                    <div>
-
-                        <strong>
-                            For Customs use
-                        </strong>
-
-                        <div>
-
-                        </div>
-
-
-                        <footer style="position: absolute; bottom: 0px;">
-                            <div style="display: flex;">
-
-                                <span>Date</span>
-                                <div>
-
-                                </div>
-                            </div>
-
-                        </footer>
-                    </div>
+            <div style="display:flex; flex-direction: column;padding:0 60px; margin-top: 38px;">
+                <label style="font-weight:bold; ">Date</label>
+                <div style="
+                        border:1px solid #000;
+                        height:45px;
+                        width:200px;
+                        display:flex;
+                        align-items:center;
+                      ">
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                    <div style="width:1px; height:60%; background:#000;"></div>
+    
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                    <div style="width:1px; height:60%; background:#000;"></div>
+    
+                    <div style="flex:2; text-align:center; font-weight:bold;"></div>
                 </div>
-
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <label style="font-weight:bold; font-size:13px; margin-bottom: 0;padding-left: 25px;">
+                    <span class="mb-0">
+                        Export Bill
+                    </span> <br> <span>
+                        Air way bill
+                    </span> <br> <span>
+                        Manifest
+                    </span></label>
+                <div style="display: flex;align-items: center; gap: 5px;">
+                    <label for="">No.</label>
+                    <div style="border:1px solid #000; height:45px;width: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Country of Origin, Point of Exit & Destination -->
+        <div style="display:flex;  padding:10px 20px;">
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <label style="font-weight:bold; ">Country of Origin</label>
+                <div style="border:1px solid #000; height:45px;width: 320px;"></div>
+            </div>
+            <div style=" display:flex; flex-direction:column; padding:0 20px;">
+                <label style="font-weight:bold; ">Point of Exit</label>
+                <div style="border:1px solid #000; height:45px;width: 320px;"></div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <label style="font-weight:bold; ">Destination</label>
+                <div style="border:1px solid #000; height:45px;width: 320px;"></div>
+            </div>
+        </div>
+    
+    
+        <div style="padding:10px 20px;">
+    
+            <label style="font-weight:bold; padding-left: 280px;">Description of Goods</label>
+            <div style="display:flex; width:100%; border:1px solid #000;">
+    
+    
                 <div
-                    style="border: 1px solid black;height: 300px;position: relative;padding: 10px;margin-top: 10px;border-bottom: none;">
-                    <div>
-
-                        <strong style="margin-top: 20px;">
-                            We certify that the details given by us on <br> this document are correct
-                        </strong>
-
-                        <div>
-
-                        </div>
-
-
-                        <footer style="position: absolute; bottom: 0px;">
-                            <div style="display: flex;flex-direction: column;">
-                                <div>
-
-                                </div>
-                                <span style="text-align: center;">Stamps & signature <br> of exporter</span>
-
+                    style="width:150px; border-right:1px solid #000; height:350px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
+    
+                    <label style="font-weight:bold; ">Quantity</label>
+    
+                    <span></span>
+    
+                </div>
+    
+    
+                <div style="flex:1; height:350px;">
+                    <span style="color: rgb(170, 166, 166);padding: 0 200px;">Description of goods must enable
+                        identification on original documents</span>
+                </div>
+    
+    
+    
+            </div>
+    
+            <div style="display: flex;">
+                <div style="display: flex;flex-direction: column;">
+                    <div style="display:flex; align-items:flex-start; width:100%;">
+    
+    
+                        <div style="display:flex; gap:3px;">
+                            <label style="font-weight:bold;  text-align:right;">
+                                Total <br> quantity
+                            </label>
+                            <div style="border:1px solid black; border-top:none; width:180px; height: 45px;">
                             </div>
-
+                        </div>
+    
+    
+                        <div style="display:flex; gap:3px;  padding:0 100px;">
+                            <label style="font-weight:bold;  text-align:right;">
+                                Total <br> weight
+                            </label>
+                            <div style="border:1px solid black; border-top:none; width:180px; height: 45px;">
+                            </div>
+                        </div>
+    
+    
+    
+                    </div>
+                    <div style="display:flex;margin-top: 10px;">
+                        <div style="display:flex; flex-direction:column;">
+                            <label style="font-weight:bold; padding-left: 80px;">Container no. /
+                                Vehicle no.</label>
+                            <div style="border:1px solid #000; height:45px;width: 350px;"></div>
+                        </div>
+                        <div style="display:flex; flex-direction:column;padding-left: 30px;">
+                            <label style="font-weight:bold; padding-left: 50px;">Customs seal
+                                no.</label>
+                            <div style="border:1px solid #000; height:45px;width: 240px;"></div>
+                        </div>
+                    </div>
+    
+                    <div style="border: 1px solid black;width:99%; height: 260px;margin-top: 10px; position: relative;">
+                        <span style="padding: 0 100px;">
+                            Customs certification at point of exit or country of destination
+                        </span>
+                        <div>
+    
+                        </div>
+    
+                        <footer style="display: flex; position:absolute; bottom: 0px; width:100%; padding: 10px;">
+                            <!-- Left Side -->
+                            <div style="flex:1;">
+                                <span>
+                                    It is certified that the above <br>
+                                    mentioned goods have been <br> cleared by Customs.
+                                </span>
+                            </div>
+    
+                            <!-- Right Side -->
+                            <div style="flex:1;">
+                                <span>For Dubai Customs</span>
+    
+                                <div style="display: flex; align-items: center;">
+                                    <div>
+                                        <Strong>Date</Strong>
+                                    </div>
+    
+                                    <div
+                                        style="display: flex; align-items: center; margin-top: 0px; height: 35px;  width:200px;">
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                                        <div style="width:1px; height:60%; background:#000;"></div>
+    
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                                        <div style="width:1px; height:60%; background:#000;"></div>
+    
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </footer>
+    
+                    </div>
+    
+                    <div style="margin-top: 10px;">
+                        <span>
+                            The exporter needs this certificate <br>
+                            which proof that these goods have <br>
+                            left the United Arab Emirates or <br>
+                            arrived in a foreign country so that <br>
+                            the deposit paid may be refunded <br>
+                            by Dubai Customs
+                        </span>
+                    </div>
+    
+    
+                </div>
+    
+                <div style="flex: 1;">
+                    <div style="border: 1px solid black;height: 250px;border-top: none;position: relative;padding: 10px;">
+                        <div>
+    
+                            <strong>
+                                For Customs use
+                            </strong>
+    
+                            <div>
+    
+                            </div>
+    
+    
+                            <footer style="position: absolute; bottom: 0px;">
+                                <div style="display: flex; align-items: center;">
+    
+                                    <strong>Date</strong>
+                                    <div
+                                        style="display: flex; align-items: center; margin-top: 0px; height: 35px;  width:200px;">
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                                        <div style="width:1px; height:60%; background:#000;"></div>
+    
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+    
+                                        <div style="width:1px; height:60%; background:#000;"></div>
+    
+                                        <div style="flex:2; text-align:center; font-weight:bold;"></div>
+                                    </div>
+                                </div>
+    
+                            </footer>
+                        </div>
+                    </div>
+    
+                    <div
+                        style="border: 1px solid black;height: 280px;position: relative;padding: 10px;margin-top: 10px;border-bottom: none;">
+                        <div>
+    
+                            <strong style="margin-top: 20px;">
+                                We certify that the details given by us on <br> this document are correct
+                            </strong>
+    
+                            <div>
+    
+                            </div>
+    
+    
+                            <footer style="position: absolute; bottom: 0px;">
+                                <div style="display: flex;flex-direction: column;">
+                                    <div>
+    
+                                    </div>
+                                    <span style="text-align: center;">Stamps & signature <br> of exporter</span>
+    
+                                </div>
+    
+                            </footer>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-
-        <div style="border-top:1px solid black ;">
-            <div style="display: flex; gap: 30px;">
-                <div style="width: 160px;border: 1px solid black; margin-top: 5px;">
-                    <span style="padding:0 2px;">
-                        No. 1 copy <br>
-                        Dubai Customs <br>
-                        after certification
-                    </span>
-                </div>
-                <div style="border-right: 1px solid black;height: 60px; padding: 0px 20px;padding-top: 25px;">
-                    <strong style="color: rgb(170, 166, 166);">
-                        This certificate must be prepared in typescript
-                    </strong>
-                </div>
-
-                <div style="padding: 0px 20px;padding-top: 25px;">
-                    <strong style="height: 60px;color: rgb(170, 166, 166);">
-                        Any alteration will invalidate this certificate
-                    </strong>
+    
+    
+            <div style="border-top:1px solid black ;">
+                <div style="display: flex; gap: 30px;">
+                    <div style="width: 160px;border: 1px solid black; margin-top: 5px;padding: 0 10px;">
+                        <span>
+                            No. 1 copy <br>
+                            Dubai Customs <br>
+                            after certification
+                        </span>
+                    </div>
+                    <div style="border-right: 1px solid black;height: 60px; padding: 0px 20px;padding-top: 25px;">
+                        <strong style="color: rgb(170, 166, 166);">
+                            This certificate must be prepared in typescript
+                        </strong>
+                    </div>
+    
+                    <div style="padding: 0px 20px;padding-top: 25px;">
+                        <strong style="height: 60px;color: rgb(170, 166, 166);">
+                            Any alteration will invalidate this certificate
+                        </strong>
+                    </div>
                 </div>
             </div>
+    
+            <div style="
+              position: absolute;
+              left: 27px;
+              bottom: -100%;
+              writing-mode: vertical-rl;
+              transform: rotate(180deg);
+              font-size: 12px;
+              font-weight: 700;
+            ">
+                Website :
+            </div>
+            <div style="
+              position: absolute;
+              left: 27px;
+              bottom: -140%;
+              writing-mode: vertical-rl;
+              transform: rotate(180deg);
+              font-size: 12px;
+              font-weight: 700;
+            ">
+                Copyright reserved 2026
+            </div>
+    
         </div>
     </div>
-</div>

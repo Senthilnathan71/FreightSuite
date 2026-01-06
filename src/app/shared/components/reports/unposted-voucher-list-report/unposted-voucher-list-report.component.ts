@@ -6,11 +6,14 @@ import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { RouterModule } from '@angular/router';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-unposted-voucher-list-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule, RouterModule],
   templateUrl: './unposted-voucher-list-report.component.html',
   styles: ``
 })
@@ -24,7 +27,8 @@ export class UnpostedVoucherListReportComponent {
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
-    private reportRegistryService: ReportRegistryService
+    private reportRegistryService: ReportRegistryService,
+    private modalService : NgbModal
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -117,5 +121,9 @@ private formatNumber(value: any): number | string {
     } catch {
       return String(date);
     }
+  }
+
+  closeAllModal(){
+    this.modalService.dismissAll();
   }
 }

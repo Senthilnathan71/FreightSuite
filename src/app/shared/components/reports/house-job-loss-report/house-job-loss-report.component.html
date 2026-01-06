@@ -1,5 +1,5 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-  <div style="text-align: center;">
+    <div style="text-align: center;">
         <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
         </h4>
         <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -67,7 +67,7 @@
                     <ng-container *ngFor="let item of fullData?.data">
                         <tr style="white-space: nowrap;">
                             <td>{{ item.HouseNo }}</td>
-                            <td>{{ item.jobDate | date:'shortDate' }}</td>
+                            <td>{{ item.jobDate | formatDate }}</td>
                             <td>{{ item.houseDept }}</td>
                             <td>{{ item.MBLNo }}</td>
                             <td>{{ item.HBLNo }}</td>
@@ -84,6 +84,13 @@
                             <td class="text-end">{{ item.costRevenueDetails.CostLocalAmount | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenueDetails.Profit | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenueDetails.GP | number:'1.2-2' }}%</td>
+                        </tr>
+                    </ng-container>
+                    <ng-container *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <tr>
+                            <td colspan="15" class="text-center fw-bold py-1">
+                                No Record Found
+                            </td>
                         </tr>
                     </ng-container>
                 </tbody>

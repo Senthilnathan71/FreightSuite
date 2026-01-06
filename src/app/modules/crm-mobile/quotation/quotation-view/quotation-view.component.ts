@@ -199,7 +199,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: "120px"
+          width: "115px"
         },
         {
           key: 'CustomerName',
@@ -211,7 +211,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         },
         {
           key: 'departmentName',
-          label: 'Department',
+          label: 'Dept',
           sortable: true,
           filterable: true,
           visible: true,
@@ -261,9 +261,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
                 filterable: true,
                 visible: true,
                 template: 'status', // Use status template
-                width: '150px',
+                width: '100px',
                 dataType: 'string',
-                cellClass: 'approval-status-column'
+                cellClass: 'approval-status-column',
             },
       ],
       actions: [

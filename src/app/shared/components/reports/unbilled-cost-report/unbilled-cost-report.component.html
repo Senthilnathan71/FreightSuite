@@ -87,6 +87,11 @@
                         <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostLocalAmount | number:'1.2-2' }}</td>
                         <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
                     </tr>
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="11" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -116,6 +121,11 @@
                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostAmount  | number:'1.2-2'}}</td>
                         <td class="text-end">{{ item.costRevenueDetails?.[0]?.CostLocalAmount | number:'1.2-2'}}</td>
                         <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
+                    </tr>
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="8" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
                     </tr>
                 </tbody>
             </table>

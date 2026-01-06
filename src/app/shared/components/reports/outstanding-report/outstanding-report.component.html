@@ -96,7 +96,7 @@
                             {{ getCumulative(fullData?.transactions, i) | number:'1.2-2'}}
                         </td>
                     </tr>
-                    <tr class="fw-bold bg-light">
+                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
                         <td colspan="9" class="text-end">TOTAL :</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') | number:'1.2-2'}}</td>
@@ -114,6 +114,11 @@
                         <td style="text-align: right;">{{ getCumulative(fullData?.transactions, fullData?.transactions?.length - 1) | number:'1.2-2' }}</td>
                     </tr>
 
+                    <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
+                        <td colspan="15" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

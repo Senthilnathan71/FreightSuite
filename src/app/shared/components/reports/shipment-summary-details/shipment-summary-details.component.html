@@ -253,6 +253,11 @@
                         <td></td>
                         <td>{{item.addtionalRemarks}}</td>
                     </tr>
+                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="89" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 

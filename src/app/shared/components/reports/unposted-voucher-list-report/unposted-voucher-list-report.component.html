@@ -56,7 +56,81 @@
 
                     <tr *ngFor="let item of fullData?.tableData;" style="white-space: nowrap;">
                         <td>{{ item.branch }}</td>
-                        <td>{{ item.voucherNo }}</td>
+                        <!-- <td>{{ item.voucherNo }}</td> -->
+                        <td>
+                            <div [ngSwitch]=item.voucherCode>
+                                <ng-container *ngIf="item.voucherCode">
+                                    <!-- Invoice -->
+                                    <a *ngSwitchCase="'INV'" (click)="closeAllModal()" [routerLink]="[
+                                                '/operation/invoice/entry',
+                                               item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Vendor Invoice (VIN / VN) -->
+                                    <a *ngSwitchCase="'VIN'" [routerLink]="[
+                                                '/operation/vendor-invoice/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Receipt -->
+                                    <a *ngSwitchCase="'RPT'" [routerLink]="[
+                                                '/accounts/receipt/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Payment (if needed later) -->
+                                    <a *ngSwitchCase="'PMT'" [routerLink]="[
+                                                '/accounts/payment/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Journal Voucher -->
+                                    <a *ngSwitchCase="'JV'" [routerLink]="[
+                                                '/accounts/journal-voucher/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+                                    <!-- Reversal Journal Voucher -->
+                                    <a *ngSwitchCase="'RJV'" [routerLink]="[
+                                                '/accounts/reversal-voucher/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+
+                                    <!-- Credit Note -->
+                                    <a *ngSwitchCase="'CRN'" [routerLink]="[
+                                                '/operation/credit-note/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Vendor Credit Note -->
+                                    <a *ngSwitchCase="'VRN'" [routerLink]="[
+                                                '/operation/vendor-credit-note/entry',
+                                                item.VoucherHeaderSid
+                                              ]" class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </a>
+
+                                    <!-- Default case -->
+                                    <span *ngSwitchDefault class="fw-bold px-2 ">
+                                        {{ item.voucherNo }}
+                                    </span>
+                                </ng-container>
+                            </div>
+                        </td>
                         <td>{{ item.voucherDate | formatDate }}</td>
                         <td>{{ item.voucherType }}</td>
                         <td>{{ item.party }}</td>
@@ -64,7 +138,11 @@
                         <td>{{ item.createdOn | formatDate }}</td>
                         <td class="text-center">{{ item.postStatus }}</td>
                     </tr>
-
+                    <tr *ngIf="!fullData?.tableData || fullData.tableData.length === 0">
+                        <td colspan="15" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
