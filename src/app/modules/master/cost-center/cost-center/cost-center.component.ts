@@ -342,7 +342,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
 
 
   viewCostCenter(item: any, content: any): void {
-    this.editCostCenter(item.CostCenterMasterSid, content)
+    this.editCostCenter(item.CostCenterMasterSid, content);
   }
 
 
@@ -576,27 +576,57 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  editCostCenter(id: number, content: any) {
-    this.isEditMode = true;
-    this.CostCenterMasterSid = id;
-    this.masterService.getCostCenterById(id).pipe(take(1)).subscribe({
-      next: (costCenter: any) => {
-        this.costCenterData = costCenter;
-        this.costCenterForm.get('Status')?.enable();
-        this.costCenterForm.patchValue({
-          CostCenterCode: costCenter.CostCenterCode,
-          CostCenterName: costCenter.CostCenterName,
-          Remarks: costCenter.Remarks,
-          Status: costCenter.Status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching Cost-Center', err);
-        this.appSettingService.showError('Error fetching data for edting');
+ editCostCenter(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.CostCenterMasterSid = id;
+
+  // Reset form to clear previous state
+  this.costCenterForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false // Prevents closing via ESC while loading
+  });
+
+  // 3. DISABLE FORM (Read-Only Mode)
+  this.costCenterForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getCostCenterById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Handle response structure variations (response vs response.data)
+      const data = response?.data || response;
+      
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.costCenterData = data;
+
+      // Safe Patching (Handle potential nulls)
+      this.costCenterForm.patchValue({
+        CostCenterCode: data.CostCenterCode,
+        CostCenterName: data.CostCenterName,
+        Remarks: data.Remarks || '', // Default to empty string
+        Status: data.Status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. UNLOCK UI
+      this.costCenterForm.enable();
+    },
+    error: (err) => {
+      // 6. ROLLBACK
+      this.closeModal(); 
+      console.error('Error fetching Cost-Center:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.CostCenterMasterSid) return;

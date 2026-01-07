@@ -431,7 +431,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
 
   viewinco(item: any, content: any): void {
-    this.editInco(item.IncoMasterSid, content)
+    this.editInco(item.IncoMasterSid, content);
   }
 
  
@@ -595,30 +595,60 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  editInco(id: number, content: any) {
-    this.isEditMode = true;
-    this.IncoMasterSid = id;
-    this.masterService.getIncoById(id).pipe(take(1)).subscribe({
-      next: (inco: any) => {
-        this.incoData = inco;
-        this.incoForm.get('Status')?.enable();
-        this.incoForm.patchValue({
-          IncoCode: inco.IncoCode,
-          IncoName: inco.IncoName,
-          IncoType: inco.IncoType,
-          OceanFreight: inco.OceanFreight,
-          Remarks: inco.Remarks,
-          IncoDescription: inco.IncoDescription,
-          Status: inco.Status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching Inco', err);
-        this.appSettingService.showError('Error fetching data for edting');
+  editInco(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.IncoMasterSid = id;
+
+  this.incoForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM
+  this.incoForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getIncoById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Robust Data Extraction: Handle 'response.data' or direct 'response'
+      const data = response?.data || response;
+
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.incoData = data;
+
+      this.incoForm.patchValue({
+        IncoCode: data.IncoCode,
+        IncoName: data.IncoName,
+        IncoType: data.IncoType,
+        OceanFreight: data.OceanFreight,
+        // Null Safety: Ensure text fields are empty string if null
+        Remarks: data.Remarks || '',
+        IncoDescription: data.IncoDescription || '',
+        Status: data.Status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. UNLOCK UI
+      this.incoForm.enable();
+    },
+    error: (err) => {
+      // 6. ROLLBACK
+      this.closeModal(); 
+      console.error('Error fetching Inco:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
+
 
   closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {

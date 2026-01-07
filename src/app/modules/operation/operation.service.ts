@@ -704,14 +704,15 @@ processProductUpload(payload: any): Observable<any> {
       })
     );
   }
-  getDepartmentByType(type: string, CompanyMasterSid: number) {
-    return this.http.post<{ data: any }>(`department/department-type?type=${type}`, { CompanyMasterSid }
-    ).pipe(
-      map((resp: any) => {
-        return resp.data || resp;
-      })
-    );
-  }
+  getDepartmentByType(CompanyMasterSid: number, type: string[]) {
+  return this.http.post<{ data: any[] }>(
+    'department/department-type',
+    { CompanyMasterSid, type }
+  ).pipe(
+    map(resp => resp.data || [])
+  );
+}
+
 
   getAllPorts() {
     return this.http.get('port').pipe(

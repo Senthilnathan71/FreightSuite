@@ -338,6 +338,7 @@ export class CostEntryComponent implements OnInit {
   this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
   this.currentCompanyCountryCode = String(this.currentCompanyCountry.countryCode).toLowerCase();
   this.currentBranchstate = this.appSettingService.getCurrentBranchState()?.StateMasterSid;
+  this.currentBranchStateName = this.appSettingService.getCurrentBranchState()?.stateName;
   this.currentBranchCity = this.appSettingService.getCurrentBranchCity()?.CityMasterSid;
 
   
@@ -390,13 +391,13 @@ export class CostEntryComponent implements OnInit {
       charges: this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
       revenueParties : this.operationService.getAllDebtorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
       costParties : this.operationService.getAllCreditorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
-      state :this.operationService.getStateById(this.currentBranch?.StateMasterSid).pipe(catchError(err => of([]))),
-    }).subscribe(({ allMasters , charges , revenueParties, costParties, state }) => {
+      // state :this.operationService.getStateById(this.currentBranch?.StateMasterSid).pipe(catchError(err => of([]))),
+    }).subscribe(({ allMasters , charges , revenueParties, costParties }) => {
       this.chargeList = charges;
       this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
       this.uomList = allMasters.uoms;
       this.docTypeList = allMasters.docTypes;
-      this.currentBranchStateName = state?.stateName || "";
+      // this.currentBranchStateName = state?.stateName || "";
       this.vouchers= allMasters.Vouchers;
       this.billingParties = revenueParties.data;
       this.parties = costParties.data;
@@ -3228,8 +3229,8 @@ getChargeTaxPercentage(charge: any): string {
     // Same currency → no conversion
     if (chargeCurrencyCode === voucherHeaderCurrency) {
       return isRevenue ? 
-        this.getFormattedAmount(toNumber(charge.RevenueLocalAmount), chargeCurrencyId) :
-        this.getFormattedAmount(toNumber(charge.CostLocalAmount), chargeCurrencyId);
+        this.getFormattedAmount(toNumber(charge.RevenueAmount), chargeCurrencyId) :
+        this.getFormattedAmount(toNumber(charge.CostAmount), chargeCurrencyId);
     } else{
       return isRevenue ? 
         this.getFormattedAmount(toNumber(charge.RevenueLocalAmount) / toNumber(voucherHeaderExRate), chargeCurrencyId) :

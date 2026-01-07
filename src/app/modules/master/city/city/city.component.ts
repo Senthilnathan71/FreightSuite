@@ -449,9 +449,9 @@ private initializeTableConfig() {
     return item.CityMasterSid || index;
   }
 
-  viewcity(row: any, content: any): void {
-    this.updateCityById(row.CityMasterSid, content)
-  }
+ viewcity(row: any, content: any): void {
+  this.updateCityById(row.CityMasterSid, content); 
+}
 
   // Table configuration
  
@@ -621,28 +621,64 @@ private initializeTableConfig() {
     });
   }
 
-  updateCityById(id: number, content: any) {
-    this.isEditMode = true;
-    this.CityMasterSid = id;
-    this.masterService.getCityById(id).pipe(take(1)).subscribe({
-      next: (city: any) => {
-        this.cityData = city;
-        this.cityForm.get('status')?.enable();
-        this.cityForm.patchValue({
-          cityName: city.cityName,
-          cityCode: city.cityCode,
-          CountryMasterSid: Number(city.CountryMasterSid),
-          StateMasterSid: Number(city.StateMasterSid),
-          status: city.status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching', err);
-        this.appSettingService.showError('Error fetching data for editing');
+ updateCityById(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.CityMasterSid = id;
+  
+  // Reset form to clear previous validation errors
+  this.cityForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  // 'keyboard: false' prevents users from closing the modal with ESC 
+  // while the form is loading (inconsistent state).
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static', 
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM (Read-Only Mode)
+  this.cityForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getCityById(id).pipe(take(1)).subscribe({
+    next: (city: any) => {
+      // Safety Check: Ensure data actually exists
+      if (!city) {
+        throw new Error('City data is empty');
       }
-    });
-  }
+
+      this.cityData = city;
+
+      // DATA SANITIZATION (Crucial for Dropdowns):
+      // Direct 'Number(null)' returns 0, which might select the wrong item or nothing.
+      // We ensure null stays null.
+      const countryId = city.CountryMasterSid ? Number(city.CountryMasterSid) : null;
+      const stateId = city.StateMasterSid ? Number(city.StateMasterSid) : null;
+      
+      this.cityForm.patchValue({
+        cityName: city.cityName,
+        cityCode: city.cityCode,
+        CountryMasterSid: countryId,
+        StateMasterSid: stateId,
+        status: city.status === 'A' ? 'Active' : 'Suspended'
+      });
+      
+      // 5. UNLOCK UI
+      this.cityForm.enable();
+    },
+    error: (err) => {
+      // 6. ROLLBACK (Failure State)
+      this.closeModal(); 
+      console.error('Error fetching city data', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
+
 
   //   openAuditLogs(modal: TemplateRef<any>) {
   //   if (!this.CityMasterSid) return;

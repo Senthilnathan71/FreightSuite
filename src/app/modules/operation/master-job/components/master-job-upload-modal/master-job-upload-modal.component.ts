@@ -470,6 +470,14 @@ export class MasterJobUploadModalComponent implements OnInit {
     // Get form values
     const masterJob = this.masterJobForm.value;
     const houseJobs = this.houseJobsArray.value;
+    const {
+  POO,
+  POL,
+  POD,
+  FPD,
+  ETD,
+  ETA
+} = masterJob;
 
     // Get child data from forms
     const containers = this.containersArray.value;
@@ -492,7 +500,8 @@ export class MasterJobUploadModalComponent implements OnInit {
       this.appSettingsService.showError('User information missing');
       return;
     }
-
+   const menuMasterSid = Number(localStorage.getItem('currentMenuId'));
+   
     // Prepare payload
     const payload = {
       masterJob: {
@@ -500,18 +509,26 @@ export class MasterJobUploadModalComponent implements OnInit {
         CompanyMasterSid: this.currentCompany.CompanyMasterSid,
         BranchMasterSid: this.currentBranch.BranchMasterSid,
         DepartmentMasterSid: masterJob.DepartmentMasterSid || 1, // Default department
-        CreatedBy: this.userData.userEmail
+        CreatedBy: this.userData.userEmail,
+        MenuMasterSid: menuMasterSid
       },
       containers: containers || [],
       voyages: voyages || [],
       connections: connections || [],
       others: others || null,
       houseJobs: houseJobs.map((hj: any) => ({
-        ...hj,
+        ...hj,   
+  POO,
+  POL,
+  POD,
+  FPD,
+  ETD,
+  ETA,
         CompanyMasterSid: this.currentCompany.CompanyMasterSid,
         BranchMasterSid: this.currentBranch.BranchMasterSid,
         DepartmentMasterSid: hj.DepartmentMasterSid || masterJob.DepartmentMasterSid || 1,
-        CreatedBy: this.userData.userEmail
+        CreatedBy: this.userData.userEmail,
+        menuMasterSid: menuMasterSid
         // cargo, products, and connections are already included in hj from the form value
       })),
       companyMasterSid: this.currentCompany.CompanyMasterSid,

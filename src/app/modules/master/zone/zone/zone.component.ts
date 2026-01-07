@@ -416,9 +416,9 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     }
   }
 
-   viewZone(row: any) {
-    this.openEditModal(this.content,row.ZoneMasterSid)
-  }
+   viewZone(item: any) {
+  this.openEditModal(this.content, item.ZoneMasterSid);
+}
 
   deleteChargeByRow(row: any) {
     this.deleteCharge(row.ZoneMasterSid);
@@ -568,34 +568,59 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
-  openEditModal(content: any, id: number): void {
-    this.isEditMode = true;
-    this.ZoneMasterSid = id;
-    this.getZoneById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-    });
-  }
+openEditModal(content: TemplateRef<any>, id: number): void {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.ZoneMasterSid = id;
 
-  updateZoneById(id: number, content: any) {
-    this.isEditMode = true;
-    this.ZoneMasterSid = id;
-    this.masterService.getZoneById(id).pipe(take(1)).subscribe({
-      next: (zone: any) => {
-        this.zoneData = zone;
-        this.zoneForm.get('status')?.enable();
-        this.zoneForm.patchValue({
-          ZoneName: zone.ZoneName,
-          ZoneCode: zone.ZoneCode,
-          status: zone.status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching', err);
-        this.appSettingService.showError('Error fetching data for editing');
+  this.zoneForm.reset(); // Always reset before opening to clear old data
+
+  // 2. OPEN MODAL (Optimistic UI)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM (Block input during fetch)
+  this.zoneForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getZoneById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Robust Data Extraction
+      const data = response?.data || response;
+
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.zoneData = data;
+
+      // Patch Values
+      this.zoneForm.patchValue({
+        ZoneCode: data.ZoneCode,
+        ZoneName: data.ZoneName,
+        Remarks: data.Remarks || '',
+        Status: data.Status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. ENABLE FORM (Only on success)
+      this.zoneForm.enable();
+      
+      // Optional: Keep ID field disabled if it's not editable
+      // this.zoneForm.get('ZoneCode')?.disable(); 
+    },
+    error: (err) => {
+      // 6. ROLLBACK (Close modal on failure)
+      this.closeModal();
+      console.error('Error fetching Zone:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
 
   closeModal(): void {
     if (this.modalRef) {

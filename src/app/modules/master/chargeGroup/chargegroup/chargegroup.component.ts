@@ -433,9 +433,11 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  viewZone(row: any, content?: TemplateRef<any>) {
-    this.editChargeGroup(row, content)
-  }
+  
+viewZone(id: number, content?: TemplateRef<any>) {
+  this.editChargeGroup(id, content);
+}
+
 
   onTableRowClick(row: any): void {
 
@@ -574,28 +576,66 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     return index;
   }
 
-  editChargeGroup(id: number, content: any) {
-    this.isEditMode = true;
-    this.ChargeGroupSid = id;
-    this.masterService.getChargeGroupById(id).pipe(take(1)).subscribe({
+editChargeGroup(id: number, content: TemplateRef<any>) {
+  // 1. STATE & UI SETUP (Synchronous - Immediate execution)
+  this.isEditMode = true;
+  this.ChargeGroupSid = id;
+  
+  // Reset form to clear previous validation errors/values
+  this.chargeGroupForm.reset(); 
+
+  // 2. LOCK UI (Optimistic Open)
+  // 'static' backdrop and 'keyboard: false' ensure the user cannot escape 
+  // the modal while data is in an inconsistent (loading) state.
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM (Read-Only Mode)
+  // Prevents 'Dirty Reads': User cannot type into fields before the DB data arrives.
+  this.chargeGroupForm.disable();
+
+  // 4. FETCH DATA (Async Operation)
+  this.masterService.getChargeGroupById(id)
+    .pipe(take(1)) // Memory Safety: Ensures subscription dies after 1 emit
+    .subscribe({
       next: (response: any) => {
-        const chargeGroup = response.data;
-        this.chargeGroupData = chargeGroup;
-        this.chargeGroupForm.get('status')?.enable();
+        // Validation Guard: Protect against malformed API responses
+        if (!response?.data) {
+          console.warn('API returned success but no data payload.');
+          throw new Error('Data payload missing'); 
+        }
+
+        const data = response.data;
+        this.chargeGroupData = data;
+
+        // Data Patching
         this.chargeGroupForm.patchValue({
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          GroupName: chargeGroup.GroupName,
-          Remarks: chargeGroup.Remarks || '',
-          status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
+          GroupName: data.GroupName,
+          Remarks: data.Remarks || '', // Default to empty string if null
+          status: data.status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+
+        // 5. UNLOCK UI (Success State)
+        // Data is ready. Allow user interaction.
+        this.chargeGroupForm.enable();
       },
       error: (err) => {
-        console.error('Error fetching Charge Group', err);
-        this.appSettingService.showError('Error fetching data for editing');
+        // 6. ROLLBACK (Failure State)
+        // Critical: Close modal so user isn't stuck in a disabled/empty UI.
+        this.closeModal();
+        
+        console.error(`Failed to fetch Charge Group (ID: ${id})`, err);
+        this.appSettingService.showError('Unable to load data. Please try again.');
       }
     });
-  }
+}
+
+
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ChargeGroupSid) return;
