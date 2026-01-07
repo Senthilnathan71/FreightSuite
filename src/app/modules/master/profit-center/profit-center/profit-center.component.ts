@@ -336,7 +336,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
 
 
   viewCostCenter(item: any, content: any): void {
-    this.editProfitCenter(item.ProfitCenterMasterSid, content)
+    this.editProfitCenter(item.ProfitCenterMasterSid, content);
   }
 
   // Table configuration
@@ -549,27 +549,56 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  editProfitCenter(id: number, content: any) {
-    this.isEditMode = true;
-    this.ProfitCenterMasterSid = id;
-    this.masterService.getProfitCenterById(id).pipe(take(1)).subscribe({
-      next: (profitCenter: any) => {
-        this.profitCenterData = profitCenter;
-        this.profitCenterForm.get('Status')?.enable();
-        this.profitCenterForm.patchValue({
-          ProfitCenterCode: profitCenter.ProfitCenterCode,
-          ProfitCenterName: profitCenter.ProfitCenterName,
-          Remarks: profitCenter.Remarks,
-          Status: profitCenter.Status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching Profit-Center', err);
-        this.appSettingService.showError('Error fetching data for edting');
+ editProfitCenter(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.ProfitCenterMasterSid = id;
+
+  this.profitCenterForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM
+  this.profitCenterForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getProfitCenterById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Robust Data Extraction: Handle 'response.data' or direct 'response'
+      const data = response?.data || response;
+
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.profitCenterData = data;
+
+      this.profitCenterForm.patchValue({
+        ProfitCenterCode: data.ProfitCenterCode,
+        ProfitCenterName: data.ProfitCenterName,
+        // Null Safety: Ensure text fields are empty string if null
+        Remarks: data.Remarks || '',
+        Status: data.Status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. UNLOCK UI
+      this.profitCenterForm.enable();
+    },
+    error: (err) => {
+      // 6. ROLLBACK
+      this.closeModal(); 
+      console.error('Error fetching Profit-Center:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ProfitCenterMasterSid) return;

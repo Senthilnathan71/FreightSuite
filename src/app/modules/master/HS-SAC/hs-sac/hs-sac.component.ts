@@ -553,9 +553,9 @@ hasAnyDropdownPermission(): boolean {
   deleteBy(row) {
     this.softDeleteHssac(row.HSSACMasterSid)
   }
-  viewHasac(row: any, content: TemplateRef<any>) {
-    this.editHssac(row.HSSACMasterSid, content)
-  }
+  viewHasac(item: any, content: TemplateRef<any>) {
+  this.editHssac(item.HSSACMasterSid, content);
+}
   onTableRowClick(row: any): void {
     // Row clicking can be handled by the table component if needed
   }
@@ -636,31 +636,61 @@ hasAnyDropdownPermission(): boolean {
     });
   }
 
-  editHssac(id: number, content: any) {
-    this.isEditMode = true;
-    this.HSSACMasterSid = id;
-    this.masterService.getHssacById(id).pipe(take(1)).subscribe({
-      next: (hssac: any) => {
-        this.hssacData = hssac;
-        this.hssacForm.get('status')?.enable();
-        this.hssacForm.patchValue({
-          HSSACCode: hssac.HSSACCode,
-          HSSACName: hssac.HSSACName,
-          ServiceName: hssac.ServiceName,
-          TaxRate: hssac.TaxRate,
-          TaxType: hssac.TaxType,
-          EffectiveFrom: new Date(hssac.EffectiveFrom),
-          Remarks: hssac.Remarks,
-          status: hssac.status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching HSSAC', err);
-        this.appSettingService.showError('Error fetching data for editing');
+editHssac(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.HSSACMasterSid = id;
+  this.hssacForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM
+  this.hssacForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getHssacById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Robust Data Extraction: Handle 'response.data' or direct 'response'
+      const data = response?.data || response;
+
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.hssacData = data;
+      
+      this.hssacForm.patchValue({
+        HSSACCode: data.HSSACCode,
+        HSSACName: data.HSSACName,
+        ServiceName: data.ServiceName,
+        TaxRate: data.TaxRate,
+        TaxType: data.TaxType,
+        // Safe Date Parsing: Ensure date is valid before creating object
+        EffectiveFrom: data.EffectiveFrom ? new Date(data.EffectiveFrom) : null,
+        Remarks: data.Remarks || '', 
+        status: data.status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. UNLOCK UI
+      this.hssacForm.enable();
+    },
+    error: (err) => {
+      // 6. ROLLBACK
+      this.closeModal(); 
+      console.error('Error fetching HSSAC:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
+
+
 
 
   closeModal(): void {

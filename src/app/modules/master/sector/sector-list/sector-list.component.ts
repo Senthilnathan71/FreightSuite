@@ -350,7 +350,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
 
 
   viewSector(item: any, content: any): void {
-    this.editSector(item.SectorMasterSid, content)
+    this.editSector(item.SectorMasterSid, content);
   }
 
 
@@ -585,28 +585,61 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
-  editSector(id: number, content: any) {
-    this.isEditMode = true;
-    this.SectorMasterSid = id;
-    this.masterService.getSectorById(id).pipe(take(1)).subscribe({
-      next: (sector: any) => {
-        this.sectorData = sector;
-        this.sectorForm.patchValue({
-          sectorName: sector.sectorName,
-          sectorCode: sector.sectorCode,
-          RegionName: sector.RegionName || null,
-          RegionCode: sector.RegionCode || null,
-          status: sector.status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.sectorForm.get('status')?.enable();
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-      },
-      error: (err) => {
-        console.error('Error fetching Sector', err);
-        this.appSettingService.showError('Error fetching data for editing');
+  editSector(id: number, content: TemplateRef<any>) {
+  // 1. STATE SETUP
+  this.isEditMode = true;
+  this.SectorMasterSid = id;
+
+  this.sectorForm.reset();
+
+  // 2. LOCK UI (Optimistic Open)
+  this.modalRef = this.modalService.open(content, { 
+    centered: true, 
+    size: 'lg', 
+    backdrop: 'static',
+    keyboard: false 
+  });
+
+  // 3. DISABLE FORM
+  this.sectorForm.disable();
+
+  // 4. FETCH DATA
+  this.masterService.getSectorById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      // Robust Data Extraction: Handle 'response.data' or direct 'response'
+      const data = response?.data || response;
+
+      if (!data) {
+        throw new Error('Data payload missing');
       }
-    });
-  }
+
+      this.sectorData = data;
+
+      this.sectorForm.patchValue({
+        sectorName: data.sectorName,
+        sectorCode: data.sectorCode,
+        // Null Safety: Explicitly handle optional fields
+        RegionName: data.RegionName || null,
+        RegionCode: data.RegionCode || null,
+        status: data.status === 'A' ? 'Active' : 'Suspended'
+      });
+
+      // 5. ENABLE FORM
+      this.sectorForm.enable();
+
+      // Optional: Re-disable unique ID field if it shouldn't be editable
+      // this.sectorForm.get('sectorCode')?.disable(); 
+    },
+    error: (err) => {
+      // 6. ROLLBACK
+      this.closeModal(); 
+      console.error('Error fetching Sector:', err);
+      this.appSettingService.showError('Unable to load data. Please try again.');
+    }
+  });
+}
+
+
 
   closeModal(): void {
     if (this.modalRef) {
