@@ -28,7 +28,7 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ param?.Branch }}</p>
+                    <p class="ms-1">: {{ fullData?.BranchName }}</p>
                 </div>
             </div>
         </div>
@@ -294,9 +294,9 @@
                         </strong>
                     </div>
 
-                    <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
+                    <!-- <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
                         {{ vatPayableAmountLocal | number:'1.2-2' }}
-                    </div>
+                    </div> -->
 
                     <div style="width:150px; padding:2px; text-align:right;">
                         {{vatPayableAmountOversea | number:'1.2-2'}}

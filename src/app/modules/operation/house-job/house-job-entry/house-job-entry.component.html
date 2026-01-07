@@ -53,6 +53,8 @@
              @if(selectedDepartmentType === "AIR"){
                <button class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWB')">HAWB</button>
                 <button class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWBDraft')">HAWB Draft</button>
+                <button class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
+            </button>
              }@else{ 
               @if(houseJobForm.get('JobType')?.value !== 'Transhipment'){
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
@@ -78,6 +80,8 @@
               <button class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
             </button>
              <button class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
+            </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
             </button>
              <!-- <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
             </button> -->

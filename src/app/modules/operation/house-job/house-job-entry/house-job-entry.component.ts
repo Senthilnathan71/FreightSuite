@@ -59,6 +59,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
+import { ExitFormComponent } from '../report/exit-form/exit-form.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3783,6 +3784,18 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.packageTypeList = this.packageTypeList;
         }
       
+        // Exit form
+
+         reportExitForm() {
+          const modalRef = this.modalService.open(ExitFormComponent, {
+            size: 'xl',
+            scrollable: true,
+          });
+          modalRef.componentInstance.masterJobData = this.masterJobData;
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.containerTypeList = this.containerTypeList;
+          modalRef.componentInstance.packageTypeList = this.packageTypeList;
+        }
 
 
       // Delivery Note
