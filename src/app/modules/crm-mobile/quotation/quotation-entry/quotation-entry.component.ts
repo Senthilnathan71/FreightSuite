@@ -1935,20 +1935,20 @@ isRateLockDisabled(): boolean {
 
     const validationConfig = {
       FCL: ['ContainerType', 'Qty'],
-      LCL: ['GrossWeight', 'NetWeight', 'Volume'],
+      LCL: ['GrossWeight', 'Volume'],
       AIR: ['GrossWeight', 'ChargeableWeight'],
     };
 
     let allDynamicFields;
     switch (type) {
       case 'FCL':
-        allDynamicFields = ['GrossWeight', 'NetWeight', 'Volume','ChargeableWeight'];
+        allDynamicFields = ['GrossWeight', 'Volume','ChargeableWeight'];
         break;
       case 'LCL':
         allDynamicFields = ['ContainerType', 'Qty','ChargeableWeight'];
         break;
       case 'AIR':
-        allDynamicFields = ['ContainerType', 'Qty','NetWeight', 'Volume'];
+        allDynamicFields = ['ContainerType', 'Qty', 'Volume'];
         break;
       default:
         allDynamicFields = [];

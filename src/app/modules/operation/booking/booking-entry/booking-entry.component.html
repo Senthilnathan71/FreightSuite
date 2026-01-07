@@ -1487,9 +1487,9 @@
                   </th>
                   @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger">*</span></th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger">*</span></th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger">*</span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger"></span></th>
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger">*</span></th>
@@ -1570,15 +1570,18 @@
                    
                   </td>
                   <td>
-                    <input type="text" id="text-input" formControlName="Length" placeholder="" [onlyNumbers]
+                    <input type="text" id="text-input" formControlName="Length" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>
-                    <input type="text" id="text-input" formControlName="Width" placeholder="" [onlyNumbers]
+                    <input type="text" id="text-input" formControlName="Width" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>
-                    <input type="text" id="text-input" formControlName="Height" placeholder="" [onlyNumbers]
+                    <input type="text" id="text-input" formControlName="Height" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>

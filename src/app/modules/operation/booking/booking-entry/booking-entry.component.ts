@@ -740,16 +740,16 @@ arapFilter = {
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required,Validators.min(0.001)]],
-      NetWeight: ['', [Validators.min(0.001)]],
+      NetWeight: ['', [Validators.min(0)]],
       Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
       Volume: ['',[Validators.required,Validators.min(0.001)]],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
-      Length: ['',isAirOrLCL ? [Validators.required] : []],
-      Width: ['',isAirOrLCL ? [Validators.required] : []],
-      Height: ['',isAirOrLCL ? [Validators.required] : []],
+      Length: [''],
+      Width: [''],
+      Height: [''],
       UomMasterSid: [2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [null]
     });
@@ -957,15 +957,15 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
-      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0.001)]],
+      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
       Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       IsHaz: [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
       UnNo: [{ value: data?.UnNo || '', disabled: true }],
       PkgGroup: [{ value: data?.PkgGroup || '', disabled: true }],
-      Length: [data?.Length || '',isAirOrLCL ? [Validators.required] : []],
-      Width: [data?.Width || '',isAirOrLCL ? [Validators.required] : []],
-      Height: [data?.Height || '',isAirOrLCL ? [Validators.required] : []],
+      Length: [data?.Length || ''],
+      Width: [data?.Width || ''],
+      Height: [data?.Height || ''],
       Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required] : []],
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
@@ -1804,9 +1804,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         ImcoClass: product.ImcoClass || '',
         UnNo: product.UnNo || '',
         PkgGroup: product.PkgGroup || '',
-        Length: Number(product.Length),
-        Width: Number(product.Width),
-        Height: Number(product.Height),
+        Length: parseFloat(product.Length),
+        Width: parseFloat(product.Width),
+        Height: parseFloat(product.Height),
         Volumetric: parseFloat(product.Volumetric) || 0,
         UomMasterSid: product.UomMasterSid,
         CargoRecDate: product.CargoRecDate
@@ -1922,7 +1922,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             if (control.errors['required']) {
               // Special handling for AIR/LCL departments - make dimensions mandatory
               const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
-              const dimensionFields = ['Length', 'Width', 'Height', 'UomMasterSid', 'Volumetric'];
+              const dimensionFields = ['UomMasterSid', 'Volumetric'];
               
               if (isAirOrLCL && dimensionFields.includes(key)) {
                 errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required for ${this.selectedFCLLCL} shipments`);
@@ -1937,7 +1937,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
       // ADD THIS: Check if weight fields are 0 (which shouldn't be allowed)
       const grossWeight = Number(productGroup.get('GrossWeight')?.value) || 0;
-      const netWeight = Number(productGroup.get('NetWeight')?.value) || 0;
       const volume = Number(productGroup.get('Volume')?.value) || 0;
 
       // For LCL and AIR: GrossWeight and NetWeight must be greater than 0
@@ -1947,11 +1946,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           productGroup.get('GrossWeight')?.setErrors({ min: true });
           isValid = false;
         }
-        if (netWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Net Weight is required`);
-          productGroup.get('NetWeight')?.setErrors({ min: true });
-          isValid = false;
-        }
       }
 
       // For FCL: GrossWeight, NetWeight, and Volume must be greater than 0
@@ -1959,11 +1953,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         if (grossWeight <= 0) {
           errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
           productGroup.get('GrossWeight')?.setErrors({ min: true });
-          isValid = false;
-        }
-        if (netWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Net Weight is required`);
-          productGroup.get('NetWeight')?.setErrors({ min: true });
           isValid = false;
         }
         if (volume <= 0) {
@@ -2019,7 +2008,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
       
       // Update validators based on department
-      const dimensionFields = ['Length', 'Width', 'Height', 'UomMasterSid', 'Volumetric'];
+      const dimensionFields = ['UomMasterSid', 'Volumetric'];
       dimensionFields.forEach(field => {
         const control = productGroup.get(field);
         if (isAirOrLCL) {
@@ -4414,7 +4403,6 @@ getFieldLabel(fieldName: string): string {
     'ExternaPkg': 'External Package',
     'ExternlQty': 'External Quantity',
     'GrossWeight': 'Gross Weight',
-    'NetWeight': 'Net Weight',
     'Volumetric': 'Volumetric Weight',
     
     // CRO Form Fields
