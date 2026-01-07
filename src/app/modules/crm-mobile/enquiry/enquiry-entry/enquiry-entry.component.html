@@ -1052,7 +1052,7 @@
                                                                 style="width: 300px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Product <span
-                                                                        class="text-danger"></span></label>
+                                                                        class="text-danger">*</span></label>
                                                             </td>
 
 
@@ -1077,19 +1077,19 @@
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Length <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Width<span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Height <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
@@ -1182,17 +1182,23 @@
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                     >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                     >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                    >
                                                             </td>
                                                             <td>
@@ -1330,7 +1336,7 @@
                                                             <td class="bg-transparent text-light " style="width:150px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Net Weight <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
@@ -1523,19 +1529,19 @@
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Length <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Width<span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Height <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
@@ -1560,7 +1566,7 @@
                                                             <td class="bg-transparent text-light " style="width:150px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Net Weight <span
-                                                                        class="text-danger">*</span></label>
+                                                                        class="text-danger"></span></label>
                                                             </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){
@@ -1624,17 +1630,23 @@
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                     >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                     >
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
+                                                                    [DecimalPrecisionAfter]="3"
                                                                    >
                                                             </td>
                                                             <td>

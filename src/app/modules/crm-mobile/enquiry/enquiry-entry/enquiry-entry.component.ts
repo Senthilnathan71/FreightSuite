@@ -1134,8 +1134,7 @@ private parseFloatSafe(value: any): number {
       fields.forEach(f => {
         const ctrl = cargoForm.get(f);
         if (ctrl) {
-          ctrl.reset();
-          ctrl.clearValidators();
+          ctrl.setValue(null);
           ctrl.updateValueAndValidity();
         }
       });
@@ -1157,11 +1156,24 @@ private parseFloatSafe(value: any): number {
       });
     };
 
-    const FCLFields = ['ContainerType', 'PackageType', 'Qty', 'ShipmentTerms'];
-    const LCLFields = ['PackageType', 'PackageQty', 'WeightUnitSid', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm'];
-    const AIRFields = ['ChargeableWeight', 'length', 'width', 'height'];
+    const applyGrossWeightValidation = () => {
+  const ctrl = cargoForm.get('GrossWeight');
+  if (!ctrl) return;
 
-    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm', 'ContainerType', 'ChargeableWeight', 'length', 'width', 'height']);
+  ctrl.setValidators([
+    Validators.required,
+    this.weightValidator()
+  ]);
+
+  ctrl.updateValueAndValidity();
+};
+
+
+    const FCLFields = ['CargoType','ContainerType', 'PackageType', 'PackageQty', 'ShipmentTerms', 'GrossWeight', 'cbm', 'ProductName'];
+    const LCLFields = ['CargoType','PackageType', 'PackageQty', 'WeightUnitSid', 'cbm', 'volumetric' ,'GrossWeight', 'ChargeableWeight', 'ShipmentTerms', 'ProductName'];
+    const AIRFields = ['CargoType', 'PackageType','ChargeableWeight','WeightUnitSid','PackageQty','cbm', 'volumetric','GrossWeight', 'ChargeableWeight', 'ProductName'];
+
+    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'ChargeableWeight']);
 
     if (type === 'FCL') {
       setRequired(FCLFields);
@@ -1170,17 +1182,7 @@ private parseFloatSafe(value: any): number {
     } else if (type === 'AIR') {
       setRequired(AIRFields);
     }
-
-    const grossWeightCtrl = cargoForm.get('GrossWeight');
-
-    if (type === "LCL" && grossWeightCtrl) {
-      grossWeightCtrl.setValidators([
-        Validators.required,
-        this.weightValidator()
-      ]);
-    }
-
-    cargoForm.updateValueAndValidity();
+    applyGrossWeightValidation();
   }
 
   onSelectionChange(selectedItem: any) {
@@ -1446,9 +1448,9 @@ private parseFloatSafe(value: any): number {
             cbm: [cargo.Volume || '1'],
             ContainerType: [cargo.ContainerType || null],
             ChargeableWeight: [cargo.ChargeableWeight || null],
-            length: [cargo.length || ''],
-            width: [cargo.width || ''],
-            height: [cargo.height || ''],
+            length: [cargo.length || null],
+            width: [cargo.width || null],
+            height: [cargo.height || null],
             volumetric: [cargo.Volumetric || '']
           })
         );
@@ -1482,6 +1484,32 @@ private parseFloatSafe(value: any): number {
     }
   }
 
+  hasInvalidCargoFields(): boolean {
+  let hasInvalid = false;
+
+  this.routes.controls.forEach((routeGroup: FormGroup) => {
+    const cargoArray = routeGroup.get('cargo') as FormArray;
+
+    cargoArray.controls.forEach((cargoForm: FormGroup) => {
+      const grossWeight = cargoForm.get('GrossWeight')?.value;
+
+      if (!grossWeight || +grossWeight <= 0) {
+        cargoForm.get('GrossWeight')?.setErrors({ required: true });
+        cargoForm.get('GrossWeight')?.markAsTouched();
+        hasInvalid = true;
+      }
+
+      if (cargoForm.invalid) {
+        cargoForm.markAllAsTouched();
+        hasInvalid = true;
+      }
+    });
+  });
+
+  return hasInvalid;
+}
+
+
   onSubmit() {
     if (this.hasInvalidExcept('routes', this.rateRequestForm)) {
       this.rateRequestForm.markAllAsTouched();
@@ -1503,6 +1531,11 @@ private parseFloatSafe(value: any): number {
       this.selectedTab = "Route Details";
       return;
     }
+      if (this.hasInvalidCargoFields()) {
+    this.appSettingsService.showWarning('Please complete all required cargo fields');
+    this.selectedTab = "Route Details";
+    return;
+  }
 
     this.btnDisable = true;
     const otherFormValue = this.enquiryOtherForm.value;
@@ -2173,6 +2206,7 @@ private parseFloatSafe(value: any): number {
       return 'Route Details'
     }
   }
+
 
   hasGrossWeightError(routeIndex: number) {
     const cargoForm = this.routeCargo(routeIndex).at(0) as FormGroup;
