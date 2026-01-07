@@ -62,10 +62,10 @@
         <h3 style="text-align:center;border-top: 1px solid black; padding:10px auto;padding-top: 10px;font-weight: bolder;"><strong>Cash Payment</strong></h3>
 
         <!-- Row -->
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:150px;font-size: 16px;">
+        <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:150px;">
 
             <!-- Left Column -->
-            <div style="flex:0 0 50%; max-width:50%;">
+            <div style="flex:0 0 50%; max-width:50%;font-size: 17px;">
                 <div style="display:flex; margin-bottom:4px;padding-top: 10px;">
                     <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment No.</strong></div>
                     <div>: {{paymentDataPrint?.VoucherNumber}}</div>
@@ -77,7 +77,7 @@
             </div>
 
             <!-- Right Column -->
-            <div style="flex:0 0 50%; max-width:50%;">
+            <div style="flex:0 0 50%; max-width:50%;font-size: 17px;">
                 <div style="display:flex; margin-bottom:4px;padding-top: 10px;">
                     <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment Date</strong></div>
                     <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
@@ -116,9 +116,9 @@
         </table>
 
 
-          <div  style="padding-bottom:10px;font-size:16px;font-weight: bolder;">
+          <div  style="padding-bottom:10px;font-size:17px;padding-left: 20px;">
             <div style="display:flex; gap:4px;">
-                <strong>Amount in Words :</strong>
+                <strong style="font-weight: bolder;">Amount in Words :</strong>
                 <div>
                 <strong>   {{ getAmountInWords() }}</strong>
                 </div>
@@ -127,34 +127,34 @@
 
 
         <!-- Remittance Details -->
-        <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="font-weight:bold; padding:2px 0; text-decoration:underline;text-align: center;"><strong>Remittance Details</strong></h4>
+        <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="font-weight:bolder; padding:2px 20px;text-align:start;"><strong>Remittance Details</strong></h4>
 
         <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px;">
             <tbody>
                 <tr>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher No.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher Type</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Voucher No.</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>INV Type</strong></th>
                     <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher Date</strong></th>
                     <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
                     <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Ex. Rate</strong></th>
                     <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Local Amount</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-right: none;"><strong>Local Amount</strong></th>
                 </tr>
 
                 <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
-                    <td style="border:1px solid black; padding:4px;text-align: start;">{{voucher?.VoucherNumber}}</td>
+                    <td style="border:1px solid black; padding:4px;text-align: start;border-left: none;">{{voucher?.VoucherNumber}}</td>
                     <td style="border:1px solid black; padding:4px;text-align: start;">{{voucher?.VoucherType}}</td>
                     <td style="border:1px solid black; padding:4px;">{{voucher?.VoucherDate | formatDate}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:center;text-align: start;">{{voucher?.CurrencyCode}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.ExchangeRate | number:'1.3-3'}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
                 </tr>
 
-                <tr style="font-weight: bolder;">
-                    <td colspan="5" style="border:1px solid black; padding:4px; text-align:right; "><strong>Total</strong></td>
-                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:700;">{{getTotalMatchingAmount() | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:700;">{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</td>
+                <tr>
+                    <td colspan="5" style="border:1px solid black; padding:4px; text-align:right; border-left: none;"><strong>Total</strong></td>
+                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder;">{{getTotalMatchingAmount() | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder; border-right: none;">{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</td>
                 </tr>
             </tbody>
         </table>
@@ -165,9 +165,9 @@
 
 
         <!-- Signature -->
-        <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:16px;padding: 20px;font-weight: bolder;">
-            <div><strong>Checked By :</strong></div>
-            <div><strong>Approved By :</strong></div>
+        <div style="display:flex; justify-content:space-between; margin-top:20px;font-size:17px;padding: 20px;font-weight: bolder;">
+            <div><strong>Checked By</strong></div>
+            <div><strong>Approved By</strong></div>
         </div>
 
     </section>
@@ -175,7 +175,7 @@
 
     <!-- Footer -->
     <footer style="position:absolute; bottom:2mm; left:0; right:0; font-size:10pt; text-align:center; padding:0 10px;">
-        <div style="display:flex; justify-content:space-between; width:100%;font-size: 16px;">
+        <div style="display:flex; justify-content:space-between; width:100%;font-size: 17px;">
             <div><span>Printed By :</span> {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
             <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>

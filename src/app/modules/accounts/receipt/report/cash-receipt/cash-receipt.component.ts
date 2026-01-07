@@ -131,7 +131,7 @@ getAmountInWords(): string {
   const total = this.receiptPrintData?.VoucherDetail?.[0]?.Amount
   if (!total) return '';
 
-  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  const currencySid = this.receiptPrintData?.CurrencyMasterSid;
   return this.numberToWords.convert(total, currencySid);
 }
 
