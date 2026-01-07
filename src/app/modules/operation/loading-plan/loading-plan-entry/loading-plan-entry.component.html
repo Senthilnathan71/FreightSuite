@@ -905,16 +905,16 @@
                     <!-- Info Section -->
                     <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; gap:10px;padding-left: 20px;">
                         <!-- Column 1 -->
-                        <div style="flex:1; min-width:180px;font-size: 16px;">
-                            <div style="display:flex; margin-bottom:4px;">
+                        <div style="flex:1; min-width:180px;">
+                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
                                 <div style="width:150px;font-weight: bolder;"><strong>MBL No.</strong></div>
                                 <div>: {{loadingPlanData[0]?.MBLNo}}</div>
                             </div>
-                          <div style="display:flex; margin-bottom:4px;">
-  <div style="width:150px;font-weight:bolder;">
-    <strong>Vessel / Voyage No.</strong>
-  </div>
-  <div>
+                          <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                             <div style="width:150px;font-weight:bolder;">
+                                <strong>Vessel / Voy No.</strong>
+                            </div>
+                         <div>
     :
     {{ loadingPlanData[0]?.VesselName }}
     <span *ngIf="loadingPlanData[0]?.VesselName && loadingPlanData[0]?.VoyageNo">
@@ -924,11 +924,11 @@
   </div>
 </div>
 
-                            <div style="display:flex; margin-bottom:4px;">
+                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
                                 <div style="width:150px;font-weight: bolder;"><strong>Carrier</strong></div>
                                 <div>: {{this.loadingPlanForm.get('carrier')?.value || ''}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;">
+                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
                                 <div style="width:150px;font-weight: bolder;"><strong>PP/CC</strong></div>
                                 <div>: {{loadingPlanData[0]?.FreightTerms}}</div>
                             </div>
@@ -985,7 +985,7 @@
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                         <strong>Origin</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                        <strong>Dest</strong></th>
+                                        <strong>Dest.</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                         <strong>Shipper & Address</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">

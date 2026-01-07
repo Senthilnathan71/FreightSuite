@@ -72,6 +72,7 @@ export class BankPaymentPrintComponent {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response|| [];
+        this.numberToWords.initializeCurrencies(this.currency);
         console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -177,18 +178,16 @@ export class BankPaymentPrintComponent {
 //   return mainWords;
 // }
 
-  getAmountInWords(amount: number | null | undefined): string {
-  if (amount == null) return '';
 
-  const currencySid = this.currentCompany?.CurrencyMasterSid;
-  if (!currencySid) return '';
 
-  return this.numberToWords.convert(
-    Number(amount),
-    // currencySid
-  );
+
+getAmountInWords(): string {
+  const total = this.paymentDataPrint?.VoucherDetail?.[0]?.Amount
+  if (!total) return '';
+
+  const currencySid = this.paymentDataPrint?.CurrencyMasterSid;
+  return this.numberToWords.convert(total, currencySid);
 }
-
 
 
 

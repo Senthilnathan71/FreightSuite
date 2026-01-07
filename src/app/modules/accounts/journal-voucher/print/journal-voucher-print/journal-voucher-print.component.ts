@@ -13,14 +13,14 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
-  selector: 'app-bank-receipt',
+  selector: 'app-journal-voucher-print',
   standalone: true,
   imports: [CustomDatePipe, CommonModule],
-  templateUrl: './bank-receipt.component.html',
+  templateUrl: './journal-voucher-print.component.html',
   styles: ``
 })
-export class BankReceiptComponent implements OnChanges {
-  
+export class JournalVoucherPrintComponent {
+ 
   currentCompany: any
   currentBranch: any;
   userData: any
@@ -29,7 +29,7 @@ export class BankReceiptComponent implements OnChanges {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currency:any[] = [];
-  @Input() receiptPrintData: any;
+  @Input() voucherData: any;
   @Input() masterJobContainers: any[];
   @Input() selectedFCLLCL: any;
   @Input() agentList: any;
@@ -112,6 +112,26 @@ export class BankReceiptComponent implements OnChanges {
     }
   }
 
+  get totalDebit(): number {
+  if (!this.voucherData?.VoucherDetail) return 0;
+
+  return this.voucherData.VoucherDetail
+    .filter(v => v.DrCr === 'D')
+    .reduce((sum, v) => sum + Number(v.LocalAmount || 0), 0);
+}
+
+get totalCredit(): number {
+  if (!this.voucherData?.VoucherDetail) return 0;
+
+  return this.voucherData.VoucherDetail
+    .filter(v => v.DrCr === 'C')
+    .reduce((sum, v) => sum + Number(v.LocalAmount || 0), 0);
+}
+
+get difference(): number {
+  return Math.abs(this.totalDebit - this.totalCredit);
+}
+
 
   modalClose() {
     this.activeModal.close()
@@ -122,29 +142,29 @@ export class BankReceiptComponent implements OnChanges {
     // console.log(bank,"BANK")
     return bank ? bank.LedgerName : '';
   }
- getTotalMatchingAmount(): number {
-  if (!this.receiptPrintData?.voucherMatchings) return 0;
+//  getTotalMatchingAmount(): number {
+//   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
-  return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.MatchingAmount) || 0);
-  }, 0);
-}
+//   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
+//     return sum + (parseFloat(voucher?.MatchingAmount) || 0);
+//   }, 0);
+// }
 
-getTotalMatchingLocalAmount(): number {
-  if (!this.receiptPrintData?.voucherMatchings) return 0;
+// getTotalMatchingLocalAmount(): number {
+//   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
-  return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
-    return sum + (parseFloat(voucher?.MatchingLocalAmount) || 0);
-  }, 0);
-}
+//   return this.receiptPrintData.voucherMatchings.reduce((sum: number, voucher: any) => {
+//     return sum + (parseFloat(voucher?.MatchingLocalAmount) || 0);
+//   }, 0);
+// }
 
-getAmountInWords(): string {
-  const total = this.receiptPrintData?.VoucherDetail?.[0]?.Amount;
-  if (!total) return '';
+// getAmountInWords(): string {
+//   const total = this.receiptPrintData?.VoucherDetail?.[0]?.Amount;
+//   if (!total) return '';
 
-  const currencySid = this.receiptPrintData?.CurrencyMasterSid; this.receiptPrintData?.CurrencyMasterSid;
-  return this.numberToWords.convert(total, currencySid);
-}
+//   const currencySid = this.currentCompany?.CurrencyMasterSid;
+//   return this.numberToWords.convert(total, currencySid);
+// }
   
 
 
@@ -190,7 +210,7 @@ getAmountInWords(): string {
   setTimeout(async () => {
     this.spinner.show();
    try {
-      const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
+      const BankReceiptNo = this.voucherData?.VoucherNumber || 'Receipt';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
         `Bank_Receipt_${BankReceiptNo}`,

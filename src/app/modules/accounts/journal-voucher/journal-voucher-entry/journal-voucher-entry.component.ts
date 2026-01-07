@@ -23,6 +23,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { toNumber } from 'src/app/common/helper';
+import { JournalVoucherPrintComponent } from '../print/journal-voucher-print/journal-voucher-print.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -1931,6 +1932,18 @@ disableChargeFieldsForRow(row: FormGroup): void {
     row.get('costCenterMasterSid')?.disable();
     row.get('profitCenterMasterSid')?.disable();
 }
+
+
+
+  reportJournalVoucher() {
+    const modalRef = this.modalService.open(JournalVoucherPrintComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.voucherData = this.voucherData || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    // modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+  }
 
         
 showPrintLogo: boolean = false;
