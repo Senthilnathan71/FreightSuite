@@ -1476,7 +1476,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.receiptForm.reset();
     this.detailItems.clear();
     this.interBranches.clear();
-    this.addInterBranch();
+    // this.addInterBranch();
     this.selectedInvoices = [];
     this.outstandingInvoices = [];
   }

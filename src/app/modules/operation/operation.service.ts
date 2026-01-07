@@ -616,7 +616,7 @@ processProductUpload(payload: any): Observable<any> {
 
   getAllMasterJobs(payload: any) {
     return this.http.post<{ data: any[] }>('master-job', payload).pipe(
-      map((resp) => {
+      map((resp:any) => {
         return resp;
       })
     );
