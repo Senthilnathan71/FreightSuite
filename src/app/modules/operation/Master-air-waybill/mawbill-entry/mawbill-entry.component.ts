@@ -656,8 +656,12 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   const companySid = this.currentCompany?.CompanyMasterSid;
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid
   return forkJoin({
-     departments: this.operationService.getDepartmentByType('Air', companySid) 
-      .pipe(catchError(err => of({ data: [] }))),
+    //  departments: this.operationService.getDepartmentByType('Air', companySid) 
+    //   .pipe(catchError(err => of({ data: [] }))),
+    department: this.operationService.getDepartmentByType(
+  CompanyMasterSid,
+  ['Air']
+).pipe(catchError(() => of([]))),
     ports: this.operationService.getAllPorts()
       .pipe(catchError(err => of({ data: [] }))),
     // Replace individual API calls with getCustomerByItsType
@@ -684,10 +688,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       airline: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['airLine'] }).pipe(catchError(err => of([]))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
-    departments,  ports, agents, carriers, forwarders, cfsList, yards,
+    department,  ports, agents, carriers, forwarders, cfsList, yards,
     containerTypes, currencies, packageTypes, customers,charge, airline
   }) => {
-     this.departments = departments || [];
+     this.departments = department || [];
     
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.chargeList = charge || [];

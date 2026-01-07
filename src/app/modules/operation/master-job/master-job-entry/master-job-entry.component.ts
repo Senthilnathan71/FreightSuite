@@ -159,7 +159,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   profitSummary: any;
   customerWiseSummary: any;
   chargeWiseSummary: any[] = []
-  
+
 
   // Lookup data
   departments: any[] = [];
@@ -247,12 +247,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   containerValidationErrors: any[] = [];
 
   // Add these properties
-selectedProductFile: File | null = null;
-productUploadErrors: any[] = [];
-productValidationErrors: any[] = [];
-parsedProducts: any[] = [];
-showProductPreview = false;
-isProcessingProductUpload = false;
+  selectedProductFile: File | null = null;
+  productUploadErrors: any[] = [];
+  productValidationErrors: any[] = [];
+  parsedProducts: any[] = [];
+  showProductPreview = false;
+  isProcessingProductUpload = false;
 
   // Dirty tracking for unsaved changes detection
   isDirty = false;
@@ -265,14 +265,14 @@ isProcessingProductUpload = false;
   isETDFreeText: boolean = false;
   isETAFreeText: boolean = false;
   selectedReport: 'MBL' | 'MBLDraft' = 'MBL';
-jobStatusOptions = [
-  { id: 'Job Generated', name: 'Job Generated' },
-  { id: 'Open', name: 'Open' },
-  { id: 'Closed', name: 'Closed' },
-  { id: 'Sailed', name: 'Sailed' },
-  { id: 'Operation Closed', name: 'Operation Closed' },
-  { id: 'Documentation Closed', name: 'Documentation Closed' }
-];
+  jobStatusOptions = [
+    { id: 'Job Generated', name: 'Job Generated' },
+    { id: 'Open', name: 'Open' },
+    { id: 'Closed', name: 'Closed' },
+    { id: 'Sailed', name: 'Sailed' },
+    { id: 'Operation Closed', name: 'Operation Closed' },
+    { id: 'Documentation Closed', name: 'Documentation Closed' }
+  ];
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Container', icon: 'fas fa-boxes' },
@@ -350,7 +350,7 @@ jobStatusOptions = [
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
   @ViewChild('productModal') productModal!: TemplateRef<any>;
   @ViewChild('masterDocumentUploadComponent') MasterDocumentUploadComponent!: TemplateRef<any>;
-  @ViewChild('costEntryComponent') costEntryComponent : CostEntryComponent;
+  @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
   selectedTab = 'Master';
   selectedTab1 = 'Product';
   countryOfCompany: string;
@@ -381,33 +381,32 @@ jobStatusOptions = [
   }
 
   ngOnInit(): void {
-    console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
+
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
     const storedMenuId = localStorage.getItem('currentMenuId');
     this.mps.init().subscribe();
-    console.log('📋 localStorage currentMenuId:', storedMenuId);
+
 
     this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
-    console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
+
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
-    console.log('📋 Filter Option:', this.filterOption);
-    console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
 
-     
+
+
     // Setup debounced vessel search
     this.setupVesselSearchDebouncing();
     this.loadHSSACLookups();
     this.setupDepartmentBasedValidation();
     this.loadInitialData().subscribe(() => {
       const loadingPlanData = this.operationService.getLoadingPlanData();
-      console.log(loadingPlanData, 'loadingPlanData')
+
       if (loadingPlanData) {
         this.patchLoadingPlanData(loadingPlanData);
       }
@@ -801,7 +800,7 @@ jobStatusOptions = [
       MasterJobNumber: [{ value: '', disabled: true }],
       MasterJobDate: [{ value: null, disabled: true }],
       FreightPPCC: ['Prepaid', Validators.required],
-      
+
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
       MBLNo: [''],
@@ -1144,18 +1143,23 @@ jobStatusOptions = [
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     return forkJoin({
-      seaDepartments: this.operationService.getDepartmentByType('Sea', CompanyMasterSid)
-        .pipe(catchError(err => of({ data: [] }))),
-      roadDepartments: this.operationService.getDepartmentByType('Road', CompanyMasterSid)
-        .pipe(catchError(err => of({ data: [] }))),
-      transportDepartments: this.operationService.getDepartmentByType('Transport', CompanyMasterSid)
-        .pipe(catchError(err => of({ data: [] }))),
-      otherDepartments: this.operationService.getDepartmentByType('Others', CompanyMasterSid)
-        .pipe(catchError(err => of({ data: [] }))),
+      // seaDepartments: this.operationService.getDepartmentByType('Sea', CompanyMasterSid)
+      //   .pipe(catchError(err => of({ data: [] }))),
+      // roadDepartments: this.operationService.getDepartmentByType('Road', CompanyMasterSid)
+      //   .pipe(catchError(err => of({ data: [] }))),
+      // transportDepartments: this.operationService.getDepartmentByType('Transport', CompanyMasterSid)
+      //   .pipe(catchError(err => of({ data: [] }))),
+      // otherDepartments: this.operationService.getDepartmentByType('Others', CompanyMasterSid)
+      //   .pipe(catchError(err => of({ data: [] }))),
+       department: this.operationService.getDepartmentByType(
+  CompanyMasterSid,
+  ['Sea', 'Road', 'Transport', 'Others']
+).pipe(catchError(() => of([]))),
+
       ports: this.operationService.getAllPorts()
         .pipe(catchError(err => of({ data: [] }))),
-      vessels: this.operationService.getAllVessels()
-        .pipe(catchError(err => of({ data: [] }))),
+      // vessels: this.operationService.getAllVessels()
+      //   .pipe(catchError(err => of({ data: [] }))),
       // Replace individual API calls with getCustomerByItsType
       agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['vendor', 'transporter', 'agent'] })
         .pipe(catchError(err => of([]))),
@@ -1175,22 +1179,17 @@ jobStatusOptions = [
         .pipe(catchError(err => of([]))),
       customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
         .pipe(catchError(err => of([]))),
-      charges: this.operationService.getAllCharges(CompanyMasterSid)
-        .pipe(catchError(err => of([]))),
+      // charges: this.operationService.getAllCharges(CompanyMasterSid)
+      //   .pipe(catchError(err => of([]))),
       // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
     }).pipe(tap(({
-      seaDepartments, roadDepartments, transportDepartments, otherDepartments, ports, vessels, agents, carriers, forwarders, cfsList, yards,
-      containerTypes, currencies, packageTypes, customers, charges
+     department  ,ports,  agents, carriers, forwarders, cfsList, yards,
+      containerTypes, currencies, packageTypes, customers,
     }) => {
-      this.departments = [
-        ...(seaDepartments || []),
-        ...(roadDepartments || []),
-        ...(transportDepartments || []),
-        ...(otherDepartments || [])
-      ];
+      this.departments = department || [];
 
       this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
-      this.vesselList = vessels.data || [];
+      // this.vesselList = vessels.data || [];
 
       // Update all customer type lists with data from the new API
       this.agentList = agents.data;
@@ -1198,7 +1197,7 @@ jobStatusOptions = [
       this.forwarderList = forwarders.data;
       this.cfsList = cfsList.data;
       this.yardList = yards.data;
-      this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
+      // this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
 
       this.containerTypeList = containerTypes.data;
       const rawCurrencies: any[] = Array.isArray(currencies)
@@ -1227,8 +1226,8 @@ jobStatusOptions = [
   loadMasterJobData(masterJobSid: number): void {
     this.spinner.show();
     const payload = {
-      screenName : 'Master Job',
-      MasterJobSid : masterJobSid
+      screenName: 'Master Job',
+      MasterJobSid: masterJobSid
     }
     forkJoin({
       masterJob: this.operationService.getMasterJobById(payload),
@@ -1239,8 +1238,8 @@ jobStatusOptions = [
         if (responses.masterJob.status && responses.masterJob.data) {
           const data = responses.masterJob.data;
           this.masterJobData = data;
-          
-          console.log("Master Job Data", this.masterJobData);
+
+
           const aggregatedTotals = data.aggregatedTotals;
 
           this.patchFormValues({
@@ -1278,7 +1277,7 @@ jobStatusOptions = [
             this.arapData = [];
           }
 
-         
+
         } else {
           this.arapData = [];
         }
@@ -1299,8 +1298,7 @@ jobStatusOptions = [
 
 
   patchFormValues(data: any) {
-    console.log('DEBUG: Data received for patching:', data);
-    console.log('DEBUG: MovementType value:', data.MovementType);
+
     // Helper to find port SID by port code (if stored as code in data)
     const findPortSidByCode = (portCodeOrSid: any): number | null => {
       if (!portCodeOrSid && portCodeOrSid !== 0) return null;
@@ -1431,39 +1429,38 @@ jobStatusOptions = [
     }
 
     // Patch voyage fields if voyage data exists
-if (data.voyages && data.voyages.length > 0) {
-  const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
-  let voyage;
+    if (data.voyages && data.voyages.length > 0) {
+      const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
+      let voyage;
 
-  if (validVoyages.length > 0) {
-    voyage = validVoyages.reduce((latest, current) =>
-      current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
-    );
-  } else {
-    voyage = data.voyages[0];
-  }
+      if (validVoyages.length > 0) {
+        voyage = validVoyages.reduce((latest, current) =>
+          current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
+        );
+      } else {
+        voyage = data.voyages[0];
+      }
 
-  console.log('Voyage data for patching:', voyage);
 
-  // CRITICAL: Use the voyage variable that was just calculated above
-  this.masterJobForm.patchValue({
-    MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
-    VoyageMasterSid: voyage.VoyageMasterSid,
-    VesselName: voyage.VesselName || '',
-    VoyageNo: voyage.VoyageNo || '',
-    ETA: voyage.ETA ? new Date(voyage.ETA) : null,
-    ETD: voyage.ETD ? new Date(voyage.ETD) : null,
-    ATA: voyage.ATA ? new Date(voyage.ATA) : null,
-    ATD: voyage.ATD ? new Date(voyage.ATD) : null,
-    DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
-    CarrierName: voyage.CarrierName || '',
-    PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
-      voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
-        data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
-  });
-  
-  console.log('Final Payload after voyage patch:', this.masterJobForm.value);
-}
+
+      // CRITICAL: Use the voyage variable that was just calculated above
+      this.masterJobForm.patchValue({
+        MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
+        VoyageMasterSid: voyage.VoyageMasterSid,
+        VesselName: voyage.VesselName || '',
+        VoyageNo: voyage.VoyageNo || '',
+        ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+        ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+        ATA: voyage.ATA ? new Date(voyage.ATA) : null,
+        ATD: voyage.ATD ? new Date(voyage.ATD) : null,
+        DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
+        CarrierName: voyage.CarrierName || '',
+        PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
+          voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
+            data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
+      });
+
+    }
     // ✅ Fixed: Populate carrier dropdown for edit mode
     // if (data.CarrierName && data.CarrierMasterSid) {
     //   const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
@@ -1501,7 +1498,7 @@ if (data.voyages && data.voyages.length > 0) {
     this.rateResult = [...this.masterJobRateArr];
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
-    console.log("CUSTOMER WISE SUMMARY", this.customerWiseSummary);
+
 
 
     // Patch container activities
@@ -1609,12 +1606,12 @@ if (data.voyages && data.voyages.length > 0) {
     const mblDateControl = this.masterJobForm.get('MBLDate');
 
     if (!departmentSid) {
-        // No department selected - disable both fields
-        mblNoControl?.disable();
-        mblDateControl?.disable();
-        mblNoControl?.clearValidators();
-        mblDateControl?.clearValidators();
-        return;
+      // No department selected - disable both fields
+      mblNoControl?.disable();
+      mblDateControl?.disable();
+      mblNoControl?.clearValidators();
+      mblDateControl?.clearValidators();
+      return;
     }
 
     const department = this.departments.find(dep => dep.DepartmentMasterSid === departmentSid);
@@ -1627,32 +1624,32 @@ if (data.voyages && data.voyages.length > 0) {
     const isImport = deptName?.includes('import');
 
     if (isExport) {
-        // Export department - disable both fields
-        mblNoControl?.disable();
-        mblDateControl?.disable();
-        mblNoControl?.clearValidators();
-        mblDateControl?.clearValidators();
-        
+      // Export department - disable both fields
+      mblNoControl?.disable();
+      mblDateControl?.disable();
+      mblNoControl?.clearValidators();
+      mblDateControl?.clearValidators();
+
     } else if (isImport) {
-        // Import department - enable and make required
-        mblNoControl?.enable();
-        mblDateControl?.enable();
-        mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
-        mblDateControl?.setValidators([Validators.required]);
-        
+      // Import department - enable and make required
+      mblNoControl?.enable();
+      mblDateControl?.enable();
+      mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+      mblDateControl?.setValidators([Validators.required]);
+
     } else {
-        // Other departments - enable but not required
-        mblNoControl?.enable();
-        mblDateControl?.enable();
-        mblNoControl?.clearValidators();
-        mblDateControl?.clearValidators();
-        mblNoControl?.setValidators([Validators.maxLength(20)]);
+      // Other departments - enable but not required
+      mblNoControl?.enable();
+      mblDateControl?.enable();
+      mblNoControl?.clearValidators();
+      mblDateControl?.clearValidators();
+      mblNoControl?.setValidators([Validators.maxLength(20)]);
     }
 
     mblNoControl?.updateValueAndValidity();
     mblDateControl?.updateValueAndValidity();
     this.cdr.detectChanges();
-}
+  }
   onDeptChange(department: any) {
     this.selectedDepartment = department;
     if (!department) {
@@ -1971,7 +1968,7 @@ if (data.voyages && data.voyages.length > 0) {
       return;
     }
 
-    console.log('Selected voyage for PortCutoffDate:', voyage);
+
 
     // Set voyage details
     this.masterJobForm.patchValue({
@@ -1993,10 +1990,10 @@ if (data.voyages && data.voyages.length > 0) {
 
     // ⚠️ CRITICAL FIX: Set PortCutoffDate properly
     if (voyage.PortCutoff) {
-      console.log('Setting PortCutoffDate from PortCutoff:', voyage.PortCutoff);
+
       this.masterJobForm.get('PortCutoffDate')?.setValue(new Date(voyage.PortCutoff));
     } else if (voyage.PortCutoffDate) {
-      console.log('Setting PortCutoffDate from PortCutoffDate:', voyage.PortCutoffDate);
+
       this.masterJobForm.get('PortCutoffDate')?.setValue(new Date(voyage.PortCutoffDate));
     }
 
@@ -2006,7 +2003,7 @@ if (data.voyages && data.voyages.length > 0) {
       const polDetail = voyage.Ports.find((p: any) => p.POLSid === POL);
 
       if (polDetail?.PortCutoff) {
-        console.log('Setting PortCutoffDate from port detail:', polDetail.PortCutoff);
+
         this.masterJobForm.get('PortCutoffDate')?.setValue(new Date(polDetail.PortCutoff));
       }
     }
@@ -2090,14 +2087,14 @@ if (data.voyages && data.voyages.length > 0) {
     const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
     let CarrierSid = null;
-  if (formValue.CarrierName) {
-    const selectedCarrier = this.carrierList.find(carrier => 
-      carrier.CustomerName === formValue.CarrierName
-    );
-    if (selectedCarrier) {
-      CarrierSid = selectedCarrier.CustomerMasterSid;
+    if (formValue.CarrierName) {
+      const selectedCarrier = this.carrierList.find(carrier =>
+        carrier.CustomerName === formValue.CarrierName
+      );
+      if (selectedCarrier) {
+        CarrierSid = selectedCarrier.CustomerMasterSid;
+      }
     }
-  }
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
       VoyageMasterSid: formValue.VoyageMasterSid,
@@ -2194,8 +2191,7 @@ if (data.voyages && data.voyages.length > 0) {
     formData['shipmentList'] = [...allShipments];
 
     // Debug to check the payload
-    console.log('Form Data to be saved:', formData);
-    console.log('Others data:', othersData);
+
 
     if (this.isEditMode && this.masterJobSid) {
       formData.MasterJobSid = this.masterJobSid;
@@ -2249,29 +2245,29 @@ if (data.voyages && data.voyages.length > 0) {
     }
   }
   handleCustomsChange(event: any) {
-    console.log('BOE Data from child:', event);
+
     // You can process and save event data here
   }
 
   onContainerSubmit(): void {
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
-        if (this.selectedFCLLCL === 'FCL') {
-      const currentContainerCount = this.masterJobContainers.length;
-      const totalAllowedContainers = this.getTotalAllowedContainers();
-      
-      // For edit mode, check if we're adding a new container (not editing existing)
-      const isAddingNewContainer = !this.isEditContainer;
-      
-      if (isAddingNewContainer && currentContainerCount >= totalAllowedContainers) {
-        // Show warning but allow to proceed
-        const warningMsg = totalAllowedContainers === 0 
-          ? 'No containers are allowed based on attached bookings.'
-          : `Booking Container Qty (${totalAllowedContainers}) exceeded. Current count: ${currentContainerCount + 1}`;
-        
-        this.toastr.warning(warningMsg, 'Container Limit Warning');
+      if (this.selectedFCLLCL === 'FCL') {
+        const currentContainerCount = this.masterJobContainers.length;
+        const totalAllowedContainers = this.getTotalAllowedContainers();
+
+        // For edit mode, check if we're adding a new container (not editing existing)
+        const isAddingNewContainer = !this.isEditContainer;
+
+        if (isAddingNewContainer && currentContainerCount >= totalAllowedContainers) {
+          // Show warning but allow to proceed
+          const warningMsg = totalAllowedContainers === 0
+            ? 'No containers are allowed based on attached bookings.'
+            : `Booking Container Qty (${totalAllowedContainers}) exceeded. Current count: ${currentContainerCount + 1}`;
+
+          this.toastr.warning(warningMsg, 'Container Limit Warning');
+        }
       }
-    }
 
       if (this.isEditContainer && this.editingContainerIndex !== null) {
         // Update existing container - preserve the MasterJobContainerSid
@@ -2397,68 +2393,68 @@ if (data.voyages && data.voyages.length > 0) {
       centered: true,
     });
   }
-// Method to check if container is mapped to any house job products
-isContainerMapped(containerSid: number): boolean {
-  if (!containerSid || !this.masterJobData || !this.masterJobData.containers) {
-    return false;
-  }
-  
-  // Find the container by SID
-  const container = this.masterJobData.containers.find(
-    (c: any) => c.MasterJobContainerSid === containerSid
-  );
-  
-  // If container has houseJobProduct array with items, it's mapped
-  return container && 
-         container.houseJobProduct && 
-         Array.isArray(container.houseJobProduct) && 
-         container.houseJobProduct.length > 0;
-}
+  // Method to check if container is mapped to any house job products
+  isContainerMapped(containerSid: number): boolean {
+    if (!containerSid || !this.masterJobData || !this.masterJobData.containers) {
+      return false;
+    }
 
-// Alternative: Check by container number
-isContainerMappedByNumber(containerNumber: string): boolean {
-  if (!containerNumber || !this.masterJobData || !this.masterJobData.containers) {
-    return false;
-  }
-  
-  const container = this.masterJobData.containers.find(
-    (c: any) => c.ContainerNumber === containerNumber
-  );
-  
-  return container && 
-         container.houseJobProduct && 
-         Array.isArray(container.houseJobProduct) && 
-         container.houseJobProduct.length > 0;
-}
+    // Find the container by SID
+    const container = this.masterJobData.containers.find(
+      (c: any) => c.MasterJobContainerSid === containerSid
+    );
 
-// Get mapping count for a container
-getContainerMappingCount(containerSid: number): number {
-  if (!containerSid || !this.masterJobData || !this.masterJobData.containers) {
+    // If container has houseJobProduct array with items, it's mapped
+    return container &&
+      container.houseJobProduct &&
+      Array.isArray(container.houseJobProduct) &&
+      container.houseJobProduct.length > 0;
+  }
+
+  // Alternative: Check by container number
+  isContainerMappedByNumber(containerNumber: string): boolean {
+    if (!containerNumber || !this.masterJobData || !this.masterJobData.containers) {
+      return false;
+    }
+
+    const container = this.masterJobData.containers.find(
+      (c: any) => c.ContainerNumber === containerNumber
+    );
+
+    return container &&
+      container.houseJobProduct &&
+      Array.isArray(container.houseJobProduct) &&
+      container.houseJobProduct.length > 0;
+  }
+
+  // Get mapping count for a container
+  getContainerMappingCount(containerSid: number): number {
+    if (!containerSid || !this.masterJobData || !this.masterJobData.containers) {
+      return 0;
+    }
+
+    const container = this.masterJobData.containers.find(
+      (c: any) => c.MasterJobContainerSid === containerSid
+    );
+
+    if (container && container.houseJobProduct && Array.isArray(container.houseJobProduct)) {
+      return container.houseJobProduct.length;
+    }
+
     return 0;
   }
-  
-  const container = this.masterJobData.containers.find(
-    (c: any) => c.MasterJobContainerSid === containerSid
-  );
-  
-  if (container && container.houseJobProduct && Array.isArray(container.houseJobProduct)) {
-    return container.houseJobProduct.length;
-  }
-  
-  return 0;
-}
   removeContainer(index: number): void {
     const containerControl = this.masterJobContainers.at(index);
     const containerSid = containerControl.value.MasterJobContainerSid;
     const containerNumber = containerControl.value.ContainerNumber;
-     if (this.isContainerMapped(containerSid)) {
-    const mappingCount = this.getContainerMappingCount(containerSid);
-    this.toastr.warning(
-      `Cannot delete container ${containerNumber}. It is mapped to ${mappingCount} house job product(s).`,
-      'Delete Restricted'
-    );
-    return;
-  }
+    if (this.isContainerMapped(containerSid)) {
+      const mappingCount = this.getContainerMappingCount(containerSid);
+      this.toastr.warning(
+        `Cannot delete container ${containerNumber}. It is mapped to ${mappingCount} house job product(s).`,
+        'Delete Restricted'
+      );
+      return;
+    }
     if (confirm(`Are you sure you want to delete container ${containerNumber}?`)) {
       if (containerSid && this.isEditMode) {
         this.isDeletingContainer = index;
@@ -2547,7 +2543,7 @@ getContainerMappingCount(containerSid: number): number {
 
   // Add connection change handler
   handleConnectionChange(allConnections: any[]) {
-    console.log('Connections changed:', allConnections);
+
     if (allConnections && allConnections.length >= 0) {
       this.connectionResult = [...allConnections];
       this.markAsDirty();
@@ -2606,24 +2602,12 @@ getContainerMappingCount(containerSid: number): number {
 
   // Add sync method for Edoc
   syncFormValueWithEdocComponent() {
-    console.log('🔍 === syncFormValueWithEdocComponent START ===');
 
-    // Log all relevant properties
-    console.log('📋 Current Component State:');
-    console.log('  - masterJobSid:', this.masterJobSid);
-    console.log('  - MenuMasterSid:', this.MenuMasterSid);
-    console.log('  - currentCompany:', this.currentCompany);
-    console.log('  - currentBranch:', this.currentBranch);
-    console.log('  - isEditMode:', this.isEditMode);
 
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
 
-    console.log('📊 Form Values:');
-    console.log('  - CompanyMasterSid:', CompanyMasterSid);
-    console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
-    console.log('  - MasterJobNumber:', MasterJobNumber);
 
     this.currentEdocFormValue = {
       CompanyMasterSid,
@@ -2632,7 +2616,7 @@ getContainerMappingCount(containerSid: number): number {
       MasterJobNumber: MasterJobNumber,
     };
 
-    console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
+
 
     const data: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2641,11 +2625,6 @@ getContainerMappingCount(containerSid: number): number {
       DocumentSid: this.masterJobSid,
     };
 
-    console.log('🚀 Data being set to commonService:');
-    console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
-    console.log('  - BranchMasterSid:', data.BranchMasterSid);
-    console.log('  - MenuMasterSid:', data.MenuMasterSid);
-    console.log('  - DocumentSid:', data.DocumentSid);
 
     // Check if any values are null/undefined
     const missingFields = [];
@@ -2657,30 +2636,27 @@ getContainerMappingCount(containerSid: number): number {
     if (missingFields.length > 0) {
       console.warn('⚠️  Missing fields:', missingFields);
     } else {
-      console.log('✅ All fields are present');
+
     }
 
-    console.log('📤 Setting data to commonService.documentData...');
+
     this.commonService.documentData.set(data);
 
     // Verify the data was set
     const currentData = this.commonService.documentData();
-    console.log('✅ Data in commonService after set:', currentData);
 
-    console.log('🔍 === syncFormValueWithEdocComponent END ===');
+
+
   }
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-    console.log('📨 === handleEdocChange START ===');
-    console.log('Event received:', event);
+
 
     this.edocData = event.dataItems || [];
     this.currentEdocFormValue = event.formData;
 
-    console.log('📊 Updated edocData:', this.edocData);
-    console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
-    console.log('📨 === handleEdocChange END ===');
+
   }
 
   // Add sync method for Email component
@@ -2704,7 +2680,7 @@ getContainerMappingCount(containerSid: number): number {
   handleEmailChange(event: any) {
     this.emailData = event.dataItems || [];
     this.currentEmailFormValue = event.formData || null;
-    console.log("Email data updated:", this.emailData);
+
   }
 
   syncFormValueWithContainerActivityComponent() {
@@ -2723,7 +2699,7 @@ getContainerMappingCount(containerSid: number): number {
 
   // Add this handler for container activity data changes
   handleContainerActivityChange(activities: any[]) {
-    console.log('Container Activities received from component:', activities);
+
 
     // Ensure we have an array and properly store it
     this.containerActivityData = Array.isArray(activities) ? [...activities] : [];
@@ -2747,8 +2723,7 @@ getContainerMappingCount(containerSid: number): number {
       containerActivitiesFormArray.push(activityGroup);
     });
 
-    console.log('Updated containerActivityData:', this.containerActivityData);
-    console.log('Updated form array length:', containerActivitiesFormArray.length);
+
     this.markAsDirty();
   }
 
@@ -2940,7 +2915,7 @@ getContainerMappingCount(containerSid: number): number {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.slicedAttachedBookings = this.attachedBookings.getRawValue().slice(start, end);
-    console.log('slicedAttachedBookings', this.slicedAttachedBookings)
+
   }
 
   getDepartmentName(DepartmentMasterSid: number) {
@@ -2965,17 +2940,17 @@ getContainerMappingCount(containerSid: number): number {
 
   //2
   patchShipments(shipments: any[]) {
-      this.clearInvoiceStatusCache();
+    this.clearInvoiceStatusCache();
     this.bookingItems = shipments
     this.attachedBookings.clear();
-    console.log(shipments, 'shipments')
+
     shipments.forEach(shipment => {
       const formGrp = this.createShipmentGroup(shipment)
-      console.log(formGrp);
+
       this.attachedBookings.push(formGrp);
     });
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
-    console.log(this.totalLengthOfAttachedBookings, 'totalLengthOfAttachedBookings')
+
     this.updateAttachedBookingsPagination();
     this.getTranshipmentList();
   }
@@ -2987,17 +2962,11 @@ getContainerMappingCount(containerSid: number): number {
     this.isTranshipment = false;
     this.transhipmentHouseJobSids = [];
 
-    console.log('🔍 Checking bookingItems:', this.bookingItems);
+
 
     this.bookingItems.forEach(item => {
       const departmentName = this.getDepartmentName(item.DepartmentMasterSid);
 
-      console.log('📋 Item:', {
-        DepartmentMasterSid: item.DepartmentMasterSid,
-        DepartmentName: departmentName,
-        JobType: item.JobType,
-        HouseJobSid: item.HouseJobSid
-      });
 
       // Make comparison case-insensitive and trim whitespace
       const normalizedDepartment = departmentName?.trim().toLowerCase();
@@ -3006,14 +2975,10 @@ getContainerMappingCount(containerSid: number): number {
       if (normalizedDepartment === 'lcl import' && normalizedJobType === 'transhipment') {
         this.isTranshipment = true;
         this.transhipmentHouseJobSids.push(item.HouseJobSid);
-        console.log('✅ Found transhipment item!');
+
       }
     });
 
-    console.log('🎯 Final State:', {
-      isTranshipment: this.isTranshipment,
-      transhipmentHouseJobSids: this.transhipmentHouseJobSids
-    });
 
     if (this.transhipmentHouseJobSids.length) {
       this.loadAllHouses();
@@ -3044,9 +3009,9 @@ getContainerMappingCount(containerSid: number): number {
 
   detachBooking(shipmentIndex: number, booking: any) {
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
-    console.log(booking);
+
     const HouseJobSid = booking.HouseJobSid;
-    console.log(HouseJobSid);
+
     if (HouseJobSid) {
       this.operationService.detachBooking(HouseJobSid).subscribe
         ({
@@ -3173,7 +3138,7 @@ getContainerMappingCount(containerSid: number): number {
   }
 
   navigateToHouse(shipment) {
-    console.log(shipment, 'shipment');
+
     this.router.navigate(['/operation/house-job/entry', shipment.HouseJobSid]);
   }
 
@@ -3340,7 +3305,7 @@ getContainerMappingCount(containerSid: number): number {
     return charge ? (charge.chargeCode || charge.ChargeCode || 'N/A') : 'N/A';
   }
   // getChargeName(ChargeMasterSid) {
-  //   console.log(this.getChargeName,"CHARGE ")
+
   //   if (!ChargeMasterSid || this.chargeList.length === 0) {
   //     return '';
   //   }
@@ -3349,8 +3314,7 @@ getContainerMappingCount(containerSid: number): number {
 
   // Add this method to your component
   getCurrencyName(CurrencyMasterSid: number): string {
-    console.log('🔍 getCurrencyName called with:', CurrencyMasterSid);
-    console.log('📋 currencyList:', this.currencyList);
+
 
     if (!CurrencyMasterSid || !this.currencyList || this.currencyList.length === 0) {
       return 'N/A';
@@ -3362,7 +3326,7 @@ getContainerMappingCount(containerSid: number): number {
 
 
   getAgentBranchName(AgentSid: number): string {
-    console.log('🔍 Looking up AgentBranchSid:', AgentSid);
+
 
     if (!AgentSid || !this.agentList || this.agentList.length === 0) {
       return 'N/A';
@@ -3379,19 +3343,19 @@ getContainerMappingCount(containerSid: number): number {
 
   reportPreAlertModel() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
       );
-      return;
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
     }
-  }
- 
+
     const modalRef = this.modalService.open(PreAlertComponent, {
       size: 'xl',
       scrollable: true,
@@ -3407,38 +3371,38 @@ getContainerMappingCount(containerSid: number): number {
 
   reportcargomanifest() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+      );
 
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
+      const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
       );
-      return;
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
+
     }
-    const hasValidVessale = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
-    );
-    if (!hasValidVessale) {
-      this.appSettingService.showWarning(
-        'Vessel Name is required.'
-      );
-      return;
-    } 
-    const hasValidVoyage = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
-    );
-    if (!hasValidVoyage) {
-      this.appSettingService.showWarning(
-        'Voyage No is required.'
-      );
-      return;
-    }
-    
-  }
     const modalRef = this.modalService.open(CargoManifestComponent, {
       size: 'xl',
       scrollable: true,
@@ -3466,20 +3430,20 @@ getContainerMappingCount(containerSid: number): number {
   }
 
   reportCFSoutturn() {
-     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
-
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+    if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
       );
-      return;
+
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
     }
-  }
     const modalRef = this.modalService.open(CfsOutturnComponent, {
       size: 'xl',
       scrollable: true,
@@ -3532,8 +3496,8 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.TandCList = this.TandCList || [];
-     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
- 
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+
   }
 
   // sailing confirmation
@@ -3551,39 +3515,39 @@ getContainerMappingCount(containerSid: number): number {
 
 
 
-  reportMBLBill(type:'MBL' | 'MBLDraft') {
+  reportMBLBill(type: 'MBL' | 'MBLDraft') {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+      );
 
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
+      const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
       );
-      return;
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
     }
-    const hasValidVessale = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
-    );
-    if (!hasValidVessale) {
-      this.appSettingService.showWarning(
-        'Vessel Name is required.'
-      );
-      return;
-    } 
-    const hasValidVoyage = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
-    );
-    if (!hasValidVoyage) {
-      this.appSettingService.showWarning(
-        'Voyage No is required.'
-      );
-      return;
-    }
-  }
     this.selectedReport = type;
     const modalRef = this.modalService.open(MblComponent, {
       size: 'xl',
@@ -3593,103 +3557,103 @@ getContainerMappingCount(containerSid: number): number {
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
-    modalRef.componentInstance.selectedReport = type; 
+    modalRef.componentInstance.selectedReport = type;
 
   }
 
 
-    reportHBLBill() {
+  reportHBLBill() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+      );
 
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
+      const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
       );
-      return;
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
     }
-    const hasValidVessale = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
-    );
-    if (!hasValidVessale) {
-      this.appSettingService.showWarning(
-        'Vessel Name is required.'
-      );
-      return;
-    } 
-    const hasValidVoyage = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
-    );
-    if (!hasValidVoyage) {
-      this.appSettingService.showWarning(
-        'Voyage No is required.'
-      );
-      return;
-    }
-  }
-    
+
     const modalRef = this.modalService.open(AllHBLDraftComponent, {
       size: 'xl',
       scrollable: true,
     })
     modalRef.componentInstance.masterJobData = this.masterJobData;
-     modalRef.componentInstance.masterJobSid = this.masterJobSid
+    modalRef.componentInstance.masterJobSid = this.masterJobSid
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
-   
+
 
   }
 
 
-    reportHBL() {
+  reportHBL() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
-    // Check if containers exist and have ContainerNumber
-    const hasValidContainers = this.masterJobData?.containers?.some(
-      (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
-    );
+      // Check if containers exist and have ContainerNumber
+      const hasValidContainers = this.masterJobData?.containers?.some(
+        (container: any) => container.ContainerNumber && container.ContainerNumber.trim() !== ''
+      );
 
-   
-    if (!hasValidContainers) {
-      this.appSettingService.showWarning(
-        'ContainerNo is required.'
+
+      if (!hasValidContainers) {
+        this.appSettingService.showWarning(
+          'ContainerNo is required.'
+        );
+        return;
+      }
+      const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
       );
-      return;
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
     }
-    const hasValidVessale = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
-    );
-    if (!hasValidVessale) {
-      this.appSettingService.showWarning(
-        'Vessel Name is required.'
-      );
-      return;
-    } 
-    const hasValidVoyage = this.masterJobData?.voyages?.some(
-      (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
-    );
-    if (!hasValidVoyage) {
-      this.appSettingService.showWarning(
-        'Voyage No is required.'
-      );
-      return;
-    }
-  }
-   
+
     const modalRef = this.modalService.open(AllHBLComponent, {
       size: 'xl',
       scrollable: true,
     })
     modalRef.componentInstance.masterJobData = this.masterJobData;
-     modalRef.componentInstance.masterJobSid = this.masterJobSid
+    modalRef.componentInstance.masterJobSid = this.masterJobSid
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
-  
+
 
   }
 
@@ -3700,7 +3664,7 @@ getContainerMappingCount(containerSid: number): number {
     const data = [...rateFormValue];
 
     data.forEach(item => {
-      console.log(item);
+
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
@@ -3746,7 +3710,7 @@ getContainerMappingCount(containerSid: number): number {
       p.totalCost = p.totalCost.toFixed(2);
     });
 
-    console.log(this.profitSummary);
+
   }
 
   calculateCustomerWiseAmount() {
@@ -3794,9 +3758,6 @@ getContainerMappingCount(containerSid: number): number {
       }
     });
 
-    // --- LOGS & ASSIGNMENT ---
-    console.log("Cost Summary:", costHmap);
-    console.log("Revenue Summary:", revenueHmap);
 
     this.customerWiseSummary = {
       cost: Array.from(costHmap.values()),
@@ -3824,7 +3785,7 @@ getContainerMappingCount(containerSid: number): number {
       ETD: this.masterJobForm.get('ETD')?.value,
       CarrierName: this.masterJobForm.get('CarrierName')?.value,
       // Get port codes instead of SIDs
-      POOCode : this.getPortCode(this.masterJobForm.get('POO')?.value),
+      POOCode: this.getPortCode(this.masterJobForm.get('POO')?.value),
       POLCode: this.getPortCode(this.masterJobForm.get('POL')?.value),
       PODCode: this.getPortCode(this.masterJobForm.get('POD')?.value),
       FPDCode: this.getPortCode(this.masterJobForm.get('FPD')?.value)
@@ -3846,7 +3807,7 @@ getContainerMappingCount(containerSid: number): number {
     this.operationService.getAllHssac().subscribe({
       next: (resp: any) => {
         this.hssacList = resp || [];
-        console.log('HSSAC List loaded:', this.hssacList);
+
       },
       error: (err) => {
         console.error('Error loading HSSAC data:', err);
@@ -3863,122 +3824,122 @@ getContainerMappingCount(containerSid: number): number {
     this.arapLoading = true;
     this.operationService.getMasterJobARAPData(this.masterJobSid).subscribe({
       next: (response: any) => {
-            if (response.status) {
-                let rawData = response.data || response;
-                // Format the data for display
-                rawData = rawData.map(item => ({
-                    ...item,
-                    DocumentTypeCode: item.DocumentTypeCode,
-                    VoucherNumber: item.VoucherNumber,
-                    VoucherDate: item.VoucherDate,
-                    VoucherHeaderSid: item.VoucherHeaderSid,
-                    Amount: Number(item.Amount) || 0,
-                    CurrencyCode: item.CurrencyCode,
-                    LocalAmount: Number(item.LocalAmount) || 0,
-                    HBLNo: item.HBLNo || '-',
-                    PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
-                }));
-                
-                // Apply filters
-                this.arapData = this.applyFilters(rawData);
-            } else {
-                this.arapData = [];
-            }
-            this.arapLoading = false;
-        },
-        error: (error) => {
-            console.error('Error loading AR/AP data:', error);
-            this.arapData = [];
-            this.arapLoading = false;
-            this.appSettingService.showError('Failed to load AR/AP data');
+        if (response.status) {
+          let rawData = response.data || response;
+          // Format the data for display
+          rawData = rawData.map(item => ({
+            ...item,
+            DocumentTypeCode: item.DocumentTypeCode,
+            VoucherNumber: item.VoucherNumber,
+            VoucherDate: item.VoucherDate,
+            VoucherHeaderSid: item.VoucherHeaderSid,
+            Amount: Number(item.Amount) || 0,
+            CurrencyCode: item.CurrencyCode,
+            LocalAmount: Number(item.LocalAmount) || 0,
+            HBLNo: item.HBLNo || '-',
+            PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
+          }));
+
+          // Apply filters
+          this.arapData = this.applyFilters(rawData);
+        } else {
+          this.arapData = [];
         }
+        this.arapLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading AR/AP data:', error);
+        this.arapData = [];
+        this.arapLoading = false;
+        this.appSettingService.showError('Failed to load AR/AP data');
+      }
     });
-}
+  }
 
   getTotalAmount(): number {
-  return this.arapData.reduce(
-    (sum, item) => sum + Number(item.Amount || 0),
-    0
-  );
-}
+    return this.arapData.reduce(
+      (sum, item) => sum + Number(item.Amount || 0),
+      0
+    );
+  }
 
-getTotalLocalAmount(): number {
-  return this.arapData.reduce(
-    (sum, item) => sum + Number(item.LocalAmount || 0),
-    0
-  );
-}
-
-
+  getTotalLocalAmount(): number {
+    return this.arapData.reduce(
+      (sum, item) => sum + Number(item.LocalAmount || 0),
+      0
+    );
+  }
 
 
 
 
-openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
+
+
+  openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
     if (documentTypeCode === 'INV') {
-        this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
+      this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
     } else if (documentTypeCode === 'VINV') {
-        this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
+      this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
     }
-}
-getFilteredCount(): number {
+  }
+  getFilteredCount(): number {
     return this.arapData.length;
-}
+  }
 
-private applyFilters(data: any[]): any[] {
+  private applyFilters(data: any[]): any[] {
     let filtered = [...data];
-    
+
     // Filter by voucher type
     if (this.arapFilter.voucherType !== 'all') {
-        filtered = filtered.filter(item => 
-            item.DocumentTypeCode === this.arapFilter.voucherType
-        );
+      filtered = filtered.filter(item =>
+        item.DocumentTypeCode === this.arapFilter.voucherType
+      );
     }
-    
+
     // Filter by status - Corrected: use PostStatus field
     if (this.arapFilter.status !== 'all') {
-        filtered = filtered.filter(item => 
-            item.PostStatus === this.arapFilter.status
-        );
+      filtered = filtered.filter(item =>
+        item.PostStatus === this.arapFilter.status
+      );
     }
-    
+
     return filtered;
-}
+  }
 
 
   exportARAPReport() {
     if (this.arapData.length === 0) {
-        this.appSettingService.showWarning('No data to export');
-        return;
+      this.appSettingService.showWarning('No data to export');
+      return;
     }
 
     const dataForExport = this.arapData.map(item => ({
-        'Voucher No': item.VoucherNumber,
-        'Document Type': item.DocumentTypeCode,
-        'Date': this.datePipe.transform(item.VoucherDate),
-        'Currency': item.CurrencyCode,
-        'Amount': item.Amount,
-        'Local Amount': item.LocalAmount,
-        // 'HBL No': item.HBLNo || '',
-        'Post Status': item.PostStatus
+      'Voucher No': item.VoucherNumber,
+      'Document Type': item.DocumentTypeCode,
+      'Date': this.datePipe.transform(item.VoucherDate),
+      'Currency': item.CurrencyCode,
+      'Amount': item.Amount,
+      'Local Amount': item.LocalAmount,
+      // 'HBL No': item.HBLNo || '',
+      'Post Status': item.PostStatus
     }));
 
     this.exportExcelService.exportAsExcel({
-        data: dataForExport,
-        headers: [
-            { key: 'Voucher No', label: 'Voucher No' },
-            { key: 'Document Type', label: 'Document Type' },
-            { key: 'Date', label: 'Date' },
-            { key: 'Currency', label: 'Currency' },
-            { key: 'Amount', label: 'Amount' },
-            { key: 'Local Amount', label: 'Local Amount' },
-            // { key: 'HBL No', label: 'HBL No' },
-            { key: 'Post Status', label: 'Post Status' }
-        ],
-        fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
-        title: 'AR/AP Report'
+      data: dataForExport,
+      headers: [
+        { key: 'Voucher No', label: 'Voucher No' },
+        { key: 'Document Type', label: 'Document Type' },
+        { key: 'Date', label: 'Date' },
+        { key: 'Currency', label: 'Currency' },
+        { key: 'Amount', label: 'Amount' },
+        { key: 'Local Amount', label: 'Local Amount' },
+        // { key: 'HBL No', label: 'HBL No' },
+        { key: 'Post Status', label: 'Post Status' }
+      ],
+      fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
+      title: 'AR/AP Report'
     });
-}
+  }
 
 
   // printARAPReport() {
@@ -3986,53 +3947,53 @@ private applyFilters(data: any[]): any[] {
   //   window.print();
   // }
 
- bookingCreateInMasterJob() {
-  const bookingPayload = {
-    houses: this.loadedHouses,
-    createdBy: this.appSettingsService.userSettingSource.value['userEmail']
-  };
+  bookingCreateInMasterJob() {
+    const bookingPayload = {
+      houses: this.loadedHouses,
+      createdBy: this.appSettingsService.userSettingSource.value['userEmail']
+    };
 
-  this.spinner.show();
+    this.spinner.show();
 
-  this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
-    next: (resp: any) => {
-      this.spinner.hide();
+    this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
+      next: (resp: any) => {
+        this.spinner.hide();
 
-      // 🚨 Hard failure (API / server error)
-      if (!resp || resp.status !== true) {
-        this.appSettingService.showError(
-          resp?.message || 'Failed to create booking'
-        );
-        return;
+        // 🚨 Hard failure (API / server error)
+        if (!resp || resp.status !== true) {
+          this.appSettingService.showError(
+            resp?.message || 'Failed to create booking'
+          );
+          return;
+        }
+
+        const results = resp.data || [];
+
+        const successList = results.filter((r: any) => r.success);
+        const duplicateList = results.filter((r: any) => !r.success);
+
+        // ✅ Case 1: At least one booking created
+        if (successList.length > 0) {
+          this.appSettingService.showSuccess(
+            `${successList.length} booking(s) created successfully`
+          );
+        }
+
+        // ℹ️ Case 2: All houses already have booking
+        else if (duplicateList.length > 0 && successList.length === 0) {
+          this.appSettingService.showInfo(
+            'All selected house jobs already have bookings'
+          );
+        }
+
+      },
+      error: (err) => {
+        this.spinner.hide();
+        console.error('Booking creation failed:', err);
+        this.appSettingService.showError('Failed to create booking');
       }
-
-      const results = resp.data || [];
-
-      const successList = results.filter((r: any) => r.success);
-      const duplicateList = results.filter((r: any) => !r.success);
-
-      // ✅ Case 1: At least one booking created
-      if (successList.length > 0) {
-        this.appSettingService.showSuccess(
-          `${successList.length} booking(s) created successfully`
-        );
-      }
-
-      // ℹ️ Case 2: All houses already have booking
-      else if (duplicateList.length > 0 && successList.length === 0) {
-        this.appSettingService.showInfo(
-          'All selected house jobs already have bookings'
-        );
-      }
-
-    },
-    error: (err) => {
-      this.spinner.hide();
-      console.error('Booking creation failed:', err);
-      this.appSettingService.showError('Failed to create booking');
-    }
-  });
-}
+    });
+  }
 
   showInfo() {
     if (!this.masterJobData) return;
@@ -4149,119 +4110,119 @@ private applyFilters(data: any[]): any[] {
     this.groupedByHBL = {};
   }
   // Get gross weight from house job cargo
-getHouseJobGrossWeight(shipment: any): string {
+  getHouseJobGrossWeight(shipment: any): string {
     if (!shipment || !shipment.Cargo || !Array.isArray(shipment.Cargo) || shipment.Cargo.length === 0) {
-        return '0';
+      return '0';
     }
-    
+
     // Sum up GrossWeight from all cargo items
     const total = shipment.Cargo.reduce((sum: number, cargo: any) => {
-        const weight = parseFloat(cargo.GrossWeight) || 0;
-        return sum + weight;
+      const weight = parseFloat(cargo.GrossWeight) || 0;
+      return sum + weight;
     }, 0);
-    
-    return total.toString();
-}
 
-// Get volume from house job cargo
-getHouseJobVolume(shipment: any): string {
+    return total.toString();
+  }
+
+  // Get volume from house job cargo
+  getHouseJobVolume(shipment: any): string {
     if (!shipment || !shipment.Cargo || !Array.isArray(shipment.Cargo) || shipment.Cargo.length === 0) {
-        return '0';
+      return '0';
     }
-    
+
     // Sum up Volume from all cargo items
     const total = shipment.Cargo.reduce((sum: number, cargo: any) => {
-        const volume = parseFloat(cargo.Volume) || 0;
-        return sum + volume;
+      const volume = parseFloat(cargo.Volume) || 0;
+      return sum + volume;
     }, 0);
-    
-    return total.toString();
-}
 
-// Get total packages from house job cargo
-getHouseJobTotalPackages(shipment: any): string {
+    return total.toString();
+  }
+
+  // Get total packages from house job cargo
+  getHouseJobTotalPackages(shipment: any): string {
     if (!shipment || !shipment.Cargo || !Array.isArray(shipment.Cargo) || shipment.Cargo.length === 0) {
-        return '0';
+      return '0';
     }
-    
+
     // Sum up NoOfPackage from all cargo items
     const total = shipment.Cargo.reduce((sum: number, cargo: any) => {
-        const packages = parseInt(cargo.NoOfPackage) || 0;
-        return sum + packages;
+      const packages = parseInt(cargo.NoOfPackage) || 0;
+      return sum + packages;
     }, 0);
-    
+
     return total.toString();
-}
-// Alternative method that searches in masterJobData.houseJob
-getHouseJobGrossWeightFromMaster(shipment: any): string {
+  }
+  // Alternative method that searches in masterJobData.houseJob
+  getHouseJobGrossWeightFromMaster(shipment: any): string {
     // If shipment already has Cargo, use it
     if (shipment.Cargo && Array.isArray(shipment.Cargo)) {
-        return this.getHouseJobGrossWeight(shipment);
+      return this.getHouseJobGrossWeight(shipment);
     }
-    
+
     // Otherwise, find in masterJobData.houseJob
     if (this.masterJobData && this.masterJobData.houseJob && shipment.HBLNo) {
-        const houseJob = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
-        
-        if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
-            const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
-                const weight = parseFloat(cargo.GrossWeight) || 0;
-                return sum + weight;
-            }, 0);
-            return total.toString();
-        }
-    }
-    
-    return '0';
-}
+      const houseJob = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
 
-// Similarly for volume
-getHouseJobVolumeFromMaster(shipment: any): string {
-    if (shipment.Cargo && Array.isArray(shipment.Cargo)) {
-        return this.getHouseJobVolume(shipment);
+      if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
+        const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
+          const weight = parseFloat(cargo.GrossWeight) || 0;
+          return sum + weight;
+        }, 0);
+        return total.toString();
+      }
     }
-    
-    if (this.masterJobData && this.masterJobData.houseJob && shipment.HBLNo) {
-        const houseJob = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
-        
-        if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
-            const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
-                const volume = parseFloat(cargo.Volume) || 0;
-                return sum + volume;
-            }, 0);
-            return total.toString();
-        }
-    }
-    
-    return '0';
-}
 
-// And for total packages
-getHouseJobTotalPackagesFromMaster(shipment: any): string {
-    if (shipment.Cargo && Array.isArray(shipment.Cargo)) {
-        return this.getHouseJobTotalPackages(shipment);
-    }
-    
-    if (this.masterJobData && this.masterJobData.houseJob && shipment.HBLNo) {
-        const houseJob = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
-        
-        if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
-            const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
-                const packages = parseInt(cargo.NoOfPackage) || 0;
-                return sum + packages;
-            }, 0);
-            return total.toString();
-        }
-    }
-    
     return '0';
-}
+  }
+
+  // Similarly for volume
+  getHouseJobVolumeFromMaster(shipment: any): string {
+    if (shipment.Cargo && Array.isArray(shipment.Cargo)) {
+      return this.getHouseJobVolume(shipment);
+    }
+
+    if (this.masterJobData && this.masterJobData.houseJob && shipment.HBLNo) {
+      const houseJob = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
+
+      if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
+        const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
+          const volume = parseFloat(cargo.Volume) || 0;
+          return sum + volume;
+        }, 0);
+        return total.toString();
+      }
+    }
+
+    return '0';
+  }
+
+  // And for total packages
+  getHouseJobTotalPackagesFromMaster(shipment: any): string {
+    if (shipment.Cargo && Array.isArray(shipment.Cargo)) {
+      return this.getHouseJobTotalPackages(shipment);
+    }
+
+    if (this.masterJobData && this.masterJobData.houseJob && shipment.HBLNo) {
+      const houseJob = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
+
+      if (houseJob && houseJob.Cargo && Array.isArray(houseJob.Cargo)) {
+        const total = houseJob.Cargo.reduce((sum: number, cargo: any) => {
+          const packages = parseInt(cargo.NoOfPackage) || 0;
+          return sum + packages;
+        }, 0);
+        return total.toString();
+      }
+    }
+
+    return '0';
+  }
   // Add this method to check if a house job has container mapping
   hasContainerMapping(houseJob: any): boolean {
     if (!houseJob || !houseJob.houseJob || !houseJob.houseJob.Products ||
@@ -4307,227 +4268,223 @@ getHouseJobTotalPackagesFromMaster(shipment: any): string {
     return false;
   }
 
- 
 
-getInvoiceStatus(shipment: any): string {
+
+  getInvoiceStatus(shipment: any): string {
     // Generate cache key based on shipment and house job data
     const cacheKey = this.getInvoiceStatusCacheKey(shipment);
-    
+
     // Return cached result if available
     if (this.invoiceStatusCache.has(cacheKey)) {
-        return this.invoiceStatusCache.get(cacheKey)!;
+      return this.invoiceStatusCache.get(cacheKey)!;
     }
-    
-    console.log('🔍 Checking invoice status for shipment:', shipment);
-    console.log('📋 Shipment HBLNo:', shipment?.HBLNo);
-    
+
+
+
     // First, try to find the corresponding house job from masterJobData
     let houseJobData = null;
-    
+
     if (this.masterJobData?.houseJob && shipment?.HBLNo) {
-        houseJobData = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
-        console.log('📊 Found houseJobData:', houseJobData);
+      houseJobData = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
+
     }
-    
+
     // Use houseJobData if found, otherwise use shipment data
     const dataToCheck = houseJobData || shipment;
-    
+
     // Check if costRevenueCharges exists and is an array with items
     if (!dataToCheck || !dataToCheck.costRevenueCharges || !Array.isArray(dataToCheck.costRevenueCharges)) {
-        console.log('❌ No costRevenueCharges table available or not an array');
-        this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
-        return 'no-cost-charges';
+
+      this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
+      return 'no-cost-charges';
     }
-    
+
     if (dataToCheck.costRevenueCharges.length === 0) {
-        console.log('⚠️ costRevenueCharges array is empty');
-        this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
-        return 'no-cost-charges';
+
+      this.invoiceStatusCache.set(cacheKey, 'no-cost-charges');
+      return 'no-cost-charges';
     }
-    
-    console.log('📋 costRevenueCharges items:', dataToCheck.costRevenueCharges.length);
-    
+
+
+
     // Check each costRevenueCharge for revenue voucher
     let hasRevenueVoucher = false;
     let voucherDetails = null;
-    
+
     for (const charge of dataToCheck.costRevenueCharges) {
-        console.log('🔍 Checking charge:', {
-            RevenueVoucherHeaderSid: charge.RevenueVoucherHeaderSid,
-            revenueVoucherHeader: charge.revenueVoucherHeader
-        });
-        
-        if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid) {
-            hasRevenueVoucher = true;
-            voucherDetails = charge.revenueVoucherHeader || { VoucherHeaderSid: charge.RevenueVoucherHeaderSid };
-            console.log('✅ Found revenue voucher:', voucherDetails);
-            break;
-        }
+
+
+      if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid) {
+        hasRevenueVoucher = true;
+        voucherDetails = charge.revenueVoucherHeader || { VoucherHeaderSid: charge.RevenueVoucherHeaderSid };
+
+        break;
+      }
     }
-    
+
     if (!hasRevenueVoucher) {
-        console.log('⚠️ No revenue voucher found in costRevenueCharges');
-        this.invoiceStatusCache.set(cacheKey, 'pending');
-        return 'pending';
+
+      this.invoiceStatusCache.set(cacheKey, 'pending');
+      return 'pending';
     }
-    
+
     // Check if revenueVoucherHeader has a value
     const voucherHeaderSid = voucherDetails?.VoucherHeaderSid;
-    
+
     let result: string;
     if (voucherHeaderSid && voucherHeaderSid !== null && voucherHeaderSid !== undefined) {
-        console.log('✅ Invoice generated with VoucherHeaderSid:', voucherHeaderSid);
-        result = 'generated';
+
+      result = 'generated';
     } else {
-        console.log('❌ RevenueVoucherHeaderSid is null/undefined');
-        result = 'pending';
+
+      result = 'pending';
     }
-    
+
     // Cache the result
     this.invoiceStatusCache.set(cacheKey, result);
     return result;
-}
-private getInvoiceStatusCacheKey(shipment: any): string {
+  }
+  private getInvoiceStatusCacheKey(shipment: any): string {
     if (!shipment) return 'null-shipment';
-    
+
     const hblNo = shipment.HBLNo || 'no-hbl';
     const houseJobSid = shipment.HouseJobSid || 'no-house-job-sid';
-    
+
     // Also include masterJobData houseJob costRevenueCharges hash if available
     let costRevenueHash = 'no-cost-revenue';
     if (this.masterJobData?.houseJob && shipment?.HBLNo) {
-        const houseJob = this.masterJobData.houseJob.find((hj: any) => hj.HBLNo === shipment.HBLNo);
-        if (houseJob && houseJob.costRevenueCharges) {
-            // Create a simple hash of the costRevenueCharges
-            costRevenueHash = JSON.stringify(houseJob.costRevenueCharges.map((c: any) => ({
-                RevenueVoucherHeaderSid: c.RevenueVoucherHeaderSid,
-                VoucherHeaderSid: c.revenueVoucherHeader?.VoucherHeaderSid
-            })));
-        }
+      const houseJob = this.masterJobData.houseJob.find((hj: any) => hj.HBLNo === shipment.HBLNo);
+      if (houseJob && houseJob.costRevenueCharges) {
+        // Create a simple hash of the costRevenueCharges
+        costRevenueHash = JSON.stringify(houseJob.costRevenueCharges.map((c: any) => ({
+          RevenueVoucherHeaderSid: c.RevenueVoucherHeaderSid,
+          VoucherHeaderSid: c.revenueVoucherHeader?.VoucherHeaderSid
+        })));
+      }
     }
-    
-    return `${hblNo}-${houseJobSid}-${costRevenueHash.substring(0, 50)}`;
-}
-clearInvoiceStatusCache(): void {
-    this.invoiceStatusCache.clear();
-}
-/**
- * Check if shipment has costRevenueCharges table
- */
-hasCostRevenueCharges(shipment: any): boolean {
-    // First, try to find the corresponding house job from masterJobData
-    let houseJobData = null;
-    
-    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
-        houseJobData = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
-    }
-    
-    // Use houseJobData if found, otherwise use shipment data
-    const dataToCheck = houseJobData || shipment;
-    
-    return dataToCheck && 
-           dataToCheck.costRevenueCharges && 
-           Array.isArray(dataToCheck.costRevenueCharges) && 
-           dataToCheck.costRevenueCharges.length > 0;
-}
 
-/**
- * Get detailed invoice information
- */
-getInvoiceInfo(shipment: any): any {
-    if (!this.hasCostRevenueCharges(shipment)) {
-        return null;
-    }
-    
+    return `${hblNo}-${houseJobSid}-${costRevenueHash.substring(0, 50)}`;
+  }
+  clearInvoiceStatusCache(): void {
+    this.invoiceStatusCache.clear();
+  }
+  /**
+   * Check if shipment has costRevenueCharges table
+   */
+  hasCostRevenueCharges(shipment: any): boolean {
     // First, try to find the corresponding house job from masterJobData
     let houseJobData = null;
-    
+
     if (this.masterJobData?.houseJob && shipment?.HBLNo) {
-        houseJobData = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
+      houseJobData = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
     }
-    
+
     // Use houseJobData if found, otherwise use shipment data
     const dataToCheck = houseJobData || shipment;
-    
+
+    return dataToCheck &&
+      dataToCheck.costRevenueCharges &&
+      Array.isArray(dataToCheck.costRevenueCharges) &&
+      dataToCheck.costRevenueCharges.length > 0;
+  }
+
+  /**
+   * Get detailed invoice information
+   */
+  getInvoiceInfo(shipment: any): any {
+    if (!this.hasCostRevenueCharges(shipment)) {
+      return null;
+    }
+
+    // First, try to find the corresponding house job from masterJobData
+    let houseJobData = null;
+
+    if (this.masterJobData?.houseJob && shipment?.HBLNo) {
+      houseJobData = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
+    }
+
+    // Use houseJobData if found, otherwise use shipment data
+    const dataToCheck = houseJobData || shipment;
+
     // Find charge with revenue voucher
     for (const charge of dataToCheck.costRevenueCharges) {
-        if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader) {
-            return {
-                chargeDescription: charge.ChargeDescription,
-                revenueAmount: charge.RevenueAmount,
-                voucherNumber: charge.revenueVoucherHeader?.VoucherNumber,
-                voucherHeaderSid: charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid,
-                voucherType: charge.revenueVoucherTypeMaster?.DocumentTypeName || 'Invoice'
-            };
-        }
+      if (charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader) {
+        return {
+          chargeDescription: charge.ChargeDescription,
+          revenueAmount: charge.RevenueAmount,
+          voucherNumber: charge.revenueVoucherHeader?.VoucherNumber,
+          voucherHeaderSid: charge.RevenueVoucherHeaderSid || charge.revenueVoucherHeader?.VoucherHeaderSid,
+          voucherType: charge.revenueVoucherTypeMaster?.DocumentTypeName || 'Invoice'
+        };
+      }
     }
-    
-    return null;
-}
 
-/**
- * Get the voucher number for display
- */
-getVoucherNumber(shipment: any): string {
+    return null;
+  }
+
+  /**
+   * Get the voucher number for display
+   */
+  getVoucherNumber(shipment: any): string {
     // First, try to find the corresponding house job from masterJobData
     let houseJobData = null;
-    
+
     if (this.masterJobData?.houseJob && shipment?.HBLNo) {
-        houseJobData = this.masterJobData.houseJob.find(
-            (hj: any) => hj.HBLNo === shipment.HBLNo
-        );
+      houseJobData = this.masterJobData.houseJob.find(
+        (hj: any) => hj.HBLNo === shipment.HBLNo
+      );
     }
-    
+
     // Use houseJobData if found, otherwise use shipment data
     const dataToCheck = houseJobData || shipment;
-    
+
     if (!dataToCheck || !dataToCheck.costRevenueCharges || !Array.isArray(dataToCheck.costRevenueCharges)) {
-        return '';
+      return '';
     }
-    
+
     // Find first charge with revenue voucher
     for (const charge of dataToCheck.costRevenueCharges) {
-        if (charge.revenueVoucherHeader?.VoucherNumber) {
-            return charge.revenueVoucherHeader.VoucherNumber;
-        }
-        if (charge.RevenueVoucherHeaderSid && !charge.revenueVoucherHeader) {
-            // If we have the SID but no voucher header object
-            return `Voucher #${charge.RevenueVoucherHeaderSid}`;
-        }
+      if (charge.revenueVoucherHeader?.VoucherNumber) {
+        return charge.revenueVoucherHeader.VoucherNumber;
+      }
+      if (charge.RevenueVoucherHeaderSid && !charge.revenueVoucherHeader) {
+        // If we have the SID but no voucher header object
+        return `Voucher #${charge.RevenueVoucherHeaderSid}`;
+      }
     }
-    
+
     return '';
-}
+  }
   getTotalAllowedContainers(): number {
-  // Only check for FCL departments
-  if (this.selectedFCLLCL !== 'FCL') {
-    return Infinity; // No limit for non-FCL
-  }
-
-  // If there are no attached bookings, no limit
-  if (!this.bookingItems || this.bookingItems.length === 0) {
-    return Infinity;
-  }
-
-  // Sum up NoofContainers from all house jobs
-  let totalAllowed = 0;
-  
-  this.bookingItems.forEach(booking => {
-    if (booking.Cargo && Array.isArray(booking.Cargo)) {
-      booking.Cargo.forEach(cargo => {
-        totalAllowed += parseInt(cargo.NoofContainers) || 0;
-      });
+    // Only check for FCL departments
+    if (this.selectedFCLLCL !== 'FCL') {
+      return Infinity; // No limit for non-FCL
     }
-  });
 
-  return totalAllowed;
-}
+    // If there are no attached bookings, no limit
+    if (!this.bookingItems || this.bookingItems.length === 0) {
+      return Infinity;
+    }
+
+    // Sum up NoofContainers from all house jobs
+    let totalAllowed = 0;
+
+    this.bookingItems.forEach(booking => {
+      if (booking.Cargo && Array.isArray(booking.Cargo)) {
+        booking.Cargo.forEach(cargo => {
+          totalAllowed += parseInt(cargo.NoofContainers) || 0;
+        });
+      }
+    });
+
+    return totalAllowed;
+  }
   /**
    * Get grouped error keys for template iteration
    */
@@ -4536,10 +4493,10 @@ getVoucherNumber(shipment: any): string {
   }
 
   getFormattedPort(code: string) {
-    console.log(code);
+
     if (!code) return '';
     const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
-    console.log(ourPort);
+
     return `${ourPort} (${code})`
   }
 
@@ -4605,562 +4562,562 @@ getVoucherNumber(shipment: any): string {
   }
 
 
- /**
- * Download Container Excel template
- */
-downloadContainerTemplate(): void {
+  /**
+  * Download Container Excel template
+  */
+  downloadContainerTemplate(): void {
     this.spinner.show();
     this.operationService.downloadContainerTemplate().subscribe({
-        next: (blob: Blob) => {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Container_Template_${new Date().toISOString().slice(0,10)}.xlsx`;
-            link.click();
-            window.URL.revokeObjectURL(url);
-            this.spinner.hide();
-            this.appSettingService.showSuccess('Container template downloaded successfully');
-        },
-        error: (error) => {
-            console.error('Error downloading container template:', error);
-            this.spinner.hide();
-            this.appSettingService.showError('Error downloading container template');
-        }
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Container_Template_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.spinner.hide();
+        this.appSettingService.showSuccess('Container template downloaded successfully');
+      },
+      error: (error) => {
+        console.error('Error downloading container template:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error downloading container template');
+      }
     });
-}
+  }
 
-/**
- * Handle container file selection
- */
-onContainerFileSelected(event: any): void {
+  /**
+   * Handle container file selection
+   */
+  onContainerFileSelected(event: any): void {
     const file = event.target.files[0];
-    
+
     if (!file) {
-        return;
+      return;
     }
-    
+
     // Validate file type
     const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel'
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
-        this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
-        return;
+      this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
+      return;
     }
-    
+
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-        this.appSettingService.showError('File size exceeds 5MB limit');
-        return;
+      this.appSettingService.showError('File size exceeds 5MB limit');
+      return;
     }
-    
+
     this.selectedContainerFile = file;
     this.parseContainerExcelFile();
-}
+  }
 
 
-/**
- * Parse container Excel file
- */
-parseContainerExcelFile(): void {
+  /**
+   * Parse container Excel file
+   */
+  parseContainerExcelFile(): void {
     if (!this.selectedContainerFile) {
-        return;
+      return;
     }
-    
+
     this.isProcessingContainerUpload = true;
     this.spinner.show();
     this.containerUploadErrors = [];
     this.parsedContainers = [];
-    
+
     this.operationService.parseContainerExcel(this.selectedContainerFile).subscribe({
-        next: (response: any) => {
-            this.spinner.hide();
-            this.isProcessingContainerUpload = false;
-            
-            if (response.status) {
-                this.parsedContainers = response.data.containers || [];
-                
-                if (this.parsedContainers.length === 0) {
-                    this.appSettingService.showWarning('No valid container data found in the Excel file');
-                    return;
-                }
-                
-                // Show preview
-                this.showContainerPreview = true;
-                this.appSettingService.showSuccess(`Found ${this.parsedContainers.length-1} valid containers`);
-                
-                // Validate the parsed data
-                this.validateContainerData();
-                
-            } else {
-                if (response.data?.errors) {
-                    this.containerUploadErrors = response.data.errors;
-                }
-                this.appSettingService.showError(response.message || 'Error parsing Excel file');
-            }
-        },
-        error: (error) => {
-            console.error('Error parsing container Excel:', error);
-            this.spinner.hide();
-            this.isProcessingContainerUpload = false;
-            this.appSettingService.showError('Error parsing Excel file');
+      next: (response: any) => {
+        this.spinner.hide();
+        this.isProcessingContainerUpload = false;
+
+        if (response.status) {
+          this.parsedContainers = response.data.containers || [];
+
+          if (this.parsedContainers.length === 0) {
+            this.appSettingService.showWarning('No valid container data found in the Excel file');
+            return;
+          }
+
+          // Show preview
+          this.showContainerPreview = true;
+          this.appSettingService.showSuccess(`Found ${this.parsedContainers.length - 1} valid containers`);
+
+          // Validate the parsed data
+          this.validateContainerData();
+
+        } else {
+          if (response.data?.errors) {
+            this.containerUploadErrors = response.data.errors;
+          }
+          this.appSettingService.showError(response.message || 'Error parsing Excel file');
         }
+      },
+      error: (error) => {
+        console.error('Error parsing container Excel:', error);
+        this.spinner.hide();
+        this.isProcessingContainerUpload = false;
+        this.appSettingService.showError('Error parsing Excel file');
+      }
     });
-}
+  }
 
 
-/**
- * Validate container data
- */
-validateContainerData(): void {
+  /**
+   * Validate container data
+   */
+  validateContainerData(): void {
     if (this.parsedContainers.length === 0) {
-        return;
+      return;
     }
-    
+
     this.spinner.show();
-    
+
     const payload = {
-        containers: this.parsedContainers,
-        masterJobSid: this.masterJobSid,
-        companyMasterSid: this.currentCompany?.CompanyMasterSid,
-        branchMasterSid: this.currentBranch?.BranchMasterSid,
-        createdBy: this.userData?.userEmail || ''
+      containers: this.parsedContainers,
+      masterJobSid: this.masterJobSid,
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      createdBy: this.userData?.userEmail || ''
     };
-    
+
     this.operationService.validateContainerData(payload).subscribe({
-        next: (response: any) => {
-            this.spinner.hide();
-            
-            if (response.status) {
-                this.parsedContainers = response.data.containers || [];
-                this.containerValidationErrors = [];
-                this.appSettingService.showSuccess('Container data validated successfully');
-            } else {
-                if (response.data?.errors) {
-                    this.containerValidationErrors = response.data.errors;
-                    this.appSettingService.showWarning(`Found ${this.containerValidationErrors.length} validation errors`);
-                } else {
-                    this.appSettingService.showError(response.message || 'Validation failed');
-                }
-            }
-        },
-        error: (error) => {
-            console.error('Error validating container data:', error);
-            this.spinner.hide();
-            this.appSettingService.showError('Error validating container data');
+      next: (response: any) => {
+        this.spinner.hide();
+
+        if (response.status) {
+          this.parsedContainers = response.data.containers || [];
+          this.containerValidationErrors = [];
+          this.appSettingService.showSuccess('Container data validated successfully');
+        } else {
+          if (response.data?.errors) {
+            this.containerValidationErrors = response.data.errors;
+            this.appSettingService.showWarning(`Found ${this.containerValidationErrors.length} validation errors`);
+          } else {
+            this.appSettingService.showError(response.message || 'Validation failed');
+          }
         }
+      },
+      error: (error) => {
+        console.error('Error validating container data:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error validating container data');
+      }
     });
-}
-/**
- * Process container upload and add to form
- */
-processContainerUpload(): void {
+  }
+  /**
+   * Process container upload and add to form
+   */
+  processContainerUpload(): void {
     if (this.parsedContainers.length === 0) {
-        this.appSettingService.showWarning('No container data to process');
-        return;
+      this.appSettingService.showWarning('No container data to process');
+      return;
     }
-    
+
     // Check for validation errors
     if (this.containerValidationErrors.length > 0) {
-        this.appSettingService.showWarning('Please fix validation errors before proceeding');
-        return;
+      this.appSettingService.showWarning('Please fix validation errors before proceeding');
+      return;
     }
-    
+
     // Check container limits for FCL
     if (this.selectedFCLLCL === 'FCL') {
-        const currentContainerCount = this.masterJobContainers.length;
-        const newTotalCount = currentContainerCount + this.parsedContainers.length;
-        const totalAllowedContainers = this.getTotalAllowedContainers();
-        
-        if (newTotalCount > totalAllowedContainers && totalAllowedContainers > 0) {
-            const warningMsg = `Upload would exceed container limit. Current: ${currentContainerCount}, Adding: ${this.parsedContainers.length}, Limit: ${totalAllowedContainers}`;
-            this.appSettingService.showWarning(warningMsg);
-            return;
-        }
+      const currentContainerCount = this.masterJobContainers.length;
+      const newTotalCount = currentContainerCount + this.parsedContainers.length;
+      const totalAllowedContainers = this.getTotalAllowedContainers();
+
+      if (newTotalCount > totalAllowedContainers && totalAllowedContainers > 0) {
+        const warningMsg = `Upload would exceed container limit. Current: ${currentContainerCount}, Adding: ${this.parsedContainers.length}, Limit: ${totalAllowedContainers}`;
+        this.appSettingService.showWarning(warningMsg);
+        return;
+      }
     }
-    
+
     // Add each container to the form
     this.parsedContainers.forEach(container => {
-        // Check for duplicate container numbers
-        const existingContainer = this.masterJobContainers.controls.find(
-            control => control.value.ContainerNumber === container.ContainerNumber
-        );
-        
-        if (existingContainer) {
-            this.appSettingService.showWarning(`Container ${container.ContainerNumber} already exists. Skipping.`);
-            return;
+      // Check for duplicate container numbers
+      const existingContainer = this.masterJobContainers.controls.find(
+        control => control.value.ContainerNumber === container.ContainerNumber
+      );
+
+      if (existingContainer) {
+        this.appSettingService.showWarning(`Container ${container.ContainerNumber} already exists. Skipping.`);
+        return;
+      }
+
+      // Validate container number format
+      if (container.ContainerNumber) {
+        const validation = this.validateContainerNumber(container.ContainerNumber);
+        if (!validation.isValid) {
+          return;
         }
-        
-        // Validate container number format
-        if (container.ContainerNumber) {
-            const validation = this.validateContainerNumber(container.ContainerNumber);
-            if (!validation.isValid) {
-                return;
-            }
-        }
-        
-        // Add the container
-        this.addContainer(container);
+      }
+
+      // Add the container
+      this.addContainer(container);
     });
-    
+
     // Reset upload state
     this.resetContainerUpload();
-    
+
     // this.appSettingService.showSuccess(`Added ${this.parsedContainers.length} containers successfully`);
     this.markAsDirty();
-}
+  }
 
 
-/**
- * Reset container upload state
- */
-resetContainerUpload(): void {
+  /**
+   * Reset container upload state
+   */
+  resetContainerUpload(): void {
     this.selectedContainerFile = null;
     this.containerUploadErrors = [];
     this.containerValidationErrors = [];
     this.showContainerPreview = false;
     this.parsedContainers = [];
     this.isProcessingContainerUpload = false;
-    
+
     // Reset file input
     const fileInput = document.querySelector('#containerFileInput') as HTMLInputElement;
     if (fileInput) {
-        fileInput.value = '';
+      fileInput.value = '';
     }
-}
+  }
 
-/**
- * Get container type name for display
- */
-getContainerTypeDisplay(containerTypeId: number): string {
+  /**
+   * Get container type name for display
+   */
+  getContainerTypeDisplay(containerTypeId: number): string {
     if (!containerTypeId || this.containerTypeList.length === 0) {
-        return containerTypeId?.toString() || 'N/A';
+      return containerTypeId?.toString() || 'N/A';
     }
-    
+
     const containerType = this.containerTypeList.find(
-        ct => ct.ContainerTypeMasterSid === containerTypeId
+      ct => ct.ContainerTypeMasterSid === containerTypeId
     );
-    
+
     return containerType ? containerType.ContainerName : containerTypeId.toString();
-}
+  }
 
-/**
- * Get package type name for display
- */
-getPackageTypeDisplay(packageTypeId: number): string {
+  /**
+   * Get package type name for display
+   */
+  getPackageTypeDisplay(packageTypeId: number): string {
     if (!packageTypeId || this.packageTypeList.length === 0) {
-        return packageTypeId?.toString() || 'N/A';
+      return packageTypeId?.toString() || 'N/A';
     }
-    
-    const packageType = this.packageTypeList.find(
-        pt => pt.UOMMasterSid === packageTypeId
-    );
-    
-    return packageType ? packageType.UOMName : packageTypeId.toString();
-}
 
-exportContainerData(): void {
+    const packageType = this.packageTypeList.find(
+      pt => pt.UOMMasterSid === packageTypeId
+    );
+
+    return packageType ? packageType.UOMName : packageTypeId.toString();
+  }
+
+  exportContainerData(): void {
     if (this.masterJobContainers.length === 0) {
-        this.toastr.warning('No container data to export');
-        return;
+      this.toastr.warning('No container data to export');
+      return;
     }
 
     // Format container data for export
     const formattedData = this.masterJobContainers.value.map(container => ({
-        'Container Type': this.getContainerTypeName(container.ContainerType),
-        'Container Number': container.ContainerNumber,
-        'Line Seal': container.LineSeal,
-        'Customs Seal': container.CustomsSeal,
-        'HS Code': container.HsCode,
-        'Commodity Description': container.CommodityDescription,
-        'Package Type': this.getPackageTypeName(container.PkgType),
-        'No. of Pkg': container.NoOfPkg,
-        'Gross Weight': container.GrossWeight,
-        'Net Weight': container.NetWeight,
-        'Chargeable Weight': container.ChargeableWeight,
-        'Volume (CBM)': container.Volume,
-        'SOC': container.IsSoc ? 'Yes' : 'No'
+      'Container Type': this.getContainerTypeName(container.ContainerType),
+      'Container Number': container.ContainerNumber,
+      'Line Seal': container.LineSeal,
+      'Customs Seal': container.CustomsSeal,
+      'HS Code': container.HsCode,
+      'Commodity Description': container.CommodityDescription,
+      'Package Type': this.getPackageTypeName(container.PkgType),
+      'No. of Pkg': container.NoOfPkg,
+      'Gross Weight': container.GrossWeight,
+      'Net Weight': container.NetWeight,
+      'Chargeable Weight': container.ChargeableWeight,
+      'Volume (CBM)': container.Volume,
+      'SOC': container.IsSoc ? 'Yes' : 'No'
     }));
 
     // Use the same ExcelExportService as your reports
     this.exportExcelService.exportAsExcel({
-        data: formattedData,
-        headers: [
-            { key: 'Container Type', label: 'Container Type' },
-            { key: 'Container Number', label: 'Container Number' },
-            { key: 'Line Seal', label: 'Line Seal' },
-            { key: 'Customs Seal', label: 'Customs Seal' },
-            { key: 'HS Code', label: 'HS Code' },
-            { key: 'Commodity Description', label: 'Commodity Description' },
-            { key: 'Package Type', label: 'Package Type' },
-            { key: 'No. of Pkg', label: 'No. of Pkg' },
-            { key: 'Gross Weight', label: 'Gross Weight' },
-            { key: 'Net Weight', label: 'Net Weight' },
-            { key: 'Chargeable Weight', label: 'Chargeable Weight' },
-            { key: 'Volume (CBM)', label: 'Volume (CBM)' },
-            { key: 'SOC', label: 'SOC' }
-        ],
-        fileName: `Containers_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${new Date().toISOString().slice(0, 10)}`,
-        title: 'Container Details'
+      data: formattedData,
+      headers: [
+        { key: 'Container Type', label: 'Container Type' },
+        { key: 'Container Number', label: 'Container Number' },
+        { key: 'Line Seal', label: 'Line Seal' },
+        { key: 'Customs Seal', label: 'Customs Seal' },
+        { key: 'HS Code', label: 'HS Code' },
+        { key: 'Commodity Description', label: 'Commodity Description' },
+        { key: 'Package Type', label: 'Package Type' },
+        { key: 'No. of Pkg', label: 'No. of Pkg' },
+        { key: 'Gross Weight', label: 'Gross Weight' },
+        { key: 'Net Weight', label: 'Net Weight' },
+        { key: 'Chargeable Weight', label: 'Chargeable Weight' },
+        { key: 'Volume (CBM)', label: 'Volume (CBM)' },
+        { key: 'SOC', label: 'SOC' }
+      ],
+      fileName: `Containers_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${new Date().toISOString().slice(0, 10)}`,
+      title: 'Container Details'
     });
-}
+  }
 
-/**
- * Download Product Excel template
- */
-downloadProductTemplate(): void {
+  /**
+   * Download Product Excel template
+   */
+  downloadProductTemplate(): void {
     if (!this.masterJobSid) {
-        this.appSettingService.showWarning('Please select a master job first');
-        return;
+      this.appSettingService.showWarning('Please select a master job first');
+      return;
     }
-    
+
     this.spinner.show();
     this.operationService.downloadProductTemplate(this.masterJobSid).subscribe({
-        next: (blob: Blob) => {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Product_Template_MJ${this.masterJobSid}_${new Date().toISOString().slice(0,10)}.xlsx`;
-            link.click();
-            window.URL.revokeObjectURL(url);
-            this.spinner.hide();
-            this.appSettingService.showSuccess('Product template downloaded successfully');
-        },
-        error: (error) => {
-            console.error('Error downloading product template:', error);
-            this.spinner.hide();
-            this.appSettingService.showError('Error downloading product template');
-        }
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Product_Template_MJ${this.masterJobSid}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.spinner.hide();
+        this.appSettingService.showSuccess('Product template downloaded successfully');
+      },
+      error: (error) => {
+        console.error('Error downloading product template:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error downloading product template');
+      }
     });
-}
+  }
 
-/**
- * Handle product file selection
- */
-onProductFileSelected(event: any): void {
+  /**
+   * Handle product file selection
+   */
+  onProductFileSelected(event: any): void {
     const file = event.target.files[0];
-    
+
     if (!file) {
-        return;
+      return;
     }
-    
+
     // Validate file type
     const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel'
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
-        this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
-        return;
+      this.appSettingService.showError('Invalid file type. Please upload Excel files only (.xlsx, .xls)');
+      return;
     }
-    
+
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-        this.appSettingService.showError('File size exceeds 5MB limit');
-        return;
+      this.appSettingService.showError('File size exceeds 5MB limit');
+      return;
     }
-    
+
     this.selectedProductFile = file;
     this.parseProductExcelFile();
-}
+  }
 
-/**
- * Parse product Excel file
- */
-parseProductExcelFile(): void {
+  /**
+   * Parse product Excel file
+   */
+  parseProductExcelFile(): void {
     if (!this.selectedProductFile) {
-        return;
+      return;
     }
-    
+
     this.isProcessingProductUpload = true;
     this.spinner.show();
     this.productUploadErrors = [];
     this.parsedProducts = [];
-    
+
     this.operationService.parseProductExcel(this.selectedProductFile).subscribe({
-        next: (response: any) => {
-            this.spinner.hide();
-            this.isProcessingProductUpload = false;
-            
-            if (response.status) {
-                this.parsedProducts = response.data.products || [];
-                
-                if (this.parsedProducts.length === 0) {
-                    this.appSettingService.showWarning('No valid product data found in the Excel file');
-                    return;
-                }
-                
-                // Show preview
-                this.showProductPreview = true;
-                this.appSettingService.showSuccess(`Found ${this.parsedProducts.length-1} valid products`);
-                
-                // Validate the parsed data
-                this.validateProductData();
-                
-            } else {
-                if (response.data?.errors) {
-                    this.productUploadErrors = response.data.errors;
-                }
-                this.appSettingService.showError(response.message || 'Error parsing Excel file');
-            }
-        },
-        error: (error) => {
-            console.error('Error parsing product Excel:', error);
-            this.spinner.hide();
-            this.isProcessingProductUpload = false;
-            this.appSettingService.showError('Error parsing Excel file');
-        }
-    });
-}
+      next: (response: any) => {
+        this.spinner.hide();
+        this.isProcessingProductUpload = false;
 
-/**
- * Validate product data
- */
-validateProductData(): void {
+        if (response.status) {
+          this.parsedProducts = response.data.products || [];
+
+          if (this.parsedProducts.length === 0) {
+            this.appSettingService.showWarning('No valid product data found in the Excel file');
+            return;
+          }
+
+          // Show preview
+          this.showProductPreview = true;
+          this.appSettingService.showSuccess(`Found ${this.parsedProducts.length - 1} valid products`);
+
+          // Validate the parsed data
+          this.validateProductData();
+
+        } else {
+          if (response.data?.errors) {
+            this.productUploadErrors = response.data.errors;
+          }
+          this.appSettingService.showError(response.message || 'Error parsing Excel file');
+        }
+      },
+      error: (error) => {
+        console.error('Error parsing product Excel:', error);
+        this.spinner.hide();
+        this.isProcessingProductUpload = false;
+        this.appSettingService.showError('Error parsing Excel file');
+      }
+    });
+  }
+
+  /**
+   * Validate product data
+   */
+  validateProductData(): void {
     if (this.parsedProducts.length === 0) {
-        return;
+      return;
     }
-    
+
     this.spinner.show();
-    
+
     const payload = {
-        products: this.parsedProducts,
-        masterJobSid: this.masterJobSid,
-        companyMasterSid: this.currentCompany?.CompanyMasterSid,
-        branchMasterSid: this.currentBranch?.BranchMasterSid
+      products: this.parsedProducts,
+      masterJobSid: this.masterJobSid,
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid
     };
-    
+
     this.operationService.validateProductData(payload).subscribe({
-        next: (response: any) => {
-            this.spinner.hide();
-            
-            if (response.status) {
-    this.productValidationErrors = response.data.errors || [];
+      next: (response: any) => {
+        this.spinner.hide();
 
-    if (this.productValidationErrors.length === 0) {
-        this.appSettingService.showSuccess('Product data validated successfully');
-    } else {
-        this.appSettingService.showWarning(
-            `Found ${this.productValidationErrors.length} validation errors`
-        );
-    }
-            } else {
-                if (response.data?.errors) {
-                    this.productValidationErrors = response.data.errors;
-                    this.appSettingService.showWarning(`Found ${this.productValidationErrors.length} validation errors`);
-                } else {
-                    this.appSettingService.showError(response.message || 'Validation failed');
-                }
-            }
-        },
-        error: (error) => {
-            console.error('Error validating product data:', error);
-            this.spinner.hide();
-            this.appSettingService.showError('Error validating product data');
+        if (response.status) {
+          this.productValidationErrors = response.data.errors || [];
+
+          if (this.productValidationErrors.length === 0) {
+            this.appSettingService.showSuccess('Product data validated successfully');
+          } else {
+            this.appSettingService.showWarning(
+              `Found ${this.productValidationErrors.length} validation errors`
+            );
+          }
+        } else {
+          if (response.data?.errors) {
+            this.productValidationErrors = response.data.errors;
+            this.appSettingService.showWarning(`Found ${this.productValidationErrors.length} validation errors`);
+          } else {
+            this.appSettingService.showError(response.message || 'Validation failed');
+          }
         }
+      },
+      error: (error) => {
+        console.error('Error validating product data:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error validating product data');
+      }
     });
-}
+  }
 
-/**
- * Process product upload
- */
-processProductUpload(): void {
+  /**
+   * Process product upload
+   */
+  processProductUpload(): void {
     if (this.parsedProducts.length === 0) {
-        this.appSettingService.showWarning('No product data to process');
-        return;
+      this.appSettingService.showWarning('No product data to process');
+      return;
     }
-    
+
     // Check for validation errors
     if (this.productValidationErrors.length > 0) {
-        this.appSettingService.showWarning('Please fix validation errors before proceeding');
-        return;
+      this.appSettingService.showWarning('Please fix validation errors before proceeding');
+      return;
     }
-     const filteredProducts = this.parsedProducts.filter(product => {
-        // Skip products with example HBL numbers
-        const exampleHblPatterns = ['HBL-001', 'HBL-', 'SAMPLE', 'EXAMPLE', 'DEMO'];
-        const hblNo = product.HBLNo?.toUpperCase();
-        if (hblNo && exampleHblPatterns.some(pattern => hblNo.includes(pattern))) {
-            console.log('Skipping example product with HBL:', product.HBLNo);
-            return false;
-        }
-        
-        // Skip products with example product names
-        const exampleProductPatterns = ['ELECTRONICS', 'SAMPLE', 'EXAMPLE', 'DEMO'];
-        const productName = product.ProductName?.toUpperCase();
-        if (productName && exampleProductPatterns.some(pattern => productName.includes(pattern))) {
-            console.log('Skipping example product with name:', product.ProductName);
-            return false;
-        }
-        
-        return true;
+    const filteredProducts = this.parsedProducts.filter(product => {
+      // Skip products with example HBL numbers
+      const exampleHblPatterns = ['HBL-001', 'HBL-', 'SAMPLE', 'EXAMPLE', 'DEMO'];
+      const hblNo = product.HBLNo?.toUpperCase();
+      if (hblNo && exampleHblPatterns.some(pattern => hblNo.includes(pattern))) {
+
+        return false;
+      }
+
+      // Skip products with example product names
+      const exampleProductPatterns = ['ELECTRONICS', 'SAMPLE', 'EXAMPLE', 'DEMO'];
+      const productName = product.ProductName?.toUpperCase();
+      if (productName && exampleProductPatterns.some(pattern => productName.includes(pattern))) {
+
+        return false;
+      }
+
+      return true;
     });
-    
+
     if (filteredProducts.length === 0) {
-        this.appSettingService.showWarning('No valid product data to process after filtering example rows');
-        return;
+      this.appSettingService.showWarning('No valid product data to process after filtering example rows');
+      return;
     }
-    
+
     this.spinner.show();
-    
+
     const payload = {
-        products: filteredProducts,
-       masterJobSid: this.masterJobSid,
-        companyMasterSid: this.currentCompany?.CompanyMasterSid,
-        branchMasterSid: this.currentBranch?.BranchMasterSid,
-        createdBy: this.userData?.userEmail || ''
+      products: filteredProducts,
+      masterJobSid: this.masterJobSid,
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      createdBy: this.userData?.userEmail || ''
     };
-    console.log('PROCESS PAYLOAD:', payload);
 
-    
+
+
     this.operationService.processProductUpload(payload).subscribe({
-        next: (response: any) => {
-            this.spinner.hide();
-            
-            if (response.status) {
-                this.appSettingService.showSuccess(response.message);
-                
-                // Reset upload state
-                this.resetProductUpload();
-                
-                // Refresh product data if needed
-                // if (this.HouseJobSid) {
-                //     this.loadHouseById(this.HouseJobSid);
-                // }
-                if (this.masterJobSid) {
-                    this.loadMasterJobData(this.masterJobSid);
-                }
-            } else {
-                this.appSettingService.showError(response.message || 'Failed to process product upload');
-            }
-        },
-        error: (error) => {
-            console.error('Error processing product upload:', error);
-            this.spinner.hide();
-            this.appSettingService.showError('Error processing product upload');
-        }
-    });
-}
+      next: (response: any) => {
+        this.spinner.hide();
 
-/**
- * Reset product upload state
- */
-resetProductUpload(): void {
+        if (response.status) {
+          this.appSettingService.showSuccess(response.message);
+
+          // Reset upload state
+          this.resetProductUpload();
+
+          // Refresh product data if needed
+          // if (this.HouseJobSid) {
+          //     this.loadHouseById(this.HouseJobSid);
+          // }
+          if (this.masterJobSid) {
+            this.loadMasterJobData(this.masterJobSid);
+          }
+        } else {
+          this.appSettingService.showError(response.message || 'Failed to process product upload');
+        }
+      },
+      error: (error) => {
+        console.error('Error processing product upload:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error processing product upload');
+      }
+    });
+  }
+
+  /**
+   * Reset product upload state
+   */
+  resetProductUpload(): void {
     this.selectedProductFile = null;
     this.productUploadErrors = [];
     this.productValidationErrors = [];
     this.showProductPreview = false;
     this.parsedProducts = [];
     this.isProcessingProductUpload = false;
-    
+
     // Reset file input
     const fileInput = document.querySelector('#productFileInput') as HTMLInputElement;
     if (fileInput) {
-        fileInput.value = '';
+      fileInput.value = '';
     }
-}
+  }
 
 }
 
