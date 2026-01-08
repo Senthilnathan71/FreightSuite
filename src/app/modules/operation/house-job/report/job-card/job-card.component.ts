@@ -12,15 +12,16 @@ interface summaryDTO {
   cost : any[];
 }
 
+
 @Component({
   selector: 'app-job-card',
   standalone: true,
   imports: [CommonModule, CustomDatePipe],
   templateUrl: './job-card.component.html',
-  styles: ``,
+  styles: ``
 })
 export class JobCardComponent {
-  userData: any;
+ userData: any;
   currentCompany: any;
   currentBranch: any;
   branchDetails: any;
@@ -157,26 +158,26 @@ export class JobCardComponent {
       !this.currencyList ||
       this.currencyList.length === 0
     ) {
-      return 'N/A';
+      return '';
     }
 
     const currency = this.currencyList.find(
       (c) => c.CurrencyMasterSid === CurrencyMasterSid
     );
     return currency
-      ? currency.currencyCode || currency.CurrencyCode || 'N/A'
+      ? currency.currencyCode || currency.CurrencyCode || ''
       : 'N/A';
   }
 
   get totalNoOfPkg(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
+    return this.housejobData?.Products?.reduce((sum, c) => {
       const value = Number(c.NoOfPkg) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalGrossWeight(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
+    return this.housejobData?.Products?.reduce((sum, c) => {
       const value = Number(c.GrossWeight) || 0;
       return sum + value;
     }, 0);

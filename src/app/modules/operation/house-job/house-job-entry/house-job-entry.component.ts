@@ -60,6 +60,7 @@ import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
+import { JobCardComponent } from '../report/job-card/job-card.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -135,6 +136,7 @@ export class HouseJobEntryComponent  implements OnInit {
   */
  @ViewChild(CustomsComponent) customsComponent!: CustomsComponent;
   @ViewChild('vehicleComponent') vehicleComponent!: VehicleComponent;
+  @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
 @ViewChild(BoeEntryComponent) boeComponent!: BoeEntryComponent;
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   parsedBookings: BookingData[] = [];
@@ -3818,6 +3820,26 @@ ${this.userData['userName']}`;
         })
         modalRef.componentInstance.housejobData = this.housejobData || [];
   }
+
+  
+    reportjobCard() {
+      const modalRef = this.modalService.open(JobCardComponent,{
+        size: 'xl',
+        scrollable: true,
+      });
+      modalRef.componentInstance.housejobData = this.housejobData || [];
+      modalRef.componentInstance.masterJobData = this.masterJobData;
+      modalRef.componentInstance.containerTypeList = this.containerTypeList;
+      // modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.agentList = this.agentList;
+      modalRef.componentInstance.currencyList = this.currencyList;
+      modalRef.componentInstance.chargeList = this.chargeList;
+      modalRef.componentInstance.profitSummary = this.profitSummary || [];
+      modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+      modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
+      modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
+    }
 
    reportReleaseLetter() {
         const modalRef = this.modalService.open(ReleaseLetterComponent, {
