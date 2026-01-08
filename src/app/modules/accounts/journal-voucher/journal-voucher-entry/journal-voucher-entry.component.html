@@ -7,7 +7,7 @@
                         <i class="fas fa-file-invoice"></i>
                     </div>
                     <h5 class="page-title mb-0 text-info">
-                         Journal Voucher
+                        Journal Voucher
                     </h5>
                     @if(editMode){
                     <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
@@ -19,15 +19,15 @@
             <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                     <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="onFinalSave()" [disabled]="isPosted || isSaving || form.invalid">
                         <i class="fas fa-check-circle me-1"></i>
                         Post
                     </button>
-                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reportJournalVoucher()"
-             [disabled]="!voucherData" *ngIf="editMode">
-            <i class="fas fa-print me-1"></i> Print
-          </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="reportJournalVoucher()" [disabled]="!voucherData" *ngIf="editMode">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -96,7 +96,7 @@
                     <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="PostedOn" formControlName="PostedOn" class="custom-input-field sm"
-                                placeholder="" readonly/>
+                                placeholder="" readonly />
                             <label for="PostedOn" class="input-label">Posted On</label>
                         </div>
                     </aside>
@@ -149,8 +149,9 @@
     <div class="bg-white">
         <div class="split-table-container d-flex" formArrayName="details">
             <!-- Fixed Left Table -->
-            <div class="table-fixed table-borderless" [style]="!hasChargeTypeRows() ? 'flex: 1 1 auto; max-width: 100% !important;' : 'flex: 0 0 auto; max-width: 1000px;'"
-             style="overflow: hidden;">
+            <div class="table-fixed table-borderless"
+                [style]="!hasChargeTypeRows() ? 'flex: 1 1 auto; max-width: 100% !important;' : 'flex: 0 0 auto; max-width: 1000px;'"
+                style="overflow: hidden;">
                 <table class="table table-hover align-middle no-wrap table-sm mb-0">
                     <thead class="bg-info">
                         <tr>
@@ -202,17 +203,21 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <input type="number" step="0.0001" formControlName="exchangeRate"
+                                <input type="number" step="0.0001" formControlName="exchangeRate" DecimalPrecision
+                                    [DecimalPrecisionBefore]="3"
+                                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('currencyMasterSid')?.value)"
                                     class="form-control" />
                             </td>
                             <td>
-                                <input type="number" step="0.01" formControlName="currencyAmount"  DecimalPrecision [DecimalPrecisionBefore]="15" 
-                                [DecimalPrecisionAfter]="3"
+                                <input type="number" step="0.01" formControlName="currencyAmount" DecimalPrecision
+                                    [DecimalPrecisionBefore]="15"
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
                                     class="form-control" />
                             </td>
                             <td>
-                                <input type="number" step="0.01" formControlName="localAmount" class="form-control" DecimalPrecision [DecimalPrecisionBefore]="15" 
-                                [DecimalPrecisionAfter]="3"
+                                <input type="number" step="0.01" formControlName="localAmount" class="form-control"
+                                    DecimalPrecision [DecimalPrecisionBefore]="15"
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
                                     readonly />
                             </td>
                             <td>
@@ -230,7 +235,8 @@
             </div>
 
             <!-- Scrollable Right Table -->
-            <div *ngIf="hasChargeTypeRows()" class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
+            <div *ngIf="hasChargeTypeRows()" class="table-scroll flex-grow-1 table-borderless"
+                style="overflow-x: auto;">
                 <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
                     <thead class="bg-info">
                         <tr>
@@ -250,28 +256,30 @@
                         <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
                             <td>
                                 <ng-select formControlName="departmentMasterSid" [items]="departmentList"
-                                    bindLabel="departmentName" bindValue="DepartmentMasterSid" appendTo="body" (change)="filterDetailsWithDept($event,i)"
-                                    placeholder="">
+                                    bindLabel="departmentName" bindValue="DepartmentMasterSid" appendTo="body"
+                                    (change)="filterDetailsWithDept($event,i)" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="chargeMasterSid" [items]="(filteredChargeList[i] || [])" bindLabel="chargeCode" 
-                                    bindValue="ChargeMasterSid" appendTo="body" placeholder="" >
+                                <ng-select formControlName="chargeMasterSid" [items]="(filteredChargeList[i] || [])"
+                                    bindLabel="chargeCode" bindValue="ChargeMasterSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select [items]="(hssacList[i] || [])" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
-                                    placeholder="" formControlName="hssacMasterSid" appendTo="body">
+                                <ng-select [items]="(hssacList[i] || [])" bindLabel="HSSACCode"
+                                    bindValue="HSSACMasterSid" placeholder="" formControlName="hssacMasterSid"
+                                    appendTo="body">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="masterJobSid" [items]="masterJobList[i]" (change)="onMasterJobChange(i,$event)"
-                                    bindLabel="MasterJobNumber" bindValue="MasterJobSid" appendTo="body" placeholder="">
+                                <ng-select formControlName="masterJobSid" [items]="masterJobList[i]"
+                                    (change)="onMasterJobChange(i,$event)" bindLabel="MasterJobNumber"
+                                    bindValue="MasterJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="houseJobSid" [items]="(houseJobList[i] || [])" bindLabel="HBLNo"
-                                    bindValue="HouseJobSid" appendTo="body" placeholder="">
+                                <ng-select formControlName="houseJobSid" [items]="(houseJobList[i] || [])"
+                                    bindLabel="HBLNo" bindValue="HouseJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
@@ -279,6 +287,8 @@
                             </td>
                             <td>
                                 <input type="number" step="0.01" formControlName="taxAmount" class="form-control"
+                                    DecimalPrecision [DecimalPrecisionBefore]="12"
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(currentCompany?.CurrencyMasterSid)"
                                     readonly />
                             </td>
                             <td>
