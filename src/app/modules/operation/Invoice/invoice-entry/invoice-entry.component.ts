@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
@@ -21,7 +21,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError, distinctUntilChanged, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -61,6 +61,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { LogoService } from 'src/app/core/services/logo.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 interface NgbDateStructLike {
   day: number;
@@ -94,7 +95,7 @@ interface NgbDateStructLike {
     CustomDatePipe,
   ],
 })
-export class InvoiceEntryComponent implements OnInit {
+export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestroy {
   // User Related Variable Declarations
   userData: any;
   currUserEmail: string | null = null;
@@ -220,6 +221,13 @@ export class InvoiceEntryComponent implements OnInit {
   filteredDetailItems: any[] = [];
   companyCurrency: any;
   currentCurrencyCode: string;
+  isAutoPosting : boolean = false;
+
+  // Unsaved changes related varaible declarations
+  isDirty : boolean = false;
+  isSaving : boolean = false;
+  private initialFormValue : any = null;
+  private destroy$ = new Subject<void>();
 
   bookingModeCountry: string = 'india';
   taxGroupMap: Map<string, any[]> = new Map();
@@ -328,10 +336,10 @@ export class InvoiceEntryComponent implements OnInit {
       this.currentCompany = null;
       this.currentBranch = null;
     }
-
+    this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadLookups();
-
+    this.spinner.show();
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
     });
@@ -341,28 +349,13 @@ export class InvoiceEntryComponent implements OnInit {
       if (id) {
         this.headerId = Number(id);
         this.loadInvoiceById(this.headerId);
+      } else {
+        this.initialFormValue = this.invoiceForm.getRawValue();
+        this.subscribeToFormChanges();
+        this.subscribeToValueChanges();
       }
     });
 
-    // Value changes subscriptions
-    this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
-      this.recalculateAllRows();
-    });
-
-    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe(() => {
-        if (this.isPosted) return;
-        this.recalculateAllRows();
-      });
-    });
-
-    ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe((value) => {
-        if (!this.isEditMode) {
-          this.patchDueDate();
-        }
-      });
-    });
   }
 
   initForm() {
@@ -394,7 +387,7 @@ export class InvoiceEntryComponent implements OnInit {
       PlaceOfSupply: [''],
       PostStatus: [''],
       GSTType: [''],
-      InvoiceType: [null],
+      InvoiceType: ['REG'],
       VoucherType: [1],
       Narration: [''],
       Remarks: [''],
@@ -419,6 +412,103 @@ export class InvoiceEntryComponent implements OnInit {
     );
   }
 
+  subscribeToValueChanges() {
+    this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
+      this.recalculateAllRows();
+    });
+
+    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
+      this.invoiceForm.get(field)?.valueChanges.subscribe(() => {
+        if (this.isPosted) return;
+        this.recalculateAllRows();
+      });
+    });
+
+    ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
+      this.invoiceForm.get(field)?.valueChanges.subscribe((value) => {
+        if (!this.isEditMode) {
+          this.patchDueDate();
+        }
+      });
+    });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue =
+        'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges() : Promise<boolean> {
+    return new Promise((resolve) =>{
+      this.onSubmit(resolve);
+    })
+  }
+
+  subscribeToFormChanges() {
+    this.invoiceForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.invoiceForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    // Handle Date
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0]; // DATE only
+    }
+
+    // Handle numeric strings and numbers
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6)); // prevent float noise
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    // Handle objects
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+
+
   async loadLookups() {
     this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -439,9 +529,6 @@ export class InvoiceEntryComponent implements OnInit {
         .getAllMappedChargeCreditors(filterOption)
         .pipe(catchError((err) => of([]))),
       uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
-      salesmans: this.operationService
-        .getAllSalesman(CompanyMasterSid)
-        .pipe(catchError((err) => of([]))),
       departments: this.operationService
         .getAllDepartments(CompanyMasterSid)
         .pipe(catchError((err) => of([]))),
@@ -459,11 +546,9 @@ export class InvoiceEntryComponent implements OnInit {
         currencies,
         charges,
         uoms,
-        salesmans,
         departments,
         masterJobs,
       }) => {
-        this.spinner.hide();
         this.customerList = customers.data || [];
         this.subledgerList = customers.data || [];
         this.chargeList = charges.data || [];
@@ -473,9 +558,11 @@ export class InvoiceEntryComponent implements OnInit {
         this.numberToWords.initializeCurrencies(this.currencyList);
 
         this.uomList = uoms.data || [];
-        this.salesmanList = salesmans || [];
         this.departmentList = departments.data || [];
         this.masterJobList = masterJobs.data || [];
+        if(!this.isEditMode){
+          this.spinner.hide();
+        }
       }
     );
   }
@@ -486,15 +573,15 @@ export class InvoiceEntryComponent implements OnInit {
         ? selected.CustomerMasterSid ?? selected
         : selected;
 
-    if (!customerMasterSid) {
+    if (!selected || !customerMasterSid) {
       this.customerBranchList = [];
       this.invoiceForm.get('CustomerMasterSid')?.setValue(null);
       this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PartyMasterSid')?.setValue(null);
       this.invoiceForm.get('COAMasterSid')?.setValue(null);
-      this.invoiceForm.get('GSTNo')?.setValue('');
-      this.invoiceForm.get('PartyName')?.setValue('');
+      this.invoiceForm.get('GST_VAT')?.setValue('');
+      this.invoiceForm.get('PartyName')?.setValue(null);
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
 
       // Set default InvoiceType based on country
@@ -705,8 +792,10 @@ export class InvoiceEntryComponent implements OnInit {
   loadInvoiceById(id: number) {
     this.operationService.getInvoiceById(id).subscribe({
       next: (resp: any) => {
-        this.spinner.hide();
         if (resp?.status && resp.data) {
+          this.destroy$.next();
+          this.destroy$.complete();
+
           this.invoiceData = resp.data;
           this.invoiceData['MBLNo'] = resp.data?.MasterNumber;
           this.invoiceData['HBLNo'] = resp.data?.HouseNumber;
@@ -718,8 +807,20 @@ export class InvoiceEntryComponent implements OnInit {
           this.invoiceForm.get('CurrencyCode')?.disable();
           if (this.isPosted) {
             this.details.disable({ emitEvent: false });
+            this.isDirty = false;
+            this.initialFormValue = this.invoiceForm.getRawValue();
             this.invoiceForm.disable();
+            this.destroy$.next();
+            this.destroy$.complete();
+            return;
           }
+          // unsaved changes related
+          setTimeout(() => {
+            this.initialFormValue = this.invoiceForm.getRawValue();
+            this.isDirty = false;
+            this.subscribeToFormChanges();
+            this.subscribeToValueChanges();
+          }, 0);
         } else {
           this.appSettingService.showError('Error loading invoice');
           this.router.navigate(['operation/invoice/list']);
@@ -752,7 +853,7 @@ export class InvoiceEntryComponent implements OnInit {
         HBLNo: data.HouseJob || data.HBLNo || '',
         CurrencyMasterSid: data?.CurrencyMasterSid || null,
         CurrencyCode: data.CurrencyCode || null,
-        ExchangeRate: data.ExchangeRate || 0,
+        ExchangeRate: toNumber(data.ExchangeRate),
         GST_VAT: data.GST_VAT || '',
         InvoiceType: data.InvoiceType || null,
         GSTType: data.GSTType || null,
@@ -775,7 +876,7 @@ export class InvoiceEntryComponent implements OnInit {
       this.invoiceForm.get('ExchangeRate')?.enable();
     }
 
-    this.getCustomerBranchByCustomer(data.CustomerMasterSid);
+    // this.getCustomerBranchByCustomer(data.CustomerMasterSid);
     const detailsFromResp = data.VoucherDetail || [];
 
     this.filteredDetailItems = detailsFromResp.filter(
@@ -795,42 +896,41 @@ export class InvoiceEntryComponent implements OnInit {
           ChargeDescription: det.ChargeDescription,
           HSSACMasterSid: det.HSSACMasterSid,
           ChargeUOMSid: det.ChargeUOMSid,
-          NumberOfUnit: det.NumberOfUnit,
+          NumberOfUnit: toNumber(det.NumberOfUnit),
           DrCr: det.DrCr,
           CurrencyMasterSid: det.CurrencyMasterSid,
           CurrencyCode: det.CurrencyCode,
-          ExchangeRate: det.ExchangeRate,
-          Rate: det.Rate,
-          Amount: det.Amount,
-          TaxableAmount: det.TaxableAmount,
-          TaxPercentage1:
-            det.TaxPercentage1 != null ? Number(det.TaxPercentage1) : 0,
-          TaxAmount1: det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0,
-          TaxPercentage2:
-            det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0,
-          TaxAmount2: det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0,
-          LocalAmount: det.LocalAmount,
+          ExchangeRate: toNumber(det.ExchangeRate),
+          Rate: toNumber(det.Rate),
+          Amount: toNumber(det.Amount),
+          TaxableAmount: toNumber(det.TaxableAmount),
+          TaxPercentage1: toNumber(det.TaxPercentage1),
+          TaxAmount1: toNumber(det.TaxAmount1),
+          TaxPercentage2:toNumber(det.TaxPercentage2) ,
+          TaxAmount2: toNumber(det.TaxAmount2),
+          LocalAmount: toNumber(det.LocalAmount),
           MasterJobSid: det.MasterJobSid,
           HouseJobSid: det.HouseJobSid,
           DepartmentMasterSid: det.DepartmentMasterSid,
           Remarks: det.Remarks,
-          PartyAmount: det.PartyAmount || this.getPartyAmount(index),
+          PartyAmount: det.PartyAmount,
           IsAutoGenerated: det.IsAutoGenerated,
         })
       );
-      this.fetchHSN(this.details.length - 1);
+      this.fetchHSN(this.details.length - 1,false);
       if (det.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid) {
         this.details
           .at(this.details.length - 1)
           .get('ExchangeRate')
           ?.disable();
       }
-      this.onDetailMasterJobSelected(
-        { MasterJobSid: det.MasterJobSid },
-        index++
-      );
+      if(det.MasterJobSid){
+        this.onDetailMasterJobSelected(
+          { MasterJobSid: det.MasterJobSid },
+          index++
+        );
+      }
     }
-    this.invoiceForm.updateValueAndValidity();
 
     const voucherOthersSource =
       data.VoucherOthers && Array.isArray(data.VoucherOthers)
@@ -869,6 +969,35 @@ export class InvoiceEntryComponent implements OnInit {
         VoucherReverseSid: null,
       });
     }
+
+    this.spinner.hide();
+  }
+
+    checkVoucherPostingMechanism() {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const menuName = 'Invoice';
+    if (!companyId || !branchId || !menuName) {
+      return;
+    }
+    this.operationService
+      .checkVoucherPostingMechanism({
+        CompanyMasterSid: companyId,
+        BranchMasterSid: branchId,
+        MenuName: menuName,
+      })
+      .subscribe({
+        next: (resp) => {
+          if (resp.status) {
+            this.isAutoPosting = Boolean(resp.data);
+          } else {
+            this.isAutoPosting = false;
+          }
+        },
+        error: (error: any) => {
+          console.error('Error checking voucher posting mechanism:', error);
+        },
+      });
   }
 
   addDetailRow() {
@@ -1632,41 +1761,6 @@ export class InvoiceEntryComponent implements OnInit {
     }
   }
 
-  onFinalSave() {
-    if (this.invoiceForm.invalid) {
-      this.invoiceForm.markAllAsTouched();
-      this.appSettingService.showWarning(
-        'Please fill required invoice fields.'
-      );
-      return;
-    }
-
-    if (this.details.length === 0) {
-      this.appSettingService.showWarning(
-        'Please add at least one charge line.'
-      );
-      return;
-    }
-
-    this.recalculateAllRows();
-
-    // First save the invoice, then post it
-    this.saveInvoice(true); // true indicates final save
-  }
-
-  // Draft Save
-  onDraftSave() {
-    if (this.invoiceForm.invalid) {
-      this.invoiceForm.markAllAsTouched();
-      this.appSettingService.showWarning(
-        'Please fill required invoice fields.'
-      );
-      return;
-    }
-
-    this.recalculateAllRows();
-    this.saveInvoice(false); // false indicates draft save
-  }
 
   fetchHSN(index: number, patch: boolean = false) {
     const row = this.details.at(index) as FormGroup;
@@ -1683,8 +1777,8 @@ export class InvoiceEntryComponent implements OnInit {
               this.details.at(index).patchValue({
                 HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
               });
+              this.recalcRow(index);
             }
-            this.recalcRow(index);
           } else {
             this.appSettingService.showError(
               `Error fetching HSSAC details for ${chargeName}`
@@ -1702,22 +1796,42 @@ export class InvoiceEntryComponent implements OnInit {
     }
   }
 
-  private saveInvoice(isFinal: boolean) {
+  onSubmit(
+    resolve?: (value:boolean) => void,
+    isPostingTrue?: boolean
+  ) {
     const raw = this.invoiceForm.getRawValue();
 
-    if (this.invoiceForm.hasError('inconsistentExchangeRates')) {
-      const errorMsg = getExchangeRateErrorMessage(
-        this.invoiceForm,
-        this.currencyList
-      );
-      this.appSettingService.showError(errorMsg);
+    if(this.deepEqual(raw,this.initialFormValue) && !this.isDirty){
+      this.appSettingService.showWarning('No changes to save');
+      if(resolve) resolve(false);
       return;
+    }
+
+    // Enhanced exchange rate validation - checks all three error types
+    if (this.invoiceForm.errors) {
+      const hasExchangeRateError =
+        this.invoiceForm.errors['inconsistentExchangeRates'] ||
+        this.invoiceForm.errors['foreignCurrencyRateOne'] ||
+        this.invoiceForm.errors['exchangeRateZero'];
+
+      if (hasExchangeRateError) {
+        const errorMsg = getExchangeRateErrorMessage(
+          this.invoiceForm,
+          this.currencyList
+        );
+        this.appSettingService.showError(errorMsg);
+        if (resolve) resolve(false);
+        this.isSaving = false;
+        return;
+      }
     }
 
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
       this.invoiceForm.updateValueAndValidity();
       this.appSettingService.showError('Please fill all the required fields.');
+      if(resolve) resolve(false);
       return;
     }
 
@@ -1862,91 +1976,98 @@ export class InvoiceEntryComponent implements OnInit {
       if (payload[k] === undefined) delete payload[k];
     });
 
-    const saveObservable = this.headerId
-      ? this.operationService.updateInvoiceById(this.headerId, payload)
-      : this.operationService.createInvoice(payload);
-
     this.spinner.show();
-    saveObservable.subscribe({
-      next: async (resp: any) => {
-        if (!resp?.status) {
-          this.appSettingService.showError('Failed to save invoice.');
-          return;
-        }
-        const voucherHeaderSid = resp.data?.VoucherHeaderSid || this.headerId;
-
-        if (isFinal) {
-          const postResult = await this.postVoucher(voucherHeaderSid);
-          if (postResult && postResult.status) {
-            this.appSettingService.showSuccess(
-              `Invoice ${
-                this.headerId ? 'updated' : 'created'
-              } and posted successfully!`
-            );
+    if (this.isEditMode) {
+      this.operationService.updateInvoiceById(this.headerId, payload).subscribe({
+        next: async (resp: any) => {
+          this.isSaving = false;
+          if (resp.status) {
+            this.isDirty = false;
+            this.appSettingService.showSuccess(resp.message);
+            this.loadInvoiceById(this.headerId);
+            if (resolve) resolve(true);
+            this.spinner.hide();
           } else {
-            this.appSettingService.showWarning(
-              'Invoice created successfully but failed during posting.'
-            );
-            setTimeout(() => {
-              this.toastr.clear();
-
-              if (postResult?.message) {
-                this.appSettingService.showError(postResult.message);
-              }
-            }, 2000);
+            this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
+            this.spinner.hide();
           }
-
-          if (!this.headerId && voucherHeaderSid) {
-            this.headerId = voucherHeaderSid;
-            this.router.navigate(['operation/invoice/entry', voucherHeaderSid]);
-          } else if (this.headerId && voucherHeaderSid) {
-            this.loadInvoiceById(voucherHeaderSid);
-          }
-        } else {
+        },
+        error: (error) => {
+          this.appSettingService.showError('Failed to update invoice');
+          this.isSaving = false;
+          if (resolve) resolve(false);
           this.spinner.hide();
-          this.appSettingService.showSuccess(
-            'Invoice saved as draft successfully!'
-          );
-
-          if (!this.headerId && voucherHeaderSid) {
-            this.headerId = voucherHeaderSid;
-            this.router.navigate(['operation/invoice/entry', voucherHeaderSid]);
-          } else if (this.headerId && voucherHeaderSid) {
-            this.loadInvoiceById(voucherHeaderSid);
-          }
         }
-      },
-      error: (err) => {
-        this.spinner.hide();
-        console.error('Save invoice error', err);
-        this.appSettingService.showError('Failed to save invoice.');
-      },
-    });
+      })
+    } else {
+      this.operationService.createInvoice(payload).subscribe({
+        next: async (resp: any) => {
+          this.isSaving = false;
+          if (resp.status) {
+            this.isDirty = false;
+            this.headerId = resp.data?.VoucherHeaderSid;
+            if(isPostingTrue){
+              await this.postVoucher();
+            } else {
+              this.appSettingService.showSuccess(resp.message);
+              this.spinner.hide();
+            }
+            if (resolve) resolve(true);
+            if (this.headerId) {
+              this.router.navigate(['operation/invoice/entry', this.headerId]);
+            }
+          } else {
+            this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
+            this.spinner.hide();
+          }
+        },
+        error: (error) => {
+          this.isSaving = false;
+          this.appSettingService.showError('Failed to create invoice');
+          if (resolve) resolve(false);
+          this.spinner.hide();
+        }
+      })
+    }
   }
 
-  private async postVoucher(
-    voucherHeaderSid: number
-  ): Promise<{ status: boolean; data: any; message: string }> {
+  async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
     try {
+      this.spinner.show();
+      const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
       const currentBranch = this.currentBranch;
-      const currentFinancialYear = Number(
+      const currentFinancialYear = toNumber(
         localStorage.getItem('current-year-id')
       );
-      const currentCountry = Number(this.currentCompany?.CountryMasterSid);
-      const currentCountryName = String(
-        this.currentCompany?.countryMaster?.countryName
+
+      const currentCompanyCountry = toNumber(this.currentCompany?.CountryMasterSid);
+      const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid)
+      const currentCurrency = toNumber(this.currentCompany?.CurrencyMasterSid);
+      const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
+      const customerState = this.customerBranchList.find(
+        c => c.CustomerBranchSid === customerBranchFromForm
       )
-        .trim()
-        .toLowerCase();
-      const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
-      const currentUserEmail = this.userData?.userEmail;
+      let interOrIntra = 'Inter';
+      // india
+      if(this.currentCompanyCountryCode === 'in'){
+        if(currentCompanyState === customerState){
+          interOrIntra = 'Inter';
+        } else {
+          interOrIntra = 'Intra';
+        }
+      } else if(['ae', 'us'].includes(this.currentCompanyCountryCode)){
+        interOrIntra = 'Inter';
+      }
 
       if (
+        !voucherHeaderSid ||
         !currentCompany ||
         !currentBranch ||
         !currentFinancialYear ||
-        !currentCountry ||
+        !currentCompanyCountry ||
         !currentCurrency
       ) {
         throw new Error(
@@ -1960,12 +2081,12 @@ export class InvoiceEntryComponent implements OnInit {
         BranchMasterSid: currentBranch.BranchMasterSid,
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
-        LocalCurrencyCode: currentCompany.CurrencyCode,
-        PostedBy: currentUserEmail,
+        LocalCurrencyCode: this.currentCompanyCurrency.code,
+        PostedBy: this.userData?.userEmail,
         TaxDetails: {
-          CountryMasterSid: currentCountry,
-          countryName: currentCountryName,
-          TaxCategory: 'Inter',
+          CountryMasterSid: currentCompanyCountry,
+          countryCode: this.currentCompanyCountryCode,
+          TaxCategory: interOrIntra,
           EffectiveFrom: new Date().toISOString(),
           TaxType: 'Input',
         },
@@ -1975,7 +2096,15 @@ export class InvoiceEntryComponent implements OnInit {
         this.operationService.postVoucherByVoucherSid(postPayload)
       );
       this.spinner.hide();
-      return result;
+      if(result.status) {
+        this.appSettingService.showSuccess(result.message);
+        this.invoiceData.PostStatus = 'P';
+        if (notFromSubmit) {
+          this.loadInvoiceById(this.headerId);
+        }
+      } else {
+        this.appSettingService.showError(result.message);
+      }
     } catch (error) {
       console.error('Post voucher error:', error);
       return null;
@@ -3171,4 +3300,14 @@ export class InvoiceEntryComponent implements OnInit {
 
     return countryCode ? countryCode.toUpperCase() : '';
   }
+
+  getGSTType(){
+    return this.invoiceForm.get('GSTType')?.getRawValue();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 }

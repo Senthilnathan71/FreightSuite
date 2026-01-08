@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
 <div class="row compact-form">
   <div class="col-12 px-0">
     <div
@@ -46,30 +55,70 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <!-- Regular Save (for backward compatibility) -->
-
+          @if(isAutoPosting){
+          <button
+            type="button"
+            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
+            (click)="onSubmit(undefined, true)"
+            [disabled]="
+              isPosted || (!mps.can('update') && isEditMode) || isSaving
+            "
+          >
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+            <span
+              *ngIf="isDirty"
+              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+              title="You have unsaved changes"
+            >
+              <span class="visually-hidden">unsaved changes</span>
+            </span>
+          </button>
+          } @else {
           <!-- Draft Save Button -->
           <button
             type="button"
             appPreventMultiClick
-            class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onDraftSave()"
-            [disabled]="invoiceForm.invalid || isPosted"
+            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
+            (click)="onSubmit()"
+            [disabled]="
+              isPosted || (!mps.can('update') && isEditMode) || isSaving
+            "
           >
-            <i class="fas fa-save me-1"></i> Draft
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+            <span
+              *ngIf="isDirty"
+              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+              title="You have unsaved changes"
+            >
+              <span class="visually-hidden">unsaved changes</span>
+            </span>
           </button>
 
-          <!-- Final Save Button -->
+          <!-- Final Save/Post Button -->
           <button
             type="button"
             appPreventMultiClick
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onFinalSave()"
-            [disabled]="invoiceForm.invalid || details.length === 0 || isPosted"
+            (click)="postVoucher(true)"
+            [disabled]="
+              invoiceForm.invalid ||
+              isPosted ||
+              (!mps.can('update') && isEditMode) ||
+              isDirty ||
+              isSaving
+            "
+            [title]="
+              isDirty ? 'Please save the draft first before posting' : ''
+            "
           >
             <i class="fas fa-check-circle me-1"></i>
             {{ isPosted ? "Posted" : "Post" }}
           </button>
+          }
 
           <div
             *ngIf="mps.hasAtLeastOne() && isEditMode"

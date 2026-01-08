@@ -6,6 +6,7 @@ import { Vessel } from "../crm-mobile/Interfaces/vessel.interface";
 import { Uom } from "../crm-mobile/Interfaces/uom.interface";
 import { HSSAC } from "../crm-mobile/Interfaces/hs-sac.interfaces";
 import { State } from "../crm-mobile/Interfaces/state.interface";
+import { CheckVoucherPostingMechanism } from "../accounts/accounts.service";
 
 @Injectable({
   providedIn: 'root',
@@ -1333,6 +1334,14 @@ processProductUpload(payload: any): Observable<any> {
 
   postVoucherByVoucherSid(payload: any) {
     return this.http.post<{ data: any }>('voucher/post-voucher', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  checkVoucherPostingMechanism(payload: CheckVoucherPostingMechanism) {
+    return this.http.post<{ data: boolean }>('voucher/check-auto-posting', payload).pipe(
       map((resp: any) => {
         return resp;
       })
