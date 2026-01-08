@@ -339,7 +339,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadLookups();
-
+    this.spinner.show();
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
     });
@@ -352,29 +352,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       } else {
         this.initialFormValue = this.invoiceForm.getRawValue();
         this.subscribeToFormChanges();
+        this.subscribeToValueChanges();
       }
     });
 
-
-
-    this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
-      this.recalculateAllRows();
-    });
-
-    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe(() => {
-        if (this.isPosted) return;
-        this.recalculateAllRows();
-      });
-    });
-
-    ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe((value) => {
-        if (!this.isEditMode) {
-          this.patchDueDate();
-        }
-      });
-    });
   }
 
   initForm() {
@@ -431,6 +412,27 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     );
   }
 
+  subscribeToValueChanges() {
+    this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
+      this.recalculateAllRows();
+    });
+
+    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
+      this.invoiceForm.get(field)?.valueChanges.subscribe(() => {
+        if (this.isPosted) return;
+        this.recalculateAllRows();
+      });
+    });
+
+    ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
+      this.invoiceForm.get(field)?.valueChanges.subscribe((value) => {
+        if (!this.isEditMode) {
+          this.patchDueDate();
+        }
+      });
+    });
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: BeforeUnloadEvent): void {
     if (this.hasUnsavedChanges()) {
@@ -461,13 +463,50 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       });
   }
 
-  deepEqual(obj1: any, obj2: any): boolean {
-    console.log("Deep Equal Comparison",{
-      obj1,
-      obj2
-    })
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    // Handle Date
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0]; // DATE only
+    }
+
+    // Handle numeric strings and numbers
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6)); // prevent float noise
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    // Handle objects
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
   }
+
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
 
 
   async loadLookups() {
@@ -490,9 +529,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         .getAllMappedChargeCreditors(filterOption)
         .pipe(catchError((err) => of([]))),
       uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
-      salesmans: this.operationService
-        .getAllSalesman(CompanyMasterSid)
-        .pipe(catchError((err) => of([]))),
       departments: this.operationService
         .getAllDepartments(CompanyMasterSid)
         .pipe(catchError((err) => of([]))),
@@ -510,11 +546,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         currencies,
         charges,
         uoms,
-        salesmans,
         departments,
         masterJobs,
       }) => {
-        this.spinner.hide();
         this.customerList = customers.data || [];
         this.subledgerList = customers.data || [];
         this.chargeList = charges.data || [];
@@ -524,9 +558,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.numberToWords.initializeCurrencies(this.currencyList);
 
         this.uomList = uoms.data || [];
-        this.salesmanList = salesmans || [];
         this.departmentList = departments.data || [];
         this.masterJobList = masterJobs.data || [];
+        if(!this.isEditMode){
+          this.spinner.hide();
+        }
       }
     );
   }
@@ -771,8 +807,20 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceForm.get('CurrencyCode')?.disable();
           if (this.isPosted) {
             this.details.disable({ emitEvent: false });
+            this.isDirty = false;
+            this.initialFormValue = this.invoiceForm.getRawValue();
             this.invoiceForm.disable();
+            this.destroy$.next();
+            this.destroy$.complete();
+            return;
           }
+          // unsaved changes related
+          setTimeout(() => {
+            this.initialFormValue = this.invoiceForm.getRawValue();
+            this.isDirty = false;
+            this.subscribeToFormChanges();
+            this.subscribeToValueChanges();
+          }, 0);
         } else {
           this.appSettingService.showError('Error loading invoice');
           this.router.navigate(['operation/invoice/list']);
@@ -828,7 +876,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.invoiceForm.get('ExchangeRate')?.enable();
     }
 
-    this.getCustomerBranchByCustomer(data.CustomerMasterSid);
+    // this.getCustomerBranchByCustomer(data.CustomerMasterSid);
     const detailsFromResp = data.VoucherDetail || [];
 
     this.filteredDetailItems = detailsFromResp.filter(
@@ -856,12 +904,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           Rate: toNumber(det.Rate),
           Amount: toNumber(det.Amount),
           TaxableAmount: toNumber(det.TaxableAmount),
-          TaxPercentage1:
-            det.TaxPercentage1 != null ? Number(det.TaxPercentage1) : 0,
-          TaxAmount1: det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0,
-          TaxPercentage2:
-            det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0,
-          TaxAmount2: det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0,
+          TaxPercentage1: toNumber(det.TaxPercentage1),
+          TaxAmount1: toNumber(det.TaxAmount1),
+          TaxPercentage2:toNumber(det.TaxPercentage2) ,
+          TaxAmount2: toNumber(det.TaxAmount2),
           LocalAmount: toNumber(det.LocalAmount),
           MasterJobSid: det.MasterJobSid,
           HouseJobSid: det.HouseJobSid,
@@ -871,19 +917,20 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           IsAutoGenerated: det.IsAutoGenerated,
         })
       );
-      this.fetchHSN(this.details.length - 1);
+      this.fetchHSN(this.details.length - 1,false);
       if (det.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid) {
         this.details
           .at(this.details.length - 1)
           .get('ExchangeRate')
           ?.disable();
       }
-      this.onDetailMasterJobSelected(
-        { MasterJobSid: det.MasterJobSid },
-        index++
-      );
+      if(det.MasterJobSid){
+        this.onDetailMasterJobSelected(
+          { MasterJobSid: det.MasterJobSid },
+          index++
+        );
+      }
     }
-    this.invoiceForm.updateValueAndValidity();
 
     const voucherOthersSource =
       data.VoucherOthers && Array.isArray(data.VoucherOthers)
@@ -922,11 +969,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         VoucherReverseSid: null,
       });
     }
+
     this.spinner.hide();
-    // unsaved changes related
-    this.initialFormValue = this.invoiceForm.getRawValue();
-    this.isDirty = false;
-    this.subscribeToFormChanges();
   }
 
     checkVoucherPostingMechanism() {
@@ -1733,8 +1777,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
               this.details.at(index).patchValue({
                 HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
               });
+              this.recalcRow(index);
             }
-            this.recalcRow(index);
           } else {
             this.appSettingService.showError(
               `Error fetching HSSAC details for ${chargeName}`
@@ -2037,7 +2081,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         BranchMasterSid: currentBranch.BranchMasterSid,
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
-        LocalCurrencyCode: currentCompany.CurrencyCode,
+        LocalCurrencyCode: this.currentCompanyCurrency.code,
         PostedBy: this.userData?.userEmail,
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
@@ -3255,6 +3299,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
 
     return countryCode ? countryCode.toUpperCase() : '';
+  }
+
+  getGSTType(){
+    return this.invoiceForm.get('GSTType')?.getRawValue();
   }
 
   ngOnDestroy(): void {
