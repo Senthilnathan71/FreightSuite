@@ -1,0 +1,482 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Job Card</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+            <i class="fas fa-print me-1"></i> Print
+        </button>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)=" modalClose()"></button>
+
+    </div>
+</div>
+
+
+<div class="modal-body">
+    <div id="printContent" class="p-1">
+        <div
+            style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  font-size:16px; page-break-after:always;">
+
+            <!-- Company Info -->
+            <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; flex-direction: column;">
+                        <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
+                            style="max-width: 60px;height: auto;" />
+                        <!-- Print logo -->
+                        <!-- <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                            alt="Company Logo"
+                            style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;"> -->
+                        <!-- Pdf logo -->
+                        <!-- <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                            style="width:50px; height:50px; object-fit:contain;"> -->
+                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                    </div>
+                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                        <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
+                        </h3>
+                        <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
+                        </h5>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+                            currentBranch?.cityMaster?.cityName || currentCompany?.City ||
+                            ''
+                            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+<h4
+  style="
+    text-align:center;
+    font-weight:bolder;
+    margin:0;
+    padding:6px 0 4px 0;
+    border-top:1px solid black;
+    font-size:20px;
+    line-height:1.2;
+  "
+>
+  <strong>Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</strong>
+</h4>
+
+
+            <!-- Client/Shipper/Consignee/Forwarder Sections -->
+            <div style="display:flex; padding:0;">
+
+                <!-- Client -->
+                <div style="width:50%; border:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    <div style="display:flex; flex-direction: column;">
+                        <div style="width:125px;font-weight: bolder;"><strong>Client</strong></div>
+
+                        <div style="min-height:100px;padding-left: 30px;">
+                            {{housejobData?.CustomerName}}<br>
+                            {{housejobData?.CustomerAddress}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipper -->
+                <div
+                    style="width:50%; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    <div style="display:flex; flex-direction: column;">
+                        <div style="width:120px;font-weight: bolder;"><strong>Shipper</strong></div>
+
+                        <div style="min-height:100px;padding-left: 30px;">
+                            {{housejobData?.ShipperName}}<br>
+                            {{housejobData?.ShipperAddress}}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="display:flex; padding:0;">
+
+                <!-- Consignee -->
+                <div
+                    style="width:50%; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    <div style="display:flex;flex-direction: column;">
+                        <div style="width:123px;font-weight: bolder;"><strong>Consignee</strong></div>
+
+                        <div style="min-height:100px;padding-left: 30px;">
+                            {{housejobData?.ConsigneeName}}<br>
+                            {{housejobData?.ConsigneeAddress}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forwarder -->
+                <div
+                    style="width:50%; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    <div style="display:flex;flex-direction: column;">
+                        <div style="width:120px;font-weight: bolder;"><strong>Forwarder</strong></div>
+
+                        <div style="min-height:100px;padding-left: 30px;">
+                            {{housejobData?.Others?.[0]?.Forwarder}}<br>
+                            {{housejobData?.Others?.[0]?.ForwarderAddress}}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Job Details -->
+            <div
+                style="display:flex; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black; margin:0;padding-left: 10px;">
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>Job No.</strong></div>
+                        <div>: {{ masterJobData?.MasterJobNumber }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>HBL No.</strong></div>
+                        <div>: {{housejobData?.HBLNo}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>POL</strong></div>
+                        <div>: {{housejobData?.POL}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>POD</strong></div>
+                        <div>: {{housejobData?.POD}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>FPD</strong></div>
+                        <div>: {{housejobData?.FPD}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>Service Type</strong></div>
+                        <div>: {{housejobData?.ShipmentTerms}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:120px;font-weight: bolder;"><strong>Sales Person</strong></div>
+                        <div>: {{getSalespersonName(masterJobData?.houseJob[0]?.SalesmanSid)}}</div>
+                    </div>
+                </div>
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>MBL No.</strong></div>
+                        <div>: {{masterJobData?.MBLNo}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>Place of Receipt</strong></div>
+                        <div>: {{housejobData?.Others?.[0]?.PickupPlace}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>Place of Delivery</strong></div>
+                        <div>: {{housejobData?.Others?.[0]?.ForwarderAddress}}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>ETA</strong></div>
+                        <div>: {{ housejobData?.ETA | formatDate }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>ETD</strong></div>
+                        <div>: {{ housejobData?.ETD | formatDate }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px; font-weight:bolder;">
+                            <strong>Vessel / Voy.</strong>
+                        </div>
+                        <div>
+                            {{housejobData?.VesselName  }}/{{housejobData?.VoyageNo  }}
+                        </div>
+                    </div>
+
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;"><strong>Carrier</strong></div>
+                        <div>: {{ housejobData?.CarrierName }}</div>
+                    </div>
+                    <div style="display:flex; margin-bottom:1px;">
+                        <div style="width:135px;"><strong>PP/CC</strong></div>
+                        <div>: {{ housejobData?.FreightTerms }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Containers Table -->
+            <div style="overflow-x:auto; margin-top:5px;">
+                <table
+                    style="width:100%; border-collapse:collapse; font-size:16px; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
+                    <thead style="background-color:#f8f9fa;">
+                        <tr>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Container No.</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Type</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Commodity Description</strong>
+                            </th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>No. of
+                                    Pkg</strong></th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>Gross
+                                    Weight</strong></th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>Volume</strong>
+                            </th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>Net
+                                    Weight</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let container of housejobData?.Products">
+                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{ container?.ContainerNumber }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
+                                getContainerTypeName(container?.ContainerType) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{container?.CommodityDescription }}
+                            </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                {{container?.NoOfPkg}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                container?.GrossWeight | number:'1.3-3'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ container?.Volume
+                                | number:'1.3-3'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                {{container?.NetWeight | number:'1.3-3'}}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight:bolder;">
+                            <td colspan="3"
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;">
+                                <strong>TOTAL</strong>
+                            </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalNoOfPkg }}
+                            </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalGrossWeight |
+                                number:'1.3-3' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalVolume |
+                                number:'1.3-3' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalNetWeight |
+                                number:'1.3-3' }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Profit Summary Table -->
+            <div style="overflow-x:auto; margin-top:5px;">
+                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                    <thead style="background-color:#f8f9fa;">
+                        <tr>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Charge</strong></th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>Sales</strong>
+                            </th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>Cost</strong>
+                            </th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
+                                <strong>GP</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of profitSummary">
+                            <td style="border:1px solid black; padding:2px 8px;">{{ item.chargeName }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{item.totalSales |
+                                number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{item.totalCost |
+                                number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{item.profit |
+                                number:'1.2-2'}}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight:bolder;font-size: 16px;">
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                <strong>TOTAL</strong>
+                            </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{totalSales |
+                                number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{totalCost |
+                                number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{profit | number:'1.2-2'}}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Cost/Revenue Charges Table -->
+            <div style="overflow-x:auto; margin-top:5px;">
+                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                    <thead style="background-color:#f8f9fa;">
+                        <tr>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Charge</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Unit</strong>
+                            </th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Curr</strong>
+                            </th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Ex.Rate</strong>
+                            </th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Sale/Unit</strong>
+                            </th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Local
+                                    Amt.</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Cost
+                                    Curr</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Cost Ex
+                                    Rate</strong></th>
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Cost/Unit</strong>
+                            </th>
+                            <th
+                                style="border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>Cost Local
+                                    Amt.</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of housejobData?.costRevenueCharges">
+                            <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid)
+                                }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                {{
+                              getUnitCode(item.ChargeUomSid) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                getCurrencyName(item.CostCurrencyMasterSid) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{   
+                                item.CostExchangeRate | number:'1.3-3'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                item.RevenueRate | number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                item.RevenueLocalAmount | number:'1.2-2' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                getCurrencyName(item.CostCurrencyMasterSid) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                item.CostExchangeRate | number:'1.3-3' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                item.CostRate | number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                item.CostLocalAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; margin-top:6px;">
+
+                <!-- Revenue -->
+                <div style="width:49.5%; box-sizing:border-box;">
+                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
+                       <strong> Revenue</strong>
+                    </h4>
+
+                    <table
+                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                        <thead>
+                            <tr>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder; width: 300px;">
+                                    <strong>Sales Party</strong>
+                                </th>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    <strong>Amount</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let row of getGroupedRevenueByParty()">
+                                <td style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                           {{ row.party }}
+                                </td>
+                                <td style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                      {{ row.amount | number:'1.2-2' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>
+
+                <!-- Expense -->
+                <div style="width:49.5%; box-sizing:border-box; margin-left:1%;">
+                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
+                        <strong>Expense</strong>
+                    </h4>
+
+                    <table
+                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                        <thead>
+                            <tr>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;width: 300px;">
+                                    <strong>Cost Party</strong>
+                                </th>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    <strong>Amount</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let row of getGroupedExpenseByParty()">
+                                <td  style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                       {{ row.party }}
+                                </td>
+
+                                <th  style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                              {{ row.amount | number:'1.2-2' }}
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+              <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 15px;">
+                        <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
+                        <div>: {{ housejobData?.InternalNote }}</div>
+                </div>
+
+
+            <!-- Footer -->
+            <footer
+                style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
+                <div style="display:flex; justify-content:space-between; font-size:16px;">
+                    <div>Printed By: {{userData.userName}}</div>
+                    <span>This document is computer-generated and does not require a signature.</span>
+                    <div>Printed On: {{ currentDate | formatDate }}</div>
+                </div>
+
+            </footer>
+        </div>
+
+    </div>
+</div>

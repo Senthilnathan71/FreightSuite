@@ -167,7 +167,7 @@
           <strong style="display:block; margin-bottom:4px;font-weight: bolder;">Notify Party</strong>
           <div style="padding-left: 30px;">
 
-            <span>{{ housejobData?.Others?.[0]?.NotifyParty }}</span>
+            <span>{{ housejobData?.Notify }} <br> {{ housejobData?.NotifyAddress }} </span>
           </div>
         </div>
 
@@ -204,7 +204,7 @@
           <div style="flex:0 0 50%; max-width:50%;">
             <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
               <strong style="width:160px;font-weight: bolder;">Ocean Bill Of Lading</strong>
-              <span>: {{ housejobData?.MBLNo }}</span>
+              <span>: {{ housejobData?.masterJob?.MBLNo }}</span>
             </div>
             <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
               <strong style="width:160px;font-weight: bolder;">Commodity</strong>
