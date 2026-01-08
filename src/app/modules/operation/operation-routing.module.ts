@@ -159,6 +159,7 @@ export const OperationRoutes: Routes = [
        {
         path: 'invoice/entry',
         component: InvoiceEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Invoice',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
@@ -167,6 +168,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'invoice/entry/:id',
         component: InvoiceEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Invoice',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
