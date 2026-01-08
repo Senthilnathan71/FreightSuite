@@ -2179,7 +2179,7 @@
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
       <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
-        [minDate]="minStartDate" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
+        [minDate]="minStartDate" [portList]="portList"  [vesselList]="vesselList"
         (dataEmitter)="handleConnectionChange($event)">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
