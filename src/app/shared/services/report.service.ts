@@ -19,6 +19,7 @@ export interface ReportCard {
   ReportFormat: string;
   ReportType: string;
   ReportExcludedCompany?: number[];
+  Orientation ?: 'L' | 'P';
   ReportMasterDetail: ReportParameter[];
 }
 
@@ -315,8 +316,8 @@ export class ReportService {
    * @param entityId Entity ID (e.g., MasterJobSid)
    * @returns Modal reference
    */
-  async openReportModal(reportId: string, entityId?: number,payload?:any): Promise<NgbModalRef> {
-    const config = this.reportRegistry.getReportConfig(reportId);
+  async openReportModal(reportDetails: ReportCard, entityId?: number,payload?:any): Promise<NgbModalRef> {
+    const config = this.reportRegistry.getReportConfig(reportDetails.ReportName);
 
     // Import GenericReportModalComponent dynamically to avoid circular dependencies
     const { GenericReportModalComponent } = await import(
@@ -329,11 +330,14 @@ export class ReportService {
       scrollable: true,
       backdrop: 'static',
       keyboard: false,
-      windowClass: 'report-modal-wide'
+      windowClass : 'report-modal-landscape',
+      // windowClass : 'report-modal-portrait',
+
+      // windowClass: reportDetails.Orientation === 'L' ? 'report-modal-landscape' : 'report-modal-portrait'
     });
 
     // Pass input data
-    modalRef.componentInstance.reportId = reportId;
+    modalRef.componentInstance.reportId = reportDetails.ReportName;
     modalRef.componentInstance.entityId = entityId;
     modalRef.componentInstance.payload = payload;
 

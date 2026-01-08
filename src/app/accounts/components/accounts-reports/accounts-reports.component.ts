@@ -147,7 +147,7 @@ export class AccountsReportsComponent implements OnInit {
 
     if (this.selectedReport.ReportName) {
       this.reportService.openReportModal(
-        this.selectedReport.ReportName,
+        this.selectedReport,
         undefined,
         this.reportParameters,
       );

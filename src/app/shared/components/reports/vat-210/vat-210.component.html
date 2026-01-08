@@ -12,7 +12,7 @@
     </div>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        VAT-210 Report
+        VAT-201 Report
     </h4>
     <div style="margin-top: 1rem;">
 
@@ -92,287 +92,291 @@
                 </div>
 
             </div>
+        </div>
 
-            <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none;">
+        <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none; margin-top: 10px;">
 
 
-                <div style="display:flex; border-bottom:1px solid black; font-weight:bold;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Particulars
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:center;border-right:1px solid black;">
-                        Taxable Amount
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:center;">
-                        Tax Amount
-                    </div>
+            <div style="display:flex; border-bottom:1px solid black; font-weight:bold;border-top: 1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    Particulars
                 </div>
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>Sales (Outwards) : </strong>
-                    </div>
-
+                <div style="width:150px; padding:2px; text-align:center;border-right:1px solid black;">
+                    Taxable Amount
                 </div>
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>
-                            Local Supplies
-                        </strong>
-                    </div>
+                <div style="width:150px; padding:2px; text-align:center;">
+                    Tax Amount
                 </div>
-
-
-                <div style="display:flex;border-bottom: 1px solid black; " *ngFor="let item of localInputTax">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>{{item.LedgerName}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
-                        <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{item.TaxAmount | number:'1.2-2'}}</span>
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Total Local Supplies
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ localSalesTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ localSalesTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>
-                            Outside GCC Supplies
-                        </strong>
-                    </div>
-                </div>
-
-
-                <div style="display:flex;  border-bottom:1px solid black;" *ngFor="let item of outSideInputTax">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>{{item.LedgerName}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
-                        <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{item.TaxAmount | number:'1.2-2'}}</span>
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Total Outside GCC Supplies
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ overseasSalesTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ overseasSalesTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold; background:#f5f5f5; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        GRAND TOTAL – SALES (OUTWARDS)
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ grandSalesTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ grandSalesTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>Purchases (Inwards) :</strong>
-                    </div>
-
-                </div>
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>
-                            Local Purchases
-                        </strong>
-                    </div>
-                </div>
-
-                <div style="display:flex;  border-bottom:1px solid black;" *ngFor="let item of localoutputTax">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>{{item.LedgerName}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
-                        <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{item.TaxAmount | number:'1.2-2'}}</span>
-                    </div>
-                </div>
-
-
-
-                <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Total Local Purchases
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ localPurchaseTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ localPurchaseTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:none;">
-                        <strong>
-                            Outside GCC Purchases
-                        </strong>
-                    </div>
-                </div>
-
-
-                <div style="display:flex; border-bottom:1px solid black; " *ngFor="let item of overseasoutputTax">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>{{item.LedgerName}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
-                        <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{item.TaxAmount | number:'1.2-2'}}</span>
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold;border-bottom: 1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        Total Outside GCC Purchases
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ overseasPurchaseTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ overseasPurchaseTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold; background:#f5f5f5;border-bottom: 1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        GRAND TOTAL – PURCHASES (INWARDS)
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
-                        {{ grandPurchaseTaxableTotal | number:'1.2-2' }}
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{ grandPurchaseTaxTotal | number:'1.2-2' }}
-                    </div>
-                </div>
-
-
-                <div style="display:flex; font-weight:bold; background:#e8e8e8; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <strong>
-                            PAYABLE
-                        </strong>
-                    </div>
-
-                    <!-- <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
-                        {{ vatPayableAmountLocal | number:'1.2-2' }}
-                    </div> -->
-
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{vatPayableAmountOversea | number:'1.2-2'}}
-                    </div>
+            </div>
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>Sales (Outwards) : </strong>
                 </div>
 
             </div>
-
-            <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none;">
-
-
-                <div
-                    style="display:flex; border-bottom:1px solid black; font-weight:bold; justify-content: space-between;">
-                    <div style=" padding:2px; border-right:none;">
-                        <strong>Payment Details</strong>
-                    </div>
-
-                    <div style=" padding:2px; border-right:none;">
-                        <span>
-                            {{ param?.FromDate | formatDate }} - {{ param?.ToDate | formatDate }}
-                        </span>
-                    </div>
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>
+                        Local Supplies
+                    </strong>
+                </div>
+            </div>
 
 
+            <div style="display:flex;border-bottom: 1px solid black; " *ngFor="let item of localInputTax">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>{{item.LedgerName}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
+                    <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{item.TaxAmount | number:'1.2-2'}}</span>
+                </div>
+            </div>
+
+
+            <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    Total Local Supplies
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ localSalesTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ localSalesTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+
+
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>
+                        Outside GCC Supplies
+                    </strong>
+                </div>
+            </div>
+
+
+            <div style="display:flex;  border-bottom:1px solid black;" *ngFor="let item of outSideInputTax">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>{{item.LedgerName}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
+                    <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{item.TaxAmount | number:'1.2-2'}}</span>
+                </div>
+            </div>
+
+
+            <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    Total Outside GCC Supplies
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ overseasSalesTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ overseasSalesTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+
+
+            <div style="display:flex; font-weight:bold; background:#f5f5f5; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    GRAND TOTAL – SALES (OUTWARDS)
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ grandSalesTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ grandSalesTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+        </div>
+
+        <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none;margin-top: 10px;">
+
+
+
+            <div style="display:flex; border-bottom:1px solid black;margin-top: 10px;border-top: 1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>Purchases (Inwards) :</strong>
                 </div>
 
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>Tax payment (included)</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{payment.totalPaymentVoucher || 0}}</span>
-                    </div>
+            </div>
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>
+                        Local Purchases
+                    </strong>
+                </div>
+            </div>
+
+            <div style="display:flex;  border-bottom:1px solid black;" *ngFor="let item of localoutputTax">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>{{item.LedgerName}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
+                    <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{item.TaxAmount | number:'1.2-2'}}</span>
+                </div>
+            </div>
+
+
+
+            <div style="display:flex; font-weight:bold; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    Total Local Purchases
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ localPurchaseTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ localPurchaseTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:none;">
+                    <strong>
+                        Outside GCC Purchases
+                    </strong>
+                </div>
+            </div>
+
+
+            <div style="display:flex; border-bottom:1px solid black; " *ngFor="let item of overseasoutputTax">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>{{item.LedgerName}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;border-right:1px solid black;">
+                    <span>{{item.TaxableAmount | number:'1.2-2'}}</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{item.TaxAmount | number:'1.2-2'}}</span>
+                </div>
+            </div>
+
+
+            <div style="display:flex; font-weight:bold;border-bottom: 1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    Total Outside GCC Purchases
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ overseasPurchaseTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ overseasPurchaseTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+
+
+            <div style="display:flex; font-weight:bold; background:#f5f5f5;border-bottom: 1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    GRAND TOTAL – PURCHASES (INWARDS)
+                </div>
+                <div style="width:150px; padding:2px; text-align:right; border-right:1px solid black;">
+                    {{ grandPurchaseTaxableTotal | number:'1.2-2' }}
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{ grandPurchaseTaxTotal | number:'1.2-2' }}
+                </div>
+            </div>
+
+
+
+
+            <div style="display:flex; font-weight:bold; background:#e8e8e8; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <strong>
+                        PAYABLE
+                    </strong>
                 </div>
 
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>Tax payments (not included/uncertain)</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        <span>{{payment.totalWithoutPayment || 0}}</span>
-                    </div>
-                </div>
-
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <span>Tax paid at customs</span>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-
-                    </div>
-                </div>
-
-                <div style="display:flex; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <strong>VAT Paid</strong>
-                    </div>
-                    <div style="width:150px; padding:2px; text-align:right;">
-
-                    </div>
-                </div>
-
-                <div style="display:flex; font-weight:bold; background:#e8e8e8; border-bottom:1px solid black;">
-                    <div style="flex:1; padding:2px; border-right:1px solid black;">
-                        <strong>
-                            Balance VAT Payable
-                        </strong>
-                    </div>
-
-                    <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
+                <!-- <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
                         {{ vatPayableAmountLocal | number:'1.2-2' }}
-                    </div>
+                    </div> -->
 
-                    <div style="width:150px; padding:2px; text-align:right;">
-                        {{vatPayableAmountOversea | number:'1.2-2'}}
-                    </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{vatPayableAmountOversea | number:'1.2-2'}}
+                </div>
+            </div>
+        </div>
+
+        <div style="width:100%; border:1px solid black; border-top: none; border-bottom: none;margin-top: 10px;">
+
+
+            <div
+                style="display:flex; border-bottom:1px solid black; font-weight:bold; justify-content: space-between;border-top: 1px solid black;">
+                <div style=" padding:2px; border-right:none;">
+                    <strong>Payment Details</strong>
+                </div>
+
+                <div style=" padding:2px; border-right:none;">
+                    <span>
+                        {{ param?.FromDate | formatDate }} - {{ param?.ToDate | formatDate }}
+                    </span>
+                </div>
+
+
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>Tax payment (included)</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{payment.totalPaymentVoucher || 0}}</span>
+                </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>Tax payments (not included/uncertain)</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+                    <span>{{payment.totalWithoutPayment || 0}}</span>
+                </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <span>Tax paid at customs</span>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+
+                </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <strong>VAT Paid</strong>
+                </div>
+                <div style="width:150px; padding:2px; text-align:right;">
+
+                </div>
+            </div>
+
+            <div style="display:flex; font-weight:bold; background:#e8e8e8; border-bottom:1px solid black;">
+                <div style="flex:1; padding:2px; border-right:1px solid black;">
+                    <strong>
+                        Balance VAT Payable
+                    </strong>
+                </div>
+
+                <div style="width:150px; border-right:1px solid black; text-align: right;padding: 2px;">
+                    {{ vatPayableAmountLocal | number:'1.2-2' }}
+                </div>
+
+                <div style="width:150px; padding:2px; text-align:right;">
+                    {{vatPayableAmountOversea | number:'1.2-2'}}
                 </div>
             </div>
         </div>

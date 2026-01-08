@@ -3202,22 +3202,22 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   //     });
   //   }
 
-  /**
-   * Open report modal using the generic report system
-   * @param reportType Report type ID (e.g., 'master-job-pre-alert')
-   */
-  openReport(reportType: string): void {
-    // const masterJobSid = this.masterJobForm.get('MasterJobSid')?.value;
-    const masterJobSid = this.masterJobSid;
+  // /**
+  //  * Open report modal using the generic report system
+  //  * @param reportType Report type ID (e.g., 'master-job-pre-alert')
+  //  */
+  // openReport(reportType: string): void {
+  //   // const masterJobSid = this.masterJobForm.get('MasterJobSid')?.value;
+  //   const masterJobSid = this.masterJobSid;
 
 
-    if (!masterJobSid) {
-      this.toastr.error('Please save the master job first before generating reports', 'Error');
-      return;
-    }
+  //   if (!masterJobSid) {
+  //     this.toastr.error('Please save the master job first before generating reports', 'Error');
+  //     return;
+  //   }
 
-    this.reportService.openReportModal(reportType, masterJobSid);
-  }
+  //   this.reportService.openReportModal(reportType, masterJobSid);
+  // }
   getCfsValue(cfsSid: number): string {
     if (!cfsSid || this.cfsList.length === 0) return '';
     // Look for CFS by CustomerMasterSid instead of CfsMasterSid

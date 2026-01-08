@@ -614,11 +614,11 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'VAT_210_Report',
+        emailSubjectTemplate: 'VAT_201_Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> VAT_210_Report</strong></strong></p>
+            <p>Please find attached the <strong> VAT_201_Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -627,7 +627,7 @@ export class ReportRegistryService {
       });
 
     } catch (error) {
-      console.warn(' VAT-210 Report component not yet created:', error);
+      console.warn(' VAT-201 Report component not yet created:', error);
     }
 
 

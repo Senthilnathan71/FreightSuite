@@ -115,7 +115,7 @@ onGenerateReport(parameters: any): void {
 
   if (this.selectedReport.ReportName) {
     this.reportService.openReportModal(
-      this.selectedReport.ReportName,
+      this.selectedReport,
       undefined,
       this.reportParameters,
     );
