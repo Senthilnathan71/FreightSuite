@@ -992,6 +992,19 @@
                 <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MasterJobNumber || ''"  readonly>
                 
               </div>
+              <!-- Invoice Type -->
+              <div class="col-md-3">
+                <label class="form-label fw-bold">Invoice Type</label>
+                <ng-select 
+                  [(ngModel)]="invoiceHeaderType" 
+                  [items]="invoiceTypes" 
+                  bindLabel="name"
+                  bindValue="id"
+                  placeholder="Select Invoice type"  
+                  [clearable]="false"
+                >
+                </ng-select>
+              </div>
               <!-- Billing Currency -->
               <div class="col-md-3">
                 <label class="form-label fw-bold">Billing Currency</label>
@@ -1008,12 +1021,11 @@
 
               <!-- Exchange Rate -->
               <div class="col-md-3">
-                <div class="custom-form-group">
+                <label class="form-label fw-bold">Exchange Rate</label>
                 <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
-                  (ngModelChange)="onHeaderExchangeRateChange()" step="0.0001" min="0"
+                  (ngModelChan
+                  ge)="onHeaderExchangeRateChange()" step="0.0001" min="0"
                   placeholder="" [disabled]="disableHeaderExRate">
-                   <label class="input-label">Exchange Rate</label>
-                </div>
               
               </div>
           </div>
