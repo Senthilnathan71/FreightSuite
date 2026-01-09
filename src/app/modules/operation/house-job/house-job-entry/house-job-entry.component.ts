@@ -3694,6 +3694,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.uomList = this.uomList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.portList = this.portList || [];
   }
 
 
@@ -3782,6 +3783,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
         modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+        modalRef.componentInstance.portList = this.portList || [];
     }
 
   reportIndeminty() {
@@ -3852,6 +3854,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
          modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
          modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+        modalRef.componentInstance.portList = this.portList || [];
       }
 
   reportReleaseOrder() {
@@ -3920,6 +3923,7 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.housejobData = this.housejobData || [];
           modalRef.componentInstance.containerTypeList = this.containerTypeList;
           modalRef.componentInstance.packageTypeList = this.packageTypeList;
+          modalRef.componentInstance.portList = this.portList || [];
         }
       
         // Exit form

@@ -66,9 +66,9 @@
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Container</strong></div><div>: {{ masterJobData?.containers?.[0]?.ContainerNumber }}</div></div>
             <!-- {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }} -->
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Shipment No</strong></div><div>: {{masterJobData?.allShipments?.[0]?.ShipmentNo }}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of Receipt</strong></div><div> : {{masterJobData.POO}} </div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Loading</strong></div><div>: {{masterJobData.POL}}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Final Destination</strong></div><div>: {{masterJobData.FPD}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of Receipt</strong></div><div> : {{getPortName(masterJobData.POO)}} </div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Loading</strong></div><div>: {{getPortName(masterJobData.POL)}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Final Destination</strong></div><div>: {{getPortName(masterJobData.FPD)}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Carrier</strong></div><div>: {{masterJobData?.voyages?.[0]?.CarrierName}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>PP/CC</strong></div><div>: {{ masterJobData?.houseJob?.[0]?.FreightTerms }}</div></div>
         </div>
@@ -80,8 +80,8 @@
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Vessel</strong></div><div>: {{masterJobData?.voyages?.[0]?.VesselName}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Voyage</strong></div><div>: {{masterJobData?.voyages?.[0]?.VoyageNo}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Job No.</strong></div><div>: {{masterJobData.MasterJobNumber}}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Receipt</strong></div><div>: {{housejobData?.houseJob?.[0]?.POL}}</div></div>
-            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Discharge</strong></div><div>: {{masterJobData?.POD}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Receipt</strong></div><div>: {{getPortName(housejobData?.houseJob?.[0]?.POL)}}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of Discharge</strong></div><div>: {{getPortName(masterJobData?.POD)}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of Delivery</strong></div><div>: {{housejobData?.Others?.[0]?.DeliveryAddress}}</div></div>
             <div style="display:flex; margin-bottom:5px;"><div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Movement Type</strong></div><div>: {{ masterJobData?.houseJob?.[0]?.Cargo?.[0]?.MovementType }}</div></div>
         </div>

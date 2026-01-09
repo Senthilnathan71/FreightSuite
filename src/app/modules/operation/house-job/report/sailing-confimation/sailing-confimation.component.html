@@ -91,17 +91,17 @@
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of
                                 Receipt</strong></div>
-                        <div> : {{housejobData.POO}} </div>
+                        <div> : {{getPortName(housejobData.POO)}} </div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
                                 Loading</strong></div>
-                        <div>: {{housejobData.POL}}</div>
+                        <div>: {{getPortName(housejobData.POL)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Final
                                 Destination</strong></div>
-                        <div>: {{housejobData.FPD}}</div>
+                        <div>: {{getPortName(housejobData.FPD)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Carrier</strong></div>
@@ -138,17 +138,17 @@
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
                                 Receipt</strong></div>
-                        <div>: {{housejobData?.POL}}</div>
+                        <div>: {{getPortName(housejobData?.POL)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
                                 Discharge</strong></div>
-                        <div>: {{housejobData?.POD}}</div>
+                        <div>: {{getPortName(housejobData?.POD)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of
                                 Delivery</strong></div>
-                        <div>: {{housejobData?.Others?.[0]?.DeliveryAddress}}</div>
+                        <div>: {{getPortName(housejobData?.Others?.[0]?.DeliveryAddress)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Movement Type</strong>
@@ -162,9 +162,14 @@
                 <p style="font-size:17px; margin:0;"><strong>Dear Sir,</strong></p>
                 <p style="margin:5px 0;font-size: 17px;">We are pleased to advice you the dispatch of your shipment.
                     <br>
-                    <strong>MBL No :</strong> {{housejobData?.masterJob?.MasterJobNumber}} , <strong>HBL No :</strong> {{
-                    housejobData?.HBLNo }} , <strong>Container No :</strong> {{
-                    masterJobData?.containers?.[0]?.ContainerNumber }}
+                    <strong>MBL No :</strong> {{housejobData?.masterJob?.MasterJobNumber}} , <strong>HBL No :</strong>
+                    {{
+                    housejobData?.HBLNo }} , <strong>Container No :</strong> <ng-container
+                        *ngFor="let item of housejobData?.Products; let last = last">
+                        <ng-container *ngIf="item?.ContainerNo">
+                            {{ item.ContainerNo }}<span *ngIf="!last">, </span>
+                        </ng-container>
+                    </ng-container>
                     Sailed onboard on {{housejobData?.ETA | formatDate }} <strong>Voyage No :</strong>
                     {{housejobData?.VoyageNo}} expected to arrive in
                     {{housejobData?.ETD | formatDate }} our invoice no amount would be obliged with your

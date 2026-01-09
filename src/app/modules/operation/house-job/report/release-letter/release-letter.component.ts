@@ -33,6 +33,7 @@ export class ReleaseLetterComponent {
   @Input() masterJobData: any;
   @Input() containerTypeList: any;
   @Input() selectedFCLLCL: any;
+  @Input() portList: any[] = []; // Add this input
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
@@ -126,6 +127,16 @@ get totalVolume(): number {
       (pt) => pt.UOMMasterSid === pkgTypeSid
     );
     return packageType ? packageType.UOMName : 'Unknown';
+  }
+
+
+   getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
   }
 
    async downloadPDF() {

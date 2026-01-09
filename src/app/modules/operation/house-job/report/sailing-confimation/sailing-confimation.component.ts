@@ -32,7 +32,7 @@ export class SailingConfimationComponent {
   @Input() packageTypeList: any[] = [];
   @Input() agentList: any[] = [];
   @Input() yardList: any[] = [];
-
+  @Input() portList: any[] = []; // Add this input
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -95,6 +95,14 @@ export class SailingConfimationComponent {
     return containerType ? containerType.ContainerName : 'Unknown';
   }
   
+   getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
 
 
   modalClose() {

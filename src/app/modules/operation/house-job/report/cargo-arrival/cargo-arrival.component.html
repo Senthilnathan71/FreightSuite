@@ -389,8 +389,8 @@
                 <div style="display:flex; flex-wrap:wrap;">
                     <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
                         <div style=" margin:0;padding-left: 3%;font-weight: bolder;"><strong>Notify Party</strong></div>
-                        <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.Others?.[0]?.NotifyParty}} <br>
-                            {{housejobData?.Others?.[0]?.NotifyPartyAddress}}</div>
+                        <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.Notify}} <br>
+                            {{housejobData?.NotifyAddress}}</div>
                     </div>
                     <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
                         <div style="font-weight: bolder;"><strong>Goods Available At</strong></div>
@@ -453,7 +453,7 @@
 
                         <div style="display:flex; align-items:center;margin-bottom:5px;">
                             <div style="width:140px;font-weight: bolder;"><strong>Final Destination</strong></div>
-                            <div>: {{ housejobData?.FPD }}</div>
+                            <div>: {{ getPortName(housejobData?.FPD) }}</div>
                         </div>
 
                          <div style="display:flex; align-items:center;">
@@ -488,18 +488,18 @@
                         </div>
                         <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
                             <div style=" width:180px; font-weight: bolder;"><strong>Final Destination</strong></div>
-                            <div>: {{housejobData.FPD}}</div>
+                            <div>: {{ getPortName(housejobData.FPD)}}</div>
                         </div>
                     </div>
 
                     <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
                         <div style="display:flex; align-items:center;">
                             <div style=" width:140px; font-weight: bolder;"><strong>Port of Loading</strong></div>
-                            <div>: {{housejobData?.POL}}</div>
+                            <div>: {{ getPortName(housejobData?.POL)}}</div>
                         </div>
                         <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
                             <div style=" width:140px; font-weight: bolder;"><strong>Port of Discharge</strong></div>
-                            <div>: {{housejobData?.POD}}</div>
+                            <div>: {{ getPortName(housejobData?.POD)}}</div>
                         </div>
                         <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
                             <div style=" width:140px;font-weight: bolder;"><strong>ETD</strong></div>
