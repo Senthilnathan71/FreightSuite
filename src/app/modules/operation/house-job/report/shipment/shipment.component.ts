@@ -39,7 +39,7 @@ export class ShipmentComponent {
   rateResult : any[] = [];
   @Input() customerWiseSummary : any;
   @Input() chargeWiseSummary : any;
-
+  @Input() portList: any[] = []; // Add this input
     showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   
@@ -417,7 +417,14 @@ get totalExpense(): number {
   return this.customerWiseSummary.cost.reduce((sum, item) => sum + (item.Amount || 0), 0);
 }
 
-// pdf download
+getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
 
 
 

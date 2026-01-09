@@ -235,7 +235,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"150px"
+        width:"170px"
       },
       {
         key: 'VoucherDate',

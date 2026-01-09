@@ -385,9 +385,9 @@
     <div style="flex: 1; padding: 5px;">
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Shipment No.</strong></div><div>: {{housejobData?.ShipmentNo}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>MBL No.</strong></div><div>:  {{housejobData?.masterJob?.MBLNo}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Place of Receipt</strong></div><div>: {{housejobData?.POO}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Loading</strong></div><div>: {{housejobData?.POL}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Final Destination</strong></div><div>: {{housejobData?.FPD}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Place of Receipt</strong></div><div>: {{getPortName(housejobData?.POO)}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Loading</strong></div><div>: {{getPortName(housejobData?.POL)}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Final Destination</strong></div><div>: {{getPortName(housejobData?.FPD)}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>ETD</strong></div><div>: {{ housejobData?.ETD | formatDate }}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Carrier</strong></div><div>: {{housejobData?.CarrierName}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Shipment Terms</strong></div><div>: {{housejobData?.Cargo?.[0]?.ShipmentTerms}}</div></div>
@@ -395,9 +395,9 @@
     <div style="flex: 1; padding: 5px;margin-left: 5px;">
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Job No.</strong></div><div></div>: {{housejobData?.masterJob?.MasterJobNumber}}</div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>HBL No.</strong></div><div>: {{housejobData?.HBLNo}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Receipt</strong></div><div>: {{housejobData?.POL}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Discharge</strong></div><div>: {{housejobData?.POD}}</div></div>
-      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Place of Delivery</strong></div><div>: {{housejobData?.FPD}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Receipt</strong></div><div>: {{getPortName(housejobData?.POL)}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Port of Discharge</strong></div><div>: {{getPortName(housejobData?.POD)}}</div></div>
+      <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Place of Delivery</strong></div><div>: {{getPortName(housejobData?.FPD)}}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>ETA</strong></div><div>: {{ housejobData?.ETA | formatDate }}</div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>Vessel/Voyage</strong></div><div [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div></div>
       <div style="display: flex; margin-bottom: 5px;"><div style="width: 135px;"><strong>PP/CC</strong></div><div>: {{housejobData?.FreightTerms}}</div></div>

@@ -3359,6 +3359,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const modalRef = this.modalService.open(PreAlertComponent, {
       size: 'xl',
       scrollable: true,
+      
     })
     modalRef.componentInstance.masterJobData = this.masterJobData;
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
@@ -3404,6 +3405,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
     }
     const modalRef = this.modalService.open(CargoManifestComponent, {
+      // windowClass:"print-a4-landscape",
       size: 'xl',
       scrollable: true,
     });

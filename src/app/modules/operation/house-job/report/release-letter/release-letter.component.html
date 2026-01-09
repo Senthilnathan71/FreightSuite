@@ -71,8 +71,8 @@
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Date</strong><span>: {{ housejobData?.HBLDate | formatDate }}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Your Booking Ref.</strong><span>: {{housejobData?.Others?.[0]?.CustomerRefNo}}</span></div>
             <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Our Booking Ref.</strong><span>: {{housejobData?.BookingNo}}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Port Of Discharge</strong><span>: {{housejobData.POD}}</span></div>
-            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Final Destination</strong><span>: {{housejobData.FPD}}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Port Of Discharge</strong><span>: {{getPortName(housejobData.POD)}}</span></div>
+            <div style="display:flex;margin-bottom:4px;"><strong style="width:150px;font-weight: bolder;">Final Destination</strong><span>: {{ getPortName(housejobData.FPD)}}</span></div>
 
         </div>
     </div>
