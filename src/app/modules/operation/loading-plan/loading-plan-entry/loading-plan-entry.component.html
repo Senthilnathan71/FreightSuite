@@ -756,9 +756,24 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="HsCode" class="custom-input-field sm" placeholder=""
-                                maxlength="10" [textWithNumbers]="10">
+                        
+                          <div class="custom-form-group custom-form-group-select" 
+       [class.filled]="!!containerForm.get('HsCode')?.value">
+    <ng-select 
+      [items]="hssacList"
+      bindLabel="HSSACCode"
+      bindValue="HSSACCode"
+      formControlName="HsCode"
+      placeholder="">
+      <ng-template ng-label-tmp let-item="item">
+        {{ item.HSSACCode }} 
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item">
+        <div>
+          <strong>{{ item.HSSACCode }}</strong>
+        </div>
+      </ng-template>
+    </ng-select>
                             <label class="input-label">HS Code</label>
                         </div>
                     </aside>
@@ -780,47 +795,16 @@
                             <label class="input-label">Package Type</label>
                         </div>
                     </aside>
-
-                    <aside class="col-md-4">
+                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="number" placeholder="" formControlName="NoOfPkg" class="custom-input-field sm"
-                                min="0">
-                            <label class="input-label">No of Pkg</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" placeholder="" formControlName="GrossWeight"
-                                class="custom-input-field sm" step="0.001" min="0">
-                            <label class="input-label">Gross Weight</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" placeholder="" formControlName="NetWeight"
-                                class="custom-input-field sm" step="0.001" min="0">
-                            <label class="input-label">Net Weight</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" placeholder="" formControlName="ChargeableWeight"
-                                class="custom-input-field sm" step="0.001" min="0">
+                            <!-- <input type="number" placeholder="" formControlName="ChargeableWeight"
+                                class="custom-input-field sm" step="0.001" min="0"> -->
+                                 <input type="text" formControlName="ChargeableWeight" class="custom-input-field sm"
+                             DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+                                step="0.001" min="0" placeholder="">
                             <label class="input-label">Chargeable Weight</label>
                         </div>
                     </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" placeholder="" formControlName="Volume" class="custom-input-field sm"
-                                step="0.001" min="0">
-                            <label class="input-label">Volume (CBM)</label>
-                        </div>
-                    </aside>
-
                     <aside class="col-md-4 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
@@ -831,6 +815,52 @@
                             </div>
                         </div>
                     </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <!-- <input type="number" placeholder="" formControlName="NoOfPkg" class="custom-input-field sm"
+                                min="0"> -->
+                                <input type="text" formControlName="NoOfPkg" class="custom-input-field sm" min="0" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
+                                placeholder="">
+                            <label class="input-label">No of Pkg</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <!-- <input type="number" placeholder="" formControlName="GrossWeight"
+                                class="custom-input-field sm" step="0.001" min="0"> -->
+                                 <input type="text" formControlName="GrossWeight" class="custom-input-field sm"
+           DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+           step="0.001" min="0" placeholder="" >
+                            <label class="input-label">Gross Weight</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <!-- <input type="number" placeholder="" formControlName="NetWeight"
+                                class="custom-input-field sm" step="0.001" min="0"> -->
+                                <input type="text" formControlName="NetWeight" class="custom-input-field sm" step="0.001"
+           DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+           min="0" placeholder="">
+                            <label class="input-label">Net Weight</label>
+                        </div>
+                    </aside>
+
+                   
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <!-- <input type="number" placeholder="" formControlName="Volume" class="custom-input-field sm"
+                                step="0.001" min="0"> -->
+                                <input type="text" formControlName="Volume" class="custom-input-field sm" step="0.001"
+                             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="3"
+                                min="0" placeholder="">
+                            <label class="input-label">Volume (CBM)</label>
+                        </div>
+                    </aside>
+
+                    
                 </div>
             </form>
         </div>

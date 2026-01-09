@@ -28,6 +28,7 @@ import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -45,6 +46,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
     CustomDatePipe,
     NgxSpinnerModule,
     PreventMultiClickDirective,
+    DecimalPrecisionDirective,
 
   ],
   templateUrl: './loading-plan-entry.component.html',
@@ -88,6 +90,7 @@ export class LoadingPlanEntryComponent {
   selectedPOD: any;
   filteredPOD: any[] = [];
   carrierList: any[] = [];
+  hssacList: any[] = [];
   selectedVoyage: any;
   filteredVesselsVoyage: any[] = [];
   availableBookings: any[] = [];
@@ -206,6 +209,7 @@ export class LoadingPlanEntryComponent {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.onInitForm();
     this.loadAllLookups();
+    this.loadHSSACLookups();
     this.branchDetails = this.appSettingsService.getCurrentBranchInfo();
     console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
@@ -701,11 +705,11 @@ export class LoadingPlanEntryComponent {
       HsCode: ['', Validators.maxLength(10)],
       CommodityDescription: ['', Validators.maxLength(500)],
       PkgType: [null],
-      NoOfPkg: [0, [Validators.min(0)]],
-      GrossWeight: [0, [Validators.min(0)]],
-      NetWeight: [0, [Validators.min(0)]],
       ChargeableWeight: [0, [Validators.min(0)]],
-      Volume: [0, [Validators.min(0)]],
+    NoOfPkg: [{ value: 0, disabled: true }],
+      GrossWeight: [{ value: 0, disabled: true }],
+      NetWeight: [{ value: 0, disabled: true }],
+      Volume: [{ value: 0, disabled: true }],
       IsSoc: [false]
     });
   }
@@ -969,6 +973,7 @@ formatContainerNumber(): void {
         CustomerMasterSid: booking.CustomerMasterSid,
         CustomerName: booking.CustomerName,
         CustomerAddress: booking.CustomerAddress,
+        JobType: booking.JobType,
         ShipperName: booking.ShipperName,
         ShipperAddress: booking.ShipperAddress,
         ConsigneeName: booking.ConsigneeName,
@@ -1026,6 +1031,7 @@ formatContainerNumber(): void {
       return {
         BookingHeaderSid: booking.BookingHeaderSid,
         HBLNo: booking.HBLNo,
+        JobType: booking.JobType
       }
     });
     const payload = {
@@ -1121,13 +1127,28 @@ formatContainerNumber(): void {
     this.closeModal.emit(true);
   }
 
-  getParseInteger(value: any) {
-    return value ? parseInt(value).toFixed(3) : '0.000';
-  }
+  getParseInteger(value: any): string {
+  if (!value && value !== 0) return '0.000';
+  const num = parseFloat(value);
+  return isNaN(num) ? '0.000' : num.toFixed(3);
+}
   getParseIntegerNoDecimal(value: any): string {
-    return value ? parseInt(value).toString() : '0';
-  }
+  if (!value && value !== 0) return '0';
+  const num = parseFloat(value);
+  return isNaN(num) ? '0' : num.toString();
+}
+ loadHSSACLookups() {
+    this.operationService.getAllHssac().subscribe({
+      next: (resp: any) => {
+        this.hssacList = resp || [];
 
+      },
+      error: (err) => {
+        console.error('Error loading HSSAC data:', err);
+        this.hssacList = [];
+      }
+    });
+  }
   existInSelected(item) {
     return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);
   }

@@ -3771,7 +3771,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.toastr.error('Please save the master job first before creating house job');
       return;
     }
-
+ 
     // Get the current master job data
     const masterJobData = {
       MasterJobSid: this.masterJobSid,
@@ -3805,7 +3805,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
 
 
-  loadHSSACLookups() {
+  loadHSSACLookups(){
     this.operationService.getAllHssac().subscribe({
       next: (resp: any) => {
         this.hssacList = resp || [];
