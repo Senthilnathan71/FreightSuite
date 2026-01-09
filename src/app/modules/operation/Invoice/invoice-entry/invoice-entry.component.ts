@@ -21,7 +21,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, distinctUntilChanged, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -413,19 +413,25 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   subscribeToValueChanges() {
-    this.invoiceForm.get('GSTType')?.valueChanges.subscribe((value) => {
+    this.invoiceForm.get('GSTType')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
       this.recalculateAllRows();
     });
 
     ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe(() => {
+      this.invoiceForm.get(field)?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
         if (this.isPosted) return;
         this.recalculateAllRows();
       });
     });
 
     ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges.subscribe((value) => {
+      this.invoiceForm.get(field)?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
         if (!this.isEditMode) {
           this.patchDueDate();
         }
@@ -454,7 +460,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
   subscribeToFormChanges() {
     this.invoiceForm.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$),debounceTime(300))
       .subscribe(() => {
         this.isDirty = !this.deepEqual(
           this.initialFormValue,
@@ -800,6 +806,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceData['MBLNo'] = resp.data?.MasterNumber;
           this.invoiceData['HBLNo'] = resp.data?.HouseNumber;
 
+          this.invoiceForm.markAsUntouched();
           this.patchValues(this.invoiceData);
           this.invoiceForm.get('PartyName')?.disable();
           this.invoiceForm.get('CustomerBranchSid')?.disable();
@@ -969,7 +976,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         VoucherReverseSid: null,
       });
     }
-
     this.spinner.hide();
   }
 
@@ -1542,6 +1548,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   recalculateAllRows() {
+    console.error("Recalc All Rows");
     if (this.isPosted) return;
     for (let i = 0; i < this.details.length; i++) {
       const exRateCtrl = this.details.at(i).get('ExchangeRate');
@@ -1802,8 +1809,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   ) {
     const raw = this.invoiceForm.getRawValue();
 
-    if(this.deepEqual(raw,this.initialFormValue) && !this.isDirty){
+    const autoPostingButNotPosting = (this.isAutoPosting && !this.isPosted);  
+    if(!autoPostingButNotPosting && this.deepEqual(raw,this.initialFormValue) && !this.isDirty){
       this.appSettingService.showWarning('No changes to save');
+      this.invoiceForm.markAsUntouched();
       if(resolve) resolve(false);
       return;
     }
@@ -1870,7 +1879,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
     const voucherDetailArray = (raw.voucherDetails || []).map(
       (d: any, index: number) => {
-        const partyAmount = this.getPartyAmount(index);
         const detail = {
           VoucherDetailSid: d.VoucherDetailSid,
           ChargeMasterSid:
@@ -1886,12 +1894,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
               ? Number(d.DepartmentMasterSid)
               : null,
           NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
+          CostRevenue : d.DrCr === 'D' ? 'Cost' : 'Revenue',
           DrCr: d.DrCr || 'D',
           PlaceOfSupply: d.PlaceOfSupply || '',
           CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
-          CurrencyMasterSid: this.getCurrencyId(
-            d.CurrencyCode || raw.CurrencyCode
-          ),
+          CurrencyMasterSid: d.CurrencyMasterSid || this.getCurrencyId(d.CurrencyCode),
           Rate: d.Rate != null ? Number(d.Rate) : 0,
           ExchangeRate:
             d.ExchangeRate != null
@@ -1913,7 +1920,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
           TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
           LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
-          PartyAmount: partyAmount != null ? Number(partyAmount) : 0,
+          PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
           MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
           HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
           YearMasterSid: YearMasterSid,
@@ -1983,10 +1990,14 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.isSaving = false;
           if (resp.status) {
             this.isDirty = false;
-            this.appSettingService.showSuccess(resp.message);
-            this.loadInvoiceById(this.headerId);
+            if(isPostingTrue){
+              await this.postVoucher();
+            } else {
+              this.appSettingService.showSuccess(resp.message);
+              this.spinner.hide();
+            }
             if (resolve) resolve(true);
-            this.spinner.hide();
+            this.loadInvoiceById(this.headerId);
           } else {
             this.appSettingService.showError(resp.message);
             if (resolve) resolve(false);
@@ -2087,7 +2098,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,
           TaxCategory: interOrIntra,
-          EffectiveFrom: new Date().toISOString(),
+          EffectiveFrom: this.invoiceData.VoucherDate ?? new Date().toISOString(),
           TaxType: 'Input',
         },
       };
@@ -2674,13 +2685,14 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       return;
     }
 
+    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom: this.isEditMode
-        ? new Date(this.invoiceData?.VoucherDate)
+      EffectiveFrom: invoiceDate
+        ? new Date(invoiceDate)
         : new Date(),
       segment: 'revenue',
     };
@@ -2777,13 +2789,14 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string) {
+    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode: fromCurrencyCode,
       toCurrencyCode: toCurrencyCode,
-      EffectiveFrom: this.isEditMode
-        ? new Date(this.invoiceData?.VoucherDate)
+      EffectiveFrom: invoiceDate
+        ? new Date(this.invoiceForm.get('VoucherDate')?.getRawValue())
         : new Date(),
       segment: 'revenue',
     };
@@ -3303,6 +3316,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
   getGSTType(){
     return this.invoiceForm.get('GSTType')?.getRawValue();
+  }
+
+  navigateToCreate() : void {
+    this.router.navigate(['operation/invoice/entry']);
   }
 
   ngOnDestroy(): void {

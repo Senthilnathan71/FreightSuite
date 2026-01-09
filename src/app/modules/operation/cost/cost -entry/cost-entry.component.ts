@@ -97,6 +97,13 @@ export class CostEntryComponent implements OnInit {
     { id: 2, name: 'C', value: 'C' }
   ]
 
+  invoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'REIMB', name: 'Reimbursement' },
+    { id: 'BOS', name: 'Bill of Supply' },
+    { id: 'NONGST', name: 'Non GST/Zero' },
+  ];
+
   ModeofStatus = [
     { id: 'A', name: "Active" },
     { id: 'S', name: "Suspended" }
@@ -271,6 +278,7 @@ export class CostEntryComponent implements OnInit {
 
 
   // Invoice header properties
+  invoiceHeaderType : any = 'REG';
   invoiceHeaderCurrency: any = null;
   invoiceHeaderExchangeRate: number = 1;
   selectedTaxCategory : string = 'VAT'
@@ -2998,12 +3006,18 @@ getChargeTaxPercentage(charge: any): string {
   // Default narration
   narration = `Voucher generated from ${this.screenName} ${this.ParentSid}`.substring(0, 250);
 }
+    const companyCurrencyCode = this.companySettings.getCurrencySettings().code;
+    const companyState = this.getCompanyState();
+    const zerothSelectedRateSid = this.selectedCharges.values().next().value;
+    const zerothIndexedCharge = this.availableCharges.find(c => c.RateSid === zerothSelectedRateSid);
+    const interOrIntra = this.determineTaxCategory(companyState , this.placeOfSupply,this.getCustomerCountryFromCharge(zerothIndexedCharge,this.selectedVoucherType === 'Invoice'))
+
       const headerDetails = {
         CreatedBy: currUserEmail,
         Status: 'A',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
         BranchMasterSid: this.currentBranch?.BranchMasterSid ?? null,
-        VoucherTypeName: this.selectedVoucherType,
+        VoucherTypeMenuName: this.selectedVoucherType,
         Narration: narration,
         PartyMasterSid: PartyLedgerMasterSid,
         PartyName: this.billingPartyDetails?.CustomerName ?? '',
@@ -3015,7 +3029,7 @@ getChargeTaxPercentage(charge: any): string {
         BankCOA: null,
         BankPartyName: null,
         GST_VAT: this.billingGST_VAT ?? '',
-        InvoiceType: this.selectedGSTType ?? '',
+        InvoiceType: this.invoiceHeaderType ?? '',
         ReversalVoucher: null,
         TaxNumber: null,
         GSTType: this.selectedTaxCategory ?? '',
@@ -3135,7 +3149,7 @@ getChargeTaxPercentage(charge: any): string {
           NumberOfUnit: Number(isRevenue ? chargeInfo.RevenueNumberOfUnit : chargeInfo.CostNumberOfUnit),
           Narration:  narration.substring(0, 250),
           DrCr: isRevenue ? chargeInfo.RevenueDrCr : chargeInfo.CostDrCr,
-          TaxableAmount: Number(isRevenue ? chargeInfo.RevenueAmount : chargeInfo.CostAmount),
+          TaxableAmount: Number(isRevenue ? chargeInfo.RevenueLocalAmount : chargeInfo.CostLocalAmount),
           TaxPercentage1: taxPercentage1,
           TaxAmount1: taxAmount1,
           TaxPercentage2: taxPercentage2,
@@ -3160,6 +3174,15 @@ getChargeTaxPercentage(charge: any): string {
 
       const payload = {
         ...headerDetails,
+        LocalCurrencyMasterSid: this.currentCompany?.CurrencyMasterSid ?? null,
+        LocalCurrencyCode: companyCurrencyCode || "",
+        taxDetails: {
+          CountryMasterSid: this.currentCompany?.CountryMasterSid ?? null,
+          countryCode: this.currentCompanyCountryCode,
+          TaxCategory: interOrIntra,
+          EffectiveFrom: new Date().toISOString(),
+          TaxType: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output'
+        },
         selectedRateIds : Array.from(this.selectedCharges),
         screenName : this.screenName,
         VoucherDetail: detailPayload
@@ -3601,7 +3624,6 @@ onGSTTypeChange() {
 // }
 private getCustomerCountryFromCharge(charge: any, isRevenue: boolean): string {
   if(!charge){
-    console.error("No charge provided to getCustomerCountryFromCharge");
     return '';
   }
   const countryName = isRevenue ? 
@@ -3626,13 +3648,7 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
    * Determine tax category based on company state and place of supply
    */
   private determineTaxCategory(companyState: string, billingPartyState: string, customerCountryCode: string): 'Inter' | 'Intra' {
-    console.log("DETERMINING TAX CATEGORY INSIDE", {
-      companyState,
-      billingPartyState,
-      customerCountryCode
-    })
     if (!companyState || !billingPartyState) {
-      console.warn('Missing state information, defaulting to Inter');
       return 'Inter';
     }
 
@@ -3641,17 +3657,9 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
     const isIndianCustomer = normalizedCustomerCountry === 'in';
     const isInternationalCustomer = !isIndianCustomer && normalizedCustomerCountry !== '';
 
-    console.log('Tax Category - Customer Country Analysis:', {
-      customerCountryCode,
-      normalizedCustomerCountry,
-      isIndianCustomer,
-      isInternationalCustomer
-    });
-
     // For international customers (like Dubai), use 'Inter' category for VAT
     if (isInternationalCustomer) {
-      console.log('International transaction - Using Inter category for customer country:', customerCountryCode);
-      return 'Inter'; // Use 'Inter' for international transactions (VAT)
+      return 'Inter';
     }
 
     // For Indian customers, check if same state or different state
@@ -3659,18 +3667,6 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
     const normalizedBillingState = billingPartyState.trim().toLowerCase();
 
     const isSameState = normalizedCompanyState === normalizedBillingState;
-
-    console.log('Tax Category Determination for Indian Customer:', {
-      companyState: normalizedCompanyState,
-      billingPartyState: normalizedBillingState,
-      isSameState,
-      // CORRECT: Same state = Inter, Different state = Intra
-      taxCategory: isSameState ? 'Inter' : 'Intra'
-    });
-
-    // CORRECT LOGIC:
-    // Same state = Inter (CGST+SGST)
-    // Different state = Intra (IGST)
     return isSameState ? 'Inter' : 'Intra';
   }
 
