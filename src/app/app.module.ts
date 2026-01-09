@@ -33,6 +33,9 @@ import { ToastrModule } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { DATE_FORMAT_INITIALIZER } from './core/initializers/date-format.initializer';
 import { NgxDocViewerModule } from 'ngx-doc-viewer';
+import { NgxBarcode6Module } from 'ngx-barcode6';
+
+
 
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -53,6 +56,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FeatherModule.pick(allIcons),
     AppRoutingModule,
     NgScrollbarModule,
+    NgxBarcode6Module,
     HttpClientModule,
     NgxDocViewerModule,
     TranslateModule.forRoot({

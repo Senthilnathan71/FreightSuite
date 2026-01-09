@@ -34,9 +34,19 @@
           <span>Report</span>
         </button> -->
         
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!bookingData || isFormDirty()" (click)="reportAndEmailModel(reportModel)">
+        <!-- <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!bookingData || isFormDirty()" (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print"></i> Print
-        </button>
+        </button> -->
+        <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="!bookingData || isFormDirty()" id="dropdownManual" ngbDropdownAnchor (focus)="myDrop.open()">
+            <i class="fas fa-print"></i> Print
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownManual">
+            <button ngbDropdownItem (click)="reportAndEmailModel(reportModel)">Booking Confirmation</button>
+            <button ngbDropdownItem (click)="barCode(BarModal)">BarCode</button>
+          </div>
+        </div>
       </div>
       <div class="action-group" *ngIf="!isEditMode">
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openUploadModal()">
@@ -3653,6 +3663,179 @@
         </footer>
       </div>
     </div>
+  </div>
+</ng-template>
+
+
+<!--  -->
+<ng-template #BarModal let-modal>
+
+  <div *ngIf="isEditMode">
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 50px;">
+      <h5 class="modal-title text-white mb-0">Bar Code </h5>
+      <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDivBarcode('printContent')">
+          <i class="fas fa-download me-1"></i> Print
+        </button>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDFBarCode()">
+          <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
+          <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-body p-0">
+    <div id="printContent" class="p-1">
+
+      <div style="
+        width:380px;
+        height:480px;
+        margin:0 auto;
+        padding:8px;
+        background:#fff;
+        border-radius:16px;
+        border:1px solid #ddd;
+        box-shadow:0 8px 24px rgba(0,0,0,0.15);
+        box-sizing:border-box;
+        color:#000;
+        overflow:hidden;
+      ">
+      
+        <div style="height:100%;">
+      
+        <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+  <ngx-barcode6
+    *ngIf="barcodeBookingNo"
+    [bc-value]="barcodeBookingNo"
+    [bc-format]="barcodeConfig1.format"
+    [bc-height]="barcodeConfig1.height"
+    [bc-width]="barcodeConfig1.width"
+    [bc-font-size]="barcodeConfig1.fontSize"
+    [bc-display-value]="barcodeConfig1.displayValue">
+  </ngx-barcode6>
+</div>
+
+      
+          <!-- Shipper Info -->
+          <div
+            style="display:flex; flex-direction:column; width:100%; border-top: 1px solid black;text-align: center;">
+            <div style="display:flex; flex-direction: column;margin-top:5px;">
+      
+              <div style="flex:1; text-align:center; font-size:16px;  line-height:1.2;">
+                <h5 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h5>
+                <h6 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h6>
+              </div>
+      
+            </div>
+          </div>
+      
+          <!-- Details Table -->
+          <div style="
+        margin:3px 0;
+        padding:0;
+        border-top:1px solid #000;
+        border-bottom:1px solid #000;
+        font-size:12px;
+      ">
+      
+            <!-- Row -->
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Accepted On
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.ETD}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Origin
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.POO}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Destination
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.FPD}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Total Pkgs
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.bookingCargo?.[0]?.NoOfPackage}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Weight
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.bookingCargo?.[0]?.GrossWeight}}
+              </div>
+            </div>
+      
+            <div style="display:flex;">
+              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+                Booking No
+              </div>
+              <div style="flex:1; padding:6px 8px;">
+                {{bookingHeader?.BookingNo}}
+              </div>
+            </div>
+      
+          </div>
+      
+          <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            <ngx-barcode6 *ngIf="barcodeBookingNo" [bc-value]="barcodeBookingNo" [bc-format]="barcodeConfig.format"
+            [bc-height]="barcodeConfig.height" [bc-width]="barcodeConfig.width" [bc-font-size]="barcodeConfig.fontSize"
+            [bc-display-value]="barcodeConfig.displayValue">
+          </ngx-barcode6>
+          </div>
+          
+      
+          <!-- Contact Info -->
+          <div style="display: flex;align-items: center;justify-content: center;border-top: 1px solid black;gap: 10px;">
+            <div style="padding-top: 5px;">
+              <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
+                style="width: 40px;height: 40px;" />
+            </div>
+            <div>
+              <h5 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h5>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <p style="margin:0; font-size: 12px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin:0; font-size: 12px;">{{ currentBranch?.addressLine2 || '' }}, {{
+              currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+              }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+              currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+              <p>{{website}}</p>
+          </div>
+      
+        </div>
+      </div>
+
+
+    </div>
+
+
   </div>
 </ng-template>
 

@@ -3899,3 +3899,19 @@ textarea:disabled {
 }
 
 //--------------------------
+
+// Bar Code In Booking Modal Width and Height
+
+.barcode-card-modal .modal-dialog {
+  max-width: 420px;     /* CARD WIDTH */
+}
+
+.barcode-card-modal .modal-content {
+  width: 420px;
+  height: 560px;        /* CARD HEIGHT */
+  border-radius: 16px;  /* CARD SHAPE */
+  overflow: hidden;
+}
+
+
+// ------------------------------------

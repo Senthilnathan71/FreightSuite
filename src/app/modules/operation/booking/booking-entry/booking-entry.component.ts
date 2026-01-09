@@ -53,6 +53,8 @@ import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volume
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.service';
+import { NgxBarcode6Module } from 'ngx-barcode6';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -104,7 +106,8 @@ type Html2PdfOptions = {
     NgxSpinnerModule,
     NgbDropdownModule,
     PreventMultiClickDirective,
-    TimeAgoPipe
+    TimeAgoPipe,
+    NgxBarcode6Module
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -236,6 +239,25 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     { id: 2, name: "Nomination" },
   ]
 
+  barcodeBookingNo: string = '';
+ barcodeConfig: BarcodeConfig = {
+  format: 'CODE128',
+  height: 22,     // small but readable
+  width: 1,       // DO NOT go below 1
+  fontSize: 10,
+  displayValue: true   // reduces visual size
+};
+
+ barcodeConfig1: BarcodeConfig = {
+  format: 'CODE128',
+  height: 30,     // small but readable
+  width: 1.2,       // DO NOT go below 1
+  fontSize: 10,
+  displayValue: true   // reduces visual size
+};
+
+
+
   // Variable Declaration - Cargo Part
   containerTypeList: any[] = [];
   selectedContainerType: any;
@@ -303,7 +325,7 @@ arapFilter = {
   resetTriggerMilestone: boolean;
   milestoneResult: any[] = [];
   followupModalRef : NgbModalRef;
-
+  website:any;
   today: any;
   minDate: any;
   currentDate = new Date();
@@ -396,6 +418,7 @@ arapFilter = {
     private commonService: CommonService,
     public mps: MenuPermissionService,
     public logoService : LogoService,
+    private barcodeService: BarcodeService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
@@ -485,6 +508,8 @@ arapFilter = {
       MenuMasterSid: this.MenuMasterSid
     };
 
+     this.website = this.userData?.userCompanyMaster?.[0]?.companyMaster?.webSite || null;
+
 
     this.initBookingForm();
     this.initCargoForm();
@@ -570,6 +595,7 @@ arapFilter = {
       this.departmentLookup.focus();
     }
   }
+
 
   getCurrentCompanyBranches() {
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
@@ -1238,9 +1264,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     )
   }
 
+  
   patchValues(response: any) {
     console.log(response);
     this.bookingHeader = response;
+    const barcodeData = `${response.BookingNo}`;
+    this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
@@ -3382,6 +3411,13 @@ getFormattedPort(code: string): string {
     });
   }
 
+    barCode(content: TemplateRef<any>) {
+    this.modalService.open(content, {
+      scrollable: true,
+       windowClass: 'barcode-card-modal'
+    });
+  }
+
   // generatePDFBlob(): Promise<Blob> {
   //   return new Promise((resolve, reject) => {
   //     const element = document.getElementById('pdfContent');
@@ -3935,6 +3971,34 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
   );
 }
 
+downloadPDFBarCode(): void {
+  this.spinner.show();
+
+  const elementId = 'printContent'; // ✅ fixed element
+  const fileName = this.generateFileName('barcode');
+
+  const sourceEl = document.getElementById(elementId);
+  if (!sourceEl) {
+    this.spinner.hide();
+    this.appSettingService.showWarning('PDF content not found.');
+    return;
+  }
+
+  // Generate PDF directly from the element
+  this.pdfService.downloadBalancedPDF(
+    elementId,
+    fileName,
+    () => {
+      this.appSettingService.showSuccess('Barcode PDF downloaded successfully!');
+      this.spinner.hide();
+    },
+    (error) => {
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating Barcode PDF. Please try again.');
+      this.spinner.hide();
+    }
+  );
+}
 
 
 
@@ -4384,6 +4448,57 @@ printDiv(divId: string): void {
     }
   }, 50); 
 }
+
+printDivBarcode(divId: string): void {
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+    const sourceElement = document.getElementById(divId);
+    if (!sourceElement) return;
+
+    // 👇 Total packages
+    const totalPkgs =
+      Number(this.bookingHeader?.bookingCargo?.[0]?.NoOfPackage) || 1;
+
+    let finalHtml = '';
+
+    for (let i = 0; i < totalPkgs; i++) {
+      finalHtml += `
+        <div class="print-page">
+          ${sourceElement.innerHTML}
+        </div>
+      `;
+    }
+
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
+    if (popupWin) {
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print Barcode</title>
+            <style>
+              @media print {
+                .print-page {
+                  page-break-after: always;
+                }
+                .print-page:last-child {
+                  page-break-after: auto;
+                }
+              }
+            </style>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${finalHtml}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }
+  }, 100);
+}
+
 // Add this method to your component class
 getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {

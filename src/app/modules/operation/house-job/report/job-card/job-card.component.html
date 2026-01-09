@@ -58,8 +58,7 @@
 
 
 
-<h4
-  style="
+            <h4 style="
     text-align:center;
     font-weight:bolder;
     margin:0;
@@ -67,10 +66,9 @@
     border-top:1px solid black;
     font-size:20px;
     line-height:1.2;
-  "
->
-  <strong>Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</strong>
-</h4>
+  ">
+                <strong>Job Card / Job No - {{ housejobData?.masterJob?.MasterJobNumber }}</strong>
+            </h4>
 
 
             <!-- Client/Shipper/Consignee/Forwarder Sections -->
@@ -140,7 +138,7 @@
                 <div style="flex:0 0 50%; max-width:50%; padding:5px;font-size: 16px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Job No.</strong></div>
-                        <div>: {{ masterJobData?.MasterJobNumber }}</div>
+                        <div>: {{ housejobData?.masterJob?.MasterJobNumber }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>HBL No.</strong></div>
@@ -160,25 +158,25 @@
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Service Type</strong></div>
-                        <div>: {{housejobData?.ShipmentTerms}}</div>
+                        <div>: {{housejobData?.Cargo?.[0]?.ShipmentTerms}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Sales Person</strong></div>
-                        <div>: {{getSalespersonName(masterJobData?.houseJob[0]?.SalesmanSid)}}</div>
+                        <div>: {{getSalespersonName(housejobData?.SalesmanSid)}}</div>
                     </div>
                 </div>
                 <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;font-weight: bolder;"><strong>MBL No.</strong></div>
-                        <div>: {{masterJobData?.MBLNo}}</div>
+                        <div>: {{housejobData?.masterJob?.MBLNo}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;font-weight: bolder;"><strong>Place of Receipt</strong></div>
-                        <div>: {{housejobData?.Others?.[0]?.PickupPlace}}</div>
+                        <div>: {{housejobData?.POO}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;font-weight: bolder;"><strong>Place of Delivery</strong></div>
-                        <div>: {{housejobData?.Others?.[0]?.ForwarderAddress}}</div>
+                        <div>: {{housejobData?.FPD}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;font-weight: bolder;"><strong>ETA</strong></div>
@@ -193,9 +191,13 @@
                             <strong>Vessel / Voy.</strong>
                         </div>
                         <div>
-                            {{housejobData?.VesselName  }}/{{housejobData?.VoyageNo  }}
+                            :
+                            {{ housejobData?.VesselName || '' }}
+                            <span *ngIf="housejobData?.VesselName && housejobData?.VoyageNo">/</span>
+                            {{ housejobData?.VoyageNo || '' }}
                         </div>
                     </div>
+
 
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;"><strong>Carrier</strong></div>
@@ -215,20 +217,24 @@
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Container No.</strong></th>
+                                <strong>Container No.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Type</strong></th>
+                                <strong>Type</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Commodity Description</strong>
                             </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>No. of
-                                    Pkg</strong></th>
+                                    Pkg</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Gross
-                                    Weight</strong></th>
+                                    Weight</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Volume</strong>
@@ -236,18 +242,20 @@
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Net
-                                    Weight</strong></th>
+                                    Weight</strong>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let container of housejobData?.Products">
-                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{ container?.ContainerNumber }}</td>
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
-                                getContainerTypeName(container?.ContainerType) }}</td>
+                                container?.ContainerNo }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
+                                getContainerTypeName(container?.masterJobContainer?.ContainerType) }}</td>
                             <td style="border:1px solid black; padding:2px 8px;">{{container?.CommodityDescription }}
                             </td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
-                                {{container?.NoOfPkg}}</td>
+                                {{container?.ExternlQty}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 container?.GrossWeight | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ container?.Volume
@@ -281,7 +289,8 @@
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Charge</strong></th>
+                                <strong>Charge</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Sales</strong>
@@ -316,7 +325,8 @@
                                 number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{totalCost |
                                 number:'1.2-2'}}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{profit | number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{profit |
+                                number:'1.2-2'}}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -328,7 +338,8 @@
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Charge</strong></th>
+                                <strong>Charge</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Unit</strong>
                             </th>
@@ -343,20 +354,24 @@
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Local
-                                    Amt.</strong></th>
+                                    Amt.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Cost
-                                    Curr</strong></th>
+                                    Curr</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Cost Ex
-                                    Rate</strong></th>
+                                    Rate</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Cost/Unit</strong>
                             </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;">
                                 <strong>Cost Local
-                                    Amt.</strong></th>
+                                    Amt.</strong>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -365,10 +380,10 @@
                                 }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 {{
-                              getUnitCode(item.ChargeUomSid) }}</td>
+                                getUnitCode(item.ChargeUomSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 getCurrencyName(item.CostCurrencyMasterSid) }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{   
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.CostExchangeRate | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueRate | number:'1.2-2'}}</td>
@@ -392,7 +407,7 @@
                 <!-- Revenue -->
                 <div style="width:49.5%; box-sizing:border-box;">
                     <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
-                       <strong> Revenue</strong>
+                        <strong style="text-decoration: underline;"> Revenue</strong>
                     </h4>
 
                     <table
@@ -400,33 +415,35 @@
                         <thead>
                             <tr>
                                 <th
-                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder; width: 300px;">
+                                    style="border:1px solid #000; padding:2px 8px; text-align:center; box-sizing:border-box;font-weight: bolder; width: 300px;">
                                     <strong>Sales Party</strong>
                                 </th>
                                 <th
-                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    style="border:1px solid #000; padding:2px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
                                     <strong>Amount</strong>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let row of getGroupedRevenueByParty()">
-                                <td style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
-                                           {{ row.party }}
+                                <td
+                                    style="border:1px solid #000; padding:2px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.party }}
                                 </td>
-                                <td style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
-                                      {{ row.amount | number:'1.2-2' }}
+                                <td
+                                    style="border:1px solid #000; padding:2px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.amount | number:'1.2-2' }}
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    
+
                 </div>
 
                 <!-- Expense -->
                 <div style="width:49.5%; box-sizing:border-box; margin-left:1%;">
                     <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
-                        <strong>Expense</strong>
+                        <strong style="text-decoration: underline;">Expense</strong>
                     </h4>
 
                     <table
@@ -434,23 +451,25 @@
                         <thead>
                             <tr>
                                 <th
-                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;width: 300px;">
+                                    style="border:1px solid #000; padding:2px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;width: 300px;">
                                     <strong>Cost Party</strong>
                                 </th>
                                 <th
-                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    style="border:1px solid #000; padding:2px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
                                     <strong>Amount</strong>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let row of getGroupedExpenseByParty()">
-                                <td  style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
-                                       {{ row.party }}
+                                <td
+                                    style="border:1px solid #000; padding:2px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.party }}
                                 </td>
 
-                                <th  style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
-                                              {{ row.amount | number:'1.2-2' }}
+                                <th
+                                    style="border:1px solid #000; padding:2px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.amount | number:'1.2-2' }}
                                 </th>
                             </tr>
                         </tbody>
@@ -460,10 +479,10 @@
 
             </div>
 
-              <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 15px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
-                        <div>: {{ housejobData?.InternalNote }}</div>
-                </div>
+            <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 0px;">
+                <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
+                <div>: {{ housejobData?.InternalNote }}</div>
+            </div>
 
 
             <!-- Footer -->

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
@@ -20,7 +20,7 @@ interface summaryDTO {
   templateUrl: './job-card.component.html',
   styles: ``
 })
-export class JobCardComponent {
+export class JobCardComponent implements OnChanges {
  userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -35,7 +35,7 @@ export class JobCardComponent {
   @Input() packageTypeList: any[] = [];
   @Input() agentList: any[] = [];
   @Input() currencyList: any[] = [];
-  @Input() profitSummary: any[] = [];
+   profitSummary: any[] = [];
   @Input() customerWiseSummary : summaryDTO;
   @Input() chargeWiseSummary : any[] = [];
   @Input() chargeList: any[] =[];
@@ -70,6 +70,16 @@ export class JobCardComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.calculateChargeWiseProfit();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(
+      changes['housejobData'].previousValue !== changes['housejobData'].currentValue && 
+      !changes['housejobData'].firstChange
+    ){
+      this.calculateChargeWiseProfit();
+    }
   }
 
   loadCityName(): void {
@@ -123,7 +133,7 @@ export class JobCardComponent {
     const containerType = this.containerTypeList.find(
       (ct) => ct.ContainerTypeMasterSid === ContainerTypeMasterSid
     );
-    return containerType ? containerType.ContainerName : 'Unknown';
+    return containerType ? containerType.ContainerName : '';
   }
 
   getChargeName(ChargeMasterSid: number): string {
@@ -171,7 +181,7 @@ export class JobCardComponent {
 
   get totalNoOfPkg(): number {
     return this.housejobData?.Products?.reduce((sum, c) => {
-      const value = Number(c.NoOfPkg) || 0;
+      const value = Number(c.ExternlQty) || 0;
       return sum + value;
     }, 0);
   }
@@ -184,50 +194,105 @@ export class JobCardComponent {
   }
 
   get totalVolume(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
+    return this.housejobData?.Products?.reduce((sum, c) => {
       const value = Number(c.Volume) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalNetWeight(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
+    return this.housejobData?.Products?.reduce((sum, c) => {
       const value = Number(c.NetWeight) || 0;
       return sum + value;
     }, 0);
   }
 
-  get totalSales() {
-    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
-      return 0;
-    }
-
-    return this.profitSummary.reduce((sum, c) => {
-      const value = Number(c.totalSales) || 0;
-      return sum + value;
-    }, 0);
+get totalSales() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
   }
 
-  get totalCost() {
-    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
-      return 0;
-    }
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalSales) || 0;
+    return sum + value;
+  }, 0);
+}
 
-    return this.profitSummary.reduce((sum, c) => {
-      const value = Number(c.totalCost) || 0;
-      return sum + value;
-    }, 0);
+get totalCost() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
   }
 
-  get profit() {
-    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
-      return 0;
-    }
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalCost) || 0;
+    return sum + value;
+  }, 0);
+}
 
-    return this.profitSummary.reduce((sum, c) => {
-      const value = Number(c.profit) || 0;
-      return sum + value;
-    }, 0);
+get profit() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.profit) || 0;
+    return sum + value;
+  }, 0);
+}
+
+ calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.housejobData?.costRevenueCharges|| [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "";
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+        existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+        existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+    console.log(this.profitSummary);
   }
 
   
@@ -241,11 +306,11 @@ export class JobCardComponent {
   }
 
  getGroupedRevenueByParty() {
-  if (!this.masterJobData?.costRevenueCharges) return [];
+  if (!this.housejobData?.costRevenueCharges) return [];
 
   const map = new Map<string, number>();
 
-  this.masterJobData.costRevenueCharges.forEach(item => {
+  this.housejobData.costRevenueCharges.forEach(item => {
     const party = item?.revenueCustomerMaster?.CustomerName;
     const amount = Number(item?.RevenueLocalAmount) || 0;
 
@@ -261,11 +326,11 @@ export class JobCardComponent {
 }
 
 getGroupedExpenseByParty() {
-  if (!this.masterJobData?.costRevenueCharges) return [];
+  if (!this.housejobData?.costRevenueCharges) return [];
 
   const map = new Map<string, number>();
 
-  this.masterJobData.costRevenueCharges.forEach(item => {
+  this.housejobData.costRevenueCharges.forEach(item => {
     const party = item?.costCustomerMaster?.CustomerName;
     const amount = Number(item?.CostLocalAmount) || 0;
 
