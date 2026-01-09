@@ -969,6 +969,7 @@ formatContainerNumber(): void {
         CustomerMasterSid: booking.CustomerMasterSid,
         CustomerName: booking.CustomerName,
         CustomerAddress: booking.CustomerAddress,
+        JobType: booking.JobType,
         ShipperName: booking.ShipperName,
         ShipperAddress: booking.ShipperAddress,
         ConsigneeName: booking.ConsigneeName,
@@ -1026,6 +1027,7 @@ formatContainerNumber(): void {
       return {
         BookingHeaderSid: booking.BookingHeaderSid,
         HBLNo: booking.HBLNo,
+        JobType: booking.JobType
       }
     });
     const payload = {

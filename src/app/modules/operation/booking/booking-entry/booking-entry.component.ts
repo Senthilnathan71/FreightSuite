@@ -1434,6 +1434,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
 
     this.syncFormValueWithRateComponent();
+    this.applyTranshipmentRestrictions();
   }
 
   // patchBookingFromQuotation(data:any){
@@ -4412,6 +4413,42 @@ getFieldLabel(fieldName: string): string {
   };
   
   return fieldLabels[fieldName] || fieldName;
+}
+get isTranshipmentMode(): boolean {
+  return this.b['JobType']?.value === 'Transhipment';
+}
+
+private applyTranshipmentRestrictions(): void {
+  if (this.isTranshipmentMode) {
+    // Disable all booking form controls except vessel/voyage details
+    Object.keys(this.bookingForm.controls).forEach(key => {
+      if (!['VesselName', 'VoyageNo', 'ETA', 'ETD'].includes(key)) {
+        this.bookingForm.get(key)?.disable();
+      }
+    });
+
+    // Disable all cargo form controls
+    Object.keys(this.cargoForm.controls).forEach(key => {
+      this.cargoForm.get(key)?.disable();
+    });
+
+    // Disable all other form controls
+    Object.keys(this.otherForm.controls).forEach(key => {
+      this.otherForm.get(key)?.disable();
+    });
+
+    // Disable all CRO form controls
+    Object.keys(this.croForm.controls).forEach(key => {
+      this.croForm.get(key)?.disable();
+    });
+
+    // Disable all product controls
+    this.bookingProducts.controls.forEach((product: FormGroup) => {
+      Object.keys(product.controls).forEach(key => {
+        product.get(key)?.disable();
+      });
+    });
+  }
 }
 
 }
