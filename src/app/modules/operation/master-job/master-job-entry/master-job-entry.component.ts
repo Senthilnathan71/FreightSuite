@@ -67,6 +67,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.component';
 import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.component';
 import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
+import { LoadingPlanMasterComponent } from '../reports/loading-plan-master/loading-plan-master.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -3429,6 +3430,23 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     modalRef.componentInstance.cfsList = this.cfsList || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.agentList = this.agentList;
+    modalRef.componentInstance.yardList = this.yardList;
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
+  }
+
+  // Loading Plan
+
+   reportLoadingPlan() {
+    const modalRef = this.modalService.open(LoadingPlanMasterComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.cfsList = this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.portList = this.portList || [];
   }
 
   reportCFSoutturn() {
