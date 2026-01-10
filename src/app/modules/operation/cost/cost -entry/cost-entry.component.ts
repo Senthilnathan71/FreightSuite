@@ -1295,7 +1295,7 @@ createRateFormGroup(data?: any): FormGroup {
     if (!VoucherTypeSid || this.docTypeList.length === 0) {
       return '';
     }
-    return (this.docTypeList.find(docType => docType.DocumentTypeMasterSid === VoucherTypeSid)?.DocumentTypeName);
+    return (this.docTypeList.find(docType => docType.DocumentTypeMasterSid === VoucherTypeSid)?.DocumentTypeCode);
   }
 
   getTariffDetails(content: TemplateRef<any>) {
