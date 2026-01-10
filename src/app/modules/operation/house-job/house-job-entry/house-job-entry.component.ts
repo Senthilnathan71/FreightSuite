@@ -3719,8 +3719,7 @@ ${this.userData['userName']}`;
     
     if (!hasContainerMapping) {
       this.appSettingService.showWarning(
-        'ContainerNo. mapping is required. ' +
-        'Please map containersNo'
+       'No. of containers are not matching with entered container check and change it'
       );
       return;
     } 
