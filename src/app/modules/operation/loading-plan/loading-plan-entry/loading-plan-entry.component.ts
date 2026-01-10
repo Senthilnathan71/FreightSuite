@@ -1181,7 +1181,15 @@ formatContainerNumber(): void {
     });
   }
 
-
+    getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
+  
   async downloadPDF() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;

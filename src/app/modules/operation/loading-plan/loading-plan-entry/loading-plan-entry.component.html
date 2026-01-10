@@ -933,15 +933,15 @@
                     <h4 style="text-align: center; font-weight: bolder; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;font-size: 20px;"><strong>Container Load Plan</strong></h4>
 
                     <!-- Info Section -->
-                    <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; gap:10px;padding-left: 20px;">
+                    <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; gap:10px;">
                         <!-- Column 1 -->
                         <div style="flex:1; min-width:180px;">
-                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                            <!-- <div style="display:flex; margin-bottom:4px;font-size: 16px;">
                                 <div style="width:150px;font-weight: bolder;"><strong>MBL No.</strong></div>
                                 <div>: {{loadingPlanData[0]?.MBLNo}}</div>
-                            </div>
-                          <div style="display:flex; margin-bottom:4px;font-size: 16px;">
-                             <div style="width:150px;font-weight:bolder;">
+                            </div> -->
+                          <div style="display:flex; margin-bottom:4px;font-size: 16px; padding-left: 50px;">
+                             <div style="width:140px;font-weight:bolder;">
                                 <strong>Vessel / Voy No.</strong>
                             </div>
                          <div>
@@ -954,53 +954,41 @@
   </div>
 </div>
 
-                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
-                                <div style="width:150px;font-weight: bolder;"><strong>Carrier</strong></div>
+                            <div style="display:flex; margin-bottom:4px;font-size: 16px;padding-left: 50px;">
+                                <div style="width:140px;font-weight: bolder;"><strong>Carrier</strong></div>
                                 <div>: {{this.loadingPlanForm.get('carrier')?.value || ''}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;font-size: 16px;">
-                                <div style="width:150px;font-weight: bolder;"><strong>PP/CC</strong></div>
+                            <div style="display:flex; margin-bottom:4px;font-size: 16px;padding-left: 50px;">
+                                <div style="width:140px;font-weight: bolder;"><strong>PP/CC</strong></div>
                                 <div>: {{loadingPlanData[0]?.FreightTerms}}</div>
+                            </div>
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;font-size: 16px;">
+                                <div style="width:140px;font-weight: bolder;"><strong>ETD</strong></div>
+                                <div>: {{loadingPlanData[0]?.ETD}}</div>
+                            </div>
+                                <div style="display:flex; margin-bottom:4px;padding-left: 50px;font-size: 16px;">
+                                <div style="width:140px;font-weight: bolder;"><strong>ETA</strong></div>
+                                <div>: {{loadingPlanData[0]?.ETA}}</div>
                             </div>
                         </div>
 
                         <!-- Column 2 -->
                         <div style="flex:1; min-width:180px;font-size: 16px;">
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>Job No.</strong></div>
-                                <div>: </div>
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
+                                <div style="width:60px;font-weight: bolder;"><strong>POR</strong></div>
+                                <div>: {{getPortName(loadingPlanData[0]?.POO)}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>Job Date</strong></div>
-                                <div>: {{loadingPlanData[0]?.MBLDate}}</div>
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
+                                <div style="width:60px;font-weight: bolder;"><strong>POL</strong></div>
+                                <div>: {{getPortName(loadingPlanData[0]?.POL)}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>ETD</strong></div>
-                                <div>: {{loadingPlanData[0]?.ETD}}</div>
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
+                                <div style="width:60px;font-weight: bolder;"><strong>POD</strong></div>
+                                <div>: {{getPortName(loadingPlanData[0]?.POD)}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>ETA</strong></div>
-                                <div>: {{loadingPlanData[0]?.ETA}}</div>
-                            </div>
-                        </div>
-
-                        <!-- Column 3 -->
-                        <div style="flex:1; min-width:180px;font-size: 16px;">
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>POR</strong></div>
-                                <div>: {{loadingPlanData[0]?.POO}}</div>
-                            </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>POL</strong></div>
-                                <div>: {{loadingPlanData[0]?.POL}}</div>
-                            </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>POD</strong></div>
-                                <div>: {{loadingPlanData[0]?.POD}}</div>
-                            </div>
-                            <div style="display:flex; margin-bottom:4px;">
-                                <div style="width:120px;font-weight: bolder;"><strong>FDC</strong></div>
-                                <div>: {{loadingPlanData[0]?.FPD}}</div>
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
+                                <div style="width:60px;font-weight: bolder;"><strong>FDC</strong></div>
+                                <div>: {{getPortName(loadingPlanData[0]?.FPD)}}</div>
                             </div>
                         </div>
                     </div>
@@ -1010,16 +998,12 @@
                         <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0;">
                             <thead style="background-color:#f8f9fa;">
                                 <tr>
-                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;border-left: none;"><strong>BL
-                                            No.</strong></th>
-                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                        <strong>Origin</strong></th>
-                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                        <strong>Dest.</strong></th>
-                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                        <strong>Shipper & Address</strong></th>
-                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                        <strong>Consignee & Address</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;border-left: none;"><strong>BL No.</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Origin</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Dest.</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Shipper & Address</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Consignee & Address</strong></th>
+                                    <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Commodity Desc.</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>Cargo Type</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>No.of Pkg</strong></th>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;"><strong>G.Wt.</strong></th>
@@ -1031,27 +1015,20 @@
                                 <tr *ngFor="let booking of selectedBookings; let i = index">
                                     <td style="border:1px solid black; padding:2px 8px;border-left: none;">{{ booking.BookingNo }}</td>
                                     <td style="border:1px solid black; padding:2px 8px;">{{ booking.POO || '' }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.AgentName || ''}}
-                                    </td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.ShipperName }} & {{
-                                        booking.ShipperAddress }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.ConsigneeName }} &
-                                        {{ booking.ConsigneeAddress }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.CargoType || '' }}
-                                    </td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                        booking.NoOfPackage || '0' }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                        booking.GrossWeight | number:'1.3-3' }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                        booking.NetWeight | number:'1.3-3' }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">{{
-                                        booking.Volume | number:'1.3-3' }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.AgentName || ''}}</td>
+                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.ShipperName }} & {{booking.ShipperAddress }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.ConsigneeName }} & {{ booking.ConsigneeAddress }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px;"></td>
+                                    <td style="border:1px solid black; padding:2px 8px;">{{ booking.CargoType || '' }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{booking.NoOfPackage || '0' }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{booking.GrossWeight | number:'1.3-3' }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{booking.NetWeight | number:'1.3-3' }}</td>
+                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">{{booking.Volume | number:'1.3-3' }}</td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr style="font-weight:bolder;">
-                                    <td colspan="6" style="border:1px solid black; padding:2px 8px; text-align:right; border-left: none;">
+                                    <td colspan="7" style="border:1px solid black; padding:2px 8px; text-align:right; border-left: none;">
                                         <strong>TOTAL</strong></td>
                                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                         getParseIntegerNoDecimal(totalPkg) }}</td>

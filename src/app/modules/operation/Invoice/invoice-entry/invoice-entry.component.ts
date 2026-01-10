@@ -2783,6 +2783,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     );
   }
 
+  
+
   hasDetailSid(index: number) {
     const detail = (this.details.at(index) as FormGroup)?.getRawValue();
     return !!detail?.VoucherDetailSid;
