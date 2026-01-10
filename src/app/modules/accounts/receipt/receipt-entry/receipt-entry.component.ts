@@ -10,6 +10,7 @@ import {
   AbstractControl,
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -500,10 +501,11 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(1);
+      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
       this.recalculateAllMatchingPartyAmounts();
       this.recalcPartyAmtForAllDetails();
+      this.checkAndUpdateForAllPartyDetail();
       return;
     }
 
@@ -1278,7 +1280,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         BranchMasterSid: currentBranch.BranchMasterSid,
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
-        LocalCurrencyCode: currentCompany.CurrencyCode,
+        LocalCurrencyCode: this.companyCurrency.code,
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
@@ -1590,20 +1592,49 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     ) {
       this.markAsDirty();
     }
-
     const lastAddedRow = this.detailItems.length - 1;
+    this.checkAndUpdateForPartyDetail(lastAddedRow,syncExRate);
     const currencySid = newRow.get('CurrencyMasterSid')?.value;
     if (syncExRate) {
       this.handleDetailExchangeRate(currencySid, lastAddedRow);
     }
-    // const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
-    // localAmountTriggeringCtrls.forEach((ctrl) => {
-    //   newRow.get(ctrl)?.valueChanges.subscribe(() => {
-    //     if (!this.isSaving && !this.isLoading) {
-    //       this.calculateLocalAmount(lastAddedRow, true);
-    //     }
-    //   });
-    // });
+  }
+
+  checkAndUpdateForAllPartyDetail(patchRequired : boolean = true){
+    for (let i = 0; i < this.detailItems.length; i++) {
+      console.log("Calling checkAndUpdateForPartyDetail for index :"+i);
+      this.checkAndUpdateForPartyDetail(i,patchRequired);
+    }
+  }
+
+  checkAndUpdateForPartyDetail(detailIndex: number , patch : boolean = true) {
+    const detail = this.detailItems.at(detailIndex) as FormGroup;
+    const headerCtrl = this.receiptForm.get('PartyMasterSid') as FormControl;
+    const detailPartyCtrl = detail.get('LedgerMasterSid') as FormControl;
+
+    if (headerCtrl && detailPartyCtrl) {
+
+      if (headerCtrl.getRawValue() === detailPartyCtrl.getRawValue()) {
+        console.log("Party sid is same .Patch ? :",patch);
+        if (patch) {
+          detail.get('CurrencyMasterSid')?.setValue(this.r['CurrencyMasterSid']?.getRawValue());
+          detail.get('CurrencyCode')?.setValue(this.r['CurrencyCode']?.getRawValue());
+          detail.get('ExchangeRate')?.setValue(this.r['ExchangeRate']?.getRawValue());
+          this.calculateLocalAmount(detailIndex);
+        }
+        detail.get('CurrencyMasterSid')?.disable();
+        detail.get('CurrencyCode')?.disable();
+        detail.get('ExchangeRate')?.disable();
+      } else {
+        detail.get('CurrencyMasterSid')?.enable();
+        detail.get('CurrencyCode')?.enable();
+        detail.get('ExchangeRate')?.enable();
+      }
+    } else {
+      detail.get('CurrencyMasterSid')?.enable();
+      detail.get('CurrencyCode')?.enable();
+      detail.get('ExchangeRate')?.enable();
+    }
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
@@ -1715,7 +1746,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.fetchLedgerForCOA(bankLedger, 1);
     console.log('RAW VALUE', this.detailItems.at(1).getRawValue());
     this.calculateLocalAmount(1, true);
-
+    this.checkAndUpdateForAllPartyDetail();
     this.updateDetailNarration();
   }
 
@@ -2478,7 +2509,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(1);
+      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
       this.calculateLocalAmount(index);
       return;
@@ -2492,17 +2523,14 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   patchCurrencyExchangeRate() {
     const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    console.log('Entered patchCurrencyExchangeRate', {
-      FromCurrencyId: currencySid,
-      toCurrencyId: companyCurrency,
-    });
 
     if (currencySid === companyCurrency && currencySid !== null) {
       this.receiptForm.patchValue({
-        ExchangeRate: 1,
+        ExchangeRate: this.getFormattedExchangeRate(1, currencySid),
       });
       this.recalculateAllMatchingPartyAmounts();
       this.recalcPartyAmtForAllDetails();
+      this.checkAndUpdateForAllPartyDetail();
       return;
     }
 
@@ -2513,10 +2541,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (!fromCurrencyCode || !toCurrencyCode) {
       return;
     }
-    console.log('FINDING CURRENCY EXCHANGE', {
-      fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode,
-    });
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -2529,19 +2554,19 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     };
     this.accountService.getExchangeRate(payload).subscribe((resp: any) => {
       if (resp?.status) {
-        console.log('PATCHING EXCHANGE RATE', resp.data);
         if (resp.data) {
           this.receiptForm.patchValue({
-            ExchangeRate: resp.data,
+            ExchangeRate: this.getFormattedExchangeRate(resp.data,currencySid),
           });
         } else {
           this.receiptForm.patchValue({
-            ExchangeRate: 0,
+            ExchangeRate: this.getFormattedExchangeRate(0,currencySid),
           });
           this.appSettingService.showError(resp.message);
         }
         this.recalculateAllMatchingPartyAmounts();
         this.recalcPartyAmtForAllDetails();
+        this.checkAndUpdateForAllPartyDetail();
       } else {
         this.appSettingService.showError('Error fetching exchange rate');
       }

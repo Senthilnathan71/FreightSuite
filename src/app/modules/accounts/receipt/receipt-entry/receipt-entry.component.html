@@ -95,13 +95,14 @@
             </div>
           </div>
         </form>
+        
       </div>
 
       <!-- Button Section -->
 
       <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
         <div
-          class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
+        class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
         >
           <div class="col-md-4">
             <div class="form-check form-check-inline p-0 mt-0">
@@ -154,6 +155,7 @@
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="resetForm()"
+            [disabled]="isPosted"
           >
             <i class="fas fa-sync-alt me-1"></i>
             Reset
@@ -219,6 +221,12 @@
               isDirty ? 'Please save the draft first before posting' : ''
             "
           >
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
+          </button>
+          }
+          @if(isAutoPosting){
+          <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled="true">
             <i class="fas fa-check-circle me-1"></i>
             {{ isPosted ? "Posted" : "Post" }}
           </button>
@@ -517,6 +525,10 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="ExchangeRate"
+                    (change)="checkAndUpdateForAllPartyDetail()"
+                    DecimalPrecision
+                    [DecimalPrecisionBefore]="4"
+                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(receiptForm.get('CurrencyMasterSid')?.getRawValue())"
                   />
                   <label
                     for="text-input"
@@ -911,6 +923,7 @@
                     type="button"
                     class="btn waves-effect waves-light text-light py-0 px-1"
                     (click)="addDetailRow()"
+                    [disabled]="isPosted"
                   >
                     <i class="fas fa-plus text-info"></i>
                   </button>
@@ -919,6 +932,7 @@
                     type="button"
                     class="btn waves-effect waves-light text-light py-0 px-1"
                     (click)="removeDetail(i, d.get('VoucherDetailSid')?.value)"
+                    [disabled]="isPosted"
                   >
                     <i class="fas fa-trash text-danger" name="trash-2"></i>
                   </button>
@@ -941,6 +955,7 @@
                     bindValue="SubledgerMasterSid"
                     formControlName="LedgerMasterSid"
                     appendTo="body"
+                    (change)="checkAndUpdateForPartyDetail(i)"
                   ></ng-select>
                 </td>
                 <td class="">
