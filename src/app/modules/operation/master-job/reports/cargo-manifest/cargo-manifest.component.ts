@@ -144,6 +144,7 @@ export class CargoManifestComponent {
     return yard ? yard.CustomerName : '';
   }
 
+
   getPackageTypeName(pkgTypeSid: number): string {
     if (!pkgTypeSid) return 'Unknown';
     const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
@@ -212,17 +213,16 @@ export class CargoManifestComponent {
 
 
    async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
 
   setTimeout(async () => {
     this.spinner.show();
    try {
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Cargo_manifest_${this.masterJobData?.MasterJobNumber || 'Report'}`,
+        `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+        (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
+        'landscape'
       );
     } finally {
       this.spinner.hide();

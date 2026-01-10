@@ -24,10 +24,10 @@
 <div class="modal-body">
   <div id="printContent" class="p-1">
     <div
-      style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column;">
+      style="width:300mm; min-height:205mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
       <!-- Company Info -->
-      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 5px;
     padding-left: 20px">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; flex-direction: column;">
@@ -39,7 +39,7 @@
               />
             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
           </div>
-          <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+          <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 18%;">
             <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
             </h3>
             <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -130,8 +130,8 @@
           <div><strong>Notify</strong></div>
 
           <div style="margin-top:5px;margin-left: 30px; min-height:70px; white-space:pre-line;">
-            {{ housejobData?.Others?.[0]?.NotifyParty }}<br>
-            {{ housejobData?.Others?.[0]?.NotifyPartyAddress }}
+            {{ housejobData?.Notify }}<br>
+            {{ housejobData?.NotifyAddress }}
           </div>
 
         </div>
@@ -148,13 +148,13 @@
         </div>
 
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:1px solid black; padding:4px; box-sizing:border-box; text-align:center;">
+          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; border-left:1px solid black; border-right:none; padding:4px; box-sizing:border-box; text-align:center;">
           <div><strong>Currency</strong></div>
           <div style="text-align: center;">{{housejobData?.Others?.[0]?.CargoCurrency}}</div>
         </div>
 
         <div
-          style="flex:0 0 25%; max-width:25%; border:1px solid black; border-top:none; padding:4px; box-sizing:border-box; text-align:center;border-left: none;border-right:none ;">
+          style="flex:0 0 25%; max-width:25%;  border-top:none; border-left:1px solid black;border-bottom:1px solid black; border-right:none; padding:4px; box-sizing:border-box; text-align:center;">
           <div><strong>No. of Package</strong></div>
           <div style="text-align: right;">{{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
         </div>
@@ -190,7 +190,7 @@
           style="width:25%; border:1px solid black;border-top: none;border-right: none; padding:4px; text-align:center; box-sizing:border-box;">
           <strong>Good Value</strong>
           <div style="text-align:right;">
-            {{housejobData?.Others?.[0]?.CargoValue}}
+            {{housejobData?.Others?.[0]?.CargoValue | number:'1.2-2'}}
           </div>
         </div>
 
@@ -206,26 +206,32 @@
       <table style="width:98%; border-collapse:collapse; margin:  10px;font-size: 16px;">
         <thead>
           <tr>
+            <th style="border:1px solid black; text-align:center;"><strong>Commodity</strong></th>
+            <th style="border:1px solid black; text-align:center;"><strong>Container No</strong></th>
             <th style="border:1px solid black; text-align:center;"><strong>Type</strong></th>
-            <th style="border:1px solid black; text-align:center;"><strong>Commodity Description</strong></th>
             <th style="border:1px solid black; text-align:center;"><strong>No. of Pkgs</strong></th>
-            <th style="border:1px solid black; text-align:center;"><strong>No. Containers</strong></th>
             <th style="border:1px solid black; text-align:center;"><strong>Gross Wt.</strong></th>
             <th style="border:1px solid black; text-align:center;"><strong>Net Wt.</strong></th>
             <th style="border:1px solid black; text-align:center;"><strong>Volume</strong></th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-
-            <td style="border:1px solid black; text-align:start;">{{housejobData?.Cargo?.[0]?.CargoType}}</td>
-            <td style="border:1px solid black; text-align:start;">{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-            <td style="border:1px solid black; text-align:right;">{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
-            <td style="border:1px solid black; text-align:right;">{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
-            <td style="border:1px solid black; text-align:right;">{{housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}}</td>
-            <td style="border:1px solid black; text-align:right;">{{housejobData?.Cargo?.[0]?.NetWeight |number:'1.3-3'}}</td>
-            <td style="border:1px solid black; text-align:right;">{{housejobData?.Cargo?.[0]?.Volume | number:'1.3-3'}}</td>
+          <tr *ngFor="let item of housejobData?.Products">
+            <td style="border:1px solid black; text-align:start;">{{item?.ProductName}}</td>
+            <td style="border:1px solid black;">{{item?.ContainerNo}}</td>
+             <td style="border:1px solid black;">{{getContainerName(item?.masterJobContainer?.ContainerType)}}</td>
+            <td style="border:1px solid black; text-align:right;">{{item?.ExternlQty}}</td>
+            <td style="border:1px solid black; text-align:right;">{{item?.GrossWeight | number:'1.3-3'}}</td>
+            <td style="border:1px solid black; text-align:right;">{{item?.NetWeight |number:'1.3-3'}}</td>
+            <td style="border:1px solid black; text-align:right;">{{item?.Volume | number:'1.3-3'}}</td>
         
+          </tr>
+          <tr>
+            <td colspan="3" style="font-weight: bolder;border:1px solid black;text-align: right;">Total</td>
+            <td style="border:1px solid black;text-align: right;font-weight: bold;">{{getTotalPkg()}}</td>
+            <td style="border:1px solid black;text-align: right;font-weight: bold;">{{getGrossWeight() | number:'1.3-3'}}</td>
+            <td style="border:1px solid black;text-align: right;font-weight: bold;">{{NetWeightTotal() | number:'1.3-3'}}</td>
+            <td style="border:1px solid black;text-align: right;font-weight: bold;">{{voluemTotal() | number:'1.3-3'}}</td>
           </tr>
         </tbody>
       </table>

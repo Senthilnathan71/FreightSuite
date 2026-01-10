@@ -1076,7 +1076,37 @@ export class ReportRegistryService {
       console.warn('Export_Job_Volume_TEU_Report component not yet created:', error);
     }
 
-    // 
+     // Comprehensive Management Report
+    try {
+      const { ComprehensiveManagementReportComponent } = await import(
+        '../components/reports/comprehensive-management-report/comprehensive-management-report.component'
+      );
+
+      this.registerReport({
+        id: 'comprehensive-management',
+        title: 'Comprehensive_Management_Report',
+        component: ComprehensiveManagementReportComponent,
+        filenameTemplate: 'Comprehensive_Management_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Comprehensive_Management_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Comprehensive_Management_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Comprehensive_Management_Report component not yet created:', error);
+    }
+   
   }
 
   /**

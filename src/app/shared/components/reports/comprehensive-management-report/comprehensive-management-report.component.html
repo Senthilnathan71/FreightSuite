@@ -1,0 +1,163 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <div style="text-align: center;">
+        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+        </h4>
+        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+        </h5>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+    </div>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Comprehensive Management Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                </div>
+
+                <div class="d-flex align-items-center d-none">
+                    <strong style="margin-bottom: 4px;width: 130px;">BLIssue </strong>
+                    <p class="ms-1">: {{ params?.BLIssue }}</p>
+                </div>
+            </div>
+        </div>
+        <h5>Booking Details</h5>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light text-center">No of Booking</th>
+                        <th class="bg-transparent text-light">Revenue</th>
+                        <th class="bg-transparent text-light">Cost</th>
+                        <th class="bg-transparent text-light">Profit</th>
+                        <th class="bg-transparent text-light">Gross Wt</th>
+                        <th class="bg-transparent text-light">Net Wt</th>
+                        <th class="bg-transparent text-light">CBM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of bookingRows" style="white-space: nowrap;">
+                        <td>{{ item.dept }}</td>
+                        <td class="text-center">{{ item.totalBookings }}</td>
+                        <td class="text-end">{{ item.totalRevenue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.totalCost | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.totalProfit | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.totalGrossWt | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.totalNetWt | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.totalVolume | number:'1.2-2' }}</td>
+                    </tr>
+
+                    <tr *ngIf="bookingRows.length === 0">
+                        <td colspan="8" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h5>Master Job Details</h5>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light text-center">No of Master Jobs</th>
+                        <th class="bg-transparent text-light">Revenue</th>
+                        <th class="bg-transparent text-light">Cost</th>
+                        <th class="bg-transparent text-light">Profit</th>
+                        <th class="bg-transparent text-light">Gross Wt</th>
+                        <th class="bg-transparent text-light">Net Wt</th>
+                        <th class="bg-transparent text-light">CBM</th>
+                        <th class="bg-transparent text-light">TEUs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of masterJobRows" style="white-space: nowrap;">
+                        <td>{{ item.Department }}</td>
+                        <td class="text-center">{{ item.NoOfMasterJobs }}</td>
+                        <td class="text-end">{{ item.Revenue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.Cost | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.Profit | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.GrossWeight | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.NetWeight | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CBM | number:'1.2-2' }}</td>
+                        <td >{{ item.TEUs || 0 }}</td>
+                    </tr>
+
+                    <tr *ngIf="masterJobRows.length === 0">
+                        <td colspan="9" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <h5>House Job Details</h5>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Dept</th>
+                        <th class="bg-transparent text-light text-center">No of House Jobs</th>
+                        <th class="bg-transparent text-light">Revenue</th>
+                        <th class="bg-transparent text-light">Cost</th>
+                        <th class="bg-transparent text-light">Profit</th>
+                        <th class="bg-transparent text-light">Gross Wt</th>
+                        <th class="bg-transparent text-light">Net Wt</th>
+                        <th class="bg-transparent text-light">CBM</th>
+                        <!-- <th class="bg-transparent text-light">TEUs</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of houseJobRows" style="white-space: nowrap;">
+                        <td>{{ item.Department }}</td>
+                        <td class="text-center">{{ item.NoOfHouseJobs }}</td>
+                        <td class="text-end">{{ item.Revenue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.Cost | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.Profit | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.GrossWeight | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.NetWeight | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CBM | number:'1.2-2' }}</td>
+                        <!-- <td>{{ item.TEUs || 0 }}</td> -->
+                    </tr>
+
+                    <tr *ngIf="houseJobRows.length === 0">
+                        <td colspan="9" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+</div>

@@ -102,15 +102,16 @@
 
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
                         <td colspan="6" class="text-end">TOTAL :</td>
+                            <!-- Total Local Amount (originalCurrencyAmount) -->
+                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') |
+                            number:'1.2-2' }}
+                        </td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') |
                             number:'1.2-2' }}
                         </td>
 
-                        <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') |
-                            number:'1.2-2' }}
-                        </td>
+                    
 
                         <!-- Total O/S Currency -->
                         <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount')

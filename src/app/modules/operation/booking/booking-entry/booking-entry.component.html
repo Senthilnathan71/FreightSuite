@@ -3746,56 +3746,74 @@
       ">
       
             <!-- Row -->
-            <div style="display:flex; border-bottom:1px solid #000;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
-                Accepted On
+             <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+               Shipper
               </div>
-              <div style="flex:1; padding:6px 8px;">
-                {{bookingHeader?.ETD}}
+              <div style="flex:1; padding:2px 8px;">
+                 {{bookingHeader?.ShipperName}}
               </div>
             </div>
       
             <div style="display:flex; border-bottom:1px solid #000;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Consignee
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                 {{bookingHeader?.ConsigneeName}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Accepted On
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.ETD | date:'yyyy-MM-dd HH:mm:ss'}}
+              </div>
+            </div>
+      
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
                 Origin
               </div>
-              <div style="flex:1; padding:6px 8px;">
+              <div style="flex:1; padding:2px 8px;">
                 {{bookingHeader?.POO}}
               </div>
             </div>
       
             <div style="display:flex; border-bottom:1px solid #000;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
                 Destination
               </div>
-              <div style="flex:1; padding:6px 8px;">
+              <div style="flex:1; padding:2px 8px;">
                 {{bookingHeader?.FPD}}
               </div>
             </div>
       
             <div style="display:flex; border-bottom:1px solid #000;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
                 Total Pkgs
               </div>
-              <div style="flex:1; padding:6px 8px;">
+              <div style="flex:1; padding:2px 8px;">
                 {{bookingHeader?.bookingCargo?.[0]?.NoOfPackage}}
               </div>
             </div>
       
             <div style="display:flex; border-bottom:1px solid #000;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
                 Weight
               </div>
-              <div style="flex:1; padding:6px 8px;">
+              <div style="flex:1; padding:2px 8px;">
                 {{bookingHeader?.bookingCargo?.[0]?.GrossWeight}}
               </div>
             </div>
       
             <div style="display:flex;">
-              <div style="width:150px; padding:6px 8px; font-weight:bold; border-right:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
                 Booking No
               </div>
-              <div style="flex:1; padding:6px 8px;">
+              <div style="flex:1; padding:2px 8px;">
                 {{bookingHeader?.BookingNo}}
               </div>
             </div>
@@ -3826,7 +3844,7 @@
               currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
               }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
               currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-              <p>{{website}}</p>
+              <p style="font-size: 12px;">{{website}}</p>
           </div>
       
         </div>

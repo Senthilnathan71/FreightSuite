@@ -2399,7 +2399,8 @@ onYardChange(selectedYard: any): void {
  
     reportcargomanifest() {
       const modalRef = this.modalService.open(CargoManifestComponent, {
-        size: 'xl',
+        // size: 'xl',
+        windowClass:"print-landscape",
         scrollable: true,
       });
       modalRef.componentInstance.masterJobData = this.masterJobData;
@@ -2413,7 +2414,8 @@ onYardChange(selectedYard: any): void {
  
       reportPreAlertModel() {
         const modalRef = this.modalService.open(PreAlertComponent, {
-          size: 'xl',
+          // size: 'xl',
+          windowClass:"print-landscape",
           scrollable: true,
         })
         modalRef.componentInstance.masterJobData = this.masterJobData;

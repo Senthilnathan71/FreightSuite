@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
@@ -39,6 +40,7 @@ export class PreAlertComponent {
      private appSettingService: AppSettingsService,
      private spinner: NgxSpinnerService,
      private pdfService: PdfDownloadService,
+    public logoService : LogoService
    ) { }
  
     showPrintLogo: boolean = false;
@@ -58,7 +60,7 @@ export class PreAlertComponent {
      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
      this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
-     this.loadCityName();
+    //  this.loadCityName();
    }
  
    async loadLookups() {
@@ -77,30 +79,30 @@ export class PreAlertComponent {
        this.appSettingService.showError('Error loading lookup data');
      });
    }
-   loadCityName(): void {
-     if (!this.currentBranchCityId) return;
+  //  loadCityName(): void {
+  //    if (!this.currentBranchCityId) return;
  
-     this.spinner.show();
+  //    this.spinner.show();
  
-     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
-       next: (response: any) => {
-         console.log("City API response:", response);
+  //    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+  //      next: (response: any) => {
+  //        console.log("City API response:", response);
  
-         if (response) {
-           const ourCity = response;
+  //        if (response) {
+  //          const ourCity = response;
  
-           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-           console.log("Final City Name:", this.currentBranchCityName);
-         }
+  //          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+  //          console.log("Final City Name:", this.currentBranchCityName);
+  //        }
  
-         this.spinner.hide();
-       },
-       error: (error) => {
-         console.error("Failed to load city:", error);
-         this.spinner.hide();
-       }
-     });
-   }
+  //        this.spinner.hide();
+  //      },
+  //      error: (error) => {
+  //        console.error("Failed to load city:", error);
+  //        this.spinner.hide();
+  //      }
+  //    });
+  //  }
  
  
  
@@ -210,17 +212,18 @@ export class PreAlertComponent {
  
  
     async downloadPDF() {
-   this.showPrintLogo = false;
-   this.showPdfLogo = true;
+  //  this.showPrintLogo = false;
+  //  this.showPdfLogo = true;
  
    setTimeout(async () => {
      this.spinner.show();
     try {
        await this.pdfService.downloadBalancedPDF(
          'printContent',
-         `Cargo_manifest_${this.masterJobData?.MasterJobNumber || 'Report'}`,
+         `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}`,
          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+         (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
+          'landscape'
        );
      } finally {
        this.spinner.hide();
@@ -229,8 +232,8 @@ export class PreAlertComponent {
  }
    
  printDiv(divId: string): void {
-   this.showPrintLogo = true;
-   this.showPdfLogo = false;
+  //  this.showPrintLogo = true;
+  //  this.showPdfLogo = false;
  
    setTimeout(() => {
      const printContents = document.getElementById(divId)?.innerHTML;

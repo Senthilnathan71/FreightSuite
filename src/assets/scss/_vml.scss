@@ -3915,3 +3915,10 @@ textarea:disabled {
 
 
 // ------------------------------------
+.print-landscape{
+   .modal-dialog {
+    max-width: 1200px !important;
+    width: 1200px !important;
+    margin: 1.75rem auto;
+  }
+}

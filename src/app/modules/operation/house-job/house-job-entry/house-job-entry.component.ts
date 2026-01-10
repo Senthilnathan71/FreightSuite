@@ -3809,11 +3809,12 @@ ${this.userData['userName']}`;
   }
      reportCommericalInvoice() {
       const modalRef=this.modalService.open(CommericalInvoiceComponent,{
-         size: 'xl',
+          windowClass:"print-landscape",
         scrollable: true,
       })
        modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+        modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     }
        reportCertificateofOrgin() {
         const modalRef=this.modalService.open(CertificateOfOriginComponent,{

@@ -123,8 +123,8 @@ export class StatementReportComponent {
         { value: item?.salesmanSid || '' },
         { value: item?.drCr || '' },
         { value: item?.currencyCode || '' },
-        { value: this.formatNumber(item?.originalLocalAmount) },
         { value: this.formatNumber(item?.originalCurrencyAmount) },
+        { value: this.formatNumber(item?.originalLocalAmount) },
         { value: this.formatNumber(item?.outstandingCurrencyAmount) },
         { value: this.formatNumber(item?.outstandingLocalAmount) },
         { value: this.formatNumber(this.getCumulative(transactions, index)) }

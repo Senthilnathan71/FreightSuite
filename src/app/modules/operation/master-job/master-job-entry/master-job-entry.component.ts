@@ -3357,7 +3357,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     }
 
     const modalRef = this.modalService.open(PreAlertComponent, {
-      size: 'xl',
+      windowClass:"print-landscape",
       scrollable: true,
       
     })
@@ -3405,8 +3405,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
     }
     const modalRef = this.modalService.open(CargoManifestComponent, {
-      // windowClass:"print-a4-landscape",
-      size: 'xl',
+      windowClass:"print-landscape",
+      // size: 'xl',
       scrollable: true,
     });
     modalRef.componentInstance.masterJobData = this.masterJobData;
@@ -3447,7 +3447,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       }
     }
     const modalRef = this.modalService.open(CfsOutturnComponent, {
-      size: 'xl',
+     windowClass:"print-landscape",
       scrollable: true,
     });
     modalRef.componentInstance.masterJobData = this.masterJobData;

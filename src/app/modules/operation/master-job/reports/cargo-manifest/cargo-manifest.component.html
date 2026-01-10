@@ -19,27 +19,23 @@
 
 
 <div class="modal-body">
-    <div id="printContent" class="p-1">
+    <div id="printContent" class="py-2">
         <div>
             <div
-                style="width: 280mm; min-height: 402mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
+                style="width: 300mm; min-height: 205mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
 
                 <!-- Company Info -->
-                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 0px;
     padding-left: 20px">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                         <div style="display: flex;  flex-direction: column; align-items: center;">
                             <!-- Print logo -->
-                                                  <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: 60px;height: auto;" 
-              />
+                            <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
+                                class="company-logo img-fluid" style="width: 60px;height: auto;" />
                             <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
                             </h4>
                         </div>
-                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
+                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 18%;">
                             <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
                             </h3>
                             <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -199,7 +195,8 @@
             padding-left:35px;
             margin-top:3px;
         ">
-                            {{ getYardName(masterJobData?.others[0]?.Yard) }}
+                            {{ getYardName(masterJobData?.others[0]?.Yard) }} <br>
+                            {{ masterJobData?.others[0]?.YardAddress }}
                         </div>
                     </div>
 
@@ -315,7 +312,7 @@
                                     style="border:1px solid black; padding:2px 8px;text-align: center;font-weight:bold;width: 13%;">
                                     <strong>Volume</strong>
                                 </th>
-                                  <th
+                                <th
                                     style="border:1px solid black; padding:2px 8px;text-align: center;font-weight:bold;width: 13%;">
                                     <strong>Packages</strong>
                                 </th>
@@ -337,7 +334,7 @@
                                     {{container.Volume | number:'1.3-3'}}</td>
                                 <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                     {{container.NoOfPkg || 0}}</td>
-                                          <!-- <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                <!-- <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                     {{container.NoOfPkg || 0}}
                                     {{getPackageTypeName(masterJobData?.containers?.[0]?.PkgType)}}</td> -->
                             </tr>
@@ -379,63 +376,68 @@
             </div>
 
 
-            <div class="p-1">
+            <div class="py-2">
                 <div
-                    style="width:280mm; min-height:398mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
+                    style="width: 300mm; min-height: 205mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
 
-                      <!-- Company Info -->
-                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+                    <!-- Company Info -->
+                    <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 0px;
     padding-left: 20px">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                        <div style="display: flex;  flex-direction: column; align-items: center;">
-                            <!-- Print logo -->
-                                                  <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: 60px;height: auto;" 
-              />
-                            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
-                            </h4>
-                        </div>
-                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
-                            <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
-                            </h3>
-                            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
-                            </h5>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
-                                currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
-                                currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
-                                currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div style="display: flex;  flex-direction: column; align-items: center;">
+                                <!-- Print logo -->
+                                <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
+                                    class="company-logo img-fluid" style="width: 60px;height: auto;" />
+                                <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name'
+                                        }}</strong>
+                                </h4>
+                            </div>
+                            <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 18%;">
+                                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company
+                                    Name' }}
+                                </h3>
+                                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company
+                                    Branch' }}
+                                </h5>
+                                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+                                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
+                                    currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
+                                    currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
+                                    currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
 
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                      <h3
-                    style="text-align:center;  padding:8px 0; margin:0; border-top: 1px solid black; font-size: 20px;font-weight: bolder;">
-                    <strong>Cargo Manifest</strong>
+                    <h3
+                        style="text-align:center;  padding:8px 0; margin:0; border-top: 1px solid black; font-size: 20px;font-weight: bolder;">
+                        <strong>Cargo Manifest</strong>
                     </h3>
                     <!-- Manifest Details -->
                     <div
-                        style="display:flex; flex-wrap:wrap; border:1px solid black; padding:1rem 2rem; margin-top:0.5rem;">
-                        <div style="width:100%; max-width:50%; box-sizing:border-box;font-size: 16px;">
+                        style="display:flex; flex-wrap:wrap; border:1px solid black; padding:0.2rem 2rem; margin-top:0.3rem;">
+
+                        <!-- Column 1 -->
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Manifest No.</strong></div>
                                 <p style="margin:0;">: {{masterJobData.MasterJobNumber}}</p>
                             </div>
+
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Manifest Date</strong></div>
                                 <p style="margin:0;">: {{masterJobData.MasterJobDate | formatDate}}</p>
                             </div>
+
                             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Vessel</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
                             </div>
+
                             <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>Flight Name</strong></div>
+                                <div style="width:130px;font-weight:bold;"><strong>Voyage No</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
                             </div>
                             }@else{
@@ -443,11 +445,22 @@
                                 <div style="width:130px;font-weight:bold;"><strong>Flight No</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
                             </div>
+
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Flight Name</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
                             </div>
                             }
+
+                            <div style="display:flex; margin-bottom:0.25rem;">
+                                <div style="width:130px;font-weight:bold;"><strong>ETD</strong></div>
+                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ETD | formatDate}}</p>
+                            </div>
+
+                        </div>
+
+                        <!-- Column 2 -->
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Booking No.</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
@@ -455,17 +468,41 @@
 
                             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                             <div style="display:flex; margin-bottom:0.25rem;">
+                                <div style="width:130px;font-weight:bold;"><strong>MBL No.</strong></div>
+                                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
+                            </div>
+                            }@else{
+                            <div style="display:flex; margin-bottom:0.25rem;">
+                                <div style="width:130px; white-space:nowrap;font-weight:bold;"><strong>MAWB</strong>
+                                </div>
+                                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
+                            </div>
+                            }
+
+                            <div style="display:flex; margin-bottom:0.25rem;">
+                                <div style="width:130px;font-weight:bold;"><strong>MBL Date</strong></div>
+                                <p style="margin:0;">: {{ masterJobData.MBLDate | formatDate }}</p>
+                            </div>
+
+
+                            @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
+                            <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Sailing Date</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ATA | formatDate}}</p>
                             </div>
                             }
+
                             <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>Master PP/CC</strong></div>
-                                <p style="margin:0;">: {{masterJobData.FreightPPCC}}</p>
+                                <div style="width:130px;font-weight:bold;"><strong>ETA</strong></div>
+                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ETA | formatDate}}</p>
                             </div>
+
+
+
                         </div>
 
-                        <div style="width:100%; max-width:50%; box-sizing:border-box;font-size: 16px;">
+                        <!-- Column 3 -->
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Load Port</strong></div>
                                 <p style="margin:0;">: {{masterJobData.POL}}</p>
@@ -474,43 +511,26 @@
                                 <div style="width:130px;font-weight:bold;"><strong>Discharge Port</strong></div>
                                 <p style="margin:0;">: {{masterJobData.POD}}</p>
                             </div>
+
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bold;"><strong>Delivery Port</strong></div>
                                 <p style="margin:0;">: {{masterJobData.FPD}}</p>
                             </div>
-                            @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                             <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>MBL No.</strong></div>
-                                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
-                            </div>
-                            }@else{
-                            <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px; white-space:nowrap;font-weight:bold; "><strong>MAWB</strong>
-                                </div>
-                                <p style="margin:0;">: {{masterJobData.MBLNo}}</p>
-                            </div>
-                            }
-
-
-                            <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>MBL Date</strong></div>
-                                <p style="margin:0;">: {{ masterJobData.MasterJobDate | formatDate }}</p>
-                            </div>
-                            <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>ETD</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ETD | formatDate}}</p>
-                            </div>
-                            <div style="display:flex; margin-bottom:0.25rem;">
-                                <div style="width:130px;font-weight:bold;"><strong>ETA</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.ETA | formatDate}}</p>
+                                <div style="width:130px;font-weight:bold;"><strong>Master PP/CC</strong></div>
+                                <p style="margin:0;">: {{masterJobData.FreightPPCC}}</p>
                             </div>
                         </div>
+
                     </div>
+
+
+                    <!-- Master Job - Cargo Manifest -->
 
                     @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                     <!-- Container Table -->
                     <table
-                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">
+                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:10px; border:1px solid black;">
                         <thead>
                             <tr>
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;">
@@ -519,8 +539,10 @@
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;">
                                     <strong>Container Type</strong>
                                 </th>
-                                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>SOC
-                                        Container</strong></th>
+                                <th style="border:1px solid black; padding:0.25rem;text-align: center;width: 15%;">
+                                    <strong>SOC
+                                        Container</strong>
+                                </th>
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;">
                                     <strong>Seal</strong>
                                 </th>
@@ -541,11 +563,11 @@
                     </table>
                     }
 
-                    <!-- House Job Table -->
+                    <!-- MasterAir way Bill print -->
                     <table
-                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:1rem; border:1px solid black;">
+                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:10px; border:1px solid black;">
                         <thead>
-                            <tr>
+                            <tr style="white-space: nowrap;">
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;">
                                     <strong>SNo.</strong>
                                 </th>
@@ -557,8 +579,12 @@
                                         No.</strong></th>
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Pkg &
                                         Desc</strong></th>
-                                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Weight</strong></th>
-                                <th style="border:1px solid black; padding:0.25rem;text-align: center;"><strong>Vol</strong></th>
+                                <th style="border:1px solid black; padding:0.25rem;text-align: center;">
+                                    <strong>Weight</strong>
+                                </th>
+                                <th style="border:1px solid black; padding:0.25rem;text-align: center;">
+                                    <strong>Vol</strong>
+                                </th>
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;">
                                     <strong>PP/CC</strong>
                                 </th>
@@ -577,31 +603,31 @@
                                             0 ? (i + 1) : '' }}</td>
                                         <td style="border:1px solid black; padding:0.25rem; white-space: nowrap;">{{ j
                                             === 0 ? (h.HBLNo || '') : '' }}</td>
-                                      <td style="border:1px solid black; padding:0.25rem;">
-    <ng-container *ngIf="j === 0">
+                                        <td style="border:1px solid black; padding:0.25rem;">
+                                            <ng-container *ngIf="j === 0" style="white-space: nowrap;">
 
-        <strong>Shipper:</strong>
-        {{ h.ShipperName || '' }}
-        <span *ngIf="h.ShipperName && (h.ConsigneeName || h.Notify)">
-            /
-        </span>
-        <br>
+                                                <strong>Shipper:</strong>
+                                                {{ h.ShipperName || '' }}
+                                                <!-- <span *ngIf="h.ShipperName && (h.ConsigneeName || h.Notify)">
+                                                    /
+                                                </span> -->
+                                                <br>
 
-        <strong>Consignee:</strong>
-        {{ h.ConsigneeName || '' }}
-        <span *ngIf="h.ConsigneeName && h.Notify">
-            /
-        </span>
-        <br>
+                                                <strong>Consignee:</strong>
+                                                {{ h.ConsigneeName || '' }}
+                                                <!-- <span *ngIf="h.ConsigneeName && h.Notify">
+                                                    /
+                                                </span> -->
+                                                <br>
 
-        <strong>Notify:</strong>
-        {{ h.Notify || '' }}
-        <span *ngIf="h.NotifyAddress">
-            {{ ' ' + h.NotifyAddress }}
-        </span>
+                                                <strong>Notify:</strong>
+                                                {{ h.Notify || '' }}
+                                                <!-- <span *ngIf="h.NotifyAddress">
+                                                    {{ ' ' + h.NotifyAddress }}
+                                                </span> -->
 
-    </ng-container>
-</td>
+                                            </ng-container>
+                                        </td>
 
                                         <td style="border:1px solid black; padding:0.25rem;">{{ c.MarksAndNumber }}</td>
                                         <td style="border:1px solid black; padding:0.25rem;">{{ c.NoOfPackage || '' }}
@@ -649,8 +675,6 @@
 
                 </div>
             </div>
-
-
 
         </div>
     </div>

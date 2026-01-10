@@ -363,7 +363,8 @@ getTotalDamage(containerNo: string): number {
           'printContent',
           `CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}`,
           () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+          (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
+          'landscape'
         );
       } finally {
         this.spinner.hide();
