@@ -528,7 +528,7 @@ export class DocReferenceComponent implements OnInit {
 
 
   goBack() {
-    this.router.navigate(['/operation/doc-reference/list']);
+    history.back();
   }
 
 
@@ -563,120 +563,5 @@ export class DocReferenceComponent implements OnInit {
     return this.datePipe.transform(dateValue, 'yyyy-MM-dd');
   }
 
-
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (this.isEditMode && this.docRefId) {
-      this.http
-        .get<any>(`doc-reference/audit-logs/${this.docRefId}`)
-        .subscribe({
-          next: (response) => {
-            if (response.status || response.Status) {
-              this.auditLogs = response.data || [];
-              this.auditLogModalRef = this.modalService.open(modal, {
-                centered: true,
-                scrollable: true,
-                size: 'xl',
-                windowClass: 'audit-log-modal',
-              });
-            } else {
-              this.appSettingService.showInfo(
-                'No audit logs available',
-              );
-            }
-          },
-          error: () => {
-            this.appSettingService.showInfo(
-              'Audit logs not available',
-            );
-          },
-        });
-    }
-  }
-
-
-  showInfo() {
-    this.appSettingService.showInfo(
-      'Document Reference Information',
-    );
-  }
-
-
-  openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-
-
-    this.masterService
-      .getTandCByCondition(payload)
-      .subscribe({
-        next: (resp: any) => {
-          if (resp.Status) {
-            this.TandCList = resp.data;
-            const modalRef = this.modalService.open(
-              TermsAndConditionsComponent,
-              {
-                size: 'lg',
-                backdrop: 'static',
-                centered: true,
-              },
-            );
-            modalRef.componentInstance.terms = this.TandCList;
-            modalRef.componentInstance.MenuMasterSid =
-              this.currentMenuId;
-            modalRef.componentInstance.DocumentSid = this.docRefId;
-          } else {
-            this.appSettingService.showError(
-              'Error loading Terms and Conditions',
-            );
-          }
-        },
-        error: () => {
-          this.appSettingService.showError(
-            'Error loading Terms and Conditions',
-          );
-        },
-      });
-  }
-
-
-  openEmail() {
-    this.modalService.open(EmailEntryComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static',
-    });
-  }
-
-
-  openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
-    if (!MenuMasterSid) return;
-
-
-    const modalRef = this.modalService.open(AuthorityLogComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static',
-    });
-    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-    modalRef.componentInstance.documentSid = this.docRefId;
-  }
-
-
-  openEDoc() {
-    const modalRef = this.modalService.open(EdocComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static',
-    });
-
-
-    modalRef.componentInstance.CompanyMasterSid =
-      this.currentCompany?.CompanyMasterSid;
-    modalRef.componentInstance.BranchMasterSid =
-      this.currentBranch?.BranchMasterSid;
-    modalRef.componentInstance.MenuMasterSid = this.MenuMasterSid;
-    modalRef.componentInstance.DocumentSid = this.docRefId;
-  }
 }
 
