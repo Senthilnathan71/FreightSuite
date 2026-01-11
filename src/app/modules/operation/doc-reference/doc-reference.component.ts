@@ -1,6 +1,6 @@
 
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, Optional, TemplateRef } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -17,6 +17,7 @@ import {
   NgbDatepickerModule,
   NgbDropdownModule,
   NgbModal,
+  NgbActiveModal,
   NgbModalRef,
   NgbCalendar,
   NgbDateAdapter,
@@ -62,6 +63,7 @@ export class DocReferenceComponent implements OnInit {
   docRefId!: number;
   docRefData: any;
   userData: any;
+  componentData: any;
   permissions: string[] = [
     'View',
     'Edit',
@@ -106,6 +108,7 @@ export class DocReferenceComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private calendar: NgbCalendar,
     private modalService: NgbModal,
+    @Optional() private activeModal: NgbActiveModal,
     private datePipe: DatePipe,
   ) {
     this.initForm();
@@ -474,11 +477,6 @@ export class DocReferenceComponent implements OnInit {
                   ? 'Document Reference updated successfully!'
                   : 'Document Reference created successfully!',
               );
-              setTimeout(() => {
-                this.router.navigate([
-                  '/operation/doc-reference/list',
-                ]);
-              }, 1000);
             } else {
               const errorMsg =
                 response?.message ||
@@ -495,18 +493,24 @@ export class DocReferenceComponent implements OnInit {
             } else if (error.message) {
               errorMessage = error.message;
             }
-            this.appSettingService.showError(errorMessage);
-            this.btnDisable = false;
-            this.isSubmitting = false;
+            this.appSettingService.showError(errorMessage);
+            this.btnDisable = false;
+            this.isSubmitting = false;
+            if (this.componentData && this.activeModal) {
+              this.activeModal.dismiss('error');
+            }
           },
         });
-    } catch (err: any) {
-      this.appSettingService.showError(
-        `Error preparing data: ${err.message}`,
-      );
-      this.btnDisable = false;
-      this.isSubmitting = false;
-    }
+    } catch (err: any) {
+      this.appSettingService.showError(
+        'Error preparing data: ' + err.message,
+      );
+      this.btnDisable = false;
+      this.isSubmitting = false;
+      if (this.componentData && this.activeModal) {
+        this.activeModal.dismiss('error');
+      }
+    }
   }
 
 
@@ -527,9 +531,13 @@ export class DocReferenceComponent implements OnInit {
   }
 
 
-  goBack() {
-    history.back();
-  }
+  goBack() {
+    if (this.componentData && this.activeModal) {
+      this.activeModal.dismiss('cancel');
+    } else {
+      history.back();
+    }
+  }
 
 
   private markFormGroupTouched(formGroup: FormGroup) {

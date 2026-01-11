@@ -44,17 +44,6 @@
             ></i>
             {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
           </button>
-
-          <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-            <button
-              type="button"
-              class="btn btn-light-secondary btn-sm has-arrow"
-              id="dropdownBasic1"
-              ngbDropdownToggle
-            >
-              <i class="fas fa-ellipsis-v"></i>
-            </button>
-          </div>
         </div>
       </div>
     </div>
