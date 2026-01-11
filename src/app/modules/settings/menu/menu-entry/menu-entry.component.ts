@@ -311,14 +311,41 @@ export class MenuEntryComponent implements OnInit {
   loadMenuPermissions(menuMasterSid: number) {
     this.settingsService.getMenuPermissions(menuMasterSid).subscribe((resp: any) => {
       if (!resp) { return; }
-      const map: Record<string, boolean> = {};
+
+      // Reverse map: permissionCode → formControlName
+      const reverseMap: Record<string, string> = {
+        'add': 'add',
+        'edit': 'edit',
+        'view': 'view',
+        'delete': 'delete',
+        'edoc': 'edoc',
+        'terms_and_condition': 'terms_and_condition',
+        'authority': 'authority',
+        'email': 'email',
+        'follow_up': 'followUp',
+        'document_reference': 'docRef'
+      };
+
+      const menuPerms: Record<string, boolean> = {};
+      const otherPerms: Record<string, boolean> = {};
+
       resp.forEach((item: any) => {
-        map[item.permissionCode.toLowerCase()] = item.status === 'A';
+        const code = item.permissionCode?.toLowerCase();
+        const formControlName = reverseMap[code];
+        if (!formControlName) return;
+
+        const isActive = item.status === 'A';
+
+        if (['add', 'edit', 'view', 'delete'].includes(formControlName)) {
+          menuPerms[formControlName] = isActive;
+        } else {
+          otherPerms[formControlName] = isActive;
+        }
       });
 
       this.menuForm.patchValue({
-        menuPermissions: map,
-        otherPermissions: map
+        menuPermissions: menuPerms,
+        otherPermissions: otherPerms
       });
     });
   }

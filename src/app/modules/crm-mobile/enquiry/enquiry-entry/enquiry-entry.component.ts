@@ -54,6 +54,8 @@ import { VoiceRecognitionService } from '../voice-recognition.service';
 import { VoiceParserService } from '../voice-parser.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
+import { DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -149,6 +151,7 @@ export class EnquiryEntryComponent implements OnInit {
   minExpDate: any;
   permissions: any[] = [];
   currentMenuPermissions = {}
+  actionMenuItems: DropdownMenuItem[] = [];
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
@@ -387,7 +390,9 @@ export class EnquiryEntryComponent implements OnInit {
       }
     });
 
-    this.mps.init().subscribe();
+    this.mps.init().subscribe(() => {
+      this.initializeActionMenu();
+    });
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -419,6 +424,79 @@ export class EnquiryEntryComponent implements OnInit {
     });
     this.checkAuthorisedPerson(this.userData?.UserMasterSid);
     this.subscribeToLeadCustomerToggle();
+  }
+
+  initializeActionMenu(): void {
+    this.actionMenuItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.mps.has('edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms_and_condition',
+        condition: this.mps.has('terms_and_condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.mps.has('authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.mps.has('email')
+      },
+      {
+        label: 'Agent Email',
+        icon: 'fas fa-envelope',
+        action: 'agent_email',
+        condition: this.selectedFCLLCL === 'FCL'
+      },
+      {
+        label: 'Followup',
+        icon: 'fas fa-paperclip',
+        action: 'follow_up',
+        condition: this.mps.has('follow_up')
+      },
+      {
+        label: 'Document reference',
+        icon: 'fas fa-paperclip',
+        action: 'document_reference',
+        condition: this.mps.has('document_reference')
+      }
+    ];
+  }
+
+  onActionMenuClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms_and_condition':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      case 'agent_email':
+        this.openAgentEmail();
+        break;
+      case 'follow_up':
+        this.openFollowup();
+        break;
+      case 'document_reference':
+        this.openDocRef();
+        break;
+    }
   }
 
   loadCityName(): void {
@@ -1068,6 +1146,9 @@ private parseFloatSafe(value: any): number {
       this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase() || "LCL";
     }
 
+    // Refresh action menu items based on new segment selection
+    this.initializeActionMenu();
+
     // Reset route ports
     this.routes.controls.forEach((routeGroup: FormGroup, index) => {
       ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
@@ -1352,6 +1433,9 @@ private parseFloatSafe(value: any): number {
     } else {
       this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
     }
+
+    // Refresh action menu items based on loaded segment
+    this.initializeActionMenu();
 
     // Patch header fields
     this.quotationEnquiryNumber = response.EnquiryNumber;
@@ -2066,6 +2150,23 @@ private parseFloatSafe(value: any): number {
   openEDoc() {
     // if (!this.tariffData) return;
     const modalRef = this.ngbModal.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    const data: any = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
+      DocumentSid: this.EnquiryHeaderSid
+    }
+
+    this.commonService.documentData.set(data)
+  }
+
+
+  openDocRef(){
+    const modalRef = this.ngbModal.open(DocReferenceComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
