@@ -78,7 +78,6 @@
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                                Authorize</button>
                             <ng-container *ngFor="let item of actionMenuItems">
                                 <button *ngIf="item.condition !== false" class="text-dark" ngbDropdownItem
                                     appPreventMultiClick (click)="onActionMenuClick(item.action)">
