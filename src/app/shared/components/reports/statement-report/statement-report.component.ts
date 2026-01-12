@@ -135,8 +135,8 @@ export class StatementReportComponent {
     
     const totalCells: ExcelCell[] = [
       { value: 'TOTAL', colspan: 11 },
-      { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
       { value: this.formatNumber(this.getTotal(transactions, 'originalCurrencyAmount')) },
+      { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
       { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
       { value: this.formatNumber(this.getTotal(transactions, 'outstandingLocalAmount')) },
       { value: this.formatNumber(this.getCumulative(transactions, transactions.length - 1)) }

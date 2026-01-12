@@ -1107,6 +1107,37 @@ export class ReportRegistryService {
       console.warn('Comprehensive_Management_Report component not yet created:', error);
     }
    
+    // Tradelane_Profitability
+       try {
+      const { TradelaneProfitabilityComponent } = await import(
+        '../components/reports/tradelane-profitability/tradelane-profitability.component'
+      );
+
+      this.registerReport({
+        id: 'tradelane-profitability',
+        title: 'Tradelane_Profitability_Report',
+        component: TradelaneProfitabilityComponent,
+        filenameTemplate: 'Tradelane_Profitability_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Tradelane_Profitability_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Tradelane_Profitability_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Comprehensive_Management_Report component not yet created:', error);
+    }
+   
   }
 
   /**
