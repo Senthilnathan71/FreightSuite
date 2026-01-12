@@ -94,10 +94,50 @@
                             <div style="width:80px; font-weight:bolder;"><strong>Seal</strong></div>
                             <div>: {{ masterJobData?.containers?.[0]?.LineSeal || '' }} </div>
                         </div>
-                        <div style="display:flex; margin-bottom:4px;">
-                            <div style="width:80px; font-weight:bolder;"><strong>Remarks</strong></div>
-                            <div>: {{ masterJobData?.others?.[0]?.InternalNote || '' }}</div>
-                        </div>
+                        <div
+  style="
+    display:flex;
+    align-items:flex-start;
+    margin-bottom:4px;
+    width:100%;
+    box-sizing:border-box;
+  "
+>
+  <!-- Label -->
+  <div
+    style="
+      width:80px;
+      font-weight:bolder;
+      box-sizing:border-box;
+    "
+  >
+    Remarks
+  </div>
+
+  <!-- Colon -->
+  <div
+    style="
+      width:15px;
+      font-weight:bolder;
+    "
+  >
+    :
+  </div>
+
+  <!-- Value -->
+  <div
+    style="
+      flex:1;
+      white-space:normal;
+      word-break:break-word;
+      overflow-wrap:break-word;
+      box-sizing:border-box;
+    "
+  >
+    {{ masterJobData?.others?.[0]?.InternalNote || '' }}
+  </div>
+</div>
+
                     </div>
                 </div>
 

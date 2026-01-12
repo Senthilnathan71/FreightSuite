@@ -3369,6 +3369,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     modalRef.componentInstance.agentList = this.agentList;
     modalRef.componentInstance.yardList = this.yardList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
+    modalRef.componentInstance.portList = this.portList || [];
   }
 
   reportcargomanifest() {
@@ -3417,7 +3418,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     modalRef.componentInstance.agentList = this.agentList;
     modalRef.componentInstance.yardList = this.yardList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
-
+    modalRef.componentInstance.portList = this.portList || [];
   }
 
 

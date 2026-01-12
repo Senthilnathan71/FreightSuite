@@ -323,15 +323,34 @@
       </span>
     </div>
 
-    <!-- Right Side -->
-    <div style="flex:0 0 50%;max-width:50%;padding-left:10px;">
-      <strong style="display:block;margin-bottom:4px;">
-        Goods Description
-      </strong>
-      <span style="display:block;margin-left: 30px;">
-        {{ housejobData?.Cargo?.[0]?.CommodityDescription }}
-      </span>
-    </div>
+<!-- Right Side -->
+<div
+  style="
+    flex:0 0 50%;
+    max-width:50%;
+    padding:10px;
+    box-sizing:border-box;
+  "
+>
+  <strong style="display:block; margin-bottom:4px;">
+    Goods Description
+  </strong>
+
+  <span
+    style="
+      display:block;
+      padding-left:30px;     /* use padding, not margin */
+      white-space:normal;
+      word-break:break-word;
+      overflow-wrap:break-word;
+      max-width:100%;
+      box-sizing:border-box;
+    "
+  >
+    {{ housejobData?.Cargo?.[0]?.CommodityDescription }}
+  </span>
+</div>
+
 
   </div>
 </div>
@@ -343,13 +362,13 @@
         <table style="width:100%; border-collapse:collapse; table-layout:fixed;font-size: 16px;">
           <thead>
             <tr>
-              <th style="border:1px solid black; text-align:center;border-left: none;font-weight: bolder;"><strong>Charge
+              <th style="border:1px solid black; text-align:center;border-left: none;font-weight: bolder; width: 30%;"><strong>Charge
                   Description</strong></th>
-              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Unit</strong></th>
-              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Curr.</strong></th>
-              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;"><strong>Per Unit</strong></th>
-              <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;"><strong>Amount</strong></th>
-              <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;"><strong>Local Amount</strong></th>
+              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;width: 6%;"><strong>Unit</strong></th>
+              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;width: 6%;"><strong>Curr.</strong></th>
+              <th style="border:1px solid black; text-align:center;width: 100px;font-weight: bolder;width: 13%;"><strong>Per Unit</strong></th>
+              <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;width: 15%;"><strong>Amount</strong></th>
+              <th style="border:1px solid black; text-align:center;border-right: none;font-weight: bolder;width: 15%;"><strong>Local Amount</strong></th>
             </tr>
           </thead>
           <tbody>
@@ -367,7 +386,7 @@
                 number:'1.2-2' }}</td>
             </tr>
             
-            <tr >
+            <tr style="font-weight: bolder;">
               <td colspan="3" style="border:1px solid black; text-align:right;border-left: none;"><strong>Total</strong>
               </td>
               <td style="border:1px solid black; text-align:right;border-right: none; "><strong>{{
@@ -394,8 +413,8 @@
 
 
       <!-- Terms & Conditions -->
-      <div style="margin-top: 1rem;font-size: 16px;padding-left: 15px;">
-        <h5 style=" margin-bottom: 0.5rem;font-weight: bolder;"><strong>Terms and Conditions</strong></h5>
+      <div style="margin-top: 1rem;padding-left: 15px;">
+        <h5 style=" margin-bottom: 0.5rem;font-weight: bolder;font-size: 16px;"><strong>Terms and Conditions</strong></h5>
         <ul style="margin-top: 0; padding-left: 1.2rem;">
           @for(term of TandCList; track term){
           <li>{{ term.TandC }}</li>

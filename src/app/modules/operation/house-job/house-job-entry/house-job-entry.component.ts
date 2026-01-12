@@ -3841,6 +3841,7 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
       modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
       modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
+      modalRef.componentInstance.portList = this.portList || [];
     }
 
    reportReleaseLetter() {

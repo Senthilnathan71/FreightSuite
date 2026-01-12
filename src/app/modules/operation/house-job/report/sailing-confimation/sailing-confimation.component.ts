@@ -103,6 +103,19 @@ export class SailingConfimationComponent {
     const port = this.portList.find(p => p.PortCode === portCode);
     return port ? `${port.PortCode} - ${port.PortName}` : portCode;
   }
+getUniqueContainers(): string[] {
+  if (!this.housejobData?.Products) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      this.housejobData.Products
+        .map(p => p.ContainerNo)
+        .filter(c => c) // remove null / empty
+    )
+  );
+}
 
 
   modalClose() {
