@@ -35,13 +35,14 @@
       </div>
 
       <!-- Search Section -->
+
       <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
         <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
           <div
             class="d-flex pb-1 align-items-center ps-5"
             [ngClass]="{ 'gap-2': !isEditMode, 'gap-0': isEditMode }"
           >
-            <!-- Search Type (FIRST ng-select with increased width) -->
+            <!-- Search Type -->
             <div class="col-md-3" style="width: 160px">
               <ng-select
                 formControlName="SearchType"
@@ -97,6 +98,7 @@
       </div>
 
       <!-- Button Section -->
+
       <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-0'">
         <div
           class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
@@ -106,12 +108,15 @@
               <div class="form-check d-flex align-items-center">
                 <input
                   type="checkbox"
+                  id="multibranchcheck"
                   class="focus-ring form-check-input sm p-0"
                   formControlName="MultiBranch"
                   (keydown.enter)="toggleMultiBranch($event)"
                   (click)="toggleMultiBranch($event)"
                 />
-                <label class="form-check-label sm">Multi Branch</label>
+                <label for="multibranch" class="form-check-label sm"
+                  >Multi Branch</label
+                >
               </div>
             </div>
           </div>
@@ -123,7 +128,7 @@
             (click)="reportPayment()"
             [disabled]="!paymentDataPrint"
           >
-            <i class="fas fa-print me-1"></i>Print
+            <i class="fas fa-print me-1"></i> Print
           </button>
 
           <button
@@ -133,7 +138,7 @@
             (click)="reportBankPayment()"
             [disabled]="!paymentDataPrint"
           >
-            <i class="fas fa-print me-1"></i>Print
+            <i class="fas fa-print me-1"></i> Print
           </button>
 
           <button
@@ -141,15 +146,18 @@
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="goBack()"
           >
-            <i class="fas fa-chevron-left me-1"></i> Back
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
           </button>
 
           <button
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="resetForm()"
+            [disabled]="isPosted"
           >
-            <i class="fas fa-sync-alt me-1"></i> Reset
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
           </button>
 
           @if(isAutoPosting){
@@ -171,6 +179,15 @@
             >
               <span class="visually-hidden">unsaved changes</span>
             </span>
+          </button>
+          <button
+            type="button"
+            appPreventMultiClick
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            disabled="true"
+          >
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
           </button>
           } @else {
           <!-- Draft Save Button -->
@@ -290,7 +307,6 @@
 
   <div class="col-md-12 px-0">
     <div class="row">
-      <!-- FIRST CARD (Changes width dynamically) -->
       <div
         [ngClass]="{
           'col-md-12': paymentForm.get('CashOrBank')?.value,
@@ -298,9 +314,9 @@
         }"
       >
         <div class="card h-100 mb-0">
-          <div class="card-body pb-0">
+          <div class="card-body pb-1">
             <div class="row">
-              <!-- Payment No -->
+              <!-- Payment No. -->
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -311,8 +327,8 @@
                     formControlName="VoucherNumber"
                   />
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     ><span>Payment No.</span></label
                   >
@@ -352,6 +368,7 @@
               </aside>
 
               <!-- Narration -->
+
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -361,13 +378,17 @@
                     class="custom-input-field sm"
                     formControlName="Narration"
                   />
-                  <label class="input-label" style="font-size: 14px"
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
                     >Narration <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
 
               <!-- Remarks -->
+
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -378,26 +399,27 @@
                     formControlName="Remarks"
                   />
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
-                    >Remarks</label
-                  >
+                    >Remarks
+                  </label>
                 </div>
               </aside>
 
-              <!-- Toggle Checkbox -->
+              <!-- Mode of Payment -->
+
               <aside class="col-md-3 d-flex align-items-center">
                 <div class="form-check form-check-inline p-0 mt-0">
                   <div class="form-check d-flex align-items-center">
                     <input
                       type="checkbox"
+                      id=""
                       class="form-check-input sm"
                       formControlName="CashOrBank"
-                      (click)="toggleCashOrBank($event)"
                       (keydown.enter)="toggleCashOrBank($event)"
+                      (click)="toggleCashOrBank($event)"
                     />
-
                     <label
                       class="form-check-label sm"
                       for="paymentMode"
@@ -414,7 +436,7 @@
                 </div>
               </aside>
 
-              <!-- Cash Dropdown -->
+              <!-- Cash -->
               <aside
                 class="col-md-3"
                 *ngIf="paymentForm.get('CashOrBank')?.value"
@@ -426,6 +448,7 @@
                   <dofi-searchable-dropdown
                     [items]="cashTypeLedgers"
                     formControlName="BankCOA"
+                    placeholder=""
                     [displayFields]="COALookupConfig.displayFields"
                     [displayLabels]="COALookupConfig.displayLabels"
                     [labelFields]="COALookupConfig.labelFields"
@@ -433,14 +456,16 @@
                     bindValue="COAMasterSid"
                   >
                   </dofi-searchable-dropdown>
-
-                  <label class="input-label" style="font-size: 14px"
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
                     >Cash <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
 
-              <!-- Bank Dropdown -->
+              <!-- Bank -->
               <aside
                 class="col-md-3"
                 *ngIf="!paymentForm.get('CashOrBank')?.value"
@@ -452,6 +477,7 @@
                   <dofi-searchable-dropdown
                     [items]="bankTypedLedgers"
                     formControlName="BankCOA"
+                    placeholder=""
                     [displayFields]="COALookupConfig.displayFields"
                     [displayLabels]="COALookupConfig.displayLabels"
                     [labelFields]="COALookupConfig.labelFields"
@@ -459,14 +485,17 @@
                     bindValue="COAMasterSid"
                   >
                   </dofi-searchable-dropdown>
-
-                  <label class="input-label" style="font-size: 14px"
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
                     >Bank <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
 
               <!-- Currency -->
+
               <aside class="col-md-3">
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -475,24 +504,24 @@
                   <dofi-searchable-dropdown
                     [items]="currencyList"
                     formControlName="CurrencyMasterSid"
+                    [placeholder]="''"
                     [displayFields]="CurrencyLookupConfig.displayFields"
                     [displayLabels]="CurrencyLookupConfig.displayLabels"
                     [labelFields]="CurrencyLookupConfig.labelFields"
-                    bindValue="CurrencyMasterSid"
+                    [bindValue]="'CurrencyMasterSid'"
                     (itemSelected)="onCurrencyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     >Currency <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
 
-              <!-- Exchange Rate -->
+              <!-- Ex. Rate -->
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -501,6 +530,14 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="ExchangeRate"
+                    (change)="checkAndUpdateForAllPartyDetail()"
+                    DecimalPrecision
+                    [DecimalPrecisionBefore]="4"
+                    [DecimalPrecisionAfter]="
+                      getExchangeRateDecimalPlaces(
+                        paymentForm.get('CurrencyMasterSid')?.getRawValue()
+                      )
+                    "
                   />
                   <label
                     for="text-input"
@@ -512,6 +549,7 @@
               </aside>
 
               <!-- Party -->
+
               <aside class="col-md-3">
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -529,10 +567,9 @@
                     (itemSelected)="onPartyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     >Party <span class="text-danger">*</span></label
                   >
@@ -540,6 +577,7 @@
               </aside>
 
               <!-- Received From -->
+
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -559,6 +597,7 @@
               </aside>
 
               <!-- Address -->
+
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -569,8 +608,8 @@
                     formControlName="PartyAddress"
                   />
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     >Address</label
                   >
@@ -578,6 +617,7 @@
               </aside>
 
               <!-- GST / VAT -->
+
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input
@@ -588,18 +628,17 @@
                     formControlName="GST_VAT"
                   />
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
-                  >
-                    {{
+                    >{{
                       currentCompanyCountryCode === "in"
                         ? "GST No."
                         : currentCompanyCountryCode === "ae"
                         ? "VAT No."
                         : "Tax No."
-                    }}
-                  </label>
+                    }}</label
+                  >
                 </div>
               </aside>
             </div>
@@ -615,19 +654,19 @@
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
             <div class="row">
-              <!-- Instt Number -->
+              <!-- Inst No. -->
               <aside class="col-md-6">
                 <div class="custom-form-group">
                   <input
                     type="text"
-                    id=""
+                    id="text-input"
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="InstrumentNumber"
                   />
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     >Inst No. <span class="text-danger">*</span></label
                   >
@@ -635,6 +674,7 @@
               </aside>
 
               <!-- Inst Mode -->
+
               <aside class="col-md-6">
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -648,10 +688,9 @@
                     formControlName="InstrumentMode"
                   >
                   </ng-select>
-
                   <label
-                    class="input-label"
                     for="text-input"
+                    class="input-label"
                     style="font-size: 14px"
                     >Inst Mode <span class="text-danger">*</span></label
                   >
@@ -659,12 +698,14 @@
               </aside>
 
               <!-- Instrument Date -->
+
               <aside class="col-md-6 pe-0">
                 <div class="custom-form-group custom-form-group-select filled">
                   <div class="input-group">
                     <input
                       class="form-control"
                       placeholder="dd-mm-yyyy"
+                      name="dp"
                       ngbDatepicker
                       #d2="ngbDatepicker"
                       formControlName="InstrumentDate"
@@ -675,24 +716,28 @@
                     <button
                       class="btn bi bi-calendar3 px-0"
                       (click)="d2.toggle()"
+                      type="button"
                     >
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
                   <label class="input-label" style="font-size: 14px"
-                    >Inst Date <span class="text-danger">*</span></label
-                  >
+                    >Inst Date <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
               <!-- Clearance Date -->
+
               <aside class="col-md-6 pe-1">
                 <div class="custom-form-group custom-form-group-select filled">
                   <div class="input-group">
                     <input
                       class="form-control"
                       placeholder="dd-mm-yyyy"
+                      name="dp"
                       ngbDatepicker
+                      style="font-size: 14px"
                       #d3="ngbDatepicker"
                       formControlName="ClearanceDate"
                       (click)="d3.toggle()"
@@ -702,6 +747,7 @@
                     <button
                       class="btn bi bi-calendar3 px-0"
                       (click)="d3.toggle()"
+                      type="button"
                     >
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
@@ -719,19 +765,23 @@
   </div>
 
   <div class="nav-pills-container mt-1">
-    <div class="nav-pills w-100">
-      <div
-        class="nav-pill"
-        *ngFor="let tab of tabs"
-        [class.active]="selectedTab === tab.name"
-        (click)="selectTab(tab.name)"
-      >
-        <div class="pill-icon">
-          <i [class]="tab.icon"></i>
+    <div class="nav-pills w-100 d-flex align-items-center gap-3">
+      <!-- Tabs -->
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        <div
+          class="nav-pill"
+          *ngFor="let tab of tabs"
+          [class.active]="selectedTab === tab.name"
+          (click)="selectTab(tab.name)"
+        >
+          <div class="pill-icon">
+            <i [class]="tab.icon"></i>
+          </div>
+          <span class="pill-label" style="font-size: 14px">{{ tab.name }}</span>
+          <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
         </div>
-        <span class="pill-label" style="font-size: 14px">{{ tab.name }}</span>
-        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
       </div>
+
       <!-- Voucher No (auto takes remaining space) -->
       <div class="flex-grow-1 text-start">
         @if(isEditMode && voucherMatchingInfo?.VoucherMatchingHeaderSid){
@@ -782,7 +832,11 @@
         <table class="table table-hover align-middle no-wrap table-sm mb-1">
           <thead>
             <tr class="bg-info text-center">
-              <th class="bg-transparent text-light" width="3%"></th>
+              <th
+                class="bg-transparent text-light"
+                width="3%"
+                style="font-size: 14px"
+              ></th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Ledger Name <span class="text-danger">*</span>
               </th>
@@ -845,7 +899,7 @@
                     (click)="addDetailRow()"
                     [disabled]="isPosted"
                   >
-                    <i class="fas fa-plus text-info fs-2"></i>
+                    <i class="fas fa-plus text-info"></i>
                   </button>
                   }
                   <button
@@ -875,6 +929,7 @@
                     bindValue="SubledgerMasterSid"
                     formControlName="LedgerMasterSid"
                     appendTo="body"
+                    (change)="checkAndUpdateForPartyDetail(i)"
                   ></ng-select>
                 </td>
                 <td class="">
@@ -912,8 +967,8 @@
                         d.get('CurrencyMasterSid')?.value
                       )
                     "
-                    (input)="calculateLocalAmount(i,true)"
-                    (blur)="calculateLocalAmount(i,true)"
+                    (input)="calculateLocalAmount(i, true)"
+                    (blur)="calculateLocalAmount(i, true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -926,8 +981,8 @@
                     [DecimalPrecisionAfter]="
                       getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)
                     "
-                    (input)="calculateLocalAmount(i,true)"
-                    (blur)="calculateLocalAmount(i,true)"
+                    (input)="calculateLocalAmount(i, true)"
+                    (blur)="calculateLocalAmount(i, true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -962,7 +1017,7 @@
                     formControlName="Narration"
                     class="custom-input-field sm"
                     [textWithNumbers]="200"
-                    style="width: 280px"
+                    style="width: 300px"
                   />
                 </td>
                 <td class="dofi-min-w-100">
@@ -1220,7 +1275,6 @@
                       {{ v.get("voucherNo")?.value }}
                     </a>
 
-                    
                     <!-- Credit Note -->
                     <a
                       *ngSwitchCase="'CRN'"
@@ -1262,7 +1316,6 @@
                   type="text"
                   formControlName="voucherType"
                   class="custom-input-field sm"
-                  style="width: 50px"
                 />
               </td>
 
@@ -1277,8 +1330,8 @@
                       placeholder="dd-mm-yyyy"
                       name="dp"
                       ngbDatepicker
-                      style="width: 100px"
                       #d4="ngbDatepicker"
+                      style="width: 100px"
                       (click)="d4.toggle()"
                       formControlName="voucherDate"
                       container="body"
@@ -1316,8 +1369,8 @@
                   type="text"
                   formControlName="exRate"
                   class="custom-input-field sm text-end"
-                  style="width: 75px"
                   DecimalPrecision
+                  style="width: 75px"
                   [DecimalPrecisionBefore]="4"
                   [DecimalPrecisionAfter]="
                     getExchangeRateDecimalPlacesWithCode(v.get('curr')?.value)
@@ -1331,8 +1384,8 @@
                   type="text"
                   formControlName="currAmt"
                   class="custom-input-field sm text-end"
-                  style="width: 100px"
                   DecimalPrecision
+                  style="width: 100px"
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
                     getAmountDecimalPlaces(v.get('curr')?.value)
@@ -1346,8 +1399,8 @@
                   type="text"
                   formControlName="localAmt"
                   class="custom-input-field sm text-end"
-                  style="width: 100px"
                   DecimalPrecision
+                  style="width: 100px"
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
                     getAmountDecimalPlaces(v.get('curr')?.value)
@@ -1384,10 +1437,9 @@
                 />
               </td>
               }
-              <!-- } -->
 
               <!-- Match Curr -->
-              <td class="dofi-min-w-80">
+              <td class="dofi-min-w-50">
                 <dofi-searchable-dropdown
                   [items]="currencyList"
                   formControlName="matchCurr"
@@ -1413,6 +1465,7 @@
                     getExchangeRateDecimalPlaces(v.get('matchCurr')?.value)
                   "
                   (input)="calculateLocalAmountForMatchRow(i, true)"
+                  (blur)="calculateLocalAmountForMatchRow(i, true)"
                   style="width: 70px"
                 />
               </td>
@@ -1422,6 +1475,7 @@
                 <input
                   type="text"
                   formControlName="matchCurrAmt"
+                  (input)="validateMatchLimits(i)"
                   class="custom-input-field sm text-end"
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
@@ -1429,6 +1483,7 @@
                     getAmountDecimalPlaces(v.get('matchCurr')?.value)
                   "
                   (input)="calculateLocalAmountForMatchRow(i, true)"
+                  (blur)="calculateLocalAmountForMatchRow(i, true)"
                 />
               </td>
 
@@ -1496,12 +1551,9 @@
               </td>
             </tr>
 
-            <tr>
-              <td style="visibility: hidden; font-size: 5px">ftydfydy</td>
-            </tr>
             <!-- TOTAL ROW -->
             <tr class="table-info fw-bold text-end">
-              <td colspan="7" class="text-end">Total :</td>
+              <td colspan="7" class="text-end">Total</td>
               <!-- @if(!isEditMode){ -->
               <!-- <td>{{ getTotalCurrAmt() }}</td> -->
               <td>{{ getTotalLocalAmt() }}</td>
@@ -1509,7 +1561,6 @@
               <td>{{ getTotalOSCurrAmt() }}</td>
               <td>{{ getTotalOSLocalAmount() }}</td>
               }
-              <!-- } -->
               <td></td>
               <!-- matchCurr -->
               <td></td>
@@ -1527,6 +1578,7 @@
         </table>
       </div>
     </div>
+
     <div
       class="workspace-content px-0"
       [formGroup]="paymentForm"
