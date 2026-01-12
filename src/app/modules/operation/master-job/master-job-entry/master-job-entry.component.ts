@@ -1704,6 +1704,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     if (polSid && podSid && polSid === podSid) {
       this.masterJobForm.get('POD')?.setErrors({ samePort: true });
       this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+      this.toastr.warning('POL and POD cannot be the same');
     } else {
       this.masterJobForm.get('POD')?.setErrors(null);
       this.masterJobForm.get('POL')?.setErrors(null);
@@ -1732,6 +1733,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
     this.masterJobForm.get('POL')?.setValue(selectedPortSid, { emitEvent: false });
+    this.onRouteChange();
     this.triggerVesselSearch();
   }
 
@@ -1751,6 +1753,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
     // ✅ Auto-set FPOD to the same value as POD
     this.masterJobForm.get('FPD')?.setValue(selectedPortSid);
+    this.onRouteChange();
 
     this.triggerVesselSearch();
   }
@@ -2058,6 +2061,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   onSubmit(): void {
+    const polSid = this.masterJobForm.get('POL')?.value;
+  const podSid = this.masterJobForm.get('POD')?.value;
+  
+  if (polSid && podSid && polSid === podSid) {
+    this.toastr.error('POL and POD cannot be the same port');
+    this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+    this.masterJobForm.get('POD')?.setErrors({ samePort: true });
+    return;
+  }
     if (this.masterJobForm.invalid) {
       this.toastr.error('Please fill all required fields');
       this.masterJobForm.markAllAsTouched();

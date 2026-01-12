@@ -1183,6 +1183,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     if (polSid && podSid && polSid === podSid) {
       this.masterJobForm.get('POD')?.setErrors({ samePort: true });
       this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+      this.toastr.warning('POL and POD cannot be the same');
     } else {
       this.masterJobForm.get('POD')?.setErrors(null);
       this.masterJobForm.get('POL')?.setErrors(null);
@@ -1212,6 +1213,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
     this.masterJobForm.get('POL')?.setValue(selectedPortSid, { emitEvent: false });
+    this.onRouteChange();
   }
 
   // Handle POD change
@@ -1225,6 +1227,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
     this.masterJobForm.get('POD')?.setValue(selectedPortSid, { emitEvent: false });
     this.masterJobForm.get('FPD')?.setValue(selectedPortSid);
+    this.onRouteChange();
   }
 
 
@@ -1248,6 +1251,17 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
         return;
     }
+
+      const polSid = this.masterJobForm.get('POL')?.value;
+  const podSid = this.masterJobForm.get('POD')?.value;
+  
+  if (polSid && podSid && polSid === podSid) {
+    this.toastr.error('POL and POD cannot be the same port');
+    this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+    this.masterJobForm.get('POD')?.setErrors({ samePort: true });
+    return;
+  }
+
     
     // Check general form validity
     if (this.masterJobForm.invalid) {
@@ -2425,4 +2439,6 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.agentList = this.agentList;
         modalRef.componentInstance.yardList = this.yardList;
       }
+
+      
 }
