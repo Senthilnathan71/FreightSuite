@@ -90,34 +90,33 @@
                 "
                 (click)="searchOutstanding()"
               >
-                <i class="fas fa-search me-1"></i> Get OS
+                <i class="fas fa-search me-1 fs-2"></i> Get OS
               </button>
             </div>
           </div>
         </form>
-        
       </div>
 
       <!-- Button Section -->
 
       <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
         <div
-        class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
+          class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
         >
           <div class="col-md-4">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
                 <input
                   type="checkbox"
-                  id=""
+                  id="multibranchcheck"
                   class="focus-ring form-check-input sm p-0"
                   formControlName="MultiBranch"
                   (keydown.enter)="toggleMultiBranch($event)"
                   (click)="toggleMultiBranch($event)"
                 />
-                <label for="" class="form-check-label sm"
-                  >Multi Branch <span class=""></span
-                ></label>
+                <label for="multibranch" class="form-check-label sm"
+                  >Multi Branch</label
+                >
               </div>
             </div>
           </div>
@@ -181,6 +180,15 @@
               <span class="visually-hidden">unsaved changes</span>
             </span>
           </button>
+          <button
+            type="button"
+            appPreventMultiClick
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            disabled="true"
+          >
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
+          </button>
           } @else {
           <!-- Draft Save Button -->
           <button
@@ -225,12 +233,6 @@
             {{ isPosted ? "Posted" : "Post" }}
           </button>
           }
-          @if(isAutoPosting){
-          <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled="true">
-            <i class="fas fa-check-circle me-1"></i>
-            {{ isPosted ? "Posted" : "Post" }}
-          </button>
-          }
 
           <div
             *ngIf="mps.hasAtLeastOne() && isEditMode"
@@ -245,6 +247,7 @@
             >
               <i class="fas fa-ellipsis-v"></i>
             </button>
+
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
               <button
                 *ngIf="mps.has('edoc')"
@@ -255,6 +258,7 @@
               >
                 <i class="fas fa-file-alt me-1"></i> Edoc
               </button>
+
               <button
                 *ngIf="mps.has('terms_and_condition')"
                 class="text-dark"
@@ -264,6 +268,7 @@
               >
                 <i class="fas fa-clipboard me-1"></i> Terms & Condition
               </button>
+
               <button
                 *ngIf="mps.has('authority')"
                 class="text-dark"
@@ -273,6 +278,7 @@
               >
                 <i class="fas fa-shield-alt me-1"></i> Authorize
               </button>
+
               <button
                 *ngIf="mps.has('email')"
                 class="text-dark"
@@ -282,6 +288,7 @@
               >
                 <i class="fas fa-envelope me-1"></i> Email
               </button>
+
               <button
                 *ngIf="mps.has('follow_up')"
                 class="text-dark"
@@ -395,8 +402,8 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Remarks <span class="text-danger"></span
-                  ></label>
+                    >Remarks
+                  </label>
                 </div>
               </aside>
 
@@ -413,8 +420,6 @@
                       (keydown.enter)="toggleCashOrBank($event)"
                       (click)="toggleCashOrBank($event)"
                     />
-                    <!-- <label for="" class="form-check-label sm">Cash or Bank <span
-                                        class="text-danger"></span></label> -->
                     <label
                       class="form-check-label sm"
                       for="paymentMode"
@@ -528,7 +533,11 @@
                     (change)="checkAndUpdateForAllPartyDetail()"
                     DecimalPrecision
                     [DecimalPrecisionBefore]="4"
-                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(receiptForm.get('CurrencyMasterSid')?.getRawValue())"
+                    [DecimalPrecisionAfter]="
+                      getExchangeRateDecimalPlaces(
+                        receiptForm.get('CurrencyMasterSid')?.getRawValue()
+                      )
+                    "
                   />
                   <label
                     for="text-input"
@@ -768,7 +777,7 @@
           <div class="pill-icon">
             <i [class]="tab.icon"></i>
           </div>
-          <span class="pill-label">{{ tab.name }}</span>
+          <span class="pill-label" style="font-size: 14px">{{ tab.name }}</span>
           <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
         </div>
       </div>
@@ -812,41 +821,6 @@
       </div>
     </div>
   </div>
-
-  <!-- <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body pb-0">
-                <div class="row">
-                 
-                   
-                    
-                    @if(receiptForm.get('CashOrBank')?.value){
-                  
-                    } @else {
-                    
-                    }
-
-                 
-                 
-                 
-                  
-
-
-                    
-                 
-                  
-
-
-                   @if(!receiptForm.get('CashOrBank')?.value){
-                 
-                  
-           
-                  
-                    }
-                </div>
-            </div>
-        </div>
-    </div> -->
 
   <div class="content-workspace">
     <div
@@ -993,8 +967,8 @@
                         d.get('CurrencyMasterSid')?.value
                       )
                     "
-                    (input)="calculateLocalAmount(i,true)"
-                    (blur)="calculateLocalAmount(i,true)"
+                    (input)="calculateLocalAmount(i, true)"
+                    (blur)="calculateLocalAmount(i, true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -1007,8 +981,8 @@
                     [DecimalPrecisionAfter]="
                       getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)
                     "
-                    (input)="calculateLocalAmount(i,true)"
-                    (blur)="calculateLocalAmount(i,true)"
+                    (input)="calculateLocalAmount(i, true)"
+                    (blur)="calculateLocalAmount(i, true)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
@@ -1195,7 +1169,9 @@
                 TDS Amt
               </th>
               } @if(!isPosted){
-              <th class="bg-warning text-light">Balance</th>
+              <th class="bg-warning text-light" style="font-size: 14px">
+                Balance
+              </th>
               }
               <th
                 class="bg-transparent text-light"
@@ -1212,16 +1188,7 @@
               [formGroupName]="i"
             >
               <!-- Voucher No -->
-              <td>
-                <!-- <div class="custom-form-group custom-form-group-select dofi-min-w-140">
-                                    <input *ngIf="!v.get('voucherNo')?.value" type="fw-bold px-2 text-decoration-underline"
-                                        [value]="v.get('voucherNo')?.value || ''" class="custom-input-field sm" readonly>
-                                    <a *ngIf="v.get('voucherNo')?.value"
-                                        [routerLink]="['/operation/invoice/entry', v.get('VoucherHeaderSid')?.value]"
-                                        class="fw-bold px-2 text-decoration-underline" title="View Invoice">
-                                        {{v.get('voucherNo')?.value }}
-                                    </a>
-                                </div> -->
+              <td class="dofi-min-w-120">
                 <div
                   class="custom-form-group custom-form-group-select dofi-min-w-140"
                   [ngSwitch]="v.get('voucherType')?.value"
@@ -1308,7 +1275,6 @@
                       {{ v.get("voucherNo")?.value }}
                     </a>
 
-                    
                     <!-- Credit Note -->
                     <a
                       *ngSwitchCase="'CRN'"
@@ -1342,8 +1308,6 @@
                     </span>
                   </ng-container>
                 </div>
-
-                <!-- <input type="text" formControlName="voucherNo" class="custom-input-field sm" style="width: 170px;" /> -->
               </td>
 
               <!-- Voucher Type -->
@@ -1479,7 +1443,6 @@
                 <dofi-searchable-dropdown
                   [items]="currencyList"
                   formControlName="matchCurr"
-                  bindValue="CurrencyMasterSid"
                   [placeholder]="''"
                   [displayFields]="CurrencyLookupConfig.displayFields"
                   [displayLabels]="CurrencyLookupConfig.displayLabels"
@@ -1609,7 +1572,6 @@
               @if(isIndianCompany()){
               <td>{{ getTotalTdsAmt() }}</td>
               }
-
               <td></td>
             </tr>
           </tbody>
@@ -1653,7 +1615,10 @@
                     class="btn waves-effect waves-light text-light py-0 px-1"
                     (click)="removeInterBranch(i)"
                   >
-                    <i class="fas fa-trash text-danger" name="trash-2"></i>
+                    <i-feather
+                      class="feather-sm text-danger"
+                      name="trash-2"
+                    ></i-feather>
                   </button>
                 </td>
                 <td>

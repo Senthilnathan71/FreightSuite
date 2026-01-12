@@ -10,6 +10,7 @@ import {
   AbstractControl,
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -27,7 +28,6 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
 import { PaymentService } from '../../services/payment.service';
-import { OutstandingService } from '../../services/outstanding.service';
 import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -48,7 +48,6 @@ import {
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
-import { ConfirmationDialogComponent } from 'src/app/component/confirmation-modal/confirmation-modal.component';
 import { errorLogger, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
@@ -58,18 +57,16 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
-import { ReceiptService } from '../../services/receipt.service';
-import { MasterService } from 'src/app/modules/master/master.service';
+import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-payment-print.component';
+import { PaymentPrintComponent } from '../report/payment-print/payment-print.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
-import { CommonService } from 'src/app/common/common.service';
-import { PaymentPrintComponent } from '../report/payment-print/payment-print.component';
-import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-payment-print.component';
-import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
-import { DetailsComponent } from 'src/app/component/details/details.component';
 import {
   consistentExchangeRatesValidator,
   getExchangeRateErrorMessage,
@@ -90,6 +87,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
   selector: 'app-payment-entry',
   standalone: true,
   imports: [
+    NgbDropdownModule,
     CommonModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
@@ -102,7 +100,6 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     TextWithNumbersDirective,
     OnlyNumbersDirective,
     NgxSpinnerModule,
-    NgbDropdownModule,
     RouterModule,
   ],
   templateUrl: './payment-entry.component.html',
@@ -164,6 +161,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
   paymentDataPrint: any;
+  isLimitErrorShown: boolean = false;
 
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
@@ -177,6 +175,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     VoucherMatchingHeaderSid: number;
     VoucherMatchingNo: string;
   };
+
   // Outstanding invoices
 
   get isEditMode() {
@@ -237,19 +236,19 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
   constructor(
     public mps: MenuPermissionService,
+    private commonService: CommonService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private toastr: ToastrService,
     private paymentService: PaymentService,
-    private accountService: AccountsService,
     private appSettingService: AppSettingsService,
     private dropdownStore: DropdownStore,
+    private accountService: AccountsService,
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
     private spinner: NgxSpinnerService,
-    private commonService: CommonService,
     private companySettings: CompanySettingsManagerService
   ) {}
 
@@ -264,18 +263,9 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.currentMenuId = this.mps.getMenuId();
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
-    console.log('Company Currency:', this.currentCurrencyCode);
-    console.log('Company Currency:', this.companyCurrency);
     this.getCurrentCompanyBranches();
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
-
-    console.log('USER DATA', this.userData);
-    console.log('CURRENT COMPANY', this.currentCompany);
-    console.log('CURRENT BRANCH', this.currentBranch);
-    console.log('CURRENT USER COUNTRY', this.currentCompanyCountryCode);
-    console.log('CURRENT YEAR ID', this.currentYearId);
-
     this.mps.init().subscribe();
     this.checkVoucherPostingMechanism();
     this.initSearchOutstandingForm();
@@ -417,12 +407,13 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       });
     });
 
-    this.paymentForm.setValidators(consistentExchangeRatesValidator(companyCurrency, this.currentCurrencyCode));
+    this.paymentForm.setValidators(
+      consistentExchangeRatesValidator(
+        companyCurrency,
+        this.currentCurrencyCode
+      )
+    );
     this.paymentForm.updateValueAndValidity();
-
-    this.paymentForm.patchValue({
-      CurrencyMasterSid: companyCurrency,
-    });
 
     this.setCurrencyCode(companyCurrency);
     this.handleHeaderExchangeRate(companyCurrency);
@@ -491,10 +482,11 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(1);
+      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
       this.recalculateAllMatchingPartyAmounts();
       this.recalcPartyAmtForAllDetails();
+      this.checkAndUpdateForAllPartyDetail();
       return;
     }
 
@@ -504,57 +496,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.patchCurrencyExchangeRate(); // existing API call
   }
 
-  /**
-   * Setup form value change listeners
-   */
-  // private setupFormListeners(): void {
-  //   // Recalculate TDS when percentage or amount changes
-  //   this.paymentForm.get('TDSPercentage')?.valueChanges.subscribe(() => {
-  //     this.calculateTDS();
-  //   });
-
-  //   this.paymentForm.get('TotalInvoiceAmount')?.valueChanges.subscribe(() => {
-  //     this.calculateTDS();
-  //     this.calculateNetAmount();
-  //   });
-
-  //   // Show/hide TDS fields
-  //   this.paymentForm.get('HasTDS')?.valueChanges.subscribe((hasTDS) => {
-  //     if (hasTDS) {
-  //       this.paymentForm.get('TDSPercentage')?.setValidators([Validators.required, Validators.min(0)]);
-  //       this.paymentForm.get('TDSLedgerMasterSid')?.setValidators([Validators.required]);
-  //     } else {
-  //       this.paymentForm.get('TDSPercentage')?.clearValidators();
-  //       this.paymentForm.get('TDSLedgerMasterSid')?.clearValidators();
-  //       this.paymentForm.patchValue({ TDSPercentage: 0, TDSAmount: 0 });
-  //     }
-  //     this.paymentForm.get('TDSPercentage')?.updateValueAndValidity();
-  //     this.paymentForm.get('TDSLedgerMasterSid')?.updateValueAndValidity();
-  //   });
-
-  //   // Show/hide inter-branch fields
-  //   this.paymentForm.get('IsInterBranch')?.valueChanges.subscribe((isInterBranch) => {
-  //     if (isInterBranch) {
-  //       this.paymentForm.get('ReceivingBranchMasterSid')?.setValidators([Validators.required]);
-  //     } else {
-  //       this.paymentForm.get('ReceivingBranchMasterSid')?.clearValidators();
-  //     }
-  //     this.paymentForm.get('ReceivingBranchMasterSid')?.updateValueAndValidity();
-  //   });
-
-  //   // Show cheque fields for cheque payment mode
-  //   this.paymentForm.get('PaymentMode')?.valueChanges.subscribe((mode) => {
-  //     if (mode === PaymentMode.CHEQUE) {
-  //       this.paymentForm.get('ChequeNumber')?.setValidators([Validators.required]);
-  //       this.paymentForm.get('ChequeDate')?.setValidators([Validators.required]);
-  //     } else {
-  //       this.paymentForm.get('ChequeNumber')?.clearValidators();
-  //       this.paymentForm.get('ChequeDate')?.clearValidators();
-  //     }
-  //     this.paymentForm.get('ChequeNumber')?.updateValueAndValidity();
-  //     this.paymentForm.get('ChequeDate')?.updateValueAndValidity();
-  //   });
-  // }
 
   loadAllLookups() {
     const filterOption = {
@@ -729,76 +670,8 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     }
   }
 
-  /**
-   * Save payment
-   */
-  // async savePayment(): Promise<void> {
-  //   if (this.paymentForm.invalid) {
-  //     this.toastr.warning('Please fill all required fields');
-  //     this.markFormGroupTouched(this.paymentForm);
-  //     return;
-  //   }
-
-  //   this.isSaving = true;
-
-  //   try {
-  //     const formValue = this.paymentForm.getRawValue();
-
-  //     // Build payment details from vouchers
-  //     const details: PaymentDetail[] = this.detailItems.controls.map((control) => ({
-  //       VoucherTransactionSid: control.get('VoucherTransactionSid')?.value,
-  //       Amount: control.get('MatchedAmount')?.value,
-  //       Narration: control.get('Narration')?.value,
-  //       IsAdvance: control.get('IsAdvance')?.value || false,
-  //     }));
-
-  //     // Add advance amount if any
-  //     const advanceAmount = formValue.AdvanceAmount || 0;
-  //     if (advanceAmount > 0) {
-  //       details.push({
-  //         Amount: advanceAmount,
-  //         IsAdvance: true,
-  //         Description: 'Advance payment',
-  //       });
-  //     }
-
-  //     const createRequest: CreatePaymentRequest = {
-  //       CompanyMasterSid: formValue.CompanyMasterSid,
-  //       BranchMasterSid: formValue.BranchMasterSid,
-  //       LedgerMasterSid: formValue.LedgerMasterSid,
-  //       VoucherDate: this.paymentService.formatDateForAPI(formValue.VoucherDate),
-  //       Narration: formValue.Narration,
-  //       PaymentMode: formValue.PaymentMode,
-  //       ChequeNumber: formValue.ChequeNumber,
-  //       ChequeDate: formValue.ChequeDate ? this.paymentService.formatDateForAPI(formValue.ChequeDate) : undefined,
-  //       BankName: formValue.BankName,
-  //       TotalAmount: formValue.TotalInvoiceAmount,
-  //       CurrencyMasterSid: formValue.CurrencyMasterSid,
-  //       ExchangeRate: formValue.ExchangeRate,
-  //       CurrencyAmount: formValue.TotalCurrencyAmount,
-  //       HasTDS: formValue.HasTDS,
-  //       TDSLedgerMasterSid: formValue.TDSLedgerMasterSid,
-  //       TDSAmount: formValue.TDSAmount,
-  //       TDSPercentage: formValue.TDSPercentage,
-  //       Details: details,
-  //       IsInterBranch: formValue.IsInterBranch,
-  //       ReceivingBranchMasterSid: formValue.ReceivingBranchMasterSid,
-  //       CreatedBy: 'current-user', // TODO: Get from auth service
-  //     };
-
-  //     const response = await this.paymentService.createPayment(createRequest).toPromise();
-
-  //     this.toastr.success(`Payment ${response?.VoucherNumber} created successfully`);
-  //     this.router.navigate(['/accounts/payment/list']);
-  //   } catch (error: any) {
-  //     console.error('Failed to save payment:', error);
-  //     this.toastr.error(error.message || 'Failed to save payment');
-  //   } finally {
-  //     this.isSaving = false;
-  //   }
-  // }
-
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    this.isSaving = true;
     const formValue = this.paymentForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
 
@@ -807,8 +680,10 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         'Please add at least one payment detail'
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
+
     // Enhanced exchange rate validation - checks all three error types
     if (this.paymentForm.errors) {
       const hasExchangeRateError =
@@ -831,11 +706,12 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     const partyDetail = detailItems.find(
       (d) => d.LedgerMasterSid === formValue.PartyMasterSid
     );
-    if (formValue.LedgerMasterSid && !partyDetail) {
+    if (formValue.PartyMasterSid && !partyDetail) {
       this.appSettingService.showError(
-        'Please add a party detail for the alloted ledger'
+        'Please add a party detail for the alloted ledger.'
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -844,9 +720,10 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     );
     if (formValue.BankCOA && !hasBankDetail) {
       this.appSettingService.showError(
-        'Please add a bank detail for the alloted COA'
+        'Please add a bank detail for the alloted COA.'
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -855,14 +732,16 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         'Please add at least one debit or credit amount.'
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
     if (this.totalDebits !== this.totalCredits) {
       this.appSettingService.showError(
-        'Please make sure the sum of debit amounts and credit amounts are equal'
+        'Please make sure the sum of debit amounts and credit amounts are equal.'
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
@@ -881,25 +760,25 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         toNumber(matchingAmt) > toNumber(partyAmt)
       );
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
     if (this.matchingError) {
       this.appSettingService.showError(this.matchingError);
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
 
     if (this.paymentForm.invalid) {
       errorLogger(this.paymentForm);
-      this.appSettingService.showError('Please fill all required fields');
-      this.markFormGroupTouched(this.paymentForm);
+      this.appSettingService.showWarning('Please fill all required fields');
+      this.paymentForm.markAllAsTouched();
       if (resolve) resolve(false);
+      this.isSaving = false;
       return;
     }
-
-    this.isSaving = true;
-    this.spinner.show();
 
     const currentUserEmail =
       this.appSettingService.userSettingSource.value['userEmail'];
@@ -978,14 +857,13 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
           }),
     };
 
-    console.log('PAYLOAD', payload);
-
+    this.spinner.show();
     if (this.isEditMode) {
       this.accountService.updatePaymentById(this.headerId, payload).subscribe({
         next: (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
-            this.isSaving = false;
-            this.appSettingService.showSuccess('Payment updated successfully');
+            this.appSettingService.showSuccess(resp.message);
 
             this.formSaved = true;
             this.isDirty = false;
@@ -1001,7 +879,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to update payment');
+          this.appSettingService.showError('Failed to update payment.');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -1071,7 +949,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
       let interOrIntra = 'Inter';
       // india
-      if (this.currentCompanyCountryCode === 'india') {
+      if (this.currentCompanyCountryCode === 'in') {
         if (currentCompanyState === customerState) {
           interOrIntra = 'Inter';
         } else {
@@ -1100,11 +978,11 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         BranchMasterSid: currentBranch.BranchMasterSid,
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
-        LocalCurrencyCode: currentCompany.CurrencyCode,
+        LocalCurrencyCode: this.companyCurrency.code,
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
-          countryName: this.currentCompanyCountryCode,
+          countryCode: this.currentCompanyCountryCode,
           TaxCategory: interOrIntra,
           EffectiveFrom: new Date().toISOString(),
           TaxType: 'Output',
@@ -1124,9 +1002,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         }
       } else {
         this.spinner.hide();
-        this.appSettingService.showError(
-          result.message || 'Failed to post payment.'
-        );
+        this.appSettingService.showError(result.message);
       }
     } catch (error) {
       this.spinner.hide();
@@ -1150,8 +1026,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
           this.patchValues(resp.data);
           this.paymentDataPrint = resp.data;
           this.voucherMatchingInfo = resp.data?.VoucherMatchingHeader?.[0];
-          console.log(this.paymentDataPrint, 'PAYMENT PRINT');
-          console.log(this.voucherMatchingInfo, 'VOUCHER MATCHING INFO');
         } else {
           this.appSettingService.showError(resp.message);
           this.isLoading = false;
@@ -1198,8 +1072,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       },
       { emitEvent: false }
     );
-
-    console.log('Header', this.paymentForm.value);
 
     this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
@@ -1259,7 +1131,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         MasterJobSid: d.MasterJobSid,
       });
     });
-    console.log('Detail', this.paymentForm.value);
     this.isPosted = response.PostStatus === 'P';
 
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
@@ -1302,7 +1173,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.paymentForm.reset();
     this.detailItems.clear();
     this.interBranches.clear();
-    this.addInterBranch();
+    // this.addInterBranch();
     this.selectedInvoices = [];
     this.outstandingInvoices = [];
   }
@@ -1386,6 +1257,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       voucherTransaction: [data?.voucherTransaction || null],
       yearMaster: [data?.yearMaster || null],
     });
+
     detailItem.get('CurrencyMasterSid')?.valueChanges.subscribe((val) => {
       if (!val || this.currencyList.length === 0) {
         detailItem.get('CurrencyCode')?.setValue('');
@@ -1417,19 +1289,53 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     }
 
     const lastAddedRow = this.detailItems.length - 1;
+    this.checkAndUpdateForPartyDetail(lastAddedRow, syncExRate);
     const currencySid = newRow.get('CurrencyMasterSid')?.value;
-
     if (syncExRate) {
       this.handleDetailExchangeRate(currencySid, lastAddedRow);
     }
-    // const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
-    // localAmountTriggeringCtrls.forEach((ctrl) => {
-    //   newRow.get(ctrl)?.valueChanges.subscribe(() => {
-    //     if (!this.isSaving && !this.isLoading) {
-    //       this.calculateLocalAmount(lastAddedRow, true);
-    //     }
-    //   });
-    // });
+  }
+
+  checkAndUpdateForAllPartyDetail(patchRequired: boolean = true) {
+    for (let i = 0; i < this.detailItems.length; i++) {
+      console.log('Calling checkAndUpdateForPartyDetail for index :' + i);
+      this.checkAndUpdateForPartyDetail(i, patchRequired);
+    }
+  }
+
+  checkAndUpdateForPartyDetail(detailIndex: number, patch: boolean = true) {
+    const detail = this.detailItems.at(detailIndex) as FormGroup;
+    const headerCtrl = this.paymentForm.get('PartyMasterSid') as FormControl;
+    const detailPartyCtrl = detail.get('LedgerMasterSid') as FormControl;
+
+    if (headerCtrl && detailPartyCtrl) {
+      if (headerCtrl.getRawValue() === detailPartyCtrl.getRawValue()) {
+        console.log('Party sid is same .Patch ? :', patch);
+        if (patch) {
+          detail
+            .get('CurrencyMasterSid')
+            ?.setValue(this.r['CurrencyMasterSid']?.getRawValue());
+          detail
+            .get('CurrencyCode')
+            ?.setValue(this.r['CurrencyCode']?.getRawValue());
+          detail
+            .get('ExchangeRate')
+            ?.setValue(this.r['ExchangeRate']?.getRawValue());
+          this.calculateLocalAmount(detailIndex);
+        }
+        detail.get('CurrencyMasterSid')?.disable();
+        detail.get('CurrencyCode')?.disable();
+        detail.get('ExchangeRate')?.disable();
+      } else {
+        detail.get('CurrencyMasterSid')?.enable();
+        detail.get('CurrencyCode')?.enable();
+        detail.get('ExchangeRate')?.enable();
+      }
+    } else {
+      detail.get('CurrencyMasterSid')?.enable();
+      detail.get('CurrencyCode')?.enable();
+      detail.get('ExchangeRate')?.enable();
+    }
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
@@ -1515,9 +1421,12 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       Amount: outstandingCurrencyAmount,
     };
     console.log('PartyData', partyData);
-    this.addDetailRow(partyData,false);
-    if(headerCurrencyId === this.currentCompany?.CurrencyMasterSid){
-      this.detailItems.at(this.detailItems.length - 1).get('ExchangeRate')?.disable();
+    this.addDetailRow(partyData, false);
+    if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
+      this.detailItems
+        .at(this.detailItems.length - 1)
+        .get('ExchangeRate')
+        ?.disable();
     }
     this.fetchLedgerForCOA(partyLedger, 0);
     this.calculateLocalAmount(0, true);
@@ -1534,13 +1443,17 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       Amount: outstandingCurrencyAmount,
     };
     console.log('BankData', bankData);
-    this.addDetailRow(bankData,false);
-    if(headerCurrencyId === this.currentCompany?.CurrencyMasterSid){
-      this.detailItems.at(this.detailItems.length - 1).get('ExchangeRate')?.disable();
+    this.addDetailRow(bankData, false);
+    if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
+      this.detailItems
+        .at(this.detailItems.length - 1)
+        .get('ExchangeRate')
+        ?.disable();
     }
     this.fetchLedgerForCOA(bankLedger, 1);
     this.calculateLocalAmount(1, true);
 
+    this.checkAndUpdateForAllPartyDetail();
     this.updateDetailNarration();
   }
 
@@ -1820,7 +1733,9 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         matchCurr: [
           isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
         ],
-        matchExRate: [isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate],
+        matchExRate: [
+          isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+        ],
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
@@ -1835,8 +1750,8 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
             ? tx.OutstandingLocalAmount
             : null,
         ],
-        tdsAmt: [isMatchedRecord ? tx.MatchingTDSAmount ?? null : null],
         matchPartyAmt: [tx.PartyAmount ?? 0],
+        tdsAmt: [isMatchedRecord ? tx.MatchingTDSAmount ?? null : null],
 
         balance: [
           isMatchedRecord ? tx.OutstandingLocalAmount - tx.LocalAmount : null,
@@ -2016,14 +1931,16 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   getTotalMatchCurrAmt() {
-    return this.voucherMatchings.controls
-      .reduce((total, control) => {
+    const totalMatchCurrAmt = this.voucherMatchings.controls.reduce(
+      (total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('matchCurrAmt')?.value || 0);
         }
         return total - Number(control.get('matchCurrAmt')?.value || 0);
-      }, 0)
-      .toFixed(2);
+      },
+      0
+    );
+    return toNumber(totalMatchCurrAmt).toFixed(2);
   }
 
   getPartyDetailAmount() {
@@ -2069,51 +1986,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
         0
       )
       .toFixed(2);
-  }
-
-  /**
-   * Select invoices from outstanding modal
-   */
-  applySelectedInvoices(): void {
-    const selectedInvoices = this.outstandingInvoices.filter(
-      (inv) => inv.selected
-    );
-
-    if (selectedInvoices.length === 0) {
-      this.toastr.warning('Please select at least one invoice');
-      return;
-    }
-
-    // Clear existing vouchers
-    this.detailItems.clear();
-
-    // Add selected invoices to vouchers
-    selectedInvoices.forEach((invoice) => {
-      const amountToApply = invoice.amountToApply || invoice.OutstandingAmount;
-
-      this.detailItems.push(
-        this.fb.group({
-          VoucherTransactionSid: [invoice.VoucherTransactionSid],
-          VoucherNumber: [invoice.VoucherNumber],
-          VoucherType: [invoice.VoucherType],
-          VoucherDate: [invoice.VoucherDate],
-          OriginalAmount: [invoice.OriginalAmount],
-          OutstandingAmount: [invoice.OutstandingAmount],
-          MatchedAmount: [
-            amountToApply,
-            [Validators.required, Validators.min(0)],
-          ],
-          CurrencyCode: [invoice.CurrencyCode],
-          DrCr: [invoice.DrCr],
-          Narration: [''],
-          IsAdvance: [false],
-        })
-      );
-    });
-
-    this.recalculateTotalAmount();
-    this.modalService.dismissAll();
-    this.toastr.success(`${selectedInvoices.length} vendor invoice(s) added`);
   }
 
   // Section-4 Helper
@@ -2172,29 +2044,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.modalService.open(content, { centered: true, size: 'xl' });
   }
 
-  // async searchOutstanding(modal?: any): Promise<void> {
-  //   const customerSid = this.paymentForm.get('LedgerMasterSid')?.value;
-  //   if (!customerSid) {
-  //     this.toastr.warning('Please select a customer first');
-  //     return;
-  //   }
-
-  //   try {
-  //     // Use payment service which calls outstanding service
-  //     const invoices = await this.paymentService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
-
-  //     if (invoices && invoices.length > 0) {
-  //       this.outstandingInvoices = invoices;
-  //       this.modalService.open(modal, { size: 'xl', backdrop: 'static' });
-  //     } else {
-  //       this.toastr.info('No outstanding invoices found for this customer');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('Failed to fetch outstanding:', error);
-  //     this.toastr.error(error.message || 'Failed to fetch outstanding invoices');
-  //   }
-  // }
-
   /**
    * Calculate total invoice amount from vouchers
    */
@@ -2234,33 +2083,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.paymentForm.patchValue({ TDSAmount: tdsAmount });
   }
 
-  /**
-   * Mark all form controls as touched to show validation errors
-   */
-  private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
-    Object.keys(formGroup.controls).forEach((key) => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-
-      if (control instanceof FormGroup || control instanceof FormArray) {
-        this.markFormGroupTouched(control);
-      }
-    });
-  }
-
-  /**
-   * Check if field has error
-   */
-  hasError(fieldName: string, errorType?: string): boolean {
-    const field = this.paymentForm.get(fieldName);
-    if (!field) return false;
-
-    if (errorType) {
-      return field.hasError(errorType) && (field.dirty || field.touched);
-    }
-    return field.invalid && (field.dirty || field.touched);
-  }
-
   onCurrencyChange(selected: any) {
     if (!selected) return;
 
@@ -2273,6 +2095,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
     this.handleHeaderExchangeRate(currencySid);
   }
+
   handleDetailExchangeRate(currencySid: number, index: number) {
     const row = this.detailItems.at(index) as FormGroup;
     const exCtrl = row.get('ExchangeRate');
@@ -2281,7 +2104,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(1);
+      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
       this.calculateLocalAmount(index);
       return;
@@ -2295,17 +2118,14 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   patchCurrencyExchangeRate() {
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.value;
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    console.log('Entered patchCurrencyExchangeRate', {
-      FromCurrencyId: currencySid,
-      toCurrencyId: companyCurrency,
-    });
 
     if (currencySid === companyCurrency && currencySid !== null) {
       this.paymentForm.patchValue({
-        ExchangeRate: 1,
+        ExchangeRate: this.getFormattedExchangeRate(1, currencySid),
       });
       this.recalculateAllMatchingPartyAmounts();
       this.recalcPartyAmtForAllDetails();
+      this.checkAndUpdateForAllPartyDetail();
       return;
     }
 
@@ -2316,35 +2136,31 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     if (!fromCurrencyCode || !toCurrencyCode) {
       return;
     }
-    console.log('FINDING CURRENCY EXCHANGE', {
-      fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode,
-    });
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom: this.isEditMode
-        ? new Date(this.paymentData?.VoucherDate)
-        : new Date(),
+      EffectiveFrom:
+        this.paymentForm.get('VoucherDate')?.getRawValue ?? new Date(),
       segment: 'cost',
     };
     this.accountService.getExchangeRate(payload).subscribe((resp: any) => {
       if (resp?.status) {
-        console.log('PATCHING EXCHANGE RATE', resp.data);
         if (resp.data) {
           this.paymentForm.patchValue({
-            ExchangeRate: resp.data,
+            ExchangeRate: this.getFormattedExchangeRate(resp.data, currencySid),
           });
         } else {
           this.paymentForm.patchValue({
-            ExchangeRate: 0,
+            ExchangeRate: this.getFormattedExchangeRate(0, currencySid),
           });
           this.appSettingService.showError(resp.message);
         }
         this.recalculateAllMatchingPartyAmounts();
         this.recalcPartyAmtForAllDetails();
+        this.checkAndUpdateForAllPartyDetail();
       } else {
         this.appSettingService.showError('Error fetching exchange rate');
       }
@@ -2379,33 +2195,11 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       GST_VAT:
         partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo,
     });
+
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
     }
-    console.log('FORM VALUE AFTER CUSTOMER SELECTED', this.paymentForm.value);
   }
-
-  // openSearchModal() {
-  //   if (!this.searchModal) {
-  //     this.appSettingService.showError('Search modal template not found');
-  //     return;
-  //   }
-
-  //   this.searchType = 'House No';
-  //   this.searchValue = '';
-  //   this.allPendingCosts = [];
-  //   this.selectedCosts = [];
-
-  //   this.modalService.open(this.searchModal, {
-  //     size: 'lg',
-  //     backdrop: 'static',
-  //     keyboard: false
-  //   });
-  // }
-  // closeSearchModal() {
-  //   this.modalService.dismissAll();
-  //   this.selectedCosts = [];
-  // }
 
   toggleMultiBranch(event: any): void {
     const ctrl = this.paymentForm.get('MultiBranch');
@@ -2441,7 +2235,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     const number = this.paymentForm.get('InstrumentNumber');
     const date = this.paymentForm.get('InstrumentDate');
 
-    // Reset values
     this.paymentForm.patchValue({
       InstrumentMode: null,
       InstrumentNumber: '',
@@ -2506,9 +2299,8 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom: this.isEditMode
-        ? new Date(this.paymentData?.VoucherDate)
-        : new Date(),
+      EffectiveFrom:
+        this.paymentForm.get('VoucherDate')?.getRawValue ?? new Date(),
       segment: 'cost',
     };
 
@@ -2654,7 +2446,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
 
   /**
    * Get the number of decimal places allowed for exchange rates
-   * Example: getExchangeRateDecimalPlaces('12') returns 3
+   * Example: getExchangeRateDecimalPlaces(12) returns 3
    */
   public getExchangeRateDecimalPlaces(CurrencyMasterSid: number): number {
     const currency = this.currencyList.find(
@@ -2672,11 +2464,9 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
    * Get the number of decimal places allowed for exchange rates
    * Example: getExchangeRateDecimalPlaces('USD') returns 3
    */
-  public getExchangeRateDecimalPlacesWithCode(CurrencyCode : string): number {
+  public getExchangeRateDecimalPlacesWithCode(CurrencyCode: string): number {
     if (CurrencyCode) {
-      const config = this.currencyConfigService.getCurrencyConfig(
-       CurrencyCode
-      );
+      const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
       return config?.exchangeDecimal;
     }
     return 2;
@@ -2730,28 +2520,6 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     });
     this.totalCredits = totalCredits || 0;
     this.totalDebits = totalDebits || 0;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  reportPayment() {
-    const modalRef = this.modalService.open(PaymentPrintComponent, {
-      size: 'xl',
-      scrollable: true,
-    });
-    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
-  }
-
-  reportBankPayment() {
-    const modalRef = this.modalService.open(BankPaymentPrintComponent, {
-      size: 'xl',
-      scrollable: true,
-    });
-    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
-    modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
   }
 
   showInfo() {
@@ -2856,6 +2624,29 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       backdrop: 'static',
     });
   }
+  
+  reportBankPayment() {
+    const modalRef = this.modalService.open(BankPaymentPrintComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+  }
+
+  reportPayment() {
+    const modalRef = this.modalService.open(PaymentPrintComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   getCurrencySidFromCode(code: string) {
     if (!code || !this.currencyList) return null;
 
@@ -2902,12 +2693,12 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     });
     this.calculatePartyAmount(index);
     row.get('isTicked')?.setValue(checked);
+    this.markAsDirty();
 
     console.log('✔ PATCHED ROW:', row.value);
 
     // this.calculateLocalAmountForMatchRow(index);
   }
-
   validateMatchLimits(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
 
@@ -2955,15 +2746,15 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   isUAECompany() {
-    return this.currentCompanyCountryCode === 'united arab emirates';
+    return this.currentCompanyCountryCode === 'ae';
   }
 
   isUSACompany() {
-    return this.currentCompanyCountryCode === 'united states';
+    return this.currentCompanyCountryCode === 'us';
   }
 
   isIndianCompany() {
-    return this.currentCompanyCountryCode === 'india';
+    return this.currentCompanyCountryCode === 'in';
   }
 
   checkVoucherPostingMechanism() {
