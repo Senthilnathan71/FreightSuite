@@ -420,21 +420,94 @@
                             <div style="width:183px;font-weight: bolder;"><strong>Release Type</strong></div>
                             <div>: {{ housejobData?.Others?.[0]?.ReleaseType }}</div>
                         </div>
+<div
+  style="
+    display:flex;
+    align-items:flex-start;
+    margin-bottom:5px;
+    width:100%;
+    box-sizing:border-box;
+  "
+>
+  <!-- Label -->
+  <div
+    style="
+      width:183px;
+      font-weight:bolder;
+      box-sizing:border-box;
+    "
+  >
+    Goods To be Cleared By
+  </div>
 
-                        <div style="display:flex; align-items:center; margin-bottom:5px;">
-                            <div style="width:183px;font-weight: bolder;"><strong>Goods To be Cleared By</strong></div>
-                            <div>: {{ housejobData?.Others?.[0]?.CHAName }}</div>
-                        </div>
+  <!-- Colon -->
+  <div
+    style="
+      width:15px;
+      font-weight:bolder;
+    "
+  >
+    :
+  </div>
+
+  <!-- Value -->
+  <div
+    style="
+      flex:1;
+      white-space:normal;
+      word-break:break-word;
+      overflow-wrap:break-word;
+      box-sizing:border-box;
+    "
+  >
+    {{ housejobData?.Others?.[0]?.CHAName }}
+  </div>
+</div>
+
 
                         <div style="display:flex; align-items:center;margin-bottom:6px;">
                             <div style="width:183px; font-weight: bolder;"><strong>Ocean Bill of Lading</strong></div>
                             <div>: {{ housejobData?.MBLNo }}</div>
                         </div>
 
-                           <div style="display:flex; align-items:center;">
-                            <div style="width:183px;font-weight: bolder;"><strong>Goods Description</strong></div>
-                            <div>: {{ housejobData?.Cargo?.[0]?.CommodityDescription }}</div>
-                        </div>
+                          <div style="display:flex; align-items:flex-start; width:100%; box-sizing:border-box;">
+  
+  <!-- Label -->
+  <div
+    style="
+      width:183px;
+      font-weight:bolder;
+      box-sizing:border-box;
+    "
+  >
+    Goods Description
+  </div>
+
+  <!-- Colon -->
+  <div
+    style="
+      width:15px;
+      font-weight:bolder;
+    "
+  >
+    :
+  </div>
+
+  <!-- Value -->
+  <div
+    style="
+      flex:1;
+      white-space:normal;
+      word-break:break-word;
+      overflow-wrap:break-word;
+      box-sizing:border-box;
+    "
+  >
+    {{ housejobData?.Cargo?.[0]?.CommodityDescription }}
+  </div>
+
+</div>
+
 
                     </div>
 
@@ -460,6 +533,7 @@
                             <div style="width:140px;font-weight: bolder;"><strong>Marks and No.</strong></div>
                             <div>: {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}</div>
                         </div>
+                        
 
                     </div>
 
@@ -672,7 +746,7 @@
   </h4>
 
   <div style="margin-top:8px;">
-    Printed By: {{ userData.userName }}
+    {{ userData.userName }}
   </div>
 </div>
 

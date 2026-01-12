@@ -62,53 +62,56 @@
                 <!-- Left Column -->
                 <div style="flex:0 0 50%; max-width:50%; padding-right:10px; box-sizing:border-box;font-size:16px;">
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>MBL No.</strong></div>
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>MBL No.</strong></div>
                         <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>ETA</strong></div>
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>ETA</strong></div>
                         <div>: {{housejobData?.ETA | formatDate }}</div>
                     </div>
-                    <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; font-weight:bolder;">
-                            <strong>Container</strong>
-                        </div>
-                        <div>:
-                            <ng-container *ngFor="let item of housejobData?.Products; let last = last">
-                                <ng-container *ngIf="item?.ContainerNo">
-                                    {{ item.ContainerNo }}<span *ngIf="!last">, </span>
-                                </ng-container>
-                            </ng-container>
-                        </div>
-                    </div>
+                   <div style="display:flex; margin-bottom:5px; align-items:flex-start;">
+  
+  <div style="width:130px; font-weight:bolder;">
+    <strong>Container</strong>
+  </div>
+
+  <div style="flex:1;">
+    :
+    <ng-container *ngFor="let container of getUniqueContainers(); let last = last">
+      {{ container }}<span *ngIf="!last">, </span>
+    </ng-container>
+  </div>
+
+</div>
+
 
                     <!-- {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }} -->
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Shipment No</strong>
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Shipment No</strong>
                         </div>
                         <div>: {{housejobData?.ShipmentNo }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Place of
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Place of
                                 Receipt</strong></div>
                         <div> : {{getPortName(housejobData.POO)}} </div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Port of
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Port of
                                 Loading</strong></div>
                         <div>: {{getPortName(housejobData.POL)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Final
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Final
                                 Destination</strong></div>
                         <div>: {{getPortName(housejobData.FPD)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Carrier</strong></div>
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Carrier</strong></div>
                         <div>: {{housejobData?.CarrierName}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:5px;">
-                        <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>PP/CC</strong></div>
+                        <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>PP/CC</strong></div>
                         <div>: {{ housejobData?.FreightTerms }}</div>
                     </div>
                 </div>
@@ -164,12 +167,10 @@
                     <br>
                     <strong>MBL No :</strong> {{housejobData?.masterJob?.MasterJobNumber}} , <strong>HBL No :</strong>
                     {{
-                    housejobData?.HBLNo }} , <strong>Container No :</strong> <ng-container
-                        *ngFor="let item of housejobData?.Products; let last = last">
-                        <ng-container *ngIf="item?.ContainerNo">
-                            {{ item.ContainerNo }}<span *ngIf="!last">, </span>
-                        </ng-container>
-                    </ng-container>
+                    housejobData?.HBLNo }} , <strong>Container No :</strong> 
+                       <ng-container *ngFor="let container of getUniqueContainers(); let last = last">
+      {{ container }}<span *ngIf="!last">, </span>
+    </ng-container>
                     Sailed onboard on {{housejobData?.ETA | formatDate }} <strong>Voyage No :</strong>
                     {{housejobData?.VoyageNo}} expected to arrive in
                     {{housejobData?.ETD | formatDate }} our invoice no amount would be obliged with your

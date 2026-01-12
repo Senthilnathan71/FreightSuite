@@ -32,6 +32,7 @@ export class PreAlertComponent {
    @Input() packageTypeList: any[] = [];
    @Input() agentList: any[] = [];
    @Input() yardList: any[] = [];
+   @Input() portList: any[] = []; // Add this input
      @Input()  selectedFCLLCL:any;
    constructor(
      private appSettingsService: AppSettingsService,
@@ -204,6 +205,14 @@ export class PreAlertComponent {
      }, 0);
    }
  
+       getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
  
    modalClose() {
      this.activeModal.close();

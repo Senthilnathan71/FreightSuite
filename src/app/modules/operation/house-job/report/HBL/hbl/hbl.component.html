@@ -47,7 +47,7 @@
           <!-- Left Column -->
           <div
             style="display: table-cell; width: 50%; border:1px solid black; padding:5px; vertical-align: top;border-left: none;">
-            <strong>Shipper</strong>
+            <strong style="font-weight: bolder;">Shipper</strong>
             <div style=" margin-left:30px;min-height:70px;">
               {{ housejobData?.ShipperName }} <br>
               {{ housejobData?.ShipperAddress }}
@@ -57,11 +57,11 @@
           <div
             style="display: table-cell; width: 50%; border:1px solid black; padding:5px 0; vertical-align: top;border-right: none;box-sizing: border-box;">
             <div style="display: flex; border-bottom: 1px solid black; padding-bottom:4px; padding-left: 5px;">
-              <div style="width:150px;"><strong>Bill of Lading No.</strong></div>
+              <div style="width:150px;font-weight: bolder;"><strong>Bill of Lading No.</strong></div>
               <div>: {{ housejobData?.HBLNo }}</div>
             </div>
             <div style="margin-top:8px; padding-left: 5px;">
-              <strong>Delivery Agent & Ref.</strong>
+              <strong style="font-weight: bolder;">Delivery Agent & Ref.</strong>
               <div style="margin-left:40px;min-height:70px;">
                 {{ getDestinationAgentName(housejobData?.DestinationAgent) }}
               </div>
@@ -76,7 +76,7 @@
             style="display: table-cell; width: 50%; border:1px solid black; padding:0; vertical-align: top;border-left: none;">
             <!-- Consignee -->
             <div style="border-bottom:1px solid black; padding:5px;">
-              <strong>Consignee</strong>
+              <strong style="font-weight: bolder;">Consignee</strong>
               <div style=" margin-left:30px;min-height:70px;">
                 {{ housejobData?.ConsigneeName }} <br>
                 {{ housejobData?.ConsigneeAddress }}
@@ -84,7 +84,7 @@
             </div>
             <!-- Notify Party -->
             <div style="padding:5px;">
-              <strong>Notify Party</strong>
+              <strong style="font-weight: bolder;">Notify Party</strong>
               <div style="min-height:70px;  margin-left:30px;">
                 {{ housejobData?.Notify }} <br>
                 {{ housejobData?.NotifyAddress }}
@@ -103,10 +103,10 @@
               />
 
             <div>
-              <h3 style="margin:0; font-weight:800;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-              <h5 style="margin:0; font-weight:800;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-              <p style="margin:2px 0; font-size:16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-              <p style="margin:2px 0; font-size:16px;">
+              <h3 style="margin:0; font-weight:900;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
+              <h5 style="margin:0; font-weight:900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p style="margin:2px 0; font-size:17px;">{{ currentBranch?.addressLine1 || '' }}</p>
+              <p style="margin:2px 0; font-size:17px;">
                 {{ currentBranch?.addressLine2 || '' }},
                 {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
                 {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }},
@@ -126,23 +126,23 @@
   border-bottom:1px solid black;
 ">
         <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
-          <strong>Place of Receipt</strong><br />
+          <strong style="font-weight: bolder;">Place of Receipt</strong><br />
           {{ housejobData?.POO }}
         </div>
 
         <div style="width:25%; text-align:center; padding:5px; ">
-          <strong>Port of Loading</strong><br />
+          <strong style="font-weight: bolder;">Port of Loading</strong><br />
           {{ housejobData?.POL }}
         </div>
 
         <div
           style="width:25%; text-align:center; padding:5px; border-right:1px solid black; border-left: 1px solid black;">
-          <strong>Job No.</strong><br />
+          <strong style="font-weight: bolder;">Job No.</strong><br />
           {{ housejobData?.HBLNo }}
         </div>
 
         <div style="width:25%; text-align:center; padding:5px;">
-          <strong>Job Ref.</strong><br />
+          <strong style="font-weight: bolder;">Job Ref.</strong><br />
           {{ housejobData?.Others?.[0]?.CustomerRefNo }}
         </div>
       </div>
@@ -155,23 +155,23 @@
   border-bottom:1px solid black;
 ">
         <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
-          <strong>Vessel / Voyage No.</strong><br />
+          <strong style="font-weight: bolder;">Vessel / Voyage No.</strong><br />
           {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
         </div>
 
         <div style="width:25%; text-align:center; padding:5px;">
-          <strong>Port of Discharge</strong><br />
+          <strong style="font-weight: bolder;">Port of Discharge</strong><br />
           {{ housejobData?.POD }}
         </div>
 
         <div
           style="width:25%; text-align:center; padding:5px; border-right:1px solid black;border-left:  1px solid black;">
-          <strong>Place of Delivery</strong><br />
+          <strong style="font-weight: bolder;">Place of Delivery</strong><br />
           {{ housejobData?.Others?.[0]?.DeliveryPlace }}
         </div>
 
         <div style="width:25%; text-align:center; padding:5px;">
-          <strong>No of Bill of Lading</strong><br />
+          <strong style="font-weight: bolder;">No of Bill of Lading</strong><br />
           {{ housejobData?.masterJob?.NoofOriginal }}
         </div>
       </div>
@@ -180,14 +180,12 @@
       <!-- Product Table -->
       <div style="overflow-x:auto; margin-top: 5px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 16px; color: #000;">
-          <thead>
+          <thead style="font-weight: bolder;">
             <tr>
-              <th style="border: 1px solid black; padding: 2px 8px;border-left: none;"><strong>Container No. / Seal No.
-                  / Marks &
-                  No.</strong></th>
-              <th style="border: 1px solid black; padding: 2px 8px;"><strong>No. of Pkg / Description / Shipping
+              <th style="border: 1px solid black; padding: 2px 8px;border-left: none;"><strong>Container No. / Seal No./ Marks&No.</strong></th>
+              <th style="border: 1px solid black; padding: 2px 8px;text-align: center;"><strong>No. of Pkg / Description / Shipping
                   Unit</strong></th>
-              <th style="border: 1px solid black; padding: 2px 8px;text-align: center;"><strong>Gross Weight</strong>
+              <th style="border: 1px solid black; padding: 2px 8px;text-align: center;"><strong>Gross Wt.</strong>
               </th>
               <th style="border: 1px solid black; padding: 2px 8px;text-align: center;border-right: none;">
                 <strong>Volume</strong>
@@ -209,7 +207,7 @@
             </tr>
           </tbody>
           <tfoot>
-            <tr style="font-weight:bold;">
+            <tr style="font-weight:bolder;">
               <td colspan="2" style="border: 1px solid black; padding: 2px 8px; text-align:right;border-left: none;">
                 <strong>TOTAL</strong>
               </td>
@@ -228,10 +226,10 @@
         <div style="display:flex;">
           <div
             style="width:66.66%; border-top:1px solid black; border-bottom:1px solid black; border-right:1px solid black;  padding:5px;">
-            <strong>Total Number of Containers SAY :</strong> {{ housejobData?.Cargo?.[0]?.NoofContainers }}
+            <strong style="font-weight: bolder;">Total Number of Containers SAY :</strong> {{ housejobData?.Cargo?.[0]?.NoofContainers }}
           </div>
           <div style="width:33.33%; border-top:1px solid black; border-bottom:1px solid black;  padding:5px;">
-            <strong>OnBoard Date :</strong> {{ housejobData?.masterJob?.others?.[0]?.SOBDate | formatDate }}
+            <strong style="font-weight: bolder;">OnBoard Date :</strong> {{ housejobData?.masterJob?.others?.[0]?.SOBDate | formatDate }}
           </div>
         </div>
         <!-- <div style="display:flex;height: 90px;">
@@ -264,11 +262,11 @@
 
         <div style="display:flex; height:90px; align-items:stretch;">
           <div style="width:50%; border-bottom:1px solid black; padding:5px; box-sizing:border-box;">
-            <strong>Freight Details, Charges etc :</strong>
+            <strong style="font-weight: bolder;">Freight Details, Charges etc :</strong>
           </div>
           <div
             style="width:50%; border-left:1px solid black; border-bottom:1px solid black; padding:5px; box-sizing:border-box;">
-            <strong>Excess Value Declaration :</strong>
+            <strong style="font-weight: bolder;">Excess Value Declaration :</strong>
           </div>
         </div>
 
@@ -288,7 +286,7 @@
 
           <div
             style="width:50%; border-left:1px solid black; border-bottom:1px solid black; padding:5px; box-sizing:border-box;">
-            <strong>Signed on behalf of the Carrier.</strong><br>
+            <strong style="font-weight: bolder;">Signed on behalf of the Carrier.</strong><br>
             By {{ currentCompany?.companyName || 'Company Name' }}<br>
             <strong>As Agent For the Carrier</strong>
           </div>
