@@ -2130,15 +2130,15 @@ createRateFormGroup(data?: any): FormGroup {
       skipChargeGroup = true;
     }
 
-    console.log("DEBUG COUNTRY", {
-      companyCountry : this.currentCompanyCountry,
-      customerCountry,
-      skipChargeGroup
-    })
     if (!skipChargeGroup) {
       let chargeIndex = 0;
       for (const charge of this.availableCharges) {
         console.log("Inside Validate Tax For HSSAC", charge)
+        if(!charge.chargeTaxMaster  || charge.chargeTaxMaster.length === 0){
+          this.appSettingService.showWarning("Tax mapping is not available for Charge : " + charge.ChargeDescription);
+          continue;
+        }
+
         const taxGroupSid = this.getTaxGroupSidFromCharge(charge);
 
         if (taxGroupSid) {
@@ -3639,7 +3639,7 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
     charge,
     chargeTaxMaster
   });
-  const taxGroupSid = chargeTaxMaster.TaxGroupSid;
+  const taxGroupSid = chargeTaxMaster?.TaxGroupSid;
 
   return taxGroupSid ? Number(taxGroupSid) : null;
 }

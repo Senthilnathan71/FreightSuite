@@ -1299,7 +1299,15 @@
               <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
                 formControlName="CargoType" placeholder="" appendTo="body">
               </ng-select>
-              <label for="text-input" class="input-label">Cargo Type<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">Cargo Type<span class="text-danger">*</span></label>
+              @if(cargoForm.get('CargoType')?.touched &&
+              cargoForm.get('CargoType')?.invalid){
+              <div class="error-message">
+                @if(cargoForm.get('CargoType')?.hasError('required')){
+                <span>Required</span>
+                } 
+              </div>
+              }
             </div>
           </aside>
           @if(selectedFCLLCL === "FCL"){
@@ -1327,7 +1335,7 @@
                 formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                 max="9999999.999">
               <label for="text-input" class="input-label">
-                Gross Weight
+                Gross Weight<span class="text-danger">*</span>
               </label>
 
               <!-- Validation Messages -->
@@ -1338,6 +1346,9 @@
                 <span>Gross Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+                @else if (cargoForm.get('GrossWeight')?.errors?.['required']) {
+                <span>Required</span>
                 }
               </div>
               }

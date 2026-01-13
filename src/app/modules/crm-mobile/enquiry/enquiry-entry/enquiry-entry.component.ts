@@ -42,7 +42,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
-import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
+import { AuthorizationStatus, errorLogger, getFormattedPort } from 'src/app/common/helper';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
@@ -1595,29 +1595,59 @@ private parseFloatSafe(value: any): number {
 
 
   onSubmit() {
+    errorLogger(this.rateRequestForm.value);
     if (this.hasInvalidExcept('routes', this.rateRequestForm)) {
       this.rateRequestForm.markAllAsTouched();
       this.rateRequestForm.updateValueAndValidity();
       const errorMessage = this.getValidationErrorMessage();
-      this.appSettingsService.showWarning(errorMessage);
-      return;
-    }
-    let routeInvalid: boolean;
-    this.routes.controls.forEach((routeGroup: FormGroup, index: number) => {
-      if (this.hasInvalidExcept('cargo', routeGroup)) {
-        routeGroup.markAllAsTouched();
-        routeGroup.updateValueAndValidity();
-        this.appSettingsService.showWarning(`Please enter the Route.`);
-        routeInvalid = true;
-      }
+       const timeout = errorMessage.includes('\n') ? 10000 : 5000;
+    this.toastr.error(errorMessage, 'Validation Failed', { 
+      timeOut: timeout,
+      closeButton: true,
+      enableHtml: true,
+      positionClass: 'toast-top-right'
     });
-    if (routeInvalid) {
-      this.selectedTab = "Route Details";
       return;
     }
-      if (this.hasInvalidCargoFields()) {
-    this.appSettingsService.showWarning('Please complete all required cargo fields');
-    this.selectedTab = "Route Details";
+     let routeInvalid: boolean = false;
+  const routeErrors: string[] = [];
+    this.routes.controls.forEach((routeGroup: FormGroup, index: number) => {
+      routeGroup.markAllAsTouched();
+      if (this.hasInvalidExcept('cargo', routeGroup)) {
+      routeInvalid = true;
+      
+      // Check specific route fields
+      if (routeGroup.get('POL')?.invalid) {
+        routeErrors.push(`Route ${index + 1}: Port of Loading (POL) is required`);
+      }
+      if (routeGroup.get('POD')?.invalid) {
+        routeErrors.push(`Route ${index + 1}: Port of Discharge (POD) is required`);
+      }
+    }
+  });
+    if (routeInvalid) {
+    const errorMessage = routeErrors.length > 0 
+      ? `Route validation failed:\n• ${routeErrors.join('\n• ')}`
+      : 'Please complete all required route details.';
+      
+    this.toastr.error(errorMessage, 'Route Validation Failed', {
+      timeOut: 8000,
+      closeButton: true,
+      enableHtml: true,
+      positionClass: 'toast-top-right'
+    });
+    this.selectedTab = 'Route Details';
+    return;
+  }
+     if (this.hasInvalidCargoFields()) {
+    const errorMessage = this.getValidationErrorMessage();
+    this.toastr.error(errorMessage, 'Cargo Validation Failed', {
+      timeOut: 10000,
+      closeButton: true,
+      enableHtml: true,
+      positionClass: 'toast-top-right'
+    });
+    this.selectedTab = 'Route Details';
     return;
   }
 
@@ -2528,43 +2558,124 @@ private parseFloatSafe(value: any): number {
   }
 
   getValidationErrorMessage(): string {
-    const form = this.rateRequestForm;
+  const form = this.rateRequestForm;
+  const missingFields: string[] = [];
 
-    // Check specific required fields first
-    if (form.get('shipmentDate')?.invalid) {
-      return 'Please enter Expected Shipment Date.';
-    }
+  // Define field labels for better readability
+  const fieldLabels: { [key: string]: string } = {
+    'shipmentDate': 'Expected Shipment Date',
+    'Segment': 'Department',
+    'CustomerMasterSid': 'Customer',
+    'PreCustomerMasterSid': 'Lead',
+    'Email': 'Email',
+    'ContactNumber': 'Contact Number',
+    'POL': 'Port of Loading (POL)',
+    'POD': 'Port of Discharge (POD)',
+    'CargoType': 'Cargo Type',
+    'ProductName': 'Product Name',
+    'PackageType': 'Package Type',
+    'WeightUnitSid': 'Weight Unit',
+    'GrossWeight': 'Gross Weight',
+    'cbm': 'CBM',
+    'ContainerType': 'Container Type',
+    'ShipmentTerms': 'Shipment Terms',
+    'PackageQty': 'Package Quantity',
+    'ChargeableWeight': 'Chargeable Weight',
+    'volumetric': 'Volumetric',
+    'authorizerStatus': 'Authorizer Status'
+  };
 
-    if (form.get('Segment')?.invalid) {
-      return 'Please select Department.';
-    }
-
-    if (form.get('CustomerMasterSid')?.invalid && form.get('LeadOrCustomer')?.value === true) {
-      return 'Please select Customer.';
-    }
-
-    if (form.get('PreCustomerMasterSid')?.invalid && form.get('LeadOrCustomer')?.value === false) {
-      return 'Please select Lead.';
-    }
-
-    // Check routes
-    const routesArray = form.get('routes') as FormArray;
-    for (let i = 0; i < routesArray.length; i++) {
-      const route = routesArray.at(i) as FormGroup;
-
-      if (route.get('POL')?.invalid) {
-        return `Please select POL for Route.`;
-      }
-
-      if (route.get('POD')?.invalid) {
-        return `Please select POD for Route.`;
-      }
-    }
-
-    // Default message
-    return 'Please fill all the required fields correctly.';
+  // Check main form fields
+  if (form.get('shipmentDate')?.invalid) {
+    missingFields.push(fieldLabels['shipmentDate']);
   }
 
+  if (form.get('Segment')?.invalid) {
+    missingFields.push(fieldLabels['Segment']);
+  }
+
+  // Check Customer/Lead based on toggle
+  const isCustomer = form.get('LeadOrCustomer')?.value;
+  if (isCustomer && form.get('CustomerMasterSid')?.invalid) {
+    missingFields.push(fieldLabels['CustomerMasterSid']);
+  } else if (!isCustomer && form.get('PreCustomerMasterSid')?.invalid) {
+    missingFields.push(fieldLabels['PreCustomerMasterSid']);
+  }
+
+  // Check email format if filled
+  if (form.get('Email')?.hasError('singleEmail')) {
+    missingFields.push('Valid Email Address');
+  }
+
+  // Check contact number format if filled
+  if (form.get('ContactNumber')?.hasError('invalidPhoneNumber')) {
+    missingFields.push('Valid Contact Number');
+  }
+
+  // Check authorizer status if applicable
+  if (this.isAuthorizedUser && !this.isApproved) {
+    if (form.get('authorizerStatus')?.invalid) {
+      missingFields.push(fieldLabels['authorizerStatus']);
+    }
+  }
+
+  // Check routes
+  const routesArray = form.get('routes') as FormArray;
+  routesArray.controls.forEach((route: FormGroup, routeIndex: number) => {
+    const routeLabel = `Route ${routeIndex + 1}`;
+
+    if (route.get('POL')?.invalid) {
+      missingFields.push(`${routeLabel} - ${fieldLabels['POL']}`);
+    }
+
+    if (route.get('POD')?.invalid) {
+      missingFields.push(`${routeLabel} - ${fieldLabels['POD']}`);
+    }
+
+    // Check cargo within route
+    const cargoArray = route.get('cargo') as FormArray;
+    cargoArray.controls.forEach((cargo: FormGroup, cargoIndex: number) => {
+      const cargoLabel = `${routeLabel} - Cargo ${cargoIndex + 1}`;
+
+      // Check all required cargo fields based on segment type
+      const requiredCargoFields = this.getRequiredCargoFields();
+      
+      requiredCargoFields.forEach(fieldName => {
+        const control = cargo.get(fieldName);
+        if (control?.invalid) {
+          const label = fieldLabels[fieldName] || fieldName;
+          missingFields.push(`${cargoLabel} - ${label}`);
+        }
+      });
+
+      // Special check for Gross Weight > Net Weight
+      if (cargo.get('GrossWeight')?.hasError('grossNotGreater')) {
+        missingFields.push(`${cargoLabel} - Gross Weight must be greater than Net Weight`);
+      }
+    });
+  });
+
+  // Build error message
+  if (missingFields.length === 0) {
+    return 'Please fill all required fields correctly.';
+  }
+
+  if (missingFields.length === 1) {
+    return `Please fill the required field: ${missingFields[0]}`;
+  }
+
+  return `Please fill the following required fields:\n• ${missingFields.join('\n• ')}`;
+}
+private getRequiredCargoFields(): string[] {
+  if (this.selectedFCLLCL === 'FCL') {
+    return ['CargoType', 'ContainerType', 'PackageType', 'PackageQty', 'ShipmentTerms', 'GrossWeight', 'cbm', 'ProductName'];
+  } else if (this.selectedFCLLCL === 'LCL') {
+    return ['CargoType', 'PackageType', 'PackageQty', 'WeightUnitSid', 'cbm', 'volumetric', 'GrossWeight', 'ChargeableWeight', 'ShipmentTerms', 'ProductName'];
+  } else if (this.selectedFCLLCL === 'AIR') {
+    return ['CargoType', 'PackageType', 'ChargeableWeight', 'WeightUnitSid', 'PackageQty', 'cbm', 'volumetric', 'GrossWeight', 'ProductName'];
+  }
+  return [];
+}
 
   // Voice Recognition
 
