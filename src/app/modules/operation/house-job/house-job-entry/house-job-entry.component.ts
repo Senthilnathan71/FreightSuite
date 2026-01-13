@@ -688,10 +688,10 @@ private setupMBLDateListener(): void {
   initCargoForm() {
     this.cargoForm = this.fb.group({
       HouseJobCargoSid: [null],
-      CargoType: ['General'],
+      CargoType: ['General',Validators.required],
       ContainerType: [null],
       NoofContainers: [''],
-      GrossWeight: [''],
+      GrossWeight: ['',Validators.required],
       NetWeight: [''],
       Volume: [''],
       Volumetric: [''],
