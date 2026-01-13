@@ -340,7 +340,7 @@ get currencyList(): any[] {
 
   openTariffDetailEntryModal(content: TemplateRef<any>, data?: any) {
   if (!this.TariffHeaderSid) {
-    this.appSettingServ.showError('Adding tariff details requires creation of tariff header.');
+    this.appSettingServ.showError('Please save tariff header then try to add charges.');
     return;
   }
 
@@ -383,7 +383,6 @@ get currencyList(): any[] {
     } else {
       // Create mode - ensure min date is set correctly
         const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
   this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
   this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(tomorrow);
       
@@ -1244,7 +1243,6 @@ filterChargesByDepartment(department: any): void {
   if (!chargeCode) {
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
      const tomorrow = new Date(this.todayDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
     return;
   }
@@ -1257,7 +1255,6 @@ filterChargesByDepartment(department: any): void {
     // NEW charge code - set to today's date
     // ✅ FIX: Add one day to compensate for the adapter issue
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
     
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(tomorrow);
     this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
@@ -1290,7 +1287,6 @@ filterChargesByDepartment(department: any): void {
   calculateMinEffectiveFrom(chargeCode?: string) {
   if (!chargeCode) {
     const tomorrow = new Date(this.todayDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
     return;
   }
@@ -1302,7 +1298,6 @@ filterChargesByDepartment(department: any): void {
 
   if (sameChargeDetails.length === 0) {
     const tomorrow = new Date(this.todayDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     this.minEffectiveFrom = this.toNgbDateStruct(tomorrow);
   } else {
     const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
