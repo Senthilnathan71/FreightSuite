@@ -144,7 +144,7 @@ hasAnyDropdownPermission(): boolean {
   initPortForm() {
     this.portForm = this.fb.group({
       PortName: ['', [Validators.required, Validators.maxLength(50)]],
-      PortCode: ['', [Validators.required, Validators.maxLength(3)]],
+      PortCode: ['', [Validators.required, Validators.maxLength(5)]],
       CountryMasterSid: ['', [Validators.required]],
       StateMasterSid: ['',],
       TimeZone: [''],
@@ -184,7 +184,7 @@ hasAnyDropdownPermission(): boolean {
   
   handlePortCodePatch(PortCode:String,PortType:String){
     if(PortType === 'Sea'){
-      return PortCode.substring(2,5)
+      return PortCode
     } else {
       return PortCode
     }
