@@ -240,6 +240,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ]
 
   barcodeBookingNo: string = '';
+  printQty: number = 1;
  barcodeConfig: BarcodeConfig = {
   format: 'CODE128',
   height: 22,     // small but readable
@@ -4450,55 +4451,121 @@ printDiv(divId: string): void {
   }, 50); 
 }
 
-printDivBarcode(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
+  openPrintQtyModal(template: any) {
+    this.printQty = 1;
+    this.modalService.open(template, { centered: true });
+  }
 
-  setTimeout(() => {
-    const sourceElement = document.getElementById(divId);
-    if (!sourceElement) return;
 
-    // 👇 Total packages
-    const totalPkgs =
-      Number(this.bookingHeader?.bookingCargo?.[0]?.NoOfPackage) || 1;
+  confirmPrint(modal: any) {
+    modal.close();
+    this.printDivBarcode('printContent', this.printQty);
+  }
 
-    let finalHtml = '';
 
-    for (let i = 0; i < totalPkgs; i++) {
-      finalHtml += `
+  printDivBarcode(divId: string, qty: number): void {
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
+
+    setTimeout(() => {
+      const sourceElement = document.getElementById(divId);
+      if (!sourceElement) return;
+
+      // ✅ Collect all styles from current page
+      const styles = Array.from(document.styleSheets)
+        .map((sheet: any) => {
+          try {
+            return Array.from(sheet.cssRules)
+              .map((rule: any) => rule.cssText)
+              .join('');
+          } catch {
+            return '';
+          }
+        })
+        .join('');
+
+      let finalHtml = '';
+
+      for (let i = 0; i < qty; i++) {
+        finalHtml += `
         <div class="print-page">
           ${sourceElement.innerHTML}
         </div>
       `;
-    }
+      }
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <html>
           <head>
             <title>Print Barcode</title>
-            <style>
-              @media print {
-                .print-page {
-                  page-break-after: always;
-                }
-                .print-page:last-child {
-                  page-break-after: auto;
-                }
-              }
-            </style>
+
+            <!-- Bootstrap -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+            <!-- FontAwesome -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+         <style>
+  ${styles}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* One physical printed page */
+.print-page {
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  page-break-after: always;
+}
+
+.print-page:last-child {
+  page-break-after: auto;
+}
+
+/* Your label size */
+.print-label {
+  width: 380px;
+  height: 480px;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 0;
+  }
+}
+
+</style>
+
           </head>
+
           <body onload="window.print(); window.close();">
             ${finalHtml}
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 100);
-}
+
+        popupWin.document.close();
+      }
+    }, 100);
+  }
+
+
 
 // Add this method to your component class
 getFieldLabel(fieldName: string): string {

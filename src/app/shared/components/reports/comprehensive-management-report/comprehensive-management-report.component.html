@@ -108,7 +108,7 @@
                         <td class="text-end">{{ item.GrossWeight | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.NetWeight | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.CBM | number:'1.2-2' }}</td>
-                        <td class="text-center">{{ item.TEUs || 0 }}</td>
+                        <td class="text-center">{{ item.TEU || 0 }}</td>
                     </tr>
 
                     <tr *ngIf="masterJobRows.length === 0">
