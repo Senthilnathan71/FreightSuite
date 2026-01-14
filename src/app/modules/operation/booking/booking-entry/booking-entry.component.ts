@@ -1270,7 +1270,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     console.log(response);
     this.bookingHeader = response;
     const barcodeData = `${response.BookingNo}`;
-    this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
+    if(response.BookingNo){
+      this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
+    }
+    // this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);

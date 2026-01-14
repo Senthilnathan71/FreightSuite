@@ -1619,13 +1619,23 @@ createRateFormGroup(data?: any): FormGroup {
    * Example: getExchangeRateDecimalPlaces('USD') returns 3
    */
   public getExchangeRateDecimalPlaces(CurrencyMasterSid: string): number {
+    if(!this.currencyList || this.currencyList.length === 0) return 4;
     const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
     if (currency) {
       const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
-      return config?.exchangeDecimal;
+      return config?.exchangeDecimal?? 4;
     }
-    return 2;
+    return 4;
   }
+//   public getExchangeRateDecimalPlaces(CurrencyMasterSid: number): number {
+//   if (!this.currencyList || this.currencyList.length === 0) return 3;
+//   const currency = this.currencyList.find(c => c.CurrencyMasterSid === CurrencyMasterSid);
+//   if (currency) {
+//     const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+//     return config?.exchangeDecimal ?? 3;
+//   }
+//   return 3; 
+// }
     /**
    * Format an amount with currency symbol and comma separators
    * Example: getFormattedAmount(1234.56, 'USD') returns '$1,234.56'
