@@ -173,7 +173,7 @@
                                     <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
                                         {{country.countryName}}</option>
                                 </select> -->
-                <label for="text-input" class="input-label">Country <span class="text-danger"></span></label>
+                <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
                 @if(companyForm.get('CountryMasterSid')?.touched &&

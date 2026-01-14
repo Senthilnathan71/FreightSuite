@@ -353,7 +353,7 @@
              <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="CIN" [onlyText]="25">
+                  formControlName="CIN" [textWithNumbers]="25">
                 <label for="text-input" class="input-label">CIN </label>
 
                 <!--  Validation -->
@@ -370,7 +370,7 @@
              <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="TAN" [onlyText]="25">
+                  formControlName="TAN" [textWithNumbers]="25">
                 <label for="text-input" class="input-label">TAN </label>
 
                 <!--  Validation -->
@@ -590,9 +590,9 @@
     @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
     customerForm.get('PanName')?.dirty)) {
     <div class="error-message">
-      @if (customerForm.get('PanName')?.hasError('required')) {
+      <!-- @if (customerForm.get('PanName')?.hasError('required')) {
       <span>Name is required</span>
-      }
+      } -->
       @if (customerForm.get('PanName')?.hasError('maxlength')) {
       <span>Max 100 characters allowed</span>
       }
@@ -785,7 +785,7 @@
                 <!-- Phone -->
                 <aside class="col-md-4">
                   <div class="custom-form-group">
-                    <input type="tel" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
+                    <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
                       [onlyNumbers]="15">
                     <label class="input-label">Phone</label>
                     @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
