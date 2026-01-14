@@ -21,7 +21,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, Observable, of, Subject, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -96,7 +96,7 @@ interface NgbDateStructLike {
   ],
 })
 export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestroy {
-  // User Related Variable Declarations
+  // Datas from Session Storage
   userData: any;
   currUserEmail: string | null = null;
   currentCompany: any;
@@ -119,26 +119,28 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     cityName: string;
     cityCode: string;
   };
+  currentUserState: string;
+  currentFinancialYear: number;
+  currentCountry: number;
+  currentCurrency: CurrencySettings;
+  currentBranchCityId: number;
+  currentBranchCityName: string | null;
+  salesmanName : string | null = null;
 
   invoiceForm!: FormGroup;
-  emailForm!: FormGroup;
   headerId: number | null = null;
   invoiceData: any;
-  isDataModified: boolean = false;
-  MenuMasterSid: any;
   currentMenuId: number;
   TandCList: any[] = [];
-  currentClauseId: any;
   isViewMode: boolean = false;
-  isBankFetched : boolean = false;
   get isEditMode() {
     return !!this.headerId && !this.isViewMode;
   }
-
+  
   // ViewChild references for modals
   @ViewChild('printModal') printModalRef: any;
   @ViewChild('emailModal') emailModalRef: any;
-
+  
   // lookups
   customerList: any[] = [];
   customerBranchList: any[] = [];
@@ -148,41 +150,21 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   hssacList: any[][] = [];
   subledgerList: any[] = [];
   uomList: any[] = [];
+  departmentList: any[] = [];
+  masterJobList: any[] = [];
+  houseJobList: any[] = [];
   taxGroupList: any[] = [];
   chargeTaxGroupMap: Map<number, any> = new Map();
-  voucherTypesList: any[] = [
-    { id: '1', name: 'Type 1' },
-    { id: '2', name: 'Type 2' },
-    { id: '3', name: 'Type 3' },
-  ];
-  currentDate = new Date();
-  // master jobs
-  masterJobList: any[] = [];
-  salesmanList: any[] = [];
-  houseJobList: any[] = [];
   masterHouseMap: Map<number, any[]> = new Map();
+  
+  //  Dropdown configs
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
-
-  showPrintLogo: boolean = false;
-  showPdfLogo: boolean = true;
-
-  CurrencyLookupConfig = {
-    displayFields: ['currencyCode', 'currencyName', 'countryName'],
-    displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['currencyCode'],
-  };
-  HSSACLookupConfig = {
-    displayFields: ['HSSACCode', 'HSSACName'],
-    displayLabels: ['Code', 'Name'],
-    labelFields: ['HSSACCode'],
-  };
-  departmentList: any[] = [];
-  departmentLookupConfig = {
-    displayFields: ['departmentCode', 'departmentName'],
-    displayLabels: ['Code', 'Name'],
-    labelFields: ['departmentCode'],
-  };
+  CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
+  HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC_TAX;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  masterJobLookupConfig = DROPDOWN_CONFIGS.MASTER_JOB;
+  
   // UI state
   selectedTab = 'Invoice';
   selectTab(tab: string): void {
@@ -193,35 +175,33 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
-  ModeofStatus = [
-    { id: 'A', name: 'Active' },
-    { id: 'S', name: 'Suspended' },
-  ];
-
   invoiceTypes = [
     { id: 'REG', name: 'Regular' },
     { id: 'REIMB', name: 'Reimbursement' },
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
   ];
-
+  
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
     { id: 'B2C', name: 'B2C - Business to Customer' },
     { id: 'EXWP', name: 'Export With Payment' },
     { id: 'EXWOP', name: 'Export Without Payment' },
   ];
-  currentUserState: string;
-  currentFinancialYear: number;
-  currentCountry: number;
-  currentCurrency: number;
-  currentUserCurrency: string;
-  currentBranchCityId: number;
-  currentBranchCityName: string | null;
+  
+  ModeofStatus = [
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' },
+  ];
+  
+  
   filteredDetailItems: any[] = [];
-  companyCurrency: any;
-  currentCurrencyCode: string;
+  currentDate = new Date();
   isAutoPosting : boolean = false;
+  
+  // Declaration not exist in Vendor Invoice
+  isBankFetched : boolean = false;
+  emailForm!: FormGroup;
 
   // Unsaved changes related varaible declarations
   isDirty : boolean = false;
@@ -239,9 +219,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   ): string {
     return `${TaxGroupSid}_${InputOrOutput}_${placeOfSupply}_${CountryMasterSid}`;
   }
-
+  
   private pendingBranchToSelect: number | null = null;
-
+  
   // Tax display mode based on country
   get isIndiaGST(): boolean {
     return this.currentCompanyCountryCode === 'in';
@@ -295,8 +275,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // Getting Data from appSettingService
       this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
       this.currentBranch = this.appSettingService.getCurrentBranchInfo();
-      this.currentCompanyCountry =
-        this.appSettingService.getCurrentCompanyCountry();
+      this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
       this.currentBranchCity = this.appSettingService.getCurrentBranchCity();
@@ -304,7 +283,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.appSettingService.getCurrentFinancialYear();
 
       // Getting Menu Id from MenuPermissionService
-      this.MenuMasterSid = this.mps.getMenuId();
+      this.currentMenuId = this.mps.getMenuId();
       this.mps.init().subscribe();
 
       // Assigning value to global variables
@@ -515,7 +494,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
 
 
-  async loadLookups() {
+  loadLookups() {
     this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -649,9 +628,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         next: (resp: any) => {
           if (resp?.status) {
             this.customerBranchList = resp.data || [];
-            const branchId = this.pendingBranchToSelect;
-            this.pendingBranchToSelect = null;
-            this.onCustomerBranchChange(branchId);
           }
         },
         error: (err) => {
@@ -670,6 +646,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     if (!branchSid) {
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
+      this.invoiceForm.get('GSTType')?.setValue('');
       this.others.get('DueDate')?.setValue(null);
       return;
     }
@@ -829,14 +806,15 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             this.subscribeToValueChanges();
           }, 0);
         } else {
-          this.appSettingService.showError('Error loading invoice');
-          this.router.navigate(['operation/invoice/list']);
+          this.spinner.hide();
+          this.appSettingService.showError(resp.message);
+          // this.router.navigate(['operation/invoice/list']);
         }
       },
       error: (err) => {
+        this.spinner.hide();
         console.error(err);
         this.appSettingService.showError('Error loading invoice');
-        console.error('error:', err);
       },
     });
   }
@@ -852,8 +830,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         PartyName: data.PartyName || '',
         PartyAddress: data.PartyAddress || '',
         COAMasterSid: data.COAMasterSid || null,
-        DocumentNumber: data.DocumentNumber || '',
-        IRNNumber: data.IRNNumber || '',
         PlaceOfSupply: data.PlaceOfSupply || '',
         PostStatus: data.PostStatus || '',
         MasterJobSid: data.MasterJobSid || null,
@@ -864,12 +840,15 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         GST_VAT: data.GST_VAT || '',
         InvoiceType: data.InvoiceType || null,
         GSTType: data.GSTType || null,
-        VoucherType: data.VoucherType,
         Narration: data.Narration || '',
         Remarks: data.Remarks || '',
-        IRNStatus: data.IRNStatus || '',
         MBLNo: data.MBLNo || '',
-        status: data.status || 'A',
+        status: data.Status || 'A',
+        
+        DocumentNumber: data.DocumentNumber || '',
+        IRNNumber: data.IRNNumber || '',
+        IRNStatus: data.IRNStatus || '',
+        VoucherType: data.VoucherType,
       },
       { emitEvent: false }
     );
@@ -883,7 +862,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.invoiceForm.get('ExchangeRate')?.enable();
     }
 
-    // this.getCustomerBranchByCustomer(data.CustomerMasterSid);
     const detailsFromResp = data.VoucherDetail || [];
 
     this.filteredDetailItems = detailsFromResp.filter(
@@ -1106,11 +1084,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       return '-';
     }
     const department = this.departmentList.find(
-      (dept) =>
-        dept.DepartmentMasterSid === departmentSid ||
-        dept.departmentMasterSid === departmentSid
+      (dept) => dept.DepartmentMasterSid === departmentSid 
     );
-    return department?.DepartmentName || department?.departmentName || '-';
+    return department?.departmentName || '-';
   }
   removeDetailRow(index: number) {
     if (this.details.length > index) this.details.removeAt(index);
@@ -1140,11 +1116,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         const selectedCurrency = this.currencyList.find(
           (c: any) => c.currencyCode === fromCurrencyCode
         );
-        this.details
-          .at(index)
-          .get('CurrencyMasterSid')
+        formGroup.get('CurrencyMasterSid')
           ?.setValue(selectedCurrency?.CurrencyMasterSid);
-        let toCurrencyCode = this.companySettings.getCurrencySettings().code;
+        let toCurrencyCode = this.currentCompanyCurrency.code;
         this.patchExchangeRateForDetail(
           fromCurrencyCode,
           toCurrencyCode,
@@ -1411,7 +1385,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // IGST or B2C - use TaxPercentage1 and TaxAmount1 only
       const rate = gstType === 'IGST' ? igstRate : cgstRate;
       const amount = gstType === 'IGST' ? igstAmt : cgstAmt;
-      row.get('TaxPercentage1')?.setValue(this.round(rate));
+      row.get('TaxPercentage1')?.setValue(rate);
       row
         .get('TaxAmount1')
         ?.setValue(toNumber(this.getFormattedAmount(amount, companyCurrency)));
@@ -1419,7 +1393,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // Default based on country
       if (this.isIndiaGST) {
         // India default - use TaxPercentage1 and TaxAmount1
-        row.get('TaxPercentage1')?.setValue(this.round(igstRate));
+        row.get('TaxPercentage1')?.setValue(igstRate);
         row
           .get('TaxAmount1')
           ?.setValue(
@@ -1427,48 +1401,18 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           );
       } else {
         // Non-India default (VAT)
-        row.get('TaxPercentage1')?.setValue(this.round(vatRate));
-        row.get('TaxAmount1')?.setValue(this.round(vatAmt));
+        row.get('TaxPercentage1')?.setValue(vatRate);
+        row.get('TaxAmount1')?.setValue(this.getFormattedAmount(vatAmt,companyCurrency));
       }
     }
 
-    row.get('LocalAmount')?.setValue(this.round(localAmount));
+    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount,companyCurrency));
     row.get('PartyAmount')?.setValue(this.getPartyAmount(index));
 
     this.updateBillAmount();
     this.invoiceForm.updateValueAndValidity();
   }
-  // private extractTaxRatesFromTaxGroup(taxGroupData: any): { cgst: number, sgst: number, igst: number, vat: number } {
-  //   const rates = { cgst: 0, sgst: 0, igst: 0, vat: 0 };
 
-  //   if (taxGroupData.taxMaster && Array.isArray(taxGroupData.taxMaster)) {
-  //     for (const tax of taxGroupData.taxMaster) {
-  //       switch (tax.TaxCode) {
-  //         case 'CGST':
-  //           rates.cgst = parseFloat(tax.TaxRate || 0);
-  //           break;
-  //         case 'SGST':
-  //           rates.sgst = parseFloat(tax.TaxRate || 0);
-  //           break;
-  //         case 'IGST':
-  //           rates.igst = parseFloat(tax.TaxRate || 0);
-  //           break;
-  //         case 'VAT':
-  //           rates.vat = parseFloat(tax.TaxRate || 0);
-  //           break;
-  //       }
-  //     }
-  //   } else {
-  //     // Fallback: use tax group rate and split for GST
-  //     const groupRate = parseFloat(taxGroupData.TaxRate || 0);
-  //     rates.cgst = groupRate / 2;
-  //     rates.sgst = groupRate / 2;
-  //     rates.igst = groupRate;
-  //     rates.vat = groupRate;
-  //   }
-
-  //   return rates;
-  // }
   private applyFallbackTax(
     index: number,
     row: any,
@@ -1531,12 +1475,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       }
     }
   }
-  onInvoiceTypeChange() {
-    const placeOfSupply = this.invoiceForm.get('PlaceOfSupply')?.value;
-    this.determineGSTType(placeOfSupply);
 
-    this.recalculateAllRows();
-  }
   updateBillAmount() {
     const totalLocalAmount = this.calculateTotalLocalAmount();
     this.invoiceForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
@@ -1548,7 +1487,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   recalculateAllRows() {
-    console.error("Recalc All Rows");
     if (this.isPosted) return;
     for (let i = 0; i < this.details.length; i++) {
       const exRateCtrl = this.details.at(i).get('ExchangeRate');
@@ -1558,10 +1496,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       ) {
         exRateCtrl.setValue(this.invoiceForm.get('ExchangeRate')?.value || 1);
       }
-      // const currCtrl = this.details.at(i).get('CurrencyCode');
-      // if (currCtrl && !currCtrl.value) {
-      //   currCtrl.setValue(this.invoiceForm.get('CurrencyCode')?.value || null);
-      // }
       this.recalcRow(i);
     }
   }
@@ -1809,8 +1743,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   ) {
     const raw = this.invoiceForm.getRawValue();
 
-    const autoPostingButNotPosting = (this.isAutoPosting && !this.isPosted);  
-    if(!autoPostingButNotPosting && this.deepEqual(raw,this.initialFormValue) && !this.isDirty){
+    const autoPostingButNoPosted = (this.isAutoPosting && !this.isPosted);
+    if (!autoPostingButNoPosted) {
+      this.appSettingService.showWarning(
+        'Auto Posting is currently enabled.\n\nPlease switch to Manual Posting and post this vendor invoice first.\nAfter posting, you can switch back to Auto Posting.'
+      );
+      if(resolve) resolve(false);
+      return;
+    }
+
+
+    if(this.deepEqual(raw,this.initialFormValue) && !this.isDirty){
       this.appSettingService.showWarning('No changes to save');
       this.invoiceForm.markAsUntouched();
       if(resolve) resolve(false);
@@ -1844,38 +1787,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       return;
     }
 
-    const userEmailFromSettings =
-      (this.appSettingService as any).userSettingSource?.value?.['userEmail'] ||
-      null;
-    const createdByValue = userEmailFromSettings || this.currUserEmail || null;
-    const updatedByValue = this.isEditMode
-      ? userEmailFromSettings || this.currUserEmail || null
-      : null;
+
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
-    let normalizedVoucherType: number | null = null;
-    const vt = raw.VoucherType;
-    if (Array.isArray(vt) && vt.length > 0) {
-      normalizedVoucherType = Number(vt[0]);
-    } else if (vt !== null && vt !== undefined && vt !== '') {
-      normalizedVoucherType = Number(vt);
-    }
-    if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-
-    const normalizedParty = this.normalizeParty(raw);
-    const currencyMasterId = this.getCurrencyId(raw.CurrencyCode);
-    const masterJobSid = raw.MasterJobSid ? Number(raw.MasterJobSid) : null;
-
-    const rawPartyControl = this.invoiceForm.get('PartyMasterSid')?.value;
-    const partyMasterSid =
-      rawPartyControl != null && rawPartyControl !== ''
-        ? Number(rawPartyControl)
-        : normalizedParty.PartyMasterSid != null
-        ? Number(normalizedParty.PartyMasterSid)
-        : null;
-    const headerCOAMasterSid = raw.COAMasterSid
-      ? Number(raw.COAMasterSid)
-      : null;
 
     const voucherDetailArray = (raw.voucherDetails || []).map(
       (d: any, index: number) => {
@@ -1896,7 +1810,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
           CostRevenue : d.DrCr === 'D' ? 'Cost' : 'Revenue',
           DrCr: d.DrCr || 'D',
-          PlaceOfSupply: d.PlaceOfSupply || '',
           CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
           CurrencyMasterSid: d.CurrencyMasterSid || this.getCurrencyId(d.CurrencyCode),
           Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -1921,7 +1834,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
           LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
           PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
-          MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
+          MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : null,
           HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
           YearMasterSid: YearMasterSid,
         };
@@ -1938,41 +1851,36 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
     const payload: any = {
       ...(this.isEditMode
-        ? { UpdatedBy: updatedByValue }
-        : { CreatedBy: createdByValue }),
+        ? { UpdatedBy: this.currUserEmail }
+        : { CreatedBy: this.currUserEmail }),
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherNumber: raw.VoucherNumber || null,
       VoucherDate: raw.VoucherDate ? new Date(raw.VoucherDate) : null,
-      PostDate: null,
       GST_VAT: raw.GST_VAT || undefined,
-      PartyMasterSid: partyMasterSid,
+      PartyMasterSid: raw.PartyMasterSid ?? null,
       DepartmentMasterSid: raw.DepartmentMasterSid || null,
-      PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),
-      PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
-      CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
+      PartyName: raw.PartyName || '',
+      PartyAddress: raw.PartyAddress || '',
+      CustomerBranchSid: raw.CustomerBranchSid ?? null,
       PlaceOfSupply: raw.PlaceOfSupply || '',
       COAMasterSid: raw.COAMasterSid ?? 1,
-      VoucherType: normalizedVoucherType,
-      VoucherTypeMasterSid: raw.VoucherTypeMasterSid
-        ? Number(raw.VoucherTypeMasterSid)
-        : normalizedVoucherType ?? undefined,
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
-      CurrencyMasterSid: currencyMasterId,
+      CurrencyMasterSid: raw.CurrencyMasterSid ?? null,
       PostStatus: raw.PostStatus || 'U',
       CurrencyCode: raw.CurrencyCode || undefined,
       ExchangeRate:
         raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
-      MasterJobSid: masterJobSid,
+      MasterJobSid: raw.MasterJobSid ?? null,
       HouseJobSid: raw.HouseJobSid ? Number(raw.HouseJobSid) : null,
-      DocumentNumber: raw.DocumentNumber || undefined,
-      Remarks: raw.Remarks || undefined,
       Narration: raw.Narration !== undefined ? raw.Narration : undefined,
       status: raw.status != null ? raw.status : 'A',
       VoucherDetail:
-        voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
+      voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
       YearMasterSid: YearMasterSid,
+
+      DocumentNumber: raw.DocumentNumber || undefined,
+      Remarks: raw.Remarks || undefined,
     };
 
     if (voucherOthersCandidate) {
@@ -1983,8 +1891,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       if (payload[k] === undefined) delete payload[k];
     });
 
+    this.isSaving = true;
     this.spinner.show();
-    if (this.isEditMode) {
+
+    if (this.isEditMode && this.headerId) {
       this.operationService.updateInvoiceById(this.headerId, payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
@@ -2098,7 +2008,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,
           TaxCategory: interOrIntra,
-          EffectiveFrom: this.invoiceData.VoucherDate ?? new Date().toISOString(),
+          EffectiveFrom: this.invoiceForm.get('VoucherDate')?.getRawValue() ?? new Date().toISOString(),
           TaxType: 'Input',
         },
       };
@@ -2144,11 +2054,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.router.navigate(['operation/invoice/list']);
   }
 
-  // Helper methods to get display values
-  getChargeCode(chargeSid: number): string {
-    const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeSid);
-    return charge?.chargeCode || charge?.ChargeCode || '-';
-  }
 
   getHSSACCode(hssacSid: number, rowIndex?: number): string {
     // First, try to get from hssacList using the HSSACMasterSid
@@ -2444,10 +2349,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
   }
 
-  getSalesmanName(sid: number): string {
-    const salesman = this.salesmanList.find((x) => x.UserMasterSid === sid);
-    return salesman ? salesman.userName : '';
-  }
+
 
   getRowTotal(detail: any): number {
     const taxable = Number(detail.TaxableAmount || 0);
@@ -2497,7 +2399,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.currentClauseId;
+          modalRef.componentInstance.DocumentSid = this.headerId;
         } else {
           this.appSettingService.showError(
             'Error loading Terms and Conditions'
@@ -2550,7 +2452,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     const data: any = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       BranchMasterSid: this.currentBranch.BranchMasterSid,
-      MenuMasterSid: this.MenuMasterSid,
+      MenuMasterSid: this.currentMenuId,
       DocumentSid: this.invoiceData?.VoucherHeaderSid,
     };
 
@@ -2675,10 +2577,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     index: number
   ) {
     const formGroup = this.details.at(index) as FormGroup;
+    const fromCurrencyId = this.currencyList.find(c => c.currencyCode === fromCurrencyCode)?.CurrencyMasterSid;
 
     if (fromCurrencyCode === toCurrencyCode) {
       formGroup.patchValue({
-        ExchangeRate: 1,
+        ExchangeRate: toNumber(this.getFormattedExchangeRate(1, fromCurrencyId)),
       });
       this.recalcRow(index);
       formGroup.get('ExchangeRate')?.disable();
@@ -2702,15 +2605,21 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         if (response?.status) {
           const formGroup = this.details.at(index) as FormGroup;
           if (response.data) {
-            formGroup.patchValue({ ExchangeRate: Number(response.data) });
+            formGroup.patchValue({ 
+              ExchangeRate: toNumber(this.getFormattedExchangeRate(response.data,fromCurrencyId)) 
+            });
           } else {
-            formGroup.patchValue({ ExchangeRate: 0 });
+            formGroup.patchValue({ 
+              ExchangeRate: toNumber(this.getFormattedExchangeRate(0,fromCurrencyId)) 
+            });
             this.appSettingService.showError(response.message);
           }
           formGroup.get('ExchangeRate')?.enable();
           this.recalcRow(index);
         } else {
-          formGroup.patchValue({ ExchangeRate: 0 });
+          formGroup.patchValue({
+            ExchangeRate: toNumber(this.getFormattedExchangeRate(0,fromCurrencyId)) 
+          });
           this.appSettingService.showError(response.message);
           formGroup.get('ExchangeRate')?.enable();
           this.recalcRow(index);
@@ -2719,7 +2628,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       error: (err) => {
         console.error('Error fetching exchange rate:', err);
         formGroup.get('ExchangeRate')?.enable();
-        formGroup.patchValue({ ExchangeRate: 0 });
+        formGroup.patchValue({ 
+          ExchangeRate: toNumber(this.getFormattedExchangeRate(0,fromCurrencyId)) 
+        });
         this.recalcRow(index);
       },
     });
@@ -2758,7 +2669,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   getPartyCurrCreditAmt() {
-    const headerCurrency = this.invoiceForm.get('CurrencyMasterSid')?.value;
+    const headerCurrency = this.invoiceForm.get('CurrencyMasterSid')?.getRawValue();
     return this.getFormattedAmount(
       this.details.getRawValue().reduce((sum, dtl: any) => {
         if (dtl.DrCr === 'C') {
@@ -2771,7 +2682,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   getPartyCurrDebitAmt() {
-    const headerCurrency = this.invoiceForm.get('CurrencyMasterSid')?.value;
+    const headerCurrency = this.invoiceForm.get('CurrencyMasterSid')?.getRawValue();
     return this.getFormattedAmount(
       this.details.getRawValue().reduce((sum, dtl: any) => {
         if (dtl.DrCr === 'D') {
@@ -2783,12 +2694,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     );
   }
 
-  
-
-  hasDetailSid(index: number) {
-    const detail = (this.details.at(index) as FormGroup)?.getRawValue();
-    return !!detail?.VoucherDetailSid;
-  }
 
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string) {
     const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue();
@@ -2798,7 +2703,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       fromCurrencyCode: fromCurrencyCode,
       toCurrencyCode: toCurrencyCode,
       EffectiveFrom: invoiceDate
-        ? new Date(this.invoiceForm.get('VoucherDate')?.getRawValue())
+        ? new Date(invoiceDate)
         : new Date(),
       segment: 'revenue',
     };
@@ -2815,7 +2720,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.invoiceForm.patchValue({
         CurrencyMasterSid: fromCurrencyId,
         CurrencyCode: fromCurrencyCode,
-        ExchangeRate: 1,
+        ExchangeRate: this.getFormattedExchangeRate(1, fromCurrencyId),
       });
       this.invoiceForm.get('ExchangeRate')?.disable();
       return;
@@ -2830,7 +2735,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             this.invoiceForm.patchValue({
               CurrencyMasterSid: fromCurrencyId,
               CurrencyCode: fromCurrencyCode,
-              ExchangeRate: Number(resp.data),
+              ExchangeRate: this.getFormattedExchangeRate(resp.data, fromCurrencyId)
             });
           }
           // if data = null , then Exchange Rate not found for the conversion
@@ -2839,7 +2744,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             this.invoiceForm.patchValue({
               CurrencyMasterSid: fromCurrencyId,
               CurrencyCode: fromCurrencyCode,
-              ExchangeRate: 0,
+              ExchangeRate: this.getFormattedExchangeRate(0, fromCurrencyId)
             });
           }
           this.invoiceForm.get('ExchangeRate')?.enable();
@@ -2850,7 +2755,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceForm.patchValue({
             CurrencyMasterSid: fromCurrencyId,
             CurrencyCode: fromCurrencyCode,
-            ExchangeRate: 0,
+            ExchangeRate: this.getFormattedExchangeRate(0, fromCurrencyId),
           });
           this.invoiceForm.get('ExchangeRate')?.enable();
         }
@@ -2861,7 +2766,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.invoiceForm.patchValue({
           CurrencyMasterSid: fromCurrencyId,
           CurrencyCode: fromCurrencyCode,
-          ExchangeRate: 0,
+          ExchangeRate: this.getFormattedExchangeRate(0, fromCurrencyId)
         });
         this.invoiceForm.get('ExchangeRate')?.enable();
       },
@@ -2951,7 +2856,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       (c) =>
         c.SubledgerMasterSid === this.invoiceForm.get('PartyMasterSid')?.value
     );
-    return customer?.countryMaster?.countryName || '';
+    return customer?.countryMaster?.countryCode || '';
   }
 
   /**
@@ -2986,8 +2891,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   printDiv(divId: string): void {
-    this.showPrintLogo = true;
-    this.showPdfLogo = false;
 
     setTimeout(() => {
       const printContents = document.getElementById(divId)?.innerHTML;
@@ -3014,8 +2917,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   // pdf
 
   async downloadPDF() {
-    this.showPrintLogo = false;
-    this.showPdfLogo = true;
 
     setTimeout(async () => {
       this.spinner.show();
@@ -3171,6 +3072,28 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       showVAT: false,
     };
   }
+
+  getSalesmanName(UserMasterSid : number){
+    if(this.salesmanName){
+      return this.salesmanName;
+    }
+    this.fetchSalesmanName(UserMasterSid);
+    return this.salesmanName;
+  }
+
+  fetchSalesmanName(UserMasterSid : number){
+    this.masterService.getFfUserById(UserMasterSid).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.salesmanName = resp.data?.userName;
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching salesman name:', error);
+      }
+    });
+  }
+
   getTaxPercentageForDisplay(detail: any): {
     cgstRate: number;
     sgstRate: number;
@@ -3279,41 +3202,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
   // Helper Section
   private getCustomerCountryCode(customer: any): string {
-    // Check the CountryMasterSid object structure
-    if (
-      customer.CountryMasterSid &&
-      typeof customer.CountryMasterSid === 'object'
-    ) {
-      const code =
-        customer.CountryMasterSid.countryCode ||
-        customer.CountryMasterSid.CountryCode;
-      return code ? code.toUpperCase() : '';
-    }
-
-    // Check direct country code fields
-    const countryCode =
-      customer.CountryCode ||
-      customer.countryCode ||
-      customer.countryMaster?.countryCode ||
-      customer.country?.countryCode ||
-      customer.CountryMaster?.CountryCode ||
-      '';
-
-
-    // Final fallback: if customer has any branches with GSTNo, assume it's India
-    if (!countryCode) {
-      const customerBranches = this.customerBranchList.filter(
-        (b) => b.CustomerMasterSid === customer.CustomerMasterSid
-      );
-      const hasGSTNo = customerBranches.some(
-        (branch) => branch.GSTNo && branch.GSTNo.trim() !== ''
-      );
-      if (hasGSTNo) {
-        return 'IN';
-      }
-    }
-
-    return countryCode ? countryCode.toUpperCase() : '';
+    return customer.countryMaster?.countryCode
   }
 
   getGSTType(){

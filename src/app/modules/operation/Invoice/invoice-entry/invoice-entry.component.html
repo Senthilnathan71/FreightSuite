@@ -13,7 +13,8 @@
       class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
     >
       <div class="col-md-4 d-flex pb-1">
-        <h4 class="page-title mb-0">Invoice</h4>
+        <h4 class="page-title mb-0">{{ isViewMode ? ' Invoice' : (isEditMode ? 'Edit Invoice' :
+          'Create Invoice') }}</h4>
         @if(isEditMode){
         <a
           class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"
@@ -80,6 +81,15 @@
             >
               <span class="visually-hidden">unsaved changes</span>
             </span>
+          </button>
+            <button
+            type="button"
+            appPreventMultiClick
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            disabled="true"
+          >
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
           </button>
           } @else {
           <!-- Draft Save Button -->
@@ -228,7 +238,7 @@
                     readonly
                     style="cursor: not-allowed"
                   />
-                  <label for="text-input" class="input-label">Invoice No</label>
+                  <label for="text-input" class="input-label">Invoice No.</label>
                 </div>
               </aside>
 
@@ -256,7 +266,9 @@
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
-                  <label class="input-label">Invoice Date</label>
+                  <label class="input-label">Invoice Date 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -278,7 +290,7 @@
                     (itemSelected)="onCustomerChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label">Customer</label>
+                  <label class="input-label">Customer <span class="text-danger">*</span></label>
                 </div>
               </aside>
 
@@ -308,7 +320,9 @@
                       </div>
                     </ng-template>
                   </ng-select>
-                  <label class="input-label">Customer Address</label>
+                  <label class="input-label">Customer Address 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
                 } @else {
                 <div class="custom-form-group">
@@ -319,7 +333,9 @@
                     placeholder=""
                     readonly
                   />
-                  <label class="input-label">Customer Address</label>
+                  <label class="input-label">Customer Address
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
                 }
               </aside>
@@ -330,8 +346,10 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="GST_VAT"
+                    id="GSTNo"
                     placeholder=""
                     readonly
+                    style="cursor: not-allowed"
                   />
                   @if(currentCompanyCountryCode === 'in'){
                   <label class="input-label">GST No</label>
@@ -351,6 +369,7 @@
                     formControlName="GSTType"
                     placeholder=""
                     readonly
+                    style = "cursor: not-allowed"
                   />
                   @if(currentCompanyCountryCode === 'in'){
                   <label class="input-label">GST Type</label>
@@ -453,7 +472,9 @@
                     (itemSelected)="onHeaderCurrencyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label">Currency</label>
+                  <label class="input-label">Currency 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -474,7 +495,9 @@
                       )
                     "
                   />
-                  <label class="input-label">Ex Rate</label>
+                  <label class="input-label">Ex. Rate 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -759,7 +782,7 @@
                               class="text-center bg-transparent text-light"
                               style="min-width: 60px"
                             >
-                              Dept
+                              Dept.
                             </th>
                           </tr>
 
@@ -901,7 +924,6 @@
                                   "
                                 >
                                 </dofi-searchable-dropdown>
-                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span> -->
                               </td>
 
                               <!-- Description -->
@@ -910,6 +932,7 @@
                                   class="text-start custom-input-field sm"
                                   formControlName="ChargeDescription"
                                   readonly
+                                  style="cursor: not-allowed;"
                                 />
                                 <!-- <span *ngIf="hasDetailSid(i)" style="text-align:start; font-weight: 600; color: black;">{{ row.get('ChargeDescription')?.value || '-' }}</span> -->
                               </td>
@@ -2123,7 +2146,7 @@
                       text-align: left;
                     "
                   >
-                    <strong>Amt In {{ currentCurrencyCode }}</strong>
+                    <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
                   </th>
                   <th
                     style="
