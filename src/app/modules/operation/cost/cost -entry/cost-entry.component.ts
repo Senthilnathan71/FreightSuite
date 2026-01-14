@@ -2144,7 +2144,7 @@ createRateFormGroup(data?: any): FormGroup {
       let chargeIndex = 0;
       for (const charge of this.availableCharges) {
         console.log("Inside Validate Tax For HSSAC", charge)
-        if(!charge.chargeTaxMaster  || charge.chargeTaxMaster.length === 0){
+        if(!charge.ChargeMaster?.chargeTaxMaster  || charge.ChargeMaster?.chargeTaxMaster.length === 0){
           this.appSettingService.showWarning("Tax mapping is not available for Charge : " + charge.ChargeDescription);
           continue;
         }
@@ -3120,21 +3120,19 @@ getChargeTaxPercentage(charge: any): string {
         let taxPercentage1 = 0, taxPercentage2 = 0;
         let taxAmount1 = 0, taxAmount2 = 0;
 
-        const amount = isRevenue ? chargeInfo.RevenueLocalAmount : chargeInfo.CostLocalAmount;
-        const chargeAmount = Number(amount ?? 0);
+        const localAmount = isRevenue ? chargeInfo.RevenueLocalAmount : chargeInfo.CostLocalAmount;
 
         if (this.isUAECompany() || this.isUSCompany()) {
           taxPercentage1 = getTax('VAT');
-          taxAmount1 = (chargeAmount * taxPercentage1) / 100;
+          taxAmount1 = (localAmount * taxPercentage1) / 100;
 
         } else if (this.isIndianCompany()) {
           taxPercentage1 = getTax('CGST');
           taxPercentage2 = getTax('SGST');
-          taxAmount1 = (chargeAmount * taxPercentage1) / 100;
-          taxAmount2 = (chargeAmount * taxPercentage2) / 100;
+          taxAmount1 = (localAmount * taxPercentage1) / 100;
+          taxAmount2 = (localAmount * taxPercentage2) / 100;
         }
 
-        const localAmount = chargeAmount * Number(isRevenue ? chargeInfo.RevenueExchangeRate : chargeInfo.CostExchangeRate);
         const partyAmount = await this.getPartyAmount(chargeInfo);
 
         detailPromises.push({
@@ -3159,13 +3157,13 @@ getChargeTaxPercentage(charge: any): string {
           NumberOfUnit: Number(isRevenue ? chargeInfo.RevenueNumberOfUnit : chargeInfo.CostNumberOfUnit),
           Narration:  narration.substring(0, 250),
           DrCr: isRevenue ? chargeInfo.RevenueDrCr : chargeInfo.CostDrCr,
-          TaxableAmount: Number(isRevenue ? chargeInfo.RevenueLocalAmount : chargeInfo.CostLocalAmount),
+          TaxableAmount: Number(localAmount),
           TaxPercentage1: taxPercentage1,
           TaxAmount1: taxAmount1,
           TaxPercentage2: taxPercentage2,
           TaxAmount2: taxAmount2,
           Amount: Number(isRevenue ? chargeInfo.RevenueAmount : chargeInfo.CostAmount),
-          LocalAmount: localAmount,
+          LocalAmount: toNumber(localAmount),
           PartyAmount : toNumber(partyAmount),
           CostRevenue : this.selectedVoucherType === "Invoice" ? "Revenue" : "Cost",
           InvoiceType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : (this.isUSCompany() ? 'TAX' : null)),
