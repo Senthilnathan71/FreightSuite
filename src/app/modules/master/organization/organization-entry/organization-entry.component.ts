@@ -3507,17 +3507,17 @@ private updatePanTypeValidation(): void {
     // For India - PAN validation with Company Type
     companyTypeControl?.setValidators([Validators.required]);
     panTypeControl?.setValidators([Validators.required, this.panValidator]);
-    panNameControl?.setValidators([Validators.required]);
+    panNameControl?.setValidators([]);
   } else if (this.isUaeCountry()) {
     // For UAE - VAT validation without Company Type
     companyTypeControl?.setValidators([]); // Company Type not required for VAT
     panTypeControl?.setValidators([Validators.required, this.vatValidator]);
-    panNameControl?.setValidators([Validators.required]);
+    panNameControl?.setValidators([]);
   } else {
     // For other countries - Basic Tax ID validation
     companyTypeControl?.setValidators([]); // Company Type not required
     panTypeControl?.setValidators([Validators.required]);
-    panNameControl?.setValidators([Validators.required]);
+    panNameControl?.setValidators([]);
   }
 
   // Update validation states
