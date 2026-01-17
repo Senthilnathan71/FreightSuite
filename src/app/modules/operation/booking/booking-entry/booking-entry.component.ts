@@ -645,9 +645,10 @@ arapFilter = {
 
   // Header Form Initialization
   initBookingForm() {
+    const today = new Date();
     this.bookingForm = this.fb.group({
       BookingNo: [{ value: '', disabled: true }],
-      BookingDateTime: [{ value: '', disabled: true }],
+      BookingDateTime: [today, [Validators.required]],
       DepartmentMasterSid: [null, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
@@ -2916,8 +2917,14 @@ getVesselVoyBasedOnPorts() {
   isQuickFormExpanded = false;
 
   resetForm() {
+    const today = new Date();
     this.bookingForm.reset({
-      status: 'Active'
+    status: 'Active',
+    BookingDateTime: today, // Reset to today's date
+    NominatedBy: 'Self',
+    BookingStatus: 'Booked',
+    Coload: false,
+    ShipmentType: false
     });
 
     this.filteredPorts = [];
