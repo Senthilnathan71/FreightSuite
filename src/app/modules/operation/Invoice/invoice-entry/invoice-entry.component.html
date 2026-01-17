@@ -1622,11 +1622,11 @@
                   class="company-logo img-fluid"
                   style="width: 50px; height: auto"
                 />
-                <h4 style="margin: 0">
+                <!-- <h4 style="margin: 0">
                   <strong>{{
                     currentCompany?.companyName || "Company Name"
                   }}</strong>
-                </h4>
+                </h4> -->
               </div>
               <div
                 style="
@@ -1701,11 +1701,8 @@
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
               <strong style="font-weight: bolder">BILLED TO</strong><br />
               <div style="padding-left: 30px">
-                <span>{{
-                  getCustomerName(invoiceForm.get("CustomerMasterSid")?.value)
-                }}</span
-                ><br />
-                {{ invoiceForm.get("PartyAddress")?.value || "" }}<br />
+                <span>{{ invoiceData?.PartyName || invoiceData?.subledgerMaster?.SubledgerName || '' }}</span><br />
+                {{ invoiceData?.PartyAddress || invoiceData?.subledgerMaster?.Address || '' }}<br />
                 <div
                   style="display: flex"
                   *ngIf="currentCompanyCountryCode === 'in'"
@@ -1950,7 +1947,7 @@
                   <strong>Sales Person</strong>
                 </div>
                 <div>
-                  : {{ getSalesmanName(invoiceData?.houseJob?.SalesmanSid) }}
+                  : {{ getSalesmanName() }}
                 </div>
               </div>
             </div>
@@ -1986,6 +1983,7 @@
                     <strong>Particulars</strong>
                   </th>
                   <th
+                    *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2140,6 +2138,7 @@
                   </ng-container>
 
                   <th
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2149,6 +2148,7 @@
                     <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
                   </th>
                   <th
+                    *ngIf="shouldShowForeignCurrencyColumn()"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2177,7 +2177,7 @@
                   <td style="border: 1px solid black; padding: 2px 8px">
                     {{ detail.ChargeDescription }}
                   </td>
-                  <td style="border: 1px solid black; padding: 2px 8px">
+                  <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px">
                     {{ getHSSACCode(detail.HSSACMasterSid, i) }}
                   </td>
                   <td style="border: 1px solid black; padding: 2px 8px">
@@ -2322,6 +2322,7 @@
                     </td>
                   </ng-container>
                   <td
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2331,6 +2332,7 @@
                     {{ detail?.PartyAmount | number : "1.2-2" }}
                   </td>
                   <td
+                    *ngIf="shouldShowForeignCurrencyColumn()"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2345,7 +2347,7 @@
                 <!-- Total Row with dynamic colspan -->
                 <tr style="font-weight: bolder">
                   <td
-                    [attr.colspan]="calculateTotalColspan()"
+                    [attr.colspan]="calculateTotalColspan() + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2363,7 +2365,7 @@
                       text-align: right;
                     "
                   >
-                    <strong> {{ getPartyCurrDebitAmt() }}</strong>
+                    <strong>{{ shouldShowForeignCurrencyColumn() ? getPartyCurrDebitAmt() : (getLocalCurrencyTotal() | number:'1.2-2') }}</strong>
                   </td>
                 </tr>
                 
