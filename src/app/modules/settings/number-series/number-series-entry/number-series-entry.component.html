@@ -1,0 +1,324 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <!-- Header -->
+    <div class="row bg-white mb-3 align-items-center pt-2 pb-2 rounded shadow-sm">
+      <div class="col">
+        <h4 class="page-title mb-0">
+          {{ isEditMode ? 'Edit' : 'Configure' }} Number Series
+        </h4>
+        <small class="text-muted" *ngIf="menuInfo">
+          {{ menuInfo.MenuName }}
+        </small>
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="navigateBack()">
+          <i class="fas fa-arrow-left me-1"></i> Back
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Configuration Form -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-info text-white py-2">
+            <h6 class="mb-0">Format Components</h6>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="configForm">
+              <!-- Company Flag -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="CompanyFlagRequired"
+                      [checked]="configForm.get('CompanyFlagRequired')?.value === 'Y'"
+                      (change)="onToggleChange('CompanyFlagRequired', $event)"
+                    />
+                    <label class="form-check-label" for="CompanyFlagRequired">
+                      Company Prefix
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    formControlName="CompanyPrefix"
+                    placeholder="e.g., BE"
+                    maxlength="10"
+                    [disabled]="configForm.get('CompanyFlagRequired')?.value !== 'Y'"
+                  />
+                </div>
+              </div>
+
+              <!-- Branch Flag -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="BranchFlagRequired"
+                      [checked]="configForm.get('BranchFlagRequired')?.value === 'Y'"
+                      (change)="onToggleChange('BranchFlagRequired', $event)"
+                    />
+                    <label class="form-check-label" for="BranchFlagRequired">
+                      Branch Prefix
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    formControlName="BranchPrefix"
+                    placeholder="e.g., DU"
+                    maxlength="10"
+                    [disabled]="configForm.get('BranchFlagRequired')?.value !== 'Y'"
+                  />
+                </div>
+              </div>
+
+              <!-- Department Code -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="DepartmentCodeRequired"
+                      [checked]="configForm.get('DepartmentCodeRequired')?.value === 'Y'"
+                      (change)="onToggleChange('DepartmentCodeRequired', $event)"
+                    />
+                    <label class="form-check-label" for="DepartmentCodeRequired">
+                      Department Code
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <small class="text-muted">
+                    Uses department code from DepartmentMaster (e.g., LE, FE, AE)
+                  </small>
+                </div>
+              </div>
+
+              <!-- Month Flag -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="MonthFlagRequired"
+                      [checked]="configForm.get('MonthFlagRequired')?.value === 'Y'"
+                      (change)="onToggleChange('MonthFlagRequired', $event)"
+                    />
+                    <label class="form-check-label" for="MonthFlagRequired">
+                      Month (MM)
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <small class="text-muted">
+                    Current month in 2-digit format (01-12)
+                  </small>
+                </div>
+              </div>
+
+              <!-- Year Flag -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="YearFlagRequired"
+                      [checked]="configForm.get('YearFlagRequired')?.value === 'Y'"
+                      (change)="onToggleChange('YearFlagRequired', $event)"
+                    />
+                    <label class="form-check-label" for="YearFlagRequired">
+                      Financial Year
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <small class="text-muted">
+                    Uses YearCode from YearMaster
+                    <span *ngIf="currentYear" class="badge bg-info ms-1">
+                      Current: {{ currentYear.YearCode }}
+                    </span>
+                  </small>
+                </div>
+              </div>
+
+              <hr />
+
+              <!-- Separator -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label mb-0">Separator</label>
+                </div>
+                <div class="col-md-8">
+                  <ng-select
+                    [items]="separatorOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="Separator"
+                    [clearable]="false"
+                    class="custom-ng-select"
+                  ></ng-select>
+                </div>
+              </div>
+
+              <!-- Number Length -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label mb-0">Sequence Length</label>
+                </div>
+                <div class="col-md-8">
+                  <ng-select
+                    [items]="numberLengthOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="NumberLength"
+                    [clearable]="false"
+                    class="custom-ng-select"
+                  ></ng-select>
+                </div>
+              </div>
+
+              <!-- Reset Option -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label mb-0">Counter Reset</label>
+                </div>
+                <div class="col-md-8">
+                  <ng-select
+                    [items]="resetOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="ResetOption"
+                    [clearable]="false"
+                    class="custom-ng-select"
+                  ></ng-select>
+                  <small class="text-muted" *ngIf="configForm.get('ResetOption')?.value === 'Yearly'">
+                    Counter resets when financial year changes in YearMaster
+                  </small>
+                </div>
+              </div>
+
+              <!-- Department-wise Counter -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="DepartmentWiseCounter"
+                      [checked]="configForm.get('DepartmentWiseCounter')?.value === 'Y'"
+                      (change)="onToggleChange('DepartmentWiseCounter', $event)"
+                    />
+                    <label class="form-check-label" for="DepartmentWiseCounter">
+                      Department-wise Counter
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <small class="text-muted">
+                    When enabled, each department maintains its own sequence starting from 00001
+                  </small>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm mb-3 sticky-top" style="top: 10px;">
+          <div class="card-header bg-success text-white py-2">
+            <h6 class="mb-0">Live Preview</h6>
+          </div>
+          <div class="card-body">
+            <!-- Format Structure -->
+            <div class="mb-3">
+              <label class="text-muted small mb-1">Format Structure:</label>
+              <div class="d-flex flex-wrap gap-1">
+                <span
+                  *ngFor="let part of getFormatPreviewParts(); let last = last"
+                  class="badge bg-light text-dark border"
+                >
+                  {{ part }}
+                  <span *ngIf="!last" class="text-muted ms-1">{{ configForm.get('Separator')?.value || '' }}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Department Selection for Preview -->
+            <div class="mb-3" *ngIf="configForm.get('DepartmentCodeRequired')?.value === 'Y'">
+              <label class="text-muted small mb-1">Preview Department:</label>
+              <ng-select
+                [items]="departmentList"
+                bindLabel="departmentName"
+                bindValue="DepartmentMasterSid"
+                [(ngModel)]="selectedDepartmentForPreview"
+                (change)="onDepartmentPreviewChange($event)"
+                placeholder="Select department"
+                class="custom-ng-select"
+              ></ng-select>
+            </div>
+
+            <!-- Preview Result -->
+            <div class="mb-3">
+              <label class="text-muted small mb-1">Next Number Preview:</label>
+              <div class="bg-light rounded p-3 text-center" *ngIf="previewResult">
+                <code class="fs-5 text-primary fw-bold">{{ previewResult.preview }}</code>
+              </div>
+            </div>
+
+            <!-- Financial Year Info -->
+            <div class="small text-muted" *ngIf="currentYear">
+              <i class="fas fa-calendar-alt me-1"></i>
+              Financial Year: {{ currentYear.YearName || currentYear.YearCode }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body py-2 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="navigateBack()">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-info"
+              (click)="onSubmit()"
+              [disabled]="btnDisable || configForm.invalid"
+            >
+              <i class="fas fa-save me-1"></i>
+              {{ isEditMode ? 'Update' : 'Save' }} Configuration
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -632,6 +632,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/settings/number-series/list',
+        title: 'Number Series',
+        icon: 'mdi mdi-format-list-numbered',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   }
 

@@ -8,6 +8,8 @@ import { EmailEntryComponent } from "./email/email-entry/email-entry.component";
 import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
 import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
 import { RolemenuEntryComponent } from "./rolemenu/rolemenu-entry/rolemenu-entry.component";
+import { NumberSeriesListComponent } from "./number-series/number-series-list/number-series-list.component";
+import { NumberSeriesEntryComponent } from "./number-series/number-series-entry/number-series-entry.component";
 
 
 export const SettingsRoutes: Routes = [
@@ -110,6 +112,22 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Follow-Up',
                     urls: [{ title: 'Master', url: '/master' }, { title: 'Follow-up' }],
+                },
+            },
+            {
+                path: 'number-series/list',
+                component: NumberSeriesListComponent,
+                data: {
+                    title: 'Number Series',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Number Series' }],
+                },
+            },
+            {
+                path: 'number-series/entry/:menuId',
+                component: NumberSeriesEntryComponent,
+                data: {
+                    title: 'Number Series Entry',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Number Series' }],
                 },
             },
         ]
