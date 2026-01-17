@@ -21,323 +21,20 @@ import {
 })
 export class DashboardService {
 
-  private salespeople: Salesperson[] = [
-    { id: '1', name: 'Sarah Kim', email: 'sarah.kim@company.com', department: 'Sales' },
-    { id: '2', name: 'Mark Rivera', email: 'mark.rivera@company.com', department: 'Sales' },
-    { id: '3', name: 'Anita Desai', email: 'anita.desai@company.com', department: 'Sales' },
-    { id: '4', name: 'James O\'Neil', email: 'james.oneil@company.com', department: 'Sales' },
-    { id: '5', name: 'Linda Gomez', email: 'linda.gomez@company.com', department: 'Sales' }
-  ];
+  private salespeople: Salesperson[] = [];
 
-  private clientMeetings: ClientMeeting[] = [
-    {
-      id: '1',
-      client: 'Global Freight Ltd',
-      agenda: 'Virtual Meeting',
-      meetingType: 'Virtual Meeting',
-      salesperson: 'Sarah Kim',
-      date: new Date('2025-09-13'),
-      status: 'Pending'
-    },
-    {
-      id: '2',
-      client: 'Oceanic Shippers',
-      agenda: 'On-site Visit',
-      meetingType: 'On-site Visit',
-      salesperson: 'Mark Rivera',
-      date: new Date('2025-09-12'),
-      status: 'Pending'
-    },
-    {
-      id: '3',
-      client: 'TransWorld Cargo',
-      agenda: 'Introductory Call',
-      meetingType: 'Introductory Call',
-      salesperson: 'Anita Desai',
-      date: new Date('2025-09-15'),
-      status: 'Scheduled Today'
-    },
-    {
-      id: '4',
-      client: 'Swift Logistics',
-      agenda: 'Proposal Discussion',
-      meetingType: 'Proposal Discussion',
-      salesperson: 'James O\'Neil',
-      date: new Date('2025-09-15'),
-      status: 'Scheduled Today'
-    },
-    {
-      id: '5',
-      client: 'AirSea Movers',
-      agenda: 'Contract Finalization',
-      meetingType: 'Contract Finalization',
-      salesperson: 'Linda Gomez',
-      date: new Date('2025-09-15'),
-      status: 'Scheduled Today'
-    }
-  ];
+  private clientMeetings: ClientMeeting[] = [];
 
-  private meetingsWithFollowup: MeetingWithFollowup[] = [
-    {
-      id: '1',
-      client: 'Global Freight Ltd',
-      salesperson: 'Sarah Kim',
-      meetingType: 'Virtual Meeting',
-      meetingDate: new Date('2025-09-10'),
-      followupType: 'Email Recap',
-      followupDate: new Date('2025-09-12')
-    },
-    {
-      id: '2',
-      client: 'Oceanic Shippers',
-      salesperson: 'Mark Rivera',
-      meetingType: 'On-site Meeting',
-      meetingDate: new Date('2025-09-08'),
-      followupType: 'Call Follow-up',
-      followupDate: new Date('2025-09-10')
-    },
-    {
-      id: '3',
-      client: 'TransWorld Cargo',
-      salesperson: 'Anita Desai',
-      meetingType: 'Phone Call',
-      meetingDate: new Date('2025-09-07'),
-      followupType: 'Demo Scheduled',
-      followupDate: new Date('2025-09-14')
-    },
-    {
-      id: '4',
-      client: 'Swift Logistics',
-      salesperson: 'James O\'Neil',
-      meetingType: 'Virtual Meeting',
-      meetingDate: new Date('2025-09-05'),
-      followupType: 'Proposal Sent',
-      followupDate: new Date('2025-09-06')
-    },
-    {
-      id: '5',
-      client: 'AirSea Movers',
-      salesperson: 'Linda Gomez',
-      meetingType: 'Conference Call',
-      meetingDate: new Date('2025-09-09'),
-      followupType: 'Contract Review',
-      followupDate: new Date('2025-09-16')
-    }
-  ];
+  private meetingsWithFollowup: MeetingWithFollowup[] = [];
 
-  private rateRequests: RateRequest[] = [
-    {
-      id: '1',
-      rateRequestNumber: 'RRQ-20250901-01',
-      date: new Date('2025-09-01'),
-      quotationNumber: 'QTN-20250901-01',
-      quoteDate: new Date('2025-09-01'),
-      salesperson: 'Sarah Kim',
-      status: 'Pending',
-      client: 'Global Freight Ltd',
-      amount: 15000
-    },
-    {
-      id: '2',
-      rateRequestNumber: 'RRQ-20250903-02',
-      date: new Date('2025-09-03'),
-      quotationNumber: 'QTN-20250903-02',
-      quoteDate: new Date('2025-09-03'),
-      salesperson: 'Mark Rivera',
-      status: 'Approved',
-      approvedBy: 'Linda Gomez',
-      bookingNumber: 'BKG-20250905-15',
-      client: 'Oceanic Shippers',
-      amount: 22000
-    },
-    {
-      id: '3',
-      rateRequestNumber: 'RRQ-20250904-03',
-      date: new Date('2025-09-04'),
-      quotationNumber: 'QTN-20250904-03',
-      quoteDate: new Date('2025-09-04'),
-      salesperson: 'Anita Desai',
-      status: 'Rejected',
-      approvedBy: 'James O\'Neil',
-      client: 'TransWorld Cargo',
-      amount: 8500
-    },
-    {
-      id: '4',
-      rateRequestNumber: 'RRQ-20250905-04',
-      date: new Date('2025-09-06'),
-      quotationNumber: 'QTN-20250906-04',
-      quoteDate: new Date('2025-09-06'),
-      salesperson: 'James O\'Neil',
-      status: 'Approved',
-      approvedBy: 'Sarah Kim',
-      bookingNumber: 'BKG-20250907-22',
-      client: 'Swift Logistics',
-      amount: 18750
-    },
-    {
-      id: '5',
-      rateRequestNumber: 'RRQ-20250907-05',
-      date: new Date('2025-09-07'),
-      quotationNumber: 'QTN-20250907-05',
-      quoteDate: new Date('2025-09-07'),
-      salesperson: 'Linda Gomez',
-      status: 'Approved',
-      approvedBy: 'Mark Rivera',
-      client: 'AirSea Movers',
-      amount: 31200
-    }
-  ];
+  private rateRequests: RateRequest[] = [];
 
   // Customer Service Data
-  private todaysActivities: TodaysActivity[] = [
-    {
-      id: '1',
-      bookingNumber: 'BKG-20250915-01',
-      jobNumber: 'JOB-20250914-07',
-      activity: 'Document Verification',
-      date: new Date('2025-09-15'),
-      status: 'Completed'
-    },
-    {
-      id: '2',
-      bookingNumber: 'BKG-20250915-05',
-      jobNumber: 'JOB-20250913-03',
-      activity: 'Pickup Coordination',
-      date: new Date('2025-09-15'),
-      status: 'In Progress'
-    },
-    {
-      id: '3',
-      bookingNumber: 'BKG-20250911-08',
-      jobNumber: 'JOB-20250914-09',
-      activity: 'Customs Clearance Follow-up',
-      date: new Date('2025-09-15'),
-      status: 'Pending'
-    },
-    {
-      id: '4',
-      bookingNumber: 'BKG-20250911-20',
-      jobNumber: 'JOB-20250915-04',
-      activity: 'POD Upload',
-      date: new Date('2025-09-15'),
-      status: 'Completed'
-    },
-    {
-      id: '5',
-      bookingNumber: 'BKG-20250909-04',
-      jobNumber: 'JOB-20250912-06',
-      activity: 'Client Escalation Response',
-      date: new Date('2025-09-15'),
-      status: 'In Progress'
-    }
-  ];
+  private todaysActivities: TodaysActivity[] = [];
 
-  private approvedQuotations: ApprovedQuotation[] = [
-    {
-      id: '1',
-      quotationNumber: 'QTN-20250901-001',
-      status: 'Approved',
-      approvedBy: 'Sarah Kim',
-      date: new Date('2025-09-10'),
-      option: 'Option A'
-    },
-    {
-      id: '2',
-      quotationNumber: 'QTN-20250903-002',
-      status: 'Approved',
-      approvedBy: 'Mark Rivera',
-      date: new Date('2025-09-11'),
-      option: 'Option B'
-    },
-    {
-      id: '3',
-      quotationNumber: 'QTN-20250904-003',
-      status: 'Approved',
-      approvedBy: 'Linda Gomez',
-      date: new Date('2025-09-12'),
-      option: 'Option A'
-    },
-    {
-      id: '4',
-      quotationNumber: 'QTN-20250905-004',
-      status: 'Approved',
-      approvedBy: 'James O\'Neil',
-      date: new Date('2025-09-13'),
-      option: 'Option C'
-    },
-    {
-      id: '5',
-      quotationNumber: 'QTN-20250906-005',
-      status: 'Approved',
-      approvedBy: 'Linda Gomez',
-      date: new Date('2025-09-12'),
-      option: 'Option B'
-    }
-  ];
+  private approvedQuotations: ApprovedQuotation[] = [];
 
-  private bookingList: BookingListItem[] = [
-    {
-      id: '1',
-      bookingNumber: 'BKG-20250901-10',
-      jobNumber: 'JOB-20250901-05',
-      shipmentStatus: 'In Transit',
-      date: new Date('2025-09-13'),
-      pol: 'Shanghai',
-      pod: 'Los Angeles',
-      salesperson: 'Sarah Kim',
-      assignedTo: 'Mike Johnson',
-      invoicing: 'Yes'
-    },
-    {
-      id: '2',
-      bookingNumber: 'BKG-20250902-14',
-      jobNumber: 'JOB-20250902-08',
-      shipmentStatus: 'Delivered',
-      date: new Date('2025-09-14'),
-      pol: 'Rotterdam',
-      pod: 'New York',
-      salesperson: 'Mark Rivera',
-      assignedTo: 'Anna Smith',
-      invoicing: 'Yes'
-    },
-    {
-      id: '3',
-      bookingNumber: 'BKG-20250903-09',
-      jobNumber: 'JOB-20250903-07',
-      shipmentStatus: 'Pending',
-      date: new Date('2025-09-15'),
-      pol: 'Hamburg',
-      pod: 'Singapore',
-      salesperson: 'Anita Desai',
-      assignedTo: 'John Lee',
-      invoicing: 'No'
-    },
-    {
-      id: '4',
-      bookingNumber: 'BKG-20250904-12',
-      jobNumber: 'JOB-20250904-10',
-      shipmentStatus: 'In Transit',
-      date: new Date('2025-09-13'),
-      pol: 'Antwerp',
-      pod: 'Dubai',
-      salesperson: 'James O\'Neil',
-      assignedTo: 'Sarah Kim',
-      invoicing: 'Yes'
-    },
-    {
-      id: '5',
-      bookingNumber: 'BKG-20250905-07',
-      jobNumber: 'JOB-20250905-06',
-      shipmentStatus: 'Delivered',
-      date: new Date('2025-09-14'),
-      pol: 'Busan',
-      pod: 'Seattle',
-      salesperson: 'Linda Gomez',
-      assignedTo: 'Mike Johnson',
-      invoicing: 'Yes'
-    }
-  ];
+  private bookingList: BookingListItem[] = [];
 
   constructor() { }
 
@@ -345,33 +42,33 @@ export class DashboardService {
     let filteredData = this.applyFilters(filters);
 
     const metrics: DashboardMetrics = {
-      leadsWithoutSchedule: 15,
+      leadsWithoutSchedule: 0,
       meetingsScheduled: {
-        overdue: 3,
-        today: 8,
-        future: 12
+        overdue: 0,
+        today: 0,
+        future: 0
       },
-      meetingsConductedNotConverted: 7,
-      customersWithoutQuoteOrBooking: 5,
-      quotesWithoutBooking: 9
+      meetingsConductedNotConverted: 0,
+      customersWithoutQuoteOrBooking: 0,
+      quotesWithoutBooking: 0
     };
 
     const salesMetrics: SalesMetrics = {
-      newClientCreated: 2,
-      salesCall: 1,
+      newClientCreated: 0,
+      salesCall: 0,
       salesCallClosed: 0,
       quotationCreated: 0,
       quotationApproved: 0,
-      bookingQuotation: 1
+      bookingQuotation: 0
     };
 
     const customerServiceMetrics: CustomerServiceMetrics = {
-      documentsVerified: 24,
-      customsClearances: 12,
-      shipmentsInTransit: 18,
-      deliveriesCompleted: 31,
-      pendingActions: 8,
-      customerQueries: 15
+      documentsVerified: 0,
+      customsClearances: 0,
+      shipmentsInTransit: 0,
+      deliveriesCompleted: 0,
+      pendingActions: 0,
+      customerQueries: 0
     };
 
     const dashboardData: DashboardData = {

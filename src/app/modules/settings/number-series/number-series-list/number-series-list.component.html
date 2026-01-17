@@ -1,0 +1,99 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <div class="row bg-white mb-3 align-items-center pt-2 pb-2 rounded shadow-sm">
+      <div class="col">
+        <h4 class="page-title mb-0">Number Series Configuration</h4>
+        <small class="text-muted" *ngIf="currentYear">
+          Financial Year: {{ currentYear?.YearName || currentYear?.YearCode }}
+        </small>
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-info btn-sm" (click)="refreshData()">
+          <i class="fas fa-sync-alt me-1"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu Cards -->
+    <div class="row" *ngIf="!loading && menuList.length > 0">
+      <div class="col-md-6 col-lg-4 mb-3" *ngFor="let item of menuList">
+        <div class="card h-100 shadow-sm" [ngClass]="{'border-success': item.configured, 'border-secondary': !item.configured}">
+          <div class="card-header d-flex justify-content-between align-items-center py-2"
+               [ngClass]="{'bg-light-success': item.configured, 'bg-light': !item.configured}">
+            <h6 class="mb-0">{{ item.MenuName }}</h6>
+            <span class="badge" [ngClass]="{'bg-success': item.configured, 'bg-secondary': !item.configured}">
+              {{ item.configured ? 'Configured' : 'Not Configured' }}
+            </span>
+          </div>
+          <div class="card-body py-2">
+            <!-- Preview -->
+            <div class="mb-2" *ngIf="item.configured && item.preview">
+              <label class="text-muted small mb-1">Preview:</label>
+              <div class="bg-light rounded px-2 py-1">
+                <code class="text-primary fw-bold">{{ item.preview }}</code>
+              </div>
+            </div>
+
+            <!-- Format Summary -->
+            <div class="mb-2">
+              <label class="text-muted small mb-1">Format:</label>
+              <div class="small">{{ getFormatSummary(item) }}</div>
+            </div>
+
+            <!-- Settings Summary -->
+            <div class="row small" *ngIf="item.configured">
+              <div class="col-6">
+                <span class="text-muted">Seq Length:</span>
+                <span class="ms-1">{{ item.NumberLength || 5 }}</span>
+              </div>
+              <div class="col-6">
+                <span class="text-muted">Reset:</span>
+                <span class="ms-1">{{ getResetLabel(item) }}</span>
+              </div>
+            </div>
+
+            <!-- Department-wise indicator -->
+            <div class="small mt-1" *ngIf="item.configured && item.DepartmentWiseCounter === 'Y'">
+              <span class="badge bg-info">Department-wise Counter</span>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent py-2">
+            <button class="btn btn-sm btn-outline-info w-100" (click)="editConfig(item)">
+              <i class="fas me-1" [ngClass]="{'fa-edit': item.configured, 'fa-plus': !item.configured}"></i>
+              {{ item.configured ? 'Edit Configuration' : 'Configure' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Data -->
+    <div class="row" *ngIf="!loading && menuList.length === 0">
+      <div class="col-12">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          No document menus found. Please ensure menus are configured for Enquiry, Quotation, Booking, Master Job, and House Job.
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="row" *ngIf="loading">
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-info" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading configurations...</p>
+      </div>
+    </div>
+  </div>
+</div>

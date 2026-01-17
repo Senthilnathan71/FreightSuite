@@ -328,6 +328,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
         if (this.masterJobSid) {
           this.isEditMode = true;
           this.loadMasterJobData(this.masterJobSid);
+        } else {
+          this.isEditMode = false;
         }
       });
     });
@@ -751,6 +753,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
           this.masterAirWayData= data;
           this.masterJobData=data;
           const aggregatedTotals = data.aggregatedTotals; 
+          this.isEditMode = true;
           this.patchFormValues({
             ...data,
             NoOfPkg: aggregatedTotals?.NoOfPkg || data.NoOfPkg,
@@ -933,7 +936,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   // Set department info
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     if (selectedDepartment) {
-      this.onDeptChange(selectedDepartment);
+      this.onDeptChange(selectedDepartment,true);
     }
 
     // Patch voyage fields if voyage data exists
@@ -1091,82 +1094,117 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
 
   onDeptChange(department: any, isEditMode = false) {
-    this.selectedDepartment = department;
-    if (!department) {
-      this.selectedDepartmentType = '';
-      this.selectedFCLLCL = 'LCL';
-      this.isAirDepartment = false;
-      this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
-      this.filteredPOL = [...this.filteredPorts];
-      this.filteredPOD = [...this.filteredPorts];
-      this.masterJobForm.get('POO')?.setValue(null);
-      this.masterJobForm.get('POL')?.setValue(null);
-      this.masterJobForm.get('POD')?.setValue(null);
-      this.masterJobForm.get('FPD')?.setValue(null);
-      this.masterJobForm.get('ETA')?.setValue('');
-      this.masterJobForm.get('ETD')?.setValue('');
-      this.masterJobForm.get('MovementType')?.setValue(null);
-        this.masterJobForm.get('MBLNo')?.enable();
-        this.masterJobForm.get('MBLNo')?.clearValidators();
-        this.masterJobForm.get('MBLNo')?.updateValueAndValidity();
-      return;
-    }
+  this.selectedDepartment = department;
+  if (!department) {
+    this.selectedDepartmentType = '';
+    this.selectedFCLLCL = 'LCL';
+    this.isAirDepartment = false;
+    this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
+    this.filteredPOL = [...this.filteredPorts];
+    this.filteredPOD = [...this.filteredPorts];
+    this.masterJobForm.get('POO')?.setValue(null);
+    this.masterJobForm.get('POL')?.setValue(null);
+    this.masterJobForm.get('POD')?.setValue(null);
+    this.masterJobForm.get('FPD')?.setValue(null);
+    this.masterJobForm.get('ETA')?.setValue('');
+    this.masterJobForm.get('ETD')?.setValue('');
+    this.masterJobForm.get('MovementType')?.setValue(null);
     
-    this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? 
-      (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
-
-      this.isAirDepartment = this.selectedDepartmentType === "AIR";
-      const mblNoControl = this.masterJobForm.get('MBLNo');
-      if (this.isAirDepartment) {
-        const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
-        const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
-        
-        if (isAirExport) {
-            // Air Export - disable MBLNo (auto-allocated), optional
-            mblNoControl?.disable();
-            mblNoControl?.clearValidators();
-            if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
-                mblNoControl?.setValue('');
-            }
-        } else if (isAirImport) {
-            // Air Import - enable MBLNo, REQUIRED field
-            mblNoControl?.enable();
-            mblNoControl?.setValidators([
-                Validators.required, // Add required validator for Air Import
-                Validators.maxLength(50)
-            ]);
-            mblNoControl?.updateValueAndValidity();
-        } else {
-            // For Air without ExportImport specified, default to Export behavior
-            mblNoControl?.disable();
-            mblNoControl?.clearValidators();
-            if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
-                mblNoControl?.setValue('');
-            }
-        }
+    // In edit mode, enable MBLNo field if it already has a value
+    if (this.isEditMode) {
+      this.masterJobForm.get('MBLNo')?.enable();
     } else {
-        // For non-Air departments, MBLNo is optional
-        mblNoControl?.enable();
-        mblNoControl?.clearValidators();
-        mblNoControl?.setValidators([Validators.maxLength(50)]);
+      this.masterJobForm.get('MBLNo')?.enable();
+      this.masterJobForm.get('MBLNo')?.clearValidators();
+    }
+    this.masterJobForm.get('MBLNo')?.updateValueAndValidity();
+    return;
+  }
+  
+  this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
+  this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? 
+    (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
+
+  this.isAirDepartment = this.selectedDepartmentType === "AIR";
+  const mblNoControl = this.masterJobForm.get('MBLNo');
+  
+  // Special handling for edit mode
+  if (this.isEditMode) {
+    // In edit mode, always enable the MBLNo field for editing
+    mblNoControl?.enable();
+    
+    // For Air departments in edit mode, set appropriate validators
+    if (this.isAirDepartment) {
+      const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
+      
+      if (isAirImport) {
+        // Air Import - required field in edit mode
+        mblNoControl?.setValidators([
+          Validators.required,
+          Validators.maxLength(50)
+        ]);
+      } else {
+        // Air Export - optional in edit mode
+        mblNoControl?.setValidators([
+          Validators.maxLength(50)
+        ]);
+      }
+    } else {
+      // Non-Air departments - optional
+      mblNoControl?.setValidators([Validators.maxLength(50)]);
     }
     
     mblNoControl?.updateValueAndValidity();
-    
-    // Filter ports based on department type
-    this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
-    this.filteredPOL = [...this.filteredPorts];
-    this.filteredPOD = [...this.filteredPorts];
-    
-    if (this.selectedDepartmentType === "SEA") {
-      this.masterJobForm.get('MovementType')?.setValue('Sea');
-    } else if (this.selectedDepartmentType === "AIR") {
-      this.masterJobForm.get('MovementType')?.setValue('Flight');
+  } else {
+    // Original logic for create mode
+    if (this.isAirDepartment) {
+      const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
+      const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
+      
+      if (isAirExport) {
+        // Air Export - disable MBLNo (auto-allocated), optional
+        mblNoControl?.disable();
+        mblNoControl?.clearValidators();
+        if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
+          mblNoControl?.setValue('');
+        }
+      } else if (isAirImport) {
+        // Air Import - enable MBLNo, REQUIRED field
+        mblNoControl?.enable();
+        mblNoControl?.setValidators([
+          Validators.required,
+          Validators.maxLength(50)
+        ]);
+        mblNoControl?.updateValueAndValidity();
+      } else {
+        // For Air without ExportImport specified, default to Export behavior
+        mblNoControl?.disable();
+        mblNoControl?.clearValidators();
+        if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
+          mblNoControl?.setValue('');
+        }
+      }
+    } else {
+      // For non-Air departments, MBLNo is optional
+      mblNoControl?.enable();
+      mblNoControl?.clearValidators();
+      mblNoControl?.setValidators([Validators.maxLength(50)]);
     }
     
-    
+    mblNoControl?.updateValueAndValidity();
   }
+  
+  // Filter ports based on department type
+  this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
+  
+  if (this.selectedDepartmentType === "SEA") {
+    this.masterJobForm.get('MovementType')?.setValue('Sea');
+  } else if (this.selectedDepartmentType === "AIR") {
+    this.masterJobForm.get('MovementType')?.setValue('Flight');
+  }
+}
 
   onRouteChange(): void {
     const polSid = this.masterJobForm.get('POL')?.value;
@@ -1521,6 +1559,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
   onReset(): void {
     this.formSubmitted = false;
+    this.isEditMode = false; 
     this.masterJobForm.reset({
       BLReleaseType: 'Original',
       NoofOriginal: 3,

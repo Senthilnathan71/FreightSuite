@@ -1,0 +1,32 @@
+.card {
+  transition: box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+
+  &.border-success {
+    border-width: 2px !important;
+  }
+
+  &.border-secondary {
+    border-style: dashed !important;
+  }
+}
+
+.bg-light-success {
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+code {
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.card-header h6 {
+  font-size: 0.95rem;
+}

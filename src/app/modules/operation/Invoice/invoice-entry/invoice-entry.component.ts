@@ -785,6 +785,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
           this.invoiceForm.markAsUntouched();
           this.patchValues(this.invoiceData);
+
+          // Fetch salesman name once when invoice loads
+          if (this.invoiceData?.houseJob?.SalesmanSid) {
+            this.fetchSalesmanName(this.invoiceData.houseJob.SalesmanSid);
+          }
+
           this.invoiceForm.get('PartyName')?.disable();
           this.invoiceForm.get('CustomerBranchSid')?.disable();
           this.invoiceForm.get('CurrencyMasterSid')?.disable();
@@ -2297,10 +2303,16 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   getAmountInWords(): string {
-    const total = toNumber(this.getPartyCurrDebitAmt());
+    // Use foreign currency total if different currency, otherwise use local currency total
+    const total = this.shouldShowForeignCurrencyColumn()
+      ? toNumber(this.getPartyCurrDebitAmt())
+      : this.getLocalCurrencyTotal();
+
     if (!total) return '';
 
-    const currencySid = this.invoiceData?.CurrencyMasterSid;
+    const currencySid = this.shouldShowForeignCurrencyColumn()
+      ? this.invoiceData?.CurrencyMasterSid
+      : this.currentCompanyCurrency?.currencyMasterSid;
     return this.numberToWords.convert(total, currencySid);
   }
 
@@ -3073,12 +3085,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     };
   }
 
-  getSalesmanName(UserMasterSid : number){
-    if(this.salesmanName){
-      return this.salesmanName;
-    }
-    this.fetchSalesmanName(UserMasterSid);
-    return this.salesmanName;
+  getSalesmanName(): string {
+    return this.salesmanName || '';
   }
 
   fetchSalesmanName(UserMasterSid : number){
@@ -3187,9 +3195,68 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   shouldShowGSTTypeField(): boolean {
     return this.currentCompanyCountryCode === 'in';
   }
+
+  shouldShowForeignCurrencyColumn(): boolean {
+    return this.invoiceData?.CurrencyCode !== this.currentCompanyCurrency?.code;
+  }
+
+  getLocalCurrencyTotal(): number {
+    const currencyTotal = Number(this.getTotalCurrencyAmount()) || 0;
+    let taxTotal = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
+      const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
+      taxTotal += taxAmt1 + taxAmt2;
+    }
+    return currencyTotal + taxTotal;
+  }
+
+  /**
+   * Get shipment field value based on priority: HouseJob > MasterJob > BookingHeader
+   * Note: MasterJob only has POL and FPD directly. VesselName, VoyageNo, ETD, ETA
+   * are in MasterJobVoyage (not included in API), so these fall back to bookingHeader.
+   */
+  getShipmentFieldValue(fieldName: 'VesselName' | 'VoyageNo' | 'POL' | 'FPD' | 'ETD' | 'ETA'): any {
+    const hasHouseJob = !!this.invoiceData?.HouseJobSid;
+    const hasMasterJob = !!this.invoiceData?.MasterJobSid;
+    const hasBookingHeader = !!this.invoiceData?.BookingHeaderSid;
+
+    // Priority 1: HouseJob (if HouseJobSid exists)
+    if (hasHouseJob && this.invoiceData?.houseJob) {
+      const value = (this.invoiceData.houseJob as any)[fieldName];
+      if (value !== null && value !== undefined && value !== '') {
+        return value;
+      }
+    }
+
+    // Priority 2: MasterJob (if only MasterJobSid exists, no HouseJobSid)
+    // Only POL and FPD are directly available on masterJob
+    if (!hasHouseJob && hasMasterJob && this.invoiceData?.masterJob) {
+      if (fieldName === 'POL' || fieldName === 'FPD') {
+        const value = (this.invoiceData.masterJob as any)[fieldName];
+        if (value !== null && value !== undefined && value !== '') {
+          return value;
+        }
+      }
+      // VesselName, VoyageNo, ETD, ETA are in MasterJobVoyage - fall through to bookingHeader
+    }
+
+    // Priority 3: BookingHeader (fallback)
+    if (hasBookingHeader && this.invoiceData?.BookingHeader) {
+      return (this.invoiceData.BookingHeader as any)[fieldName] || null;
+    }
+
+    return null;
+  }
+
   calculateTotalColspan(): number {
     const config = this.getTaxDisplayConfig();
-    let baseColumns = 9; // S.No, Particulars, HSN/SAC, Curr, No of Unit, Rate, ROE, Taxable Value
+    let baseColumns = 7; // S.No, Particulars, Curr, No of Unit, Rate, ROE, Taxable Value
+
+    // Add HSN/SAC column if not UAE
+    if (this.currentCompanyCountryCode?.toLowerCase() !== 'ae') {
+      baseColumns += 1;
+    }
 
     // Add tax columns based on what's visible
     if (config.showCGST) baseColumns += 2; // CGST % + CGST Amt

@@ -331,4 +331,108 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
+  // ============= NUMBER SERIES CONFIGURATION =============
+
+  /**
+   * Get all number series configurations for a branch
+   */
+  getNumberSeriesConfigs(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.get<{ status: boolean; data: any[] }>(
+      `number-series/configs?CompanyMasterSid=${CompanyMasterSid}&BranchMasterSid=${BranchMasterSid}`
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Get number series configuration for a specific menu
+   */
+  getNumberSeriesConfig(CompanyMasterSid: number, BranchMasterSid: number, MenuMasterSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(
+      `number-series/config/${MenuMasterSid}?CompanyMasterSid=${CompanyMasterSid}&BranchMasterSid=${BranchMasterSid}`
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Save (create or update) number series configuration
+   */
+  saveNumberSeriesConfig(payload: any) {
+    return this.http.post<{ status: boolean; data: any; message: string }>(
+      'number-series/config',
+      payload
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Preview next number without incrementing counter
+   */
+  previewNumberSeries(payload: any) {
+    return this.http.post<{ status: boolean; data: { preview: string; nextNumber: number } }>(
+      'number-series/preview',
+      payload
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Generate next document number (increments counter)
+   */
+  generateNextNumber(payload: any) {
+    return this.http.post<{ status: boolean; data: string }>(
+      'number-series/generate',
+      payload
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Delete number series configuration (soft delete)
+   */
+  deleteNumberSeriesConfig(id: number, UpdatedBy: string) {
+    return this.http.delete<{ status: boolean; data: any; message: string }>(
+      `number-series/config/${id}`,
+      { body: { UpdatedBy } }
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Get current financial year for a company
+   */
+  getCurrentFinancialYear(CompanyMasterSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(
+      `number-series/financial-year?CompanyMasterSid=${CompanyMasterSid}`
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Get all counters for a configuration (for debugging/reporting)
+   */
+  getNumberSeriesCounters(configId: number) {
+    return this.http.get<{ status: boolean; data: any[] }>(
+      `number-series/counters/${configId}`
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  /**
+   * Get menus that are document types (Enquiry, Quotation, Booking, etc.)
+   * Returns menus with status 'A' (Active) or 'S' (Suspended)
+   */
+  getDocumentMenus() {
+    return this.http.get<{ data: any[] }>('menu/document-menus').pipe(
+      map((resp) => resp.data || [])
+    );
+  }
+
 }
