@@ -126,6 +126,24 @@
 
       <!-- Table Body -->
       <tbody>
+          <!-- PERMISSION BLOCK ROW -->
+          <tr *ngIf="config.overlayVisible" class="permission-row">
+            <td [attr.colspan]="getVisibleColumns().length + (config.actions?.length ? 1 : 0)">
+              <div class="permission-card">
+                <div class="permission-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+          
+                <div class="permission-content">
+                  <div class="permission-title">Access Restricted</div>
+                  <div class="permission-text">
+                    Please configure the permissions in <b>"Role Menu"</b> Master.
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
         <tr *ngFor="let row of filteredData; let i = index" [class]="getRowClass(row)" (click)="onRowClick(row)">
 
 
@@ -179,7 +197,7 @@
         </tr>
 
         <!-- Empty State -->
-        <tr *ngIf="!loading && filteredData.length === 0">
+        <tr *ngIf="!loading && filteredData.length === 0 && !config.overlayVisible">
           <td [attr.colspan]="getVisibleColumns().length + (config.actions?.length ? 1 : 0)" class="text-center p-4">
             <div class="alert alert-info mb-0">
               {{ getEmptyMessage() }}

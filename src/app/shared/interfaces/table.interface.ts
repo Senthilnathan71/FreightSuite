@@ -49,6 +49,9 @@ export interface TableConfig {
   emptyMessage?: string;
   loadingMessage?: string;
   dragAndDrop?: boolean;
+  overlayMessage?: string;
+  overlayIcon?: string;
+  overlayVisible?: boolean;
 }
 
 export interface TableState {

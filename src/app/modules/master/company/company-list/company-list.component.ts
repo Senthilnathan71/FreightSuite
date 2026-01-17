@@ -18,7 +18,7 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -35,6 +35,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   searchResults: any[] = []
   companyList: any[] = []
   userData: any;
+  hasViewPermission : boolean = false;
+  permissionError : boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
    headerActions: HeaderAction[] = [];
@@ -92,16 +94,51 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.spinner.show();
     this.mps.init().subscribe(()=>{
       this.initializeTableConfig();
       this.initializeHeaderActions();
+      this.checkViewPermission();
     })
     
       
      
     // Initialize base component
-    super.ngOnInit();
+    // super.ngOnInit();
   }
+
+  private checkViewPermission(): void {
+    this.hasViewPermission = this.mps.can('view');
+
+    if (!this.hasViewPermission) {
+      this.permissionError = true;
+
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+
+      this.tableConfig = {
+        ...this.tableConfig,
+        showPagination : false,
+        overlayVisible: true,
+        overlayMessage: `You don't have permission to view the company list`,
+        overlayIcon: 'fas fa-lock'
+      };
+
+      super.updatePaginationConfig();
+      this.spinner.hide();
+    } else {
+      this.permissionError = false;
+
+      this.tableConfig = {
+        ...this.tableConfig,
+        overlayVisible: false,
+        showPagination : true
+      };
+
+      super.loadData();
+    }
+  }
+
 
   initializeTableConfig(){
     this.tableConfig = {
@@ -200,7 +237,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     showFilters: true,
     showPagination: true,
     trackByKey: 'CompanyMasterSid',
-    emptyMessage: 'No comapny found',
+    emptyMessage: 'No company found',
     dragAndDrop: true
   };
   }
@@ -208,6 +245,15 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
+    if (!this.hasViewPermission) {
+      this.tableLoading = false;
+      this.spinner.hide();
+      return of({
+        status: false,
+        message: 'You do not have permission to view company list',
+        data: { items: [], totalCount: 0 }
+      });
+    }
     this.tableLoading = true;
     this.spinner.show();
     return this.masterService.searchCompanyList(this.getSearchParams());
@@ -242,7 +288,11 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     }
   }
 
-    onSearchTriggered(searchValue: string): void {
+  onSearchTriggered(searchValue: string): void {
+    if (!this.hasViewPermission) {
+      this.appSettingService.showError('You do not have permission to view company list');
+      return;
+    }
     this.filterValue = searchValue;
     this.searchCompany();
   }

@@ -321,6 +321,9 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
 
   // Row selection
   onRowClick(row: any): void {
+    if (this.config.overlayVisible) {
+      return;
+    }
     this.rowClick.emit(row);
   }
 

@@ -186,7 +186,7 @@ export abstract class BaseListComponent implements OnInit, OnDestroy {
     this.paginationService.clearState(this.config.storageKey);
   }
 
-  private updatePaginationConfig(): void {
+  public updatePaginationConfig(): void {
     this.paginationConfig = {
       page: this.page,
       pageSize: this.pageSize,

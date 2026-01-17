@@ -697,3 +697,49 @@
     }
   }
 }
+.permission-row td {
+  padding: 24px;
+  border-bottom: none;
+  background: transparent;
+}
+
+.permission-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 0 auto;
+
+  padding: 18px 24px;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    to right,
+    #eef5fb,
+    #f9fcff
+  );
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.permission-icon {
+  font-size: 38px;
+  color: #c89b3c; /* enterprise gold */
+}
+
+.permission-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.permission-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.permission-text {
+  font-size: 14px;
+  color: #6c757d;
+}
