@@ -1797,37 +1797,19 @@
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Vessel</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.VesselName ||
-                      invoiceData?.bookingHeader?.VesselName
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('VesselName') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Voyage / Flight No.</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.VoyageNo ||
-                      invoiceData?.bookingHeader?.VoyageNo
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('VoyageNo') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Loading Port</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.POL ||
-                      invoiceData?.bookingHeader?.POL
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('POL') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
@@ -1839,36 +1821,19 @@
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Final Destination</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.FPD || invoiceData?.bookingHeader?.FPD
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('FPD') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>ETD</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.ETD ||
-                      invoiceData?.bookingHeader?.ETD | formatDate
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('ETD') | formatDate }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>ETA</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.ETA ||
-                      invoiceData?.bookingHeader?.ETA | formatDate
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('ETA') | formatDate }}</div>
               </div>
             </div>
 

@@ -3211,6 +3211,44 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     return currencyTotal + taxTotal;
   }
 
+  /**
+   * Get shipment field value based on priority: HouseJob > MasterJob > BookingHeader
+   * Note: MasterJob only has POL and FPD directly. VesselName, VoyageNo, ETD, ETA
+   * are in MasterJobVoyage (not included in API), so these fall back to bookingHeader.
+   */
+  getShipmentFieldValue(fieldName: 'VesselName' | 'VoyageNo' | 'POL' | 'FPD' | 'ETD' | 'ETA'): any {
+    const hasHouseJob = !!this.invoiceData?.HouseJobSid;
+    const hasMasterJob = !!this.invoiceData?.MasterJobSid;
+    const hasBookingHeader = !!this.invoiceData?.BookingHeaderSid;
+
+    // Priority 1: HouseJob (if HouseJobSid exists)
+    if (hasHouseJob && this.invoiceData?.houseJob) {
+      const value = (this.invoiceData.houseJob as any)[fieldName];
+      if (value !== null && value !== undefined && value !== '') {
+        return value;
+      }
+    }
+
+    // Priority 2: MasterJob (if only MasterJobSid exists, no HouseJobSid)
+    // Only POL and FPD are directly available on masterJob
+    if (!hasHouseJob && hasMasterJob && this.invoiceData?.masterJob) {
+      if (fieldName === 'POL' || fieldName === 'FPD') {
+        const value = (this.invoiceData.masterJob as any)[fieldName];
+        if (value !== null && value !== undefined && value !== '') {
+          return value;
+        }
+      }
+      // VesselName, VoyageNo, ETD, ETA are in MasterJobVoyage - fall through to bookingHeader
+    }
+
+    // Priority 3: BookingHeader (fallback)
+    if (hasBookingHeader && this.invoiceData?.BookingHeader) {
+      return (this.invoiceData.BookingHeader as any)[fieldName] || null;
+    }
+
+    return null;
+  }
+
   calculateTotalColspan(): number {
     const config = this.getTaxDisplayConfig();
     let baseColumns = 7; // S.No, Particulars, Curr, No of Unit, Rate, ROE, Taxable Value
