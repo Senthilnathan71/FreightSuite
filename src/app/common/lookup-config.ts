@@ -88,6 +88,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['VoucherNumber', 'PartyName'],
     displayLabels: ['Invoice No', 'Customer'],    
     labelFields: ['VoucherNumber']
+  },
+  MASTER_JOB : {
+    displayFields: ['MasterJobNumber', 'MBLNo'],
+    displayLabels: ['Job No', 'MBL No'],
+    labelFields: ['MasterJobNumber'],
   }
 } satisfies Record<string, {
   displayFields: string[];

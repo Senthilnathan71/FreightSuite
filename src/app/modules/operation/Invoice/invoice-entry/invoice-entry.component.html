@@ -13,7 +13,8 @@
       class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
     >
       <div class="col-md-4 d-flex pb-1">
-        <h4 class="page-title mb-0">Invoice</h4>
+        <h4 class="page-title mb-0">{{ isViewMode ? ' Invoice' : (isEditMode ? 'Edit Invoice' :
+          'Create Invoice') }}</h4>
         @if(isEditMode){
         <a
           class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"
@@ -80,6 +81,15 @@
             >
               <span class="visually-hidden">unsaved changes</span>
             </span>
+          </button>
+            <button
+            type="button"
+            appPreventMultiClick
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            disabled="true"
+          >
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
           </button>
           } @else {
           <!-- Draft Save Button -->
@@ -228,7 +238,7 @@
                     readonly
                     style="cursor: not-allowed"
                   />
-                  <label for="text-input" class="input-label">Invoice No</label>
+                  <label for="text-input" class="input-label">Invoice No.</label>
                 </div>
               </aside>
 
@@ -256,7 +266,9 @@
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
-                  <label class="input-label">Invoice Date</label>
+                  <label class="input-label">Invoice Date 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -278,7 +290,7 @@
                     (itemSelected)="onCustomerChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label">Customer</label>
+                  <label class="input-label">Customer <span class="text-danger">*</span></label>
                 </div>
               </aside>
 
@@ -308,7 +320,9 @@
                       </div>
                     </ng-template>
                   </ng-select>
-                  <label class="input-label">Customer Address</label>
+                  <label class="input-label">Customer Address 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
                 } @else {
                 <div class="custom-form-group">
@@ -319,7 +333,9 @@
                     placeholder=""
                     readonly
                   />
-                  <label class="input-label">Customer Address</label>
+                  <label class="input-label">Customer Address
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
                 }
               </aside>
@@ -330,8 +346,10 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="GST_VAT"
+                    id="GSTNo"
                     placeholder=""
                     readonly
+                    style="cursor: not-allowed"
                   />
                   @if(currentCompanyCountryCode === 'in'){
                   <label class="input-label">GST No</label>
@@ -351,6 +369,7 @@
                     formControlName="GSTType"
                     placeholder=""
                     readonly
+                    style = "cursor: not-allowed"
                   />
                   @if(currentCompanyCountryCode === 'in'){
                   <label class="input-label">GST Type</label>
@@ -453,7 +472,9 @@
                     (itemSelected)="onHeaderCurrencyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label">Currency</label>
+                  <label class="input-label">Currency 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -474,7 +495,9 @@
                       )
                     "
                   />
-                  <label class="input-label">Ex Rate</label>
+                  <label class="input-label">Ex. Rate 
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -759,7 +782,7 @@
                               class="text-center bg-transparent text-light"
                               style="min-width: 60px"
                             >
-                              Dept
+                              Dept.
                             </th>
                           </tr>
 
@@ -901,7 +924,6 @@
                                   "
                                 >
                                 </dofi-searchable-dropdown>
-                                <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span> -->
                               </td>
 
                               <!-- Description -->
@@ -910,6 +932,7 @@
                                   class="text-start custom-input-field sm"
                                   formControlName="ChargeDescription"
                                   readonly
+                                  style="cursor: not-allowed;"
                                 />
                                 <!-- <span *ngIf="hasDetailSid(i)" style="text-align:start; font-weight: 600; color: black;">{{ row.get('ChargeDescription')?.value || '-' }}</span> -->
                               </td>
@@ -1599,11 +1622,11 @@
                   class="company-logo img-fluid"
                   style="width: 50px; height: auto"
                 />
-                <h4 style="margin: 0">
+                <!-- <h4 style="margin: 0">
                   <strong>{{
                     currentCompany?.companyName || "Company Name"
                   }}</strong>
-                </h4>
+                </h4> -->
               </div>
               <div
                 style="
@@ -1678,11 +1701,8 @@
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
               <strong style="font-weight: bolder">BILLED TO</strong><br />
               <div style="padding-left: 30px">
-                <span>{{
-                  getCustomerName(invoiceForm.get("CustomerMasterSid")?.value)
-                }}</span
-                ><br />
-                {{ invoiceForm.get("PartyAddress")?.value || "" }}<br />
+                <span>{{ invoiceData?.PartyName || invoiceData?.subledgerMaster?.SubledgerName || '' }}</span><br />
+                {{ invoiceData?.PartyAddress || invoiceData?.subledgerMaster?.Address || '' }}<br />
                 <div
                   style="display: flex"
                   *ngIf="currentCompanyCountryCode === 'in'"
@@ -1777,37 +1797,19 @@
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Vessel</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.VesselName ||
-                      invoiceData?.bookingHeader?.VesselName
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('VesselName') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Voyage / Flight No.</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.VoyageNo ||
-                      invoiceData?.bookingHeader?.VoyageNo
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('VoyageNo') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Loading Port</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.POL ||
-                      invoiceData?.bookingHeader?.POL
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('POL') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
@@ -1819,36 +1821,19 @@
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Final Destination</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData.houseJob?.FPD || invoiceData?.bookingHeader?.FPD
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('FPD') }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>ETD</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.ETD ||
-                      invoiceData?.bookingHeader?.ETD | formatDate
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('ETD') | formatDate }}</div>
               </div>
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>ETA</strong>
                 </div>
-                <div>
-                  :
-                  {{
-                    invoiceData?.houseJob?.ETA ||
-                      invoiceData?.bookingHeader?.ETA | formatDate
-                  }}
-                </div>
+                <div>: {{ getShipmentFieldValue('ETA') | formatDate }}</div>
               </div>
             </div>
 
@@ -1927,7 +1912,7 @@
                   <strong>Sales Person</strong>
                 </div>
                 <div>
-                  : {{ getSalesmanName(invoiceData?.houseJob?.SalesmanSid) }}
+                  : {{ getSalesmanName() }}
                 </div>
               </div>
             </div>
@@ -1963,6 +1948,7 @@
                     <strong>Particulars</strong>
                   </th>
                   <th
+                    *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2117,15 +2103,17 @@
                   </ng-container>
 
                   <th
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
                       text-align: left;
                     "
                   >
-                    <strong>Amt In {{ currentCurrencyCode }}</strong>
+                    <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
                   </th>
                   <th
+                    *ngIf="shouldShowForeignCurrencyColumn()"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2154,7 +2142,7 @@
                   <td style="border: 1px solid black; padding: 2px 8px">
                     {{ detail.ChargeDescription }}
                   </td>
-                  <td style="border: 1px solid black; padding: 2px 8px">
+                  <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px">
                     {{ getHSSACCode(detail.HSSACMasterSid, i) }}
                   </td>
                   <td style="border: 1px solid black; padding: 2px 8px">
@@ -2299,6 +2287,7 @@
                     </td>
                   </ng-container>
                   <td
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2308,6 +2297,7 @@
                     {{ detail?.PartyAmount | number : "1.2-2" }}
                   </td>
                   <td
+                    *ngIf="shouldShowForeignCurrencyColumn()"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2322,7 +2312,7 @@
                 <!-- Total Row with dynamic colspan -->
                 <tr style="font-weight: bolder">
                   <td
-                    [attr.colspan]="calculateTotalColspan()"
+                    [attr.colspan]="calculateTotalColspan() + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
@@ -2340,7 +2330,7 @@
                       text-align: right;
                     "
                   >
-                    <strong> {{ getPartyCurrDebitAmt() }}</strong>
+                    <strong>{{ shouldShowForeignCurrencyColumn() ? getPartyCurrDebitAmt() : (getLocalCurrencyTotal() | number:'1.2-2') }}</strong>
                   </td>
                 </tr>
                 

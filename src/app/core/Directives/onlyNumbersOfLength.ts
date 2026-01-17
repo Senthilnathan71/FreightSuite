@@ -124,6 +124,9 @@ export class OnlyNumbersDirective {
 
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
+         if (event.ctrlKey || event.metaKey) {
+        return;
+    }
         const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
 
         if (allowedKeys.includes(event.key)) return;
