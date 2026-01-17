@@ -2294,7 +2294,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail?.PartyAmount | number : "1.2-2" }}
+                    {{ detail?.LocalAmount | number : "1.2-2" }}
                   </td>
                   <td
                     *ngIf="shouldShowForeignCurrencyColumn()"
@@ -2305,7 +2305,8 @@
                       text-align: right;
                     "
                   >
-                    {{ getPartyCurrDebitAmt() }}
+                    {{ detail?.PartyAmount | number : "1.2-2" }}
+                    <!-- {{ getPartyCurrDebitAmt() }} -->
                   </td>
                 </tr>
 
