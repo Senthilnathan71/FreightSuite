@@ -2090,7 +2090,7 @@ getFieldConfiguration() {
 
   getTandCByCondition(payload) {
     return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByCondition', payload).pipe(
-      map((resp) => {
+      map((resp : any) => {
         let response = resp;
         return response;
       })
