@@ -164,7 +164,7 @@
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light">Salesman</th>
-                        <th class="bg-transparent text-light">Leads</th>
+                        <th class="bg-transparent text-light">Lead</th>
                         <th class="bg-transparent text-light">Opportunity</th>
                         <th class="bg-transparent text-light">Meetings</th>
                         <th class="bg-transparent text-light">Enquiry</th>
@@ -249,15 +249,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="white-space: nowrap;">
-
+                    <tr *ngFor="let item of vendorRows" style="white-space: nowrap;">
+                        <td>{{ item.SubledgerName }}</td>
+                        <td class="text-end">{{ item.TotalOutstanding | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.buckets['0-30'] | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.buckets['31-60'] | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.buckets['61-90'] | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.buckets['91-120'] | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.buckets['120 & Above'] | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CreditDays }}</td>
+                        <td class="text-end">{{ item.CreditLimit | number:'1.2-2' }}</td>
                     </tr>
 
-                    <!-- <tr >
+                    <tr *ngIf="vendorRows.length === 0">
                         <td colspan="10" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
-                    </tr> -->
+                    </tr>
                 </tbody>
             </table>
         </div>
