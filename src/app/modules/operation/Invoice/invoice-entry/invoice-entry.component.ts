@@ -1890,7 +1890,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     const raw = this.invoiceForm.getRawValue();
 
     const autoPostingButNoPosted = (this.isAutoPosting && !this.isPosted);
-    if (autoPostingButNoPosted) {
+    if (this.isEditMode && autoPostingButNoPosted) {
       this.appSettingService.showWarning(
         'Auto Posting is currently enabled.\n\nPlease switch to Manual Posting and post this vendor invoice first.\nAfter posting, you can switch back to Auto Posting.'
       );

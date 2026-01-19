@@ -147,6 +147,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         BillDate: this.datePipe.transform(item?.BillDate),
         CurrencyCode: item.currencyMaster.currencyCode,
+        PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -284,6 +285,16 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         dataType: 'string',
         width: '120px',
       },
+       {
+         key: 'PostStatus',
+         label: 'Post Status',
+         sortable: true,
+         filterable: true,
+         visible: true,
+         width: '120px',
+         template: 'status',
+         dataType: 'string',
+       },
       {
         key: 'Status',
         label: 'Status',

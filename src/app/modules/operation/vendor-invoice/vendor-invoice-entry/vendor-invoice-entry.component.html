@@ -70,6 +70,7 @@
             </span>
           </button>
           <button
+            *ngIf="isEditMode"
             type="button"
             appPreventMultiClick
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -683,7 +684,7 @@
                         <!-- HSN/SAC -->
                         <td>
                           <dofi-searchable-dropdown 
-                            [items]="hssacList[i]" \
+                            [items]="hssacList[i]" 
                             formControlName="HSSACMasterSid"
                             [placeholder]="''" 
                             [displayFields]="HSSACLookupConfig.displayFields"
@@ -1202,7 +1203,7 @@
     </div>
 
     <!-- Vendor Selection -->
-    <div *ngIf="searchVendors.length > 0" class="card mb-1">
+    <div *ngIf="searchVendors.length > 0 && searchType !== 'Vendor Name'" class="card mb-1">
       <div class="card-header bg-light">
         <h6 class="mb-0">Select Vendor for Costs</h6>
       </div>
@@ -1210,13 +1211,13 @@
         <div class="row compact-form">
           <div class="col-md-6">
             <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="searchVendors" bindLabel="VendorName" [(ngModel)]="selectedVendorForCosts"
-                (change)="onVendorSelectForCosts($event)" placeholder="Select vendor for all costs" appendTo="body">
+              <ng-select [items]="searchVendors" bindLabel="CustomerName" [(ngModel)]="selectedVendorForCosts"
+                (change)="handleMultipleVendorChange($event)" placeholder="Select vendor for all costs" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
-                    <strong>{{ item.VendorName }}</strong>
+                    <strong>{{ item.CustomerName }}</strong>
                     <br>
-                    <small class="text-muted">{{ item.VendorAddress }}</small>
+                    <small class="text-muted">{{ item.CustomerAddress }}</small>
                   </div>
                 </ng-template>
               </ng-select>
@@ -1239,7 +1240,7 @@
             <div class="custom-form-group">
               <!-- <label class="input-label">Vendor Name</label> -->
               <div class="form-control form-control-sm bg-light">
-                {{ vendorInvoiceForm.get('PartyName')?.value || 'Not populated' }}
+                {{ temporaryForm.get('PartyName')?.value || '' }}
               </div>
             </div>
           </div>
@@ -1247,7 +1248,7 @@
             <div class="custom-form-group">
               <!-- <label class="form-label fw-bold">Vendor Address</label> -->
               <div class="form-control form-control-sm bg-light">
-                {{ vendorInvoiceForm.get('PartyAddress')?.value || 'Not populated' }}
+                {{ temporaryForm.get('PartyAddress')?.value || '' }}
               </div>
             </div>
           </div>
@@ -1255,7 +1256,7 @@
             <div class="custom-form-group">
               <!-- <label class="form-label fw-bold">GST No</label> -->
               <div class="form-control form-control-sm bg-light">
-                {{ vendorInvoiceForm.get('GSTNo')?.value || 'Not available' }}
+                {{ temporaryForm.get('GST_VAT')?.value || '' }}
               </div>
             </div>
           </div>
@@ -1263,7 +1264,7 @@
             <div class="custom-form-group">
               <!-- <label class="form-label fw-bold">Place of Supply</label> -->
               <div class="form-control form-control-sm bg-light">
-                {{ vendorInvoiceForm.get('PlaceOfSupply')?.value || 'Not available' }}
+                {{ temporaryForm.get('PlaceOfSupply')?.value || '' }}
               </div>
             </div>
           </div>
@@ -1293,11 +1294,11 @@
 
                 <th class="sticky-top">Vendor</th>
                 <th class="sticky-top">Charge Code</th>
-                <th class="sticky-top">HS Code</th>
                 <th class="sticky-top">Description</th>
+                <th class="sticky-top">HS Code</th>
                 <th class="sticky-top">Job No</th>
-                <th class="sticky-top">MBL No</th>
-                <th class="sticky-top">HBL No</th>
+                <!-- <th class="sticky-top">MBL No</th>
+                <th class="sticky-top">HBL No</th> -->
                 <th class="sticky-top text-end">Quantity</th>
                 <th class="sticky-top text-end">Rate</th>
                 <th class="sticky-top text-end">Amount</th>
@@ -1318,11 +1319,24 @@
                   </div>
                 </td>
                 <td>{{ cost.ChargeCode || '-' }}</td>
-                <td>{{ cost.HSSACCode || cost.HSNCode || '-' }}</td>
                 <td>{{ cost.ChargeDescription }}</td>
+                <td class="dofi-min-w-80">
+                  <ng-select
+                    class="ng-select"
+                    clearable="false"
+                    [items]="temporaryHssacList[i]" 
+                    [(ngModel)]="cost.HSSACMasterSid" 
+                    placeholder=""
+                    bindLabel="HSNCode" 
+                    bindValue="HSSACMasterSid" 
+                    appendTo="body"
+                    (change)="onHSSACChange(i,$event)">
+                  </ng-select>
+                </td>
+                <!-- <td>{{ cost.HSSACCode || '-' }}</td> -->
                 <td>{{ cost.JobNo || cost.MasterJobNumber || '-' }}</td>
-                <td>{{ cost.MBLNo || '-' }}</td>
-                <td>{{ cost.HBLNo || '-' }}</td>
+                <!-- <td>{{ cost.MBLNo || '-' }}</td>
+                <td>{{ cost.HBLNo || '-' }}</td> -->
                 <td class="text-end">{{ cost.NumberOfUnit | number:'1.2-2' }}</td>
                 <td class="text-end">{{ cost.Rate | number:'1.2-2' }}</td>
                 <td class="text-end">{{ cost.CostAmount | number:'1.2-2' }}</td>

@@ -140,7 +140,7 @@ export class NumberToWordsService {
     if (num >= 100) {
       words += this.ones[Math.floor(num / 100)] + ' Hundred';
       num %= 100;
-      if (num > 0) words += ' and ';
+      // if (num > 0) words += ' and ';
     }
 
     if (num >= 20) {
