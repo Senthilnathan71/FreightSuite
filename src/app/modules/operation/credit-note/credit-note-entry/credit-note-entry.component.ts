@@ -520,7 +520,7 @@ export class CreditNoteEntryComponent {
   return '';
 }
 
-      getInvoiceData(invoice?: any) {
+    getInvoiceData(invoice?: any) {
   const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
   if (!invoiceId) {
     this.appSettingService.showWarning('Please select an invoice first.');
@@ -534,7 +534,7 @@ export class CreditNoteEntryComponent {
   if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
     invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
     reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
-     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    const autoNarration = this.autoGenerateNarration(reversalVoucherId);
     this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   } else {
     // If it's just an ID, try to find the invoice in the list to get the number
@@ -542,7 +542,7 @@ export class CreditNoteEntryComponent {
       inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
     );
     invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
-     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    const autoNarration = this.autoGenerateNarration(reversalVoucherId);
     this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   }
 
@@ -552,24 +552,28 @@ export class CreditNoteEntryComponent {
   this.operationService.getInvoicesById(invoiceId).subscribe({
     next: (resp: any) => {
       if (resp?.status && resp.data) {
+        // Set ReversalVoucher first
         this.creditNoteForm.patchValue({
           ReversalVoucher: reversalVoucherId
         });
-        this.patchInvoiceData(resp.data);
         
         // Now search for outstanding amount for this invoice
+        // The patchInvoiceData will only be called if outstanding amount is found
         this.searchOutstandingForInvoice(invoiceNumber, resp.data);
         
-        this.appSettingService.showSuccess('Invoice data loaded successfully.');
       } else {
         this.spinner.hide();
         this.appSettingService.showError('Error loading invoice data.');
+        this.creditNoteForm.get('ReversalVoucher')?.setValue(null);
+        this.creditNoteForm.get('Narration')?.setValue('');
       }
     },
     error: (err) => {
       this.spinner.hide();
       console.error('Error fetching invoice:', err);
       this.appSettingService.showError('Failed to load invoice data.');
+      this.creditNoteForm.get('ReversalVoucher')?.setValue(null);
+      this.creditNoteForm.get('Narration')?.setValue('');
     }
   });
 }
@@ -598,6 +602,21 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       // Extract the array from the response
       const outstandingInvoices = response.data || response || [];
       
+      // Check if there are any outstanding invoices
+      if (outstandingInvoices.length === 0) {
+        console.log('DEBUG - No outstanding invoices found for:', invoiceNumber);
+        this.invoiceOutstandingAmount = 0;
+        this.showOutstandingInfo = false;
+        
+        // DON'T patch any invoice data - just show the message
+        this.appSettingService.showInfo('No outstanding amount found for this invoice.');
+        
+        // Clear the ReversalVoucher field since there's no outstanding amount
+        this.creditNoteForm.get('ReversalVoucher')?.setValue(null);
+        this.creditNoteForm.get('Narration')?.setValue('');
+        return;
+      }
+      
       // Find the specific invoice in outstanding results
       const matchingOutstanding = outstandingInvoices.find((inv: any) => 
         inv.VoucherNumber === invoiceNumber
@@ -619,12 +638,18 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
         this.selectedOutstandingInvoice = matchingOutstanding;
         this.showOutstandingInfo = true;
         
+        // Now patch the invoice data since we have outstanding amount
+        this.patchInvoiceData(invoiceData);
         
       } else {
         this.invoiceOutstandingAmount = 0;
         this.showOutstandingInfo = false;
         console.log('DEBUG - No outstanding amount found for invoice:', invoiceNumber);
         this.appSettingService.showInfo('No outstanding amount found for this invoice.');
+        
+        // Clear the ReversalVoucher field
+        this.creditNoteForm.get('ReversalVoucher')?.setValue(null);
+        this.creditNoteForm.get('Narration')?.setValue('');
       }
     },
     error: (error) => {
@@ -632,7 +657,13 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       console.error('Error searching outstanding invoices:', error);
       this.invoiceOutstandingAmount = 0;
       this.showOutstandingInfo = false;
-      this.appSettingService.showWarning('Could not fetch outstanding amount, but invoice data was loaded.');
+      
+      // Don't patch invoice data on error - just show warning
+      this.appSettingService.showWarning('Could not fetch outstanding amount.');
+      
+      // Clear the ReversalVoucher field
+      this.creditNoteForm.get('ReversalVoucher')?.setValue(null);
+      this.creditNoteForm.get('Narration')?.setValue('');
     }
   });
 }

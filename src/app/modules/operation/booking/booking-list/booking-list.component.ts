@@ -20,6 +20,8 @@ import { getConcatenatedPorts } from 'src/app/common/helper';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MatDialog } from '@angular/material/dialog';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+
 
 @Component({
     selector: 'app-booking-list',
@@ -30,11 +32,13 @@ import { MatDialog } from '@angular/material/dialog';
         FormsModule,
         RouterModule,
         FavoriteStarComponent,
+        CustomDatePipe,
         NgxSpinnerModule,
         ReusableTableComponent,
         PageHeaderComponent,
         ToolsDropdownComponent
     ],
+    providers: [CustomDatePipe],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
 })
@@ -53,7 +57,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     protected config: ListComponentConfig = {
         storageKey: 'booking-list-state',
         defaultPageSize: 10,
-        defaultSortColumn: 'BookingNo',
+        defaultSortColumn: 'BookingDateTime',
         defaultSortDirection: 'desc',
         pageSizeOptions: [10, 20, 50, 100, 500],
         maxPagesToShow: 3
@@ -70,7 +74,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         private excelReportService: ExcelExportService,
         private spinner: NgxSpinnerService,
         paginationService: PaginationService,
-        public mps: MenuPermissionService
+        public mps: MenuPermissionService,
+        private datePipe: CustomDatePipe,
     ) {
         super(paginationService);
     }
@@ -127,6 +132,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 milestone: item.Milestone?.MilestoneName,
                 salesman: item.salesman?.userName,
                 status: item.status === 'A' ? 'Active' : 'Suspended',
+                BookingDateTime: this.datePipe.transform(item?.BookingDateTime),
                 // Extract MasterJobNumber from houseJob array
                 MasterJobNumber: this.getMasterJobNumber(item),
                 MasterJobSid: this.getMasterJobSid(item)
@@ -290,7 +296,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     private initializeTableConfig() {
         this.tableConfig = {
         columns : [
-            {
+             {
                 key: 'BookingNo',
                 label: 'Booking No',
                 sortable: true,
@@ -298,9 +304,19 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 visible: true,
                 dataType: 'string'
             },
+            {
+                key: 'BookingDateTime',
+                label: 'Date',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string',
+                width: '100px'
+                
+            },
            {
             key: 'MasterJobNumber',
-            label: 'Master Job Number',
+            label: 'Job No.',
             sortable: true,
             filterable: true,
             visible: true,
@@ -314,7 +330,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                dataType: 'string'
+                dataType: 'string',
+                width: '100px'
             },
             {
                 key: 'CustomerName',
@@ -322,7 +339,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                dataType: 'string'
+                dataType: 'string',
+                width: '200px'
             },
             {
                 key: 'POL',
@@ -355,7 +373,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 filterable: true,
                 visible: true,
                 dataType: 'string',
-                cellClass: 'vessel-column'
+                cellClass: 'vessel-column',
+                width: '100px'
             },
             // {
             //     key: 'salesman',
@@ -372,6 +391,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 filterable: true,
                 visible: true,
                 dataType: 'string',
+                width: '140px'
             },
             {
                 key: 'status',

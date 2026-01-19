@@ -286,7 +286,7 @@
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
                       [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
               
@@ -369,7 +369,7 @@
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostAmount" class="custom-input-field sm text-end"
                       (change)="calculateCostLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly> 
                   </div>
                 </td>
               

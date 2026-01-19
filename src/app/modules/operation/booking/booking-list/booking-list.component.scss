@@ -353,3 +353,18 @@
     color: #764ba2 !important;
   }
 }
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+}
+
+::ng-deep app-reusable-table .table-responsive {
+  overflow-x: auto !important;
+}
+
+::ng-deep app-reusable-table table {
+  min-width: 1400px !important;  // force bigger than screen
+  white-space: nowrap;
+}
+
