@@ -1137,6 +1137,38 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn('Comprehensive_Management_Report component not yet created:', error);
     }
+
+    // Network Report
+
+     try {
+      const { NetworkReportComponent } = await import(
+        '../components/reports/network-report/network-report.component'
+      );
+
+      this.registerReport({
+        id: 'network-report',
+        title: 'Network Report',
+        component: NetworkReportComponent,
+        filenameTemplate: 'Network_report_{date}',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Network_report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Network_report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Network Report component not yet created:', error);
+    }
    
   }
 
