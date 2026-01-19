@@ -2909,22 +2909,22 @@
   
 
  <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 5px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex;  flex-direction: column; align-items: center;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex;  flex-direction: column;">
               <img 
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
+                style="width: 80px;height:80px;" 
               />
                  <!-- Print logo -->
             <!-- <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
                  alt="Company Logo" 
                  style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
                 <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;"> -->
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+            <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
             </div>
             <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
                 <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
@@ -2943,11 +2943,10 @@
 <div style="
     text-align:center;
     border-top:1px solid black;
-    margin:1px 0;
-    padding-left:100px;
+    margin:10px 0;
 ">
   <h3 style="
-      margin:4px 0;
+  
       font-size:28px;  
       line-height:1.2;
   ">

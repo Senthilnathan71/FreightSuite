@@ -2087,35 +2087,80 @@
                 style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
 
-                <!-- Company Info -->
-                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
-    padding-left: 20px">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                        <div style="display: flex;  flex-direction: column; align-items: center;">
-                            <!-- Print logo -->
-                            <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
-                                class="company-logo img-fluid" style="width: 50px;height: auto;" />
-                            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong>
-                            </h4>
-                        </div>
-                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
-                            <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
-                            </h3>
-                            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
-                            </h5>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
-                                currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
-                                currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
-                                currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-
-                        </div>
-                    </div>
-                </div>
+             <div
+            style="
+              display: flex;
+              flex-direction: column;
+              margin-bottom: 0;
+              width: 100%;
+              padding-top: 5px;
+              padding-left: 20px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+               
+                flex-wrap: wrap;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                "
+              >
+                <!-- Print logo -->
+                <img
+                  [src]="logoService.reportLogo$ | async"
+                  alt="Company Logo"
+                  class="company-logo img-fluid"
+                  style="width: 80px; height: 80px"
+                />
+                <!-- <h4 style="margin: 0">
+                  <strong>{{
+                    currentCompany?.companyName || "Company Name"
+                  }}</strong>
+                </h4> -->
+              </div>
+              <div
+                style="
+                  flex: 1;
+                  text-align: center;
+                  font-size: 17px;
+                  padding-right: 5%;
+                "
+              >
+                <h3 style="margin: 0; font-weight: 900">
+                  {{ currentCompany?.companyName || "Company Name" }}
+                </h3>
+                <h5 style="margin: 0; font-weight: 900">
+                  {{ currentBranch?.branchName || "Company Branch" }}
+                </h5>
+                <p style="margin: 2px 0; font-size: 16px">
+                  {{ currentBranch?.addressLine1 || "" }}
+                </p>
+                <p style="margin: 2px 0; font-size: 16px">
+                  {{ currentBranch?.addressLine2 || "" }},
+                  {{
+                    currentBranch?.cityMaster?.cityName ||
+                      currentCompany?.City ||
+                      ""
+                  }}
+                  {{
+                    currentBranch?.postalCode || currentBranch?.ZipCode || ""
+                  }}
+                  ,
+                  {{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}
+                </p>
+              </div>
+            </div>
+          </div>
 
                 <!-- Title -->
                 <h3
-                    style="text-align: center;  padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;font-size: 20px;">
+                    style="text-align: center;  padding: 0.5rem 0; border-top: 1px solid black; padding:10px; padding-left:50px;font-weight: bolder;font-size: 20px;">
                     <strong>ENQUIRY</strong></h3>
 
                 <!-- Enquiry Details -->
