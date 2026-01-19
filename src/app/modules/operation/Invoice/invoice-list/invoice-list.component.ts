@@ -129,7 +129,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
           this.initializeHeaderActions();
         });
     super.ngOnInit();
-    this.loadInvoices();
+    // this.loadInvoices();
   }
 
 
@@ -155,6 +155,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     if (response.status) {
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
+        BookingNo: item?.BookingHeader?.BookingNo || '',
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
@@ -204,12 +205,12 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        disabled: !this.mps.can('insert')
-      },
+      // {
+      //   label: 'Create',
+      //   icon: 'fas fa-plus',
+      //   action: 'create',
+      //   disabled: !this.mps.can('insert')
+      // },
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -276,6 +277,15 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         {
         key: 'HouseNumber',
         label: 'House No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+      {
+        key:'BookingNo',
+        label:'Booking No',
         sortable: true,
         filterable: true,
         visible: true,

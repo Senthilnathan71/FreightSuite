@@ -667,15 +667,15 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     ports: this.operationService.getAllPorts()
       .pipe(catchError(err => of({ data: [] }))),
     // Replace individual API calls with getCustomerByItsType
-    agents: this.operationService.getCustomerByItsType({companySid, types: ['vendor', 'transporter', 'agent']})
+    agents: this.operationService.getCustomerByItsType({CompanyMasterSid, types: ['vendor', 'transporter', 'agent']})
       .pipe(catchError(err => of([]))),
-    carriers: this.operationService.getCustomerByItsType({ companySid , types : ['carrier']})
+    carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['carrier']})
         .pipe(catchError(err => of([]))),
-    forwarders: this.operationService.getCustomerByItsType({ companySid , types : ['forwarder']})
+    forwarders: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['forwarder']})
       .pipe(catchError(err => of({ data: [] }))),
-    cfsList: this.operationService.getCustomerByItsType({ companySid , types : ['cFS']})
+    cfsList: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['cFS']})
       .pipe(catchError(err => of({ data: [] }))),
-    yards: this.operationService.getCustomerByItsType({ companySid , types : ['yard']}) 
+    yards: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['yard']}) 
          .pipe(catchError(err => of({ data: [] }))),
     containerTypes: this.operationService.getAllContainerTypes()
       .pipe(catchError(err => of({ data: [] }))),
@@ -1163,7 +1163,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
       
       if (isAirExport) {
         // Air Export - disable MBLNo (auto-allocated), optional
-        mblNoControl?.disable();
+        mblNoControl?.enable();
         mblNoControl?.clearValidators();
         if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
           mblNoControl?.setValue('');
@@ -2018,6 +2018,9 @@ handleEdocChange(event: any) {
 
   navigateBack(): void {
     this.router.navigate(['/operation/mawbill/list']);
+  }
+   navigateToMasterJob() {
+    this.router.navigate(['operation/mawbill/entry']);
   }
 
    toggleMinimizeMaximize(){
