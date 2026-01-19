@@ -28,20 +28,20 @@
        <div style="width:280mm; min-height:385mm; margin:10px;  background:#fff; border:1px solid #000; color:#000; position:relative; box-sizing:border-box; page-break-after:always;">
 
     <!-- Company Info -->
-        <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+        <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top:5px;
     padding-left: 20px">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                    <div style="display: flex; flex-direction: column;">
                         <!-- Print logo -->
                                                                             <img 
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
+                style="width: 80px;height:80px;" 
               />
-                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                        <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
+                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right:8%;">
                         <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
                         </h3>
                         <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}

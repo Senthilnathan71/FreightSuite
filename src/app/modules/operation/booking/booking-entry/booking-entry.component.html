@@ -3097,18 +3097,18 @@
 ">  <div>
 
  <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 15px;
+     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 5px;
     padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;  margin-top:-10px;">
-            <div style="display: flex;  flex-direction: column; align-items: center;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;  margin-top:-10px;">
+            <div style="display: flex;  flex-direction: column;">
                  <!-- Print logo -->
                                                            <img 
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 50px;height: auto;" 
+                style="width: 80px;height: 80px;" 
               />
-            <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+            <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
             </div>
             <div style="flex: 1; text-align: center; font-size: 18px; padding-right: 12%; margin:0; line-height:1.2;">
                 <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
