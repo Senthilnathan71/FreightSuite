@@ -3842,6 +3842,7 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
       modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
       modalRef.componentInstance.portList = this.portList || [];
+      modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
     }
 
    reportReleaseLetter() {

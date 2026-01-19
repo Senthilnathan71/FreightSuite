@@ -932,8 +932,8 @@
               <!-- Billing Party -->
               <div class="col-md-3">
                 <div class="custom-form-group">
-                    <label class="text-input">Billing Party</label>
-                   <p>{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</p>
+                    <label class="form-label mb-0 text-info">Billing Party</label>
+                   <p class="text-black" style="font-weight: 600;">{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</p>
                 </div>
               
               </div>
@@ -941,9 +941,9 @@
               <!-- Address -->
               <div class="col-md-3">
                 <div class="custom-form-group">
-                   <label class="form-label fw-bold">Address</label>
+                   <label class="form-label text-info mb-0">Address</label>
                 
-                  <p class="mb-0 text-truncate" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress ||
+                  <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress ||
                     '-' }}</p>
                 </div>
               </div>
@@ -951,8 +951,8 @@
               <!-- GST-VAT -->
                <div class="col-md-3">
                  <div class="custom-form-group">
-                    <label class="form-label fw-bold">GST-VAT</label>
-                    <p class="mb-0 text-truncate" ngbTooltip="{{ billingGST_VAT || '-' }}">
+                    <label class="form-label text-info mb-0">GST-VAT</label>
+                    <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ billingGST_VAT || '-' }}">
       {{ billingGST_VAT || '-' }} 
                  </div>
                </div>
@@ -969,32 +969,36 @@
                </div>
 
                <!-- Place of Supply - Show for all companies -->
-               <div class="col-md-3">
-                 <label class="form-label fw-bold">Place of Supply</label>
-                 <input type="text" class="custom-input-field sm" [(ngModel)]="placeOfSupply" 
-                        [disabled]="true" placeholder="Auto-calculated">
+               <div class="col-md-3 mt-2">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" [(ngModel)]="placeOfSupply" 
+                 [disabled]="true" placeholder="Auto-calculated">
+                 <label class="input-label fw-bold">Place of Supply</label>
+                </div>
+                 
                </div>
            
             <div class="col-md-3">
-              <div class="custom-form-group-select">
-                <label class="">MBL NO </label>
+              <div class="custom-form-group-select-date">
                 <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MBLNo || ''"  readonly>
-                
+                <label class="input-label">MBL NO </label>
               </div>
               </div>
                <div class="col-md-3">
-                <label class="form-label fw-bold">HBL NO </label>
-                
-                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.HBLNo || ''"  readonly>
+                <div class="custom-form-group-select-date">
+                 <input type="text" class="custom-input-field sm" [value]="parentFormValue?.HBLNo || ''"  readonly>
+                 <label class="input-label fw-bold">HBL NO </label>
+                 </div>
               </div>
                <div class="col-md-3">
-                <label class="form-label fw-bold">Job No </label>
-                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MasterJobNumber || ''"  readonly>
-                
+                <div class="custom-form-group-select-date">
+                  <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MasterJobNumber || ''"  readonly>
+                  <label class="input-label fw-bold">Job No </label>
+                </div>
               </div>
               <!-- Invoice Type -->
               <div class="col-md-3">
-                <label class="form-label fw-bold">Invoice Type</label>
+                <div class="custom-form-group-select-date">
                 <ng-select 
                   [(ngModel)]="invoiceHeaderType" 
                   [items]="invoiceTypes" 
@@ -1004,29 +1008,34 @@
                   [clearable]="false"
                 >
                 </ng-select>
+                <label class="input-label fw-bold">Invoice Type</label>
+                </div>
               </div>
               <!-- Billing Currency -->
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Billing Currency</label>
+              <div class="col-md-3 mt-3">
+                 <div class="custom-form-group-select-date">
                 <ng-select [(ngModel)]="invoiceHeaderCurrency" [items]="currencyList" bindLabel="currencyCode"
-                  placeholder="Select Currency" (change)="onHeaderCurrencyChange()" [clearable]="false">
-                  <ng-template ng-label-tmp let-item="item">
-                    {{ item.currencyCode }} 
-                  </ng-template>
-                  <ng-template ng-option-tmp let-item="item">
-                    {{ item.currencyCode }} - {{ item.currencyName }}
-                  </ng-template>
-                </ng-select>
+                placeholder="Select Currency" (change)="onHeaderCurrencyChange()" [clearable]="false">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.currencyCode }} 
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  {{ item.currencyCode }} - {{ item.currencyName }}
+                </ng-template>
+              </ng-select>
+              <label class="input-label fw-bold">Billing Currency</label>
+              </div>
               </div>
 
               <!-- Exchange Rate -->
-              <div class="col-md-3">
-                <label class="form-label fw-bold">Exchange Rate</label>
-                <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
-                  (ngModelChan
-                  ge)="onHeaderExchangeRateChange()" step="0.0001" min="0"
-                  placeholder="" [disabled]="disableHeaderExRate">
-              
+              <div class="col-md-3 mt-3">
+                 <div class="custom-form-group-select-date">
+                   <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
+                   (ngModelChan
+                   ge)="onHeaderExchangeRateChange()" step="0.0001" min="0"
+                   placeholder="" [disabled]="disableHeaderExRate">
+                   <label class="input-label fw-bold">Exchange Rate</label>
+              </div>
               </div>
           </div>
           </div>
@@ -1047,10 +1056,10 @@
     </div>
 
     <div class="table-responsive table-borderless">
-      <table class="table table-sm table-hover">
+      <table class="table table-sm table-hover mb-1">
         <thead class="bg-info">
           <tr>
-            <th width="2%" class="">
+            <th width="2%" class="text-center">
               <input type="checkbox" class="form-check-input"
                 [checked]="selectedCharges.size === availableCharges.length"
                 (change)="selectedCharges.size === availableCharges.length ? deselectAllCharges() : selectAllCharges()">
@@ -1066,7 +1075,7 @@
          
             <th class="text-end bg-transparent text-light">Local Amount</th>
             <!-- Tax % column with dynamic label based on country -->
-            <th class="text-end bg-transparent text-light">
+            <th class="text-center bg-transparent text-light">
               {{ isIndianCompany() ? 'GST %' : (isUAECompany() ? 'VAT %' : 'Tax %') }}
             </th>
             <th class="text-end bg-transparent text-light">Tax Amount</th>
@@ -1097,7 +1106,7 @@
                   (change)="onTaxMappingChange(charge,$event)"
                 ></ng-select>
               </div> -->
-              <div class="custom-form-group mt-1 custom-form-group-select">
+              <div class="custom-form-group mt-0 custom-form-group-select">
               
                 <ng-select class="ng-select ngSize" appendTo="body" [items]="charge.ChargeMaster?.chargeTaxMaster || []"
                   [(ngModel)]="charge.selectedTaxMapping" [searchable]="true" [clearable]="false" bindLabel="HSNCode" placeholder=""

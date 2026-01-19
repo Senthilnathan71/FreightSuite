@@ -42,6 +42,7 @@ export class JobCardComponent implements OnChanges {
   @Input() uomList: any[] = [];
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
+  @Input() selectedDepartmentType : any;
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
 
@@ -177,6 +178,31 @@ export class JobCardComponent implements OnChanges {
     return currency
       ? currency.currencyCode || currency.CurrencyCode || ''
       : 'N/A';
+  }
+
+    get totalLength(): number {
+    return this.housejobData?.Products?.reduce((sum, c) => {
+      const value = Number(c.Length) || 0;
+      return sum + value;
+    }, 0);
+  }
+      get totalWidth(): number {
+    return this.housejobData?.Products?.reduce((sum, c) => {
+      const value = Number(c.Width) || 0;
+      return sum + value;
+    }, 0);
+  }
+      get totalHeight(): number {
+    return this.housejobData?.Products?.reduce((sum, c) => {
+      const value = Number(c.Height) || 0;
+      return sum + value;
+    }, 0);
+  }
+      get totalVolumteric(): number {
+    return this.housejobData?.Products?.reduce((sum, c) => {
+      const value = Number(c.Volumetric) || 0;
+      return sum + value;
+    }, 0);
   }
 
   get totalNoOfPkg(): number {
@@ -353,13 +379,12 @@ getGroupedExpenseByParty() {
 
 
    async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+
 
   setTimeout(async () => {
     this.spinner.show();
    try {
-      const quotationNumber = this.masterJobData?.MasterJobNumber;
+      const quotationNumber = this.housejobData?.masterJob?.MasterJobNumber;
       await this.pdfService.downloadBalancedPDF(
         'printContent',
          `Job_Card_${quotationNumber}`,

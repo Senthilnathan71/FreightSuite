@@ -674,7 +674,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'shipment-summary',
-        title: 'Shipment Summary Report',
+        title: 'House Summary Report',
         component: ShipmentSummaryReportComponent,
         filenameTemplate: 'Shipment_Summary_Report{GroupName}_{date}',
         module: 'accounts-report',
@@ -834,7 +834,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'shipment-summary-details',
-        title: 'Shipment_Summary_Details',
+        title: 'House_Summary_Details',
         component: ShipmentSummaryDetailsComponent,
         filenameTemplate: 'Shipment_Summary_Details_{date}',
         module: 'accounts-report',

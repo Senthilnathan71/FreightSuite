@@ -28,10 +28,10 @@
 
             <!-- Company Info -->
             <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between;  flex-wrap: wrap;">
+                    <div style="display: flex;  flex-direction: column;">
                         <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
-                            style="max-width: 60px;height: auto;" />
+                            style="max-width: 80px;height: 80px;" />
                         <!-- Print logo -->
                         <!-- <img *ngIf="showPrintLogo" src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
                             alt="Company Logo"
@@ -39,9 +39,9 @@
                         <!-- Pdf logo -->
                         <!-- <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
                             style="width:50px; height:50px; object-fit:contain;"> -->
-                        <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4>
+                        <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
                     </div>
-                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 12%;">
+                    <div style="flex: 1; text-align: center; font-size: 16px; padding-right: 8%;">
                         <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
                         </h3>
                         <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
@@ -141,7 +141,7 @@
                         <div>: {{ housejobData?.masterJob?.MasterJobNumber }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:120px;font-weight: bolder;"><strong>HBL No.</strong></div>
+                        <div style="width:120px;font-weight: bolder;"><strong> {{ selectedDepartmentType === 'SEA' ? 'HBL No.' : 'HAWB No.' }}</strong></div>
                         <div>: {{housejobData?.HBLNo}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
@@ -156,10 +156,12 @@
                         <div style="width:120px;font-weight: bolder;"><strong>FPD</strong></div>
                         <div>: {{getPortName(housejobData?.FPD)}}</div>
                     </div>
-                    <div style="display:flex; margin-bottom:1px;">
+                    @if(selectedDepartmentType === 'SEA'){
+                        <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Service Type</strong></div>
                         <div>: {{housejobData?.Cargo?.[0]?.ShipmentTerms}}</div>
                     </div>
+                    }
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Sales Person</strong></div>
                         <div>: {{getSalespersonName(housejobData?.SalesmanSid)}}</div>
@@ -167,7 +169,7 @@
                 </div>
                 <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>MBL No.</strong></div>
+                        <div style="width:135px;font-weight: bolder;"><strong>{{ selectedDepartmentType === 'SEA' ? 'MBL No.' : 'MAWB No.'}}</strong></div>
                         <div>: {{housejobData?.masterJob?.MBLNo}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
@@ -188,7 +190,7 @@
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px; font-weight:bolder;">
-                            <strong>Vessel / Voy.</strong>
+                            <strong>{{selectedDepartmentType === 'SEA' ? 'Vessel / Voy.' : 'Flight Name / No. '}}</strong>
                         </div>
                         <div>
                             :
@@ -216,15 +218,31 @@
                     style="width:100%; border-collapse:collapse; font-size:16px; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
+                           
                              <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Commodity Description</strong>
+                                <strong>Commodity</strong>
                             </th>
+                             @if(selectedDepartmentType === "SEA"){
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Container No.</strong>
-                            </th>
+                            </th>               
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Type</strong>
                             </th>
+                              }@else{
+                                  <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Length</strong>
+                            </th>
+                              <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Width</strong>
+                            </th>
+                              <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Height</strong>
+                            </th>
+                              <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Volumetric</strong>
+                            </th>
+                              }
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>No. of
@@ -250,11 +268,21 @@
                         <tr *ngFor="let container of housejobData?.Products">
                             <td style="border:1px solid black; padding:2px 8px;">{{container?.ProductName }}
                             </td>
+                             @if(selectedDepartmentType === "SEA"){
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
                                 container?.ContainerNo }}</td>
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
                                 getContainerTypeName(container?.masterJobContainer?.ContainerType) }}</td>
-                        
+                            }@else{
+                                  <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
+                                container?.Length | number:'1.3-3'}}</td>
+                                 <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
+                                container?.Width | number:'1.3-3'}}</td>
+                                 <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
+                                container?.Height | number:'1.3-3'}}</td>
+                                 <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
+                                container?.Volumetric | number:'1.3-3'}}</td>
+                            }
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 {{container?.ExternlQty}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
@@ -267,10 +295,27 @@
                     </tbody>
                     <tfoot>
                         <tr style="font-weight:bolder;">
-                            <td colspan="3"
+                            @if(selectedDepartmentType === "AIR"){
+                            <td colspan=""
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;">
                                 <strong>TOTAL</strong>
                             </td>
+                        }@else{
+                             <td colspan="3"
+                                style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;">
+                                <strong>TOTAL</strong>
+                            </td>
+                        }
+                            @if(selectedDepartmentType === "AIR"){
+                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalLength |   number:'1.3-3' }}
+                            </td>
+                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalWidth |  number:'1.3-3'  }}
+                            </td>
+                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalHeight |   number:'1.3-3' }}
+                            </td>
+                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalVolumteric |   number:'1.3-3' }}
+                            </td>
+                        }
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalNoOfPkg }}
                             </td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalGrossWeight |
