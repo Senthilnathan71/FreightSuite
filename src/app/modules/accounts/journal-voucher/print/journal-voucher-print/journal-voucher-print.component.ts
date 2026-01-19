@@ -33,11 +33,13 @@ export class JournalVoucherPrintComponent {
   @Input() masterJobContainers: any[];
   @Input() selectedFCLLCL: any;
   @Input() agentList: any;
+  @Input() coaList : any[] = [];
+  @Input() subledgerList : any[] = [];
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
-  @Input() bankTypedLedgers: any;
-    currentUserCountry: string;
+  @Input() VoucherDetail: any;
+  currentUserCountry: string;
 
    ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -133,15 +135,35 @@ get difference(): number {
 }
 
 
+getLedgerName(COAMasterSid: number): string {
+  if (!COAMasterSid || this.coaList.length===0) return '';
+
+  console.log(COAMasterSid,"Ledger Id")
+  const ledger = this.coaList.find(
+    v => v.COAMasterSid === COAMasterSid
+  );
+
+  return ledger.LedgerName || '';
+}
+
+getSubledgerName(SubledgerMasterSid : number){
+  if(!SubledgerMasterSid || this.subledgerList.length === 0) return '';
+
+  const ourSubledger = this.subledgerList.find(
+    sub => sub.SubledgerMasterSid === SubledgerMasterSid
+  );
+
+  return ourSubledger.SubledgerName || "";
+}
+
+
+
   modalClose() {
     this.activeModal.close()
   }
 
-   getBankName(COAMasterSid: number ) {
-    const bank = this.bankTypedLedgers.find(b => b.COAMasterSid == COAMasterSid);
-    // console.log(bank,"BANK")
-    return bank ? bank.LedgerName : '';
-  }
+
+  
 //  getTotalMatchingAmount(): number {
 //   if (!this.receiptPrintData?.voucherMatchings) return 0;
 
@@ -210,10 +232,10 @@ get difference(): number {
   setTimeout(async () => {
     this.spinner.show();
    try {
-      const BankReceiptNo = this.voucherData?.VoucherNumber || 'Receipt';
+      const JournalVoucher = this.voucherData?.VoucherNumber || 'Journal';
       await this.pdfService.downloadBalancedPDF(
         'printContent',
-        `Bank_Receipt_${BankReceiptNo}`,
+        `Journal_Voucher_${JournalVoucher}`,
         () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );

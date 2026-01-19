@@ -109,12 +109,12 @@
     <div style="width:48%; text-align:left;">
         <div style="display:flex; margin-bottom:4px;">
             <div style="width:115px;font-weight: bolder;"><strong>Posted On</strong></div>
-            <div>: {{ voucherData?.CreatedOn | formatDate}}</div>
+            <div>: {{ voucherData?.PostDate | formatDate}}</div>
         </div>
 
         <div style="display:flex; margin-bottom:4px;">
             <div style="width:115px;font-weight: bolder;"><strong>Posted Status</strong></div>
-            <div>: {{ voucherData?.CreatedOn | formatDate}}</div>
+            <div>: </div>
         </div>
     </div>
 
@@ -153,13 +153,13 @@
             <th style="border:1px solid black; padding:4px; text-align:center; font-weight:bolder"><strong>Ex.Rate</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center; font-weight:bolder"><strong>Curr Amt.</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center; font-weight:bolder"><strong>Local Amt.</strong></th>
-            <th style="border:1px solid black; padding:4px; text-align:center; width: 3%;font-weight: bolder;"><strong>Dr/Cr</strong></th>
+            <th style="border:1px solid black; padding:4px; text-align:center; width: 3%;font-weight: bolder;"><strong>D/C</strong></th>
             <th style="border:1px solid black; padding:4px; text-align:center; border-right:none;font-weight: bolder;"><strong>Narration</strong></th>
         </tr>
 
          <tr *ngFor="let voucher of voucherData?.VoucherDetail">
-            <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">{{ voucher?.LedgerMasterSid }}</td>
-            <td style="border:1px solid black; padding:4px; text-align:start;">{{ voucher?.COAMasterSid }}</td>
+            <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">{{ getLedgerName(voucher?.COAMasterSid) }}</td>
+            <td style="border:1px solid black; padding:4px; text-align:start;">{{ getSubledgerName(voucher?.LedgerMasterSid) }}</td>
             <td style="border:1px solid black; padding:4px; text-align:start;">{{ voucher?.CurrencyCode }}</td>
             <td style="border:1px solid black; padding:4px; text-align:end;">{{ voucher?.ExchangeRate | number:'1.3-3' }}</td>
             <td style="border:1px solid black; padding:4px; text-align:end;">{{ voucher?.Amount | number:'1.2-2' }}</td>

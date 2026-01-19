@@ -2106,38 +2106,10 @@ export class JournalVoucherEntryComponent implements OnInit {
     });
     modalRef.componentInstance.voucherData = this.voucherData || [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
-    // modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+    modalRef.componentInstance.coaList = this.coaList || [];
+    modalRef.componentInstance.subledgerList = this.subledgerList || [];
   }
 
-
-  showPrintLogo: boolean = false;
-  showPdfLogo: boolean = true;
-
-  printDiv(divId: string): void {
-    this.showPrintLogo = true;
-    this.showPdfLogo = false;
-
-    setTimeout(() => {
-      const printContents = document.getElementById(divId)?.innerHTML;
-      if (!printContents) return;
-
-      const popupWin = window.open('', '_blank', 'width=900,height=600');
-      if (popupWin) {
-        popupWin.document.open();
-        popupWin.document.write(`
-        <html>
-          <head>
-            <title>Print</title>
-          </head>
-          <body onload="window.print(); window.close();">
-            ${printContents}
-          </body>
-        </html>
-      `);
-        popupWin.document.close();
-      }
-    }, 50); // small timeout so Angular updates DOM
-  }
 
   public getFormattedAmount(amount: number | string, currencyMasterSid: number): number {
     const currency = this.currencyList.find(
