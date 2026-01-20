@@ -1065,6 +1065,9 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			// Include logo removal flags for edit mode
 			removeCompanyLogo: this.companyLogoRemoved,
 			removeReportLogo: this.reportLogoRemoved,
+			// Include flags to indicate which logo files are being uploaded
+			hasNewCompanyLogo: !!this.companyLogo,
+			hasNewReportLogo: !!this.reportLogo,
 			...(this.isEditMode ?
 				{ updatedBy: updatedBy } :
 				{ createdBy: createdBy }
@@ -1078,7 +1081,7 @@ const formData = new FormData();
 // send JSON payload
 formData.append('data', JSON.stringify(payload));
 
-// append files
+// append files - order matters: company logo first, then report logo
 if (this.companyLogo) {
   formData.append('images', this.companyLogo);
 }
