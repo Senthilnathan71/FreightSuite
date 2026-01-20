@@ -159,6 +159,9 @@ export class CompanyEntryComponent implements OnInit {
 	
 companyLogo: File | null = null;
 reportLogo: File | null = null;
+// Flags to track explicit logo removal (for edit mode)
+companyLogoRemoved: boolean = false;
+reportLogoRemoved: boolean = false;
 	// CONSTRUCTOR
 
 	constructor(
@@ -277,6 +280,8 @@ onCompanyLogoChange(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
     this.companyLogo = input.files[0];
+    // User selected new file, so we're not removing - reset the removal flag
+    this.companyLogoRemoved = false;
     // Create preview URL
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -291,6 +296,8 @@ onReportLogoChange(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
     this.reportLogo = input.files[0];
+    // User selected new file, so we're not removing - reset the removal flag
+    this.reportLogoRemoved = false;
     // Create preview URL
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -334,15 +341,23 @@ loadReportLogo(logoFilename: string) {
 clearCompanyLogo() {
   this.companyLogo = null;
   this.companyLogoPreview = null;
-  this.existingCompanyLogo = null;
   this.companyLogoUrl = null;
+  // Flag that existing logo should be removed (only if there was an existing logo)
+  if (this.existingCompanyLogo) {
+    this.companyLogoRemoved = true;
+  }
+  this.existingCompanyLogo = null;
 }
 
 clearReportLogo() {
   this.reportLogo = null;
   this.reportLogoPreview = null;
-  this.existingReportLogo = null;
   this.reportLogoUrl = null;
+  // Flag that existing logo should be removed (only if there was an existing logo)
+  if (this.existingReportLogo) {
+    this.reportLogoRemoved = true;
+  }
+  this.existingReportLogo = null;
 }
 
 	// FORM INITIALIZATION
@@ -588,6 +603,10 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 						this.existingReportLogo = resp.reportLogo;
 						this.loadReportLogo(resp.reportLogo);
 					}
+
+					// Reset logo removal flags when loading data
+					this.companyLogoRemoved = false;
+					this.reportLogoRemoved = false;
 
 					this.handlePanControl({ CountryMasterSid: this.companyData?.CountryMasterSid });
 
@@ -1043,6 +1062,9 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			isHo: formValue.isHo ? 'Y' : 'N',
 			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			branches: branchesPayload,
+			// Include logo removal flags for edit mode
+			removeCompanyLogo: this.companyLogoRemoved,
+			removeReportLogo: this.reportLogoRemoved,
 			...(this.isEditMode ?
 				{ updatedBy: updatedBy } :
 				{ createdBy: createdBy }
