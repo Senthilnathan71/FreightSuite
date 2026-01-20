@@ -2917,7 +2917,7 @@
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 80px;height:80px;" 
+                style="width: 100px;height:100px;" 
               />
                  <!-- Print logo -->
             <!-- <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
@@ -2941,20 +2941,22 @@
 
 <!-- Title -->
 <div style="
-    text-align:center;
-    border-top:1px solid black;
-    margin:10px 0;
+  text-align: center;
+  border-top: 1px solid black;
+  margin-top: 10px  ;
+  padding: 6px 0;
 ">
   <h3 style="
-  
-      font-size:28px;  
-      line-height:1.2;
+    margin: 0;
+    padding: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: bolder;
   ">
-    <strong>
-      {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
-    </strong>
+    {{ selectedItem?.IsContract === 'Y' ? 'Contract' : 'Quotation' }}
   </h3>
 </div>
+
 
 
     <!-- Customer Info -->

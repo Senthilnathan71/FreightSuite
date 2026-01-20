@@ -35,7 +35,7 @@
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 80px;height:80px;" 
+                style="width: 100px;height:100px;" 
               />
             <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
           </div>
@@ -54,8 +54,16 @@
       </div>
 
       <!-- Title -->
-      <h3 style="text-align:center;  margin-top:10; padding:10px 0; border-top:1px solid black;"><strong>Commercial
-          Invoice</strong></h3>
+    <h3 style="
+  text-align: center;
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid black;
+  font-weight: bolder;
+">
+  <strong>Commercial Invoice</strong>
+</h3>
+
 
       <!-- Section 1 -->
       <div style="display:flex; flex-wrap:wrap; padding:0 10px;font-size: 16px; ">

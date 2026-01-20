@@ -9,9 +9,9 @@
             <i class="fas fa-download me-1"></i> Print
         </button>
 
-        <!-- <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
                     <i class="fas fa-download me-1"></i> Download PDF
-                </button> -->
+                </button>
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
@@ -33,7 +33,7 @@
                     <div style="display: flex; flex-direction: column;">
                         <!-- Print logo -->
                         <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
-                            style="width: 80px;height:80px;" />
+                            style="width: 100px;height:100px;" />
                         <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
                     </div>
                     <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
