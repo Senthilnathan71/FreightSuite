@@ -7,9 +7,9 @@
                         <div class="brand-icon">
                             <i class="fas fa-chart-bar"></i>
                         </div>
-                        <h4 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit' : ''}} Report Master</h4>
+                        <h5 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit' : ''}} Report Master</h5>
                         @if(isEditMode){
-                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                        <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                             <i class="fas fs-6 fa-info-circle"></i>
                         </a>
                         }
@@ -61,13 +61,13 @@
 
         <div class="col-12">
             <div class="card h-100 mb-0">
-                <div class="card-body py-2 px-3">
-                    <div class="row pb-2 rounded border border-top-0">
+                <div class="card-body p-1">
+                    <div class="row">
 
-                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                             <i class="fas fa-chart-bar fs-4"></i>
                             <h5 class="card-titlename mb-0">Report Master Information</h5>
-                        </div>
+                        </div> -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -99,7 +99,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!reportForm.get('reportMenuId')?.value">
                                 <ng-select class="ng-select" [items]="reportMenus" bindLabel="MenuName"
                                     bindValue="MenuMasterSid" formControlName="reportMenuId" placeholder="Select Menu">
                                 </ng-select>
@@ -117,7 +117,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!reportForm.get('reportFormatId')?.value">
                                 <ng-select class="ng-select" [items]="modeofreportFormat"
                                     formControlName="reportFormatId" bindValue="name" placeholder="Select report format"
                                     bindLabel="name">
@@ -135,7 +135,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!reportForm.get('reportType')?.value">
                                 <ng-select class="ng-select" [items]="modeofreportType" formControlName="reportType"
                                     bindValue="name" placeholder="Select report type" bindLabel="name">
                                 </ng-select>
@@ -152,13 +152,13 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
+                            <div class="custom-form-group custom-form-group-select-date">
                                 <textarea
                                     id="excluded-companies"
                                     placeholder="Enter comma-separated company IDs (e.g., 3,5,7)"
                                     class="custom-input-field sm"
                                     formControlName="excludedCompanyIds"
-                                    rows="3">
+                                    rows="1">
                                 </textarea>
                                 <label for="excluded-companies" class="input-label">
                                     Excluded Companies <span class="text-info">(comma-separated IDs)</span>
@@ -187,20 +187,28 @@
                     </button>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <table class="table table-hover align-middle no-wrap table-borderless table-sm mb-1">
                         <thead>
                             <tr class="bg-info text-light">
+                                <th class="bg-transparent text-light text-center" width="3%"></th>
                                 <th class="bg-transparent text-light">Parameter Name</th>
                                 <th class="bg-transparent text-light">Field Type</th>
                                 <th class="bg-transparent text-light">Dropdown Value (JSON)</th>
                                 <th class="bg-transparent text-light">Parameter Query</th>
-                                <th class="bg-transparent text-light text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody formArrayName="parameters">
                             <tr *ngFor="let param of parameters.controls; let i = index" [formGroupName]="i">
+                                 <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-sm"
+                                            (click)="removeParameter(i)"
+                                            [disabled]="parameters.length === 0">
+                                        <i class="fas fa-trash fs-2 text-danger"></i>
+                                    </button>
+                                </td>
                                 <td>
-                                    <input type="text" class="form-control form-control-sm"
+                                    <input type="text" class="custom-input-field sm"
                                            formControlName="ParameterName"
                                            placeholder="Enter parameter name">
                                     <small class="text-danger"
@@ -224,7 +232,7 @@
                                 <td>
                                     <textarea class="form-control form-control-sm"
                                               formControlName="DropDownValue"
-                                              rows="2"
+                                              rows=""
                                               placeholder='{"key1":"value1","key2":"value2"}'
                                               [disabled]="param.get('ParameterFieldType')?.value !== 'DROPDOWN'">
                                     </textarea>
@@ -232,18 +240,11 @@
                                 <td>
                                     <textarea class="form-control form-control-sm"
                                               formControlName="ParameterQuery"
-                                              rows="2"
+                                              rows="1"
                                               placeholder="Enter SQL query">
                                     </textarea>
                                 </td>
-                                <td class="text-center">
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm"
-                                            (click)="removeParameter(i)"
-                                            [disabled]="parameters.length === 0">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
+                               
                             </tr>
                             <tr *ngIf="parameters.length === 0">
                                 <td colspan="5" class="text-center text-muted py-3">

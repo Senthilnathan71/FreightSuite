@@ -1170,6 +1170,37 @@ export class ReportRegistryService {
       console.warn('Network Report component not yet created:', error);
     }
    
+    // Freight MoM Growth Report 
+
+      try {
+      const { FreightMoMGrowthReportComponent } = await import(
+        '../components/reports/freight-mo-m-growth-report/freight-mo-m-growth-report.component'
+      );
+
+      this.registerReport({
+        id: 'freight-mom-growth',
+        title: 'Freight MoM Growth Report',
+        component: FreightMoMGrowthReportComponent,
+        filenameTemplate: 'Freight_MoM_Growth_report_{date}',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Freight_MoM_Growth_report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Freight_MoM_Growth_report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Freight MoM Growth Report component not yet created:', error);
+    }
   }
 
   /**

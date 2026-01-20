@@ -691,7 +691,6 @@
   width:280mm;
   min-height:400mm;
   margin:10px;
-  padding:2mm 5mm;
   background:#fff;
   border:1px solid #000;
   box-sizing:border-box;
@@ -710,7 +709,7 @@
                 [src]="(logoService.reportLogo$ | async)" 
                 alt="Company Logo"
                 class="company-logo img-fluid" 
-                style="width: 80px;height:80px;" 
+                style="width: 100px;height:100px;" 
               />
                         <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
                     </div>
@@ -739,12 +738,12 @@
   </div>
 
   <!-- Billed To Section -->
-  <div style="display:flex; flex-wrap:wrap; margin-top:8px; padding-bottom:8px; border-bottom:1px solid black;">
+  <div style="display:flex; flex-wrap:wrap; margin-top:8px; padding-bottom:8px; border-bottom:1px solid black;padding: 0 20px;">
 
-    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;padding-top: 5px; padding-bottom: 10px;">
+    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;padding-top: 5px; padding-bottom: 0px;">
       <strong style="font-weight: bolder; font-size: 17px;">BILLED TO</strong><br>
       <div style="padding-left: 30px;">
-      <span>{{ getCustomerName(creditNoteForm.get('CustomerMasterSid')?.value) }}</span><br>
+      <span>{{ creditNoteData?.PartyName}}</span><br>
       {{ creditNoteForm.get('PartyAddress')?.value || '' }}<br>
       <span style="font-weight:600;" *ngIf="isIndiaGST">PAN :</span>
       {{ currentCompany?.Pan || currentCompany?.PAN || '' }}
@@ -752,7 +751,7 @@
     
     </div>
 
-    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;padding-top: 5px; padding-bottom: 10px;">
+    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;padding-top: 5px; padding-bottom: 0px;padding: 0 20px;">
       <div>
         <div style="display:flex;">
           <div style="width:150px; font-weight: bolder;"><strong>Invoice No.</strong></div>
@@ -777,53 +776,53 @@
   </div>
 
   <!-- Shipment Details -->
-  <div style="display:flex; flex-wrap:wrap; margin-top:8px;">
+  <div style="display:flex; flex-wrap:wrap; margin-top:8px;padding: 0 20px;">
 
     <!-- Left Column -->
     <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
       <div style="display:flex;">
         <div style="width:150px; font-weight: bolder;"><strong>Shipper</strong></div>
-        <div>: {{ creditNoteData?.houseJob?.ShipperName }}</div>
+        <div>: {{ creditNoteData?.houseJob?.ShipperName || creditNoteData?.BookingHeader?.ShipperName }}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Consignee / Notify</strong></div>
-        <div>: {{ creditNoteData?.houseJob?.ConsigneeName }}</div>
+        <div>: {{ creditNoteData?.houseJob?.ConsigneeName || creditNoteData?.BookingHeader?.ConsigneeName}}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Vessel</strong></div>
-        <div>: {{ creditNoteData.houseJob?.VesselName }}</div>
+        <div>: {{ creditNoteData.houseJob?.VesselName || creditNoteData?.BookingHeader?.VesselName }}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Voyage / Flight No.</strong></div>
-        <div>: {{ creditNoteData.houseJob?.VoyageNo }}</div>
+        <div>: {{ creditNoteData.houseJob?.VoyageNo || creditNoteData?.BookingHeader?.VoyageNo}}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Loading Port</strong></div>
-        <div>: {{ creditNoteData?.masterJob?.POL }}</div>
+        <div>: {{ creditNoteData?.masterJob?.POL || creditNoteData?.BookingHeader?.POL }}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Place of Supply</strong></div>
-        <div>: {{ creditNoteData?.masterJob?.POD }}</div>
+        <div>: {{ creditNoteData?.masterJob?.POD || creditNoteData?.BookingHeader?.POD }}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Final Destination</strong></div>
-        <div>: {{ creditNoteData.masterJob?.FPD }}</div>
+        <div>: {{ creditNoteData.masterJob?.FPD || creditNoteData?.BookingHeader?.FPD}}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>ETD</strong></div>
-        <div>: {{ creditNoteData?.houseJob?.ETD | formatDate }}</div>
+        <div>: {{ creditNoteData?.houseJob?.ETD  || creditNoteData?.BookingHeader?.ETD | formatDate}}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>ETA</strong></div>
-        <div>: {{ creditNoteData?.houseJob?.ETA | formatDate }}</div>
+        <div>: {{ creditNoteData?.houseJob?.ETA  || creditNoteData?.BookingHeader?.ETA | formatDate }}</div>
       </div>
     </div>
 
@@ -832,12 +831,12 @@
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>HBL / HAWB</strong></div>
-        <div>: {{ creditNoteData?.houseJob?.HBLNo }}</div>
+        <div>: {{ creditNoteData?.houseJob?.HBLNo || creditNoteData?.BookingHeader?.HBLNo}}</div>
       </div>
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>MBL / MAWB</strong></div>
-        <div>: {{ creditNoteData?.masterJob?.MBLNo }}</div>
+        <div>: {{ creditNoteData?.masterJob?.MBLNo || creditNoteData?.BookingHeader?.MBLNo}}</div>
       </div>
 
       <div style="display:flex;">
@@ -847,7 +846,7 @@
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Freight</strong></div>
-        <div>: {{ creditNoteData.masterJob?.FreightPPCC }}</div>
+        <div>: {{ creditNoteData.masterJob?.FreightPPCC || creditNoteData?.BookingHeader?.bookingCargo?.[0]?.FreightTerms}}</div>
       </div>
 
       <div style="display:flex;">
@@ -870,7 +869,7 @@
 
       <div style="display:flex;">
         <div style="width:150px;font-weight: bolder;padding-top: 3px;"><strong>Carrier Name</strong></div>
-        <div>: {{ creditNoteData.houseJob?.CarrierName }}</div>
+        <div>: {{ creditNoteData.houseJob?.CarrierName || creditNoteData?.BookingHeader?.CarrierName}}</div>
       </div>
 
       <div style="display:flex;">
@@ -883,11 +882,21 @@
 
   <!-- Table -->
   <div style="width:100%; overflow-x:auto;">
-    <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0; border:1px solid black;">
+    <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0;">
       <thead style="text-align: center;">
         <tr>
-          <th style="border:1px solid black; padding:2px 8px; font-weight:bolder"><strong>Particulars</strong></th>
-          <th style="border:1px solid black; padding:2px 8px; font-weight:bolder"><strong>HSN/SAC</strong></th>
+          <th style="
+                                border: 1px solid black;
+                                padding: 2px 8px;
+                                font-weight: bolder;
+                                text-align: left;
+                                width: 20px;
+                                border-left: none;
+                              ">
+            <strong>S.No.</strong>
+          </th>
+          <th style="border:1px solid black; padding:2px 8px; font-weight:bolder;border-left: none;"><strong>Particulars</strong></th>
+          <th style="border:1px solid black; padding:2px 8px; font-weight:bolder" *ngIf="isIndiaGST"><strong>HSN/SAC</strong></th>
           <th style="border:1px solid black; padding:2px 8px; font-weight:bolder"><strong>Curr.</strong></th>
           <th style="border:1px solid black; padding:2px 8px; font-weight:bolder"><strong>No of Unit</strong></th>
           <th style="border:1px solid black; padding:2px 8px; font-weight:bolder"><strong>Rate</strong></th>
@@ -908,8 +917,8 @@
             <th style="border:1px solid black; padding:2px 8px; font-weight: bolder;"><strong>VAT Amt.</strong></th>
           </ng-container>
 
-                <th style="border:1px solid black; padding:2px 8px; text-align:left; font-weight: bolder;"><strong><strong>Amt In </strong></strong></th>
-                <th style="border:1px solid black; padding:2px 8px; text-align:left; font-weight: bolder;"><strong>Amt In {{ creditNoteData?.CurrencyCode }}</strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left; font-weight: bolder;"><strong><strong>Amt In {{ currentCompanyCurrency?.code }}</strong></strong></th>
+                <th style="border:1px solid black; padding:2px 8px; text-align:left; font-weight: bolder;border-right: none;"><strong>Amt In {{ creditNoteData?.CurrencyCode }}</strong></th>
 
           <!-- <th style="border:1px solid black; padding:2px 8px;font-weight: 800;">
             Total 
@@ -919,10 +928,20 @@
 
       <tbody>
         <tr *ngFor="let detail of details.controls; let i = index">
-          <td style="border:1px solid black; padding:2px 8px; text-align: start;">
+           <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-left: none;
+                      text-align: center;
+                    "
+                  >
+                    {{i + 1  }}
+                  </td>
+          <td style="border:1px solid black; padding:2px 8px; text-align: start;border-left: none;">
             {{ detail.get('ChargeDescription')?.value }}
           </td>
-          <td style="border:1px solid black; padding:2px 8px;text-align: start;">
+          <td style="border:1px solid black; padding:2px 8px;text-align: start;" *ngIf="isIndiaGST">
             {{ getHSSACCode(detail.get('HSSACMasterSid')?.value, i) }}
           </td>
           <td style="border:1px solid black; padding:2px 8px;text-align: start;">
@@ -958,17 +977,17 @@
            <td style="border:1px solid black; padding:2px 8px;text-align: end;">
             {{ detail.get('PartyAmount')?.value }}
           </td> 
-          <td style="border:1px solid black; padding:2px 8px;text-align: end;">
+          <td style="border:1px solid black; padding:2px 8px;text-align: end;border-right: none;">
             {{ getRowTotal(detail) | number:'1.2-2' }}
           </td>
         </tr>
 
         <tr style="font-weight: bolder; font-size: 16px;">
-          <td [attr.colspan]="isIndiaGST ? 13 : 10"
-              style="border:1px solid black; padding:2px 8px; text-align:right;">
+          <td [attr.colspan]="isIndiaGST ? 15 : 10"
+              style="border:1px solid black; padding:2px 8px; text-align:right;border-left: none;">
             <strong>Total</strong>
           </td>
-          <td style="border:1px solid black; padding:2px 8px;text-align: end;">
+          <td style="border:1px solid black; padding:2px 8px;text-align: end;border-right: none;">
             {{ getGrandTotal() | number:'1.2-2' }}
           </td>
         </tr>
@@ -977,25 +996,25 @@
   </div>
 
   <!-- Amount in Words -->
-  <div style="display:flex; font-size: 16px;">
+  <div style="display:flex; font-size: 16px;padding: 0 20px;">
     <p style="font-weight:bolder; width:150px; margin:0;"><strong>Amount In Words</strong></p>
     <p style="margin:0;">: <strong>{{ getAmountInWords() }}</strong></p>
   </div>
 
   <!-- Remarks -->
-  <div style="display:flex; font-size: 16px;">
+  <div style="display:flex; font-size: 16px;padding: 0 20px;">
     <p style="font-weight:bolder; width:150px;"><strong>Remarks</strong></p>
     <p style="margin:0;">: <strong>{{ creditNoteForm.get('Remarks')?.value || ' ' }}</strong></p>
   </div>
 
   <!-- Bank Details -->
-  <p style="margin:0; margin-top:10px; font-size: 20px; font-weight: bolder;" *ngIf="bankDetails">Bank Details</p>
+  <p style="margin:0; margin-top:10px; font-size: 20px; font-weight: bolder;padding: 0 20px;" *ngIf="bankDetails">Bank Details</p>
 
-  <div *ngIf="bankDetails" style="font-size: 16px;">
-    <div style="display:flex;">
+  <div *ngIf="bankDetails" style="font-size: 16px;padding: 0 20px;">
+    <!-- <div style="display:flex;">
       <div style="width:150px;font-weight: bolder;"><strong>Account Name</strong></div>
       <div>: {{ bankDetails.BeneficiaryName }}</div>
-    </div>
+    </div> -->
     <div style="display:flex;">
       <div style="width:150px;font-weight: bolder;"><strong>Account No.</strong></div>
       <div>: {{ bankDetails.BankAccountNo }}</div>
@@ -1015,7 +1034,7 @@
   </div>
 
   <!-- Signature -->
-  <div style="text-align:right; margin-top:20px;font-weight: bolder;font-size: 16px;">
+  <div style="text-align:right; margin-top:20px;font-weight: bolder;font-size: 16px;padding: 0 20px;">
     <p style="margin:0;"><strong>For {{ currentCompany?.companyName || 'Company Name' }}</strong></p>
     <p style="margin:0;">Authorised Signatory</p>
   </div>

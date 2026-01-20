@@ -77,7 +77,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   // Component configuration
   protected config: ListComponentConfig = {
     storageKey: 'report-master-list-state',
-    defaultPageSize: 15,
+    defaultPageSize: 50,
     defaultSortColumn: 'ReportName',
     defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100, 500],
