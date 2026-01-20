@@ -2106,7 +2106,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
       exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
-      this.calculateLocalAmount(index);
+      this.calculateLocalAmount(index,true);
       return;
     }
 

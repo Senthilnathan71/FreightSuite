@@ -287,6 +287,8 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
 
   onBranchChangeFromModal(branchId: number, modalRef: NgbModalRef): void {
+  const oldCompany = this.appSettingsService.getCurrentCompanyInfo();
+  const oldBranch = this.appSettingsService.getCurrentBranchInfo();
   const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === this.selectedCompanyId);
   const selectedBranch = this.branchList.find(b => b.UserBranchMasterSid === branchId);
 
@@ -347,8 +349,21 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   this.companyName = updatedBranchCompany.companyMaster.companyName;
   this.userData = updatedUserData;
 
-  this.appSettingsService.showSuccess('Switched to new branch and company');
-  this.logoService.refreshBothLogos();
+  // this.appSettingsService.showSuccess('Switched to new branch and company');
+  // this.logoService.refreshBothLogos();
+
+  // ✅ Step 5: Reload the page
+    if (
+        oldCompany?.CompanyMasterSid === updatedBranchCompany?.companyMaster?.CompanyMasterSid && 
+        oldBranch?.BranchMasterSid === updatedBranchCompany?.branchMaster?.BranchMasterSid
+    ) {
+      console.info("Switched to same branch and company.");
+    } else {
+      this.appSettingsService.showSuccess('Switched to new branch and company');
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
+    }
 
   modalRef.close();
 }
