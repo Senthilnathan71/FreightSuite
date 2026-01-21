@@ -3455,7 +3455,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
    reportLoadingPlan() {
     const modalRef = this.modalService.open(LoadingPlanMasterComponent, {
-      size: 'xl',
+      // size: 'xl',
+      windowClass:"print-landscape",
       scrollable: true,
     });
     modalRef.componentInstance.masterJobData = this.masterJobData;
