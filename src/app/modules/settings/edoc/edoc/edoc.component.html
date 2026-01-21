@@ -56,7 +56,7 @@
                                     <div class="input-group ">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                             #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="DocumentDate"
-                                            [minDate]="minDate" (keydown.arrowDown)="d1.open()" container="body" />
+                                             (keydown.arrowDown)="d1.open()" container="body" />
                                         <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                                     </div>

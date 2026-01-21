@@ -319,7 +319,7 @@ export class CreditNoteEntryComponent {
         PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
         Narration: [''],
-        CreditNoteReason: [''],
+        CreditNoteReason: ['', Validators.required],
         Remarks: [{ value: '', disabled: true }],
         IRNStatus: [{ value: '', disabled: true }],
         MBLNo: [{ value: '', disabled: true }],
