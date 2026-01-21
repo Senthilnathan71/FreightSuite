@@ -1,0 +1,105 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <div style="text-align: center;">
+        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
+        </h4>
+        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
+        </h5>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
+        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
+            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
+            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+    </div>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Freight MoM Growth Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">From Date </strong>
+                    <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 130px;">To Date </strong>
+                    <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+                </div>
+            </div>
+        </div>
+        <div *ngFor="let dept of fullData?.data" class="mb-2">
+
+            <h6 class="fw-bold mb-0">
+                {{ dept.department }}
+            </h6>
+
+            <div class="table-responsive">
+                <table class="table tablebordered table-sm my-0" style="font-size: 12px;">
+
+                    <thead class="bg-info">
+                        <tr>
+                            <th class="bg-transparent text-light">Month</th>
+                            <th class="bg-transparent text-light">Total Shipments</th>
+                            <th class="bg-transparent text-light">Revenue</th>
+                            <th class="bg-transparent text-light">Cost</th>
+                            <th class="bg-transparent text-light">Gross Profit</th>
+                            <th class="bg-transparent text-light">GP %</th>
+                            <th class="bg-transparent text-light">Total Weight (KGS)</th>
+                            <th class="bg-transparent text-light">Total Volume (CBM)</th>
+                            <th class="bg-transparent text-light">TEUs</th>
+                            <th class="bg-transparent text-light">Avg Revenue / Shipment</th>
+                            <th class="bg-transparent text-light">Avg GP / Shipment</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td class="text-center">{{ dept.totalShipment }}</td>
+
+                            <td class="text-end">{{ dept.totalRevenue | number:'1.2-2' }}</td>
+
+                            <td class="text-end">{{ dept.totalCost | number:'1.2-2' }}</td>
+
+                            <td class="text-end">{{ dept.grossProfit | number:'1.2-2' }}</td>
+
+                            <td class="text-end">
+                                {{
+                                dept.totalRevenue
+                                ? ((dept.grossProfit / dept.totalRevenue) * 100 | number:'1.2-2')
+                                : 0
+                                }} %
+                            </td>
+
+                            <td class="text-end">{{ dept.totalGrossWt | number:'1.0-2' }}</td>
+
+                            <td class="text-end">{{ dept.totalVolume | number:'1.2-2' }}</td>
+
+                            <td>{{ dept.totalNoOfTEU }}</td>
+
+                            <td class="text-end">
+                                {{
+                                dept.totalShipment
+                                ? (dept.totalRevenue / dept.totalShipment | number:'1.2-2')
+                                : 0
+                                }}
+                            </td>
+
+                            <td class="text-end">
+                                {{
+                                dept.totalShipment
+                                ? (dept.grossProfit / dept.totalShipment | number:'1.2-2')
+                                : 0
+                                }}
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>

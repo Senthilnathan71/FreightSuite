@@ -154,6 +154,7 @@ export class CreditNoteEntryComponent {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currentUserCountry :string;
+  currentCompanyCurrency:any;
   get isIndiaGST(): boolean {
     return this.currentUserCountry === 'india';
   }
@@ -193,6 +194,7 @@ export class CreditNoteEntryComponent {
       this.MenuMasterSid =  localStorage.getItem('currentMenuId');
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+      this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
       this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
@@ -2766,6 +2768,7 @@ private normalizeParty(raw: any) {
       ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
       MasterJobSid: masterJobSid,
       HouseJobSid: raw.HouseJobSid ? Number(raw.HouseJobSid) : null,
+      BookingHeaderSid: raw.BookingHeaderSid? Number(raw.BookingHeaderSid): null,
       DocumentNumber: raw.DocumentNumber || undefined,
       CreditNoteReason: raw.CreditNoteReason || undefined,
       Remarks: raw.Remarks || undefined,
@@ -3539,15 +3542,51 @@ calculateTotalColspan(): number {
 }
 
   getPkgWtVol() {
-    const data = this.creditNoteData?.masterJob;
-    if (!data) return '';
-    const values = [
-      data.NoOfPkg,
-      data.GrossWeight,
-      data.Volume
-    ].filter(x => x != null && x !== '');
-    return values.join(' / ');
+    let pkg: any = null;
+    let wt: any = null;
+    let vol: any = null;
+
+    const master = this.creditNoteData?.masterJob;
+    const houseCargo = this.creditNoteData?.houseJob?.Cargo?.[0];
+    const bookingCargo = this.creditNoteData?.BookingHeader?.bookingCargo?.[0];
+
+    const hasValidValue = (v: any) =>
+      v !== null && v !== undefined && v !== '' && Number(v) !== 0;
+
+    // 1️⃣ Master Job only if it has REAL values (not 0)
+    if (
+      master &&
+      (hasValidValue(master.NoOfPkg) ||
+        hasValidValue(master.GrossWeight) ||
+        hasValidValue(master.Volume))
+    ) {
+      pkg = master.NoOfPkg;
+      wt = master.GrossWeight;
+      vol = master.Volume;
+    }
+
+    // 2️⃣ Otherwise House Job
+    else if (houseCargo) {
+      pkg = houseCargo.NoOfPackage;
+      wt = houseCargo.GrossWeight;
+      vol = houseCargo.Volume;
+    }
+
+    // 3️⃣ Otherwise Booking
+    else if (bookingCargo) {
+      pkg = bookingCargo.NoOfPackage;
+      wt = bookingCargo.GrossWeight;
+      vol = bookingCargo.Volume;
+    }
+
+    if (pkg == null && wt == null && vol == null) return '';
+
+    return [pkg, wt, vol]
+      .filter(v => v !== null && v !== undefined && v !== '')
+      .join(' / ');
   }
+
+
 
   getCurrencyExRate(): string {
   const currency = this.creditNoteData?.VoucherDetail?.[0]?.CurrencyCode;
@@ -3556,7 +3595,7 @@ calculateTotalColspan(): number {
   const values = [];
 
   if (currency) values.push(currency);
-  if (exRate) values.push(exRate);
+  if (exRate) values.push(Number(exRate).toFixed(3));
 
   return values.join(' / ');
 }
