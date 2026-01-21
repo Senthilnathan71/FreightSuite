@@ -47,6 +47,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf';
 import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
@@ -416,6 +417,7 @@ arapFilter = {
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
     private pdfService:PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private commonService: CommonService,
     public mps: MenuPermissionService,
     public logoService : LogoService,
@@ -3958,10 +3960,40 @@ exportReleaseOrder() {
 // Add this method to handle all types of PDF downloads
 downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
   this.spinner.show();
-  
+
+  try {
+    const logo = this.pdfMakeService.getReportLogo();
+
+    this.pdfMakeService.generateBookingFromApi(
+      this.bookingHeader,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      {
+        ports: this.portList,
+        departments: this.departmentList,
+        carriers: this.carrierList
+      },
+      type
+    );
+
+    this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
+  } catch (error) {
+    console.error(`PDF generation error for ${type}:`, error);
+    this.appSettingService.showError(`Error generating ${this.getPdfTypeName(type)}. Please try again.`);
+  } finally {
+    this.spinner.hide();
+  }
+}
+
+// Legacy method using html2canvas (kept for fallback/barcode printing)
+downloadPDFLegacy(type: 'booking' | 'cro'  = 'booking'): void {
+  this.spinner.show();
+
   const elementId = this.getPdfElementId(type);
   const fileName = this.generateFileName(type);
-  
+
   if (!document.getElementById(elementId)) {
     this.spinner.hide();
     this.appSettingService.showWarning(`PDF content for ${type.toUpperCase()} not found.`);

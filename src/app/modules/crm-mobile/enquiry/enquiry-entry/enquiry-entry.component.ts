@@ -46,6 +46,7 @@ import { AuthorizationStatus, errorLogger, getFormattedPort } from 'src/app/comm
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -356,6 +357,7 @@ export class EnquiryEntryComponent implements OnInit {
     private datePipe: CustomDatePipe,
     public dropdownStore: DropdownStore,
     private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private commonService: CommonService,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
@@ -2364,6 +2366,35 @@ private parseFloatSafe(value: any): number {
 
 
   async downloadPDF() {
+    this.spinner.show();
+
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+
+      this.pdfMakeService.generateEnquiryFromApi(
+        this.enquiryData || this.rateRequestData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          ports: this.ports,
+          departments: this.departments,
+          salesmen: this.salesmanList
+        }
+      );
+
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  // Legacy method using html2canvas (kept for fallback)
+  async downloadPDFLegacy() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
 
@@ -2371,7 +2402,6 @@ private parseFloatSafe(value: any): number {
       this.spinner.show();
       try {
         const enquiryNumber = this.rateRequestData?.EnquiryNumber || 'Enquiry';
-
 
         await this.pdfService.downloadBalancedPDF(
           'printContent',
@@ -2386,39 +2416,21 @@ private parseFloatSafe(value: any): number {
   }
 
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      const logo = this.pdfMakeService.getReportLogo();
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      return await this.pdfMakeService.generateEnquiryBlobFromApi(
+        this.enquiryData || this.rateRequestData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          ports: this.ports,
+          departments: this.departments,
+          salesmen: this.salesmanList
+        }
+      );
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;

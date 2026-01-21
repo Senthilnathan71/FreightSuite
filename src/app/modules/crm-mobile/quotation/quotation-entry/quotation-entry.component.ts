@@ -45,6 +45,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { QuotationPdfService } from 'src/app/common/quotation-pdf.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -310,6 +311,7 @@ dataFromEnqPage:any;
     private datePipe : CustomDatePipe,
     public dropdownStore: DropdownStore,
     private pdfService: PdfDownloadService,
+    private quotationPdfService: QuotationPdfService,
     private commonService: CommonService,
     private masterService: MasterService,
     public logoService : LogoService
@@ -3230,71 +3232,52 @@ ${this.userData.userName}`;
 
 
   async downloadPDF() {
-    this.showPrintLogo = false;
-    this.showPdfLogo = true;
     this.spinner.show();
+    try {
+      // Get logo as base64 from localStorage (already stored by LogoService)
+      const logoBase64 = localStorage.getItem('current_report_logo') || undefined;
 
-    // Use requestAnimationFrame for DOM readiness instead of setTimeout
-    requestAnimationFrame(async () => {
-      try {
-        const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
+      this.quotationPdfService.generateQuotationPDF({
+        company: this.currentCompany,
+        branch: this.currentBranch,
+        quotation: this.selectedItem,
+        routes: this.selectedItem?.quoteRoute || [],
+        terms: this.TandCList,
+        currencyMaster: this.currencyMaster,
+        chargeUnitMaster: this.chargeUnitMaster,
+        departments: this.departments,
+        ports: this.ports,
+        userData: this.userData,
+        logo: logoBase64
+      });
 
-        // Use compressed PDF for faster download (scale: 1.5, quality: 0.6)
-        await this.pdfService.downloadCompressedPDF(
-          'printContent',
-          `Quotation_${quotationNumber}`,
-          () => {
-            this.spinner.hide(); // Hide AFTER success
-            this.appSettingService.showSuccess('PDF downloaded successfully!');
-          },
-          (error) => {
-            this.spinner.hide(); // Hide on error too
-            this.appSettingService.showError('Error generating PDF. Please try again.');
-          }
-        );
-      } catch (error) {
-        this.spinner.hide();
-        this.appSettingService.showError('Error generating PDF. Please try again.');
-      }
-    });
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
   }
   
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      // Use compressed settings for faster generation (scale: 1.5 instead of 2)
-      const canvas = await html2canvas(printContent, {
-        scale: 1.5,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
+      // Get logo as base64 from localStorage (already stored by LogoService)
+      const logoBase64 = localStorage.getItem('current_report_logo') || undefined;
+
+      return await this.quotationPdfService.generateQuotationPDFBlob({
+        company: this.currentCompany,
+        branch: this.currentBranch,
+        quotation: this.selectedItem,
+        routes: this.selectedItem?.quoteRoute || [],
+        terms: this.TandCList,
+        currencyMaster: this.currencyMaster,
+        chargeUnitMaster: this.chargeUnitMaster,
+        departments: this.departments,
+        ports: this.ports,
+        userData: this.userData,
+        logo: logoBase64
       });
-
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      // Use JPEG with 0.6 quality for smaller file size and faster processing
-      const imgData = canvas.toDataURL('image/jpeg', 0.6);
-
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;

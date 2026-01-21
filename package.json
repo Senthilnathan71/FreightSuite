@@ -51,6 +51,7 @@
     "ngx-scrollbar": "^11.0.0",
     "ngx-spinner": "^19.0.0",
     "ngx-toastr": "^19.0.0",
+    "pdfmake": "^0.2.10",
     "rxjs": "~7.8.0",
     "rxjs-compat": "^6.6.7",
     "sass": "^1.62.1",
