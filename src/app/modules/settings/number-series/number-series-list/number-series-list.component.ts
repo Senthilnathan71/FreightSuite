@@ -22,6 +22,7 @@ interface NumberSeriesConfig {
   NumberLength?: number;
   ResetOption?: string;
   DepartmentWiseCounter?: string;
+  StartingNumber?: number;
 }
 
 @Component({
@@ -117,6 +118,7 @@ export class NumberSeriesListComponent implements OnInit {
                   NumberLength: config?.NumberLength,
                   ResetOption: config?.ResetOption,
                   DepartmentWiseCounter: config?.DepartmentWiseCounter,
+                  StartingNumber: config?.StartingNumber,
                 };
               });
 
@@ -182,7 +184,14 @@ export class NumberSeriesListComponent implements OnInit {
     if (item.YearFlagRequired === 'Y') parts.push('Year');
     parts.push('Seq');
 
-    return parts.join(item.Separator || '/');
+    let summary = parts.join(item.Separator || '/');
+
+    // Show starting number if not 1
+    if (item.StartingNumber && item.StartingNumber > 1) {
+      summary += ` (Starts: ${item.StartingNumber})`;
+    }
+
+    return summary;
   }
 
   getResetLabel(item: NumberSeriesConfig): string {
