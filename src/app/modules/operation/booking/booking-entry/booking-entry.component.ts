@@ -56,6 +56,7 @@ import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.s
 import { LogoService } from 'src/app/core/services/logo.service';
 import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.service';
 import { NgxBarcode6Module } from 'ngx-barcode6';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -423,6 +424,7 @@ arapFilter = {
     public logoService : LogoService,
     private barcodeService: BarcodeService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
+    private sidebarService : VerticalSidebarService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -1709,7 +1711,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const croFormValue = this.croForm.getRawValue();
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const currentMenuId = this.sidebarService.syncMenuIdBeforeSubmit("Booking") ||  Number(localStorage.getItem('currentMenuId'));
       let CarrierSid = null;
   if (bookingFormValue.CarrierName) {
     const selectedCarrier = this.carrierList.find(carrier => 
@@ -1723,9 +1725,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   const QuoteRouteSid = bookingFormValue.QuoteRouteSid || this.dataFromQuotation?.QuoteRouteSid;
   
   console.log('QuoteRouteSid for payload:', QuoteRouteSid);
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      BookingDateTime : bookingFormValue.BookingDateTime ? new Date(bookingFormValue.BookingDateTime) : new Date(),
       MenuMasterSid: currentMenuId,
       DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
       CustomerMasterSid: bookingFormValue.CustomerMasterSid,

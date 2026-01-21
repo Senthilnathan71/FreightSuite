@@ -51,6 +51,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -314,7 +315,8 @@ dataFromEnqPage:any;
     private quotationPdfService: QuotationPdfService,
     private commonService: CommonService,
     private masterService: MasterService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    private sideBarService : VerticalSidebarService,
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -667,8 +669,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerName: [''],
       CustomerAddress: ['', [Validators.required]],
       CustomerBranchSid : [null],
-      QuoteNumber: [''],
-      QuoteDate: [null],
+      QuoteNumber: [{value : '', disabled: true}],
+      QuoteDate: [new Date()],
       EnquirySid: [''],
       AgreedRate : [false],
       IsContract:[false],
@@ -1805,11 +1807,12 @@ isRateLockDisabled(): boolean {
     console.log(this.authorizerDetails);
     const transportBy = this.dataFromEnqPage?.TransportBy || null;
     const clearanceBy = this.dataFromEnqPage?.ClearanceBy || null;
+    const menuId = this.sideBarService.syncMenuIdBeforeSubmit("Quotation") || this.MenuMasterSid;
 
     const payload = {
       CompanyMasterSid: currentCompanyMasterSid,
       BranchMasterSid: currentBranchMasterSid,
-      MenuMasterSid: this.MenuMasterSid,
+      MenuMasterSid: menuId,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
       UserMasterSid: this.userData?.UserMasterSid,
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
