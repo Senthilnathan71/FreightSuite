@@ -540,7 +540,7 @@ arapFilter = {
       this.loadHeaderLookups().subscribe();
       
       if (this.dataFromQuotation?.quotation) {
-        
+        this.patchBookingFromQuotation(this.dataFromQuotation);
         this.patchValues(this.dataFromQuotation);
         this.minDate = this.today;
       } else {
@@ -1301,6 +1301,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       AgentAddress: response.AgentAddress,
       CarrierName: response.CarrierName,
       QuotationHeaderSid: response.QuotationHeaderSid,
+      QuoteRouteSid: response.QuoteRouteSid,
       HBLNo: response.HBLNo,
       MBLNo: response.MBLNo,
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
@@ -1504,6 +1505,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     // Patch remaining form fields
     this.bookingForm.patchValue({
       QuotationHeaderSid: data.QuotationHeaderSid,
+      QuoteRouteSid: data.QuoteRouteSid,
       DepartmentMasterSid: data.DepartmentMasterSid,
       CustomerMasterSid: data.CustomerMasterSid,
       SalesmanSid: data.SalesmanSid,
@@ -1717,6 +1719,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       CarrierSid = selectedCarrier.CustomerMasterSid;
     }
   }
+   
+  const QuoteRouteSid = bookingFormValue.QuoteRouteSid || this.dataFromQuotation?.QuoteRouteSid;
+  
+  console.log('QuoteRouteSid for payload:', QuoteRouteSid);
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1738,6 +1744,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       CarrierName: bookingFormValue.CarrierName || null,
       CarrierSid: CarrierSid,
       QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
+      QuoteRouteSid: QuoteRouteSid, 
       HBLNo: bookingFormValue.HBLNo || '',
       MBLNo: bookingFormValue.MBLNo || '',
       MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,

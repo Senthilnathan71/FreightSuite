@@ -1,2 +1,18 @@
 
 
+/* In your component's SCSS file */
+.booking-link {
+  display: block;
+  border-radius: 4px;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.booking-link:hover {
+  background-color: #e9ecef;
+  color: #0056b3;
+  text-decoration: underline;
+}

@@ -456,6 +456,8 @@ patchEnqPageValues(enqData: any) {
       CarrierName: route?.CarrierName || '',
       CargoType: route?.CargoType || 'General',
       ContainerType: route?.ContainerType || null,
+      BookingHeaderSid: route?.BookingHeaderSid || null,
+      BookingNo: route?.BookingNo || route?.bookingHeader?.BookingNo || '',
       Qty : route?.Qty || 1,
       GrossWeight : route?.GrossWeight || 0,
       NetWeight : route?.NetWeight || 0,
@@ -814,6 +816,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       ContainerType: [data?.ContainerType || null],
       Qty: [data?.Qty || 1],
       ShipmentTerms: [data?.ShipmentTerms || null],
+      BookingHeaderSid: [data?.BookingHeaderSid || null], // Keep this for form value
+      BookingNo: [data?.BookingNo || ''],
 
       // FormArrays (Route wise multiple)
       quoteCarriers : this.fb.array([]),
@@ -861,6 +865,11 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   removeRoute(routeIndex: number, QuoteRouteSid: number) {
+    const route = this.quoteRoutes.at(routeIndex)?.value;
+     if (route?.bookingHeader) {
+    this.appSettingService.showError("Booking already created. Cannot delete this route.");
+    return;
+  }
     if (QuoteRouteSid) {
       this.leadService.deleteRoute(QuoteRouteSid).subscribe((resp: any) => {
         if (resp.status) {
@@ -1513,7 +1522,7 @@ isRateLockDisabled(): boolean {
       });
   }
 
-  patchValues(response: any) {
+ patchValues(response: any) {
     
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1537,7 +1546,7 @@ isRateLockDisabled(): boolean {
       LeadOrCustomer : response.LeadOrCustomer === "C",
       AgreedRate : response.AgreedRate === "Y",
       IsContract : response.IsContract === "Y",
-       RateLock : response.RateLock === "Y", 
+      RateLock : response.RateLock === "Y", 
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
       ContactPerson:response.ContactPerson,
@@ -1555,6 +1564,10 @@ isRateLockDisabled(): boolean {
     });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
+    
+    // Track if any carrier is approved
+    let hasApprovedCarrier = false;
+    
     (response.quoteRoute || []).forEach((route, routeIndex) => {
       const cargo = route.quoteCargo[0];
       const fullRouteData = {
@@ -1567,6 +1580,8 @@ isRateLockDisabled(): boolean {
         Volume : cargo?.Volume,
         ChargeableWeight : cargo?.ChargeableWeight,
         ContainerType : cargo?.ContainerType,
+        BookingHeaderSid: route.BookingHeaderSid || null,
+         BookingNo: route.bookingHeader?.BookingNo || '',
         Qty : cargo?.Qty,
         ShipmentTerms : cargo?.ShipmentTerms
       }
@@ -1574,14 +1589,24 @@ isRateLockDisabled(): boolean {
       this.addQuoteRoute(fullRouteData)
       this.handleValidationOnDept(routeIndex, route.segmentType)
       this.onRouteChange(routeIndex);
-     if (response.RateLock === "Y" && this.canUserLockRates)  {
-    this.lockAllRateFields();
-  }
-        // Check if this route has charges/tariffs applied
+        const isRouteApproved = route?.quoteCarrier?.some(carrier => 
+      carrier.ApprovalStatus === "Approved"
+    );
+    
+    // Store in route form for easy access
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    routeForm.addControl('isRouteApproved', this.fb.control(isRouteApproved));
+      
+      if (response.RateLock === "Y" && this.canUserLockRates)  {
+        this.lockAllRateFields();
+      }
+      
+      // Check if this route has charges/tariffs applied
       const hasCharges = route?.quoteCarrier?.some(carrier => 
         carrier?.quoteCharge && carrier.quoteCharge.length > 0
       );
-       if (hasCharges) {
+      
+      if (hasCharges) {
         setTimeout(() => {
           const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
           if (routeForm) {
@@ -1598,32 +1623,51 @@ isRateLockDisabled(): boolean {
           }
         }, 0);
       }
+      
       if (response.RateLock === "Y") {
-    setTimeout(() => {
-      this.lockAllRateFields();
-    }, 100); // Small delay to ensure form is fully initialized
-  }
+        setTimeout(() => {
+          this.lockAllRateFields();
+        }, 100);
+      }
+      
       if (cargo) {
         (cargo.quoteProduct || []).forEach(product => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-
           this.addQuoteProduct(routeIndex, { ...product, UnNo: productUnNo });
         })
       }
 
       (route?.quoteCarrier || []).forEach((carrier,carrierIndex) => {
         this.addQuoteCarrier(routeIndex,carrier);
+        
+        // Check if this carrier is approved
+        const isCarrierApproved = carrier.ApprovalStatus === "Approved";
+        if (isCarrierApproved) {
+          hasApprovedCarrier = true;
+          // Disable this specific approved carrier's fields
+          setTimeout(() => {
+            this.disableApprovedCarrierFields(routeIndex, carrierIndex);
+          }, 100);
+        }
+        
         (carrier?.quoteCharge || []).forEach(charge => {
           this.addQuoteCharge(routeIndex,carrierIndex, charge);
         }) 
       })
     })
+    
     this.disableNonEditFields();
-    if(this.authStateCache !== 'Pending'){
-      this.quotationForm.disable();
-      this.disableAllModification = true;
-    }
-
+    
+    // IMPORTANT: Only disable the entire form if ALL carriers are approved
+    // OR if you want to keep the header editable but only disable approved carriers
+    // For now, let's NOT disable the entire form based on authStateCache
+    // Instead, we'll only disable individual approved carriers
+    
+    // Remove this line that disables the entire form:
+    // if(this.authStateCache !== 'Pending'){
+    //   this.quotationForm.disable();
+    //   this.disableAllModification = true;
+    // }
     
     this.quoteAuthorized = (response.quoteRoute || []).some(route => {
       return (route?.quoteCarrier || []).some(carrier =>(carrier.ApprovalStatus === "Approved" || carrier.ApprovalStatus === "Rejected"));
@@ -1633,7 +1677,7 @@ isRateLockDisabled(): boolean {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
     })
 
-    
+    // Rest of your code remains the same...
     const { quoteRoute, ...header } = response;
     const approvedRoute = (quoteRoute || []).find(route => {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved");
@@ -1644,27 +1688,28 @@ isRateLockDisabled(): boolean {
     let approvedQuoteRoute;
 
     if (approvedRoute) {
-      // Extract only the approved carrier
       const approvedCarrier = (approvedRoute.quoteCarrier || []).find(
         carrier => carrier.ApprovalStatus === "Approved"
       );
 
-      // Prepare copies
       approvedQuoteCarrier = approvedCarrier;
       approvedQuoteCargo = approvedRoute.quoteCargo;
 
-      // Copy route details except arrays
       const { quoteCarrier, quoteCargo, ...routeDetails } = approvedRoute;
       approvedQuoteRoute = {
         ...routeDetails,
         quoteCarrier: approvedQuoteCarrier
       };
-      
     }
     
-    if(this.quoteAuthorized){
-      this.quotationForm.disable()
+    // Only disable the form if ALL carriers are approved (not just one)
+    // OR if you have a specific business rule
+    if(this.quoteAuthorized && this.quotationApproved){
+      // Only disable if there's at least one approved carrier
+      // But keep other carriers editable
+      // We'll handle disabling per carrier above
     }
+    
     console.log("Approved Route:", approvedRoute);
 
     let approvedData = {
@@ -1674,15 +1719,13 @@ isRateLockDisabled(): boolean {
 
     console.log("Approved Data:", approvedData);
 
-    // Approved Data for Quotation
     this.selectedItem = approvedData;
-    this.clearPdfCache(); // Clear cached PDF when quotation data changes
+    this.clearPdfCache();
 
     console.log("Is it approved Quotation",this.quotationApproved);
     console.log("Only Approved Data",this.selectedItem);
 
     this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
-
   }
 
   onSubmit() {
@@ -1822,6 +1865,7 @@ isRateLockDisabled(): boolean {
         ChargeableWeight : route.ChargeableWeight,
         ContainerType: route.ContainerType,
         Qty: route.Qty,
+        BookingHeaderSid: route.BookingHeaderSid,
         ShipmentTerms : route.ShipmentTerms,
         PackageType : route.PackageType,
         PackageQty : route.PackageQty,
@@ -1884,6 +1928,7 @@ isRateLockDisabled(): boolean {
             });
           }, 100);
             this.appSettingService.showSuccess('Quotation is successfully updated');
+             this.loadQuotation(this.QuoteHeaderSid);
             const customerId = resp.data?.createdCustomer?.CustomerMasterSid;
             if(customerId){
               this.createdCustomerId = customerId;
@@ -1892,9 +1937,10 @@ isRateLockDisabled(): boolean {
                 backdrop: 'static',
                 centered: true
               });
-            } else {
-              this.loadQuotation(this.QuoteHeaderSid);
-            }
+            } 
+            // else {
+            //   this.loadQuotation(this.QuoteHeaderSid);
+            // }
           } else {
             this.appSettingService.showError(resp.message);
 
@@ -3055,39 +3101,137 @@ ${this.userData.userName}`;
     ['Rejected', 'Rejected']
   ]);
 
+  // onInternalApprovalStatusChange(status: any) {
+  //   this.approvalDropdownValue = status;
+  //   this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+  //     const carrierArr = this.quoteCarriers(routeIndex);
+  //     carrierArr.controls.forEach((carrier: FormGroup) => {
+  //       carrier.get('authorizerStatus')?.setValue(status);
+  //     })
+  //   })
+  // }
   onInternalApprovalStatusChange(status: any) {
-    this.approvalDropdownValue = status;
-    this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
-      const carrierArr = this.quoteCarriers(routeIndex);
-      carrierArr.controls.forEach((carrier: FormGroup) => {
-        carrier.get('authorizerStatus')?.setValue(status);
-      })
-    })
-  }
+  this.approvalDropdownValue = status;
+  this.appSettingService.showInfo(`Status ${status} selected. Please apply to individual carriers.`);
+}
 
-  onCustomerApprovalStatusChange(routeIndex:number,carrierIndex:number,status: any) {
-    console.log(status);
-    this.quoteRoutes.controls.forEach((route: FormGroup, rIndex: number) => {
-      const carrierArr = this.quoteCarriers(rIndex);
-      carrierArr.controls.forEach((carrier: FormGroup,cIndex:number) => {
-        if (status.value === "Approved") {
-          if (routeIndex === rIndex && carrierIndex === cIndex) {
-            carrier.get('authorizerStatus')?.setValue(status.value);
-          } else {
-            carrier.get('authorizerStatus')?.setValue("Rejected");
-          }
-        } else if (status?.value === "Counter") {
-          if (routeIndex === rIndex && carrierIndex === cIndex) {
-            carrier.get('authorizerStatus')?.setValue(status.value);
-          } else {
-            carrier.get('authorizerStatus')?.setValue("Pending");
-          }
-        } else {
-          carrier.get('authorizerStatus')?.setValue(status.value);
-        }
-      });
-    })
+  // onCustomerApprovalStatusChange(routeIndex:number,carrierIndex:number,status: any) {
+  //   console.log(status);
+  //   this.quoteRoutes.controls.forEach((route: FormGroup, rIndex: number) => {
+  //     const carrierArr = this.quoteCarriers(rIndex);
+  //     carrierArr.controls.forEach((carrier: FormGroup,cIndex:number) => {
+  //       if (status.value === "Approved") {
+  //         if (routeIndex === rIndex && carrierIndex === cIndex) {
+  //           carrier.get('authorizerStatus')?.setValue(status.value);
+  //         } else {
+  //           carrier.get('authorizerStatus')?.setValue("Rejected");
+  //         }
+  //       } else if (status?.value === "Counter") {
+  //         if (routeIndex === rIndex && carrierIndex === cIndex) {
+  //           carrier.get('authorizerStatus')?.setValue(status.value);
+  //         } else {
+  //           carrier.get('authorizerStatus')?.setValue("Pending");
+  //         }
+  //       } else {
+  //         carrier.get('authorizerStatus')?.setValue(status.value);
+  //       }
+  //     });
+  //   })
+  // }
+  onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
+  console.log(status);
+  
+  // Get the specific carrier form
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  
+  // Only update the status of the selected carrier
+  if (status.value === "Approved") {
+    carrierForm.get('authorizerStatus')?.setValue(status.value);
+    
+    // Update route approval status
+    routeForm.get('isRouteApproved')?.setValue(true);
+    
+    // When approving a carrier, ONLY disable the approved carrier's fields
+    // but don't change status of other carriers
+    this.disableApprovedCarrierFields(routeIndex, carrierIndex);
+    
+  } else if (status?.value === "Counter") {
+    carrierForm.get('authorizerStatus')?.setValue(status.value);
+    
+    // Update route approval status
+    routeForm.get('isRouteApproved')?.setValue(false);
+    
+    // Enable all fields for Counter status
+    this.enableCarrierFields(routeIndex, carrierIndex);
+    
+  } else if (status?.value === "Rejected") {
+    carrierForm.get('authorizerStatus')?.setValue(status.value);
+    
+    // Update route approval status
+    routeForm.get('isRouteApproved')?.setValue(false);
+    
+    // Enable fields for Rejected status (if needed for editing)
+    this.enableCarrierFields(routeIndex, carrierIndex);
+    
+  } else {
+    // For Pending or other statuses
+    carrierForm.get('authorizerStatus')?.setValue(status.value);
+    routeForm.get('isRouteApproved')?.setValue(false);
+    this.enableCarrierFields(routeIndex, carrierIndex);
   }
+}
+
+// Helper method to disable fields of an approved carrier
+disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  
+  // Disable the authorizer status field for approved carrier
+  carrierForm.get('authorizerStatus')?.disable({ emitEvent: false });
+  
+  // Optionally disable other fields in the approved carrier if needed
+  const chargeArr = this.quoteCharges(routeIndex, carrierIndex);
+  chargeArr.controls.forEach((charge: FormGroup) => {
+    // Disable charge fields for approved carrier
+    const chargeFields = [
+      'ChargeUomSid', 'RevenueRate', 'RevenueCurrencyMasterSid', 
+      'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
+      'CostExchangeRate', 'Qty'
+    ];
+    
+    chargeFields.forEach(field => {
+      const control = charge.get(field);
+      if (control && control.enabled) {
+        control.disable({ emitEvent: false });
+      }
+    });
+  });
+}
+
+// Helper method to enable fields of a carrier
+enableCarrierFields(routeIndex: number, carrierIndex: number): void {
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  
+  // Enable the authorizer status field
+  carrierForm.get('authorizerStatus')?.enable({ emitEvent: false });
+  
+  // Enable charge fields if they were disabled
+  const chargeArr = this.quoteCharges(routeIndex, carrierIndex);
+  chargeArr.controls.forEach((charge: FormGroup) => {
+    const chargeFields = [
+      'ChargeUomSid', 'RevenueRate', 'RevenueCurrencyMasterSid', 
+      'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
+      'CostExchangeRate', 'Qty'
+    ];
+    
+    chargeFields.forEach(field => {
+      const control = charge.get(field);
+      if (control && control.disabled && !this.isRateLocked()) {
+        control.enable({ emitEvent: false });
+      }
+    });
+  });
+}
 
   getStatusName(statusValue) {
     const statusObject = this.approvalStatus.find(status => status.value === statusValue);
@@ -3232,52 +3376,71 @@ ${this.userData.userName}`;
 
 
   async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
     this.spinner.show();
-    try {
-      // Get logo as base64 from localStorage (already stored by LogoService)
-      const logoBase64 = localStorage.getItem('current_report_logo') || undefined;
 
-      this.quotationPdfService.generateQuotationPDF({
-        company: this.currentCompany,
-        branch: this.currentBranch,
-        quotation: this.selectedItem,
-        routes: this.selectedItem?.quoteRoute || [],
-        terms: this.TandCList,
-        currencyMaster: this.currencyMaster,
-        chargeUnitMaster: this.chargeUnitMaster,
-        departments: this.departments,
-        ports: this.ports,
-        userData: this.userData,
-        logo: logoBase64
-      });
+    // Use requestAnimationFrame for DOM readiness instead of setTimeout
+    requestAnimationFrame(async () => {
+      try {
+        const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
 
-      this.appSettingService.showSuccess('PDF downloaded successfully!');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      this.appSettingService.showError('Error generating PDF. Please try again.');
-    } finally {
-      this.spinner.hide();
-    }
+        // Use compressed PDF for faster download (scale: 1.5, quality: 0.6)
+        await this.pdfService.downloadCompressedPDF(
+          'printContent',
+          `Quotation_${quotationNumber}`,
+          () => {
+            this.spinner.hide(); // Hide AFTER success
+            this.appSettingService.showSuccess('PDF downloaded successfully!');
+          },
+          (error) => {
+            this.spinner.hide(); // Hide on error too
+            this.appSettingService.showError('Error generating PDF. Please try again.');
+          }
+        );
+      } catch (error) {
+        this.spinner.hide();
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+      }
+    });
   }
   
   async generatePDFBlob(): Promise<Blob | null> {
-    try {
-      // Get logo as base64 from localStorage (already stored by LogoService)
-      const logoBase64 = localStorage.getItem('current_report_logo') || undefined;
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
+    }
 
-      return await this.quotationPdfService.generateQuotationPDFBlob({
-        company: this.currentCompany,
-        branch: this.currentBranch,
-        quotation: this.selectedItem,
-        routes: this.selectedItem?.quoteRoute || [],
-        terms: this.TandCList,
-        currencyMaster: this.currencyMaster,
-        chargeUnitMaster: this.chargeUnitMaster,
-        departments: this.departments,
-        ports: this.ports,
-        userData: this.userData,
-        logo: logoBase64
+    try {
+      // Use compressed settings for faster generation (scale: 1.5 instead of 2)
+      const canvas = await html2canvas(printContent, {
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
       });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      // Use JPEG with 0.6 quality for smaller file size and faster processing
+      const imgData = canvas.toDataURL('image/jpeg', 0.6);
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('blob');
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
@@ -3786,6 +3949,7 @@ private async createBookingFromQuotation() {
       SalesmanSid: QuoteData.SalesmanSid || null,
       FreightTerms: QuoteData.FreightPPCC || "",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
+      QuoteRoteSid: approvedRoute.QuoteRouteSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
       status: 'A',
       JobType: jobType,
@@ -4201,5 +4365,345 @@ printDiv(divId: string): void {
 }
  createNew() {
     this.router.navigate(['crm/quotation/entry']);  }
+isRouteApproved(routeIndex: number): boolean {
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  if (!routeForm) return false;
+  
+  // Get the carriers for this route
+  const carrierArr = this.quoteCarriers(routeIndex);
+  
+  // Check if any carrier in this route is approved
+  const hasApprovedCarrier = carrierArr.controls.some((carrier: FormGroup) => 
+    carrier.get('authorizerStatus')?.value === "Approved"
+  );
+  
+  return hasApprovedCarrier;
+}
+doesBookingExistForRoute(routeIndex: number): boolean {
+  if (!this.quotationData || !this.quotationData.quoteRoute) return false;
+  
+  const routeData = this.quotationData.quoteRoute[routeIndex];
+  const isContract = this.quotationForm.get('IsContract')?.value;
+  
+  // For contract quotes, we don't check booking existence (button should always be enabled)
+  if (isContract) {
+    return false; // Always return false so button stays enabled
+  }
+  
+  // For non-contract quotes, check if booking exists
+  return !!routeData?.BookingHeaderSid || 
+         (!!routeData?.bookingHeader && !!routeData.bookingHeader.BookingHeaderSid);
+}
+async goForBookingCreationForRoute(routeIndex: number) {
+  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
+  if (!customerHasBranch) {
+    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+    return;
+  }
 
+  // Check if the specific route is approved
+  if (!this.isRouteApproved(routeIndex)) {
+    this.appSettingService.showWarning("This route is not approved. Please approve the route before creating a booking.");
+    return;
+  }
+
+  const isContract = this.quotationForm.get('IsContract')?.value;
+  const hasExistingBooking = this.doesBookingExistForRoute(routeIndex);
+  
+  // For non-contract quotes, show confirmation if booking exists
+  if (!isContract && hasExistingBooking) {
+    // Show confirmation modal
+    const confirmed = await this.showBookingConfirmationModal();
+    
+    if (!confirmed) {
+      // User cancelled
+      this.appSettingService.showInfo('Booking creation cancelled');
+      return;
+    }
+  }
+
+  // Find the approved carrier index
+  const carrierArr = this.quoteCarriers(routeIndex);
+  let approvedCarrierIndex = -1;
+  
+  carrierArr.controls.forEach((carrier: FormGroup, index: number) => {
+    if (carrier.get('authorizerStatus')?.value === "Approved") {
+      approvedCarrierIndex = index;
+    }
+  });
+
+  if (approvedCarrierIndex === -1) {
+    this.appSettingService.showWarning("No approved carrier found for this route.");
+    return;
+  }
+
+  // Proceed with booking creation
+  await this.createBookingFromRoute(routeIndex, approvedCarrierIndex);
+}
+private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
+  try {
+    this.spinner.show();
+    
+    // Fetch full quote details
+    const quoteResponse = await firstValueFrom(
+      this.leadService.getQuote(this.selectedItem.QuoteHeaderSid)
+    );
+
+    if (!quoteResponse) {
+      this.spinner.hide();
+      this.appSettingService.showError("Error loading quotation details");
+      return;
+    }
+
+    const QuoteData = quoteResponse.data;
+
+    
+    // Get the specific route data
+    const routeData = QuoteData.quoteRoute?.[routeIndex] || {};
+    const POO = this.ports.find(port => port.PortMasterSid === routeData.PORSid);
+    const POL = this.ports.find(port => port.PortMasterSid === routeData.POLSid);
+    const POD = this.ports.find(port => port.PortMasterSid === routeData.PODSid);
+    const FPD = this.ports.find(port => port.PortMasterSid === routeData.FDPSid);
+
+    const approvedCarrier = routeData?.quoteCarrier?.[carrierIndex] || {};
+    const cargo = routeData?.quoteCargo?.[0] || {};
+    
+    // Find container type ID if it exists
+    let containerTypeId = null;
+    if (cargo?.ContainerType) {
+      const containerType = this.containerTypeList.find(type => 
+        type.ContainerCode === cargo.ContainerType || 
+        type.ContainerName === cargo.ContainerType
+      );
+      containerTypeId = containerType?.ContainerTypeMasterSid || null;
+    }
+
+    // Extract shipper and consignee from enquiry if available
+    const enquiryData = QuoteData.EnquiryHeader;
+    const enquiryOther = enquiryData?.enquiryOther?.[0];
+    const shipperName = enquiryOther?.ShipperName || "";
+    const shipperAddress = enquiryOther?.ShipperAddress || "";
+    const consigneeName = enquiryOther?.ConsigneeName || "";
+    const consigneeAddress = enquiryOther?.ConsigneeAddress || "";
+    
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === routeData.DepartmentMasterSid);
+    let jobType = '';
+    if (selectedDept) {
+      const departmentName = selectedDept.departmentName?.toLowerCase() || '';
+      const exportImport = selectedDept.ExportImport;
+      
+      if (departmentName.includes('fcl') || departmentName.includes('lcl') || departmentName.includes('air')) {
+        if (exportImport === 'Export') {
+          jobType = 'Export';
+        } else if (exportImport === 'Import') {
+          jobType = 'Import';
+        }
+      }
+    }
+console.log(routeData,'routeData')
+  console.log('Route Data for booking:', {
+      QuoteHeaderSid: QuoteData.QuoteHeaderSid,
+      QuoteRouteSid: routeData.QuoteRouteSid,
+      routeIndex: routeIndex
+    });
+    
+    // Prepare booking data
+    const bookingData = {
+      quotation: true,
+      // Clear BookingHeaderSid to ensure new booking creation
+      BookingHeaderSid: null,
+      DepartmentMasterSid: routeData.DepartmentMasterSid || null,
+      IncoTerms: routeData.ServiceLevel,
+      CustomerMasterSid: QuoteData.CustomerMasterSid || null,
+      CustomerBranchSid: QuoteData.CustomerBranchSid || null,
+      CustomerName: QuoteData.CustomerName || "",
+      CustomerAddress: QuoteData.CustomerAddress || "",
+      SalesmanSid: QuoteData.SalesmanSid || null,
+      FreightTerms: QuoteData.FreightPPCC || "",
+      QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
+      QuoteRouteSid: routeData.QuoteRouteSid || null,// Add this to identify the route
+      CarrierName: approvedCarrier?.CarrierName || "",
+      status: 'A',
+      JobType: jobType,
+      
+      // Additional contract info
+      IsContract: QuoteData.IsContract || "N",
+      ContractExpired: QuoteData.expDate ? new Date(QuoteData.expDate) < new Date() : false,
+
+      // Shipper and Consignee from Enquiry
+      ShipperName: shipperName,
+      ShipperAddress: shipperAddress,
+      ConsigneeName: consigneeName,
+      ConsigneeAddress: consigneeAddress,
+
+      // Port details
+      POO: POO?.PortCode || null,
+      POL: POL?.PortCode || null,
+      POD: POD?.PortCode || null,
+      FPD: FPD?.PortCode || null,
+      
+
+      // Cargo details
+      bookingCargo: cargo ? [{
+        CargoType: cargo.CargoType || "General",
+        GrossWeight: cargo.GrossWeight || 0,
+        NetWeight: cargo.NetWeight || 0,
+        Volume: cargo.Volume || 0,
+        ChargeableWeight: cargo.ChargeableWeight || 0,
+        ContainerType: containerTypeId,
+        NoofContainers: cargo.Qty || 0,
+      }] : [],
+
+      // Product details
+      bookingProducts: (cargo?.quoteProduct || []).map(product => ({
+        ProductName: product.ProductName,
+        ExternaPkg: product.PackageType,
+        ExternlQty: product.ExternalQty,
+        GrossWeight: product.GrossWeight,
+        NetWeight: product.NetWeight,
+        Volume: product.Volume,
+        IsHaz: product.IsHaz,
+        ImcoClass: product.ImcoClass,
+        UnNo: product.UnNo,
+        PkgGroup: product.PkgGroup,
+        Length: product.Length,
+        Width: product.Width,
+        Height: product.Height,
+        UomMasterSid: product.UomMasterSid,
+      })),
+
+      // Rate details
+      bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
+        CompanyMasterSid: charge.CompanyMasterSid,
+        BranchMasterSid: charge.BranchMasterSid,
+        SerialNumber: index + 1,
+        ChargeMasterSid: charge.ChargeUomSid,
+        ChargeDescription: charge.ChargeDisplayName,
+        NoOfUnit: charge.Qty || 1,
+
+        CostChargeUomSid: charge.CostChargeUomSid,
+        CostPrepaidCollect: charge.CostPrepaidCollect || "Prepaid",
+        CostDrCr: charge.CostDrCr || "D",
+        CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
+        CostExchangeRate: charge.CostExchangeRate || 1,
+        CostRate: charge.CostRate || 0,
+        CostAmount: charge.CostAmount || 0,
+        CostLocalAmount: charge.CostLocalAmount || 0,
+        AgentMasterSid: charge.CostAgentMasterSid,
+
+        RevenueChargeUomSid: charge.RevenueChargeUomSid,
+        RevenuePrepaidCollect: charge.RevenuePrepaidCollect || "Prepaid",
+        RevenueDrCr: charge.RevenueDrCr || "C",
+        RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+        RevenueExchangeRate: charge.RevenueExchangeRate || 1,
+        RevenueRate: charge.RevenueRate || 0,
+        RevenueAmount: charge.RevenueAmount || 0,
+        RevenueLocalAmount: charge.RevenueLocalAmount || 0,
+        CustomerMasterSid: charge.RevenueCustomerMasterSid,
+        QuoteChargeSid: charge.QuoteChargeSid,
+        TariffDetailSid: charge.TariffDetailSid,
+      }))
+    };
+
+   console.log('Booking Data with QuoteRouteSid:', bookingData.QuoteRouteSid);
+    this.spinner.hide();
+    
+    // Navigate to booking page
+    this.router.navigate(['operation/booking/entry'], {
+      state: {
+        dataFromQuotation: bookingData,
+        isNewBooking: true,
+        existingBookingId: routeData.BookingHeaderSid,
+        quoteRouteIndex: routeIndex // Pass route index for reference
+        
+      }
+    });
+
+    // Note: The actual booking creation will happen in the booking entry component
+    // After booking is created, the backend should update both QuoteHeader and QuoteRoute
+    // with the BookingHeaderSid
+
+  } catch (error) {
+    this.spinner.hide();
+    console.error('Error creating booking from quotation route:', error);
+    this.appSettingService.showError("Failed to create booking from quotation route");
+  }
+}
+hasPendingApprovalChanges(): boolean {
+  if (!this.quotationData) return false;
+  
+  const formRoutes = this.quoteRoutes.getRawValue();
+  
+  // Compare current form approval status with original quotation data
+  return formRoutes.some((route: any, routeIndex: number) => {
+    const formCarriers = route.quoteCarriers || [];
+    const originalRoute = this.quotationData?.quoteRoute?.[routeIndex];
+    const originalCarriers = originalRoute?.quoteCarrier || [];
+    
+    // Check if any carrier approval status has changed
+    return formCarriers.some((carrier: any, carrierIndex: number) => {
+      const originalCarrier = originalCarriers[carrierIndex];
+      if (!originalCarrier) return true; // New carrier added
+      
+      return carrier.authorizerStatus !== originalCarrier.ApprovalStatus;
+    });
+  });
+}
+
+// Add this method to check if all approved routes are saved
+allApprovedRoutesSaved(): boolean {
+  const formRoutes = this.quoteRoutes.getRawValue();
+  
+  return formRoutes.every((route: any) => {
+    const carriers = route.quoteCarriers || [];
+    return carriers.every((carrier: any) => {
+      // If carrier is approved, check if it matches the saved data
+      if (carrier.authorizerStatus === 'Approved') {
+        const routeIndex = formRoutes.findIndex(r => r === route);
+        const carrierIndex = carriers.findIndex(c => c === carrier);
+        
+        // Check if this approval status has been saved
+        const originalRoute = this.quotationData?.quoteRoute?.[routeIndex];
+        const originalCarrier = originalRoute?.quoteCarrier?.[carrierIndex];
+        
+        return originalCarrier?.ApprovalStatus === 'Approved';
+      }
+      return true;
+    });
+  });
+}
+
+getBookingNumber(routeIndex: number): string {
+  if (!this.quotationData || !this.quotationData.quoteRoute) {
+    return '';
+  }
+  
+  const routeData = this.quotationData.quoteRoute[routeIndex];
+  if (routeData && routeData.bookingHeader) {
+    return routeData.bookingHeader.BookingNo || '';
+  }
+  
+  return '';
+}
+
+// Add this method to get booking header SID for a specific route
+getBookingHeaderSid(routeIndex: number): number | null {
+  if (!this.quotationData || !this.quotationData.quoteRoute) {
+    return null;
+  }
+  
+  const routeData = this.quotationData.quoteRoute[routeIndex];
+  if (routeData && routeData.bookingHeader) {
+    return routeData.bookingHeader.BookingHeaderSid || null;
+  }
+  
+  return null;
+}
+viewBooking(booking: any): void {
+    if (booking?.BookingHeaderSid) {
+        this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
+    } else {
+        this.appSettingService.showWarning('Booking information not available');
+    }
+}
 }
