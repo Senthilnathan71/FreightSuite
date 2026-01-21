@@ -237,8 +237,33 @@
                 </div>
                 <div class="col-md-8">
                   <small class="text-muted">
-                    When enabled, each department maintains its own sequence starting from 00001
+                    When enabled, each department maintains its own sequence
                   </small>
+                </div>
+              </div>
+
+              <!-- Starting Number -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label mb-0">Starting Number</label>
+                </div>
+                <div class="col-md-8">
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="StartingNumber"
+                    placeholder="Enter starting number"
+                    min="1"
+                  />
+                  <small class="text-muted">
+                    Sequence will start from this number (default: 1)
+                  </small>
+                  <div
+                    *ngIf="configForm.get('StartingNumber')?.invalid && configForm.get('StartingNumber')?.touched"
+                    class="text-danger small mt-1"
+                  >
+                    Starting number must be at least 1
+                  </div>
                 </div>
               </div>
             </form>

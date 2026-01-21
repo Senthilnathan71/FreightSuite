@@ -116,6 +116,7 @@ export class NumberSeriesEntryComponent implements OnInit {
       NumberLength: [5, [Validators.required, Validators.min(3), Validators.max(8)]],
       ResetOption: ['None'],
       DepartmentWiseCounter: ['N'],
+      StartingNumber: [1, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -187,6 +188,7 @@ export class NumberSeriesEntryComponent implements OnInit {
               NumberLength: config.NumberLength || 5,
               ResetOption: config.ResetOption || 'None',
               DepartmentWiseCounter: config.DepartmentWiseCounter || 'N',
+              StartingNumber: config.StartingNumber || 1,
             });
           }
           this.loading = false;
@@ -256,13 +258,14 @@ export class NumberSeriesEntryComponent implements OnInit {
       parts.push(this.currentYear?.YearCode || 'YY');
     }
 
-    // Sequence Number
+    // Sequence Number (use StartingNumber from config)
     const seqLength = formValue.NumberLength || 5;
-    parts.push('1'.padStart(seqLength, '0'));
+    const startingNumber = formValue.StartingNumber || 1;
+    parts.push(startingNumber.toString().padStart(seqLength, '0'));
 
     return {
       preview: parts.join(sep),
-      nextNumber: 1,
+      nextNumber: startingNumber,
     };
   }
 
