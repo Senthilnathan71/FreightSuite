@@ -295,6 +295,8 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
       voucherDate: [{ value: todayStruct, disabled: true }, Validators.required],
+      DocumentNumber:[{value:'',disabled:true}],
+      DocumentDate:[null],
       narration: ['', [Validators.required, Validators.maxLength(200)]],
       remarks: ['', Validators.maxLength(200)],
       Status: ['A', Validators.required],
@@ -515,12 +517,20 @@ export class JournalVoucherEntryComponent implements OnInit {
           month: voucherDate.getMonth() + 1,
           day: voucherDate.getDate(),
         };
+        const documentDate = new Date(voucher.DocumentDate);
+        const documentDateStruct: NgbDateStruct = {
+          year: documentDate.getFullYear(),
+          month: documentDate.getMonth() + 1,
+          day: documentDate.getDate(),
+        };
 
         // Create form patch object
         const formPatchData: any = {
           voucherNumber: voucher.VoucherNumber,
           voucherDate: voucherDateStruct,
           narration: voucher.Narration,
+          DocumentNumber: voucher.DocumentNumber,
+          DocumentDate: documentDateStruct,
           remarks: voucher.Remarks,
           Status: voucher.Status,
           postStatus: voucher.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -1715,6 +1725,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       PostStatus: 'U', // Unposted for draft
       PartyName: 'System Journal Entry',
       DocumentNumber: `JV-${new Date().getTime()}`,
+      DocumentDate: new Date(),
       Amount: this.debitTotal, // Using getter
       LocalAmount: this.debitTotal, // Using getter
       VoucherDetail,

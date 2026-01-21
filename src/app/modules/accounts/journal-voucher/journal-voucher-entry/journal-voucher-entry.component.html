@@ -68,11 +68,11 @@
     </div>
 
     <!-- Voucher Details -->
-    <div class="col-12 px-0">
+    <div class="col-12 px-5">
         <div class="card mb-1">
             <div class="card-body py-1">
                 <div class="row">
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="voucherNumber" class="custom-input-field sm"
                                 placeholder="" />
@@ -80,7 +80,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -93,7 +93,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="PostedOn" formControlName="PostedOn" class="custom-input-field sm"
                                 placeholder="" readonly />
@@ -101,7 +101,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="postStatus" class="custom-input-field sm"
                                 placeholder="" />
@@ -109,11 +109,31 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
                                 maxlength="200"></textarea>
                             <label class="input-label">Narration<span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="DocumentNumber" class="custom-input-field sm"
+                                placeholder="" />
+                            <label class="input-label">Document Number</label>
+                        </div>
+                    </aside>
+                   
+                         <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d6="ngbDatepicker" (click)="d6.toggle()"  formControlName="DocumentDate" />
+                                <button class="btn bi bi-calendar3" (click)="d6.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label" for="dp">Document Date <span class="text-danger"></span></label>
                         </div>
                     </aside>
 
@@ -125,7 +145,7 @@
                         </div>
                     </aside> -->
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!form.get('Status')?.value">
                             <ng-select formControlName="Status" [items]="statusList" bindLabel="name" bindValue="id"
