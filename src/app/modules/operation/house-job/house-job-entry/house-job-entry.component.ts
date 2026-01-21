@@ -3917,6 +3917,16 @@ ${this.userData['userName']}`;
         // sailing confirmation
       
          reportSailingConfirmation() {
+
+           const hasContainerMapping = this.housejobData?.Products?.some(
+             (product: any) => product.MasterJobContainerSid && product.MasterJobContainerSid > 0
+           );
+           if (!hasContainerMapping) {
+             this.appSettingService.showWarning(
+               'Container is not avaliable'
+             );
+             return;
+           }
           const modalRef = this.modalService.open(SailingConfimationComponent, {
             size: 'xl',
             scrollable: true,

@@ -142,7 +142,7 @@
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
             <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-            <td class="d-flex">
+            <td class="d-flex pt-1">
               <!-- Change the delete button condition -->
               <button class="action-icon delete py-0" (click)="deleteRate(i,row.value.RateSid)"
                 [disabled]="!canEditRate(i) || rateFormArray.length === 1" [class.disabled]="rateFormArray.length === 1"

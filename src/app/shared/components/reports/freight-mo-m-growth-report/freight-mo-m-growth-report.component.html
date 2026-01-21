@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-        <div *ngFor="let dept of fullData?.data" class="mb-2">
+        <div *ngFor="let dept of fullData?.currentPeriod?.data" class="mb-2">
 
             <h6 class="fw-bold mb-0">
                 {{ dept.department }}
@@ -48,58 +48,109 @@
                             <th class="bg-transparent text-light">Total Weight (KGS)</th>
                             <th class="bg-transparent text-light">Total Volume (CBM)</th>
                             <th class="bg-transparent text-light">TEUs</th>
-                            <th class="bg-transparent text-light">Avg Revenue / Shipment</th>
-                            <th class="bg-transparent text-light">Avg GP / Shipment</th>
+                            <th class="bg-transparent text-light">Active Customers</th>
+                            <th class="bg-transparent text-light">Avg Revenue per Shipment</th>
+                            <th class="bg-transparent text-light">Avg GP per Shipment</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        <tr>
-                            <td></td>
+
+                        <!-- CURRENT PERIOD -->
+                        <tr style="white-space: nowrap;">
+                            <td>{{ fullData.currentPeriod.from | date:'MMMM' }}</td>
                             <td class="text-center">{{ dept.totalShipment }}</td>
-
                             <td class="text-end">{{ dept.totalRevenue | number:'1.2-2' }}</td>
-
                             <td class="text-end">{{ dept.totalCost | number:'1.2-2' }}</td>
-
                             <td class="text-end">{{ dept.grossProfit | number:'1.2-2' }}</td>
 
                             <td class="text-end">
-                                {{
-                                dept.totalRevenue
-                                ? ((dept.grossProfit / dept.totalRevenue) * 100 | number:'1.2-2')
-                                : 0
-                                }} %
+                                {{ dept.totalRevenue ? ((dept.grossProfit / dept.totalRevenue) * 100 | number:'1.2-2') :
+                                0 }} %
                             </td>
 
-                            <td class="text-end">{{ dept.totalGrossWt | number:'1.0-2' }}</td>
-
-                            <td class="text-end">{{ dept.totalVolume | number:'1.2-2' }}</td>
-
-                            <td>{{ dept.totalNoOfTEU }}</td>
+                            <td class="text-end">{{ dept.totalGrossWt | number:'1.3-3' }}</td>
+                            <td class="text-end">{{ dept.totalVolume | number:'1.3-3' }}</td>
+                            <td class="text-center">{{ dept.totalNoOfTEU }}</td>
+                            <td class="text-center">{{ dept.jobCount }}</td>
 
                             <td class="text-end">
-                                {{
-                                dept.totalShipment
-                                ? (dept.totalRevenue / dept.totalShipment | number:'1.2-2')
-                                : 0
-                                }}
+                                {{ dept.totalShipment ? (dept.totalRevenue / dept.totalShipment | number:'1.2-2') : 0 }}
                             </td>
 
                             <td class="text-end">
-                                {{
-                                dept.totalShipment
-                                ? (dept.grossProfit / dept.totalShipment | number:'1.2-2')
-                                : 0
-                                }}
+                                {{ dept.totalShipment ? (dept.grossProfit / dept.totalShipment | number:'1.2-2') : 0 }}
+                            </td>
+                        </tr>
+
+                        <!-- PREVIOUS PERIOD -->
+                        <tr *ngIf="getPreviousDept(dept.department) as prevDept" style="white-space: nowrap;" class="">
+
+                            <td>{{ fullData.previousPeriod.from | date:'MMMM' }}</td>
+                            <td class="text-center">{{ prevDept.totalShipment }}</td>
+                            <td class="text-end">{{ prevDept.totalRevenue | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ prevDept.totalCost | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ prevDept.grossProfit | number:'1.2-2' }}</td>
+
+                            <td class="text-end">
+                                {{ prevDept.totalRevenue ? ((prevDept.grossProfit / prevDept.totalRevenue) * 100 |
+                                number:'1.2-2') : 0 }} %
+                            </td>
+
+                            <td class="text-end">{{ prevDept.totalGrossWt | number:'1.0-2' }}</td>
+                            <td class="text-end">{{ prevDept.totalVolume | number:'1.2-2' }}</td>
+                            <td class="text-center">{{ prevDept.totalNoOfTEU }}</td>
+                            <td class="text-center">{{ prevDept.jobCount }}</td>
+
+                            <td class="text-end">
+                                {{ prevDept.totalShipment ? (prevDept.totalRevenue / prevDept.totalShipment |
+                                number:'1.2-2') : 0 }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ prevDept.totalShipment ? (prevDept.grossProfit / prevDept.totalShipment |
+                                number:'1.2-2') : 0 }}
+                            </td>
+                        </tr>
+
+                        <!-- TOTAL ROW -->
+                        <tr class="fw-bold bg-light" *ngIf="getDeptTotal(dept) as total">
+
+                            <td class="text-end">Total</td>
+
+                            <td class="text-center">{{ total.totalShipment }}</td>
+
+                            <td class="text-end">{{ total.totalRevenue | number:'1.2-2' }}</td>
+
+                            <td class="text-end">{{ total.totalCost | number:'1.2-2' }}</td>
+
+                            <td class="text-end">{{ total.grossProfit | number:'1.2-2' }}</td>
+
+                            <td class="text-end">
+                                <!-- {{ total.gpPercentage | number:'1.2-2' }} % -->
+                            </td>
+
+                            <td class="text-end">{{ total.totalGrossWt | number:'1.3-3' }}</td>
+
+                            <td class="text-end">{{ total.totalVolume | number:'1.3-3' }}</td>
+
+                            <td class="text-center">{{ total.totalNoOfTEU }}</td>
+
+                            <td class="text-center">{{ total.jobCount }}</td>
+
+                            <td class="text-end">
+                                <!-- {{ total.totalShipment ? (total.totalRevenue / total.totalShipment | number:'1.2-2') : 0
+                                }} -->
+                            </td>
+
+                            <td class="text-end">
+                                <!-- {{ total.totalShipment ? (total.grossProfit / total.totalShipment | number:'1.2-2') : 0
+                                }} -->
                             </td>
                         </tr>
                     </tbody>
-
                 </table>
             </div>
-
         </div>
-
     </div>
 </div>
