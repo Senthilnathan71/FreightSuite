@@ -328,11 +328,12 @@ this.initializeTableConfig();
       // },
       {
         key: 'departmentName',
-        label: 'Department',
+        label: 'Dept',
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        width:'90px'
       },
       {
         key: 'MasterJobNumber',
@@ -349,7 +350,8 @@ this.initializeTableConfig();
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        width:'100px'
       },
       {
         key: 'MBLNo',
@@ -367,7 +369,9 @@ this.initializeTableConfig();
         filterable: true,
         visible: true,
         dataType: 'string',
-        cellClass: 'vessel-column'
+        cellClass: 'vessel-column',
+        width:'100px'
+      
       },
       {
         key: 'POL',
