@@ -34,7 +34,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
-import { toNumber } from 'src/app/common/helper';
+import { errorLogger, toNumber } from 'src/app/common/helper';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -111,6 +111,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   currentMenuId : number;
   TandCList: any[] = [];
   isViewMode: boolean = false;
+  isNonJob: boolean = false;
   get isEditMode() { 
     return !!this.headerId && !this.isViewMode; 
   }
@@ -124,8 +125,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   vendorBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
-  hssacList: any[][] = [];
-  temporaryHssacList : any[][] = [];
+  hssacList: any[][] = []; // for job related
+  hssacListForNonJob : any[][] = []; // for non job related
+  temporaryHssacList : any[][] = []; // for pulling os
   subledgerList: any[] = [];
   uomList: any[] = [];
   departmentList: any[] = [];
@@ -177,6 +179,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // TDS Configuration
   tdsConfig: any = null;
+
+  // others
+  coaList : any[] = [];
+  subledgerListDetail : any[][] = [];
   
   // Country/Tax mode
   bookingModeCountry: string = 'india';
@@ -299,6 +305,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.currentCompany = null;
       this.currentBranch = null;
     }
+    const paramValue = this.route.snapshot.queryParamMap.get('isNonJob');
+    this.isNonJob = paramValue === 'true'; 
+
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadLookups();
@@ -306,6 +315,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
     });
+
 
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -352,6 +362,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       IRNStatus : [''],
       MBLNo : [{value: '', disabled: true}],
       Status: ['A',[Validators.required]],
+      JobOrNonJob: [{value : this.isNonJob, disabled: true}],  // true then non job , false then job
 
       DepartmentMasterSid: [null],
       BillNo: ['', Validators.required],
@@ -484,7 +495,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
   deepEqual(obj1: any, obj2: any): boolean {
     const normalizedObj1 = this.normalizeValue(obj1);
     const normalizedObj2 = this.normalizeValue(obj2);
-    console.log("CHANGE DETECTED", JSON.stringify(normalizedObj1), JSON.stringify(normalizedObj2));
+    console.warn({
+      obj1 : JSON.stringify(normalizedObj1),
+      obj2 : JSON.stringify(normalizedObj2)
+  })
     return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
@@ -515,56 +529,51 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const filterOption = {
-      CompanyMasterSid,
-      BranchMasterSid,
+    const filterOption = { CompanyMasterSid, BranchMasterSid };
+
+    const source: any = {
+      vendors: this.operationService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(() => of({ data: [] }))),
+      currencies: this.operationService.getAllCurrencies().pipe(catchError(() => of({ data: [] }))),
+      uom: this.operationService.getAllUom().pipe(catchError(() => of({ data: [] }))),
+      departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      masterJobs: this.operationService.getAllMasterJobs({ ...filterOption, limit: 200, offset: 0 }).pipe(catchError(() => of({ data: [] })))
     };
 
-    forkJoin({
-      vendors: this.operationService
-        .getAllCreditorWithCOAMapped(filterOption)
-        .pipe(catchError(err => of({ data: [] }))),
-      currencies: this.operationService
-        .getAllCurrencies()
-        .pipe(catchError(err => of([]))),
-      charges: this.operationService
-        .getAllMappedChargeDebtors(filterOption)
-        .pipe(catchError(err => of([]))),
-      uom: this.operationService.getAllUom().pipe(catchError(err => of([]))),
-      departments: this.operationService
-        .getAllDepartments(CompanyMasterSid)
-        .pipe(catchError(err => of([]))),
-      masterJobs: this.operationService
-        .getAllMasterJobs({
-          CompanyMasterSid,
-          BranchMasterSid,
-          limit: 200,
-          offset: 0,
-        })
-        .pipe(catchError(err => of([]))),
-    }).subscribe(
-      ({
-        vendors,
-        currencies,
-        charges,
-        uom,
-        departments,
-        masterJobs
-      }) => {
+    if (this.isNonJob) {
+      source.coa = this.operationService.getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid: CompanyMasterSid
+      }).pipe(catchError(() => of({ data: [] })));
+      source.hssac = this.operationService.getAllHssac().pipe(catchError(() => of([])));
+      source.charges = of({ data: [] });
+    } else {
+      source.charges = this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })));
+      source.hssac = of([]);
+      source.coa = of({ data: [] });
+    }
+
+    // 3. Use the dynamic source in forkJoin
+    forkJoin(source).subscribe(
+      ({ vendors, currencies, charges, uom, departments, masterJobs, coa , hssac }: any) => {
         this.vendorList = vendors.data || [];
         this.subledgerList = vendors.data || [];
         this.chargeList = charges.data || [];
+        this.uomList = uom.data || [];
+        this.departmentList = departments.data || [];
+        this.masterJobList = masterJobs.data || [];
+        this.hssacListForNonJob = hssac || [];
+        this.coaList = coa.data || [];
 
         this.currencyList = currencies.data || [];
         this.currencyConfigService.initializeConfigurations(this.currencyList);
 
-        this.uomList = uom.data || [];
-        this.departmentList = departments.data || [];
-        this.masterJobList = masterJobs.data || [];
-
         if (!this.isEditMode) {
           this.spinner.hide();
         }
+      },
+      (err) => {
+        this.spinner.hide();
+        console.error("Lookup error:", err);
       }
     );
   }
@@ -740,14 +749,15 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.destroy$.next();
             this.destroy$.complete();
             return;
+          } else {
+            setTimeout(() => {
+              this.initialFormValue = this.vendorInvoiceForm.getRawValue();
+              this.isDirty = false;
+              this.subscribeToFormChanges();
+              this.subscribeToValueChanges();
+            }, 0);
           }
           // unsaved changes related
-          setTimeout(() => {
-            this.initialFormValue = this.vendorInvoiceForm.getRawValue();
-            this.isDirty = false;
-            this.subscribeToFormChanges();
-            this.subscribeToValueChanges();
-          }, 0);
         } else {
           this.spinner.hide();
           this.appSettingService.showError(resp.message);
@@ -786,6 +796,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       Remarks: data.Remarks || '',
       MBLNo: data.MasterNumber,
       Status: data.Status,
+      JobOrNonJob : data.CashOrBank === 'Y' ? true : false,
       
       PostedOn: data.PostDate ? new Date(data.PostDate) : null,
       BillNo: data.DocumentNumber,
@@ -842,12 +853,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
           .get('ExchangeRate')
           ?.disable();
       }
-      if(det.MasterJobSid){
+      if (det.MasterJobSid) {
         this.onDetailMasterJobSelected(
-          { MasterJobSid: det.MasterJobSid },
-          index++
+          { MasterJobSid: det.MasterJobSid , DepartmentMasterSid : det.DepartmentMasterSid || null},
+          index
         );
       }
+      if (this.isNonJob && det.COAMasterSid) {
+        const selectedCOA = this.coaList.find(coa => coa.COAMasterSid === det.COAMasterSid);
+        if (selectedCOA && selectedCOA.SubledgerName === "Y") {
+          this.onCOAChange(selectedCOA,index,false);
+        }
+      }
+      index++;
     }
 
     // Populate others
@@ -940,7 +958,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   createDetailGroup(data?: any): FormGroup {
     const group = this.fb.group({
       VoucherDetailSid: [data?.VoucherDetailSid || null],
-      ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
+      ChargeMasterSid: [data?.ChargeMasterSid || null, !this.isNonJob ? [Validators.required] : []],
       ChargeDescription: [data?.ChargeDescription || ''],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
@@ -1033,7 +1051,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
         'TaxPercentage2', 
         'CurrencyCode',
       ].includes(field || '')) {
-      this.recalcRow(index);
       if (field === 'CurrencyCode') {
         const formGroup = this.details.at(index) as FormGroup;
         const fromCurrencyCode = formGroup.get('CurrencyCode')?.getRawValue();
@@ -1045,6 +1062,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
           toCurrencyCode, 
           index
         );
+      } else {
+        this.recalcRow(index);
       }
     } else if (field === 'ChargeMasterSid') {
       const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
@@ -1066,7 +1085,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       }
       this.fetchHSN(index, true);
       let hssacId: number | null = null;
-
+      
       if (
         !hssacId &&
         Array.isArray(selectedCharge.ChargeTaxMaster) &&
@@ -1085,7 +1104,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       }
 
       // Auto-set LedgerMasterSid and COAMasterSid
-
+      
       this.details.at(index).patchValue({
         ChargeDescription: selectedCharge.chargeName || '',
         HSSACMasterSid: hssacId || null,
@@ -1093,8 +1112,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
         LedgerMasterSid: selectedCharge?.SubledgerMasterSid || null,
         COAMasterSid: selectedCharge?.DrCOAMappedId || null,
       });
-
+      
       // Trigger tax calculation when charge changes
+      this.onCOAChange({COAMasterSid : selectedCharge?.DrCOAMappedId},index);
       this.recalcRow(index);
     }
   }
@@ -1136,11 +1156,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     // Get charge data for tax ledger lookup
     const chargeSid = row.get('ChargeMasterSid')?.value;
+    const hssacSid = row.get('HSSACMasterSid')?.value;
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
-
-    if (charge) {
+    if (charge || hssacSid) {
       const HSSACMasterSid = row.get('HSSACMasterSid')?.value;
-      const hssacItem = (this.hssacList[index] || []).find(c => c.HSSACMasterSid === HSSACMasterSid);
+      const hssacListItems = this.isNonJob ? (this.hssacListForNonJob || []) :  (this.hssacList[index] || []);
+      const hssacItem = hssacListItems.find(c => c.HSSACMasterSid === HSSACMasterSid);
 
       if (HSSACMasterSid) {
         let taxLedgers: any[] = [];
@@ -1357,14 +1378,20 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   updateBillAmount() {
     const headerCurrency = this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue();
-    const totalLocalAmount = this.calculateTotalLocalAmount();
+    const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
     this.vendorInvoiceForm.get('BillAmt')?.setValue(
-      this.getFormattedAmount(totalLocalAmount, headerCurrency)
+      this.getFormattedAmount(totalBillAmount, headerCurrency)
     );
   }
-  calculateTotalLocalAmount(): number {
-    return this.details.controls.reduce((sum, row: any) => {
-      return sum + (Number(row.get('LocalAmount')?.value) || 0);
+  calculateTotalBillAmount(): number {
+    const partyId = this.vendorInvoiceForm.get('PartyMasterSid')?.getRawValue();
+    return this.details.getRawValue().
+    filter(det => det.LedgerMasterSid !== partyId)
+    .reduce((sum, row: any) => {
+      if(row.DrCr === 'D'){
+        return sum + (Number(row.PartyAmount) || 0);
+      }
+      return sum - (Number(row.PartyAmount) || 0);
     }, 0);
   }
 
@@ -1408,8 +1435,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
     if (!masterJob) {
       this.houseJobList[detailIndex] = [];
       row.get('HouseJobSid')?.setValue(null);
+      row.get('DepartmentMasterSid')?.setValue(null);
       return;
     }
+    row.get('DepartmentMasterSid')?.setValue(masterJob.DepartmentMasterSid);
 
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -1474,10 +1503,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const raw = this.vendorInvoiceForm.getRawValue();
 
     const autoPostingButNoPosted = (this.isAutoPosting && !this.isPosted);
-    console.log({
-      isEditMode : this.isEditMode,
-      autoPostingButNoPosted : autoPostingButNoPosted,
-    })
     if (this.isEditMode && autoPostingButNoPosted) {
       this.appSettingService.showWarning(
         'Auto Posting is currently enabled.\n\nPlease switch to Manual Posting and post this vendor invoice first.\nAfter posting, you can switch back to Auto Posting.'
@@ -1512,6 +1537,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
 
     if (this.vendorInvoiceForm.invalid) {
+      errorLogger(this.vendorInvoiceForm);
       this.vendorInvoiceForm.markAllAsTouched();
       this.vendorInvoiceForm.updateValueAndValidity();
       this.appSettingService.showError('Please fill all required fields.');
@@ -1571,7 +1597,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
             }
             if(resolve) resolve(true);
             if (this.headerId) {
-              this.router.navigate(['operation/vendor-invoice/entry', this.headerId]);
+              this.router.navigate(['operation/vendor-invoice/entry', this.headerId],{
+                queryParams : {
+                  ...(this.isNonJob ? {isNonJob: this.isNonJob} : {})
+                }
+              });
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -1884,6 +1914,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       };
     });
 
+    const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
     const payload: any = {
       ...(this.isEditMode
         ? { UpdatedBy: this.currUserEmail }
@@ -1910,10 +1941,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
       Narration: formValue.Narration,
       Status: String(formValue.Status).charAt(0),
       YearMasterSid: YearMasterSid,
+      CashOrBank : formValue.JobOrNonJob ? 'Y' : 'N',
 
       BillNo: formValue.BillNo,
       BillDate: formValue.BillDate ? new Date(formValue.BillDate) : null,
-      BillAmt: formValue.BillAmt,
+      BillAmt: totalBillAmount,
       MBLNo: formValue.MBLNo,
       HBLNo: formValue.HBLNo,
       
@@ -2310,6 +2342,40 @@ export class VendorInvoiceEntryComponent implements OnInit {
       console.error('Error fetching tax ledger:', error);
       return null;
     }
+  }
+
+  onCOAChange(coa:any,detailIndex:number,resetSubledger: boolean = true){
+    const ctrl = this.details.at(detailIndex) as FormGroup;
+    if(resetSubledger){
+      ctrl.get('LedgerMasterSid')?.setValue(null);
+      ctrl.get('LedgerMasterSid')?.disable();
+    }
+    if(!coa) {
+      this.subledgerListDetail[detailIndex] = [];
+      return;
+    }
+    if(coa.SubledgerName === 'Y'){
+      ctrl.get('LedgerMasterSid')?.enable();
+      this.operationService.getAllSubledgerByCOA({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        COAMasterSid: coa.COAMasterSid
+      }).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.subledgerListDetail[detailIndex] = resp.data || [];
+          } else {
+            this.appSettingService.showError('Error fetching subledger for COA');
+          }
+        },
+        error: (err) => {
+          this.subledgerListDetail[detailIndex] = [];
+          ctrl.get('LedgerMasterSid')?.setValue(null);
+          ctrl.get('LedgerMasterSid')?.disable();
+          console.error('Error fetching subledger for COA', err);
+        }
+      })
+    }
+
   }
 
   private getVendorCountry(): string {
@@ -2976,7 +3042,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   handleMultipleVendorChange(vendor: any) {
-    console.log(vendor);
     if (!vendor){
       this.vendorBranchList = [];
       this.temporaryForm.get('CustomerBranchSid')?.setValue(null);
@@ -3020,7 +3085,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.temporaryForm.get('PlaceOfSupply')?.setValue('');
     this.temporaryForm.get('GSTType')?.setValue('');
     this.getVendorBranchByVendor(vendor.CustomerMasterSid);
-    console.log("RAW VALUE AFTER handleMultipleVendorChange", this.temporaryForm.getRawValue());
   }
 
   onVendorBranchChangeForTemp(selectedBranch: any) {
@@ -3050,7 +3114,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.temporaryForm.get('PlaceOfSupply')?.setValue('');
     }
     this.determineGSTTypeForTemp(placeOfSupply);
-    console.log("RAW VALUE AFTER onVendorBranchChangeForTemp", this.temporaryForm.getRawValue());
   }
 
   determineGSTTypeForTemp(placeOfSupply: string) {
@@ -3090,7 +3153,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
         this.temporaryForm.get('GSTType')?.setValue('B2C');
       }
     }
-    console.log("RAW VALUE AFTER determineGSTTypeForTemp", this.temporaryForm.getRawValue());
   }
 
 
@@ -3190,22 +3252,22 @@ Please configure the missing mappings and try again.`
     const uniqueHouseJobCount = uniqueHouseJobs.size;
 
     // Store job information from the first selected cost
-    const firstCost = selectedCostItems[0];
+    // const firstCost = selectedCostItems[0];
 
     // Update the main form with job information
-    if (firstCost.MasterJobSid) {
-      this.vendorInvoiceForm.patchValue({
-        MasterJobSid: firstCost.MasterJobSid,
-        MBLNo: firstCost.MBLNo || ''
-      });
-    }
+    // if (firstCost.MasterJobSid) {
+    //   this.vendorInvoiceForm.patchValue({
+    //     MasterJobSid: firstCost.MasterJobSid,
+    //     MBLNo: firstCost.MBLNo || ''
+    //   });
+    // }
 
-    if (firstCost.HouseJobSid) {
-      this.vendorInvoiceForm.patchValue({
-        HouseJobSid: firstCost.HouseJobSid,
-        HBLNo: firstCost.HBLNo || ''
-      });
-    }
+    // if (firstCost.HouseJobSid) {
+    //   this.vendorInvoiceForm.patchValue({
+    //     HouseJobSid: firstCost.HouseJobSid,
+    //     HBLNo: firstCost.HBLNo || ''
+    //   });
+    // }
     const data = this.temporaryForm.getRawValue();
     this.vendorInvoiceForm.patchValue({
       CustomerMasterSid: data.CustomerMasterSid || null,
@@ -3285,15 +3347,13 @@ Please configure the missing mappings and try again.`
       this.details.push(detailRow);
       this.onDetailChange(index, 'CurrencyCode');
       this.fetchHSN(index);
-      this.onDetailMasterJobSelected({ MasterJobSid : cost.MasterJobSid},index);
+      this.onDetailMasterJobSelected({ MasterJobSid : cost.MasterJobSid , DepartmentMasterSid : cost.DepartmentMasterSid || null},index);
       // this.subscribeToRowChanges(detailRow);
     });
 
     this.recalculateAllRows();
     this.closeSearchCostsModal();
     this.appSettingService.showSuccess(`${selectedCostItems.length} cost(s) added successfully`);
-    console.log("addedSelectedCosts RAW VALUE TEMP", this.temporaryForm.getRawValue());
-    console.log("addedSelectedCosts RAW VALUE VIN", this.vendorInvoiceForm.getRawValue());
   }
 
   // Select/Deselect all costs
