@@ -118,6 +118,7 @@ export class NumberSeriesListComponent implements OnInit {
                   NumberLength: config?.NumberLength,
                   ResetOption: config?.ResetOption,
                   DepartmentWiseCounter: config?.DepartmentWiseCounter,
+                  StartingNumber: config?.StartingNumber,
                 };
               });
 

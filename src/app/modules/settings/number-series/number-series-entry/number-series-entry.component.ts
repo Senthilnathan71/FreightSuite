@@ -299,6 +299,7 @@ export class NumberSeriesEntryComponent implements OnInit {
       NumberLength: formValue.NumberLength,
       ResetOption: formValue.ResetOption,
       DepartmentWiseCounter: formValue.DepartmentWiseCounter,
+      StartingNumber: formValue.StartingNumber,
       CreatedBy: userEmail,
       UpdatedBy: userEmail,
     };
