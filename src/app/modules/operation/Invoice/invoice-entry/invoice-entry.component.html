@@ -649,17 +649,18 @@
                             <th
                               rowspan="2"
                               class="text-center bg-transparent text-light"
-                              style="min-width: 100px"
-                            >
-                              Rate
-                            </th>
-                            <th
-                              rowspan="2"
-                              class="text-center bg-transparent text-light"
                               style="min-width: 70px"
                             >
                               Ex Rate
                             </th>
+                            <th
+                              rowspan="2"
+                              class="text-center bg-transparent text-light"
+                              style="min-width: 100px"
+                            >
+                              Rate
+                            </th>
+                            
                             <th
                               rowspan="2"
                               class="text-center bg-transparent text-light"
@@ -1028,6 +1029,24 @@
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('CurrencyCode')?.value || '-' }}</span> -->
                               </td>
 
+                              <!-- Exchange Rate -->
+                              <td class="text-center">
+                                <input
+                                  type="text"
+                                  class="custom-input-field sm"
+                                  formControlName="ExchangeRate"
+                                  (input)="onDetailChange(i, 'ExchangeRate')"
+                                  DecimalPrecision
+                                  [DecimalPrecisionBefore]="3"
+                                  [DecimalPrecisionAfter]="
+                                    getExchangeRateDecimalPlaces(
+                                      row.get('CurrencyMasterSid')?.value
+                                    )
+                                  "
+                                />
+                                <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span> -->
+                              </td>
+
                               <!-- Rate -->
                               <td class="text-center">
                                 <input
@@ -1046,23 +1065,7 @@
                                 <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('Rate')?.value | numberFormat }}</span> -->
                               </td>
 
-                              <!-- Exchange Rate -->
-                              <td class="text-center">
-                                <input
-                                  type="text"
-                                  class="custom-input-field sm"
-                                  formControlName="ExchangeRate"
-                                  (input)="onDetailChange(i, 'ExchangeRate')"
-                                  DecimalPrecision
-                                  [DecimalPrecisionBefore]="3"
-                                  [DecimalPrecisionAfter]="
-                                    getExchangeRateDecimalPlaces(
-                                      row.get('CurrencyMasterSid')?.value
-                                    )
-                                  "
-                                />
-                                <!-- <span *ngIf="isPosted" style="font-weight: 600; color: black;">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span> -->
-                              </td>
+                              
 
                               <!-- Amount -->
                               <td class="text-center pt-1">

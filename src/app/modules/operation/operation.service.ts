@@ -226,6 +226,21 @@ export class OperationService {
       })
     );
   }
+  getAllCoaWithLedgerCategory(payload) {
+    return this.http.post<{ data: any }>('coa/ledger-category', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllSubledgerByCOA(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/fetch-by-coa', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
 
   getLedgerDetails(payload) {
     return this.http.post<{ data: any }>('subledgermaster/find-subledger-id', payload).pipe(

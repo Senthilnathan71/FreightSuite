@@ -7,7 +7,7 @@
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
         <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
-          'Create Vendor Invoice') }}</h5>
+          'Create Vendor Invoice') }} <span class="fw-bold text-info">{{ isNonJob ? '[Non Job]' : '' }}</span></h5>
           @if(isEditMode){
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
@@ -19,9 +19,11 @@
         <div
         class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
         @if(!isEditMode){
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170" (click)="openSearchCostsModal()">
-          <i class="fas fa-search me-2"></i>Search Pending Costs
-        </button>
+          @if(!isNonJob){
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170" (click)="openSearchCostsModal()">
+            <i class="fas fa-search me-2"></i>Search Pending Costs
+          </button>
+          }
         
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openVendorInvoiceUploadModal()"
           [disabled]="isViewMode">
@@ -432,8 +434,17 @@
             <!-- Bill Amount (readonly calculated) -->
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="number" id="BillAmount" [value]="calculateTotalLocalAmount()" placeholder=""
-                  class="custom-input-field sm" readonly />
+                <input 
+                  type="number" 
+                  id="BillAmount" 
+                  formControlName="BillAmt" 
+                  placeholder=""
+                  class="custom-input-field sm" 
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="12"
+                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(vendorInvoiceForm.get('CurrencyMasterSid')?.value)"
+                  readonly 
+                />
                 <label for="BillAmount" class="input-label">Bill Amt</label>
               </div>
             </aside>
@@ -550,10 +561,15 @@
                       <th rowspan="2" *ngIf="!isEditMode" class="text-center bg-transparent text-light"
                         style="min-width: 30px; border-top-left-radius: 10px;"></th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
+                      @if(isNonJob){
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Ledger</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Subledger</th>
+                      } @else {
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">
                         Description</th>
+                      }
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Unit</th>
@@ -561,9 +577,9 @@
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Dr/Cr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Curr</th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate
                       </th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable
@@ -657,6 +673,33 @@
                           </span>
                         </td>
 
+                        @if(isNonJob){
+                          
+                        <td>
+                          <ng-select 
+                            formControlName="COAMasterSid" 
+                            [items]="coaList" 
+                            bindLabel="LedgerName" 
+                            bindValue="COAMasterSid"
+                            appendTo="body" 
+                            placeholder=""
+                            (change)="onCOAChange($event,i)"
+                            >
+                          </ng-select>
+                        </td>
+
+                        <td>
+                          <ng-select 
+                            formControlName="LedgerMasterSid"
+                            [items]="subledgerListDetail[i] || []"
+                            bindLabel="SubledgerName"
+                            bindValue="SubledgerMasterSid"
+                            appendTo="body" 
+                            placeholder="">
+                          </ng-select>
+                        </td>
+                        } @else {
+
                         <!-- Charge -->
                         <td class="text-center">
                           <dofi-searchable-dropdown 
@@ -680,9 +723,26 @@
                             style="cursor: not-allowed;"
                           >
                         </td>
+                        }
 
                         <!-- HSN/SAC -->
+                         @if(isNonJob){
                         <td>
+                          <dofi-searchable-dropdown 
+                            [items]="hssacListForNonJob" 
+                            formControlName="HSSACMasterSid"
+                            [placeholder]="''" 
+                            [displayFields]="HSSACLookupConfig.displayFields"
+                            [displayLabels]="HSSACLookupConfig.displayLabels"
+                            [labelFields]="HSSACLookupConfig.labelFields" 
+                            [bindValue]="'HSSACMasterSid'" 
+                            appendTo="body"
+                            (itemSelected)="onDetailChange(i,'HSSACMasterSid')"
+                          >
+                        </dofi-searchable-dropdown>
+                        </td>
+                        } @else {
+                          <td>
                           <dofi-searchable-dropdown 
                             [items]="hssacList[i]" 
                             formControlName="HSSACMasterSid"
@@ -696,6 +756,7 @@
                           >
                         </dofi-searchable-dropdown>
                         </td>
+                        }
 
                         <!-- Unit -->
                         <td>
@@ -751,22 +812,6 @@
                           </dofi-searchable-dropdown>
                         </td>
 
-                        <!-- Rate -->
-                        <td>
-                          <input 
-                            type="text"
-                            class="custom-input-field sm" 
-                            formControlName="Rate"
-                            (input)="onDetailChange(i, 'Rate')"
-                            DecimalPrecision
-                            [DecimalPrecisionBefore]="12"
-                            [DecimalPrecisionAfter]="
-                              getAmountDecimalPlaces(
-                              row.get('CurrencyMasterSid')?.value
-                              )
-                            "
-                          >
-                        </td>
 
                         <!-- Exchange Rate -->
                         <td>
@@ -784,6 +829,24 @@
                             "
                           >
                         </td>
+
+                        <!-- Rate -->
+                        <td>
+                          <input 
+                            type="text"
+                            class="custom-input-field sm" 
+                            formControlName="Rate"
+                            (input)="onDetailChange(i, 'Rate')"
+                            DecimalPrecision
+                            [DecimalPrecisionBefore]="12"
+                            [DecimalPrecisionAfter]="
+                              getAmountDecimalPlaces(
+                              row.get('CurrencyMasterSid')?.value
+                              )
+                            "
+                          >
+                        </td>
+
 
                         <!-- Amount -->
                         <td class="pt-1">
@@ -941,12 +1004,13 @@
                           <span class="pt-1" style="font-weight: 600; color: black;">
                             {{ 
                               getFormattedAmount(
-                                row.get("LocalAmount")?.value,
+                                row.get("PartyAmount")?.value,
                                 currentCompany.CurrencyMasterSid
                               )
                             }}
                           </span>
                         </td>
+
 
                         <!-- MasterJobSid column -->
                         <td style="min-width:200px;">
@@ -958,9 +1022,7 @@
                             [displayLabels]="masterJobLookupConfig.displayLabels"
                             [labelFields]="masterJobLookupConfig.labelFields" 
                             [bindValue]="'MasterJobSid'"
-                            (change)="
-                              onDetailMasterJobSelected($event, i)
-                            "
+                            (itemSelected)="onDetailMasterJobSelected($event, i)"
                             appendTo="body"
                           >
                           </dofi-searchable-dropdown>
