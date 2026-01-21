@@ -57,6 +57,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -367,6 +368,7 @@ export class EnquiryEntryComponent implements OnInit {
     private cdRef: ChangeDetectorRef,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     public logoService: LogoService,
+    private sidebarService : VerticalSidebarService,
 
   ) {
     effect(() => {
@@ -399,7 +401,6 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -639,7 +640,7 @@ export class EnquiryEntryComponent implements OnInit {
       CustomerMasterSid: [null],
       customerName: ['', Validators.required],
       enquiryNo: [''],
-      EnquiryDate: [today],
+      EnquiryDate: [new Date()],
       shipmentDate: ['', Validators.required],
       DepartmentMasterSid: [''],
       Segment: [null, Validators.required],
@@ -1658,6 +1659,9 @@ private parseFloatSafe(value: any): number {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
+    
+    const menuId = this.sidebarService.syncMenuIdBeforeSubmit("Enquiry") || this.MenuMasterSid;
+
     const userEmail = this.userData['userEmail'];
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
@@ -1671,7 +1675,7 @@ private parseFloatSafe(value: any): number {
         updatedBy: userEmail,
         ContactPerson: this.rateRequestForm.value.ContactPerson,
         ContactNumber: this.rateRequestForm.value.ContactNumber,
-        MenuMasterSid: this.MenuMasterSid,
+        MenuMasterSid: menuId,
         approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,

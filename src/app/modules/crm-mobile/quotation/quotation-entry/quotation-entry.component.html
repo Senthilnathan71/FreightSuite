@@ -70,9 +70,13 @@
 
       
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-          [disabled]="(!mps.can('update') && isEditMode) || disableAllModification || quotationApproved">
-          <i class="fas fa-save me-1"></i> Save
-        </button>
+  [disabled]="
+    (!mps.can('update') && isEditMode) || 
+    disableAllModification || 
+    (isEditMode && !hasPendingApprovalChanges() && allApprovedRoutesSaved())
+  ">
+  <i class="fas fa-save me-1"></i> Save
+</button>
         
         <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
           <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -108,12 +112,7 @@
         <div class="pill-indicator" *ngIf="selectedTab1 === tab.name"></div>
       </div>
     </div>
-    <div class="ms-auto"  *ngIf="isEditMode && quotationApproved && (f['IsContract']?.value || !bookingCreatedAgainstThisQuotation)"> 
-      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" (click)="goForBookingCreation()" [disabled]="!isContractValid()"
-        >
-        <i class="fas fa-plus me-1"></i> Create Booking
-      </button>
-    </div>
+   
     <div *ngIf="selectedTab1 === 'Route Details'" class="d-flex align-items-center gap-1">
       <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button" (click)="addQuoteRoute()"
         [disabled]="f['EnquirySid'].value || disableAllModification || quotationApproved">
@@ -132,11 +131,11 @@
       <div class="row">
         <div class="col-12">
           <div class="row compact-form" [formGroup]="quotationForm">
-            @if(isEditMode){
+            <!-- @if(isEditMode){ -->
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                  formControlName="QuoteNumber">
+                  formControlName="QuoteNumber" readonly>
                 <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !quotationForm.get('QuoteNumber')?.value
@@ -159,7 +158,7 @@
                                                     </div> -->
               </div>
             </div>
-            }
+            <!-- } -->
             <aside *ngIf="enquiryNumber" class="col-md-4">
   <div class="custom-form-group">
     <a href="javascript:void(0)" 
@@ -417,10 +416,11 @@
 
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                    [disabled]="f['EnquirySid'].value || disableAllModification">
+                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(routeIndex)">
                     <i class="fas fa-trash text-danger me-1"></i>
                   </button>
                   }
+                  
                   <span
                     *ngIf="quoteRoutes.at(routeIndex).get('GrossWeight')?.hasError('grossNotGreater') && (quoteRoutes.at(routeIndex).get('GrossWeight')?.touched || quoteRoutes.at(routeIndex).get('GrossWeight')?.dirty)"
                     class="d-flex align-items-center text-danger mx-1 px-1 rounded" style="background-color: #ffffff;">
@@ -631,7 +631,7 @@
 
                       </aside>
                        <aside class="col-md-3">
-
+                        
                       </aside> -->
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL' || route.value.segmentType === 'AIR'">
                       </aside>
@@ -750,11 +750,42 @@
                         </div>
                       </aside>
 
-
-
-
-
-
+                      
+                     <aside class="col-md-2">
+  <div class="custom-form-group mt-md-2">
+    <!-- Make the booking number clickable -->
+    <div *ngIf="getBookingNumber(routeIndex)">
+      <a href="javascript:void(0)" 
+         class="booking-link"
+         (click)="viewBooking(quotationData?.quoteRoute[routeIndex]?.bookingHeader)"
+         [title]="'View Booking: ' + getBookingNumber(routeIndex)">
+        {{ getBookingNumber(routeIndex) }}
+      </a>
+    </div>
+   
+  
+  </div>
+</aside>
+                      
+                     <aside class="col-md-2 mt-md-2">
+  <div class="d-flex justify-content-end"
+       *ngIf="isEditMode && isRouteApproved(routeIndex)">
+    <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
+            (click)="goForBookingCreationForRoute(routeIndex)"
+            [disabled]="!isContractValid()|| doesBookingExistForRoute(routeIndex)">
+      <!-- Show appropriate text based on contract status and booking existence -->
+      @if(doesBookingExistForRoute(routeIndex) && quotationForm.get('IsContract')?.value) {
+        <i class="fas fa-plus me-1"></i> Create Booking
+      }
+      @else if(doesBookingExistForRoute(routeIndex) && !quotationForm.get('IsContract')?.value) {
+        <i class="fas fa- me-1"></i> Booking Created
+      }
+      @else {
+        <i class="fas fa-plus me-1"></i> Create Booking
+      }
+    </button>
+  </div>
+</aside>
 
 
                      <!-- <div class="col-12 px-2">
@@ -957,7 +988,7 @@
   </div>
                              
                             <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)"
-                              [disabled]="quotationApproved">
+                              [disabled]="quotationApproved || isRateLocked()">
                               <i class="fas fa-plus me-1"></i> Add Carrier
                             </button>
                           </div>
@@ -1039,7 +1070,8 @@
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                             <ng-select formControlName="authorizerStatus" [items]="allApprovalStatus"
                                               bindLabel="name" bindValue="value"
-                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)">
+                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
+                                              [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger"></span></label>
@@ -1051,7 +1083,8 @@
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                             <ng-select formControlName="authorizerStatus" [items]="approvalStatus"
                                               bindLabel="name" bindValue="value"
-                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)">
+                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
+                                               [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerStatus')
@@ -1078,7 +1111,8 @@
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="ApprovedBy"
-                                              class="custom-input-field sm">
+                                              class="custom-input-field sm"
+                                               [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
                                             <label for="text-input" class="input-label">Authorized By <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy')
                                                 ? '*' : '' }}</span></label>
@@ -1472,11 +1506,11 @@
     {{ tab }}
   </div>
 
-  <div class="ms-auto" *ngIf="isEditMode">
-    <button class="btn btn-info btn-sm dofi-min-w-140 dofi-max-w-140" (click)="navigateToBooking()">
-      <i class="fas fa-plus me-1"></i> Create Booking
-    </button>
-  </div>
+  // <div class="ms-auto" *ngIf="isEditMode">
+  //   <button class="btn btn-info btn-sm dofi-min-w-140 dofi-max-w-140" (click)="navigateToBooking()">
+  //     <i class="fas fa-plus me-1"></i> Create Booking
+  //   </button>
+  // </div>
 </div> -->
 
 <!-- <div class="tab-content">
@@ -1662,6 +1696,8 @@
                   <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                 </button>
                 }
+                
+                
                 <span class="ribbon-e text-white">
 
                   {{ route.value.segmentType || 'LCL' }}
@@ -1669,6 +1705,7 @@
 
 
               </button>
+              
             </h2>
 
             <div ngbAccordionCollapse [id]="'route-' + routeIndex">

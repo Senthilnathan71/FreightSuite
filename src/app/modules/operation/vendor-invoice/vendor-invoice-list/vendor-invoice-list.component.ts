@@ -193,9 +193,17 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   initializeHeaderActions(): void {
     this.headerActions = [
       {
-        label: 'Create',
+        label: 'Create (Job)',
         icon: 'fas fa-plus',
         action: 'create',
+        cssClass : 'dofi-min-w-100',
+        disabled: !this.mps.can('insert')
+      },
+      {
+        label: 'Create (Non Job)',
+        icon: 'fas fa-plus',
+        action: 'create-non-job',
+        cssClass : 'dofi-min-w-120',
         disabled: !this.mps.can('insert')
       },
       {
@@ -268,7 +276,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         width: '100px',
       },
       {
-        key: 'LocalAmount',
+        key: 'Amount',
         label: 'Amount',
         sortable: true,
         filterable: true,
@@ -354,6 +362,9 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
       case 'create':
         this.onCreate();
         break;
+      case 'create-non-job':
+        this.onCreateNonJob();
+        break;
       case 'report':
         this.onReport();
         break;
@@ -367,6 +378,12 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
   onCreate() {
     this.router.navigate(['/operation/vendor-invoice/entry']);
+  }
+
+  onCreateNonJob() {
+    this.router.navigate(['/operation/vendor-invoice/entry'], {
+      queryParams: { isNonJob: true }
+    });
   }
 
   onReport() {
@@ -411,7 +428,13 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   }
 
   editVendorInvoice(vendorInvoice: any) {
-    this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
+    if(vendorInvoice.CashOrBank === 'Y'){
+      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid],{
+        queryParams : {isNonJob : true}
+      });
+    } else {
+      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
+    }
   }
 
   deleteVendorInvoice(vendorInvoice: any) {

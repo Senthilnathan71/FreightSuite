@@ -68,6 +68,7 @@ import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.componen
 import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.component';
 import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
 import { LoadingPlanMasterComponent } from '../reports/loading-plan-master/loading-plan-master.component';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -375,6 +376,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
     public mps: MenuPermissionService,
+    private sidebarService : VerticalSidebarService
   ) {
     this.initForm();
     this.initContainerForm();
@@ -799,7 +801,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value: '', disabled: true }],
-      MasterJobDate: [{ value: null, disabled: true }],
+      MasterJobDate: [new Date()],
       FreightPPCC: ['Prepaid', Validators.required],
 
       DestinationAgent: [null],
@@ -1253,6 +1255,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
             Volume: aggregatedTotals?.Volume || data.Volume,
             WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
           });
+          this.masterJobForm.get('MasterJobDate')?.disable();
           this.loadCustomsData();
         }
 
@@ -2189,7 +2192,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+      MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Job") || Number(localStorage.getItem('currentMenuId')),
     };
 
     // Add shipment list if needed
@@ -3452,7 +3455,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
    reportLoadingPlan() {
     const modalRef = this.modalService.open(LoadingPlanMasterComponent, {
-      size: 'xl',
+      // size: 'xl',
+      windowClass:"print-landscape",
       scrollable: true,
     });
     modalRef.componentInstance.masterJobData = this.masterJobData;

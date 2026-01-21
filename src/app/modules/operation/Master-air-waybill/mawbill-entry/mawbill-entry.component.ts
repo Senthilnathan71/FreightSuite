@@ -55,6 +55,7 @@ import { CargoManifestComponent } from '../../master-job/reports/cargo-manifest/
 import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -290,6 +291,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
     private masterService: MasterService,
+    private sidebarService : VerticalSidebarService
   ) {
     this.initForm();
     this.initContainerForm();
@@ -508,7 +510,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value :'' , disabled : true}],
-      MasterJobDate: [{value : null, disabled : true}],
+      MasterJobDate: [new Date()],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
@@ -1397,7 +1399,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+        MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Air Waybill") || Number(localStorage.getItem('currentMenuId')),
         screenName : 'Master Air Waybill'
     };
 
