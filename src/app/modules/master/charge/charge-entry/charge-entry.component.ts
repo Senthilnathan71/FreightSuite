@@ -50,7 +50,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 })
 export class ChargeEntryComponent implements OnInit {
   tab = [
-  { name: "GST Details"},
+  { name: "Tax"},
   { name: "TDS Details"}
 ];
 unitQtyOptions = [

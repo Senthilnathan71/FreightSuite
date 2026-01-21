@@ -223,7 +223,7 @@
                   <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
                     formControlName="CreditNoteReason">
                   </ng-select>
-                      <label for="text-input" class="input-label">Credit Note Reason</label>
+                      <label for="text-input" class="input-label">Credit Note Reason<span class="text-danger">*</span></label>
                     </div>
               </aside>
 
@@ -240,11 +240,11 @@
               <div class=" mb-0">
                 <div class="py-1">
                   <form [formGroup]="creditNoteForm" novalidate>
-                    <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
+                    <!-- <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
                       <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
                         <i class="fas fa-plus me-1"></i> Add Charge
                       </button>
-                    </div>
+                    </div> -->
 
                     <div class="table-responsive table-borderless">
                       <table class="table table-hover table-sm mb-0 text-center">
