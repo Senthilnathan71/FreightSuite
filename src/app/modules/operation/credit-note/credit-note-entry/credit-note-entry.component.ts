@@ -69,6 +69,7 @@ export class CreditNoteEntryComponent {
   isViewMode: boolean = false;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+  currentCompanyCountry : any;
 
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
@@ -195,6 +196,7 @@ export class CreditNoteEntryComponent {
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
+      this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
       this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
@@ -1127,11 +1129,11 @@ onFinalSave() {
             BranchMasterSid: currentBranch.BranchMasterSid,
             YearMasterSid: currentFinancialYear,
             LocalCurrencyMasterSid: currentCurrency  ,
-            LocalCurrencyCode: currentCompany.CurrencyCode , 
+            LocalCurrencyCode: this.currentCompanyCurrency.code , 
             PostedBy: currentUserEmail ,
             TaxDetails: {
               CountryMasterSid: currentCountry || this.currentUserCountry,
-              countryName: currentCountryName,
+              countryCode: String(this.currentCompanyCountry.countryCode).toLowerCase(),
               TaxCategory: 'Inter', 
               EffectiveFrom: new Date().toISOString(),
               TaxType: 'Output' 

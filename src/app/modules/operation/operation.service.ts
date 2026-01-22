@@ -71,6 +71,14 @@ export class OperationService {
     );
   }
 
+  checkBookingDuplicate(payload : any){
+    return this.http.post<{ status: boolean; message: string; data: boolean }>('ff-booking/check-duplicate', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   updateBookingById(BookingHeaderSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`ff-booking/update/${BookingHeaderSid}`, payload).pipe(
       map((resp) => {

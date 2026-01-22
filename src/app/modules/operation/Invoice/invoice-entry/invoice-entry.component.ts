@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -86,6 +86,7 @@ interface NgbDateStructLike {
     NgbDropdownModule,
     PreventMultiClickDirective,
     DecimalPrecisionDirective,
+    RouterModule
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrls: ['./invoice-entry.component.scss'],
@@ -194,6 +195,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' },
   ];
+
+  hyperLinkInfo = {
+    id : null,
+    number : null,
+    path : null
+  }
   
   
   filteredDetailItems: any[] = [];
@@ -826,6 +833,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   patchValues(data: any) {
+    this.gatherHyperLinkInfo(data);
+
     this.invoiceForm.patchValue(
       {
         VoucherNumber: data.VoucherNumber,
@@ -1101,6 +1110,39 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BankDetails : bankDetails,
       TermsAndConditions : tandc,
     }
+  }
+
+  gatherHyperLinkInfo(data){
+    const isHouseJobInvoice = data.HouseJobSid && data.MasterJobSid;
+    const isMasterJobInvoice = data.MasterJobSid && !data.HouseJobSid;
+    const isBookingInvoice = !!data.BookingHeaderSid;
+
+    if(isHouseJobInvoice){
+      this.hyperLinkInfo = {
+        id : data?.HouseJobSid,
+        number : data?.houseJob?.HBLNo,
+        path : `/operation/house-job/entry/${data.HouseJobSid}`,
+      }
+    } else if (isMasterJobInvoice) {
+      this.hyperLinkInfo = {
+        id: data.MasterJobSid,
+        number : data?.masterJob?.MasterJobNumber,
+        path: `/operation/master-job/entry/${data.MasterJobSid}`,
+      }
+    } else if (isBookingInvoice){
+      this.hyperLinkInfo = {
+        id: data.BookingHeaderSid,
+        number : data?.BookingHeader?.BookingNo,
+        path: `/operation/booking/entry/${data.BookingHeaderSid}`,
+      }
+    } else {
+      this.hyperLinkInfo = {
+        id : null,
+        number : null,
+        path : null
+      }
+    }
+
   }
 
     checkVoucherPostingMechanism() {

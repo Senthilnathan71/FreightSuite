@@ -22,6 +22,9 @@
         >
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
+          @if(hyperLinkInfo.id){
+            <a class="fw-bold px-2 text-decoration-underline" [routerLink]="hyperLinkInfo.path">{{hyperLinkInfo.number}}</a>
+          }
         }
       </div>
       <div class="col-md-8 pb-1">
