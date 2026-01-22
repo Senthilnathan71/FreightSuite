@@ -1640,15 +1640,15 @@
                   flex: 1;
                   text-align: end;
                   font-size: 17px;
-                  padding-right: 2%;
+                  padding-right: 3%;
                 "
               >
                 <h3 style="margin: 0; font-weight: 900">
                   {{ currentCompany?.companyName || "Company Name" }}
                 </h3>
-                <h5 style="margin: 0; font-weight: 900">
+                <!-- <h5 style="margin: 0; font-weight: 900">
                   {{ currentBranch?.branchName || "Company Branch" }}
-                </h5>
+                </h5> -->
                 <p style="margin: 2px 0; font-size: 16px">
                   {{ currentBranch?.addressLine1 || "" }}
                 </p>
@@ -1659,27 +1659,22 @@
                       currentCompany?.City ||
                       ""
                   }}
-                  {{
-                    currentBranch?.postalCode || currentBranch?.ZipCode || "UAE"
-                  }}
+                 
                   ,
-                  {{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}
-               
                 </p>
-             <div
-  style="
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    font-size: 16px;
-  "
->
-  <span *ngIf="currentCompanyCountryCode === 'IN'">GST No.</span>
-  <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No.</span>
-  <span>: {{ currentCompany?.Pan || '' }}</span>
-</div>
+            <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                <span>Postal Code</span>
+                <span>: {{currentBranch?.postalCode || currentBranch?.ZipCode || "UAE"}}</span>
+            </div>
+            <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                <span>Phn No.</span>
+                <span>:{{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}</span>
+            </div>
+             <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                <span *ngIf="currentCompanyCountryCode === 'IN'">GST No.</span>
+                <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No.</span>
+                <span>: {{ currentCompany?.Pan || '' }}</span>
+            </div>
 
               </div>
 
@@ -1791,66 +1786,99 @@
             "
           >
             <div style="flex: 0 0 50%; max-width: 50%">
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Shipper</strong>
-                </div>
-                <div>
-                  :
-                  {{ invoicePrintData?.ShipperName }}
-                </div>
+
+              <!-- Shipper -->
+              <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Shipper</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                        {{ invoicePrintData?.ShipperName }}
+                  </div>
               </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Consignee / Notify</strong>
+
+              <!-- Consignee / Notify -->
+                <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Consignee / Notify</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                         {{ invoicePrintData?.ConsigneeName }}
+                  </div>
                 </div>
-                <div>
-                  :
-                  {{ invoicePrintData?.ConsigneeName }}
+
+                <!-- Vessel -->
+                <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Vessel</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                          {{ invoicePrintData?.Vessel }}
+                  </div>
                 </div>
-              </div>
+                
+                <!-- Vessel / Flight No -->
+               <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Voyage / Flight No.</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                          {{ invoicePrintData?.VoyageNo }}
+                  </div>
+               </div>
+
+               <!-- POL -->
+                <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Loading Port</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                          {{ invoicePrintData?.POL }}
+                  </div>
+               </div>
+
+               <!-- Place of Supply -->
+               <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Place of Supply</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                         {{ invoicePrintData?.PlaceofSupply }}
+                  </div>
+               </div>
+
+               <!-- Final Destionation -->
+                <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Final Destination</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                        {{ invoicePrintData?.FPD }}
+                  </div>
+               </div>
+
+
               <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Vessel</strong>
-                </div>
-                <div>: {{ invoicePrintData?.Vessel }}</div>
-              </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Voyage / Flight No.</strong>
-                </div>
-                <div>: {{ invoicePrintData?.VoyageNo }}</div>
-              </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Loading Port</strong>
-                </div>
-                <div>: {{ invoicePrintData?.POL }}</div>
-              </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Place of Supply</strong>
-                </div>
-                <div>: {{ invoicePrintData?.PlaceofSupply }}</div>
-              </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
-                  <strong>Final Destination</strong>
-                </div>
-                <div>: {{ invoicePrintData?.FPD }}</div>
-              </div>
-              <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
+                <div style="width: 165px; font-weight: bolder">
                   <strong>ETD</strong>
                 </div>
                 <div>: {{ invoicePrintData?.ETD | formatDate }}</div>
               </div>
+
               <div style="display: flex">
-                <div style="width: 180px; font-weight: bolder">
+                <div style="width: 165px; font-weight: bolder">
                   <strong>ETA</strong>
                 </div>
                 <div>: {{ invoicePrintData?.ETA | formatDate }}</div>
               </div>
+
             </div>
 
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
@@ -1860,18 +1888,21 @@
                 </div>
                 <div>: {{ invoicePrintData?.HBLNo }}</div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>MBL / MAWB</strong>
                 </div>
                 <div>: {{ invoicePrintData?.MBLNo }}</div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Job Number</strong>
                 </div>
                 <div>: {{ invoicePrintData?.MasterJobNumber }}</div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Freight Terms</strong>
@@ -1881,6 +1912,7 @@
                   {{ invoicePrintData?.FreightTerms }}
                 </div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Pkgs / Wt / Vol</strong>
@@ -1890,6 +1922,7 @@
                   {{ invoicePrintData?.PkgWtVol }}
                 </div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Booking No.</strong>
@@ -1899,6 +1932,7 @@
                   {{ invoicePrintData?.BookingNumber }}
                 </div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Invoice Due Date</strong>
@@ -1908,6 +1942,7 @@
                   {{ invoicePrintData?.InvoiceDueDate | formatDate }}
                 </div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Currency / Ex-Rate</strong>
@@ -1916,6 +1951,7 @@
                   : {{ invoicePrintData?.CurrExRate }} 
                 </div>
               </div>
+
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Sales Person</strong>
@@ -1924,6 +1960,7 @@
                   : {{ invoicePrintData?.SalesPerson || this.salesmanName }}
                 </div>
               </div>
+
             </div>
           </div>
 
