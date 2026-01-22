@@ -37,6 +37,8 @@ export class MilestoneComponent implements OnInit {
   MilestoneMasterSid: any;
   selectedMode: string;
   milestoneForm !: FormGroup;
+  isEditMode: boolean;
+  userData : any;
   allMilestones: any[] = []; 
   modeOfStatus = [
   { id: 'Active', name: 'Active' },
@@ -80,6 +82,7 @@ export class MilestoneComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.filterOption = {
@@ -91,9 +94,11 @@ export class MilestoneComponent implements OnInit {
   }
 
   loadAllMilestones() {
+     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
 
     this.operationService.getAllMilestones(payload).subscribe({
@@ -135,7 +140,12 @@ export class MilestoneComponent implements OnInit {
       MilestoneDate: [''],
       AutoCaptured: [false],
       Remarks: [''],
-      Status: [{ value: 'Active', disabled: true }]
+      Status: [{ value: 'Active', disabled: true }],
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      CreatedBy: this.userData['userEmail'],
+      UpdatedBy: this.userData['userEmail']
+      
     })
   }
 
@@ -162,7 +172,9 @@ export class MilestoneComponent implements OnInit {
       MilestoneDate: [data?.MilestoneDate ? new Date(data.MilestoneDate) : ''],
       AutoCaptured: [data?.AutoCaptured || null],
       Remarks: [data?.Remarks || null],
-      Status: [data.Status ? (data.Status === "A" ? "Active" : "Suspended") : "Active"]
+      Status: [data.Status ? (data.Status === "A" ? "Active" : "Suspended") : "Active"],
+      CreatedBy: this.userData['userEmail'],
+      UpdatedBy: this.userData['userEmail']
     })
     return milestoneForm;
   }
@@ -183,7 +195,9 @@ export class MilestoneComponent implements OnInit {
         MilestoneDate: data?.MilestoneDate ? new Date(data.MilestoneDate) : null,
         AutoCaptured: data.AutoCaptured,
         Remarks: data.Remarks,
-        Status: data.Status
+        Status: data.Status,
+        CreatedBy: this.userData['userEmail'],  
+        UpdatedBy: this.userData['userEmail']
       });
       this.milestoneForm.get('Status')?.enable();
     } else {
@@ -259,7 +273,9 @@ export class MilestoneComponent implements OnInit {
 
 
   syncDataWithParentComponent() {
-    const formValue : any[] = this.milestoneFormArray.getRawValue() || [];
+    const formValue : any[] = (this.milestoneFormArray.getRawValue() || []).map(
+      m => ({...m, AutoCaptured : m.AutoCaptured ? 'Y' : 'N'})
+    );
     this.dataEmitter.emit(formValue);
   }
 

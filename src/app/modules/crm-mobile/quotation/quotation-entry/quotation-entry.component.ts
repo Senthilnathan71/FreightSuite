@@ -182,6 +182,7 @@ export class QuotationEntryComponent implements OnInit {
   productLookupConfig = ['ProductCode','ProductName'];
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
+    isSaving: boolean = false;
 
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
@@ -1731,10 +1732,15 @@ isRateLockDisabled(): boolean {
   }
 
   onSubmit() {
+     if (this.isSaving) {
+    return;
+  }
+  this.isSaving = true;
 
     const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
     if(canLoginUserAuthorize && !this.approvalDropdownValue){
       this.appSettingService.showWarning("Please select approval status");
+      this.isSaving = false;
       return;
     }
     let hasCarrierValidationErrors = false;
@@ -1764,6 +1770,7 @@ isRateLockDisabled(): boolean {
 
   if (hasCarrierValidationErrors) {
     this.selectedTab1 = 'Route Details';
+    this.isSaving = false;
     return;
   }
     if (this.quoteRoutes.invalid) {
@@ -1771,6 +1778,7 @@ isRateLockDisabled(): boolean {
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
       this.selectedTab1 = 'Route Details';
+      this.isSaving = false;
       return;
     }
 
@@ -1787,6 +1795,7 @@ isRateLockDisabled(): boolean {
       this.quotationForm.markAllAsTouched();
       this.quotationForm.updateValueAndValidity();
       this.selectedTab1 = 'Quotation';
+      this.isSaving = false;
       return;
     }
 
@@ -1913,7 +1922,7 @@ isRateLockDisabled(): boolean {
 
       this.leadService.updateQuoteById(this.QuoteHeaderSid, payload).subscribe(
         (resp: any) => {
-
+          this.isSaving = false;
           if (resp.status) {
                       setTimeout(() => {
             disabledFieldsByRoute.forEach((disabledFields, routeIndex) => {
@@ -1954,6 +1963,7 @@ isRateLockDisabled(): boolean {
 
       this.leadService.createQuotation(payload).subscribe(
         (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess("Quotation Created Successfully");
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;

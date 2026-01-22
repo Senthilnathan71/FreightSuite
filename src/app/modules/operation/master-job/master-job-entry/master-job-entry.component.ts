@@ -1666,7 +1666,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.masterJobForm.get('FPD')?.setValue(null);
       this.masterJobForm.get('ETA')?.setValue('');
       this.masterJobForm.get('ETD')?.setValue('');
-      this.masterJobForm.get('MovementType')?.setValue(null);
+      // this.masterJobForm.get('MovementType')?.setValue(null);
       this.updateMBLValidation(null);
       return;
     }
@@ -1682,11 +1682,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
 
-    if (this.selectedDepartmentType === "SEA") {
-      this.masterJobForm.get('MovementType')?.setValue('Sea');
-    } else if (this.selectedDepartmentType === "AIR") {
-      this.masterJobForm.get('MovementType')?.setValue('Flight');
-    }
+    // if (this.selectedDepartmentType === "SEA") {
+    //   this.masterJobForm.get('MovementType')?.setValue('Sea');
+    // } else if (this.selectedDepartmentType === "AIR") {
+    //   this.masterJobForm.get('MovementType')?.setValue('Flight');
+    // }
 
     // Trigger vessel search after department change
     this.triggerVesselSearch();
@@ -2157,6 +2157,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       POD: getPortCode(formValue.POD),
       FPD: getPortCode(formValue.FPD),
       CarrierSid: CarrierSid,
+      MovementType: formValue.MovementType,
 
       // Add the others data as a separate object
       others: othersData,
