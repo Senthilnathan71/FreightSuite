@@ -56,6 +56,7 @@ import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -506,11 +507,13 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     return match ? parseFloat(match[0].replace(',', '')) : 0;
   }
   initForm() {
+    const today = getDefaultTodayDate();
     this.masterJobForm = this.fb.group({
+      
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value :'' , disabled : true}],
-      MasterJobDate: [new Date()],
+      MasterJobDate: [today],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [null],
       DestinationAgentAddress: [''],

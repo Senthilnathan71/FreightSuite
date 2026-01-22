@@ -58,6 +58,7 @@ import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.se
 import { NgxBarcode6Module } from 'ngx-barcode6';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -651,7 +652,7 @@ arapFilter = {
 
   // Header Form Initialization
   initBookingForm() {
-    const today = new Date();
+    const today = getDefaultTodayDate();
     this.bookingForm = this.fb.group({
       BookingNo: [{ value: '', disabled: true }],
       BookingDateTime: [today, [Validators.required]],

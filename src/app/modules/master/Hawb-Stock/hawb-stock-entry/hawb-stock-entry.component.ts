@@ -18,6 +18,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -138,13 +139,14 @@ get BLNumber(): string {
   }
 
   initForm(): void {
+    const today = getDefaultTodayDate();
     this.hawbForm = this.fb.group({
       AirwayBillType: ['Airline', Validators.required],
       AirwayBillNumber: ['', Validators.required],
       Agent: [null],
       HAWBSerial: ['', Validators.required],
       NumberofHAWB: ['', Validators.required],
-      ReceivedDate: [this.todayDate, Validators.required],
+      ReceivedDate: [today, Validators.required],
       StockStatus: ['Free', Validators.required],
       status: ['Active'],
       

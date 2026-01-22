@@ -17,6 +17,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -137,13 +138,14 @@ export class MawbStockComponent implements OnInit{
     }
   
     initForm(): void {
+      const today = getDefaultTodayDate();
       this.mawbForm = this.fb.group({
         AirwayBillType: ['Airline', Validators.required],
         MasterBillNumber: ['', Validators.required],
         Agent: [null],
         MAWBSerial: ['', Validators.required],
         NumberofMAWB: ['', Validators.required],
-        ReceivedDate: [this.todayDate, Validators.required],
+        ReceivedDate: [today, Validators.required],
         StockStatus: ['Free', Validators.required],
         status: ['Active'],
         

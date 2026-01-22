@@ -60,7 +60,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
-import { toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -797,11 +797,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     return match ? parseFloat(match[0].replace(',', '')) : 0;
   }
   initForm() {
+    const today = getDefaultTodayDate();
     this.masterJobForm = this.fb.group({
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value: '', disabled: true }],
-      MasterJobDate: [new Date()],
+      MasterJobDate: [today],
       FreightPPCC: ['Prepaid', Validators.required],
 
       DestinationAgent: [null],
