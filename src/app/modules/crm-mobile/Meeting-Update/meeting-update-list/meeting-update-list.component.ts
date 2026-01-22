@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild, ElementRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -50,7 +50,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     ReusableTableComponent,
     PageHeaderComponent
   ],
-  providers: [CustomDatePipe],
+  providers: [CustomDatePipe,DatePipe],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
 })
@@ -147,7 +147,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     private excelReportService: ExcelExportService,
     paginationService: PaginationService,
      private commonService: CommonService,
-     private ngbModal: NgbModal
+     private ngbModal: NgbModal,
+     private dateFormatPipe : DatePipe
   ) {
     super(paginationService);
   }
@@ -202,12 +203,17 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         const salesPerson = this.salesPersons?.find(
           (person: any) => person.UserMasterSid === meeting.leadAssignTo
         );
-        
         return {
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
           customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
           meetingType: meeting.meetingType || 'N/A',
-          meetingDate: this.datePipe.transform(meeting?.meetingDate),
+          meetingDate: meeting.meetingDate
+          ? this.dateFormatPipe.transform(
+              meeting.meetingDate,
+              'dd/MMM/yyyy hh:mm:ss a',
+              'UTC'
+            )
+          : '',
           salesPerson: salesPerson?.userName || 'N/A',
           leadAssignTo: meeting.leadAssignTo,
           status: meeting.status === "A" ? "Active" : "Suspended",
@@ -240,6 +246,63 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       this.searched = true;
     }
   }
+
+  private parseCustomDate(dateStr: any): Date | null {
+    // 🚫 Handle undefined / null / empty
+    if (!dateStr || typeof dateStr !== 'string') {
+      return null;
+    }
+
+    // Expected format: 24/Jan/2026 12:30:00 AM
+    const parts = dateStr.split(' ');
+    if (parts.length < 3) {
+      return null;
+    }
+
+    const [datePart, timePart, meridian] = parts;
+    if (!datePart || !timePart || !meridian) {
+      return null;
+    }
+
+    const dateParts = datePart.split('/');
+    if (dateParts.length !== 3) {
+      return null;
+    }
+
+    const [day, monthStr, year] = dateParts;
+
+    const monthMap: Record<string, number> = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const month = monthMap[monthStr];
+    if (month === undefined) {
+      return null;
+    }
+
+    let [hours, minutes, seconds] = timePart.split(':').map(Number);
+    if (
+      [hours, minutes, seconds].some(v => Number.isNaN(v))
+    ) {
+      return null;
+    }
+
+    // AM / PM logic
+    if (meridian === 'PM' && hours < 12) hours += 12;
+    if (meridian === 'AM' && hours === 12) hours = 0;
+
+    return new Date(
+      Number(year),
+      month,
+      Number(day),
+      hours,
+      minutes,
+      seconds
+    );
+  }
+
+
 
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
@@ -546,14 +609,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   // Modal and form handling methods
   openModal(content: TemplateRef<any>, meeting: any) {
     this.initMeetingForm();
-    if (meeting) {
-      this.meetingData = meeting;
-      const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo)?.UserMasterSid;
-      this.meetingForm.patchValue({
-        ...meeting,
-        leadAssignTo: ourSalesperson
-      });
-    }
+    // if (meeting) {
+    //   this.meetingData = meeting;
+    //   const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo)?.UserMasterSid;
+    //   this.meetingForm.patchValue({
+    //     ...meeting,
+    //     leadAssignTo: ourSalesperson
+    //   });
+    // }
     this.loadMeetingData(meeting.PreCustomerMeetingSid);
     this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
   }
@@ -565,7 +628,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         this.selectedMeeting = meeting;
 
         const meetingDate = meeting.meetingDate
-          ? this.formatDateForInput(meeting.meetingDate)
+          ? new Date(meeting.meetingDate)
           : '';
 
         const followUpDate = meeting.followUpDate
@@ -573,7 +636,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           : '';
 
         const followUp = !!(meeting.followUpDate || meeting.followUpNote);
-        this.originalMeetingDate = meetingDate;
+        // this.originalMeetingDate = meetingDate;
         this.meetingForm.patchValue({
           customerName: meeting.preCustomerMaster?.preCustomerName || '',
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,

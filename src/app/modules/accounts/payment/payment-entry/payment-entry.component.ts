@@ -48,7 +48,7 @@ import {
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
-import { errorLogger, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -361,9 +361,11 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
    */
   private initializeForm(): void {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
+    const today = getDefaultTodayDate();
+
     this.paymentForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }], // Payment Number
-      VoucherDate: [new Date()], // Payment Date
+      VoucherDate: [today], // Payment Date
       MultiBranch: [{ value: false, disabled: true }],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA

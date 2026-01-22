@@ -34,7 +34,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
-import { errorLogger, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -334,10 +334,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
   initForm() {
     const companyCurrencyId = this.currentCompany.CurrencyMasterSid || this.currentCompanyCurrency.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency.code;
+    const today = getDefaultTodayDate();
 
     this.vendorInvoiceForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],
-      VoucherDate: [new Date(), Validators.required],
+      VoucherDate: [today, Validators.required],
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],
       PartyAddress: [{ value: '', disabled: true },Validators.required],

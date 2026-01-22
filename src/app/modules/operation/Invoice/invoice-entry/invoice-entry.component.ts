@@ -49,7 +49,7 @@ import { CurrencyFormatService } from 'src/app/core/services/currency-format.ser
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
-import { toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ToastrService } from 'ngx-toastr';
@@ -353,10 +353,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentCompany?.CurrencyMasterSid ||
       this.currentCompanyCurrency?.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency.code;
+    const today = getDefaultTodayDate();
 
     this.invoiceForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],
-      VoucherDate: [null, Validators.required],
+      VoucherDate: [today, Validators.required],
       CustomerMasterSid: [null],
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],

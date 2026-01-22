@@ -227,6 +227,7 @@ export class FullcalendarComponent implements OnInit {
       this.appSettingService.showWarning("You do not have permission to view meetings.");
       return;
     }
+    this.initForm();
     console.log("Update Permission", this.mps.can('update'))
     this.modalData = { event, action };
     this.PreCustomerMeetingSid = event.id
