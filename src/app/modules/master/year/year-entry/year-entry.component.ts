@@ -23,6 +23,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-year-entry',
@@ -135,12 +136,13 @@ hasAnyDropdownPermission(): boolean {
     }
 
   initForm() {
+    const today = getDefaultTodayDate();
     this.yearForm = this.fb.group({
       
       YearName: ['', Validators.required],
       YearCode: ['', Validators.required],
-      StartDate: [this.todayDate, Validators.required],
-      EndDate: [{ value: this.calculateEndDate(this.todayDate), disabled: true }, Validators.required],
+      StartDate: [today],
+      EndDate: [{ value: this.calculateEndDate(today), disabled: true }, Validators.required],
       CurrentYear: [false], 
       YearEndCompleted: [false],
       Remarks: [''],

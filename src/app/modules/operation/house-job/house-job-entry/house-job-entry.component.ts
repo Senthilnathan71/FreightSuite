@@ -56,7 +56,7 @@ import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
-import { getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
@@ -619,10 +619,11 @@ private setupMBLDateListener(): void {
 
   // Header Form Initialization
   initBookingForm() {
+    const today = getDefaultTodayDate();
     this.houseJobForm = this.fb.group({
       MasterJobSid : [null],
       BookingNo: [{ value: '', disabled: true }],
-      BookingDateTime: [{ value: '', disabled: true }],
+      BookingDateTime: [today],
       DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
