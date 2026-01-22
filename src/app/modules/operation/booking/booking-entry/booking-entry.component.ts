@@ -1666,8 +1666,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
       if (response.data) {
         return await this.commonModalService.confirm(
-          `Today there was a booking created for this customer and route. 
-          Do you want to proceed?`,
+          `Today there was a booking created for this customer and route.\nDo you want to proceed?`,
           'Duplicate Detected',
           'Proceed Anyway'
         );
