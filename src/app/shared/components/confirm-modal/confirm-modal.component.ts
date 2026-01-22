@@ -22,7 +22,7 @@ export type ConfirmAction = 'confirm' | 'cancel';
     </div>
 
     <div class="modal-body">
-      <p class="mb-0">{{ message }}</p>
+      <p class="modal-message">{{ message }}</p>
     </div>
 
     <div class="modal-footer">
@@ -75,6 +75,10 @@ export type ConfirmAction = 'confirm' | 'cancel';
       font-size: 15px;
       color: #555;
       background: #fafafa;
+    }
+      
+    .modal-message {
+    white-space: pre-line;
     }
 
     .modal-footer {
