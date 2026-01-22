@@ -3272,6 +3272,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       };
     }
 
+    
     // Default: Show all GST columns for India
     return {
       showCGST: true,
