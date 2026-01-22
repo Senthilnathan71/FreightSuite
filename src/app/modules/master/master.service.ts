@@ -3017,6 +3017,69 @@ getFieldConfiguration() {
     );
   }
 
+  // voucher-period-master
+  getAllVoucherPeriods(CompanyMasterSid: number, BranchMasterSid: number, YearMasterSid: number) {
+    return this.http.post<any>('voucher-period', { CompanyMasterSid, BranchMasterSid, YearMasterSid }).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchVoucherPeriodList(params: any) {
+    return this.http.post("voucher-period/search-list", params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getVoucherPeriodById(VoucherPeriodSid: number) {
+    return this.http.get<{ data: any }>(`voucher-period/fetch/${VoucherPeriodSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createVoucherPeriod(payload: any) {
+    return this.http.post("voucher-period/create", payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateVoucherPeriodById(VoucherPeriodSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`voucher-period/update/${VoucherPeriodSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteVoucherPeriodById(VoucherPeriodSid: number) {
+    return this.http.delete<{ data: any }>(`voucher-period/delete/${VoucherPeriodSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getAuditLogsVoucherPeriod(tableName: string, recordId?: string) {
+    let url = `voucher-period/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   createFavouriteScreen(payload) {
     return this.http.post<{ data: any }>('favourite-screen/create', payload).pipe(
       map((resp) => {

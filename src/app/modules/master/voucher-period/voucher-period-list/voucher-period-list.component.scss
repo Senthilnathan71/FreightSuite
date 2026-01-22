@@ -1,0 +1,37 @@
+.detail-row {
+  td {
+    background-color: #f8f9fa;
+    border-top: none;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.btn-link:focus {
+  box-shadow: none;
+}
+
+.custom-form-group-select {
+  position: relative;
+
+  &.filled .input-label,
+  &:focus-within .input-label {
+    top: -8px;
+    font-size: 11px;
+    background: white;
+    padding: 0 4px;
+  }
+
+  .input-label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    color: #6c757d;
+    z-index: 1;
+  }
+}
