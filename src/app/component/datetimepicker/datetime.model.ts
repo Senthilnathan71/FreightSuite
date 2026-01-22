@@ -11,11 +11,28 @@ export class DateTimeModel implements NgbDateTimeStruct {
     minute: number;
     second: number;
 
-    timeZoneOffset: number;
-
     public constructor( init?: Partial<DateTimeModel>) {
         Object.assign(this, init);
     }
+
+    public static fromUTCString(dateString: string): DateTimeModel {
+        const date = new Date(dateString);
+        const isValidDate = !isNaN(date.valueOf());
+
+        if (!dateString || !isValidDate) {
+            return null;
+        }
+
+        return new DateTimeModel({
+            year: date.getUTCFullYear(),
+            month: date.getUTCMonth() + 1,
+            day: date.getUTCDate(),
+            hour: date.getUTCHours(),
+            minute: date.getUTCMinutes(),
+            second: date.getUTCSeconds()
+        });
+    }
+
 
     public static fromLocalString(dateString: string): DateTimeModel {
         const date = new Date(dateString);
@@ -32,8 +49,7 @@ export class DateTimeModel implements NgbDateTimeStruct {
             day: date.getDate(),
             hour: date.getHours(),
             minute: date.getMinutes(),
-            second: date.getSeconds(),
-            timeZoneOffset: date.getTimezoneOffset()
+            second: date.getSeconds()
         });
     }
 
@@ -41,38 +57,34 @@ export class DateTimeModel implements NgbDateTimeStruct {
         return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
     }
 
-    public toString(): string {
+    public toUTCString(): string {
+        if (this.isInteger(this.year) && this.isInteger(this.month) && this.isInteger(this.day)) {
+            const date = new Date(Date.UTC(
+                this.year,
+                this.month - 1,  // Month is 0-indexed in Date constructor
+                this.day,
+                this.hour || 0,
+                this.minute || 0,
+                this.second || 0
+            ));
+
+            return date.toISOString();
+        }
+
+        return null;
+    }
+
+    public toLocalString(): string {
         if (this.isInteger(this.year) && this.isInteger(this.month) && this.isInteger(this.day)) {
             const year = this.year.toString().padStart(2, '0');
             const month = this.month.toString().padStart(2, '0');
             const day = this.day.toString().padStart(2, '0');
 
-            if (!this.hour) {
-                this.hour = 0;
-            }
-            if (!this.minute) {
-                this.minute = 0;
-            }
-            if (!this.second) {
-                this.second = 0;
-            }
-            if (!this.timeZoneOffset) {
-                this.timeZoneOffset = new Date().getTimezoneOffset();
-            }
+            const hour = (this.hour || 0).toString().padStart(2, '0');
+            const minute = (this.minute || 0).toString().padStart(2, '0');
+            const second = (this.second || 0).toString().padStart(2, '0');
 
-            const hour = this.hour.toString().padStart(2, '0');
-            const minute = this.minute.toString().padStart(2, '0');
-            const second = this.second.toString().padStart(2, '0');
-
-            const tzo = -this.timeZoneOffset;
-            const dif = tzo >= 0 ? '+' : '-',
-            pad = function(num) {
-                const norm = Math.floor(Math.abs(num));
-                return (norm < 10 ? '0' : '') + norm;
-            };
-
-            const isoString = `${pad(year)}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}${dif}${pad(tzo / 60)}:${pad(tzo % 60)}`;
-            return isoString;
+            return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
         }
 
         return null;

@@ -578,8 +578,9 @@ export class FullcalendarComponent implements OnInit {
       return;
     }
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-
+    
     // Convert followUpDate in same format as meetingDate
+    const formValue = this.meetingForm.getRawValue();
     let followUpDate: string = null;
     if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
       const dt = new Date(this.meetingForm.value.followUpDate);
@@ -659,7 +660,7 @@ export class FullcalendarComponent implements OnInit {
         //   : '';
 
         const meetingDate = this.preCustomerMeetingData.meetingDate
-          ? this.formatDateForInput(this.preCustomerMeetingData.meetingDate)
+          ? new Date(this.preCustomerMeetingData.meetingDate)
           : '';
 
         const followUpDate = this.preCustomerMeetingData.followUpDate

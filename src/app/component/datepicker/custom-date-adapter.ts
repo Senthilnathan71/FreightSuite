@@ -104,13 +104,14 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
   }
 
   toModel(date: NgbDateStruct | null): Date | null {
-    // console.log('🟢 CustomDateAdapter.toModel called with:', date);
     if (!date) return null;
-    
-    // Return UTC date to avoid timezone issues
-    const result = new Date(Date.UTC(date.year, date.month - 1, date.day));
-    // console.log('✅ Converted NgbDateStruct to Date:', result);
-    return result;
+
+    return new Date(Date.UTC(
+      date.year,
+      date.month - 1,
+      date.day,
+      0, 0, 0, 0
+    ));
   }
 
   private isNgbDateStruct(obj: any): obj is NgbDateStruct {

@@ -167,6 +167,18 @@ export function getMinDate(
   return d;
 }
 
+
+export function getDefaultTodayDate(): Date {
+  const now = new Date(); // local time
+
+  return new Date(Date.UTC(
+    now.getFullYear(),   // ✅ LOCAL year
+    now.getMonth(),      // ✅ LOCAL month
+    now.getDate(),       // ✅ LOCAL day
+    0, 0, 0, 0
+  ));
+}
+
 /**
  * Calculates the maximum allowed date based on a base date and tolerance.
  *

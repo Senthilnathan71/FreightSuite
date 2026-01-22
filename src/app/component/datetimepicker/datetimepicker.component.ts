@@ -1,6 +1,28 @@
-import { Component, OnInit, Input, forwardRef, ViewChild, AfterViewInit, Injector } from '@angular/core';
-import { NgbTimeStruct, NgbDateStruct, NgbPopoverConfig, NgbPopover, NgbDatepicker, NgbPopoverModule, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  Input,
+  forwardRef,
+  ViewChild,
+  AfterViewInit,
+  Injector,
+} from '@angular/core';
+import {
+  NgbTimeStruct,
+  NgbDateStruct,
+  NgbPopoverConfig,
+  NgbPopover,
+  NgbDatepicker,
+  NgbPopoverModule,
+  NgbTimepicker,
+} from '@ng-bootstrap/ng-bootstrap';
+import {
+  NG_VALUE_ACCESSOR,
+  ControlValueAccessor,
+  NgControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { noop } from 'rxjs';
 import { DateTimeModel } from './datetime.model';
@@ -17,18 +39,20 @@ import { FeatherModule } from 'angular-feather';
     NgbPopoverModule,
     FeatherModule,
     NgbDatepicker,
-    NgbTimepicker
+    NgbTimepicker,
   ],
   providers: [
     DatePipe,
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => DateTimePickerComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class DateTimePickerComponent implements ControlValueAccessor, OnInit, AfterViewInit {
+export class DateTimePickerComponent
+  implements ControlValueAccessor, OnInit, AfterViewInit
+{
   @Input()
   dateString: string;
   meridian = true;
@@ -50,21 +74,24 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
 
   datetime: DateTimeModel = new DateTimeModel();
   private firstTimeAssign = true;
-  minDate: NgbDateStruct;   // <---- add this line
+  minDate: NgbDateStruct; // <---- add this line
 
   @ViewChild(NgbDatepicker)
   private dp: NgbDatepicker;
 
   @ViewChild(NgbPopover)
   private popover: NgbPopover;
-  timePickerContent = "Select DateTime"
+  timePickerContent = 'Select DateTime';
 
   private onTouched: () => void = noop;
   private onChange: (_: any) => void = noop;
 
   ngControl: NgControl;
 
-  constructor(private config: NgbPopoverConfig, private inj: Injector) {
+  constructor(
+    private config: NgbPopoverConfig,
+    private inj: Injector,
+  ) {
     config.autoClose = 'outside';
     config.placement = 'auto';
   }
@@ -72,26 +99,29 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
   ngOnInit(): void {
     this.ngControl = this.inj.get(NgControl);
     const now = new Date();
-  this.minDate = {
-    year:  now.getFullYear(),
-    month: now.getMonth() + 1,
-    day:   now.getDate()
-  };
+    this.minDate = {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      day: now.getDate(),
+    };
   }
 
   ngAfterViewInit(): void {
-    this.popover.hidden.subscribe($event => {
+    this.popover.hidden.subscribe(($event) => {
       this.showTimePickerToggle = false;
     });
   }
 
   writeValue(newModel: string) {
     if (newModel) {
-      this.datetime = Object.assign(this.datetime, DateTimeModel.fromLocalString(newModel));
-      this.dateString = newModel;
-      this.setDateStringModel();
+const parsedDateTime = DateTimeModel.fromUTCString(newModel);
+      if (parsedDateTime) {
+        this.datetime = Object.assign(this.datetime, parsedDateTime);
+        this.dateString = newModel;
+      }
     } else {
       this.datetime = new DateTimeModel();
+      this.dateString = '';
     }
   }
 
@@ -114,7 +144,7 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
 
   onInputChange($event: any) {
     const value = $event.target.value;
-    const dt = DateTimeModel.fromLocalString(value);
+    const dt = DateTimeModel.fromUTCString(value);
 
     if (dt) {
       this.datetime = dt;
@@ -129,11 +159,12 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
   }
 
   onDateChange($event: string | NgbDateStruct) {
-    if (typeof $event !== 'string') {   // type guard: ensures it's NgbDateStruct
-      $event = `${$event.year}-${$event.month}-${$event.day}`;
+    if (typeof $event !== 'string') {
+      // type guard: ensures it's NgbDateStruct
+      $event = `${$event.year}-${String($event.month).padStart(2, '0')}-${String($event.day).padStart(2, '0')}`;
     }
 
-    const date = DateTimeModel.fromLocalString($event);
+    const date = DateTimeModel.fromUTCString($event);
 
     if (!date) {
       this.dateString = this.dateString;
@@ -147,19 +178,23 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
     this.datetime.year = date.year;
     this.datetime.month = date.month;
     this.datetime.day = date.day;
+    this.datetime.hour = 0;
+    this.datetime.minute = 0;
+    this.datetime.second = 0;
 
     if (this.dp) {
-      this.dp.navigateTo({ year: this.datetime.year, month: this.datetime.month });
+      this.dp.navigateTo({
+        year: this.datetime.year,
+        month: this.datetime.month,
+      });
     }
 
-    console.log('test');
     this.setDateStringModel();
 
-      setTimeout(() => {
-    this.showTimePickerToggle = true;   // switch UI to time picker mode
-  }, 150);
+    setTimeout(() => {
+      this.showTimePickerToggle = true; // switch UI to time picker mode
+    }, 150);
   }
-
 
   onTimeChange(event: NgbTimeStruct) {
     this.datetime.hour = event.hour;
@@ -182,42 +217,103 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
   //   }
   // }
 
-
   setDateStringModel() {
-  // if time is not set, default to 00:00:00 (12:00 AM)
-  if (this.datetime && 
-      (this.datetime.hour === null || this.datetime.minute === null || this.datetime.second === null)) {
-    this.datetime.hour = 0;     // 12 AM
-    this.datetime.minute = 0;
-    this.datetime.second = 0;
-  }
-
-  this.dateString = this.datetime.toString();
-
-  if (!this.firstTimeAssign) {
-    this.onChange(this.dateString);
-  } else {
-    if (this.dateString !== null) {
-      this.firstTimeAssign = false;
+    if (!this.datetime || !this.datetime.year) {
+      this.dateString = '';
+      this.onChange('');
+      return;
     }
-  }
-}
 
-// Add this method to your DateTimePickerComponent class
-reset(): void {
-  this.datetime = new DateTimeModel();
-  this.dateString = '';
-  this.onChange('');
-  this.onTouched();
-  
-  // Also reset the NgbDatepicker if available
-  if (this.dp) {
-    this.dp.navigateTo(this.minDate);
-  }
-  
-  this.showTimePickerToggle = false;
-}
+    // Create UTC date from component values (NO offset calculation)
+    const utcDate = new Date(
+      Date.UTC(
+        this.datetime.year,
+        this.datetime.month - 1, // Month is 0-indexed in Date constructor
+        this.datetime.day,
+        this.datetime.hour || 0,
+        this.datetime.minute || 0,
+        this.datetime.second || 0,
+      ),
+    );
 
+    // Convert to ISO string (same values, UTC format)
+    this.dateString = utcDate.toISOString();
+
+    // Notify parent form of change
+    this.onChange(this.dateString);
+  }
+
+  /**
+   * Format datetime for display WITHOUT timezone conversion
+   * Shows exactly what user selected (same as timepicker shows)
+   */
+  getDisplayDateTime(): string {
+    if (!this.datetime || !this.datetime.year) {
+      return '';
+    }
+
+    const year = this.datetime.year;
+    const month = this.getMonthName(this.datetime.month);
+    const day = String(this.datetime.day).padStart(2, '0');
+    const hour = String(this.datetime.hour || 0).padStart(2, '0');
+    const minute = String(this.datetime.minute || 0).padStart(2, '0');
+    const second = String(this.datetime.second || 0).padStart(2, '0');
+
+    // Convert to 12-hour format if meridian is true
+    let displayHour: string | number = this.datetime.hour || 0;
+    let meridian = 'AM';
+
+    if (this.meridian) {
+      if (displayHour === 0) {
+        displayHour = 12;
+      } else if (displayHour >= 12) {
+        meridian = 'PM';
+        if (displayHour > 12) {
+          displayHour -= 12;
+        }
+      }
+      displayHour = String(displayHour).padStart(2, '0');
+    }
+
+    // Format: "22/Jan/2026 12:00:00 AM"
+    return `${day}/${month}/${year} ${displayHour}:${minute}:${second} ${this.meridian ? meridian : ''}`.trim();
+  }
+
+  /**
+   * Helper to get month name
+   */
+  private getMonthName(month: number): string {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[month - 1] || '';
+  }
+
+  // Add this method to your DateTimePickerComponent class
+  reset(): void {
+    this.datetime = new DateTimeModel();
+    this.dateString = '';
+    this.onChange('');
+    this.onTouched();
+
+    // Also reset the NgbDatepicker if available
+    if (this.dp) {
+      this.dp.navigateTo(this.minDate);
+    }
+
+    this.showTimePickerToggle = false;
+  }
 
   inputBlur($event) {
     this.onTouched();

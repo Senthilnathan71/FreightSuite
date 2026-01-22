@@ -42,7 +42,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
-import { AuthorizationStatus, errorLogger, getFormattedPort } from 'src/app/common/helper';
+import { AuthorizationStatus, errorLogger, getFormattedPort, getDefaultTodayDate } from 'src/app/common/helper';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
@@ -633,14 +633,14 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   initializeForm() {
-    const today = this.calendar.getToday();
+    const today = getDefaultTodayDate();
     this.rateRequestForm = this.fb.group({
       LeadOrCustomer: [true],
       PreCustomerMasterSid: [null],
       CustomerMasterSid: [null],
       customerName: ['', Validators.required],
       enquiryNo: [''],
-      EnquiryDate: [new Date()],
+      EnquiryDate: [today],
       shipmentDate: ['', Validators.required],
       DepartmentMasterSid: [''],
       Segment: [null, Validators.required],

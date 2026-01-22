@@ -424,7 +424,13 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   }
 
   viewVendorInvoice(vendorInvoice: any) {
-    this.router.navigate(['/operation/vendor-invoice/view', vendorInvoice.VoucherHeaderSid]);
+    if(vendorInvoice.CashOrBank === 'Y'){
+      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid],{
+        queryParams : {isNonJob : true}
+      });
+    } else {
+      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
+    }
   }
 
   editVendorInvoice(vendorInvoice: any) {

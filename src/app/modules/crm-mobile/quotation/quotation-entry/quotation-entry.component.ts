@@ -52,6 +52,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -657,6 +658,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   // SECTION4 - FORM AND FORM ARRAY RELATION
   initQuotationForm() {
+    const today = getDefaultTodayDate();
     this.quotationForm = this.fb.group({
       LeadOrCustomer : [true],
       PreCustomerMasterSid : [null],
@@ -671,7 +673,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerAddress: ['', [Validators.required]],
       CustomerBranchSid : [null],
       QuoteNumber: [{value : '', disabled: true}],
-      QuoteDate: [new Date()],
+      QuoteDate: [today],
       EnquirySid: [''],
       AgreedRate : [false],
       IsContract:[false],
@@ -786,8 +788,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       POLSid: [data?.POLSid ?? null, [Validators.required]],
       PODSid: [data?.PODSid ?? null, [Validators.required]],
       FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null],
-      effDate: [new Date(data?.effDate) || null, [Validators.required]],
-      expDate: [new Date(data?.expdate) || null, [Validators.required]],
+      effDate: [data?.effDate ? data?.effDate : null, [Validators.required]],
+      expDate: [data?.expdate ? data?.expdate : null, [Validators.required]],
       TransitDays: [data?.TransitDays || ''],
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
       ServiceLevel: [data?.ServiceLevel || null],
@@ -835,7 +837,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
-      routeForm.get('effDate')?.setValue(new Date());
+      const today = getDefaultTodayDate();
+      routeForm.get('effDate')?.setValue(today);
     } else {
       this.filterChargesBySegment(routeIndex,data?.segmentType)
     }
@@ -2668,14 +2671,46 @@ canGetTariff(routeIndex: number): boolean {
   }
 
 
-  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
-    if (!date) return null;
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate()
-    };
+  toNgbDateStruct(
+    value: string | Date | NgbDateStruct | null
+  ): NgbDateStruct | null {
+
+    if (!value) return null;
+
+    // Already NgbDateStruct
+    if (
+      typeof value === 'object' &&
+      'year' in value &&
+      'month' in value &&
+      'day' in value
+    ) {
+      return value;
+    }
+
+    // ISO string like 2026-01-23T00:00:00.000Z
+    if (typeof value === 'string') {
+      const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!match) return null;
+
+      return {
+        year: +match[1],
+        month: +match[2],
+        day: +match[3],
+      };
+    }
+
+    // Date object
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return {
+        year: value.getUTCFullYear(),
+        month: value.getUTCMonth() + 1,
+        day: value.getUTCDate(),
+      };
+    }
+
+    return null;
   }
+
 
   navigateToBooking(){
     this.router.navigate(['operation/booking/entry'])
