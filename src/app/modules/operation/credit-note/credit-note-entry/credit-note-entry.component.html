@@ -723,12 +723,16 @@
                              currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
                             }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
                             currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                               <span style="font-weight:800;font-size: 16px;">{{isIndiaGST ? 'PAN' : 'VAT No'}} :</span>
+                                <span style="font-size: 16px;">
+                                  {{ currentCompany?.Pan || currentCompany?.PAN || '' }}
+                                </span>
                     </div>
                 </div>
             </div>
 
   <!-- Invoice Title -->
-  <div style="text-align:center; border-top:1px solid black;font-size: 16px; padding-top: 10px; margin-top: 10px;">
+  <div style="text-align:center; border-top:1px solid black;font-size: 16px; padding-top: 10px; margin-top: 0px;">
     <h3 style="margin:2px 0; font-weight:bolder;font-size: 20px;"><strong>CREDIT NOTE INVOICE</strong></h3>
     <p style="font-size:12px; margin:2px 0;" *ngIf="isIndiaGST">
      <strong>
@@ -745,8 +749,7 @@
       <div style="padding-left: 30px;">
       <span>{{ creditNoteData?.PartyName}}</span><br>
       {{ creditNoteForm.get('PartyAddress')?.value || '' }}<br>
-      <span style="font-weight:600;" *ngIf="isIndiaGST">PAN :</span>
-      {{ currentCompany?.Pan || currentCompany?.PAN || '' }}
+   
       </div>
     
     </div>

@@ -1685,7 +1685,7 @@
                       formControlName="ShippingBillNo" [textWithNumbers]="100" >
                   </td>
                   <td>
-                    <div class="d-flex align-items-center" style="margin-top: 4px;">
+                    <div class="d-flex align-items-center">
                       <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d22="ngbDatepicker"
                         [minDate]="minDate" (keydown.arrowDown)="d22.open()" (click)="d22.toggle()"
                         formControlName="ShippingBillDate" />
@@ -1767,7 +1767,7 @@
                   </td>
                   }
                   <td>
-                    <div class="d-flex align-items-center"style="margin-top: 4px;" >
+                    <div class="d-flex align-items-center" >
                         <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker"
                           (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()"
                           [minDate]="today" container="body" readonly />
@@ -1794,7 +1794,7 @@
                   </td>
                   }
                   <td>
-                    <div class="d-flex align-items-center"style="margin-top: 4px;" >
+                    <div class="d-flex align-items-center" >
                         <input class="form-control" placeholder="" name="dp" ngbDatepicker #d24="ngbDatepicker"
                           (click)="d24.toggle()" formControlName="DeliveryDate" (keydown.arrowDown)="d24.open()"
                           [minDate]="today" container="body" readonly />
