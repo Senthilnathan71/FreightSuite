@@ -1638,9 +1638,9 @@
               <div
                 style="
                   flex: 1;
-                  text-align: center;
+                  text-align: end;
                   font-size: 17px;
-                  padding-right: 5%;
+                  padding-right: 2%;
                 "
               >
                 <h3 style="margin: 0; font-weight: 900">
@@ -1664,8 +1664,25 @@
                   }}
                   ,
                   {{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}
+               
                 </p>
+             <div
+  style="
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    font-size: 16px;
+  "
+>
+  <span *ngIf="currentCompanyCountryCode === 'IN'">GST No.</span>
+  <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No.</span>
+  <span>: {{ currentCompany?.Pan || '' }}</span>
+</div>
+
               </div>
+
             </div>
           </div>
 

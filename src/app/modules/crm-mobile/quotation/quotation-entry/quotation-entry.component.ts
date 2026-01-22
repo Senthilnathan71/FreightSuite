@@ -3157,7 +3157,7 @@ ${this.userData.userName}`;
     
     // When approving a carrier, ONLY disable the approved carrier's fields
     // but don't change status of other carriers
-    this.disableApprovedCarrierFields(routeIndex, carrierIndex);
+    this.enableCarrierFields(routeIndex, carrierIndex);
     
   } else if (status?.value === "Counter") {
     carrierForm.get('authorizerStatus')?.setValue(status.value);
@@ -3199,7 +3199,7 @@ disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
     const chargeFields = [
       'ChargeUomSid', 'RevenueRate', 'RevenueCurrencyMasterSid', 
       'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
-      'CostExchangeRate', 'Qty'
+      'CostExchangeRate', 'Qty','chargeUnitMaster'
     ];
     
     chargeFields.forEach(field => {
@@ -4708,5 +4708,33 @@ viewBooking(booking: any): void {
     } else {
         this.appSettingService.showWarning('Booking information not available');
     }
+}
+
+isQuotationSavedAfterApproval(routeIndex: number): boolean {
+  if (!this.isEditMode || !this.quotationData) {
+    return false;
+  }
+  
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  const carrierArr = this.quoteCarriers(routeIndex);
+  
+  // Check if any carrier is approved in the form
+  const hasApprovedCarrierInForm = carrierArr.controls.some((carrier: FormGroup) => 
+    carrier.get('authorizerStatus')?.value === "Approved"
+  );
+  
+  if (!hasApprovedCarrierInForm) {
+    return false;
+  }
+  
+  // Check if this approval is already saved in the database
+  const savedRoute = this.quotationData.quoteRoute?.[routeIndex];
+  const savedCarriers = savedRoute?.quoteCarrier || [];
+  
+  const hasSavedApproval = savedCarriers.some(carrier => 
+    carrier.ApprovalStatus === "Approved"
+  );
+  
+  return hasSavedApproval;
 }
 }

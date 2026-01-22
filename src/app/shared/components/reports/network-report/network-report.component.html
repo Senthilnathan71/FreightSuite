@@ -72,20 +72,20 @@
                         <td>{{ item.departmentName || '' }}</td>
                         <td>{{ item.BookingNo || '' }}</td>
                         <td>{{ item.HouseNo || '' }}</td>
-                        <td></td>
+                        <td>{{item.masterJobNo || ''}}</td>
                         <td>{{ item.HblNo || '' }}</td>
                         <td>{{ item.MBLNo || '' }}</td>
-                        <td class="text-end">{{item.bookingRates?.revenue | number:'1.3-3'}}</td>
-                        <td class="text-end">{{item.bookingRates?.cost | number:'1.3-3'}}</td>
-                        <td class="text-end">{{item.bookingRates?.gp | number:'1.3-3'}}</td>
+                        <td class="text-end">{{item.totalRevenue | number:'1.3-3'}}</td>
+                        <td class="text-end">{{item.totalCost | number:'1.3-3'}}</td>
+                        <td class="text-end">{{item.profit | number:'1.3-3'}}</td>
                         <td>{{ item.nominationBy || '' }}</td>
                         <td>{{ item.originAgent || '' }}</td>
-                        <td></td>
+                        <td>{{ item.originNetwork || ''}}</td>
                         <td>{{ item.destinationAgent || '' }}</td>
-                        <td></td>
+                        <td>{{ item.destinationNetwork || ''}}</td>
                         <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
-                        <td></td>
+                        <td class="text-center">{{item.totalNoOfTEU || ''}}</td>
                     </tr>
 
                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">

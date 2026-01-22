@@ -767,12 +767,12 @@
   </div>
 </aside>
                       
-                     <aside class="col-md-2 mt-md-2">
+                    <aside class="col-md-2 mt-md-2">
   <div class="d-flex justify-content-end"
        *ngIf="isEditMode && isRouteApproved(routeIndex)">
     <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
             (click)="goForBookingCreationForRoute(routeIndex)"
-            [disabled]="!isContractValid()|| doesBookingExistForRoute(routeIndex)">
+            [disabled]="!isContractValid() || doesBookingExistForRoute(routeIndex) || !isQuotationSavedAfterApproval(routeIndex)">
       <!-- Show appropriate text based on contract status and booking existence -->
       @if(doesBookingExistForRoute(routeIndex) && quotationForm.get('IsContract')?.value) {
         <i class="fas fa-plus me-1"></i> Create Booking
@@ -1070,8 +1070,7 @@
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                             <ng-select formControlName="authorizerStatus" [items]="allApprovalStatus"
                                               bindLabel="name" bindValue="value"
-                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                              [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
+                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger"></span></label>
