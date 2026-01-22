@@ -51,7 +51,7 @@ export class FollowUpComponent implements OnInit, OnChanges {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any;
-  @Input() FollowupSid?: number;
+  FollowupSid?: any;
 
   /**
    * Inputs for auto inserting milestone
@@ -138,6 +138,9 @@ export class FollowUpComponent implements OnInit, OnChanges {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.loadLookups();
+    if (this.documentSid) {
+      this.loadExistingFollowupForDocument();
+    }
     this.followupForm.get('FollowupAction')?.valueChanges.subscribe(value => {
       this.updateFieldVisibility(value);
     });
@@ -171,11 +174,49 @@ export class FollowUpComponent implements OnInit, OnChanges {
     }
   }
 
+  private patchFollowup(followupData: any): void {
+  const formData = {
+    FollowupRequire: followupData.FollowupRequire ?? 'Y',
+    FollowupDate: this.parseDateToNgbStruct(followupData.FollowupDate),
+    FollowupAction: followupData.FollowupAction ?? '',
+    InternalUser: followupData.InternalUser ?? '',
+    ExternalUser: followupData.ExternalUser ?? '',
+    Remarks: followupData.Remarks ?? '',
+    Public: followupData.Public === 'Y',
+    sentEmail: followupData.sentEmail === 'Y',
+    Status: followupData.Status === 'A' ? 'Active' : 'Suspended',
+    Subject: followupData.Subject ?? ''
+  };
+
+  console.log('Patching followup form:', formData);
+
+  this.followupForm.patchValue(formData);
+  this.updateFieldVisibility(formData.FollowupAction);
+}
+
+
+    loadExistingFollowupForDocument(): void {
+    if (!this.documentSid) return;
+    
+    this.masterService.getFollowupsByDocumentId(this.documentSid).subscribe({
+      next: (response: any) => {
+        if (response.status && response.data) {
+          const existingFollowup = response.data;
+          this.FollowupSid = existingFollowup.FollowupSid;
+          this.isEditMode = true;
+          this.patchFollowup(existingFollowup); // This will patch the form
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load existing followup:', err);
+      }
+    });
+  }
+
 
     private handleSaveResponse(resp: any): void {
     if (resp.status) {
       this.appSettingService.showSuccess(resp.message);
-      this.followupSaved.emit(resp); // Emit the success event
       this.closeModal();
     } else {
       this.appSettingService.showError(resp.message);
@@ -235,28 +276,64 @@ export class FollowUpComponent implements OnInit, OnChanges {
       InternalUser: [''],
       ExternalUser:[''],
       Remarks: [''], 
-      Public: [''], 
-      sentEmail: [''], 
+      Public: [false], 
+      sentEmail: [false], 
       Status: ['Active', Validators.required], 
       Subject: ['', Validators.required],
     });
-    if (this.FollowupSid) {
-      this.isEditMode = true;
-      this.loadFollowup();
-    }
   }
   loadFollowup(): void {
-    this.masterService.getFollowById(this.FollowupSid!)
+    if (!this.documentSid) return;
+    this.masterService.getFollowupsByDocumentId(this.documentSid!)
       .subscribe({
-        next: (res) => {
-          this.followupForm.patchValue(res);
-        },
+        next: (res: any) => {
+           if (res.status && res.data) {
+          const followupData = res.data; // Get the first followup from array
+          this.FollowupSid = followupData.FollowupSid; // Ensure FollowupSid is set
+          
+          // Map the API response to form values
+          const formData = {
+            FollowupRequire: followupData.FollowupRequire === 'Y' ? 'Y' : 'N',
+            FollowupDate: this.parseDateToNgbStruct(followupData.FollowupDate),
+            FollowupAction: followupData.FollowupAction || '',
+            InternalUser: followupData.InternalUser || '',
+            ExternalUser: followupData.ExternalUser || '',
+            Remarks: followupData.Remarks || '',
+            Public: followupData.Public === 'Y',
+            sentEmail: followupData.sentEmail === 'Y' ,
+            Status: followupData.Status === 'A' ? 'Active' : 'Suspended',
+            Subject: followupData.Subject || ''
+          };
+          
+          console.log('Patching form with data:', formData);
+          this.followupForm.patchValue(formData);
+          
+          // Trigger visibility update
+          this.updateFieldVisibility(formData.FollowupAction);
+        }
+      },
         error: (err) => {
           console.error('Failed to load followup:', err);
         }
       });
   }
+  parseDateToNgbStruct(dateString: string | null): NgbDateStruct | null {
+  if (!dateString) return null;
   
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return null;
+  }
+}
   async onSave() {
   if (this.btnDisable) return;
 
@@ -288,7 +365,8 @@ export class FollowUpComponent implements OnInit, OnChanges {
       Status: formValue.Status === 'Active' ? 'A' : 'S',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      DocumentSid: this.documentSid
+      DocumentSid: this.documentSid,
+      Subject: formValue.Subject,
     };
     const emailRecipients = this.getEmailRecipients(formValue);
     let pdfFile: File | null = null;
