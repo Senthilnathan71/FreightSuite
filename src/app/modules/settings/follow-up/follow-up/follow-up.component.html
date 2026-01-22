@@ -61,7 +61,7 @@
                                         bindValue="name">
                                     </ng-select>
                                 <label for="text-input" class="input-label">Followup Action <span
-                                        class="text-danger"></span>*</label>
+                                        class="text-danger">*</span></label>
                                 @if(followupForm.get('FollowupAction')?.touched &&
                                 followupForm.get('FollowupAction')?.invalid){
                                 <div class="error-message">
@@ -125,7 +125,7 @@
                         <aside class="col-md-2 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="Public">
+                                    <input type="checkbox" id="Public" class="form-check-input sm" formControlName="Public">
                                     <label for="Public" class="form-check-label sm">Public <span
                                             class="text-danger"></span></label>
                                 </div>
@@ -134,7 +134,7 @@
                         <aside class="col-md-2 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="sentEmail">
+                                    <input type="checkbox" id="sentEmail" class="form-check-input sm" formControlName="sentEmail">
                                     <label for="sentEmail" class="form-check-label sm">Send Email  <span
                                             class="text-danger"></span></label>
                                 </div>
