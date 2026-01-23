@@ -182,6 +182,7 @@ export class QuotationEntryComponent implements OnInit {
   productLookupConfig = ['ProductCode','ProductName'];
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
+    isSaving: boolean = false;
 
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
@@ -1731,10 +1732,15 @@ isRateLockDisabled(): boolean {
   }
 
   onSubmit() {
+     if (this.isSaving) {
+    return;
+  }
+  this.isSaving = true;
 
     const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
     if(canLoginUserAuthorize && !this.approvalDropdownValue){
       this.appSettingService.showWarning("Please select approval status");
+      this.isSaving = false;
       return;
     }
     let hasCarrierValidationErrors = false;
@@ -1764,6 +1770,7 @@ isRateLockDisabled(): boolean {
 
   if (hasCarrierValidationErrors) {
     this.selectedTab1 = 'Route Details';
+    this.isSaving = false;
     return;
   }
     if (this.quoteRoutes.invalid) {
@@ -1771,6 +1778,7 @@ isRateLockDisabled(): boolean {
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
       this.selectedTab1 = 'Route Details';
+      this.isSaving = false;
       return;
     }
 
@@ -1787,6 +1795,7 @@ isRateLockDisabled(): boolean {
       this.quotationForm.markAllAsTouched();
       this.quotationForm.updateValueAndValidity();
       this.selectedTab1 = 'Quotation';
+      this.isSaving = false;
       return;
     }
 
@@ -1913,7 +1922,7 @@ isRateLockDisabled(): boolean {
 
       this.leadService.updateQuoteById(this.QuoteHeaderSid, payload).subscribe(
         (resp: any) => {
-
+          this.isSaving = false;
           if (resp.status) {
                       setTimeout(() => {
             disabledFieldsByRoute.forEach((disabledFields, routeIndex) => {
@@ -1954,6 +1963,7 @@ isRateLockDisabled(): boolean {
 
       this.leadService.createQuotation(payload).subscribe(
         (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess("Quotation Created Successfully");
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
@@ -3157,7 +3167,7 @@ ${this.userData.userName}`;
     
     // When approving a carrier, ONLY disable the approved carrier's fields
     // but don't change status of other carriers
-    this.disableApprovedCarrierFields(routeIndex, carrierIndex);
+    this.enableCarrierFields(routeIndex, carrierIndex);
     
   } else if (status?.value === "Counter") {
     carrierForm.get('authorizerStatus')?.setValue(status.value);
@@ -3199,7 +3209,7 @@ disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
     const chargeFields = [
       'ChargeUomSid', 'RevenueRate', 'RevenueCurrencyMasterSid', 
       'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
-      'CostExchangeRate', 'Qty'
+      'CostExchangeRate', 'Qty','chargeUnitMaster'
     ];
     
     chargeFields.forEach(field => {
@@ -4708,5 +4718,33 @@ viewBooking(booking: any): void {
     } else {
         this.appSettingService.showWarning('Booking information not available');
     }
+}
+
+isQuotationSavedAfterApproval(routeIndex: number): boolean {
+  if (!this.isEditMode || !this.quotationData) {
+    return false;
+  }
+  
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  const carrierArr = this.quoteCarriers(routeIndex);
+  
+  // Check if any carrier is approved in the form
+  const hasApprovedCarrierInForm = carrierArr.controls.some((carrier: FormGroup) => 
+    carrier.get('authorizerStatus')?.value === "Approved"
+  );
+  
+  if (!hasApprovedCarrierInForm) {
+    return false;
+  }
+  
+  // Check if this approval is already saved in the database
+  const savedRoute = this.quotationData.quoteRoute?.[routeIndex];
+  const savedCarriers = savedRoute?.quoteCarrier || [];
+  
+  const hasSavedApproval = savedCarriers.some(carrier => 
+    carrier.ApprovalStatus === "Approved"
+  );
+  
+  return hasSavedApproval;
 }
 }

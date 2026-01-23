@@ -53,6 +53,8 @@ export class VendorCreditNoteEntryComponent {
   currentCompany: any;
   currentBranch: any;
   vendorCreditNoteData: any;
+  currentCompanyCurrency : any;
+  currentCompanyCountry : any;
 
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
@@ -229,6 +231,8 @@ gstTypes = [
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+    this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
+    this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
@@ -830,11 +834,11 @@ private async postVoucher(voucherHeaderSid: number) {
       BranchMasterSid: currentBranch.BranchMasterSid,
       YearMasterSid: currentFinancialYear,
       LocalCurrencyMasterSid: currentCurrency  ,
-      LocalCurrencyCode: currentCompany.CurrencyCode , 
+      LocalCurrencyCode:this.currentCompanyCurrency.code , 
       PostedBy: currentUserEmail ,
       TaxDetails: {
         CountryMasterSid: currentCountry,
-        countryName: currentCountryName,
+        countryCode: String(this.currentCompanyCountry.countryCode).toLowerCase(),
         TaxCategory: 'Inter', 
         EffectiveFrom: new Date().toISOString(),
         TaxType: 'Output' 

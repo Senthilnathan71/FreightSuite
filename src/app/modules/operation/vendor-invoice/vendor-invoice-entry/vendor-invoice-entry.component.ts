@@ -261,7 +261,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     public mps: MenuPermissionService,
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatService: CurrencyFormatService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private datePipe : CustomDatePipe
   ) { }
 
   ngOnInit(): void {
@@ -1870,6 +1871,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const patchCostData: any[] = []; // Store cost data to update
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
+   const derivedNarration = `${formValue.BillNo} ${this.datePipe.transform(formValue.BillDate)}  ${formValue.Narration}`; 
     // Add details with CostRevenueChargesSid and job IDs
     const voucherDetailArray = (formValue.voucherDetails || []).map((detail: any, index: number) => {
       const costRevenueChargesSid = detail.CostRevenueChargesSid;
@@ -1910,6 +1912,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         MasterJobSid: detail.MasterJobSid ?? null,
         HouseJobSid: detail.HouseJobSid ?? null,
         YearMasterSid: YearMasterSid,
+        Narration : derivedNarration,
         CostRevenueChargesSid: costRevenueChargesSid || null,
       };
     });

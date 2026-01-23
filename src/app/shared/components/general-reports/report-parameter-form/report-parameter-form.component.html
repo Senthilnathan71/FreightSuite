@@ -213,7 +213,7 @@
             type="submit"
             class="btn btn-info btn-sm ms-1"
             [disabled]="!isFormValid() || loading"
-          >
+            appPreventMultiClick>
             <span *ngIf="!loading">
               <i class="mdi mdi-chart-bar"></i> Generate Report
             </span>

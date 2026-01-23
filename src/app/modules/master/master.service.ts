@@ -3889,8 +3889,8 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
     )
   }
 
-  getFollowById(followupMasterSid) {
-    return this.http.get<{ data: any }>(`followup/fetch/${followupMasterSid}`).pipe(
+  getFollowupsByDocumentId(documentSid: number) {
+    return this.http.get<{ data: any }>(`followup/fetch/${documentSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -3898,8 +3898,8 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
     )
   }
 
-  updateById(followupMasterSid, payload) {
-    return this.http.patch<{ data: any }>(`followup/update/${followupMasterSid}`, payload).pipe(
+  updateById(id, payload) {
+    return this.http.patch<{ data: any }>(`followup/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

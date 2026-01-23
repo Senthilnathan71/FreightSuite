@@ -57,6 +57,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.service';
 import { NgxBarcode6Module } from 'ngx-barcode6';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -137,7 +138,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   parsedBookings: BookingData[] = [];
   showParsedData = false;
   uploadResult: any = null;
-
+  isSaving : boolean = false;
 
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -424,7 +425,8 @@ arapFilter = {
     public logoService : LogoService,
     private barcodeService: BarcodeService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
-    private sidebarService : VerticalSidebarService
+    private sidebarService : VerticalSidebarService,
+    private commonModalService : ModalService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -1265,6 +1267,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           if(withMilestoneRefresh){
             this.milestoneComponent.loadShipmentMilestones(resp.data?.ShipmentNo);
           }
+        } else {
+          this.isSaving = false;
         }
       }
     )
@@ -1474,6 +1478,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
     this.syncFormValueWithRateComponent();
     this.applyTranshipmentRestrictions();
+    this.isSaving = false;
   }
 
   // patchBookingFromQuotation(data:any){
@@ -1653,17 +1658,44 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
 
-  onSubmit() {
+  private async performDuplicateCheck(payload: any): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.operationService.checkBookingDuplicate(payload)
+      );
+
+      if (response.data) {
+        return await this.commonModalService.confirm(
+          `Today there was a booking created for this customer and route.\nDo you want to proceed?`,
+          'Duplicate Detected',
+          'Proceed Anyway'
+        );
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Duplicate check failed:', error);
+      this.appSettingService.showError(
+        'Duplicate check failed. Proceeding anyway.'
+      );
+      return true;
+    }
+  }
+
+
+  async onSubmit() {
+    this.isSaving = true;
     console.log('Submit triggered', this.bookingForm.value);
     if (this.isEditMode) {
       const currentFormState = JSON.stringify(this.getCurrentFormState());
       if (this.initialFormValue === currentFormState) {
         this.appSettingService.showWarning('No changes are there to save.');
         console.log("STOP 1 - No changes return");
+        this.isSaving = false;
         return;
       }
     }
-         const cleanDate = (dateValue: any) => {
+    const cleanDate = (dateValue: any) => {
     if (!dateValue || dateValue.toString() === 'Invalid Date') {
       return null;
     }
@@ -1677,6 +1709,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   this.bookingForm.updateValueAndValidity();
        if (!this.validateAllForms()) {
         console.log("STOP 2 - validateAllForms failed");
+      this.isSaving = false;
     return;
   }
     if (this.bookingForm.invalid) {
@@ -1684,6 +1717,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.bookingForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       console.log("STOP 3 - bookingForm invalid");
+      this.isSaving = false;
       return;
     }
 
@@ -1692,6 +1726,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.croForm.updateValueAndValidity();
     this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
     console.log("STOP 4 - CRO form invalid");
+    this.isSaving = false;
     return;
   }
 
@@ -1867,6 +1902,27 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     console.log("rateResult:", this.rateResult);
     console.log('Submitted payload:', payload);
 
+    const duplicateCheckingPayload = {
+      CompanyMasterSid: payload.CompanyMasterSid,
+      BranchMasterSid: payload.BranchMasterSid,
+      DepartmentMasterSid: payload.DepartmentMasterSid,
+      BookingDateTime: payload.BookingDateTime,
+      CustomerMasterSid: payload.CustomerMasterSid,
+      POL: payload.POL,
+      POD: payload.POD,
+      isEditMode : this.isEditMode,
+      BookingHeaderSid : this.isEditMode ? this.BookingHeaderSid : null
+    }
+
+    if (!this.isEditMode) {
+      const shouldProceed = await this.performDuplicateCheck(duplicateCheckingPayload);
+
+      if (!shouldProceed) {
+        this.isSaving = false;
+        return; // STOP submission
+      }
+    }
+    
     if (this.isEditMode && this.BookingHeaderSid) {
       this.operationService.updateBookingById(this.BookingHeaderSid, payload).subscribe({
         next: (resp: any) => {
@@ -1880,11 +1936,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.loadBookingById(this.BookingHeaderSid,true);
           } else {
             this.appSettingService.showError('Error updating booking.');
+            this.isSaving = false;
             console.error(resp.message);
           }
         },
         error: (err) => {
           this.appSettingService.showError('Failed to update booking.');
+          this.isSaving = false;
           console.error(err);
         }
       });
@@ -1897,11 +1955,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.router.navigate(['operation/booking/entry', bookingId]);
           } else {
             this.appSettingService.showError('Error creating booking.');
+            this.isSaving = false;
             console.error(resp.message);
           }
         },
         error: (err) => {
           this.appSettingService.showError('Failed to create booking.');
+          this.isSaving = false;
           console.error(err);
         }
       });
