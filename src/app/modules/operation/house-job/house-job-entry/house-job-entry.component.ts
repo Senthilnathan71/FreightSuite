@@ -635,7 +635,7 @@ private setupMBLDateListener(): void {
       ConsigneeAddress: ['', [Validators.required]],
       Notify: [null],
       NotifyAddress: [''],
-      DestinationAgent : [null, [Validators.required]],
+      DestinationAgent : [null],
       AgentName : [''],
       AgentAddress: [''],
       CarrierSid : [null],
