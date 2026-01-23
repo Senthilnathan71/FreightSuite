@@ -7,11 +7,13 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
   selector: 'app-cfs-outturn',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintFooterComponent,PrintHeaderComponent],
   templateUrl: './cfs-outturn.component.html',
   styles: ``
 })
