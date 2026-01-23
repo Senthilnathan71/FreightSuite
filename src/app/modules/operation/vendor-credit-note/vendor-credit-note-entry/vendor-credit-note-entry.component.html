@@ -23,12 +23,7 @@
         [disabled]="isViewMode">
   <i class="fas fa-upload me-1"></i> Upload
 </button> -->
- <button  type="button" 
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-            (click)="onFinalSave()" [disabled]="vendorCreditNoteData?.PostStatus=== 'P'" *ngIf="isEditMode"
-            >
-      <i class="fas fa-check-circle me-1"></i> Final
-    </button>
+ 
 
     <!-- <button *ngIf="isViewMode && isPosted" type="button" 
             class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
@@ -45,10 +40,16 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button [disabled]="isPosted" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onSubmit()">
             <i class="fas fa-save me-1"></i> Save
           </button>
+          <button  type="button" 
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
+            (click)="onFinalSave()" [disabled]="isPosted"
+            >
+      <i class="fas fa-check-circle me-1"></i> Post
+    </button>
 
              <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -81,7 +82,7 @@
           <div class="row">
 
             <!-- Vendor Invoice No -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
@@ -91,7 +92,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-2">
+            <aside class="col-md-3">
   <div class="d-flex gap-1 align-items-end">
     <!-- Invoice Dropdown -->
     <div class="custom-form-group custom-form-group-select flex-grow-1" 
@@ -122,14 +123,14 @@
 
 
             <!-- Invoice Date -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker id="VoucherDate"
                     #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="VoucherDate"
                     [footerTemplate]="footerTemplate1" [class.is-invalid]="isFieldInvalid('VoucherDate')" />
                   <label class="input-label" for="VoucherDate">
-                    Invoice Date <span class="text-danger">*</span>
+                    Vendor Credit Date <span class="text-danger">*</span>
                   </label>
                 </div>
                 <button class="btn bi bi-calendar3 mt-2" (click)="d1.toggle()" type="button">
@@ -150,7 +151,7 @@
 
 
             <!-- Posted On (readonly) -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="PostedOn" formControlName="PostedOn" placeholder="" class="custom-input-field sm"
                   readonly />
@@ -160,7 +161,7 @@
 
 
             <!-- Narration -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
                   class="custom-input-field sm" />
@@ -168,7 +169,7 @@
               </div>
             </aside>
 
-           <aside class="col-md-2">
+           <aside class="col-md-3">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorCreditNoteForm.get('PartyName')?.value">
     <dofi-searchable-dropdown 
@@ -202,7 +203,7 @@
 
             <!-- Vendor Address (readonly) -->
             <!-- Vendor Branch Selection -->
-             <aside class="col-md-2">
+             <aside class="col-md-3">
   <div class="custom-form-group">
     <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder="" readonly id="PartyAddress">
     <label class="input-label" for="PartyAddress">Vendor Address</label>
@@ -212,7 +213,7 @@
 
             <!-- GST No (readonly) -->
 
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text"  formControlName="GSTNo" placeholder="" class="custom-input-field sm"
                   readonly />
@@ -222,7 +223,7 @@
             </aside>
            
 <!-- GST Type -->
-<aside class="col-md-2">
+<aside class="col-md-3">
   <div class="custom-form-group">
     <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" >
     <label class="input-label" *ngIf="currentUserCountry === 'india'">GST Type</label>
@@ -231,7 +232,7 @@
 </aside>
 
            <!-- Add this temporarily for debugging -->
-<aside class="col-md-2">
+<aside class="col-md-3">
   <div class="custom-form-group">
     <input type="text" formControlName="PlaceOfSupply" placeholder="" id="PlaceOfSupply"
       class="custom-input-field sm" readonly />
@@ -240,10 +241,10 @@
   
 </aside>
 <!-- Invoice Type with auto-determination -->
-<aside class="col-md-2">
+<aside class="col-md-3">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorCreditNoteForm.get('InvoiceType')?.value">
-    <ng-select [items]="gstTypes" bindLabel="name" bindValue="id" 
+    <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" 
       formControlName="InvoiceType" [readonly]="true">
     </ng-select>
     <label class="input-label">Invoice Type</label>
@@ -251,7 +252,7 @@
 </aside>
 
             <!-- Currency -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!vendorCreditNoteForm.get('CurrencyCode')?.value">
                 <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
@@ -269,7 +270,7 @@
             </aside>
 
             <!-- Exchange Rate -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="number" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
                   class="custom-input-field sm" (blur)="onExchangeRateChange()" step="0.01"
@@ -282,7 +283,7 @@
 
 
             <!-- Bill Amount (readonly calculated) -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="number" id="BillAmount" [value]="calculateTotalLocalAmount()" placeholder=""
                   class="custom-input-field sm" readonly />
@@ -292,7 +293,7 @@
 
 
             <!-- Bill Date -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker id="BillDate"
@@ -319,7 +320,7 @@
             </ng-template>
 
             <!-- Bill No -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
                   [class.is-invalid]="isFieldInvalid('BillNo')" />
@@ -330,7 +331,7 @@
             </aside>
 
             <!-- MBL No -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm" />
                 <label for="MBLNo" class="input-label">MBL No.</label>
@@ -338,7 +339,7 @@
             </aside>
 
             <!-- HBL No -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm" />
                 <label for="HBLNo" class="input-label">HBL No.</label>
@@ -348,7 +349,7 @@
         
 
             <!-- Remarks -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
                   formControlName="Remarks"></textarea>
@@ -356,7 +357,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-2">
+            <aside class="col-md-3">
 
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!vendorCreditNoteForm.get('CreditNoteReason')?.value">  
                   <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
@@ -367,7 +368,7 @@
               </aside>
 
             <!-- Status -->
-            <aside class="col-md-2">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!vendorCreditNoteForm.get('Status')?.value">
                 <ng-select [items]="statusList" bindLabel="name" bindValue="value" formControlName="Status"
@@ -393,9 +394,6 @@
       {{ getFirstRateError() }}
     </div>
   </div>
-              <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="addDetailRow()" type="button">
-                <i class="fas fa-plus me-1"></i>Add Charge
-              </button>
             </div>
 
           <!-- Detail Grid -->

@@ -94,7 +94,7 @@ HSSACLookupConfig = {
   departmentLookupConfig = {
     displayFields: ['departmentCode', 'departmentName'],
     displayLabels: ['Code', 'Name'],
-    labelFields: ['departmentCode'],
+    labelFields: ['departmentName'],
   };
   // Add master job config with other configs
 masterJobLookupConfig = {
@@ -544,8 +544,8 @@ gstTypes = [
       BillAmount: header.Amount || 0,
       BillDate: this.toNgbDate(header.DocumentDate),
       BillNo: header.DocumentNumber || '',
-      MBLNo: header.MBLNo || '',
-      HBLNo: header.HBLNo || '',
+      MBLNo: header.MasterNumber || '',
+      HBLNo: header.HouseNumber || '',
       Remarks: header.Remarks || '',
     });
     const customerMasterSid = header.CustomerMasterSid;
@@ -913,8 +913,8 @@ onGSTTypeChange() {
     TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
     LocalAmount: [data?.LocalAmount || 0],
     PartyAmount: [data?.PartyAmount || 0],
-    MasterJobSid: [data?.MasterJobSid || null],
-    HouseJobSid: [data?.HouseJobSid || null],
+    MasterJobSid: [{value: data?.MasterJobSid || null, disabled: true}],
+    HouseJobSid: [{value: data?.HouseJobSid || null, disabled: true}],
     DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
     LedgerMasterSid: [data?.LedgerMasterSid || null],
     COAMasterSid: [data?.COAMasterSid || null],
@@ -2086,7 +2086,7 @@ getMasterJobNumber(jobSid: number): string {
   }
 
  setFormReadonly() {
-  if (this.isViewMode || this.isPosted) {
+  if (this.isEditMode || this.isPosted) {
     this.vendorCreditNoteForm.disable();
     
     // Also disable details array if posted
@@ -2398,7 +2398,8 @@ getMasterJobNumber(jobSid: number): string {
           this.spinner.hide();
           if (response.status) {
             this.appSettingService.showSuccess('Vendor CreditNote updated successfully');
-            this.router.navigate(['/operation/vendor-credit-note/list']);
+            const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+            this.router.navigate(['/operation/vendor-credit-note/entry',id]);
           } else {
             this.appSettingService.showError('Failed to update Vendor CreditNote');
           }
@@ -2415,8 +2416,9 @@ getMasterJobNumber(jobSid: number): string {
           this.spinner.hide();
           if (response.status) {
             this.appSettingService.showSuccess('Vendor CreditNote created successfully');
-            
-            this.router.navigate(['/operation/vendor-credit-note/list']);
+            const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+            if(id) this.router.navigate(['/operation/vendor-credit-note/entry',id]);
+            else this.router.navigate(['/operation/vendor-credit-note/list']);
           } else {
             this.appSettingService.showError(response.message || 'Failed to create Vendor CreditNote');
           }
@@ -2468,7 +2470,7 @@ getMasterJobNumber(jobSid: number): string {
     Narration: formValue.Narration,
     MasterJobSid: formValue.MasterJobSid,
     HouseJobSid: formValue.HouseJobSid,
-    VoucherDate: this.fromNgbDate(formValue.VoucherDate),
+    VoucherDate: formValue.VoucherDate ? new Date(formValue.VoucherDate) : null,
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
     Status: formValue.Status,
     COAMasterSid: coaMasterSid, 
@@ -2731,7 +2733,8 @@ get isDraft(): boolean {
           this.isSaving = false;
           if (response.status) {
             this.appSettingService.showSuccess('Vendor CreditNote updated successfully');
-            this.router.navigate(['/operation/vendor-credit-note/list']);
+            const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+            this.router.navigate(['/operation/vendor-credit-note/entry',id]);
           } else {
             this.appSettingService.showError('Failed to update Vendor CreditNote');
           }
@@ -2750,7 +2753,9 @@ get isDraft(): boolean {
           this.isSaving = false;
           if (response.status) {
             this.appSettingService.showSuccess('Vendor CreditNote created successfully');
-            this.router.navigate(['/operation/vendor-credit-note/list']);
+            const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+            if(id) this.router.navigate(['/operation/vendor-credit-note/entry',id]);
+            else this.router.navigate(['/operation/vendor-credit-note/list']);
           } else {
             this.appSettingService.showError('Failed to create Vendor CreditNote');
           }

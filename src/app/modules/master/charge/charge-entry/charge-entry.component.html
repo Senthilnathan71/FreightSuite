@@ -249,9 +249,9 @@
                                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
                             </div>
                             </div>
-                           <div *ngIf="selectedTab === 'GST Details'">
+                           <div *ngIf="selectedTab === 'Tax'">
                                     <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addGstRow()">
-                                        <i class="fas fa-plus"></i> Add GST
+                                        <i class="fas fa-plus"></i> Add Tax
                                     </button>
                            </div>  
                            <div *ngIf="selectedTab === 'TDS Details'">
@@ -265,7 +265,7 @@
 
                     <div class="content-workspace">
                         <!-- GST Details Tab -->
-                        <div class="workspace-content" *ngIf="selectedTab === 'GST Details'">
+                        <div class="workspace-content" *ngIf="selectedTab === 'Tax'">
                             <!-- <div class="table-toolbar">
                                 <div></div>
                                 <div class="toolbar-right1">
