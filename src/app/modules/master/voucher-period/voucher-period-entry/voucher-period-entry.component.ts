@@ -73,6 +73,11 @@ export class VoucherPeriodEntryComponent {
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
 
+  // Properties for navigation from Year Entry
+  fromYearEntry: boolean = false;
+  sourceYearMasterSid: number = null;
+  private pendingYearParams: any = null;
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -108,6 +113,41 @@ export class VoucherPeriodEntryComponent {
         this.voucherPeriodForm.get('status')?.disable();
       }
     });
+
+    // Handle query params from Year Entry
+    this.route.queryParams.subscribe(params => {
+      if (params['YearCode'] && !this.isEditMode) {
+        // If yearList is already loaded, apply immediately
+        // Otherwise, store for later application
+        if (this.yearList && this.yearList.length > 0) {
+          this.applyYearEntryParams(params);
+        } else {
+          this.pendingYearParams = params;
+        }
+      }
+    });
+  }
+
+  private applyYearEntryParams(params: any): void {
+    const startDate = params['StartDate'] ? new Date(params['StartDate']) : this.todayDate;
+    const endDate = params['EndDate'] ? new Date(params['EndDate']) : this.todayDate;
+
+    this.voucherPeriodForm.patchValue({
+      YearMasterSid: +params['YearCode'],
+      StartDate: startDate,
+      EndDate: endDate,
+      status: 'Active'
+    });
+
+    // Disable pre-filled fields
+    this.voucherPeriodForm.get('YearMasterSid')?.disable();
+    this.voucherPeriodForm.get('StartDate')?.disable();
+    this.voucherPeriodForm.get('EndDate')?.disable();
+    this.voucherPeriodForm.get('status')?.disable();
+
+    // Store flag for navigation back
+    this.fromYearEntry = true;
+    this.sourceYearMasterSid = +params['YearMasterSid']; // Keep YearMasterSid for navigation back
   }
 
   loadYears(): void {
@@ -115,6 +155,11 @@ export class VoucherPeriodEntryComponent {
     this.masterService.getAllYears(CompanyMasterSid).subscribe(
       (resp: any) => {
         this.yearList = resp || [];
+        // Apply pending year params after list loads
+        if (this.pendingYearParams) {
+          this.applyYearEntryParams(this.pendingYearParams);
+          this.pendingYearParams = null;
+        }
       },
       (error) => {
         this.errorMessage = error.message;
@@ -195,7 +240,7 @@ export class VoucherPeriodEntryComponent {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/voucher-period/list']);
+              this.router.navigate(['master/year/list']);
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -210,7 +255,12 @@ export class VoucherPeriodEntryComponent {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/voucher-period/list']);
+              // Navigate back to Year Entry if we came from there
+              if (this.fromYearEntry && this.sourceYearMasterSid) {
+                this.router.navigate(['master/year/entry', this.sourceYearMasterSid]);
+              } else {
+                this.router.navigate(['master/year/list']);
+              }
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -286,7 +336,11 @@ export class VoucherPeriodEntryComponent {
   }
 
   goBack() {
-    this.router.navigate(['master/voucher-period/list']);
+    if (this.fromYearEntry && this.sourceYearMasterSid) {
+      this.router.navigate(['master/year/entry', this.sourceYearMasterSid]);
+    } else {
+      this.router.navigate(['master/year/list']);
+    }
   }
 
   showInfo() {
@@ -394,4 +448,15 @@ export class VoucherPeriodEntryComponent {
   navigateToCreateVoucherPeriod() {
     this.router.navigate(['master/voucher-period/entry']);
   }
+
+  compareWithYear = (item: any, selected: any): boolean => {
+    if (item === null || item === undefined || selected === null || selected === undefined) {
+      return false;
+    }
+    // Handle both object and primitive comparisons
+    const itemId = typeof item === 'object' ? item.YearCode : item;
+    const selectedId = typeof selected === 'object' ? selected.YearCode : selected;
+    // Compare as numbers to handle string/number type mismatch
+    return Number(itemId) === Number(selectedId);
+  };
 }

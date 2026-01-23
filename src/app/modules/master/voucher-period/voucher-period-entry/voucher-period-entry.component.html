@@ -97,7 +97,8 @@
                         <!-- Year -->
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherPeriodForm.get('YearMasterSid')?.value">
-                                <ng-select [items]="yearList" formControlName="YearMasterSid" bindLabel="YearName" bindValue="YearMasterSid"
+                                <ng-select [items]="yearList" formControlName="YearMasterSid" bindLabel="YearName" bindValue="YearCode"
+                                    [compareWith]="compareWithYear"
                                     [class.is-invalid]="voucherPeriodForm.get('YearMasterSid')?.invalid && voucherPeriodForm.get('YearMasterSid')?.touched">
                                 </ng-select>
                                 <label class="input-label">Year <span class="text-danger">*</span></label>
@@ -169,7 +170,7 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="glClosed"
                                             [checked]="voucherPeriodForm.get('GLClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({GLClosed: $event.target.checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({GLClosed: $any($event.target).checked ? 'Y' : 'N'})">
                                         <label class="form-check-label" for="glClosed">G/L Closed</label>
                                     </div>
                                 </div>
@@ -193,7 +194,7 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="arClosed"
                                             [checked]="voucherPeriodForm.get('ARClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({ARClosed: $event.target.checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({ARClosed: $any($event.target).checked ? 'Y' : 'N'})">
                                         <label class="form-check-label" for="arClosed">AR Closed</label>
                                     </div>
                                 </div>
@@ -217,7 +218,7 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="apClosed"
                                             [checked]="voucherPeriodForm.get('APClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({APClosed: $event.target.checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({APClosed: $any($event.target).checked ? 'Y' : 'N'})">
                                         <label class="form-check-label" for="apClosed">AP Closed</label>
                                     </div>
                                 </div>

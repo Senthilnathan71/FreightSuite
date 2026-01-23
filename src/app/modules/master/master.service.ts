@@ -3080,6 +3080,38 @@ getFieldConfiguration() {
     );
   }
 
+  createPeriodsForYear(payload: {
+    YearMasterSid: number;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+    CreatedBy: string;
+  }) {
+    return this.http.post<any>('voucher-period/create-periods-for-year', payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  checkPeriodsExistForYear(payload: {
+    YearMasterSid: number;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+  }) {
+    return this.http.post<any>('voucher-period/check-periods-exist', payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  validateVoucherPeriod(payload: {
+    voucherDate: string;
+    module: 'GL' | 'AR' | 'AP';
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+  }) {
+    return this.http.post<any>('voucher-period/validate-period', payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
   createFavouriteScreen(payload) {
     return this.http.post<{ data: any }>('favourite-screen/create', payload).pipe(
       map((resp) => {

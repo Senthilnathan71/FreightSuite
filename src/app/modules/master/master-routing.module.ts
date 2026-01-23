@@ -82,7 +82,6 @@ import { NetworkEntryComponent } from './network/network-entry/network-entry.com
 import { TaxGroupComponent } from './tax-group/tax-group/tax-group.component';
 import { TaxMasterComponent } from './tax-master/tax-master.component';
 import { CompanyConfigComponent } from './company/company-config/company-config.component';
-import { VoucherPeriodListComponent } from './voucher-period/voucher-period-list/voucher-period-list.component';
 import { VoucherPeriodEntryComponent } from './voucher-period/voucher-period-entry/voucher-period-entry.component';
 
 export const MasterRoutes: Routes = [
@@ -1246,17 +1245,6 @@ export const MasterRoutes: Routes = [
         { title: 'Tax Group ' },
       ]
     }
-  },
-  {
-    path: 'voucher-period/list',
-    component: VoucherPeriodListComponent,
-    data: {
-      title: 'Voucher Period',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'Voucher Period' },
-      ],
-    },
   },
   {
     path: 'voucher-period/entry',

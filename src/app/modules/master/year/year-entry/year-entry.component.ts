@@ -74,7 +74,7 @@ export class YearEntryComponent {
 
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
-  
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -345,7 +345,7 @@ calculateEndDate(startDate: any): any {
           EndDate: endDate,
            CurrentYear: data.CurrentYear === 'Y',
         YearEndCompleted: data.YearEndCompleted === 'Y',
-          status: this.statusMap[data.status] || 'Active' 
+          status: this.statusMap[data.status] || 'Active'
         },
       );
       this.yearData = data;
@@ -354,6 +354,24 @@ calculateEndDate(startDate: any): any {
         this.appSettingService.showError('Error loading year data.');
       }
     );
+  }
+
+  createPeriods() {
+    if (!this.YearMasterSid || !this.yearData) {
+      this.appSettingService.showError('Please save the year first');
+      return;
+    }
+
+    // Navigate to voucher-period entry with year data
+    this.router.navigate(['master/voucher-period/entry'], {
+      queryParams: {
+        YearMasterSid: this.YearMasterSid,
+        YearCode: this.yearData.YearCode,
+        YearName: this.yearData.YearName,
+        StartDate: this.yearData.StartDate,
+        EndDate: this.yearData.EndDate
+      }
+    });
   }
 
   getAllCompanies() {
