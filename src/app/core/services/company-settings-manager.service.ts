@@ -17,6 +17,11 @@ export interface CurrencySettings {
   currencyMasterSid?: number;
 }
 
+export interface PrintSettings {
+  logoPosition: 'left' | 'center' | 'right';
+  companyPosition: 'left' | 'center' | 'right';
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -38,6 +43,12 @@ export class CompanySettingsManagerService {
     decimalPlaces: 2
   });
   public currencySettings$ = this.currencySettingsSubject.asObservable();
+
+  private printSettingsSubject = new BehaviorSubject<PrintSettings>({
+    logoPosition: 'left',
+    companyPosition: 'right',
+  });
+  public printSettings$ = this.printSettingsSubject.asObservable();
 
   private isLoggingOut = false;
 
@@ -107,6 +118,16 @@ export class CompanySettingsManagerService {
             };
             this.currencySettingsSubject.next(currencySettings);
             localStorage.setItem('companyCurrency', JSON.stringify(currencySettings));
+          }
+
+          // Apply print settings
+          if (config.documentConfiguration) {
+            const printSettings: PrintSettings = {
+              logoPosition: config.documentConfiguration.logoPosition || 'left',
+              companyPosition: config.documentConfiguration.companyPosition || 'right',
+            };
+            this.printSettingsSubject.next(printSettings);
+            localStorage.setItem('companyPrintSettings', JSON.stringify(printSettings));
           }
         }
       },
@@ -201,6 +222,33 @@ export class CompanySettingsManagerService {
 
     // Fallback: return current BehaviorSubject value
     return this.currencySettingsSubject.value;
+  }
+
+  getPrintSettings(): PrintSettings {
+    // First, try to get from stored print config based on current company
+    const companyId = this.getCurrentCompanyId();
+    if (companyId) {
+      const storedConfig = localStorage.getItem(`company-config-${companyId}`);
+      if (storedConfig) {
+        try {
+          const config = JSON.parse(storedConfig);
+          if (config?.documentConfiguration) {
+            const printSettings: PrintSettings = {
+              logoPosition: config.documentConfiguration.logoPosition || 'left',
+              companyPosition: config.documentConfiguration.companyPosition || 'right',
+            };
+            // Update the subject so other subscribers get the latest value
+            this.printSettingsSubject.next(printSettings);
+            return printSettings;
+          }
+        } catch (e) {
+          console.warn('Could not parse stored company config:', e);
+        }
+      }
+    }
+
+    // Fallback: return current BehaviorSubject value
+    return this.printSettingsSubject.value;
   }
 
   /**

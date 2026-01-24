@@ -237,10 +237,13 @@ reportLogoRemoved: boolean = false;
 
 	openConfigModal(isCompany: boolean) {
   if (isCompany) {
+	const countryId = this.companyForm.get('CountryMasterSid')?.value;
+	const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
     const currentConfig = this.companyForm.get('config').value || {};
     this.route.navigate(['master/company', this.CompanyMasterSid, 'config'], {
       state: {
         companyName: this.companyForm.get('companyName')?.value,
+		countryCode : country?.countryCode,
         config: currentConfig
       }
     });

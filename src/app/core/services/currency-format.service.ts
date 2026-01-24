@@ -150,7 +150,7 @@ export class CurrencyFormatService {
     
     if (!currency) {
       console.warn(`Currency config not found for: ${input.currencyCode}`);
-      return this.truncate(input.value, 3); // Fallback to 3 decimal places
+      return this.truncate(input.value, 4); // Fallback to 3 decimal places
     }
 
     // Truncate to exchangeDecimal places
