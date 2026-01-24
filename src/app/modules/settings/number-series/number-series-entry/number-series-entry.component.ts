@@ -184,7 +184,7 @@ export class NumberSeriesEntryComponent implements OnInit {
               DepartmentCodeRequired: config.DepartmentCodeRequired || 'N',
               MonthFlagRequired: config.MonthFlagRequired || 'N',
               YearFlagRequired: config.YearFlagRequired || 'N',
-              Separator: config.Separator ?? '/',
+              Separator: config.Separator !== null && config.Separator !== undefined ? config.Separator : '/',
               NumberLength: config.NumberLength || 5,
               ResetOption: config.ResetOption || 'None',
               DepartmentWiseCounter: config.DepartmentWiseCounter || 'N',

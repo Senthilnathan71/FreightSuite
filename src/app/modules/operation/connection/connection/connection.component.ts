@@ -178,11 +178,12 @@ export class ConnectionComponent implements OnInit {
       TransactionSid: [null],
       Mode: [null],
       VesselName: [null],
+      isVesselFreeText: [false],
       VoyageNo: [null],
       POL: [null],
       POD: [null],
-      ETD: [{ value: null, disabled: true }],
-      ETA: [{ value: null, disabled: true }],
+      ETD: [null],
+      ETA: [null],
       ATD: [null],
       ATA: [null],
       status: ['Active']
@@ -270,16 +271,16 @@ export class ConnectionComponent implements OnInit {
       this.minStartDate = previousConnection?.ETA ? new Date(previousConnection.ETA) : this.minStartDate;
     }
 
-    setTimeout(() => {
-      this.validateDisabledFields();
-    }, 100);
+    // setTimeout(() => {
+    //   this.validateDisabledFields();
+    // }, 100);
   }
 
   onConnectionSubmit() {
-    this.validateDisabledFields();
-    const hasETDError = this.c['ETD'].errors !== null;
+    // this.validateDisabledFields();
+    // const hasETDError = this.c['ETD'].errors !== null;
 
-    if(this.connectionForm.invalid || hasETDError){
+    if(this.connectionForm.invalid){
       this.connectionForm.markAllAsTouched();
       this.connectionForm.updateValueAndValidity();
       this.appSettingService.showWarning("Please fill all the required fields correctly.")
@@ -360,8 +361,8 @@ export class ConnectionComponent implements OnInit {
       this.filteredPOD = [...this.filteredPorts];
       this.c['VesselName']?.setValue(null);
       this.c['VoyageNo']?.setValue(null);
-      this.c['ETA']?.setValue('');
-      this.c['ETD']?.setValue('');
+      this.c['ETA']?.setValue(null);
+      this.c['ETD']?.setValue(null);
       return;
     }
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
@@ -374,8 +375,8 @@ export class ConnectionComponent implements OnInit {
       this.filteredPOL = [...this.filteredPorts];
       this.c['VesselName']?.setValue(null);
       this.c['VoyageNo']?.setValue(null);
-      this.c['ETA']?.setValue('');
-      this.c['ETD']?.setValue('');
+      this.c['ETA']?.setValue(null);
+      this.c['ETD']?.setValue(null);
       return;
     }
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
@@ -401,9 +402,9 @@ export class ConnectionComponent implements OnInit {
         if (resp.status) {
           this.filteredVesselList = resp.data;
           this.getVoyageForPortsAndVessels();
-          if (this.filteredVesselList.length === 0) {
-            this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")
-          }
+          // if (this.filteredVesselList.length === 0) {
+          //   this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")
+          // }
         } else {
           this.appSettingService.showError("Error loading Vessel")
         }
@@ -420,8 +421,8 @@ export class ConnectionComponent implements OnInit {
     if (!vessel) {
       this.voyageList = [];
       this.c['VoyageNo']?.setValue(null);
-      this.c['ETA'].setValue('');
-      this.c['ETD'].setValue('');
+      this.c['ETA'].setValue(null);
+      this.c['ETD'].setValue(null);
       return;
     }
     this.getVoyageForPortsAndVessels();
@@ -487,8 +488,8 @@ export class ConnectionComponent implements OnInit {
   }
   
   if (!voyage) {
-    this.c['ETA'].setValue('');
-    this.c['ETD'].setValue('');
+    this.c['ETA'].setValue(null);
+    this.c['ETD'].setValue(null);
     return;
   }
 
@@ -499,7 +500,7 @@ export class ConnectionComponent implements OnInit {
     this.c['ETD'].setValue(etd);
     this.c['ETA'].setValue(eta);
     
-    this.validateDisabledFields();
+    // this.validateDisabledFields();
   } catch (error) {
     console.error('Error setting voyage dates:', error);
     this.appSettingService.showWarning('Error setting voyage dates');
@@ -626,10 +627,10 @@ getVoyageLabel(): string {
       [isAirMode ? 'FlightNumber' : 'VoyageNo']: connection.VoyageNo || '',
       POL: connection.POL || '',
       POD: connection.POD || '',
-      ETD: this.datePipe.transform(connection.ETD) || '',
-      ETA: this.datePipe.transform(connection.ETA) || '',
-      ATD: this.datePipe.transform(connection.ATD) || '',
-      ATA: this.datePipe.transform(connection.ATA) || '',
+      ETD: this.datePipe.transform(connection.ETD) || null,
+      ETA: this.datePipe.transform(connection.ETA) || null,
+      ATD: this.datePipe.transform(connection.ATD) || null,
+      ATA: this.datePipe.transform(connection.ATA) || null,
       Status: connection.status || ''
       };
       if (isAirMode) {

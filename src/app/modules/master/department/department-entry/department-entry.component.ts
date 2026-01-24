@@ -19,6 +19,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { forkJoin } from 'rxjs';
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
 }
@@ -66,6 +67,8 @@ export class DepartmentEntryComponent {
   isListening = false;
   activeControl: string | null = null;
   MenuMasterSid: any;
+  costCOAOptions: any[] = [];
+  revenueCOAOptions: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -219,6 +222,7 @@ export class DepartmentEntryComponent {
        this.mps.init().subscribe();
     this.initForm();
     this.getAllDivisions();
+    this.loadAllCOAOptions();
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
       this.DepartmentMasterSid = +params.get('id');
@@ -242,6 +246,23 @@ export class DepartmentEntryComponent {
 		}
 
   }
+  loadAllCOAOptions(): void {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!CompanyMasterSid) return;
+    forkJoin({
+      CostCOA: this.masterService.getCOAByLedgerType('Cost', CompanyMasterSid),
+      RevenueCOA: this.masterService.getCOAByLedgerType('Revenue', CompanyMasterSid),
+    }).subscribe({
+      next: (results) => {
+        this.costCOAOptions = results.CostCOA || [];
+        this.revenueCOAOptions = results.RevenueCOA || [];
+      },
+      error: (err) => {
+        console.error('Error loading COA options:', err);
+        this.appSettingService.showError('Failed to load COA options');
+      }
+    });
+  }
 
  
 hasAnyDropdownPermission(): boolean {
@@ -259,6 +280,8 @@ hasAnyDropdownPermission(): boolean {
       FCLLCL: ['', [Validators.required]],
       Division : [''],
       Remarks : [''],
+      CostCOAMasterSid: [null],
+      RevenueCOAMasterSid: [null],
       Status: ['Active']
     });
   }
@@ -338,6 +361,7 @@ hasAnyDropdownPermission(): boolean {
     S: 'Suspended',
     
   };
+  lo
 
   getAllDivisions(){
      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
