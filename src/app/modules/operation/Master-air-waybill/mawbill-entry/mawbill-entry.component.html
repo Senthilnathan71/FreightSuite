@@ -785,12 +785,12 @@
                                     <th>HAWB</th>
                                     <th>Customer</th>
                                     <!-- <th>Customer Address</th> -->
-                                    <th>Shipper</th>
+                                    <th>Flight</th>
                                     <!-- <th>Shipper Address</th> -->
-                                    <th>Consignee</th>
+                                    <th>Flight No</th>
                                     <!-- <th>Consignee Address</th> -->
-                                    <th>Dest.Agent</th>
-                                    <!-- <th>MBL Date</th> -->
+                                    <th>ETD</th>
+                                    <th>ETA</th>
                                     <th>POL</th>
                                     <th>POD</th>
                                     <th>PP/CC</th>
@@ -825,11 +825,12 @@
                                     <td>{{shipment.HBLNo || 'N/A'}}</td>
                                     <td>{{shipment.CustomerName}}</td>
                                     <!-- <td>{{shipment.CustomerAddress}}</td> -->
-                                    <td>{{shipment.ShipperName}}</td>
+                                    <td>{{shipment.VesselName}}</td>
                                     <!-- <td>{{shipment.ShipperAddress}}</td> -->
-                                    <td>{{shipment.ConsigneeName}}</td>
+                                    <td>{{shipment.VoyageNo}}</td>
                                     <!-- <td>{{shipment.ConsigneeAddress}}</td> -->
-                                    <td>{{getAgentName(shipment.DestinationAgent)}}</td>
+                                    <td>{{shipment.ETD}}</td>
+                                    <td>{{shipment.ETA}}</td>
                                     <!-- <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td> -->
                                     <td>{{shipment.POL}}</td>
                                     <td>{{shipment.POD}}</td>
@@ -1329,7 +1330,7 @@
 
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
-            <app-connection screenName="MasterJob" [dataItems]="masterjobConnectionArr"
+            <app-connection screenName="MasterJob" [connectionIdField]="'MasterJobConnectionSid'" [dataItems]="masterjobConnectionArr"
                 [resetTrigger]="connectionResetTrigger" [portList]="portList" 
                 [disableAdd]="!masterJobForm.get('POL')?.value || !masterJobForm.get('POD')?.value"
                 (dataEmitter)="handleConnectionChange($event)">

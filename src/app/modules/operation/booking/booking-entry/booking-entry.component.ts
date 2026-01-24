@@ -59,6 +59,7 @@ import { NgxBarcode6Module } from 'ngx-barcode6';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { ToastrService } from 'ngx-toastr';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -427,7 +428,8 @@ arapFilter = {
     private barcodeService: BarcodeService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     private sidebarService : VerticalSidebarService,
-    private commonModalService : ModalService
+    private commonModalService : ModalService,
+    private toastr: ToastrService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -1455,7 +1457,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
       return {
         ...connection,
-        TransactionSid: connection.BookingConnectionSid,
+        BookingConnectionSid: connection.BookingConnectionSid,
       }
     }); // for child component
     this.connectionResult = [...this.bookingConnectionsArr]
@@ -1713,6 +1715,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.isSaving = false;
     return;
   }
+  const polSid = this.bookingForm.get('POL')?.value;
+  const podSid = this.bookingForm.get('POD')?.value;
+    if (polSid && podSid && polSid === podSid) {
+      this.toastr.warning('POL and POD cannot be the same');
+      this.bookingForm.get('POD')?.setErrors({ samePort: true });
+      this.bookingForm.get('POL')?.setErrors({ samePort: true });
+      return;
+    } 
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
@@ -2191,6 +2201,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (polSid && podSid && polSid === podSid) {
       this.b['POD']?.setErrors({ samePort: true });
       this.b['POL']?.setErrors({ samePort: true });
+      this.toastr.warning('POL and POD cannot be the same');
     } else {
       this.b['POD']?.setErrors(null);
       this.b['POL']?.setErrors(null);
@@ -2394,7 +2405,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       return;
     }
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
-    // this.b['ETA']?.setValue(new Date(selectedPort.ETA));
+    this.onRouteChange();
     this.getVesselVoyBasedOnPorts();
   }
 
@@ -2413,6 +2424,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
     this.b['FPD']?.setValue(selectedPort.PortCode);
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
+    this.onRouteChange();
     this.getVesselVoyBasedOnPorts();
   }
 

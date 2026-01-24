@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -22,9 +22,11 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { CommonService } from 'src/app/common/common.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
-import { toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -45,7 +47,12 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgbDropdownModule
   ],
   templateUrl: './vendor-credit-note-entry.component.html',
-  styleUrl: './vendor-credit-note-entry.component.scss'
+  styleUrl: './vendor-credit-note-entry.component.scss',
+  providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+      CustomDatePipe,
+    ],
 })
 export class VendorCreditNoteEntryComponent {
   vendorCreditNoteForm!: FormGroup;
@@ -308,11 +315,12 @@ gstTypes = [
   }
 
   initForm() {
+    const today = getDefaultTodayDate();
     this.vendorCreditNoteForm = this.fb.group({
       // Header
       VoucherNumber: [{ value: '', disabled: true }],
       ReversalVoucher:[null],
-      VoucherDate: [this.formatDateForNgb(new Date()), Validators.required],
+      VoucherDate: [today, Validators.required],
       PartyMasterSid: [{ value: null, disabled: true }], // Vendor
       PartyName:  [{ value: '', disabled: true }],
       PartyAddress: [{ value: '', disabled: true }],
@@ -542,7 +550,7 @@ gstTypes = [
       CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
       ExchangeRate: header.ExchangeRate || header.ExRate || 1,
       BillAmount: header.Amount || 0,
-      BillDate: this.toNgbDate(header.DocumentDate),
+      BillDate: header.DocumentDate,
       BillNo: header.DocumentNumber || '',
       MBLNo: header.MasterNumber || '',
       HBLNo: header.HouseNumber || '',
@@ -2113,7 +2121,7 @@ getMasterJobNumber(jobSid: number): string {
   const day = d.getDate().toString().padStart(2, '0');
   const month = (d.getMonth() + 1).toString().padStart(2, '0');
   const year = d.getFullYear();
-  return `${year}-${month}-${day}`;
+  return `${day}-${month}-${year}`;
 }
 
   populateForm(data: any) {
@@ -2143,7 +2151,7 @@ getMasterJobNumber(jobSid: number): string {
     this.vendorCreditNoteForm.patchValue({
       ReversalVoucher: reversalVoucherDisplay,
       VoucherNumber: header.VoucherNumber,
-      VoucherDate: this.formatDateForNgb(header.VoucherDate),
+      VoucherDate: header.VoucherDate,
       CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
       PartyMasterSid: header.PartyMasterSid,
       PartyName: header.PartyName,
@@ -2155,7 +2163,7 @@ getMasterJobNumber(jobSid: number): string {
       CurrencyCode: header.CurrencyCode || currency.currencyCode,
       ExchangeRate: header.ExchangeRate || 1,
       BillNo: header.DocumentNumber,
-      BillDate: header.DocumentDate ? this.formatDateForNgb(header.DocumentDate) : null,
+      BillDate: header.DocumentDate || null,
       BillAmt: header.Amount || 0,
       MBLNo: header.MasterNumber,
       HBLNo: header.HouseNumber,
@@ -2460,7 +2468,7 @@ getMasterJobNumber(jobSid: number): string {
     CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === formValue.CurrencyCode)?.CurrencyMasterSid,
     ExchangeRate: formValue.ExchangeRate,
     BillNo: formValue.BillNo,
-    BillDate: this.fromNgbDate(formValue.BillDate),
+    BillDate: formValue.BillDate,
     BillAmt: formValue.BillAmt,
     MBLNo: formValue.MBLNo,
     HBLNo: formValue.HBLNo,
@@ -2825,7 +2833,7 @@ get isDraft(): boolean {
   // }
   private fromNgbDate(s: NgbDateStructLike | null): Date | null {
     if (!s || !s.year) return null;
-    return new Date(s.year, (s.month || 1) - 1, s.day || 1);
+    return new Date(s.day, (s.month || 1) - 1, s.year || 1);
   }
 
   markFormGroupTouched(formGroup: FormGroup | FormArray) {

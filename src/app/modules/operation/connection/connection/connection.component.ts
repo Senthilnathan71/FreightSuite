@@ -72,6 +72,7 @@ export class ConnectionComponent implements OnInit {
   ];
 
   @Input() screenName: string;
+  @Input() connectionIdField: string;
   private _dataItems: any[] = [];
   public _portList: any[] = [];
   @Input()
@@ -175,10 +176,9 @@ export class ConnectionComponent implements OnInit {
   initConnectionForm() {
     this.connectionForm = this.fb.group({
       // BookingConnectionSid: [null],
-      TransactionSid: [null],
+      [this.connectionIdField]: [null],
       Mode: [null],
       VesselName: [null],
-      isVesselFreeText: [false],
       VoyageNo: [null],
       POL: [null],
       POD: [null],
@@ -209,7 +209,7 @@ export class ConnectionComponent implements OnInit {
     console.log(data);
     const connectionForm = this.fb.group({
       // BookingConnectionSid: [data?.BookingConnectionSid || null],
-     TransactionSid: [data?.TransactionSid || null],
+      [this.connectionIdField]: [data?.[this.connectionIdField] || null],
       Mode : [data?.Mode || null],
       VesselName: [data?.VesselName || null],
       VoyageNo: [data?.VoyageNo || null],
@@ -235,9 +235,8 @@ export class ConnectionComponent implements OnInit {
     if (data) {
       this.currentConnectIndex = connectionIndex;
       this.selectedMode = data.Mode;
-      this.connectionForm.patchValue({
+      const patchData: any ={
         // BookingConnectionSid: data.BookingConnectionSid,
-        TransactionSid: data?.TransactionSid ?? null,
         Mode : data.Mode,
         VesselName: data.VesselName,
         VoyageNo: data.VoyageNo,
@@ -248,7 +247,9 @@ export class ConnectionComponent implements OnInit {
         ATD: data?.ATD ? new Date(data.ATD) : null,
         ATA: data?.ATA ? new Date(data.ATA) : null,
         status: data.status
-      })
+      };
+      patchData[this.connectionIdField] = data[this.connectionIdField] ?? null;
+      this.connectionForm.patchValue(patchData);
       this.onRouteChange();
       this.getVesselBasedOnPorts();
     } else {

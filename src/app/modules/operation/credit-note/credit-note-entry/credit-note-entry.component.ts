@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -30,6 +30,8 @@ import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -50,7 +52,12 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgbDropdownModule
   ],
   templateUrl: './credit-note-entry.component.html',
-  styleUrl: './credit-note-entry.component.scss'
+  styleUrl: './credit-note-entry.component.scss',
+  providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+      CustomDatePipe,
+    ],
 })
 
 
@@ -1033,8 +1040,8 @@ onFinalSave() {
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           BranchMasterSid: this.currentBranch?.BranchMasterSid,
           VoucherNumber: raw.VoucherNumber || null,
-          VoucherDate: voucherDate,
-          PostDate: voucherDate,
+          VoucherDate: raw.VoucherDate,
+          PostDate: raw.PostDate,
           GST_VAT: raw.GST_VAT || undefined,
           PartyMasterSid: partyMasterSid,
           PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),
@@ -1542,7 +1549,7 @@ private getCustomerCountryCode(customer: any): string {
   this.creditNoteForm.patchValue({
     ReversalVoucher: reversalVoucherDisplay,
     VoucherNumber: header.VoucherNumber,
-    VoucherDate: this.toNgbDate(header.VoucherDate),
+    VoucherDate: header.VoucherDate,
     CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
     PartyMasterSid: header.PartyMasterSid || null,
     COAMasterSid : header.COAMasterSid || null,
@@ -2755,8 +2762,8 @@ private normalizeParty(raw: any) {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherNumber: raw.VoucherNumber || null,
       ReversalVoucher: raw.ReversalVoucher || null,
-      VoucherDate: voucherDate,
-      PostDate: voucherDate,
+      VoucherDate: raw.VoucherDate,
+      PostDate: raw.PostDate,
       GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: partyMasterSid,
       PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),

@@ -992,7 +992,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   this.masterjobConnectionArr = (data.masterJobConnection || []).map(connection => {
       return {
         ...connection,
-        TransactionSid : connection.MasterJobContainerSid,
+        MasterJobConnectionSid: connection.MasterJobConnectionSid,
       }
     }); // for child component
     this.connectionResult = [...this.masterjobConnectionArr]

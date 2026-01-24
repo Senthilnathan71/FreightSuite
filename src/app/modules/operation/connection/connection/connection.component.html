@@ -128,36 +128,22 @@
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select"  [class.filled]="!!connectionForm.get('VesselName')?.value" [class.custom-form-group-select]="!isAirMode()">
+                <div class="custom-form-group custom-form-group-select"  [class.filled]="!!connectionForm.get('VesselName')?.value">
                     <!-- <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName" class="ng-select"
                         formControlName="VesselName" placeholder="" (change)="onVesselChange($event)">
                     </ng-select> -->
-                     @if(isAirMode()) {
+                     
                         <!-- Text input for Air mode -->
                         <input type="text" id="vessel-input" placeholder="" class="custom-input-field sm"
-                            formControlName="VesselName" [textWithNumbers]>
-                    } @else {
-                    <dofi-searchable-dropdown [items]="filteredVesselList" formControlName="VesselName" placeholder=""
-                        [displayFields]="vesselVoyageConfig.displayFields"
-                        [displayLabels]="vesselVoyageConfig.displayLabels"
-                        [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
-                        (itemSelected)="onVesselChange($event)"> 
-                      </dofi-searchable-dropdown>
-                    }
+                            formControlName="VesselName">
                     <label for="text-input" class="input-label">{{ getVesselLabel() }} <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('VoyageNo')?.value" [class.custom-form-group-select]="!isAirMode()">
-                    @if(isAirMode()) {
-                        <!-- Text input for Air mode -->
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('VoyageNo')?.value">
                         <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
-                            formControlName="VoyageNo"[textWithNumbers]>
-                    } @else {
-                    <ng-select [items]="voyageList" formControlName="VoyageNo" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                         placeholder="" (change)="onVoyageChange($event)">
-                    </ng-select>
-                }
+                            formControlName="VoyageNo">
+                    
                     <label for="text-input" class="input-label">{{ getVoyageLabel() }} <span class="text-danger"></span></label>
                 </div>
             </aside>
