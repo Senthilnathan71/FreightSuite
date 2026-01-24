@@ -59,6 +59,8 @@ import { NgxBarcode6Module } from 'ngx-barcode6';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { ToastrService } from 'ngx-toastr';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -112,7 +114,9 @@ type Html2PdfOptions = {
     NgbDropdownModule,
     PreventMultiClickDirective,
     TimeAgoPipe,
-    NgxBarcode6Module
+    NgxBarcode6Module,
+    PrintFooterComponent,
+    PrintHeaderComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],

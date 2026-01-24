@@ -32,6 +32,7 @@ import {
 })
 export class ConfigNewComponent implements OnInit {
   companyName: string = '';
+  countryCode : string = 'ae';
   companyId: number | null = null;
   isLoading: boolean = false;
   isSaving: boolean = false;
@@ -69,6 +70,17 @@ export class ConfigNewComponent implements OnInit {
       operations: {},
       accounts: {},
       masters: {}
+    },
+    documentConfiguration: {
+      logoPosition: 'left',
+      companyPosition: 'right',
+      // enableFooter: true,
+      // footerText: 'Thank you for your business',
+      // footerPosition: 'center',
+      // marginTop: 20,
+      // marginBottom: 20,
+      // marginLeft: 15,
+      // marginRight: 15
     }
   };
 
@@ -138,6 +150,7 @@ export class ConfigNewComponent implements OnInit {
     this.companyId = +this.route.snapshot.params['id'];
     const state = history.state;
     this.companyName = state.companyName || '';
+    this.countryCode = state.countryCode || '';
 
     // Load options first, then configuration to ensure dropdowns are populated
     this.loadOptions().then(() => {
@@ -222,13 +235,24 @@ export class ConfigNewComponent implements OnInit {
         const state = history.state;
         if (state.config && Object.keys(state.config).length > 0) {
           this.config = { ...this.config, ...state.config };
-          this.updateFormValues();
         } else {
           // Set default configuration
           this.config = this.configService.getDefaultConfiguration();
-          this.updateFormValues();
         }
-
+        
+        this.config.documentConfiguration ??= {
+          logoPosition: 'left',
+          companyPosition: 'right',
+          // enableFooter: true,
+          // footerText: 'Thank you for your business',
+          // footerPosition: 'center',
+          // marginTop: 20,
+          // marginBottom: 20,
+          // marginLeft: 15,
+          // marginRight: 15
+        };
+        
+        this.updateFormValues();
         this.isLoading = false;
       },
       error: (error) => {
@@ -237,6 +261,31 @@ export class ConfigNewComponent implements OnInit {
       }
     });
   }
+
+  onLogoPositionChange(position: 'left' | 'center' | 'right') {
+    const docConfig = this.config.documentConfiguration!;
+    docConfig.logoPosition = position;
+
+    // If company position conflicts, auto-move it
+    if (docConfig.companyPosition === position) {
+      docConfig.companyPosition = position === 'left'
+        ? 'right'
+        : 'left';
+    }
+  }
+
+  onCompanyPositionChange(position: 'left' | 'center' | 'right') {
+    const docConfig = this.config.documentConfiguration!;
+    docConfig.companyPosition = position;
+
+    // If logo position conflicts, auto-move it
+    if (docConfig.logoPosition === position) {
+      docConfig.logoPosition = position === 'left'
+        ? 'right'
+        : 'left';
+    }
+  }
+
 
   private mergeFieldConfiguration() {
     // Merge field configuration following existing pattern from config.component.ts
@@ -392,6 +441,9 @@ export class ConfigNewComponent implements OnInit {
 
   onTabChange(event: any) {
     this.activeTab = event.nextId;
+  }
+
+  onDocumentConfigChange() {
   }
 
   saveConfiguration() {

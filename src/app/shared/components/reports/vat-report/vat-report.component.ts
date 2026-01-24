@@ -50,14 +50,14 @@ export class VatReportComponent {
   }
 
 
-  getExcelData(): ComplexReportExportConfig {
+getExcelData(): ComplexReportExportConfig {
 
   const tableHeaders: ExcelHeader[] = [
     { key: 'date', label: 'Date' },
     { key: 'particulars', label: 'Particulars' },
     { key: 'trn', label: 'TRN' },
     { key: 'voucherType', label: 'Voucher Type' },
-    { key: 'voucherNo', label: 'Voucher No' },
+    { key: 'voucherNo', label: 'Voucher No.' },
     { key: 'supplierRef', label: 'Supplier Inv / Ref No / Date' },
     { key: 'taxableAmt', label: 'Taxable Amt' },
     { key: 'taxAmt', label: 'Tax Amt' }
@@ -65,29 +65,23 @@ export class VatReportComponent {
 
   const rows: ExcelRow[] = [];
 
-  const data =
-    this.viewMode === 'receviable'
-      ? this.fullData?.data?.inputTax || []
-      : this.fullData?.data?.outputTax || [];
+  // ✅ Same data as HTML
+  const data = this.fullData?.data?.outputTax || [];
 
   data.forEach((item: any) => {
+
+    const supplierRef =
+      item?.documentNo && item?.documentDate
+        ? `${item.documentNo} - ${this.formatDate(item.documentDate)}`
+        : item?.documentNo || this.formatDate(item?.documentDate) || '';
+
     const cells: ExcelCell[] = [
       { value: this.formatDate(item?.voucherDate) },
       { value: item?.subledgerName || '' },
       { value: item?.panType || '' },
-      {
-        value:
-          this.viewMode === 'receviable'
-            ? item?.voucherType1 || ''
-            : item?.voucherType2 || ''
-      },
+      { value: item?.voucherType1 || '' },     // ✅ matches HTML
       { value: item?.voucherNo || '' },
-      {
-        value:
-          item?.documentNo && item?.documentDate
-            ? `${item.documentNo} - ${this.formatDate(item.documentDate)}`
-            : item?.documentNo || this.formatDate(item?.documentDate) || ''
-      },
+      { value: supplierRef },
       { value: this.formatNumber(item?.taxableAmt) },
       { value: this.formatNumber(item?.taxAmt) }
     ];
@@ -96,6 +90,7 @@ export class VatReportComponent {
   });
 
   /* TOTAL ROW */
+
   const totalTaxable = data.reduce(
     (sum: number, x: any) => sum + Number(x?.taxableAmt || 0),
     0
@@ -116,22 +111,12 @@ export class VatReportComponent {
   });
 
   return {
-    fileName:
-      this.viewMode === 'receviable'
-        ? 'VAT-Receivable-Report'
-        : 'VAT-Payable-Report',
-
-    sheetName:
-      this.viewMode === 'receviable'
-        ? 'VAT Receivable'
-        : 'VAT Payable',
+    fileName: 'VAT-Receivable-Report',
+    sheetName: 'VAT Receivable',
 
     reportHeader: {
       companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle:
-        this.viewMode === 'receviable'
-          ? 'VAT Receivable Report'
-          : 'VAT Payable Report',
+      reportTitle: 'VAT Receivable Report',
 
       additionalInfo: [
         { label: 'From Date', value: this.formatDate(this.params?.VoucherFromDate) },
@@ -142,9 +127,10 @@ export class VatReportComponent {
 
     tableHeaders,
     rows,
-    columnWidths: [12, 20, 10, 14, 14, 28, 15, 15]
+    columnWidths: [12, 22, 12, 16, 16, 30, 15, 15]
   };
 }
+
 
   private formatNumber(value: any): number | string {
     if (value === null || value === undefined) return '';

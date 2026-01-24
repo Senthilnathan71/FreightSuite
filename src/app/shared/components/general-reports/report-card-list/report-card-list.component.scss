@@ -14,7 +14,7 @@
 
   // Subtle gradient border effect based on report type
   &[data-report-type="ACCOUNTS"] {
-    border-left: 3px solid #667eea;
+    border-left: 3px solid #05608d;
   }
 
   &[data-report-type="OPERATION"] {
@@ -30,10 +30,23 @@
     }
 
     .btn-action {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      transform: scale(1.05);
-    }
+    background: #05608d;
+    color: white;
+    transition: 0.2s ease;
+  }
+  
+  /* ACCOUNTS */
+  .btn-action[data-type="ACCOUNTS"] {
+    background: #05608d;
+    box-shadow: 0 4px 15px rgba(5, 96, 141, 0.4);
+  }
+  
+  /* OPERATION */
+  .btn-action[data-type="OPERATION"] {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 4px 15px rgba(236, 56, 188, 0.4);
+  }
+
   }
 
   .card-body {
@@ -60,7 +73,7 @@
 
     // Accounts gradient (Blue/Purple)
     &[data-type="ACCOUNTS"] {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #05608d;
       box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
 

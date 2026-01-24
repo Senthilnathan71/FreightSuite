@@ -12,7 +12,7 @@
     </div>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        VAT Receivable Report
+        VAT Payable Report
     </h4>
     <div style="margin-top: 1rem;">
 
@@ -28,17 +28,6 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="receviable" name="viewMode"
-                (change)="viewMode = 'receviable'" [checked]="viewMode === 'receviable'">
-            <label class="form-check-label" for="detailRadio">Tax Receivable</label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="payableRadio" name="viewMode"
-                (change)="viewMode = 'payable'" [checked]="viewMode === 'payable'">
-            <label class="form-check-label" for="summaryRadio">Tax Payable</label>
-        </div> -->
-
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
@@ -54,11 +43,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data?.outputTax">
+                    <tr *ngFor="let item of fullData?.data?.inputTax">
                         <td>{{item.voucherDate | formatDate}}</td>
                         <td>{{item.subledgerName}}</td>
                         <td>{{item.panType}}</td>
-                        <td>{{ item.voucherType1 }}</td>
+                        <td>{{ item.voucherType2 }}</td>
                         <td>{{ item.voucherNo }}</td>
                         <td>
                             {{ item.documentNo && item.documentDate
@@ -71,38 +60,5 @@
                 </tbody>
             </table>
         </div>
-        <!-- <div *ngIf="viewMode === 'payable'" class="table-responsive">
-            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Date</th>
-                        <th class="bg-transparent text-light text-center">Particulars</th>
-                        <th class="bg-transparent text-light">TRN</th>
-                        <th class="bg-transparent text-light">Voucher Type</th>
-                        <th class="bg-transparent text-light">Voucher No.</th>
-                        <th class="bg-transparent text-light">Supplier Inv/Ref No./ Date</th>
-                        <th class="bg-transparent text-light">Taxable Amt</th>
-                        <th class="bg-transparent text-light">Tax Amt</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of fullData?.data?.outputTax">
-                        <td>{{ item.voucherDate | date:'dd-MM-yyyy' }}</td>
-                        <td>{{ item.subledgerName }}</td>
-                        <td>{{item.panType}}</td>
-                        <td>{{ item.voucherType2 }}</td>
-                        <td>{{ item.voucherNo }}</td>
-                        <td>
-                            {{ item.documentNo && item.documentDate
-                            ? (item.documentNo + ' - ' + (item.documentDate | formatDate))
-                            : (item.documentNo || item.documentDate || '') }}
-                        </td>
-
-                        <td class="text-end">{{ item.taxableAmt | number:'1.2-2' }}</td>
-                        <td class="text-end">{{ item.taxAmt | number:'1.2-2' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div> -->
     </div>
 </div>

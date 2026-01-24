@@ -17,6 +17,7 @@ import {
   NgbDropdownModule,
   NgbDateAdapter,
   NgbDateParserFormatter,
+  NgbDate,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -253,6 +254,16 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     return this.invoiceForm.get('voucherOthers') as FormGroup;
   }
 
+  // storing frequently used data in a map
+  /**
+   * Exchange rate map
+   * key = fromCurrencyCode + toCurrencyCode + Date
+   */
+  private exchangeRateMap: Map<string, number> = new Map();
+  buildExchangeRateMapKey(fromCurrencyCode: string, toCurrencyCode: string, date: Date): string {
+    return `${fromCurrencyCode}_${toCurrencyCode}_${date.toISOString()}`;
+  }
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -366,7 +377,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       CustomerBranchSid: [null],
       DocumentNumber: [''],
       IRNNumber: [''],
-      MasterJobSid: [''],
+      MasterJobSid: [null],
       HBLNo: [''],
       CurrencyMasterSid: [companyCurrencyId, Validators.required],
       CurrencyCode: [companyCurrencyCode || '', Validators.required],
@@ -562,6 +573,58 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         }
       }
     );
+  }
+
+  onVoucherDateChange(){
+    this.spinner.show();
+    const voucherDate = this.invoiceForm.get('VoucherDate')?.value;
+    if(!voucherDate) return;
+
+    const companyCurrency = this.currentCompanyCurrency.code;
+
+    // Check if header currency available , if yes fetch and recalculate
+    const headerCurrencyId = this.invoiceForm.get('CurrencyMasterSid')?.value;
+    const headerCurrencyCode = this.invoiceForm.get('CurrencyCode')?.value;
+    if(headerCurrencyId){
+
+      if(headerCurrencyCode === companyCurrency){
+        this.invoiceForm.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(1, headerCurrencyId));
+        this.invoiceForm.get('ExchangeRate')?.disable();
+        this.recalculateAllRows();
+        return;
+      }
+
+      const key = this.buildExchangeRateMapKey(headerCurrencyCode, companyCurrency, voucherDate);
+
+      if(this.exchangeRateMap.has(key)){
+        const exchangeRate = this.exchangeRateMap.get(key);
+        this.invoiceForm.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(exchangeRate, headerCurrencyId));
+        this.recalculateAllRows();
+      } else {
+        this.fetchExchangeRate(headerCurrencyCode,companyCurrency);
+      }
+    }
+
+    // check for each detail and update the exchange rate
+    this.details.controls.forEach((detail: FormGroup,index:number) => {
+      const rawValue = detail.getRawValue();
+      const fromCurrencyCode = rawValue.CurrencyCode;
+      const toCurrencyCode = companyCurrency;
+      const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode,voucherDate);
+      if(this.exchangeRateMap.has(key)){
+        const exchangeRate = this.exchangeRateMap.get(key);
+        detail.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(exchangeRate, headerCurrencyId));
+        this.recalcRow(index);
+      } else {
+        this.patchExchangeRateForDetail(
+          fromCurrencyCode,
+          toCurrencyCode,
+          index,
+        )
+      }
+    });
+
+    this.spinner.hide();
   }
 
   onCustomerChange(selected: any) {
@@ -1080,6 +1143,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       HBLNo: this.invoiceData?.houseJob?.HBLNo || '',
       MBLNo: this.invoiceData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
+      MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
+      CustomerRefNo: this.invoiceData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
+      ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
+      ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
+
       FreightTerms:
         isHouseJobInvoice ?
           this.invoiceData?.houseJob?.FreightTerms :
@@ -1111,6 +1179,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BankDetails : bankDetails,
       TermsAndConditions : tandc,
     }
+   
   }
 
   gatherHyperLinkInfo(data){
@@ -1369,6 +1438,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
   }
   private async recalcRow(index: number) {
+    console.log("DEBUG - recalcRow called");
     const row = this.details.at(index);
     if (!row) return;
     if (this.isPosted) {
@@ -2839,7 +2909,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       return;
     }
 
-    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue();
+    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue() ?? new Date();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -2859,6 +2929,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             formGroup.patchValue({ 
               ExchangeRate: toNumber(this.getFormattedExchangeRate(response.data,fromCurrencyId)) 
             });
+            const key = this.buildExchangeRateMapKey(fromCurrencyCode,toCurrencyCode,invoiceDate);
+            this.exchangeRateMap.set(key,response.data);
           } else {
             formGroup.patchValue({ 
               ExchangeRate: toNumber(this.getFormattedExchangeRate(0,fromCurrencyId)) 
@@ -2947,7 +3019,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
 
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string) {
-    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue();
+    const invoiceDate = this.invoiceForm.get('VoucherDate')?.getRawValue() ?? new Date();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -2988,6 +3060,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
               CurrencyCode: fromCurrencyCode,
               ExchangeRate: this.getFormattedExchangeRate(resp.data, fromCurrencyId)
             });
+            const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode,invoiceDate);
+            this.exchangeRateMap.set(key, resp.data);
           }
           // if data = null , then Exchange Rate not found for the conversion
           else {

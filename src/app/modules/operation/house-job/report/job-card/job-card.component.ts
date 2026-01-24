@@ -7,6 +7,9 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+
 interface summaryDTO {
   revenue : any[];
   cost : any[];
@@ -16,7 +19,7 @@ interface summaryDTO {
 @Component({
   selector: 'app-job-card',
   standalone: true,
-  imports: [CommonModule, CustomDatePipe],
+  imports: [CommonModule, CustomDatePipe,PrintFooterComponent,PrintHeaderComponent],
   templateUrl: './job-card.component.html',
   styles: ``
 })

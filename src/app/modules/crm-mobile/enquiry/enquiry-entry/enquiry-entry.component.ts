@@ -58,6 +58,8 @@ import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volume
 import { DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -76,7 +78,9 @@ import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical
     SearchableDropdown,
     NgbTooltip,
     NgxSpinnerModule,
-    CustomDatePipe
+    CustomDatePipe,
+    PrintFooterComponent,
+    PrintHeaderComponent
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',

@@ -65,6 +65,7 @@ export interface CompanyConfiguration {
     accounts: CompanyConfigModule;
     masters: CompanyConfigModule;
   };
+  documentConfiguration?: DocumentConfiguration;
 }
 
 export interface SystemSettings {
@@ -102,6 +103,22 @@ export interface ModuleFeatures {
   operations: { [featureKey: string]: ModuleFeature };
   accounts: { [featureKey: string]: ModuleFeature };
   masters: { [featureKey: string]: ModuleFeature };
+}
+
+/**
+ * Document Configuration Interface
+ * Applies to all document types (Invoices, Purchase Orders, Bill of Lading, etc.)
+ */
+export interface DocumentConfiguration {
+  logoPosition: 'left' | 'center' | 'right';
+  companyPosition: 'left' | 'center' | 'right';
+  // enableFooter: boolean;
+  // footerText?: string;
+  // footerPosition: 'left' | 'center' | 'right';
+  // marginTop?: number;
+  // marginBottom?: number;
+  // marginLeft?: number;
+  // marginRight?: number;
 }
 
 export interface FieldMapping {

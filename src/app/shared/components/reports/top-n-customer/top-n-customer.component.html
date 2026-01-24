@@ -60,6 +60,7 @@
                     <tr class="bg-info">
                         <!-- <th class="bg-transparent text-light">MBL No</th>
                         <th class="bg-transparent text-light">HBL No</th> -->
+                        <th class="bg-transparent text-light">Rank</th> 
                         <th class="bg-transparent text-light">Customer</th>
                         <th class="bg-transparent text-light text-center">GP</th>
                         <th class="bg-transparent text-light">Revenue</th>
@@ -71,9 +72,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data">
+                    <tr *ngFor="let item of fullData?.data; let i=index">
                         <!-- <td class="text-end">{{ item.MBLNo }}</td>
                                 <td class="text-end">{{ item?.HBLNo || '' }}</td> -->
+                        <td class="text-center">{{i+1}}</td>
                         <td>{{ item.customerName }}</td>
                         <td class="text-end">{{ item.GP | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.totalRevenue | number:'1.3-3' }}</td>

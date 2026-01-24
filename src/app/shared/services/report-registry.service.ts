@@ -567,7 +567,7 @@ export class ReportRegistryService {
       console.warn(' Ledger Report component not yet created:', error);
     }
 
-    // VAT Report
+    // VAT Recivedable Report
     try {
       const { VatReportComponent } = await import(
         '../components/reports/vat-report/vat-report.component'
@@ -575,7 +575,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'vat-receivable-report',
-        title: 'VAT Report',
+        title: 'VAT Recivedable Report',
         component: VatReportComponent,
         filenameTemplate: 'VAT_Report_{date}',
         module: 'accounts-report',
@@ -598,6 +598,36 @@ export class ReportRegistryService {
       console.warn(' Ledger Report component not yet created:', error);
     }
 
+     // VAT Payable  Report
+    try {
+      const { VatPayableComponent } = await import(
+        '../components/reports/vat-payable/vat-payable.component'
+      );
+
+      this.registerReport({
+        id: 'vat-payable-report',
+        title: 'VAT Payable Report',
+        component: VatPayableComponent,
+        filenameTemplate: 'VAT_Payable_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'VAT_Payable_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> VAT_Payable_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' VAT Payable Report component not yet created:', error);
+    }
 
       // VAT-210 Report
     try {

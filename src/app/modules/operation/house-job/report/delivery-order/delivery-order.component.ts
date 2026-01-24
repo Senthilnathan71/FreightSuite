@@ -11,11 +11,13 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
   selector: 'app-delivery-order',
   standalone: true,
-  imports: [CommonModule, CustomDatePipe],
+  imports: [CommonModule, CustomDatePipe,PrintFooterComponent,PrintHeaderComponent],
   templateUrl: './delivery-order.component.html',
   styles: ``
 })
