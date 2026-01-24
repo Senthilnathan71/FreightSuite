@@ -29,31 +29,8 @@
       style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
 
       <!-- Company Info -->
-      <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top:5px;
-    padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-          <div style="display: flex; flex-direction: column;">
-                           <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: 100px;height:100px;" 
-              />
-            <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
-          </div>
-          <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 8%;">
-            <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
-            </h3>
-            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
-            </h5>
-            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-              currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
-              }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-              currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-          </div>
-        </div>
-      </div>
+
+      <app-print-header></app-print-header>
 
 
       <!-- Title -->
@@ -437,28 +414,7 @@
 
 
       <!-- Footer -->
-      <footer style=" margin-top:auto;
-  text-align:center;
-  font-size:16px;
-  padding:10px 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-
-          <div style="text-align:left;">
-            Printed By: {{userData.userName}}
-          </div>
-
-          <div style="flex:1; text-align:center;">
-            This document is computer-generated and does not require a signature.
-          </div>
-
-          <div style="text-align:right;">
-            Printed On: {{ currentDate | formatDate }}
-          </div>
-
-        </div>
-      </footer>
-
-
+      <app-print-footer></app-print-footer>
 
     </div>
 

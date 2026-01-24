@@ -1080,6 +1080,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       HBLNo: this.invoiceData?.houseJob?.HBLNo || '',
       MBLNo: this.invoiceData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
+      MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
+      CustomerRefNo: this.invoiceData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
+      ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
+      ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
+
       FreightTerms:
         isHouseJobInvoice ?
           this.invoiceData?.houseJob?.FreightTerms :
@@ -1111,6 +1116,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BankDetails : bankDetails,
       TermsAndConditions : tandc,
     }
+   
   }
 
   gatherHyperLinkInfo(data){

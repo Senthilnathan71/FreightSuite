@@ -11,11 +11,13 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { toNumber } from 'src/app/common/helper';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
   selector: 'app-cash-receipt',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintFooterComponent,PrintHeaderComponent],
   templateUrl: './cash-receipt.component.html',
   styles: ``,
 })

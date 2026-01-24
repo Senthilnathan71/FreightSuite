@@ -29,6 +29,8 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -47,6 +49,8 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
     NgxSpinnerModule,
     PreventMultiClickDirective,
     DecimalPrecisionDirective,
+    PrintFooterComponent,
+    PrintHeaderComponent
 
   ],
   templateUrl: './loading-plan-entry.component.html',
