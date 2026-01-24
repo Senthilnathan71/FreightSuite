@@ -323,6 +323,7 @@ export class VoucherPeriodEntryComponent {
         const endDate = data.EndDate ? new Date(data.EndDate) : this.todayDate;
         this.voucherPeriodForm.patchValue({
           ...data,
+          YearMasterSid: data.YearMasterSid,
           StartDate: startDate,
           EndDate: endDate,
           status: this.statusMap[data.status] || 'Active'
