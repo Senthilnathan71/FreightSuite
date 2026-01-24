@@ -90,10 +90,12 @@ export class ChartAccountEntryComponent implements OnInit {
     { id: 11, name: 'Income Tax Receivable' },
     { id: 12, name: 'Input Tax' },
     { id: 13, name: 'Liabilities' },
-    { id: 14, name: 'Output Tax' },
-    { id: 15, name: 'Revenue' },
-    { id: 16, name: 'Sy Cr' },
-    { id: 17, name: 'Sy Dr' },
+    { id: 14, name: 'Other Cost'},
+    { id: 15, name: 'Other Revenue'},
+    { id: 16, name: 'Output Tax' },
+    { id: 17, name: 'Revenue' },
+    { id: 18, name: 'Sy Cr' },
+    { id: 19, name: 'Sy Dr' },
 
   ];
 
@@ -394,7 +396,16 @@ export class ChartAccountEntryComponent implements OnInit {
             (resp: any) => {
                 if (resp.status) {
                     this.appSettingService.showSuccess("Chart Account Updated Successfully");
-                   this.route.navigate(['/accounts/chart-accounts/entry']);
+                    const id = resp.data?.COAMasterSid;
+                    if (id) {
+                        this.route.navigate(['/accounts/chart-accounts/entry', id]);
+                        this.loadChartAccount();
+                        
+                    }else {
+                        this.route.navigate(['/accounts/chart-accounts/entry']);
+                    }
+
+                  //  this.route.navigate(['/accounts/chart-accounts/entry']);
                     
                     this.resetFormForNewEntry();
                 } else {
@@ -416,7 +427,15 @@ export class ChartAccountEntryComponent implements OnInit {
             (resp: any) => {
                 if (resp.status) {
                     this.appSettingService.showSuccess(resp.message);
-                   this.route.navigate(['/accounts/chart-accounts/entry']);
+                    const id = resp.data?.COAMasterSid;
+                    if (id) {
+                        this.route.navigate(['/accounts/chart-accounts/entry', id]);
+                        this.loadChartAccount();
+                        
+                    }else {
+                        this.route.navigate(['/accounts/chart-accounts/entry']);
+                    }
+
                     
                     this.resetFormForNewEntry();
                 } else {
