@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService, PrintSettings } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 
 @Component({
@@ -18,10 +19,39 @@ export class PrintHeaderComponent {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currentDate = new Date();
+  printSettings: PrintSettings;
+
+  companyPosition: 'left' | 'center' | 'right' = 'center';
+  logoPosition: 'left' | 'center' | 'right' = 'left';
+
+  /* ORDER — ensures correct placement */
+  get logoOrder(): number {
+    return this.logoPosition === 'left' ? 0 :
+      this.logoPosition === 'center' ? 1 : 2;
+  }
+
+  get companyOrder(): number {
+    return this.companyPosition === 'left' ? 0 :
+      this.companyPosition === 'center' ? 1 : 2;
+  }
+
+  /* ALIGNMENT */
+  get companyTextAlign(): string {
+    return this.companyPosition;
+  }
+
+  /* LOGO ALIGN FIX (important for center/right cases) */
+  get logoJustify(): string {
+    return this.logoPosition === 'left'
+      ? 'flex-start'
+      : this.logoPosition === 'center'
+        ? 'center'
+        : 'flex-end';
+  }
 
   constructor(
     private appSettingsService: AppSettingsService,
-    private appSettingService: AppSettingsService,
+    public companySettings: CompanySettingsManagerService,
     public logoService: LogoService
   ) { }
   ngOnInit() {
@@ -33,8 +63,14 @@ export class PrintHeaderComponent {
     this.currentBranch = this.appSettingsService.decrypt(
       localStorage.getItem('selected-branch')
     );
-    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.branchDetails = this.appSettingsService.getCurrentBranchInfo();
     console.log(this.branchDetails, "BRANCH DETAILS");
+
+    this.printSettings = this.companySettings.getPrintSettings();
+    this.companyPosition = this.printSettings.companyPosition;
+    this.logoPosition = this.printSettings.logoPosition;
+    
+    console.log("Print Settings", this.printSettings);
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);

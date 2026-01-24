@@ -11,13 +11,16 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 @Component({
   selector: 'app-cargo-arrival',
   standalone: true,
   imports: [
     CustomDatePipe,
     CommonModule,
-
+    PrintFooterComponent,
+    PrintHeaderComponent
   ],
   templateUrl: './cargo-arrival.component.html',
   styleUrl: './cargo-arrival.component.scss'

@@ -151,6 +151,17 @@ export class CompanyConfigService {
         operations: {},
         accounts: {},
         masters: {}
+      },
+      documentConfiguration : {
+        logoPosition: 'left',
+        companyPosition: 'right',
+        // enableFooter: true,
+        // footerText: 'Thank you for your business',
+        // footerPosition: 'center',
+        // marginTop: 20,
+        // marginBottom: 20,
+        // marginLeft: 15,
+        // marginRight: 15
       }
     };
   }
