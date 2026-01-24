@@ -33,6 +33,7 @@ import { CurrencyConfigurationService } from 'src/app/core/services/currency-con
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -1321,8 +1322,7 @@ filterChargesByDepartment(department: any): void {
 
     // Reset time part for accurate date comparison
     effectiveDate.setHours(0, 0, 0, 0);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrow = getDefaultTodayDate();
     tomorrow.setHours(0, 0, 0, 0);
 
     // For different charge code - must be today or future
