@@ -1660,19 +1660,19 @@
                       ""
                   }}
                  
-                  ,
+                  
                 </p>
             <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
                 <span>Postal Code</span>
                 <span>: {{currentBranch?.postalCode || currentBranch?.ZipCode || "UAE"}}</span>
             </div>
             <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                <span>Phn No.</span>
+                <span>Phn No</span>
                 <span>:{{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}</span>
             </div>
              <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                <span *ngIf="currentCompanyCountryCode === 'IN'">GST No.</span>
-                <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No.</span>
+                <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
+                <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
                 <span>: {{ currentCompany?.Pan || '' }}</span>
             </div>
 
@@ -2402,7 +2402,7 @@
           <!-- Bank Details -->
           <div *ngIf="bankDetails" style="padding: 0 20px; font-size: 16px">
             <p style="font-weight: bolder; margin-top: 12px; margin-bottom: 0">
-              Bank Details
+             <strong> Bank Details</strong>
             </p>
             <!-- <div style="display:flex;">
             <div style="width:180px; font-size:12px;"><strong>Account Name</strong></div>
@@ -2422,9 +2422,9 @@
               </div>
               <div style="font-size: 16px">: {{ bankDetails.BankName }}</div>
             </div>
-            <div style="display: flex; font-size: 16px">
-              <div style="width: 180px; font-weight: bolder">
-                <strong>IFSC Code</strong>
+            <div style="display: flex; font-size: 16px" *ngIf="isIndiaGST">
+              <div style="width: 180px; font-weight: bolder" >
+                <strong>IFSC/SWIFT</strong>
               </div>
               <div style="font-size: 16px">: {{ bankDetails.IFSCCode }}</div>
             </div>

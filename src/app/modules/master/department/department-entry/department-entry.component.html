@@ -242,6 +242,60 @@
                                 </button>
                             </div>
                         </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('CostCOAMasterSid')?.value">
+                                <ng-select class="ng-select" formControlName="CostCOAMasterSid">
+                                    <!-- <ng-option value="">Select Cost COA</ng-option> -->
+                                    @for(coa of costCOAOptions;track coa){
+                                    <ng-option [value]="coa.COAMasterSid">{{coa.LedgerCode}} - {{coa.LedgerName}}</ng-option>
+                                    }
+                                </ng-select>
+                                <label for="text-input" class="input-label">Cost COA </label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('CostCOAMasterSid')?.touched &&
+                                    departmentForm.get('CostCOAMasterSid')?.invalid){
+
+                                    @if(departmentForm.get('CostCOAMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                    }
+                                </div>
+                                <button type="button" class="mic-btn-select"
+                                    (click)="startVoiceRecognitionFor('CostCOAMasterSid')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'CostCOAMasterSid' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('RevenueCOAMasterSid')?.value">
+                                <ng-select class="ng-select" formControlName="RevenueCOAMasterSid">
+                                    <!-- <ng-option value="">Select Revenue COA</ng-option> -->
+                                    @for(coa of revenueCOAOptions;track coa){
+                                    <ng-option [value]="coa.COAMasterSid">{{coa.LedgerCode}} - {{coa.LedgerName}}</ng-option>
+                                    }
+                                </ng-select>
+                                <label for="text-input" class="input-label">Revenue COA </label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('RevenueCOAMasterSid')?.touched &&
+                                    departmentForm.get('RevenueCOAMasterSid')?.invalid){
+
+                                    @if(departmentForm.get('RevenueCOAMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                    }
+                                </div>
+                                <button type="button" class="mic-btn-select"
+                                    (click)="startVoiceRecognitionFor('RevenueCOAMasterSid')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'RevenueCOAMasterSid' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
+                            </div>
+                        </aside>
+
+
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <textarea id="text-input" class="custom-input-field sm" formControlName="Remarks"

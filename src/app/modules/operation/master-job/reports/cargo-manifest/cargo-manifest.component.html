@@ -25,29 +25,7 @@
                 style="width: 300mm; min-height: 205mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
 
                 <!-- Company Info -->
-                <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 0px;
-    padding-left: 20px">
-                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-                        <div style="display: flex;  flex-direction: column;">
-                            <!-- Print logo -->
-                            <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
-                                class="company-logo img-fluid" style="width: 100px;height:100px;" />
-                            <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
-                        </div>
-                        <div style="flex: 1; text-align: center; font-size: 17px; padding-right:8%;">
-                            <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
-                            </h3>
-                            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
-                            </h5>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
-                                currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
-                                currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
-                                currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-
-                        </div>
-                    </div>
-                </div>
+                <app-print-header></app-print-header>
 
                 <!-- <div style="height:1px; background-color:black; width:100%; margin:0.3rem 0;"></div> -->
 
@@ -360,18 +338,11 @@
                 </div>
                 }
 
-
                 <!-- Footer -->
-                <footer
-                    style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
-                    <div style="display:flex; justify-content:space-between; font-size:16px;">
-                        <div>Printed By: {{userData.userName}}</div>
-                        <span>This document is computer-generated and does not require a signature.</span>
-                        <div>Printed On: {{ currentDate | formatDate }}</div>
-                    </div>
-                    <div style="text-align:right; font-weight:bold; margin-top:0.5rem;">Page 1 of 2</div>
-                </footer>
-
+               <app-print-footer></app-print-footer>
+               <div style="position:absolute; bottom:0mm; left:0; right:0; text-align:center; font-size:10pt; padding-top: 5px;">
+                   <div style="text-align:right; font-weight:bold; margin-top:0.5rem;padding-right: 6px;">Page 1 of 2</div>
+               </div>
             </div>
 
 
@@ -380,32 +351,7 @@
                     style="width: 300mm; min-height: 205mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
 
                     <!-- Company Info -->
-                    <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 0px;
-    padding-left: 20px">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                            <div style="display: flex;  flex-direction: column; align-items: center;">
-                                <!-- Print logo -->
-                                <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
-                                    class="company-logo img-fluid" style="width: 100px;height:100px;" />
-                                <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name'}}</strong></h4> -->
-                            </div>
-                            <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 8%;">
-                                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company
-                                    Name' }}
-                                </h3>
-                                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company
-                                    Branch' }}
-                                </h5>
-                                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{
-                                    currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{
-                                    currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{
-                                    currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-
-                            </div>
-                        </div>
-                    </div>
+                  <app-print-header></app-print-header>
 
                     <h3
                         style="text-align:center;  padding:8px 0; margin-top:10px; border-top: 1px solid black; font-size: 20px;font-weight: bolder;">
@@ -655,16 +601,10 @@
                     </table>
 
                     <!-- Footer -->
-                    <footer
-                        style="position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:10pt; padding:0.5rem;">
-                        <div style="display:flex; justify-content:space-between; font-size:16px;">
-                            <div>Printed By: {{userData.userName}}</div>
-                            <span>This document is computer-generated and does not require a signature.</span>
-                            <div>Printed On: {{ currentDate | formatDate }}</div>
-                        </div>
-                        <div style="text-align:right; font-weight:bold; margin-top:0.5rem;">Page 2 of 2</div>
-                    </footer>
-
+                    <app-print-footer></app-print-footer>
+                      <div style="position:absolute; bottom:0mm; left:0; right:0; text-align:center; font-size:10pt; padding-top: 5px;">
+                   <div style="text-align:right; font-weight:bold; margin-top:0.5rem;padding-right: 6px;">Page 2 of 2</div>
+               </div>
                 </div>
             </div>
 

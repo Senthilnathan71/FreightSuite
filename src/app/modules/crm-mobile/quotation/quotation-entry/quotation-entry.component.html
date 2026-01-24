@@ -2950,32 +2950,7 @@
   
 
  <!-- Company Info -->
-     <div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 5px;
-    padding-left: 20px">
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-            <div style="display: flex;  flex-direction: column;">
-              <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: 100px;height:100px;" 
-              />
-                 <!-- Print logo -->
-            <!-- <img *ngIf="showPrintLogo"src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" 
-                 alt="Company Logo" 
-                 style="width:50px; height:50px; object-fit: contain; margin-bottom: 0.5rem;">
-                <img *ngIf="showPdfLogo" src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" style="width:50px; height:50px; object-fit:contain;"> -->
-            <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
-            </div>
-            <div style="flex: 1; text-align: center; font-size: 17px; padding-right: 12%;">
-                <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}</h3>
-                <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine2 || '' }} {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}, {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}- {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-  
-            </div>
-        </div>
-    </div>
+    <app-print-header></app-print-header>
 
 
     
@@ -3001,7 +2976,7 @@
 
 
     <!-- Customer Info -->
-    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; padding: 0 30px;font-size: 17px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0 30px;font-size: 17px;">
       <div style="width: 48%; display: flex; flex-direction: column; margin: 0;padding-right: 30px;font-weight: bolder;">
         <p style="margin: 0;"><strong>To</strong></p>
         <div style="margin-left: 20px;">
@@ -3043,7 +3018,12 @@
 </div>
 
 
-    <div style="margin-top:12px; margin-bottom:0;">
+
+
+
+    </div>
+
+        <div style="margin-top:0px; margin-bottom:0;padding-left: 30px;">
   <strong style="display:block; margin-bottom:4px;">
     Dear Sir/Mam,
   </strong>
@@ -3053,9 +3033,6 @@
     We are pleased to submit our best rates as outlined below.
   </p>
 </div>
-
-
-    </div>
 
     <!-- Quote Routes Table -->
     @for(route of selectedItem.quoteRoute; track route){
@@ -3081,7 +3058,7 @@
             <tbody>
               <tr>
                 <td colspan="8">
-                  <div style="display: flex; flex-wrap: wrap; border-top: none;padding-left: 22px; padding-right: 22px;padding-top: 5px;padding-bottom: 5px;">
+                  <div style="display: flex;  border-top: none;padding-left: 22px; padding-right: 22px;padding-top: 5px;padding-bottom: 5px;">
                     <p style="margin: 0; padding: 4px; width: 25%;;">
                      <strong>
                         <span  style="font-weight: bolder;">Carrier :</span>

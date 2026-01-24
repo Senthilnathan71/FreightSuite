@@ -255,7 +255,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   parsedProducts: any[] = [];
   showProductPreview = false;
   isProcessingProductUpload = false;
-
   // Dirty tracking for unsaved changes detection
   isDirty = false;
   private initialConnectionsCount = 0;
@@ -3372,6 +3371,25 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         );
         return;
       }
+
+      const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+      );
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
     }
 
     const modalRef = this.modalService.open(PreAlertComponent, {
@@ -3456,6 +3474,27 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   // Loading Plan
 
    reportLoadingPlan() {
+     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
+      // Check if containers exist and have ContainerNumber
+     const hasValidVessale = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VesselName && voyage.VesselName.trim() !== ''
+      );
+      if (!hasValidVessale) {
+        this.appSettingService.showWarning(
+          'Vessel Name is required.'
+        );
+        return;
+      }
+      const hasValidVoyage = this.masterJobData?.voyages?.some(
+        (voyage: any) => voyage.VoyageNo && voyage.VoyageNo.trim() !== ''
+      );
+      if (!hasValidVoyage) {
+        this.appSettingService.showWarning(
+          'Voyage No is required.'
+        );
+        return;
+      }
+    }
     const modalRef = this.modalService.open(LoadingPlanMasterComponent, {
       // size: 'xl',
       windowClass:"print-landscape",

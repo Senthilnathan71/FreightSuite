@@ -1006,10 +1006,24 @@ export class JournalVoucherEntryComponent implements OnInit {
       }
     });
 
-    detailGroup.get('taxPercentage')?.valueChanges.subscribe(() => {
-      this.calculateTaxAmount(detailGroup);
+    detailGroup.get('taxPercentage')?.valueChanges.subscribe((val) => {
+       const taxPercentage = Number(val || 0);
+       if (taxPercentage === 0) {
+         detailGroup.get('taxAmount')?.disable({ emitEvent: false });
+       } else {
+         detailGroup.get('taxAmount')?.enable({ emitEvent: false });
+       }
+       this.calculateTaxAmount(detailGroup);
     });
+    const initialTaxPercentage = Number(detailGroup.get('taxPercentage')?.value || 0);
+
+  if (initialTaxPercentage === 0) {
+    detailGroup.get('taxAmount')?.disable({ emitEvent: false });
+  } else if (initialTaxPercentage >= 1) {
+    detailGroup.get('taxAmount')?.enable({ emitEvent: false });
   }
+  }
+  
 
 
   // NEW METHOD: Check if subledger matches the selected COA
@@ -2182,5 +2196,15 @@ export class JournalVoucherEntryComponent implements OnInit {
     }
     return 0;
   }
+
+
+  isTaxAmountReadonly(index: number): boolean {
+  const row = this.details.at(index) as FormGroup;
+  const taxPercentage = Number(row.get('taxPercentage')?.value || 0);
+
+  // taxPercentage > 0 => taxAmount readonly
+  return taxPercentage === 0;
+}
+
 
 }

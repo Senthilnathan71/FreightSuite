@@ -3325,6 +3325,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     };
   }
 
+  
   getSalesmanName(): string {
     return this.salesmanName || '';
   }
@@ -3433,6 +3434,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       vatAmt: detail.TaxAmount1 || 0,
     };
   }
+  
   shouldShowGSTTypeField(): boolean {
     return this.currentCompanyCountryCode === 'in';
   }

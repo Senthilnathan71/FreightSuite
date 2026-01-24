@@ -1,0 +1,32 @@
+<div style="display: flex; flex-direction: column; margin-bottom: 0;  width: 100%; padding-top: 0px;
+    padding-left: 20px">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex;  flex-direction: column;">
+            <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
+                style="width: 100px;height:100px;" />
+        </div>
+        <div style="flex: 1; text-align: center; font-size: 17px; padding-right:8%;">
+            <h3 style="margin: 0; font-weight:900 ;">{{ currentCompany?.companyName || 'Company Name' }}
+            </h3>
+            <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
+            </h5>
+            <p style="margin: 2px 0; font-size: 14px;">{{ currentBranch?.addressLine1 || '' }}</p>
+            <p style="margin: 2px 0; font-size: 14px;">
+                {{ currentBranch?.addressLine2 || '' }}
+
+                <ng-container *ngIf="currentBranch?.cityMaster?.cityName || currentCompany?.City">
+                    {{ currentBranch?.cityMaster?.cityName || currentCompany?.City }}
+                </ng-container>
+
+                <ng-container *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode">
+                    , {{ currentBranch?.postalCode || currentBranch?.ZipCode }}
+                </ng-container>
+
+                <ng-container *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone">
+                    , {{ currentBranch?.phoneNumber || currentBranch?.Phone }}
+                </ng-container>
+            </p>
+
+        </div>
+    </div>
+</div>

@@ -52,6 +52,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -96,7 +97,8 @@ type Html2PdfOptions = {
     NgxSpinnerModule,
     FormsModule,
     NgbTooltip,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    PrintHeaderComponent
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',

@@ -165,28 +165,23 @@
                 <div class="custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                            [minDate]="toNgbDateStruct(minStartDate)" formControlName="ETD" (click)="d2.toggle()"
-                            (dateSelect)="c['ETD'].markAsTouched()" />
+                            formControlName="ETD" (click)="d2.toggle()" container="body"
+                             />
                         <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                         </button>
                     </div>
-                    <label for="" class="input-label"> ETD <span class="text-danger">*</span></label>
+                    <label for="" class="input-label"> ETD <span class="text-danger"></span></label>
             
-                </div>
-                <div *ngIf="c['ETD']?.touched && c['ETD']?.errors" class="error-message">
-                    <span *ngIf="c['ETD']?.hasError('minDate')">
-                        ETD must be after {{minStartDate | formatDate}}
-                    </span>
                 </div>
             </div>
 
-
+ 
             <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select-date">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" [minDate]="toNgbDateStruct(connectionForm.get('ETD')?.value)"
-                            formControlName="ETA" (click)="d1.toggle()" />
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                            formControlName="ETA" (click)="d1.toggle()" container="body"/>
                         <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
@@ -196,18 +191,42 @@
             </div>
             
 
-            <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
+            <!-- <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">ATD <span class="text-danger"></span></label>
                 </div>
-            </aside>
-            <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
+            </aside> -->
+            <div class="col-md-4" *ngIf="screenName !== 'Booking'">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATD" ngbDatepicker
+                                    #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="atdPicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">ATD<span class="text-danger"></span></label>
+                        </div>
+                    </div>
+            <!-- <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">ATA <span class="text-danger"></span></label>
                 </div>
-            </aside>
+            </aside> -->
+            <div class="col-md-4" *ngIf="screenName !== 'Booking'">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATA" ngbDatepicker
+                                    #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="ataPicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">ATA<span class="text-danger"></span></label>
+                        </div>
+                    </div>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('status')?.value">
                     @if(c['TransactionSid']?.value){
