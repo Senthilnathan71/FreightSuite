@@ -64,6 +64,30 @@
         </div>
     </div>
 
+    <!-- Existing Periods Selection -->
+    <div class="col-12 px-0 mb-2" *ngIf="existingPeriods.length > 0 && fromYearEntry">
+        <div class="card">
+            <div class="card-body py-2">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span class="text-muted fw-bold">Existing Periods:</span>
+                    <div class="btn-group" role="group">
+                        <button type="button"
+                            *ngFor="let period of existingPeriods; let i = index"
+                            class="btn btn-sm"
+                            [class.btn-info]="selectedPeriodIndex === i"
+                            [class.btn-outline-info]="selectedPeriodIndex !== i"
+                            (click)="selectPeriod(i)">
+                            {{ period.PeriodName }}
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" (click)="createNewPeriod()" *ngIf="mps.can('insert')">
+                        <i class="fas fa-plus me-1"></i>Add New Period
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form [formGroup]="voucherPeriodForm" class="px-0">
         <div class="col-12">
             <div class="card">
@@ -97,7 +121,7 @@
                         <!-- Year -->
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherPeriodForm.get('YearMasterSid')?.value">
-                                <ng-select [items]="yearList" formControlName="YearMasterSid" bindLabel="YearName" bindValue="YearCode"
+                                <ng-select [items]="yearList" formControlName="YearMasterSid" bindLabel="YearName" bindValue="YearMasterSid"
                                     [compareWith]="compareWithYear"
                                     [class.is-invalid]="voucherPeriodForm.get('YearMasterSid')?.invalid && voucherPeriodForm.get('YearMasterSid')?.touched">
                                 </ng-select>

@@ -77,6 +77,8 @@ export class VoucherPeriodEntryComponent {
   fromYearEntry: boolean = false;
   sourceYearMasterSid: number = null;
   private pendingYearParams: any = null;
+  existingPeriods: any[] = [];
+  selectedPeriodIndex: number = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -114,40 +116,83 @@ export class VoucherPeriodEntryComponent {
       }
     });
 
-    // Handle query params from Year Entry
-    this.route.queryParams.subscribe(params => {
-      if (params['YearCode'] && !this.isEditMode) {
-        // If yearList is already loaded, apply immediately
-        // Otherwise, store for later application
-        if (this.yearList && this.yearList.length > 0) {
-          this.applyYearEntryParams(params);
-        } else {
-          this.pendingYearParams = params;
-        }
+    // Handle navigation state from Year Entry (data not visible in URL)
+    const navState = this.router.getCurrentNavigation()?.extras?.state || history.state;
+    if (navState?.YearMasterSid && !this.isEditMode) {
+      // If yearList is already loaded, apply immediately
+      // Otherwise, store for later application
+      if (this.yearList && this.yearList.length > 0) {
+        this.applyYearEntryParams(navState);
+      } else {
+        this.pendingYearParams = navState;
       }
-    });
+    }
   }
 
-  private applyYearEntryParams(params: any): void {
-    const startDate = params['StartDate'] ? new Date(params['StartDate']) : this.todayDate;
-    const endDate = params['EndDate'] ? new Date(params['EndDate']) : this.todayDate;
-
-    this.voucherPeriodForm.patchValue({
-      YearMasterSid: +params['YearCode'],
-      StartDate: startDate,
-      EndDate: endDate,
-      status: 'Active'
-    });
-
-    // Disable pre-filled fields
-    this.voucherPeriodForm.get('YearMasterSid')?.disable();
-    this.voucherPeriodForm.get('StartDate')?.disable();
-    this.voucherPeriodForm.get('EndDate')?.disable();
-    this.voucherPeriodForm.get('status')?.disable();
-
+  private applyYearEntryParams(state: any): void {
     // Store flag for navigation back
     this.fromYearEntry = true;
-    this.sourceYearMasterSid = +params['YearMasterSid']; // Keep YearMasterSid for navigation back
+    this.sourceYearMasterSid = +state.YearMasterSid;
+
+    // Check if existing periods were passed
+    this.existingPeriods = state.existingPeriods || [];
+
+    if (this.existingPeriods.length > 0) {
+      // Load the first existing period for display
+      this.loadExistingPeriod(this.existingPeriods[0]);
+    } else {
+      // No existing periods - set up for creating new one
+      const startDate = state.StartDate ? new Date(state.StartDate) : this.todayDate;
+      const endDate = state.EndDate ? new Date(state.EndDate) : this.todayDate;
+
+      this.voucherPeriodForm.patchValue({
+        YearMasterSid: +state.YearMasterSid,
+        StartDate: startDate,
+        EndDate: endDate,
+        status: 'Active'
+      });
+
+      // Disable pre-filled fields for new period creation
+      this.voucherPeriodForm.get('YearMasterSid')?.disable();
+      this.voucherPeriodForm.get('StartDate')?.disable();
+      this.voucherPeriodForm.get('EndDate')?.disable();
+      this.voucherPeriodForm.get('status')?.disable();
+    }
+  }
+
+  private loadExistingPeriod(period: any): void {
+    const startDate = period.StartDate ? new Date(period.StartDate) : this.todayDate;
+    const endDate = period.EndDate ? new Date(period.EndDate) : this.todayDate;
+
+    this.VoucherPeriodSid = period.VoucherPeriodSid;
+    this.isEditMode = true;
+    this.voucherPeriodData = period;
+
+    this.voucherPeriodForm.patchValue({
+      PeriodCode: period.PeriodCode,
+      PeriodName: period.PeriodName,
+      YearMasterSid: period.YearMasterSid,
+      StartDate: startDate,
+      EndDate: endDate,
+      Remarks: period.Remarks || '',
+      APClosed: period.APClosed || 'N',
+      APGraceDays: period.APGraceDays || 0,
+      ARClosed: period.ARClosed || 'N',
+      ARGraceDays: period.ARGraceDays || 0,
+      GLClosed: period.GLClosed || 'N',
+      GLGraceDays: period.GLGraceDays || 0,
+      status: this.statusMap[period.Status] || 'Active'
+    });
+
+    // Enable status field for editing
+    this.voucherPeriodForm.get('status')?.enable();
+  }
+
+  selectPeriod(index: number): void {
+    if (index >= 0 && index < this.existingPeriods.length) {
+      this.selectedPeriodIndex = index;
+      this.loadExistingPeriod(this.existingPeriods[index]);
+    }
   }
 
   loadYears(): void {
@@ -203,14 +248,22 @@ export class VoucherPeriodEntryComponent {
     if (this.voucherPeriodForm.get('status')?.disabled) {
       this.voucherPeriodForm.get('status')?.enable();
     }
+    if (this.voucherPeriodForm.get('YearMasterSid')?.disabled) {
+      this.voucherPeriodForm.get('YearMasterSid')?.enable();
+    }
+    if (this.voucherPeriodForm.get('StartDate')?.disabled) {
+      this.voucherPeriodForm.get('StartDate')?.enable();
+    }
+    if (this.voucherPeriodForm.get('EndDate')?.disabled) {
+      this.voucherPeriodForm.get('EndDate')?.enable();
+    }
     if (this.voucherPeriodForm.invalid) {
       this.voucherPeriodForm.markAllAsTouched();
       this.voucherPeriodForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
       const formValue = this.voucherPeriodForm.getRawValue();
 
       const payload = (this.isEditMode) ? {
@@ -218,7 +271,7 @@ export class VoucherPeriodEntryComponent {
         PeriodCode: Number(formValue.PeriodCode),
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        ...updatedBy,
+        updatedBy: userEmail,
         APGraceDays: Number(formValue.APGraceDays) || 0,
         ARGraceDays: Number(formValue.ARGraceDays) || 0,
         GLGraceDays: Number(formValue.GLGraceDays) || 0,
@@ -228,7 +281,7 @@ export class VoucherPeriodEntryComponent {
         PeriodCode: Number(formValue.PeriodCode),
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        ...createdBy,
+        createdBy: userEmail,
         APGraceDays: Number(formValue.APGraceDays) || 0,
         ARGraceDays: Number(formValue.ARGraceDays) || 0,
         GLGraceDays: Number(formValue.GLGraceDays) || 0,
@@ -450,13 +503,43 @@ export class VoucherPeriodEntryComponent {
     this.router.navigate(['master/voucher-period/entry']);
   }
 
+  createNewPeriod(): void {
+    // Reset to create mode
+    this.isEditMode = false;
+    this.VoucherPeriodSid = null;
+    this.voucherPeriodData = null;
+    this.selectedPeriodIndex = -1;
+
+    // Reset form with year data preserved
+    this.voucherPeriodForm.reset({
+      PeriodCode: '',
+      PeriodName: '',
+      YearMasterSid: this.sourceYearMasterSid,
+      StartDate: this.todayDate,
+      EndDate: this.todayDate,
+      Remarks: '',
+      APClosed: 'N',
+      APGraceDays: 0,
+      ARClosed: 'N',
+      ARGraceDays: 0,
+      GLClosed: 'N',
+      GLGraceDays: 0,
+      status: 'Active'
+    });
+
+    // Disable fields for new period
+    this.voucherPeriodForm.get('YearMasterSid')?.disable();
+    this.voucherPeriodForm.get('status')?.disable();
+    this.btnDisable = true;
+  }
+
   compareWithYear = (item: any, selected: any): boolean => {
     if (item === null || item === undefined || selected === null || selected === undefined) {
       return false;
     }
-    // Handle both object and primitive comparisons
-    const itemId = typeof item === 'object' ? item.YearCode : item;
-    const selectedId = typeof selected === 'object' ? selected.YearCode : selected;
+    // Handle both object and primitive comparisons using YearMasterSid
+    const itemId = typeof item === 'object' ? item.YearMasterSid : item;
+    const selectedId = typeof selected === 'object' ? selected.YearMasterSid : selected;
     // Compare as numbers to handle string/number type mismatch
     return Number(itemId) === Number(selectedId);
   };
