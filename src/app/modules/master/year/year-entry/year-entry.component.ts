@@ -75,7 +75,7 @@ export class YearEntryComponent {
 
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
-  
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -347,13 +347,54 @@ calculateEndDate(startDate: any): any {
           EndDate: endDate,
            CurrentYear: data.CurrentYear === 'Y',
         YearEndCompleted: data.YearEndCompleted === 'Y',
-          status: this.statusMap[data.status] || 'Active' 
+          status: this.statusMap[data.status] || 'Active'
         },
       );
       this.yearData = data;
       },
       (error) => {
         this.appSettingService.showError('Error loading year data.');
+      }
+    );
+  }
+
+  createPeriods() {
+    if (!this.YearMasterSid || !this.yearData) {
+      this.appSettingService.showError('Please save the year first');
+      return;
+    }
+
+    // Check if voucher periods already exist for this year
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+
+    this.masterService.getAllVoucherPeriods(CompanyMasterSid, BranchMasterSid, this.YearMasterSid).subscribe(
+      (resp: any) => {
+        const existingPeriods = resp || [];
+
+        // Navigate to voucher-period entry with year data and existing periods (if any)
+        this.router.navigate(['master/voucher-period/entry'], {
+          state: {
+            YearMasterSid: this.YearMasterSid,
+            YearName: this.yearData.YearName,
+            StartDate: this.yearData.StartDate,
+            EndDate: this.yearData.EndDate,
+            existingPeriods: existingPeriods
+          }
+        });
+      },
+      (error) => {
+        console.error('Error checking existing periods:', error);
+        // Navigate anyway with empty periods
+        this.router.navigate(['master/voucher-period/entry'], {
+          state: {
+            YearMasterSid: this.YearMasterSid,
+            YearName: this.yearData.YearName,
+            StartDate: this.yearData.StartDate,
+            EndDate: this.yearData.EndDate,
+            existingPeriods: []
+          }
+        });
       }
     );
   }

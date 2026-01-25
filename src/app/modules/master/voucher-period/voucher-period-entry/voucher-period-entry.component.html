@@ -1,0 +1,324 @@
+<div class="row compact-form">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Voucher Period</h5>
+                    <a *ngIf="isEditMode" class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-8 pb-1">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
+
+                    <div class="action-group" *ngIf="isEditMode">
+                        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateVoucherPeriod()" [disabled]="!mps.can('insert')">
+                            <i class="fas fa-plus me-1"></i>
+                            <span>Create</span>
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]="((!mps.can('update') && isEditMode) || btnDisable)">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                    <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i> Edoc
+                            </button>
+                            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i> Authorize
+                            </button>
+                            <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i> Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Periods Selection -->
+    <div class="col-12 px-0 mb-2" *ngIf="existingPeriods.length > 0 && fromYearEntry">
+        <div class="card">
+            <div class="card-body py-2">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span class="text-muted fw-bold">Existing Periods:</span>
+                    <div class="btn-group" role="group">
+                        <button type="button"
+                            *ngFor="let period of existingPeriods; let i = index"
+                            class="btn btn-sm"
+                            [class.btn-info]="selectedPeriodIndex === i"
+                            [class.btn-outline-info]="selectedPeriodIndex !== i"
+                            (click)="selectPeriod(i)">
+                            {{ period.PeriodName }}
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" (click)="createNewPeriod()" *ngIf="mps.can('insert')">
+                        <i class="fas fa-plus me-1"></i>Add New Period
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form [formGroup]="voucherPeriodForm" class="px-0">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Period Code -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" formControlName="PeriodCode" id="period-code" placeholder="" class="custom-input-field sm" min="0">
+                                <label for="period-code" class="input-label">Period Code <span class="text-danger fw-bold">*</span></label>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('PeriodCode')?.touched && voucherPeriodForm.get('PeriodCode')?.hasError('required')">
+                                    Required
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Period Name -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" formControlName="PeriodName" id="period-name" placeholder="" class="custom-input-field sm" maxlength="10">
+                                <label for="period-name" class="input-label">Period Name <span class="text-danger fw-bold">*</span></label>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('PeriodName')?.touched && voucherPeriodForm.get('PeriodName')?.hasError('required')">
+                                    Required
+                                </div>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('PeriodName')?.touched && voucherPeriodForm.get('PeriodName')?.hasError('maxlength')">
+                                    Max 10 Characters
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Year -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherPeriodForm.get('YearMasterSid')?.value">
+                                <ng-select [items]="yearList" formControlName="YearMasterSid" bindLabel="YearName" bindValue="YearMasterSid"
+                                    [compareWith]="compareWithYear"
+                                    [class.is-invalid]="voucherPeriodForm.get('YearMasterSid')?.invalid && voucherPeriodForm.get('YearMasterSid')?.touched">
+                                </ng-select>
+                                <label class="input-label">Year <span class="text-danger">*</span></label>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('YearMasterSid')?.touched && voucherPeriodForm.get('YearMasterSid')?.invalid">
+                                    Required
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Start Date -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select-date">
+                                <div class="input-group">
+                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="startDate" ngbDatepicker
+                                        #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="StartDate" readonly />
+                                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                                <label class="input-label" for="startDate">Start Date <span class="text-danger">*</span></label>
+                                <div *ngIf="voucherPeriodForm.get('StartDate')?.touched && voucherPeriodForm.get('StartDate')?.invalid">
+                                    <p *ngIf="voucherPeriodForm.get('StartDate')?.errors?.['required']" class="error-message">Required</p>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- End Date -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select-date">
+                                <div class="input-group">
+                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="endDate" ngbDatepicker
+                                        #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EndDate" readonly />
+                                    <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                                <label class="input-label" for="endDate">End Date <span class="text-danger">*</span></label>
+                                <div *ngIf="voucherPeriodForm.get('EndDate')?.touched && voucherPeriodForm.get('EndDate')?.invalid">
+                                    <p *ngIf="voucherPeriodForm.get('EndDate')?.errors?.['required']" class="error-message">Required</p>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Status -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherPeriodForm.get('status')?.value">
+                                <ng-select [items]="statusList" formControlName="status" bindLabel="name" bindValue="name"
+                                    [class.is-invalid]="voucherPeriodForm.get('status')?.invalid && voucherPeriodForm.get('status')?.touched"
+                                    [disabled]="voucherPeriodForm.get('status')?.disabled">
+                                </ng-select>
+                                <label class="input-label">Status <span class="text-danger">*</span></label>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('status')?.touched && voucherPeriodForm.get('status')?.invalid">
+                                    Required
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <!-- Closed Status Section -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-info border-bottom pb-2 mb-3">Period Closure Status</h6>
+                        </div>
+
+                        <!-- GL Closed -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="glClosed"
+                                            [checked]="voucherPeriodForm.get('GLClosed')?.value === 'Y'"
+                                            (change)="voucherPeriodForm.patchValue({GLClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                        <label class="form-check-label" for="glClosed">G/L Closed</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- GL Grace Days -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" formControlName="GLGraceDays" id="gl-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <label for="gl-grace-days" class="input-label">GL Grace Days</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4"></aside>
+
+                        <!-- AR Closed -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="arClosed"
+                                            [checked]="voucherPeriodForm.get('ARClosed')?.value === 'Y'"
+                                            (change)="voucherPeriodForm.patchValue({ARClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                        <label class="form-check-label" for="arClosed">AR Closed</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- AR Grace Days -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" formControlName="ARGraceDays" id="ar-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <label for="ar-grace-days" class="input-label">AR Grace Days</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4"></aside>
+
+                        <!-- AP Closed -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="apClosed"
+                                            [checked]="voucherPeriodForm.get('APClosed')?.value === 'Y'"
+                                            (change)="voucherPeriodForm.patchValue({APClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                        <label class="form-check-label" for="apClosed">AP Closed</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- AP Grace Days -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" formControlName="APGraceDays" id="ap-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <label for="ap-grace-days" class="input-label">AP Grace Days</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4"></aside>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="row mt-3">
+                        <aside class="col-md-8">
+                            <div class="custom-form-group">
+                                <textarea formControlName="Remarks" class="custom-input-field sm" rows="2" placeholder="" maxlength="200"></textarea>
+                                <label for="" class="input-label">Remarks</label>
+                                <div class="error-message" *ngIf="voucherPeriodForm.get('Remarks')?.touched && voucherPeriodForm.get('Remarks')?.hasError('maxlength')">
+                                    Max 200 Characters
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<ng-template #auditLogModal let-modal>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="5" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
+</ng-template>

@@ -23,12 +23,19 @@
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
 
-                    <div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="nagivateTocreateYear()" [disabled]="!mps.can('insert')">    
+                    <div class="action-group"  *ngIf="isEditMode">
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="nagivateTocreateYear()" [disabled]="!mps.can('insert')">
                     <i class="fas fa-plus me-1"></i>
-                    <span>Create </span>    
+                    <span>Create </span>
                     </button>
 </div>
+                    <div class="action-group" *ngIf="isEditMode">
+                        <button class="btn btn-success btn-sm dofi-min-w-100"
+                                (click)="createPeriods()">
+                            <i class="fas fa-calendar-plus me-1"></i>
+                            Create Period
+                        </button>
+                    </div>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
