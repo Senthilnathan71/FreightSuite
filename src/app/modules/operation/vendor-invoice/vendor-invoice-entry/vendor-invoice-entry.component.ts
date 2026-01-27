@@ -243,6 +243,17 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.vendorInvoiceForm.get('voucherOthers') as FormGroup;
   }
 
+  
+  // storing frequently used data in a map
+  /**
+   * Exchange rate map
+   * key = fromCurrencyCode + toCurrencyCode + Date
+   */
+  private exchangeRateMap: Map<string, number> = new Map();
+  buildExchangeRateMapKey(fromCurrencyCode: string, toCurrencyCode: string, date: Date): string {
+    return `${fromCurrencyCode}_${toCurrencyCode}_${date.toISOString()}`;
+  }
+
   get tdsGroup(): FormGroup {
     return this.vendorInvoiceForm.get('voucherTDS') as FormGroup;
   }
@@ -497,10 +508,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
   deepEqual(obj1: any, obj2: any): boolean {
     const normalizedObj1 = this.normalizeValue(obj1);
     const normalizedObj2 = this.normalizeValue(obj2);
-    console.warn({
-      obj1 : JSON.stringify(normalizedObj1),
-      obj2 : JSON.stringify(normalizedObj2)
-  })
     return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
@@ -519,7 +526,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         CurrencyMasterSid : currencyMasterSid,
         CurrencyCode: currencyCode,
         ExchangeRate: 1
-      }, { emitEvent: false });
+      });
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();
     } else {
       this.fetchExchangeRate(currencyCode, companyCurrencyCode);
@@ -578,6 +585,56 @@ export class VendorInvoiceEntryComponent implements OnInit {
         console.error("Lookup error:", err);
       }
     );
+  }
+
+  onVoucherDateChange() {
+    const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.value;
+    if (!voucherDate) return;
+
+    const companyCurrency = this.currentCompanyCurrency.code;
+
+    // Check if header currency available , if yes fetch and recalculate
+    const headerCurrencyId = this.vendorInvoiceForm.get('CurrencyMasterSid')?.value;
+    const headerCurrencyCode = this.vendorInvoiceForm.get('CurrencyCode')?.value;
+    if (headerCurrencyId) {
+
+      if (headerCurrencyCode === companyCurrency) {
+        this.vendorInvoiceForm.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(1, headerCurrencyId));
+        this.vendorInvoiceForm.get('ExchangeRate')?.disable();
+        this.recalculateAllRows();
+        return;
+      }
+
+      const key = this.buildExchangeRateMapKey(headerCurrencyCode, companyCurrency, voucherDate);
+
+      if (this.exchangeRateMap.has(key)) {
+        const exchangeRate = this.exchangeRateMap.get(key);
+        this.vendorInvoiceForm.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(exchangeRate, headerCurrencyId));
+        this.recalculateAllRows();
+      } else {
+        this.fetchExchangeRate(headerCurrencyCode, companyCurrency);
+      }
+    }
+
+    // check for each detail and update the exchange rate
+    this.details.controls.forEach((detail: FormGroup, index: number) => {
+      const rawValue = detail.getRawValue();
+      const fromCurrencyCode = rawValue.CurrencyCode;
+      const toCurrencyCode = companyCurrency;
+      const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode, voucherDate);
+      if (this.exchangeRateMap.has(key)) {
+        const exchangeRate = this.exchangeRateMap.get(key);
+        detail.get('ExchangeRate')?.setValue(this.getFormattedAndPaddedExchangeRate(exchangeRate, headerCurrencyId));
+        this.recalcRow(index);
+      } else {
+        this.patchExchangeRateForDetail(
+          fromCurrencyCode,
+          toCurrencyCode,
+          index,
+        )
+      }
+    });
+
   }
 
   onVendorChange(selected: any) {
@@ -1165,7 +1222,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       const hssacListItems = this.isNonJob ? (this.hssacListForNonJob || []) :  (this.hssacList[index] || []);
       const hssacItem = hssacListItems.find(c => c.HSSACMasterSid === HSSACMasterSid);
 
-      if (HSSACMasterSid) {
+      if (HSSACMasterSid && hssacItem) {
         let taxLedgers: any[] = [];
         const inputOrOutput: 'Input' | 'Output' = 'Input';
         const companyState = this.currentBranchStateName;
@@ -1181,8 +1238,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         );
 
         if (this.taxGroupMap.has(key)) {
-          const alreadyFetched = this.taxGroupMap.get(key);
-          taxLedgers = alreadyFetched;
+          taxLedgers = this.taxGroupMap.get(key);
         } else {
           taxLedgers = await this.getTaxLedgerForHSSAC(
             hssacItem, 
@@ -2012,11 +2068,34 @@ export class VendorInvoiceEntryComponent implements OnInit {
     });
   }
 
+
+  /**
+ * Format an exchange rate as a string
+ * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
+ */
+  /**
+   * Format an exchange rate as a string
+   * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
+   */
+  public getFormattedAndPaddedExchangeRate(
+    rate: number,
+    CurrencyMasterSid: number
+  ): string {
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+    );
+    const formattedExchangeRate = this.currencyFormatService.formatExchangeRate({
+      value: rate,
+      currencyCode: currency?.currencyCode,
+    });
+    return formattedExchangeRate.toFixed(this.getExchangeRateDecimalPlaces(CurrencyMasterSid));
+  }
+
   /**
    * Get the number of decimal places allowed for exchange rates
    * Example: getExchangeRateDecimalPlaces('USD') returns 3
    */
-  public getExchangeRateDecimalPlaces(CurrencyMasterSid: string): number {
+  public getExchangeRateDecimalPlaces(CurrencyMasterSid: number): number {
     const currency = this.currencyList.find(
       (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
     );
@@ -2073,7 +2152,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       return;
     }
 
-    const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.getRawValue();
+    const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.getRawValue() ?? new Date();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -2093,6 +2172,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
             formGroup.patchValue({
               ExchangeRate: toNumber(this.getFormattedExchangeRate(response.data, fromCurrencyId))
             });
+            const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode, voucherDate);
+            this.exchangeRateMap.set(key, response.data);
           } else {
             formGroup.patchValue({
               ExchangeRate: toNumber(this.getFormattedExchangeRate(0, fromCurrencyId))
@@ -2197,7 +2278,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Add this new method to fetch exchange rate
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
-    const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.getRawValue();
+    const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.getRawValue() ?? new Date();
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -2233,6 +2314,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
               CurrencyCode: fromCurrencyCode,
               ExchangeRate: toNumber(this.getFormattedExchangeRate(exchangeRate, fromCurrencyId))
             });
+            const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode, voucherDate);
+            this.exchangeRateMap.set(key, resp.data);
           } else {
             this.appSettingService.showError(resp.message);
             this.vendorInvoiceForm.patchValue({
@@ -2299,16 +2382,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         TaxCategory: taxCategory,
         CountryMasterSid: currentCountry
       };
-
-      const response = await firstValueFrom(
-        this.operationService.getLedgerForTaxGroup(payload).pipe(
-          catchError(error => {
-            console.error('Error calling getLedgerForTaxGroup:', error);
-            return of(null);
-          })
-        )
-      );
-
+      
       let key = this.buildKey(
         payload.taxGroup,
         payload.InputOrOutput,
@@ -2319,6 +2393,17 @@ export class VendorInvoiceEntryComponent implements OnInit {
       if (this.taxGroupMap.has(key)) {
         return this.taxGroupMap.get(key);
       }
+
+      const response = await firstValueFrom(
+        this.operationService.getLedgerForTaxGroup(payload).pipe(
+          catchError(error => {
+            console.error('Error calling getLedgerForTaxGroup:', error);
+            return of(null);
+          })
+        )
+      );
+
+
 
       if (response?.status && response.data && response.data.length > 0) {
         const taxGroupData = response.data[0];

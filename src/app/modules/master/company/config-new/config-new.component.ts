@@ -48,8 +48,9 @@ export class ConfigNewComponent implements OnInit {
       timeFormat: '24',
       timezone: 'UTC',
       currency: {
-        code: 'USD',
-        symbol: '$',
+        currencyMasterSid : null,
+        code: null,
+        symbol: null,
         position: 'before',
         decimalPlaces: 2
       },
@@ -73,7 +74,8 @@ export class ConfigNewComponent implements OnInit {
     },
     documentConfiguration: {
       logoPosition: 'left',
-      companyPosition: 'right',
+      companyPosition: 'center',
+      companyAlignment : 'center'
       // enableFooter: true,
       // footerText: 'Thank you for your business',
       // footerPosition: 'center',
@@ -95,7 +97,7 @@ export class ConfigNewComponent implements OnInit {
   // Dropdown options
   dateFormatOptions: { value: string; label: string }[] = [];
   timeFormatOptions: { value: string; label: string }[] = [];
-  currencyOptions: { code: string; name: string; symbol: string }[] = [];
+  currencyOptions: { code: string; name: string; symbol: string , amountDecimal : number}[] = [];
   timezoneOptions: { value: string; label: string }[] = [];
   currencyPositionOptions: { value: string; label: string }[] = [];
 
@@ -163,10 +165,11 @@ export class ConfigNewComponent implements OnInit {
       dateFormat: ['DD/MM/YYYY', Validators.required],
       timeFormat: ['24', Validators.required],
       timezone: ['UTC', Validators.required],
-      currencyCode: ['USD', Validators.required],
-      currencySymbol: ['$', Validators.required],
+      currencyMasterSid : [{ value : null , disabled : true },[Validators.required]],
+      currencyCode: [{ value : null, disabled : true }, Validators.required],
+      currencySymbol: [{ value : null , disabled : true }, Validators.required],
+      currencyDecimalPlaces: [{ value : 2 , disabled : true} , [Validators.required, Validators.min(0), Validators.max(4)]],
       currencyPosition: ['before', Validators.required],
-      currencyDecimalPlaces: [2, [Validators.required, Validators.min(0), Validators.max(4)]],
       decimalSeparator: ['.', Validators.required],
       thousandSeparator: [',', Validators.required],
       enableNotifications: [true],
@@ -242,7 +245,8 @@ export class ConfigNewComponent implements OnInit {
         
         this.config.documentConfiguration ??= {
           logoPosition: 'left',
-          companyPosition: 'right',
+          companyPosition: 'center',
+          companyAlignment : 'center'
           // enableFooter: true,
           // footerText: 'Thank you for your business',
           // footerPosition: 'center',
@@ -251,7 +255,7 @@ export class ConfigNewComponent implements OnInit {
           // marginLeft: 15,
           // marginRight: 15
         };
-        
+        console.log("CONFIG",this.config)
         this.updateFormValues();
         this.isLoading = false;
       },
@@ -337,6 +341,7 @@ export class ConfigNewComponent implements OnInit {
         dateFormat: this.config.systemSettings.dateFormat,
         timeFormat: this.config.systemSettings.timeFormat,
         timezone: this.config.systemSettings.timezone,
+        currencyMasterSid : this.config.systemSettings.currency.currencyMasterSid,
         currencyCode: this.config.systemSettings.currency.code,
         currencySymbol: this.config.systemSettings.currency.symbol,
         currencyPosition: this.config.systemSettings.currency.position,
@@ -360,8 +365,11 @@ export class ConfigNewComponent implements OnInit {
   }
 
   onCurrencyChange(currency: any) {
+    console.log(currency);
     this.systemSettingsForm.patchValue({
-      currencySymbol: currency.symbol
+      currencyMasterSid : currency.CurrencyMasterSid,
+      currencySymbol: currency.symbol,
+      currencyDecimalPlaces : currency.amountDecimal
     });
   }
 
@@ -467,6 +475,7 @@ export class ConfigNewComponent implements OnInit {
       timeFormat: formValues.timeFormat,
       timezone: formValues.timezone,
       currency: {
+        currencyMasterSid : formValues.currencyMasterSid,
         code: formValues.currencyCode,
         symbol: formValues.currencySymbol,
         position: formValues.currencyPosition,

@@ -14,7 +14,7 @@
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'left'">
-        <ng-container *ngTemplateOutlet="companyDetails"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
       </ng-container>
     </div>
 
@@ -29,7 +29,7 @@
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'center'">
-        <ng-container *ngTemplateOutlet="companyDetails"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
       </ng-container>
     </div>
 
@@ -44,7 +44,7 @@
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'right'">
-        <ng-container *ngTemplateOutlet="companyDetails"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
       </ng-container>
     </div>
 
@@ -52,8 +52,8 @@
 </div>
 
 <!-- COMPANY DETAILS TEMPLATE -->
-<ng-template #companyDetails>
-  <div style="font-size:17px;">
+<ng-template #companyDetails let-alignment="alignment">
+  <div [style.text-align]="alignment" style="font-size:17px;">
     <h3 style="margin:0; font-weight:900;">
       {{ currentCompany?.companyName || 'XXXX COMPANY NAME' }}
     </h3>

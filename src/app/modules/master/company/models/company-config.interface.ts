@@ -35,6 +35,7 @@ export interface CompanyConfiguration {
     timeFormat: string;
     timezone: string;
     currency: {
+      currencyMasterSid: number;
       code: string;
       symbol: string;
       position: 'before' | 'after';
@@ -86,6 +87,7 @@ export interface SystemSettings {
 }
 
 export interface CurrencySettings {
+  currencyMasterSid: number;
   code: string;
   symbol: string;
   position: 'before' | 'after';
@@ -112,6 +114,7 @@ export interface ModuleFeatures {
 export interface DocumentConfiguration {
   logoPosition: 'left' | 'center' | 'right';
   companyPosition: 'left' | 'center' | 'right';
+  companyAlignment: 'left' | 'center' | 'right';
   // enableFooter: boolean;
   // footerText?: string;
   // footerPosition: 'left' | 'center' | 'right';

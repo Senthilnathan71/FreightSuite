@@ -1075,6 +1075,15 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       { emitEvent: false }
     );
 
+    if(headerInfo.CashOrBank === 'C'){
+      this.receiptForm.get('InstrumentMode')?.clearValidators();
+      this.receiptForm.get('InstrumentMode')?.updateValueAndValidity();
+      this.receiptForm.get('InstrumentNumber')?.clearValidators();
+      this.receiptForm.get('InstrumentNumber')?.updateValueAndValidity();
+      this.receiptForm.get('InstrumentDate')?.clearValidators();
+      this.receiptForm.get('InstrumentDate')?.updateValueAndValidity();
+    }
+
     this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
     detailItems.forEach((d, index) => {

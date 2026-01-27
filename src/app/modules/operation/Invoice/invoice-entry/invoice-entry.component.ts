@@ -390,7 +390,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       PostStatus: [''],
       GSTType: [''],
       InvoiceType: ['REG'],
-      VoucherType: [1],
+      VoucherType: [null],
       Narration: [''],
       Remarks: [''],
       IRNStatus: [''],
@@ -576,7 +576,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   onVoucherDateChange(){
-    this.spinner.show();
     const voucherDate = this.invoiceForm.get('VoucherDate')?.value;
     if(!voucherDate) return;
 
@@ -623,8 +622,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         )
       }
     });
-
-    this.spinner.hide();
   }
 
   onCustomerChange(selected: any) {
@@ -1438,7 +1435,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
   }
   private async recalcRow(index: number) {
-    console.log("DEBUG - recalcRow called");
     const row = this.details.at(index);
     if (!row) return;
     if (this.isPosted) {

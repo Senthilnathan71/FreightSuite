@@ -55,9 +55,11 @@ export class CompanyConfigService {
         return currencies
           .filter(c => c.status === 'A') // Only active currencies
           .map(currency => ({
+            CurrencyMasterSid : currency.CurrencyMasterSid,
             code: currency.currencyCode || currency.CurrencyCode,
             name: currency.currencyName || currency.CurrencyName,
-            symbol: currency.Symbol || currency.symbol || ''
+            symbol: currency.Symbol || currency.symbol || '',
+            amountDecimal : currency.amountDecimal || 2
           }));
       }),
       catchError(error => {
@@ -101,6 +103,7 @@ export class CompanyConfigService {
         timeFormat: '24',
         timezone: 'UTC',
         currency: {
+          currencyMasterSid : null,
           code: 'USD',
           symbol: '$',
           position: 'before',
@@ -154,7 +157,8 @@ export class CompanyConfigService {
       },
       documentConfiguration : {
         logoPosition: 'left',
-        companyPosition: 'right',
+        companyPosition: 'center',
+        companyAlignment : 'center'
         // enableFooter: true,
         // footerText: 'Thank you for your business',
         // footerPosition: 'center',
@@ -175,8 +179,9 @@ export class CompanyConfigService {
       timeFormat: '24',
       timezone: 'UTC',
       currency: {
-        code: 'USD',
-        symbol: '$',
+        currencyMasterSid : null,
+        code: null,
+        symbol: null,
         position: 'before',
         decimalPlaces: 2
       },

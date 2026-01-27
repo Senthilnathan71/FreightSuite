@@ -158,6 +158,20 @@
                                 </div>
                               </div>
 
+                              
+                              <div class="col-md-4 mb-3">
+                                <label for="currencyDecimalPlaces" class="form-label">Decimal Places</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="currencyDecimalPlaces"
+                                       formControlName="currencyDecimalPlaces"
+                                       [class.is-invalid]="isFieldInvalid('currencyDecimalPlaces')"
+                                       min="0" max="4">
+                                <div *ngIf="isFieldInvalid('currencyDecimalPlaces')" class="invalid-feedback">
+                                  {{ getFieldError('currencyDecimalPlaces') }}
+                                </div>
+                              </div>
+                              
                               <div class="col-md-4 mb-3">
                                 <label for="currencyPosition" class="form-label">Symbol Position</label>
                                 <select class="form-select"
@@ -170,19 +184,6 @@
                                 </select>
                                 <div *ngIf="isFieldInvalid('currencyPosition')" class="invalid-feedback">
                                   {{ getFieldError('currencyPosition') }}
-                                </div>
-                              </div>
-
-                              <div class="col-md-4 mb-3">
-                                <label for="currencyDecimalPlaces" class="form-label">Decimal Places</label>
-                                <input type="number"
-                                       class="form-control"
-                                       id="currencyDecimalPlaces"
-                                       formControlName="currencyDecimalPlaces"
-                                       [class.is-invalid]="isFieldInvalid('currencyDecimalPlaces')"
-                                       min="0" max="4">
-                                <div *ngIf="isFieldInvalid('currencyDecimalPlaces')" class="invalid-feedback">
-                                  {{ getFieldError('currencyDecimalPlaces') }}
                                 </div>
                               </div>
 
@@ -604,8 +605,8 @@
                 
                   <div class="row">
                 
-                    <!-- ================= CONFIGURATION PANEL (4 COL) ================= -->
-                    <div class="col-lg-4">
+                    <!-- ================= CONFIGURATION PANEL (5 COL) ================= -->
+                    <div class="col-lg-5">
                 
                       <div class="card mb-4">
                         <div class="card-header">
@@ -635,7 +636,8 @@
                           </div>
                 
                           <!-- COMPANY POSITION (ROW 2) -->
-                          <div class="mb-3">
+                           <div class="row">
+                          <div class="col-md-6 mb-3">
                             <label class="form-label">Company Details Position</label>
                             <select class="form-select" [(ngModel)]="config.documentConfiguration.companyPosition"
                               (ngModelChange)="onCompanyPositionChange($event)">
@@ -650,14 +652,23 @@
                               </option>
                             </select>
                           </div>
-                
+
+                          <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Details Alignment</label>
+                            <select class="form-select" [(ngModel)]="config.documentConfiguration.companyAlignment">
+                              <option value="left">Left</option>
+                              <option value="center">Center</option>
+                              <option value="right">Right</option>
+                            </select>
+                          </div>
+                          </div>
                         </div>
                       </div>
                 
                     </div>
                 
-                    <!-- ================= PREVIEW PANEL (8 COL) ================= -->
-                    <div class="col-lg-8">
+                    <!-- ================= PREVIEW PANEL (7 COL) ================= -->
+                    <div class="col-lg-7">
                 
                       <div class="card">
                         <div class="card-header">
@@ -683,7 +694,9 @@
                                 </ng-container>
                 
                                 <ng-container *ngIf="config.documentConfiguration.companyPosition === 'left'">
-                                  <div class="small">
+                                  <div class="small" [class.text-start]="config.documentConfiguration.companyAlignment === 'left'"
+                                       [class.text-center]="config.documentConfiguration.companyAlignment === 'center'"
+                                       [class.text-end]="config.documentConfiguration.companyAlignment === 'right'">
                                     <div class="fw-bold">XXXX XXXXX XXXXXXX</div>
                                     <div>XXXX XXX XXXXX XXXX</div>
                                     <div>XXXX XXX, XXXXX</div>
@@ -706,7 +719,9 @@
                                 </ng-container>
                 
                                 <ng-container *ngIf="config.documentConfiguration.companyPosition === 'center'">
-                                  <div class="small">
+                                  <div class="small" [class.text-start]="config.documentConfiguration.companyAlignment === 'left'"
+                                       [class.text-center]="config.documentConfiguration.companyAlignment === 'center'"
+                                       [class.text-end]="config.documentConfiguration.companyAlignment === 'right'">
                                     <div class="fw-bold">XXXX XXXXX XXXXXXX</div>
                                     <div>XXXX XXX XXXXX XXXX</div>
                                     <div>XXXX XXX, XXXXX</div>
@@ -729,7 +744,9 @@
                                 </ng-container>
                 
                                 <ng-container *ngIf="config.documentConfiguration.companyPosition === 'right'">
-                                  <div class="small">
+                                  <div class="small" [class.text-start]="config.documentConfiguration.companyAlignment === 'left'"
+                                       [class.text-center]="config.documentConfiguration.companyAlignment === 'center'"
+                                       [class.text-end]="config.documentConfiguration.companyAlignment === 'right'">
                                     <div class="fw-bold">XXXX XXXXX XXXXXXX</div>
                                     <div>XXXX XXX XXXXX XXXX</div>
                                     <div>XXXX XXX, XXXXX</div>
