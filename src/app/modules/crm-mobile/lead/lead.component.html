@@ -171,26 +171,42 @@
 
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!leadForm.get('leadStatus')?.value">
-                            <ng-select class="ng-select" formControlName="leadStatus" placeholder="">
-                                <ng-option *ngFor="let status of filteredStatuses" [value]="status">
-                                    {{ status }}
-                                </ng-option>
-                            </ng-select>
-                            <label class="input-label">leadStatus <span
-                                    class="text-danger"></span></label>
-                            @if(leadForm.get('leadStatus')?.touched &&
-                            leadForm.get('leadStatus')?.invalid){
-                            <div class="error-message">
-                                @if(leadForm.get('leadStatus')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                            </div>
-                            }
-                        </div>
+  <div class="custom-form-group custom-form-group-select"
+       [class.filled]="!!leadForm.get('leadStatus')?.value"
+       [class.disabled]="leadForm.get('leadStatus')?.disabled">
 
-                    </aside>
+    <ng-select
+      class="ng-select"
+      formControlName="leadStatus"
+      [clearable]="false"
+      [searchable]="false"
+      placeholder="">
+
+      <ng-option
+        *ngFor="let status of filteredStatuses"
+        [value]="status">
+        {{ status }}
+      </ng-option>
+
+    </ng-select>
+
+    <label class="input-label">
+      Lead Status
+    </label>
+
+    @if (
+      leadForm.get('leadStatus')?.touched &&
+      leadForm.get('leadStatus')?.invalid
+    ) {
+      <div class="error-message">
+        @if (leadForm.get('leadStatus')?.hasError('required')) {
+          <span>Required</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+
                     @if(isEditMode){
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"

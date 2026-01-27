@@ -105,6 +105,10 @@ isLoadingCities = false;
     return item;
   }
 
+  readonly EARLY_STATUSES = ['Discovery', 'Qualify'];
+  readonly LOCK_AFTER_STATUS = 'Meeting Scheduled';
+
+
 
   modeOfPreferredContactMode = [
     { id: "1", name: "Email" },
@@ -213,12 +217,21 @@ MenuMasterSid:any
 
 
     this.leadForm.get('isQualify')?.valueChanges.subscribe((checked: boolean) => {
-      if (checked) {
-        this.leadForm.get('leadStatus')?.setValue('Qualify');
-      } else {
-        this.leadForm.get('leadStatus')?.setValue('Discovery');
-      }
-    });
+
+  // 🚫 Do NOT auto-change status when status is locked
+  if (
+    this.isEditMode &&
+    this.leadForm.get('leadStatus')?.disabled
+  ) {
+    return;
+  }
+
+  this.leadForm.get('leadStatus')?.setValue(
+    checked ? 'Qualify' : 'Discovery',
+    { emitEvent: false }
+  );
+});
+
   }
 
   // // Method to load the city data
@@ -244,7 +257,7 @@ MenuMasterSid:any
       preCustomerType: [],
       preCustomerAddress1: ['', [
         Validators.required,
-        Validators.pattern(/^[a-zA-Z0-9#\s,.\-]+$/)
+        Validators.pattern(/^[a-zA-Z0-9#\/\s,.\-]+$/)
                        // only letters, numbers, space
       ]],
 
@@ -256,7 +269,7 @@ MenuMasterSid:any
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
       phone: ['',[Validators.maxLength(15), this.phoneNumberValidator]],
-      leadStatus: [LeadStatus.Discovery],
+      leadStatus: [{ value: LeadStatus.Discovery, disabled: true }],
       PreferredContactMode: ['Email'],
       LanguagePreferrence: ['', [
   Validators.maxLength(100),
@@ -413,41 +426,76 @@ languagePrefValidator(): ValidatorFn {
     "DealLost"
   ];
 
+  normalizeLeadStatus(apiStatus: string): string {
+  if (!apiStatus) return 'Discovery';
+
+  const map: Record<string, string> = {
+    Discovery: 'Discovery',
+    Qualify: 'Qualify',
+    MeetingScheduled: 'Meeting Scheduled',
+    MeetingCompleted: 'Meeting Completed',
+    EnquiryGenerated: 'EnquiryGenerated',
+    QuotationCreated: 'QuotationCreated',
+    QuotationConfirmed: 'QuotationConfirmed',
+    ContractSigned: 'ContractSigned',
+    DealWon: 'DealWon',
+    DealLost: 'DealLost'
+  };
+
+  return map[apiStatus] || 'Discovery';
+}
+
+
   filteredStatuses: string[] = [];
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
-    this.leadService.getLeadById(leadId).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          let response = resp;
-          this.leadData = response;
-          console.log(this.leadData,'this.leadData')
-          this.filterStateByCountryId(response);
-          this.filterCityByStateId(response);
-
-          let formattedStatus = this.findStatus(response.status);
-          console.log("From API leadStatus:", response.leadStatus); // "Qualify"
-          // Get the index of current status
-          const currentIndex = this.allStatuses.indexOf(response.leadStatus);
-
-          // Filter to only include current and future statuses
-          this.filteredStatuses = this.allStatuses.slice(currentIndex);
-          this.leadForm.patchValue({
-            ...response,
-            isQualify: response.isQualify === "Y" ? true : false,
-            leadStatus: response.leadStatus,
-            status: formattedStatus,
-          })
-
-        } else {
-          this.appSettingService.showError('Error Loading Lead Data')
-        }
-      },
-      (error) => {
-        console.log('Error Loading Lead Data', error);
+  this.leadService.getLeadById(leadId).subscribe(
+    (resp: any) => {
+      if (!resp.status) {
+        this.appSettingService.showError('Error Loading Lead Data');
+        return;
       }
-    );
-  }
+
+      this.leadData = resp;
+
+      // Patch dependent dropdowns
+      this.filterStateByCountryId(resp);
+      this.filterCityByStateId(resp);
+
+      const apiLeadStatus = this.normalizeLeadStatus(resp.leadStatus);
+
+const currentIndex = this.allStatuses.indexOf(apiLeadStatus);
+const lockIndex = this.allStatuses.indexOf(this.LOCK_AFTER_STATUS);
+
+// 🔒 Lock for Meeting Scheduled AND ALL NEXT STEPS
+if (currentIndex >= lockIndex) {
+  this.filteredStatuses = [apiLeadStatus];
+  this.leadForm.get('leadStatus')?.disable({ emitEvent: false });
+} 
+// 🔓 Early stages
+else {
+  this.filteredStatuses = this.allStatuses.slice(0, lockIndex);
+  this.leadForm.get('leadStatus')?.enable({ emitEvent: false });
+}
+
+
+      // Patch form
+      this.leadForm.patchValue({
+        ...resp,
+        isQualify: resp.isQualify === 'Y',
+        leadStatus: apiLeadStatus,
+        status: this.findStatus(resp.status)
+      },
+    { emitEvent: false }
+  );
+
+    },
+    (error) => {
+      console.error('Error Loading Lead Data', error);
+    }
+  );
+}
+
 
   loadAllFields() {
     const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();

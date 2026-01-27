@@ -52,6 +52,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'booking/entry',
         component: BookingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Booking',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Booking' }],
@@ -60,6 +61,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'booking/entry/:id',
         component: BookingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Booking',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Booking' }],

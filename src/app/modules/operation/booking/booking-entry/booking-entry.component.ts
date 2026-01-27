@@ -5,7 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, delay, firstValueFrom, forkJoin, of, Subject, tap } from 'rxjs';
+import { catchError, debounceTime, delay, firstValueFrom, forkJoin, of, Subject, takeUntil, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -62,6 +62,8 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { ToastrService } from 'ngx-toastr';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { HostListener } from '@angular/core';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -126,7 +128,7 @@ type Html2PdfOptions = {
     CustomDatePipe
   ],
 })
-export class BookingEntryComponent implements OnInit, OnDestroy {
+export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
 
   /**
@@ -145,7 +147,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   showParsedData = false;
   uploadResult: any = null;
   isSaving : boolean = false;
-
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -230,7 +233,6 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   
-  private initialFormValue: string;
   bookingStatusTimeline : any[];
   branchDetails: any;
   currentBranchCityName: string | null;
@@ -609,6 +611,76 @@ arapFilter = {
       this.departmentLookup.focus();
     }
   }
+
+  @HostListener('window:beforeunload', ['$event'])
+unloadNotification($event: BeforeUnloadEvent): void {
+  if (this.hasUnsavedChanges()) {
+    $event.preventDefault();
+    $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+  }
+}
+
+hasUnsavedChanges(): boolean {
+  return this.isDirty && !this.isSaving;
+}
+
+async saveChanges(): Promise<boolean> {
+  return new Promise((resolve) => {
+    this.onSubmit(resolve);
+  });
+}
+
+subscribeToFormChanges() {
+  // Subscribe to booking form changes
+  this.bookingForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    });
+
+  // Subscribe to cargo form changes
+  this.cargoForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    });
+
+  // Subscribe to other form changes
+  this.otherForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    });
+
+  // Subscribe to CRO form changes
+  this.croForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    });
+
+  // Subscribe to detail form changes
+  this.detailForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    });
+}
 
 
   getCurrentCompanyBranches() {
@@ -1262,6 +1334,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   loadBookingById(BookingHeaderSid: number,withMilestoneRefresh : boolean = false) {
     this.spinner.show();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.destroy$ = new Subject<void>();
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -1274,8 +1349,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           if(withMilestoneRefresh){
             this.milestoneComponent.loadShipmentMilestones(resp.data?.ShipmentNo);
           }
+          setTimeout(() => {
+          this.initialFormValue = this.getCurrentFormState();
+          this.isDirty = false;
+          this.subscribeToFormChanges();
+        }, 500);
         } else {
           this.isSaving = false;
+          this.spinner.hide();
         }
       }
     )
@@ -1486,6 +1567,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.syncFormValueWithRateComponent();
     this.applyTranshipmentRestrictions();
     this.isSaving = false;
+    setTimeout(() => {
+    this.initialFormValue = this.getCurrentFormState();
+    this.isDirty = false;
+    this.subscribeToFormChanges();
+  }, 500);
   }
 
   // patchBookingFromQuotation(data:any){
@@ -1690,15 +1776,21 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
 
-  async onSubmit() {
+  async onSubmit(resolve?: (value: boolean) => void) {
     this.isSaving = true;
     console.log('Submit triggered', this.bookingForm.value);
     if (this.isEditMode) {
-      const currentFormState = JSON.stringify(this.getCurrentFormState());
-      if (this.initialFormValue === currentFormState) {
-        this.appSettingService.showWarning('No changes are there to save.');
-        console.log("STOP 1 - No changes return");
+      const currentFormState = this.getCurrentFormState();
+      
+      // FIX: Parse initialFormValue before comparison
+      const initialState = typeof this.initialFormValue === 'string' 
+        ? JSON.parse(this.initialFormValue) 
+        : this.initialFormValue;
+      
+      if (this.deepEqual(initialState, currentFormState)) {
+        this.appSettingService.showWarning('No changes to save.');
         this.isSaving = false;
+        if (resolve) resolve(false);
         return;
       }
     }
@@ -1733,6 +1825,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       console.log("STOP 3 - bookingForm invalid");
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
@@ -1942,22 +2035,26 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.operationService.updateBookingById(this.BookingHeaderSid, payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
+            this.isDirty = false;
             this.appSettingService.showSuccess('Booking successfully updated.');
             this.bookingForm.markAsPristine();
             this.cargoForm.markAsPristine();
             this.otherForm.markAsPristine();
             this.croForm.markAsPristine(); 
+            if (resolve) resolve(true);
             // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid,true);
           } else {
             this.appSettingService.showError('Error updating booking.');
             this.isSaving = false;
+             if (resolve) resolve(false);
             console.error(resp.message);
           }
         },
         error: (err) => {
           this.appSettingService.showError('Failed to update booking.');
           this.isSaving = false;
+           if (resolve) resolve(false);
           console.error(err);
         }
       });
@@ -1965,18 +2062,22 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.operationService.createBooking(payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
+            this.isDirty = false;
             this.appSettingService.showSuccess('Booking successfully created.');
             const bookingId = resp.data?.bookingHeader?.BookingHeaderSid;
+            if (resolve) resolve(true);
             this.router.navigate(['operation/booking/entry', bookingId]);
           } else {
             this.appSettingService.showError('Error creating booking.');
             this.isSaving = false;
+            if (resolve) resolve(false);
             console.error(resp.message);
           }
         },
         error: (err) => {
           this.appSettingService.showError('Failed to create booking.');
           this.isSaving = false;
+          if (resolve) resolve(false);
           console.error(err);
         }
       });
@@ -3835,6 +3936,49 @@ getFormattedPort(code: string): string {
       milestoneResult: this.milestoneResult,
     };
   }
+  private normalizeValue(value: any): any {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  // Handle Date
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0]; // DATE only
+  }
+
+  // Handle numeric strings and numbers
+  if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+    return Number(value);
+  }
+
+  if (typeof value === 'number') {
+    return Number(value.toFixed(6)); // prevent float noise
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return value.map(v => this.normalizeValue(v));
+  }
+
+  // Handle objects
+  if (typeof value === 'object') {
+    return Object.keys(value)
+      .sort()
+      .reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+  }
+
+  return value;
+}
+
+deepEqual(obj1: any, obj2: any): boolean {
+  const normalizedObj1 = this.normalizeValue(obj1);
+  const normalizedObj2 = this.normalizeValue(obj2);
+  return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+}
+
   /**
  * Updates the booking status based on the presence of Cargo Received Dates in the products.
  * - If at least one product has a Cargo Received Date and the current status is 'Booking',
