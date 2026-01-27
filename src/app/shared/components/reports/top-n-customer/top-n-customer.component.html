@@ -19,37 +19,37 @@
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">From Date </strong>
+                    <strong style="width: 130px;">From Date </strong>
                     <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">To Date </strong>
+                    <strong style="width: 130px;">To Date </strong>
                     <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
+                    <strong style="width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                    <strong style="width: 130px;">Dept </strong>
+                    <p class="ms-1">: {{ fullData?.departmentInvoled }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Top N </strong>
+                    <strong style="width: 130px;">Top N </strong>
                     <p class="ms-1">: {{ params?.TopN }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
-                    <strong style="margin-bottom: 4px;width: 130px;">Volume</strong>
+                    <strong style="width: 130px;">Volume</strong>
                     <p class="ms-1">: {{ params?.Volume }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
-                    <strong style="margin-bottom: 4px;width: 130px;">GP </strong>
+                    <strong style="width: 130px;">GP </strong>
                     <p class="ms-1">: {{ params?.Gp }}</p>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                     <tr *ngFor="let item of fullData?.data; let i=index">
                         <!-- <td class="text-end">{{ item.MBLNo }}</td>
                                 <td class="text-end">{{ item?.HBLNo || '' }}</td> -->
-                        <td class="text-center">{{i+1}}</td>
+                        <td class="text-center fw-bold">{{i+1}}</td>
                         <td>{{ item.customerName }}</td>
                         <td class="text-end">{{ item.GP | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.totalRevenue | number:'1.3-3' }}</td>
@@ -83,7 +83,7 @@
                         <td class="text-end">{{ item.Weight | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.netwt | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
-                        <td class="text-end">{{ item.noOfShipment }}</td>
+                        <td class="text-center">{{ item.noOfShipment }}</td>
                     </tr>
                     <tr *ngIf="!fullData?.data || fullData.data?.length === 0">
                         <td colspan="10" class="text-center fw-bold py-1">

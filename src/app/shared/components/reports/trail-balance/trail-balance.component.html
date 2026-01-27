@@ -112,8 +112,8 @@
 
                         <!-- GRAND TOTAL (NO ngFor) -->
                         <tr class="bg-secondary text-white fw-bold" *ngIf="data?.grandTotal">
-                            <td colspan="3" class="text-end">Grand Total</td>
-                            <td></td>
+                            <td colspan="4" class="text-end">Grand Total</td>
+                            <!-- <td></td> -->
                             <td class="text-end">{{data.grandTotal.TotalOpeningDebit | number:'1.2-2'}}</td>
                             <td class="text-end">{{data.grandTotal.TotalOpeningCredit | number:'1.2-2'}}</td>
                             <td class="text-end">{{data.grandTotal.TotalCurrentDebit | number:'1.2-2'}}</td>

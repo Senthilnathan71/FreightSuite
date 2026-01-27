@@ -19,28 +19,28 @@
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">HBL From Date </strong>
+                    <strong style="width: 130px;">HBL From Date </strong>
                     <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">HBL To Date </strong>
+                    <strong style="width: 130px;">HBL To Date </strong>
                     <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
+                    <strong style="width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Dept </strong>
+                    <strong style="width: 130px;">Dept </strong>
                     <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
-                    <strong style="margin-bottom: 4px;width: 130px;">BLIssue </strong>
+                    <strong style="width: 130px;">BLIssue </strong>
                     <p class="ms-1">: {{ params?.BLIssue }}</p>
                 </div>
             </div>
