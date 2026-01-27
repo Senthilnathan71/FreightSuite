@@ -125,7 +125,7 @@
                                     [compareWith]="compareWithYear"
                                     [class.is-invalid]="voucherPeriodForm.get('YearMasterSid')?.invalid && voucherPeriodForm.get('YearMasterSid')?.touched">
                                 </ng-select>
-                                <label class="input-label">Year <span class="text-danger">*</span></label>
+                                <label class="input-label">Year <span class="text-danger fw-bold">*</span></label>
                                 <div class="error-message" *ngIf="voucherPeriodForm.get('YearMasterSid')?.touched && voucherPeriodForm.get('YearMasterSid')?.invalid">
                                     Required
                                 </div>
