@@ -193,6 +193,7 @@
                     (click)="d1.toggle()"
                     [footerTemplate]="footerTemplate1" 
                     [class.is-invalid]="isFieldInvalid('VoucherDate')" 
+                    (dateSelect)="onVoucherDateChange()"
                   />
                   <label class="input-label" for="VoucherDate">
                     Invoice Date <span class="text-danger">*</span>

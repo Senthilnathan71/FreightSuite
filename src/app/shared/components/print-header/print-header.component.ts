@@ -21,8 +21,9 @@ export class PrintHeaderComponent {
   currentDate = new Date();
   printSettings: PrintSettings;
 
-  companyPosition: 'left' | 'center' | 'right' = 'center';
   logoPosition: 'left' | 'center' | 'right' = 'left';
+  companyPosition: 'left' | 'center' | 'right' = 'center';
+  companyAlignment: 'left' | 'center' | 'right' = 'center';
 
   /* ORDER — ensures correct placement */
   get logoOrder(): number {
@@ -37,7 +38,7 @@ export class PrintHeaderComponent {
 
   /* ALIGNMENT */
   get companyTextAlign(): string {
-    return this.companyPosition;
+    return this.companyAlignment;
   }
 
   /* LOGO ALIGN FIX (important for center/right cases) */
@@ -54,6 +55,7 @@ export class PrintHeaderComponent {
     public companySettings: CompanySettingsManagerService,
     public logoService: LogoService
   ) { }
+
   ngOnInit() {
     this.userData = this.appSettingsService.getDecryptedUserProfile();
 
@@ -67,9 +69,10 @@ export class PrintHeaderComponent {
     console.log(this.branchDetails, "BRANCH DETAILS");
 
     this.printSettings = this.companySettings.getPrintSettings();
-    this.companyPosition = this.printSettings.companyPosition;
-    this.logoPosition = this.printSettings.logoPosition;
-    
+    this.logoPosition = this.printSettings.logoPosition || 'left';
+    this.companyPosition = this.printSettings.companyPosition || 'center';
+    this.companyAlignment = this.printSettings.companyAlignment || 'center';
+
     console.log("Print Settings", this.printSettings);
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;

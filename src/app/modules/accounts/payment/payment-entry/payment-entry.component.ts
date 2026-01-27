@@ -1075,6 +1075,15 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       { emitEvent: false }
     );
 
+    if (headerInfo.CashOrBank === 'C') {
+      this.paymentForm.get('InstrumentMode')?.clearValidators();
+      this.paymentForm.get('InstrumentMode')?.updateValueAndValidity();
+      this.paymentForm.get('InstrumentNumber')?.clearValidators();
+      this.paymentForm.get('InstrumentNumber')?.updateValueAndValidity();
+      this.paymentForm.get('InstrumentDate')?.clearValidators();
+      this.paymentForm.get('InstrumentDate')?.updateValueAndValidity();
+    }
+
     this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
     detailItems.forEach((d, index) => {

@@ -20,6 +20,7 @@ export interface CurrencySettings {
 export interface PrintSettings {
   logoPosition: 'left' | 'center' | 'right';
   companyPosition: 'left' | 'center' | 'right';
+  companyAlignment: 'left' | 'center' | 'right';
 }
 
 @Injectable({
@@ -46,7 +47,8 @@ export class CompanySettingsManagerService {
 
   private printSettingsSubject = new BehaviorSubject<PrintSettings>({
     logoPosition: 'left',
-    companyPosition: 'right',
+    companyPosition: 'center',
+    companyAlignment: 'center'
   });
   public printSettings$ = this.printSettingsSubject.asObservable();
 
@@ -124,7 +126,8 @@ export class CompanySettingsManagerService {
           if (config.documentConfiguration) {
             const printSettings: PrintSettings = {
               logoPosition: config.documentConfiguration.logoPosition || 'left',
-              companyPosition: config.documentConfiguration.companyPosition || 'right',
+              companyPosition: config.documentConfiguration.companyPosition || 'center',
+              companyAlignment: config.documentConfiguration.companyAlignment || 'center'
             };
             this.printSettingsSubject.next(printSettings);
             localStorage.setItem('companyPrintSettings', JSON.stringify(printSettings));
@@ -205,6 +208,7 @@ export class CompanySettingsManagerService {
           const config = JSON.parse(storedConfig);
           if (config?.systemSettings?.currency) {
             const currencySettings: CurrencySettings = {
+              currencyMasterSid : config.systemSettings.currency.currencyMasterSid,
               code: config.systemSettings.currency.code || 'USD',
               symbol: config.systemSettings.currency.symbol || '$',
               position: config.systemSettings.currency.position || 'before',
@@ -235,7 +239,8 @@ export class CompanySettingsManagerService {
           if (config?.documentConfiguration) {
             const printSettings: PrintSettings = {
               logoPosition: config.documentConfiguration.logoPosition || 'left',
-              companyPosition: config.documentConfiguration.companyPosition || 'right',
+              companyPosition: config.documentConfiguration.companyPosition || 'center',
+              companyAlignment: config.documentConfiguration.companyAlignment || 'center'
             };
             // Update the subject so other subscribers get the latest value
             this.printSettingsSubject.next(printSettings);
