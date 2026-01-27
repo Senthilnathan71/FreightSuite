@@ -324,7 +324,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'outstanding-report',
-        title: 'Oustanding Report',
+        title: 'Oustanding',
         component: OutstandingReportComponent,
         filenameTemplate: 'Outstanding_Report_{LedgerName}_{date}',
         module: 'accounts-report',
@@ -355,7 +355,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'statement-ledger-report',
-        title: 'Statment Ledger Report',
+        title: 'Statment of Accounts',
         component: StatementReportComponent,
         filenameTemplate: 'Statemnt_Ledger_Report_{LedgerName}_{date}',
         module: 'accounts-report',
@@ -720,7 +720,7 @@ export class ReportRegistryService {
           </div>
         `,
         modalSize: 'xl',
-        pdfOrientation: 'portrait'
+        pdfOrientation: 'landscape'
       });
 
     } catch (error) {
