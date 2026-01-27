@@ -2398,12 +2398,22 @@
           </div>
 
             <!--Container No and type-->
-          <!-- <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">
-            <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Container No./ Type</strong></p>
-            <p style="margin: 0">
-              :  {{ invoicePrintData?.ContainerNumber }} /{{ invoicePrintData?.ContainerType }}
-            </p>
-          </div> -->
+       <!-- <div style="display: flex; margin-top: 8px; font-size: 16px; padding: 0 20px;">
+  <p style="font-weight: bolder; width: 165px; margin: 0">
+    <strong>Container No./ Type</strong>
+  </p>
+
+  <p style="margin: 0">
+    :
+    {{ invoicePrintData?.ContainerNumber }}
+    {{
+      invoicePrintData?.ContainerNumber && invoicePrintData?.ContainerType
+        ? ' / ' + invoicePrintData?.ContainerType
+        : invoicePrintData?.ContainerType || ''
+    }}
+  </p>
+</div> -->
+
 
           <!-- Remarks -->
           <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">

@@ -177,11 +177,12 @@
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div> -->
-                <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+                <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
                     <i class="fas fa-info-circle fs-6"></i>
                 </a>
 
-              <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+                <div class="ms-auto d-flex align-items-center">
+                        <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                         ngbDropdownToggle>
                         <i class="fas fa-ellipsis-v"></i>
@@ -197,6 +198,9 @@
                         <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
                             (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
                     </div>
+                </div>
+                       <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
                 </div>
             </div>
             <div class="modal-body">
