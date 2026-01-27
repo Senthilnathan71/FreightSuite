@@ -66,6 +66,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-organization-entry',
@@ -430,6 +431,18 @@ onCountryChange(): void {
     'Active': 'Active',
     'Suspended': 'Suspended'
   };
+
+  // Excel Upload Properties
+  @ViewChild('excelUploadModal') excelUploadModal!: TemplateRef<any>;
+  excelUploadModalRef!: NgbModalRef;
+  selectedExcelFile: File | null = null;
+  isDragOver = false;
+  isProcessingExcel = false;
+  isImporting = false;
+  showDataPreview = false;
+  excelUploadError: string | null = null;
+  parsedCustomers: any[] = [];
+  hasValidationErrors = false;
 
   switchToEditMode() {
     this.isEditMode = true;
@@ -3780,5 +3793,739 @@ private loadNetworks(): void {
 }
   navigateToCreateOrganization() {
     this.router.navigate(['master/organization/entry'])
+  }
+
+  // ============== EXCEL UPLOAD METHODS ==============
+
+  openExcelUploadModal(content: TemplateRef<any>) {
+    this.resetExcelUploadState();
+    this.excelUploadModalRef = this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true
+    });
+  }
+
+  resetExcelUploadState() {
+    this.selectedExcelFile = null;
+    this.isDragOver = false;
+    this.isProcessingExcel = false;
+    this.isImporting = false;
+    this.showDataPreview = false;
+    this.excelUploadError = null;
+    this.parsedCustomers = [];
+    this.hasValidationErrors = false;
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onFileDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.setExcelFile(files[0]);
+    }
+  }
+
+  onExcelFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.setExcelFile(input.files[0]);
+    }
+  }
+
+  setExcelFile(file: File) {
+    this.excelUploadError = null;
+    this.showDataPreview = false;
+    this.parsedCustomers = [];
+
+    const validExtensions = ['.xlsx', '.xls'];
+    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+      this.excelUploadError = 'Invalid file format. Please upload an Excel file (.xlsx or .xls)';
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      this.excelUploadError = 'File size exceeds 10MB limit';
+      return;
+    }
+
+    this.selectedExcelFile = file;
+    this.cdRef.markForCheck();
+  }
+
+  removeExcelFile() {
+    this.selectedExcelFile = null;
+    this.showDataPreview = false;
+    this.parsedCustomers = [];
+    this.excelUploadError = null;
+    this.hasValidationErrors = false;
+    this.cdRef.markForCheck();
+  }
+
+  getFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  async processExcelFile() {
+    if (!this.selectedExcelFile) return;
+
+    this.isProcessingExcel = true;
+    this.excelUploadError = null;
+    this.cdRef.markForCheck();
+
+    // Ensure all dropdown data is loaded before processing
+    try {
+      await Promise.all([
+        this.dropdownStore.loadCountries().toPromise(),
+        this.dropdownStore.loadStates().toPromise(),
+        this.dropdownStore.loadCities().toPromise()
+      ]);
+      console.log('Dropdown data loaded - Countries:', this.countryList?.length, 'States:', this.stateList?.length, 'Cities:', this.cityList?.length);
+    } catch (error) {
+      console.error('Error loading dropdown data:', error);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Get first sheet
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        // Convert to JSON
+        const rows: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+        if (rows.length === 0) {
+          this.excelUploadError = 'No data found in the Excel file';
+          this.isProcessingExcel = false;
+          this.cdRef.markForCheck();
+          return;
+        }
+
+        // Group rows by CustomerName
+        this.parsedCustomers = this.groupExcelDataByCustomer(rows);
+
+        // Validate parsed data
+        this.validateParsedCustomers();
+
+        this.showDataPreview = true;
+        this.isProcessingExcel = false;
+        this.cdRef.markForCheck();
+      } catch (error) {
+        console.error('Error parsing Excel file:', error);
+        this.excelUploadError = 'Error parsing Excel file. Please ensure the file format is correct.';
+        this.isProcessingExcel = false;
+        this.cdRef.markForCheck();
+      }
+    };
+
+    reader.onerror = () => {
+      this.excelUploadError = 'Error reading file';
+      this.isProcessingExcel = false;
+      this.cdRef.markForCheck();
+    };
+
+    reader.readAsArrayBuffer(this.selectedExcelFile);
+  }
+
+  groupExcelDataByCustomer(rows: any[]): any[] {
+    const customerMap = new Map<string, any>();
+
+    rows.forEach(row => {
+      const customerName = row.CustomerName?.toString().trim();
+      if (!customerName) return;
+
+      if (!customerMap.has(customerName)) {
+        // Support CountryMasterSid (numeric ID) or CountryName (text)
+        const countryValue = row.CountryName || row.CountryMasterSid || '';
+
+        customerMap.set(customerName, {
+          CustomerName: customerName,
+          CustomerShortCode: row.CustomerShortCode?.toString().trim() || '',
+          CustomerAliasName: row.CustomerAliasName?.toString().trim() || '',
+          CustomerAddress1: row.CustomerAddress1?.toString().trim() || '',
+          CustomerAddress2: row.CustomerAddress2?.toString().trim() || '',
+          CountryMasterSid: row.CountryMasterSid || null,  // Keep numeric ID
+          CountryName: countryValue?.toString().trim() || '',
+          CompanyType: row.CompanyType?.toString().trim() || '',
+          PanAvailable: row.PanAvailable?.toString().toLowerCase() === 'true' || row.PanAvailable?.toString().toUpperCase() === 'Y' || row.PanType?.toString().trim() !== '',
+          PanName: row.PanName?.toString().trim() || '',
+          GroupName: row.GroupName?.toString().trim() || '',
+          Website: row.Website?.toString().trim() || '',
+          paymentType: row.PaymentType?.toString().trim() || row.paymentType?.toString().trim() || row.CashCredit?.toString().trim() || '',
+          IsMSME: row.IsMSME?.toString().toUpperCase() === 'Y' || row.IsMSME?.toString().toLowerCase() === 'yes' ? 'Y' : 'N',
+          RegistrationNo: row.RegistrationNo?.toString().trim() || '',
+          Remarks: row.Remarks?.toString().trim() || '',
+          CIN: row.CIN?.toString().trim() || '',
+          TAN: row.TAN?.toString().trim() || '',
+          status: row.CustomerStatus?.toString().trim() || row.status?.toString().trim() || 'Active',
+          CustomerType: row.CustomerTypes?.toString().trim() || row.CustomerType?.toString().trim() || '',
+          Network: row.Network?.toString().trim() || '',
+          branches: [],
+          errors: []
+        });
+      }
+
+      // Add branch - support ALL Excel column name variants
+      const branchName = row.BranchName?.toString().trim() || row.CustBranchName?.toString().trim();
+      if (branchName) {
+        customerMap.get(customerName).branches.push({
+          CustBranchName: branchName,
+          // Branch_Type (Excel) or BranchType or CustBranchType
+          CustBranchType: row.Branch_Type?.toString().trim() || row.BranchType?.toString().trim() || row.CustBranchType?.toString().trim() || 'BRANCH',
+          // Branch_Code (Excel) or BranchCode or CustBranchCode
+          CustBranchCode: row.Branch_Code?.toString().trim() || row.BranchCode?.toString().trim() || row.CustBranchCode?.toString().trim() || '',
+          // StateMasterSid (Excel numeric) or StateName
+          StateMasterSid: row.StateMasterSid || null,
+          StateName: row.StateName?.toString().trim() || row.CustBranchState?.toString().trim() || row.StateMasterSid?.toString() || '',
+          // CityMasterSid (Excel numeric) or CityName
+          CityMasterSid: row.CityMasterSid || null,
+          CityName: row.CityName?.toString().trim() || row.CustBranchCity?.toString().trim() || row.CityMasterSid?.toString() || '',
+          // Contact_Person (Excel has underscore)
+          Contact_Person: row.Contact_Person?.toString().trim() || row.ContactPerson?.toString().trim() || '',
+          // Zip_PostBox (Excel) or ZipPostCode
+          CustBranchZipPostCode: row.Zip_PostBox?.toString().trim() || row.ZipPostCode?.toString().trim() || row.CustBranchZipPostCode?.toString().trim() || '',
+          // ContactNo (Excel) or BranchPhone
+          CustBranchPhone: row.ContactNo?.toString().trim() || row.BranchPhone?.toString().trim() || row.CustBranchPhone?.toString().trim() || '',
+          // Email (Excel) or BranchEmail
+          CustBranchEmail: row.Email?.toString().trim() || row.BranchEmail?.toString().trim() || row.CustBranchEmail?.toString().trim() || '',
+          // Address (Excel) or BranchAddress
+          CustBranchAddress: row.Address?.toString().trim() || row.BranchAddress?.toString().trim() || row.CustBranchAddress?.toString().trim() || '',
+          // Registered
+          CustBranchRegistered: row.Registered?.toString().toUpperCase() === 'Y' || row.CustBranchRegistered?.toString().toUpperCase() === 'Y' ? 'Y' : 'N',
+          // CustomerGstType (Excel) or GSTType
+          CustBranchGSTtype: row.CustomerGstType?.toString().trim() || row.GSTType?.toString().trim() || row.CustBranchGSTtype?.toString().trim() || 'Regular',
+          // GSTNo (Excel) or GSTIN
+          CustBranchGSTIN: row.GSTNo?.toString().trim() || row.GSTIN?.toString().trim() || row.CustBranchGSTIN?.toString().trim() || '',
+          status: row.BranchStatus?.toString().trim() || row.status?.toString().trim() || 'Active'
+        });
+      }
+    });
+
+    return Array.from(customerMap.values());
+  }
+
+  validateParsedCustomers() {
+    this.hasValidationErrors = false;
+
+    this.parsedCustomers.forEach(customer => {
+      customer.errors = [];
+
+      // Validate required customer fields
+      if (!customer.CustomerName) {
+        customer.errors.push('Customer Name is required');
+      }
+      if (!customer.CustomerAddress1) {
+        customer.errors.push('Customer Address is required');
+      }
+
+      // Country validation - check numeric ID first, then name lookup
+      const hasCountry = customer.CountryMasterSid ||
+        (customer.CountryName && this.resolveCountryId(customer.CountryName));
+      if (!hasCountry) {
+        customer.errors.push('Country is required or not found');
+      }
+
+      // Validate branches
+      if (!customer.branches || customer.branches.length === 0) {
+        customer.errors.push('At least one branch is required');
+      } else {
+        customer.branches.forEach((branch: any, idx: number) => {
+          if (!branch.CustBranchName) {
+            customer.errors.push(`Branch ${idx + 1}: Name is required`);
+          }
+          if (!branch.CustBranchType) {
+            customer.errors.push(`Branch ${idx + 1}: Type is required`);
+          }
+
+          // State - check numeric ID first, then name lookup
+          const hasState = branch.StateMasterSid ||
+            (branch.StateName && this.resolveStateId(branch.StateName));
+          if (!hasState) {
+            customer.errors.push(`Branch ${idx + 1}: State is required or not found`);
+          }
+
+          // City - check numeric ID first, then name lookup
+          const hasCity = branch.CityMasterSid ||
+            (branch.CityName && this.resolveCityId(branch.CityName, branch.StateName));
+          if (!hasCity) {
+            customer.errors.push(`Branch ${idx + 1}: City is required or not found`);
+          }
+
+          if (!branch.CustBranchEmail) {
+            customer.errors.push(`Branch ${idx + 1}: Email is required`);
+          }
+          if (!branch.CustBranchAddress) {
+            customer.errors.push(`Branch ${idx + 1}: Address is required`);
+          }
+        });
+      }
+
+      if (customer.errors.length > 0) {
+        this.hasValidationErrors = true;
+      }
+    });
+
+    this.cdRef.markForCheck();
+  }
+
+  getCountryDisplayName(customer: any): string {
+    if (customer.CountryMasterSid) {
+      const country = this.countryList?.find((c: any) => c.CountryMasterSid === customer.CountryMasterSid);
+      return country?.countryName || customer.CountryMasterSid?.toString();
+    }
+    return customer.CountryName || '';
+  }
+
+  resolveCountryId(countryValue: string): number | null {
+    if (!countryValue || !this.countryList || this.countryList.length === 0) {
+      console.log('resolveCountryId: No value or empty countryList', { countryValue, listLength: this.countryList?.length });
+      return null;
+    }
+    const val = countryValue.toString().trim().toLowerCase();
+
+    // Try exact match on name
+    let country = this.countryList.find((c: any) =>
+      c.countryName?.toLowerCase() === val
+    );
+
+    // Try match on code (if exists)
+    if (!country) {
+      country = this.countryList.find((c: any) =>
+        c.countryCode?.toLowerCase() === val
+      );
+    }
+
+    // Try partial match on name (e.g., "IND" might be start of "India")
+    if (!country) {
+      country = this.countryList.find((c: any) =>
+        c.countryName?.toLowerCase().startsWith(val) ||
+        c.countryName?.toLowerCase().includes(val)
+      );
+    }
+
+    // Try numeric ID
+    if (!country && !isNaN(Number(countryValue))) {
+      country = this.countryList.find((c: any) => c.CountryMasterSid === Number(countryValue));
+    }
+
+    console.log('resolveCountryId:', { input: countryValue, found: country?.countryName, id: country?.CountryMasterSid });
+    return country?.CountryMasterSid || null;
+  }
+
+  resolveStateId(stateValue: string): number | null {
+    if (!stateValue || !this.stateList || this.stateList.length === 0) {
+      console.log('resolveStateId: No value or empty stateList', { stateValue, listLength: this.stateList?.length });
+      return null;
+    }
+    const val = stateValue.toString().trim().toLowerCase();
+
+    // Try exact match on name
+    let state = this.stateList.find((s: any) =>
+      s.stateName?.toLowerCase() === val
+    );
+
+    // Try match on code
+    if (!state) {
+      state = this.stateList.find((s: any) =>
+        s.stateCode?.toLowerCase() === val
+      );
+    }
+
+    // Try partial/contains match
+    if (!state) {
+      state = this.stateList.find((s: any) =>
+        s.stateName?.toLowerCase().startsWith(val) ||
+        s.stateName?.toLowerCase().includes(val)
+      );
+    }
+
+    console.log('resolveStateId:', { input: stateValue, found: state?.stateName, id: state?.StateMasterSid });
+    return state?.StateMasterSid || null;
+  }
+
+  resolveCityId(cityValue: string, stateValue?: string): number | null {
+    if (!cityValue || !this.cityList || this.cityList.length === 0) {
+      console.log('resolveCityId: No value or empty cityList', { cityValue, listLength: this.cityList?.length });
+      return null;
+    }
+    const val = cityValue.toString().trim().toLowerCase();
+
+    // Try exact match on name
+    let city = this.cityList.find((c: any) =>
+      c.cityName?.toLowerCase() === val
+    );
+
+    // Try match on code
+    if (!city) {
+      city = this.cityList.find((c: any) =>
+        c.cityCode?.toLowerCase() === val
+      );
+    }
+
+    // Try partial/contains match
+    if (!city) {
+      city = this.cityList.find((c: any) =>
+        c.cityName?.toLowerCase().startsWith(val) ||
+        c.cityName?.toLowerCase().includes(val)
+      );
+    }
+
+    // If still not found and state provided, filter by state
+    if (!city && stateValue) {
+      const stateId = this.resolveStateId(stateValue);
+      if (stateId) {
+        city = this.cityList.find(
+          (c: any) => (c.cityName?.toLowerCase() === val ||
+                      c.cityCode?.toLowerCase() === val ||
+                      c.cityName?.toLowerCase().startsWith(val) ||
+                      c.cityName?.toLowerCase().includes(val)) &&
+            c.stateMaster?.StateMasterSid === stateId
+        );
+      }
+    }
+
+    console.log('resolveCityId:', { input: cityValue, state: stateValue, found: city?.cityName, id: city?.CityMasterSid });
+    return city?.CityMasterSid || null;
+  }
+
+  prepareCustomerPayloadFromExcel(customer: any): any {
+    const countryId = customer.CountryMasterSid || this.resolveCountryId(customer.CountryName);
+
+    const branches = customer.branches.map((branch: any) => {
+      const stateId = branch.StateMasterSid || this.resolveStateId(branch.StateName);
+      const cityId = branch.CityMasterSid || this.resolveCityId(branch.CityName, branch.StateName);
+
+      return {
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchName: branch.CustBranchName,
+        StateMasterSid: stateId,
+        CityMasterSid: cityId,
+        Branch_Type: branch.CustBranchType || 'BRANCH',
+        Branch_Code: branch.CustBranchCode || '',
+        Contact_Person: branch.Contact_Person || '',
+        Zip_PostBox: branch.CustBranchZipPostCode || '',
+        ContactNo: branch.CustBranchPhone || '',
+        Email: branch.CustBranchEmail || '',
+        Address: branch.CustBranchAddress || '',
+        Registered: branch.CustBranchRegistered === 'Y' ? 'Y' : 'N',
+        CustomerGstType: branch.CustBranchGSTtype || 'Regular',
+        GSTNo: branch.CustBranchGSTIN || '',
+        status: branch.status === 'Active' ? 'A' : 'S',
+        customerBranchContacts: []
+      };
+    });
+
+    const customerTypes = customer.CustomerType ?
+      customer.CustomerType.split(',').map((t: string) => t.trim()) : [];
+
+    return {
+      customer: {
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        CustomerName: customer.CustomerName,
+        CustomerShortCode: customer.CustomerShortCode || '',
+        CustomerAliasName: customer.CustomerAliasName || '',
+        CustomerAddress1: customer.CustomerAddress1 || '',
+        CustomerAddress2: customer.CustomerAddress2 || '',
+        CountryMasterSid: countryId,
+        CustomerType: customerTypes,
+        PanName: customer.PanName || '',
+        PanType: customer.PanAvailable ? 'Y' : 'N',
+        GroupName: customer.GroupName || '',
+        Website: customer.Website || '',
+        CashCredit: customer.paymentType || '',
+        Network: customer.Network || '',
+        Remarks: customer.Remarks || '',
+        TAN: customer.TAN || '',
+        CIN: customer.CIN || '',
+        IsMSME: customer.IsMSME === 'Y' ? 'A' : 'I',
+        RegistrationNo: customer.RegistrationNo || '',
+        CompanyType: customer.CompanyType || '',
+        status: customer.status === 'Active' ? 'A' : 'S',
+        AirlineNumber: '',
+        AirlineCode: ''
+      },
+      customerBranches: branches
+    };
+  }
+
+  async importExcelData() {
+    if (this.parsedCustomers.length === 0 || this.hasValidationErrors) {
+      this.appSettingService.showError('Please fix validation errors before importing');
+      return;
+    }
+
+    this.isImporting = true;
+    this.cdRef.markForCheck();
+
+    try {
+      // Prepare all customer payloads
+      const customerPayloads = this.parsedCustomers.map(customer =>
+        this.prepareCustomerPayloadFromExcel(customer)
+      );
+
+      // Call bulk API
+      const result = await this.masterService.createBulkCustomers({
+        customers: customerPayloads
+      }).toPromise();
+
+      if (result.status) {
+        const successCount = result.data?.success?.length || 0;
+        const failCount = result.data?.failed?.length || 0;
+
+        if (failCount === 0) {
+          this.appSettingService.showSuccess(`Successfully imported ${successCount} customer(s)`);
+          if (this.excelUploadModalRef) {
+            this.excelUploadModalRef.close();
+          }
+          this.resetExcelUploadState();
+        } else {
+          const failedNames = result.data.failed.map((f: any) => f.CustomerName).join(', ');
+          this.appSettingService.showWarning(
+            `Imported ${successCount}, Failed ${failCount}: ${failedNames}`
+          );
+        }
+      } else {
+        this.appSettingService.showError(result.message || 'Bulk import failed');
+      }
+
+    } catch (error: any) {
+      console.error('Bulk import error:', error);
+      this.appSettingService.showError(error.message || 'Error during bulk import');
+    } finally {
+      this.isImporting = false;
+      this.cdRef.markForCheck();
+    }
+  }
+
+  populateFormsFromExcel(customer: any) {
+    // Resolve country ID
+    const countryId = this.resolveCountryId(customer.CountryName);
+
+    // Patch customer form
+    this.customerForm.patchValue({
+      CustomerName: customer.CustomerName,
+      CustomerShortCode: customer.CustomerShortCode,
+      CustomerAliasName: customer.CustomerAliasName,
+      CustomerAddress1: customer.CustomerAddress1,
+      CustomerAddress2: customer.CustomerAddress2,
+      CountryMasterSid: countryId,
+      CompanyType: customer.CompanyType,
+      PanAvailable: customer.PanAvailable,
+      PanName: customer.PanName,
+      GroupName: customer.GroupName,
+      Website: customer.Website,
+      paymentType: customer.paymentType,
+      IsMSME: customer.IsMSME,
+      RegistrationNo: customer.RegistrationNo,
+      Remarks: customer.Remarks,
+      CIN: customer.CIN,
+      TAN: customer.TAN,
+      status: customer.status === 'Suspended' ? 'Suspended' : 'Active',
+      Network: customer.Network
+    });
+
+    // Handle CustomerType (comma-separated)
+    if (customer.CustomerType) {
+      const typeNames = customer.CustomerType.split(',').map((t: string) => t.trim());
+      const selectedTypes = this.modeOfCustomerType.filter(
+        type => typeNames.some((name: string) => name.toLowerCase() === type.name.toLowerCase())
+      );
+      if (selectedTypes.length > 0) {
+        this.customerForm.get('CustomerType')?.setValue(selectedTypes);
+      }
+    }
+
+    // Load states for the selected country
+    if (countryId) {
+      this.customerForm.get('CountryMasterSid')?.setValue(countryId);
+      this.getStatesByCountryId();
+    }
+
+    // Clear existing branches and add new ones from Excel
+    while (this.branchFormArray.length > 0) {
+      this.branchFormArray.removeAt(0);
+    }
+    this.activeBranchIds = [];
+
+    // Add branches from Excel data
+    customer.branches.forEach((branch: any, index: number) => {
+      const stateId = this.resolveStateId(branch.StateName);
+      const cityId = this.resolveCityId(branch.CityName, branch.StateName);
+
+      const branchForm = this.addBranchFormGroup({
+        BranchName: branch.CustBranchName,
+        Branch_Type: branch.CustBranchType,
+        Branch_Code: branch.CustBranchCode,
+        StateMasterSid: stateId,
+        CityMasterSid: cityId,
+        Contact_Person: branch.Contact_Person,
+        Zip_PostBox: branch.CustBranchZipPostCode,
+        ContactNo: branch.CustBranchPhone,
+        Email: branch.CustBranchEmail,
+        Address: branch.CustBranchAddress,
+        Registered: branch.CustBranchRegistered,
+        CustomerGstType: branch.CustBranchGSTtype,
+        GSTNo: branch.CustBranchGSTIN,
+        status: branch.status === 'Suspended' ? 'S' : 'A'
+      });
+
+      this.branchFormArray.push(branchForm);
+      this.activeBranchIds.push('branch-' + index);
+    });
+
+    this.updateAvailableBranchesCache();
+    this.cdRef.markForCheck();
+  }
+
+  downloadExcelTemplate() {
+    // Create template data with headers and sample row
+    const templateData = [
+      {
+        // Customer Fields
+        CustomerName: 'ABC Corporation',
+        CustomerShortCode: 'ABC',
+        CustomerAliasName: 'ABC Corp',
+        CustomerAddress1: '123 Main Street',
+        CustomerAddress2: 'Suite 100',
+        CountryName: 'India',
+        CompanyType: 'Company',
+        PanAvailable: 'Y',
+        PanName: 'ABCDE1234F',
+        GroupName: 'ABC Group',
+        Website: 'www.abc.com',
+        PaymentType: 'Credit',
+        IsMSME: 'N',
+        RegistrationNo: 'REG12345',
+        Remarks: 'Sample customer',
+        CIN: 'U12345MH2020PTC123456',
+        TAN: 'ABCD12345E',
+        CustomerStatus: 'Active',
+        CustomerTypes: 'Customer,Shipper',
+        Network: '',
+        // Branch Fields
+        BranchName: 'Head Office',
+        BranchType: 'HeadQuarters',
+        BranchCode: 'HO001',
+        StateName: 'Maharashtra',
+        CityName: 'Mumbai',
+        ContactPerson: 'John Doe',
+        ZipPostCode: '400001',
+        BranchPhone: '9876543210',
+        BranchEmail: 'ho@abc.com',
+        BranchAddress: '123 Main Street, Mumbai',
+        Registered: 'Y',
+        GSTType: 'Regular',
+        GSTIN: '27ABCDE1234F1Z5',
+        BranchStatus: 'Active'
+      },
+      {
+        // Same customer, different branch
+        CustomerName: 'ABC Corporation',
+        CustomerShortCode: '',
+        CustomerAliasName: '',
+        CustomerAddress1: '',
+        CustomerAddress2: '',
+        CountryName: '',
+        CompanyType: '',
+        PanAvailable: '',
+        PanName: '',
+        GroupName: '',
+        Website: '',
+        PaymentType: '',
+        IsMSME: '',
+        RegistrationNo: '',
+        Remarks: '',
+        CIN: '',
+        TAN: '',
+        CustomerStatus: '',
+        CustomerTypes: '',
+        Network: '',
+        // Branch Fields
+        BranchName: 'Delhi Branch',
+        BranchType: 'BRANCH',
+        BranchCode: 'DEL001',
+        StateName: 'Delhi',
+        CityName: 'New Delhi',
+        ContactPerson: 'Jane Smith',
+        ZipPostCode: '110001',
+        BranchPhone: '9876543211',
+        BranchEmail: 'delhi@abc.com',
+        BranchAddress: '456 Park Avenue, Delhi',
+        Registered: 'Y',
+        GSTType: 'Regular',
+        GSTIN: '07ABCDE1234F1Z5',
+        BranchStatus: 'Active'
+      }
+    ];
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'OrganizationData');
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, // CustomerName
+      { wch: 15 }, // CustomerShortCode
+      { wch: 18 }, // CustomerAliasName
+      { wch: 25 }, // CustomerAddress1
+      { wch: 20 }, // CustomerAddress2
+      { wch: 12 }, // CountryName
+      { wch: 15 }, // CompanyType
+      { wch: 12 }, // PanAvailable
+      { wch: 15 }, // PanName
+      { wch: 15 }, // GroupName
+      { wch: 20 }, // Website
+      { wch: 12 }, // PaymentType
+      { wch: 8 },  // IsMSME
+      { wch: 15 }, // RegistrationNo
+      { wch: 20 }, // Remarks
+      { wch: 25 }, // CIN
+      { wch: 15 }, // TAN
+      { wch: 12 }, // CustomerStatus
+      { wch: 20 }, // CustomerTypes
+      { wch: 10 }, // Network
+      { wch: 18 }, // BranchName
+      { wch: 14 }, // BranchType
+      { wch: 12 }, // BranchCode
+      { wch: 15 }, // StateName
+      { wch: 15 }, // CityName
+      { wch: 18 }, // ContactPerson
+      { wch: 12 }, // ZipPostCode
+      { wch: 15 }, // BranchPhone
+      { wch: 25 }, // BranchEmail
+      { wch: 30 }, // BranchAddress
+      { wch: 12 }, // Registered
+      { wch: 12 }, // GSTType
+      { wch: 18 }, // GSTIN
+      { wch: 12 }  // BranchStatus
+    ];
+
+    // Download file
+    XLSX.writeFile(wb, 'Organization_Upload_Template.xlsx');
   }
 }

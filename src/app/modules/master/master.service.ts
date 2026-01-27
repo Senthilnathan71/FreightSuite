@@ -187,6 +187,12 @@ export class MasterService {
     );
   }
 
+  createBulkCustomers(payload: { customers: any[] }) {
+    return this.http.post('customer/bulk-create', payload).pipe(
+      map((res: any) => res)
+    );
+  }
+
   updateCustomerById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`customer/update/${id}`, payload).pipe(
       map((resp) => {

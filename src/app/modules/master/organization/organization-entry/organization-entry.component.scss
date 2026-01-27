@@ -1,0 +1,53 @@
+// Excel Upload Styles
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+
+  &:hover,
+  &.drag-over {
+    border-color: #17a2b8;
+    background-color: #e3f2fd;
+  }
+
+  i {
+    opacity: 0.7;
+  }
+
+  &:hover i,
+  &.drag-over i {
+    opacity: 1;
+  }
+}
+
+.selected-file-area {
+  background-color: #f8f9fa;
+}
+
+.data-preview {
+  .table {
+    font-size: 0.875rem;
+
+    th {
+      font-weight: 600;
+      background-color: #f1f3f5;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+  }
+
+  .badge {
+    font-weight: 500;
+  }
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
