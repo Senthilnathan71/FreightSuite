@@ -346,14 +346,13 @@ dataFromEnqPage:any;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
+    
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.mps.init().subscribe();
-    console.log('Current Company:', this.currentCompany);
-  console.log('Current Branch:', this.currentBranch);
+    
    this.loadAllFields();
    this.loadRateLockConfig().then(() => {
     this.checkRateLockPermissions();
@@ -366,7 +365,7 @@ dataFromEnqPage:any;
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
       if (this.dataFromEnqPage?.rateRequest) {
-        console.log(this.dataFromEnqPage,'dataFromEnqPage171')
+        
         this.patchEnqPageValues(this.dataFromEnqPage);
         this.minEffDate = this.todayDate;
         this.f['status']?.disable();
@@ -391,7 +390,7 @@ dataFromEnqPage:any;
   }
 
 patchEnqPageValues(enqData: any) { 
-  console.log(enqData,'enqData')
+  
   // --- Header form setup ---------------------------------
   this.enquiryNumber = enqData?.EnquiryNumber;
   this.quoteRoutes.clear();
@@ -433,8 +432,7 @@ patchEnqPageValues(enqData: any) {
     ? enqData.quoteRoutes
     : [];
 
-  console.log('quoteRoutes value:', enqData?.quoteRoutes);
-  console.log('routes length:', routes.length);
+
 
   if (!routes.length) {
     console.warn('No routes to process');
@@ -446,8 +444,6 @@ patchEnqPageValues(enqData: any) {
 
   // --- Process each route ---------------------------------
   for (const [routeIndex, route] of routes.entries()) {
-    console.log('Processing route', routeIndex, route);
-
     // Process cargo data from the route
     const cargoData = this.extractCargoData(route.enquiryCargo);
     
@@ -481,14 +477,12 @@ patchEnqPageValues(enqData: any) {
       segmentType: segment
     };
 
-    console.log('Processed route data:', routeData);
-
     // Add the route to the form
     this.addQuoteRoute(routeData);
     const lastAddedQuote = this.quoteRoutes.length - 1;
     this.addQuoteCarrier(lastAddedQuote);
 
-    console.log("TESTING",this.quotationForm.getRawValue())
+    
     // let packageTypeId = null;
     // if (route?.PackageType) {
       
@@ -562,13 +556,10 @@ patchEnqPageValues(enqData: any) {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
-
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
  
@@ -1286,7 +1277,6 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   logProduct(routeIndex:number,productIndex:number){
     const product = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
-    console.log(product.controls);
   }
 
   handleSegmentChangeOnProduct(routeIndex: number,productIndex:number) {
@@ -1364,7 +1354,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   toggleHazProduct(routeIndex:number,productIndex:number){
     const isHaz = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz')?.value;
-    console.log(isHaz);
+   
     if(isHaz){
       this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.enable();
       this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.enable();
@@ -1381,7 +1371,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   onImcoChange(routeIndex:number,productIndex,item:any){
-    console.log(item);
+
     const productForm = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
     if(!item){
       productForm.get('UnNo')?.setValue("");
@@ -1415,7 +1405,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   onProductChange(product:any,routeIndex:number,productIndex:number){
     const productForm = this.quoteProducts(routeIndex)?.at(productIndex) as FormGroup;
-    console.log(product,'productForm')
+    
     productForm.get('ProductName')?.setValue("");
     productForm.get('IsHaz')?.setValue(false);
     productForm.get('ImcoClass')?.setValue('');
@@ -1430,7 +1420,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         productForm.get('ImcoClass')?.enable();
         productForm.get('UnNo')?.enable();
         productForm.get('PkgGroup')?.enable();
-        console.log(product.UNNo);
+        
         productForm.patchValue({
           ImcoClass : product.IMOClass,
           UnNo : product.UNNo,
@@ -1718,20 +1708,17 @@ isRateLockDisabled(): boolean {
       // We'll handle disabling per carrier above
     }
     
-    console.log("Approved Route:", approvedRoute);
+   
 
     let approvedData = {
       ...header,
       quoteRoute: approvedQuoteRoute
     };
 
-    console.log("Approved Data:", approvedData);
 
     this.selectedItem = approvedData;
     this.clearPdfCache();
 
-    console.log("Is it approved Quotation",this.quotationApproved);
-    console.log("Only Approved Data",this.selectedItem);
 
     this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
   }
@@ -1818,7 +1805,7 @@ isRateLockDisabled(): boolean {
     let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     let userEmail = this.userData?.userEmail;
-    console.log(this.authorizerDetails);
+  
     const transportBy = this.dataFromEnqPage?.TransportBy || null;
     const clearanceBy = this.dataFromEnqPage?.ClearanceBy || null;
     const menuId = this.sideBarService.syncMenuIdBeforeSubmit("Quotation") || this.MenuMasterSid;
@@ -1910,7 +1897,7 @@ isRateLockDisabled(): boolean {
           } else {
             finalValue = "Rejected";
           }
-          console.log(finalValue);
+          
           const allCharges = (carrier.quoteCharges || []).map(charge => ({
             ...charge,
           }))
@@ -2067,11 +2054,10 @@ isRateLockDisabled(): boolean {
       return;
     }
     const deptType = dept?.departmentType;
-    console.log(deptType);
+   
     const selectedFCLLCL = deptType === "Sea" ? dept?.FCLLCL : deptType.toUpperCase()
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedFCLLCL);
-    console.log(selectedFCLLCL);
     this.onRouteChange(routeIndex);
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
       this.handleSegmentChangeOnAllProducts(routeIndex);
@@ -2174,7 +2160,6 @@ isRateLockDisabled(): boolean {
 
   onRouteChange(routeIndex: number): void {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    console.log(this.quoteRoutes,'quoteRoutes')
     const polSid = routeForm.get('POLSid')?.value;
     const podSid = routeForm.get('PODSid')?.value;
     const segment = routeForm.get('segmentType')?.value;
@@ -2251,7 +2236,6 @@ isRateLockDisabled(): boolean {
     const qty = Number(chargeCtrl.get('Qty')?.value);
     const revenueRate = Number(chargeCtrl.get('RevenueRate')?.value);
     const revExRate = Number(chargeCtrl.get('RevenueExchangeRate')?.value);
-    console.log(this.revenueLocalInputs);
     if (qty && revenueRate) {
       chargeCtrl.get('RevenueAmount')?.setValue((qty * revenueRate).toFixed(this.digitsAfterDecimal));
     } else {
@@ -2302,7 +2286,6 @@ isRateLockDisabled(): boolean {
 
     for (let index = 0; index < this.requiredFieldsToGetTariff.length; index++) {
       const element = routeForm.get(this.requiredFieldsToGetTariff[index]);
-      console.log(element.value);
       if (!element.value) {
         return false
       }
@@ -2448,7 +2431,6 @@ isRateLockDisabled(): boolean {
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
             .map((td: any) => {
               const charge = this.getCharge(td.ChargeCode);
-              console.log("Charge found",charge);
               let qtySourceField = this.findFieldForQty(charge?.UnitQty);
               let qtyValue = 1; // Default to 1
 
@@ -2667,7 +2649,6 @@ canGetTariff(routeIndex: number): boolean {
     const chargeLen = this.quoteCharges(routeIndex,carrierIndex).length - 1;
     const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeLen) as FormGroup;
     const rawValue = chargeForm.getRawValue();
-    console.log("rawValue",rawValue);
     const isEmpty = rawValue.ChargeUomSid === null;
     return isEmpty;
   }
@@ -2741,7 +2722,6 @@ canGetTariff(routeIndex: number): boolean {
   `;
 
   modalRef.componentInstance.followupSaved.subscribe((result) => {
-    console.log('Follow-up saved successfully:', result);
     this.appSettingService.showSuccess('Follow-up created successfully');
   });
 
@@ -2897,7 +2877,6 @@ ${this.userData.userName}`;
   }
 
   logFormValue() {
-    console.log(this.quotationForm.value)
   }
 
   back() {
@@ -3097,7 +3076,7 @@ ${this.userData.userName}`;
   handleCustomerChangeOnCharges(customer:any){
     this.quoteRoutes.controls.forEach((route:FormGroup,routeIndex:number)=>{
       const carrierArr = this.quoteCarriers(routeIndex);
-      console.log(carrierArr);
+      
       carrierArr.controls.forEach((carrier:FormGroup,carrierIndex:number)=>{
         const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
         chargeArr.controls.forEach((charge:FormGroup,chargeIndex:number)=>{
@@ -3188,49 +3167,83 @@ ${this.userData.userName}`;
   //     });
   //   })
   // }
-  onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
-  console.log(status);
-  
-  // Get the specific carrier form
-  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
+ 
+
+  const carriersFA = this.quoteCarriers(routeIndex);
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-  
-  // Only update the status of the selected carrier
-  if (status.value === "Approved") {
-    carrierForm.get('authorizerStatus')?.setValue(status.value);
+
+  // Only when Approved is selected
+  if (status?.value === 'Approved') {
     
-    // Update route approval status
+    // First, disable all carriers' status controls temporarily
+    carriersFA.controls.forEach((carrierCtrl, index) => {
+      const carrierForm = carrierCtrl as FormGroup;
+      const statusCtrl = carrierForm.get('authorizerStatus');
+      if (statusCtrl) {
+        statusCtrl.disable({ emitEvent: false });
+      }
+    });
+
+    carriersFA.controls.forEach((carrierCtrl, index) => {
+      const carrierForm = carrierCtrl as FormGroup;
+      const statusCtrl = carrierForm.get('authorizerStatus');
+
+      if (!statusCtrl) return;
+
+    
+
+      if (index === carrierIndex) {
+        // Selected carrier - set to Approved
+        statusCtrl.setValue('Approved', { emitEvent: false });
+        statusCtrl.disable({ emitEvent: false });
+        
+        // For the approved carrier, also set ApprovedBy
+        // const approvedByCtrl = carrierForm.get('ApprovedBy');
+        // if (approvedByCtrl) {
+        //   approvedByCtrl.setValue(this.userData?.userName || 'System', { emitEvent: false });
+        //   approvedByCtrl.enable({ emitEvent: false });
+        // }
+      } else {
+        // Force change other carriers to "Pending" (not "Waiting For Approval")
+        statusCtrl.setValue('Pending', { emitEvent: false });
+        statusCtrl.enable({ emitEvent: false });
+        
+        // Clear ApprovedBy for other carriers
+        const approvedByCtrl = carrierForm.get('ApprovedBy');
+        if (approvedByCtrl) {
+          approvedByCtrl.setValue('', { emitEvent: false });
+          approvedByCtrl.disable({ emitEvent: false });
+        }
+        
+        this.enableCarrierFields(routeIndex, index);
+      }
+
+    
+    });
+
     routeForm.get('isRouteApproved')?.setValue(true);
     
-    // When approving a carrier, ONLY disable the approved carrier's fields
-    // but don't change status of other carriers
-    this.enableCarrierFields(routeIndex, carrierIndex);
-    
-  } else if (status?.value === "Counter") {
-    carrierForm.get('authorizerStatus')?.setValue(status.value);
-    
-    // Update route approval status
-    routeForm.get('isRouteApproved')?.setValue(false);
-    
-    // Enable all fields for Counter status
-    this.enableCarrierFields(routeIndex, carrierIndex);
-    
-  } else if (status?.value === "Rejected") {
-    carrierForm.get('authorizerStatus')?.setValue(status.value);
-    
-    // Update route approval status
-    routeForm.get('isRouteApproved')?.setValue(false);
-    
-    // Enable fields for Rejected status (if needed for editing)
-    this.enableCarrierFields(routeIndex, carrierIndex);
-    
-  } else {
-    // For Pending or other statuses
-    carrierForm.get('authorizerStatus')?.setValue(status.value);
-    routeForm.get('isRouteApproved')?.setValue(false);
-    this.enableCarrierFields(routeIndex, carrierIndex);
+    return;
   }
+
+  // Other statuses (Rejected, Counter, etc.)
+  const currentCarrier = carriersFA.at(carrierIndex) as FormGroup;
+
+
+  // Enable the status control before setting value
+  const statusCtrl = currentCarrier.get('authorizerStatus');
+  if (statusCtrl) {
+    statusCtrl.enable({ emitEvent: false });
+    statusCtrl.setValue(status?.value, { emitEvent: false });
+  }
+
+
+  routeForm.get('isRouteApproved')?.setValue(false);
+  this.enableCarrierFields(routeIndex, carrierIndex);
+
 }
+
 
 // Helper method to disable fields of an approved carrier
 disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
@@ -3244,9 +3257,10 @@ disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
   chargeArr.controls.forEach((charge: FormGroup) => {
     // Disable charge fields for approved carrier
     const chargeFields = [
-      'ChargeUomSid', 'RevenueRate', 'RevenueCurrencyMasterSid', 
+      'ChargeUomSid', 'ChargeDisplayName', 'RevenueRate', 'RevenueCurrencyMasterSid', 
       'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
-      'CostExchangeRate', 'Qty','chargeUnitMaster'
+      'CostExchangeRate', 'Qty', 'RevenueChargeUomSid', 'CostChargeUomSid',
+      'RevenueAmount', 'RevenueLocalAmount', 'CostAmount', 'CostLocalAmount'
     ];
     
     chargeFields.forEach(field => {
@@ -3660,7 +3674,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         return dept.DepartmentMasterSid === routeDeptId
       });
     });
-    console.log("Filtered Charges",this.filteredCharges);
+   
   }
 
 
@@ -4192,18 +4206,18 @@ toggleLock() {
       return;
     }
     
-    console.log('Loading rate lock config for company:', this.currentCompany.CompanyMasterSid);
+   
     
     const config = await firstValueFrom(
       this.leadService.getAllCompanyConfigsByCompanyId(this.currentCompany.CompanyMasterSid)
     );
     
-    console.log('All configs loaded:', config);
+  
     
     // Find the QuoteRateLockUser configuration
     this.rateLockConfig = config.find((c: any) => c.ConfigurationName === 'QuoteRateLockUser');
     
-    console.log('Rate lock config found:', this.rateLockConfig);
+    
     
     // After loading config, check permissions
     this.checkRateLockPermissions();
@@ -4222,19 +4236,16 @@ toggleLock() {
 }
 
 checkRateLockPermissions(): void {
-  console.log('=== Checking Rate Lock Permissions ===');
-  console.log('Rate Lock Config:', this.rateLockConfig);
-  console.log('Current User Email:', this.currentUserEmail);
-  
+ 
   const rateLockControl = this.quotationForm.get('RateLock');
   if (!rateLockControl) return;
 
   // Store the current value before any changes
   const currentRateLockValue = rateLockControl.value;
-  console.log('Current RateLock Value:', currentRateLockValue);
+  
   
   if (!this.rateLockConfig || !this.currentUserEmail) {
-    console.log('Missing config or user email - disabling rate lock');
+    
     this.canUserLockRates = false;
     
     // Keep the existing value but disable the checkbox
@@ -4252,7 +4263,7 @@ checkRateLockPermissions(): void {
   // console.log('Raw ConfigurationValue:', configValue);
   
   if (!configValue || typeof configValue !== 'string') {
-    console.log('Invalid ConfigurationValue - disabling rate lock');
+   
     this.canUserLockRates = false;
     
     // Keep the existing value but disable the checkbox
@@ -4277,11 +4288,10 @@ checkRateLockPermissions(): void {
   // Check if current user's email is in the allowed list
   this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
   
-  console.log('Can User Lock Rates:', this.canUserLockRates);
 
   // Enable or disable the RateLock checkbox based on permission
   if (this.canUserLockRates) {
-    console.log('Enabling rate lock checkbox - user has permission');
+   
     rateLockControl.enable({ emitEvent: false });
     
     // If already locked in data, apply the lock
@@ -4289,14 +4299,13 @@ checkRateLockPermissions(): void {
       this.lockAllRateFields();
     }
   } else {
-    console.log('Disabling rate lock checkbox - user lacks permission');
-    // IMPORTANT: Keep the existing value (don't change it to false)
+    
     // This preserves RateLock = "Y" from database
     rateLockControl.disable({ emitEvent: false });
     
     // If it's locked, keep the fields locked even though user can't change it
     if (currentRateLockValue === true) {
-      console.log('Rate is locked, applying field locks');
+    
       this.lockAllRateFields();
     }
   }
@@ -4438,6 +4447,7 @@ doesBookingExistForRoute(routeIndex: number): boolean {
   // For contract quotes, we don't check booking existence (button should always be enabled)
   if (isContract) {
     return false; // Always return false so button stays enabled
+    
   }
   
   // For non-contract quotes, check if booking exists
@@ -4550,12 +4560,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         }
       }
     }
-console.log(routeData,'routeData')
-  console.log('Route Data for booking:', {
-      QuoteHeaderSid: QuoteData.QuoteHeaderSid,
-      QuoteRouteSid: routeData.QuoteRouteSid,
-      routeIndex: routeIndex
-    });
+
     
     // Prepare booking data
     const bookingData = {
@@ -4655,7 +4660,7 @@ console.log(routeData,'routeData')
       }))
     };
 
-   console.log('Booking Data with QuoteRouteSid:', bookingData.QuoteRouteSid);
+   
     this.spinner.hide();
     
     // Navigate to booking page

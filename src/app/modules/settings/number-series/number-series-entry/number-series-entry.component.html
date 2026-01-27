@@ -300,7 +300,7 @@
                 bindLabel="departmentName"
                 bindValue="DepartmentMasterSid"
                 [(ngModel)]="selectedDepartmentForPreview"
-                (change)="onDepartmentPreviewChange($event)"
+                (ngModelChange)="onDepartmentPreviewChange($event)"
                 placeholder="Select department"
                 class="custom-ng-select"
               ></ng-select>

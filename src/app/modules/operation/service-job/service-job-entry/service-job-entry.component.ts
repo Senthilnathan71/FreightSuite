@@ -114,6 +114,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   filterOption: any;
   decimalAfterPrecision = 3;
   public rateComponent = CostEntryComponent;
+  
   selectTab(tab: string) {
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
@@ -219,7 +220,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
   tabs = [
     // { name: 'Shipment', icon: 'fas fa-ship' },
-    // { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' }
   ];
   // Mail content
@@ -341,7 +342,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   // Cargo Form Initiation
   initCargoForm() {
     this.cargoForm = this.fb.group({
-      BookingCargoSid: [null],
+      HouseJobCargoSid: [null],
       CargoType: ['General'],
       ContainerType: [null],
       NoofContainers: [''],
@@ -463,7 +464,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
     const cargoData = response.Cargo[0];
     this.cargoForm.patchValue({
-      BookingCargoSid: cargoData?.BookingCargoSid,
+      HouseJobCargoSid: cargoData?.HouseJobCargoSid || null,
       CargoType: cargoData?.CargoType,
       ContainerType: cargoData?.ContainerType,
       NoofContainers: cargoData?.NoofContainers,
@@ -485,6 +486,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       RateSid : br.CostRevenueChargesSid,
       status : br.status  === "A" ? "Active" : "Suspended"
     }));
+
+    
     this.serviceJobRateResults = [...this.serviceJobRateArr];
 
 
@@ -542,7 +545,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       FreightPPCC: cargoFormValue.FreightTerms || "Prepaid",
       status: serviceFormValue.status === 'Active' ? 'A' : 'S',
       houseJobCargo: {
-        ...(cargoFormValue.HouseJobCargoSid && { HouseJobCargoSid: cargoFormValue.HouseJobCargoSid }),
+         HouseJobCargoSid: this.isEditMode
+    ? cargoFormValue.HouseJobCargoSid || null
+    : null,
+      
         CargoType: cargoFormValue.CargoType || 'General',
         GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
         NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,

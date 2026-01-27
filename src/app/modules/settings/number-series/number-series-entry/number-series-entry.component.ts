@@ -254,9 +254,10 @@ export class NumberSeriesEntryComponent implements OnInit {
     }
 
     // Year
-    if (formValue.YearFlagRequired === 'Y') {
-      parts.push(this.currentYear?.YearCode || 'YY');
-    }
+   if (formValue.YearFlagRequired === 'Y') {
+  parts.push(this.getYearCodeForPreview());
+}
+
 
     // Sequence Number (use StartingNumber from config)
     const seqLength = formValue.NumberLength || 5;
@@ -349,4 +350,26 @@ export class NumberSeriesEntryComponent implements OnInit {
 
     return parts;
   }
+  getYearCodeForPreview(): string {
+  const yearCode = this.currentYear?.YearCode;
+
+  if (!yearCode) {
+    return 'YY';
+  }
+
+  const yearStr = yearCode.toString();
+
+  // If full year like 2026 → take last 2 digits
+  if (yearStr.length === 4) {
+    return yearStr.slice(-2);
+  }
+
+  // If already 2 digits like 26
+  if (yearStr.length === 2) {
+    return yearStr;
+  }
+
+  return 'YY';
+}
+
 }
