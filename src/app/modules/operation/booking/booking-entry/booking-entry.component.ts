@@ -3937,7 +3937,8 @@ getFormattedPort(code: string): string {
     };
   }
   private normalizeValue(value: any): any {
-  if (value === null || value === undefined) {
+  // Treat null, undefined, empty string, and 0 as equivalent null
+  if (value === null || value === undefined || value === '' || value === 0) {
     return null;
   }
 
@@ -3948,7 +3949,8 @@ getFormattedPort(code: string): string {
 
   // Handle numeric strings and numbers
   if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
-    return Number(value);
+    const num = Number(value);
+    return num === 0 ? null : num; // Convert 0 to null for consistency
   }
 
   if (typeof value === 'number') {
