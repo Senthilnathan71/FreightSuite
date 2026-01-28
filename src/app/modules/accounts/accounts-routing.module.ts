@@ -27,6 +27,7 @@ import { PaymentListComponent } from './payment/payment-list/payment-list.compon
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { VoucherMatchingListComponent } from './voucher-matching/voucher-matching-list/voucher-matching-list.component';
 import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
+import { AccountsCloseListComponent } from './accounts-close/accounts-close-list/accounts-close-list.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -421,6 +422,18 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Reports" },
+          ],
+        },
+      },
+
+      {
+        path: "accounts-close/list",
+        component: AccountsCloseListComponent,
+        data: {
+          title: "Voucher Period",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher Period" },
           ],
         },
       },

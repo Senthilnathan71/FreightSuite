@@ -462,4 +462,17 @@ export class AccountsService {
     )
   }
 
+  // Voucher Period
+  searchVoucherPeriods(payload: any) {
+    return this.http.post('voucher-period/search-list', payload).pipe(
+      map((res: any) => res)
+    );
+  }
+
+  updateVoucherPeriod(id: number, payload: any) {
+    return this.http.patch(`voucher-period/update/${id}`, payload).pipe(
+      map((res: any) => res)
+    );
+  }
+
 }

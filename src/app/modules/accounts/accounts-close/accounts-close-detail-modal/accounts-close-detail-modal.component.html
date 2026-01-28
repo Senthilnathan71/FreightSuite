@@ -1,0 +1,134 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Saving...</p>
+</ngx-spinner>
+
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEditMode ? 'Edit' : 'View' }} Voucher Period - {{ voucherPeriod?.PeriodName }}
+  </h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="form">
+    <div class="row">
+      <!-- G/L Closed -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">G/L Closed</label>
+        <ng-container *ngIf="isEditMode; else glClosedReadOnly">
+          <select class="form-select" formControlName="GLClosed">
+            <option *ngFor="let option of yesNoOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #glClosedReadOnly>
+          <div class="form-control-plaintext">{{ getDisplayValue(form.get('GLClosed')?.value) }}</div>
+        </ng-template>
+      </div>
+
+      <!-- AR Closed -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">AR Closed</label>
+        <ng-container *ngIf="isEditMode; else arClosedReadOnly">
+          <select class="form-select" formControlName="ARClosed">
+            <option *ngFor="let option of yesNoOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #arClosedReadOnly>
+          <div class="form-control-plaintext">{{ getDisplayValue(form.get('ARClosed')?.value) }}</div>
+        </ng-template>
+      </div>
+
+      <!-- AP Closed -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">AP Closed</label>
+        <ng-container *ngIf="isEditMode; else apClosedReadOnly">
+          <select class="form-select" formControlName="APClosed">
+            <option *ngFor="let option of yesNoOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #apClosedReadOnly>
+          <div class="form-control-plaintext">{{ getDisplayValue(form.get('APClosed')?.value) }}</div>
+        </ng-template>
+      </div>
+
+      <!-- Period Closed -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Period Closed</label>
+        <ng-container *ngIf="isEditMode; else periodClosedReadOnly">
+          <select class="form-select" formControlName="PeriodClosed">
+            <option *ngFor="let option of yesNoOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-template #periodClosedReadOnly>
+          <div class="form-control-plaintext">{{ getDisplayValue(form.get('PeriodClosed')?.value) }}</div>
+        </ng-template>
+      </div>
+
+      <!-- GL Grace Days -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">GL Grace Days</label>
+        <ng-container *ngIf="isEditMode; else glGraceDaysReadOnly">
+          <input type="number" class="form-control" formControlName="GLGraceDays" min="0">
+        </ng-container>
+        <ng-template #glGraceDaysReadOnly>
+          <div class="form-control-plaintext">{{ form.get('GLGraceDays')?.value }}</div>
+        </ng-template>
+      </div>
+
+      <!-- AR Grace Days -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">AR Grace Days</label>
+        <ng-container *ngIf="isEditMode; else arGraceDaysReadOnly">
+          <input type="number" class="form-control" formControlName="ARGraceDays" min="0">
+        </ng-container>
+        <ng-template #arGraceDaysReadOnly>
+          <div class="form-control-plaintext">{{ form.get('ARGraceDays')?.value }}</div>
+        </ng-template>
+      </div>
+
+      <!-- AP Grace Days -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">AP Grace Days</label>
+        <ng-container *ngIf="isEditMode; else apGraceDaysReadOnly">
+          <input type="number" class="form-control" formControlName="APGraceDays" min="0">
+        </ng-container>
+        <ng-template #apGraceDaysReadOnly>
+          <div class="form-control-plaintext">{{ form.get('APGraceDays')?.value }}</div>
+        </ng-template>
+      </div>
+
+      <!-- Remarks -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Remarks</label>
+        <ng-container *ngIf="isEditMode; else remarksReadOnly">
+          <input type="text" class="form-control" formControlName="Remarks">
+        </ng-container>
+        <ng-template #remarksReadOnly>
+          <div class="form-control-plaintext">{{ form.get('Remarks')?.value || '-' }}</div>
+        </ng-template>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="onCancel()">
+    {{ isEditMode ? 'Cancel' : 'Close' }}
+  </button>
+  <button *ngIf="isEditMode" type="button" class="btn btn-primary" (click)="onSave()">
+    Save
+  </button>
+</div>
