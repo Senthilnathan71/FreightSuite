@@ -166,12 +166,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        disabled: !this.mps.can('insert')
-      },
+      
       {
         label: 'Report',
         icon: 'fas fa-file-alt',

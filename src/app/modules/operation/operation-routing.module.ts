@@ -35,6 +35,7 @@ import { VendorCreditNoteListComponent } from './vendor-credit-note/vendor-credi
 import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-credit-note-entry/vendor-credit-note-entry.component';
 import { DocReferenceComponent } from './doc-reference/doc-reference.component';
 import { DocReferenceListComponent } from './doc-reference/doc-reference-list/doc-reference-list.component';
+import { HouseJobListComponent } from './house-job/house-job-list/house-job-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -295,6 +296,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Shipment Instruction',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Shipment Instruction' }],
+        },  
+      },
+      {
+        path:'house-job/list',
+        component: HouseJobListComponent,
+        data: {
+          title: 'House Job',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
         },
       },
       {
