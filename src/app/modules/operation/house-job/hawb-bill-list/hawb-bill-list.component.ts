@@ -2,40 +2,26 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { Observable } from 'rxjs';
-
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
-
-import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
-
-import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
-import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-
-import {
-  ListComponentConfig,
-  SearchParams
-} from 'src/app/shared/interfaces/pagination.interface';
-
-import {
-  TableConfig,
-  TableEventData,
-  TableSortConfig,
-  TableFilter
-} from 'src/app/shared/interfaces/table.interface';
-
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 
 @Component({
-  selector: 'app-house-job-list',
+  selector: 'app-hawb-bill-list',
   standalone: true,
   imports: [
     FavoriteStarComponent,
@@ -45,15 +31,15 @@ import { OperationService } from '../../operation.service';
     CustomDatePipe,
     NgbPaginationModule,
     NgxSpinnerModule,
-    ReusableTableComponent, 
+    ReusableTableComponent,
     PageHeaderComponent,
     ToolsDropdownComponent
   ],
   providers: [CustomDatePipe],
-  templateUrl: './house-job-list.component.html',
-  styleUrl: './house-job-list.component.scss'
+  templateUrl: './hawb-bill-list.component.html',
+  styleUrl: './hawb-bill-list.component.scss'
 })
-export class HouseJobListComponent extends BaseListComponent implements OnInit {
+export class HawbBillListComponent extends BaseListComponent implements OnInit {
   @ViewChild('houseTable') houseTable!: ReusableTableComponent;
 
   userData: any;
@@ -132,7 +118,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
-      departmentType: 'Sea'
+      departmentType: 'Air'
     };
   }
 
@@ -167,7 +153,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      
+
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -197,7 +183,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   private initializeTableConfig(): void {
     this.tableConfig = {
       columns: [
-        { key: 'MasterJobNumber', label: 'Master Job No', sortable: true, filterable: true, visible: true,template: 'link',cellClass: 'master-job-column' },
+        { key: 'MasterJobNumber', label: 'Master Job No', sortable: true, filterable: true, visible: true, template: 'link', cellClass: 'master-job-column' },
         { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true },
         { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
@@ -213,7 +199,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
           label: 'View',
           action: 'view',
           tooltip: 'View',
-          state: !this.mps.can('view')
+          // state: !this.mps.can('view')
         }
       ],
       selectable: false,
@@ -221,7 +207,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       showColumnToggle: true,
       showFilters: true,
       showPagination: true,
-      emptyMessage: 'No house job found'
+      emptyMessage: 'No House AirwayBill found'
     };
   }
 
@@ -232,13 +218,18 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   onTableActionClick(event: TableEventData): void {
     if (event.column?.key === 'MasterJobNumber') {
       this.router.navigate([
-        'operation/master-job/entry',
+        'operation/mawbill/entry',
         event.row.MasterJobSid
       ]);
       return;
     }
+
+    // Existing view action
     if (event.action === 'view') {
-      this.router.navigate(['operation/house-job/entry', event.row.HouseJobSid]);
+      this.router.navigate([
+        'operation/house-job/entry',
+        event.row.HouseJobSid
+      ]);
     }
   }
 
@@ -307,9 +298,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     this.excelReportService.exportAsExcel({
       data: this.allHouseJob,
       headers,
-      fileName: 'House-Job-Report',
+      fileName: 'House-AirwayBill-Report',
       title: this.currentCompany?.companyName ?? 'Company'
     });
   }
 }
- 

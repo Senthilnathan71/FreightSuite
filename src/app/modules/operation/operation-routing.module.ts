@@ -36,6 +36,7 @@ import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-cred
 import { DocReferenceComponent } from './doc-reference/doc-reference.component';
 import { DocReferenceListComponent } from './doc-reference/doc-reference-list/doc-reference-list.component';
 import { HouseJobListComponent } from './house-job/house-job-list/house-job-list.component';
+import { HawbBillListComponent } from './house-job/hawb-bill-list/hawb-bill-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -304,6 +305,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'House Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
+        },
+      },
+      {
+        path:'hawb-bill/list',
+        component: HawbBillListComponent,
+        data: {
+          title: 'House AirwayBill',
+          urls: [{ title: 'Master', url: '/operation' }, { title: 'House AirwayBill' }],
         },
       },
       {
