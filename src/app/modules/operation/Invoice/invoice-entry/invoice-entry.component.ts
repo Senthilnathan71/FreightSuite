@@ -1177,7 +1177,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       TermsAndConditions : tandc,
     }
    
-  }
+  } 
 
   gatherHyperLinkInfo(data){
     const isHouseJobInvoice = data.HouseJobSid && data.MasterJobSid;
