@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -23,6 +23,9 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { CommonService } from 'src/app/common/common.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -43,7 +46,12 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
         NgbDropdownModule
   ],
   templateUrl: './reverse-voucher-entry.component.html',
-  styleUrl: './reverse-voucher-entry.component.scss'
+  styleUrl: './reverse-voucher-entry.component.scss',
+  providers: [
+        { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+        { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+        CustomDatePipe,
+      ],
 })
 export class ReverseVoucherEntryComponent {
     reverseVoucherForm!: FormGroup;
@@ -294,11 +302,12 @@ export class ReverseVoucherEntryComponent {
     }
   
     initForm() {
+      const today = getDefaultTodayDate();
       this.reverseVoucherForm = this.fb.group({
         // Header
         VoucherNumber: [{ value: '', disabled: true }],
         ReversalVoucher:[null],
-        VoucherDate: [this.formatDateForNgb(new Date()), Validators.required],
+        VoucherDate: [today, Validators.required],
         PartyMasterSid: [{ value: null, disabled: true }], // Vendor
         PartyName:  [{ value: '', disabled: true }],
         PartyAddress: [{ value: '', disabled: true }],
@@ -2036,7 +2045,8 @@ export class ReverseVoucherEntryComponent {
             this.spinner.hide();
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher updated successfully');
-              this.router.navigate(['/accounts/reverse-voucher/list']);
+              const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+              this.router.navigate(['/accounts/reverse-voucher/entry',id]);
             } else {
               this.appSettingService.showError('Failed to update Reverse Voucher');
             }
@@ -2053,7 +2063,9 @@ export class ReverseVoucherEntryComponent {
             this.spinner.hide();
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher created successfully');
-              this.router.navigate(['/accounts/reverse-voucher/list']);
+              const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+              if(id) this.router.navigate(['/accounts/reverse-voucher/entry',id]);
+              else this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError(response.message || 'Failed to create Reverse Voucher');
             }
@@ -2282,7 +2294,8 @@ export class ReverseVoucherEntryComponent {
             this.isSaving = false;
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher updated successfully');
-              this.router.navigate(['/accounts/reverse-voucher/list']);
+              const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+              this.router.navigate(['/accounts/reverse-voucher/entry',id]);
             } else {
               this.appSettingService.showError('Failed to update Reverse Voucher');
             }
@@ -2301,7 +2314,9 @@ export class ReverseVoucherEntryComponent {
             this.isSaving = false;
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher created successfully');
-              this.router.navigate(['/accounts/reverse-voucher/list']);
+              const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
+              if(id) this.router.navigate(['/accounts/reverse-voucher/entry',id]);
+              else this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError('Failed to create Reverse Voucher');
             }

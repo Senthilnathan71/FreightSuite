@@ -1083,14 +1083,11 @@
                             <input type="text" id="branchPostalCode" placeholder="" class="custom-input-field sm"
                               formControlName="branchPostalCode" [onlyNumbers]="10">
                             <label for="branchPostalCode" class="input-label">Postal Code <span
-                                class="text-danger">*</span></label>
+                                class="text-danger"></span></label>
                             @if(branchForm.get('branchPostalCode')?.touched &&
                             branchForm.get('branchPostalCode')?.invalid){
                             <div class="error-message">
-                              @if(branchForm.get('branchPostalCode')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                              @else if(branchForm.get('branchPostalCode')?.hasError('onlyNumbers')){
+                              @if(branchForm.get('branchPostalCode')?.hasError('onlyNumbers')){
                               <span>Only digits are allowed</span>
                               }
                               @else if(branchForm.get('branchPostalCode')?.hasError('maxlength')){
