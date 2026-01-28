@@ -71,12 +71,12 @@
                         <th class="bg-transparent text-light">Local Amt</th>
                         <th class="bg-transparent text-light">O/S Currency Amt</th>
                         <th class="bg-transparent text-light">O/S Local Amt</th>
-                        <th class="bg-transparent text-light">Cumultive</th>
+                        <th class="bg-transparent text-light">Cumulative</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <tr *ngFor="let item of fullData?.transactions;let i = index">
+                    <tr *ngFor="let item of fullData?.transactions;let i = index" style="white-space: nowrap;">
                          <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
                         <td >{{item?.voucherType}}</td>
