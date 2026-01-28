@@ -102,6 +102,14 @@ export class OperationService {
       })
     );
   }
+searchHouseJob(payload: any) {  
+  return this.http.post<{ data: any[] }>('house-job/search', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
   deleteHouseJobProduct(id: number) {
     return this.http.delete<{ data: any }>(`house-job/product/${id}`).pipe(
       map((resp) => {
