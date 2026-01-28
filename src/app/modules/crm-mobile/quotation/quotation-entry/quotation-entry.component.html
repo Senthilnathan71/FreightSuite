@@ -361,7 +361,7 @@
                 </div>
               </div>
             </aside>
-            <aside class="col-md-4">
+            <!-- <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
                 <ng-select formControlName="FreightPPCC" appendTo="body" (change)="handlePartyOnChargePPCC()">
@@ -370,7 +370,7 @@
                 </ng-select>
                 <label for="" class="input-label">Freight PP/CC <span class="text-danger"></span></label>
               </div>
-            </aside>
+            </aside> -->
 
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
@@ -625,9 +625,25 @@
                           <dofi-searchable-dropdown [items]="incoList" formControlName="ServiceLevel" placeholder=""
                             [displayFields]="incoLookupConfig.displayFields"
                             [displayLabels]="incoLookupConfig.displayLabels"
-                            [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName">
+                            [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName"
+                            (itemSelected)="handleFreightPPCCForDetail($event,routeIndex)"
+                          >
                           </dofi-searchable-dropdown>
                           <label for="text-input" class="input-label">Inco Terms <span
+                              class="text-danger"></span></label>
+                        </div>
+                      </aside>
+
+                      <aside class="col-md-2">
+                        <div class="custom-form-group custom-form-group-select"
+                          [class.filled]="!!quoteRoutes.at(routeIndex).get('FreightPPCC')?.value">
+                          <!-- <ng-select class="ng-select" [items]="incoList" bindLabel="IncoCode" bindValue="IncoCode" formControlName="ServiceLevel" >
+                            </ng-select> -->
+                          <ng-select formControlName="FreightPPCC" appendTo="body">
+                            <ng-option value="Prepaid">Prepaid</ng-option>
+                            <ng-option value="Collect">Collect</ng-option>
+                          </ng-select>
+                          <label for="text-input" class="input-label">Freight PP/CC <span
                               class="text-danger"></span></label>
                         </div>
                       </aside>
@@ -638,11 +654,9 @@
                        <aside class="col-md-3">
                         
                       </aside> -->
-                      <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL' || route.value.segmentType === 'AIR'">
-                      </aside>
                       <aside class="col-md-2 d-md-block d-none"
                         *ngIf="route.value.segmentType === 'LCL'|| route.value.segmentType === 'AIR'"></aside>
-                      <aside class="col-md-2 d-md-block d-none" *ngIf="route.value.segmentType === 'LCL'"></aside>
+                      <!-- <aside class="col-md-2 d-md-block d-none" *ngIf="route.value.segmentType === 'LCL'"></aside> -->
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select mt-md-1"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">

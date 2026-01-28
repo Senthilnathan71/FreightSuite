@@ -770,6 +770,9 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   addQuoteRoute(data?: any) {
+    console.log("PATCHING",data)
+    console.log("PATCHING VOLUME",data?.Volume)
+    console.log("PATCHING VOLUME FINAL",Number(data?.Volume).toFixed(this.digitsAfterDecimal))
     const routeForm = this.fb.group({
 
       // Route Related Controls
@@ -785,7 +788,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       expDate: [data?.expdate ? data?.expdate : null, [Validators.required]],
       TransitDays: [data?.TransitDays || ''],
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
-      ServiceLevel: [data?.ServiceLevel || null],
+      ServiceLevel: [data?.ServiceLevel || null], // Inco terms
+      FreightPPCC : [{value : data?.FreightPPCC || null, disabled : true}],
       
       // Cargo Related Controls (Route wise single)
       QuoteCargoSid : [data?.QuoteCargoSid || null],
@@ -1005,7 +1009,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   
   // Check all routes for expiration dates
   if (this.quoteRoutes && this.quoteRoutes.length > 0) {
-    const currentDate = new Date();
+    const currentDate = getDefaultTodayDate();
     
     // Check if any route has a valid expiration date
     return this.quoteRoutes.controls.some((route: FormGroup) => {
@@ -1857,6 +1861,7 @@ isRateLockDisabled(): boolean {
         expDate: route.expDate,
         TransitDays: route.TransitDays,
         segmentType: route.segmentType || 'LCL',
+        FreightPPCC : route.FreightPPCC,
         ServiceLevel: route.ServiceLevel,
 
         // Route - Cargo
@@ -1995,13 +2000,13 @@ isRateLockDisabled(): boolean {
     let allDynamicFields;
     switch (type) {
       case 'FCL':
-        allDynamicFields = ['GrossWeight', 'Volume','ChargeableWeight'];
+        allDynamicFields = ['GrossWeight','ChargeableWeight'];
         break;
       case 'LCL':
         allDynamicFields = ['ContainerType', 'Qty','ChargeableWeight'];
         break;
       case 'AIR':
-        allDynamicFields = ['ContainerType', 'Qty', 'Volume'];
+        allDynamicFields = ['ContainerType', 'Qty'];
         break;
       default:
         allDynamicFields = [];
@@ -3196,7 +3201,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
       if (index === carrierIndex) {
         // Selected carrier - set to Approved
         statusCtrl.setValue('Approved', { emitEvent: false });
-        statusCtrl.disable({ emitEvent: false });
+        statusCtrl.enable({ emitEvent: false });
         
         // For the approved carrier, also set ApprovedBy
         // const approvedByCtrl = carrierForm.get('ApprovedBy');
@@ -4011,7 +4016,7 @@ private async createBookingFromQuotation() {
       CustomerName: QuoteData.CustomerName || "",
       CustomerAddress: QuoteData.CustomerAddress || "",
       SalesmanSid: QuoteData.SalesmanSid || null,
-      FreightTerms: QuoteData.FreightPPCC || "",
+      FreightTerms: approvedRoute.FreightPPCC || "Prepaid",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
       QuoteRoteSid: approvedRoute.QuoteRouteSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
@@ -4154,6 +4159,16 @@ toggleLock() {
           })
         })
       })
+    }
+  }
+
+  handleFreightPPCCForDetail(inco:any,index:number) {
+    const group = this.quoteRoutes.at(index) as FormGroup;
+    if(!inco || inco === undefined){
+      group.get('FreightPPCC')?.setValue('Prepaid');
+      return;
+    } else {
+      group.get('FreightPPCC')?.setValue(inco.OceanFreight);
     }
   }
 
@@ -4574,7 +4589,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
       CustomerName: QuoteData.CustomerName || "",
       CustomerAddress: QuoteData.CustomerAddress || "",
       SalesmanSid: QuoteData.SalesmanSid || null,
-      FreightTerms: QuoteData.FreightPPCC || "",
+      FreightTerms: routeData.FreightPPCC || "",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
       QuoteRouteSid: routeData.QuoteRouteSid || null,// Add this to identify the route
       CarrierName: approvedCarrier?.CarrierName || "",
