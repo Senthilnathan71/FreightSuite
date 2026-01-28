@@ -348,6 +348,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
    * Get default values
    */
   private getDefaultValue(param: ReportParameter) {
+
+    if (param.ParameterFieldType === this.FIELD_TYPES.CHECKBOX)
+      return param.DefaultValue === 'true';
+
     if (param.ParameterFieldType === this.FIELD_TYPES.CHECKBOX)
       return param.DefaultValue === 'true';
 
