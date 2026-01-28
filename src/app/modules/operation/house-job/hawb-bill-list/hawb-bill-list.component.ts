@@ -199,7 +199,7 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
           label: 'View',
           action: 'view',
           tooltip: 'View',
-          // state: !this.mps.can('view')
+          state: !this.mps.can('view')
         }
       ],
       selectable: false,
