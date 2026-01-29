@@ -1,0 +1,12 @@
+::ng-deep .ng-select.ng-select-multiple .ng-select-container {
+  min-height: 29px;
+  height: auto !important;
+}
+
+::ng-deep .ng-select.ng-select-multiple .ng-value-container {
+//   flex-wrap: wrap;
+  align-items: flex-start;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+

@@ -23,6 +23,30 @@
             "
             [class.filled]="!!parameterForm.get(param.ParameterName)?.value"
           >
+
+          <!-- RADIO -->
+          <div *ngIf="param.ParameterFieldType === 'RADIO'" class="mt-3">
+            <div
+              class="form-check form-check-inline"
+              *ngFor="let option of param.DropDownValue"
+            >
+              <input
+                type="radio"
+                class="form-check-input"
+                [id]="param.ParameterName + '_' + option.value"
+                [formControlName]="param.ParameterName"
+                [value]="option.value"
+              />
+              <label
+                class="form-check-label"
+                [for]="param.ParameterName + '_' + option.value"
+              >
+                {{ option.label }}
+              </label>
+            </div>
+          </div>
+
+
           <!-- CHECKBOX -->
           <div class="form-check mt-3" *ngIf="param.ParameterFieldType === 'CHECKBOX'">
             <input 
@@ -168,7 +192,7 @@
           ></ng-select>
 
           <!-- LABEL -->
-          <label [for]="param.ParameterName" class="input-label" *ngIf="param.ParameterFieldType !== 'CHECKBOX'">
+          <label [for]="param.ParameterName" class="input-label" *ngIf="param.ParameterFieldType !== 'CHECKBOX' && param.ParameterFieldType !== 'RADIO'">
             {{ getParameterLabel(param.ParameterName) }}
             <span *ngIf="isFieldRequired(param.ParameterName)" class="text-danger">*</span>
           </label>

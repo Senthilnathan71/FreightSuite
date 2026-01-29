@@ -11,19 +11,20 @@
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: cardSlideUp 0.9s 0.1s ease-out both;
 
   // Subtle gradient border effect based on report type
   &[data-report-type="ACCOUNTS"] {
-    border-left: 3px solid #05608d;
+    border-left: 5px solid #05608d;
   }
 
   &[data-report-type="OPERATION"] {
-    border-left: 3px solid #f093fb;
+    border-left: 5px solid #f597c0;
   }
 
   &:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px) scale(1.02) !important;
+    // box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 
     .report-icon-circle {
       transform: scale(1.1) rotate(5deg);
@@ -43,8 +44,8 @@
   
   /* OPERATION */
   .btn-action[data-type="OPERATION"] {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    box-shadow: 0 4px 15px rgba(236, 56, 188, 0.4);
+    background: #f597c0;
+    box-shadow: 0 4px 15px rgba(241, 127, 207, 0.4);
   }
 
   }
@@ -74,13 +75,13 @@
     // Accounts gradient (Blue/Purple)
     &[data-type="ACCOUNTS"] {
       background: #05608d;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      // box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
 
     // Operation gradient (Pink/Red)
     &[data-type="OPERATION"] {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+      background: #f597c0;
+      // box-shadow: 0 4px 15px rgba(250, 61, 149, 0.4);
     }
 
     // Default gradient
@@ -171,6 +172,18 @@
     }
   }
 }
+
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 .empty-state {
   min-height: 300px;

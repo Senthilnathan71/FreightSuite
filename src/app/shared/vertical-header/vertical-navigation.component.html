@@ -205,7 +205,7 @@
         class="form-control ps-3 pe-5 border border-info" 
         placeholder="Search Menu" 
         name="search"
-        style="border-radius: 20px; min-width: 200px;" 
+        style="border-radius: 20px; min-width: 200px;height: 28px;" 
         (click)="$event.stopPropagation(); menuSearchDropdown.open ; getMenusFromSideBar()" 
         (input)="searchMenus($event)" 
         (keydown)="onMenuSearchKeyDown($event)"
@@ -305,7 +305,7 @@
           #docSearchInput
           class="form-control ps-3 pe-5 border border-info"
           placeholder="Search Document"
-          style="border-radius: 20px; min-width: 200px;"
+          style="border-radius: 20px; min-width: 200px;height: 28px;"
           (click)="$event.stopPropagation(); docSearchDropdown.open()"
           (input)="searchDocuments($event)"
           (keydown)="onDocSearchKeyDown($event)"
