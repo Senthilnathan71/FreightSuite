@@ -1177,7 +1177,53 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       Remarks : this.invoiceData?.Remarks,
       BankDetails : bankDetails,
       TermsAndConditions : tandc,
+
+
+
+
+       pkg: isHouseJobInvoice
+  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.NoOfPackage ?? " ")
+  : isBookingInvoice
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.NoOfPackage ?? " ")
+    : isMasterJobInvoice
+      ? (this.invoiceData?.masterJob?.NoOfPkg ?? " ")
+      : " ",
+     
+    grosswt: isHouseJobInvoice
+  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.GrossWeight ?? " ")
+  : isBookingInvoice
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.GrossWeight ?? " ")
+    : isMasterJobInvoice
+      ? (this.invoiceData?.masterJob?.GrossWeight ?? " ")
+      : " ",
+ 
+      desc: isHouseJobInvoice
+  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.CommodityDescription ?? " ")
+  : isBookingInvoice
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.CommodityDescription ?? " ")
+    : isMasterJobInvoice
+      ? (this.invoiceData?.masterJob?.CommodityDescription ?? " ")
+      : " ",
+ 
+    ChargeableWeight: isHouseJobInvoice
+  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.ChargeableWeight ?? " ")
+  : isBookingInvoice
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.ChargeableWeight ?? " ")
+    : isMasterJobInvoice
+      ? (this.invoiceData?.masterJob?.ChargeableWeight ?? " ")
+      : " ",
+ 
+    cbm: isHouseJobInvoice
+  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.Volume ?? " ")
+  : isBookingInvoice
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.Volume ?? " ")
+    : isMasterJobInvoice
+      ? (this.invoiceData?.masterJob?.Volume ?? " ")
+      : " ",
     }
+
+
+    
    
     
   } 
