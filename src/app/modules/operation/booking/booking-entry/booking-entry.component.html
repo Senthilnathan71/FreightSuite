@@ -1546,14 +1546,43 @@
                       <i class="fas fa-trash text-center fs-2"></i>
                     </button>
                   </td>
-                  <td >
-                    <dofi-searchable-dropdown [items]="productList" formControlName="ProductName"
-                      [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
-                      [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']" [bindValue]="'ProductName'"
-                       (itemSelected)="handleProductChange($event,productIndex)" >
-                    </dofi-searchable-dropdown>
-
-                  </td>
+                  <td>
+  <div class="custom-form-group custom-form-group-select inputChnages"
+       [class.filled]="!!product.get('ProductName')?.value">
+    
+    <!-- Dropdown mode -->
+    <div class="d-flex align-items-center" *ngIf="!product.get('isProductFreeText')?.value">
+      <dofi-searchable-dropdown 
+        [items]="productList" 
+        formControlName="ProductName"
+        placeholder="" 
+        [displayFields]="['ProductCode', 'ProductName']"
+        [displayLabels]="['Code', 'Name']" 
+        [labelFields]="['ProductName']" 
+        bindLabel="ProductName"
+        bindValue="ProductName"
+        (itemSelected)="handleProductChange($event, productIndex)"
+        style="width: 100%;">
+      </dofi-searchable-dropdown>
+      
+      <!-- Swap icon -->
+      <button class="btn bi bi-calendar3 pe-0" type="button"
+              (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+    
+    <!-- Manual text input mode -->
+    <div class="input-group" *ngIf="product.get('isProductFreeText')?.value">
+      <input type="text" formControlName="ProductName" 
+             placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3 pe-0" type="button"
+              (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+  </div>
+</td>
                   <td>
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                       formControlName="ShippingBillNo" [textWithNumbers]="100" >

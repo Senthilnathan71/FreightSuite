@@ -227,7 +227,7 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid" placeholder=""
+                <dofi-searchable-dropdown [items]="customerlist" formControlName="CustomerBranchSid" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
                   bindValue="CustomerBranchSid" (itemSelected)="onSelectionChange($event)">

@@ -406,7 +406,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="phoneNumber" [onlyNumbers]="10">
+                  formControlName="phoneNumber" [onlyNumbers]="15">
                 <label for="text-input" class="input-label">Phone Number </label>
 
                 <!--  Validation -->
@@ -416,7 +416,7 @@
                   <span>Only Digits are allowed</span>
                   }
                   @else if(companyForm.get('phoneNumber')?.hasError('maxlength')){
-                  <span>Max 10 Characters</span>
+                  <span>Max 15 Characters</span>
                   }
                 </div>
                 }
@@ -1264,7 +1264,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchPhoneNumber" placeholder="" class="custom-input-field sm"
-                              formControlName="branchPhoneNumber" [onlyNumbers]="10">
+                              formControlName="branchPhoneNumber" [onlyNumbers]="15">
                             <label for="branchPhoneNumber" class="input-label">Phone Number</label>
                             @if(branchForm.get('branchPhoneNumber')?.touched &&
                             branchForm.get('branchPhoneNumber')?.invalid){
@@ -1273,7 +1273,7 @@
                               <span>Only digits are allowed</span>
                               }
                               @else if(branchForm.get('branchPhoneNumber')?.hasError('maxlength')){
-                              <span>Max 10 digits</span>
+                              <span>Max 15 digits</span>
                               }
                             </div>
                             }

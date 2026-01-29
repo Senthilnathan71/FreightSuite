@@ -624,6 +624,7 @@ private setupMBLDateListener(): void {
       MasterJobSid : [null],
       BookingNo: [{ value: '', disabled: true }],
       BookingDateTime: [today],
+      BookingHeaderSid: [null],
       DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
@@ -867,6 +868,7 @@ shouldCalculateVolume(): boolean {
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
       ProductName: [null,[Validators.required]],
+      isProductFreeText: [false],
       ShippingBillNo: [''],
       ShippingBillDate: [null],
       ExternaPkg: [null,[Validators.required]],
@@ -1104,6 +1106,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
+      isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
@@ -1594,6 +1597,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
   
   this.houseJobForm.patchValue({
     MasterJobSid : response.MasterJobSid,
+    BookingHeaderSid: response.BookingHeaderSid, 
     MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
     BookingNo: response.BookingNo,
     BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -1742,6 +1746,16 @@ private loadMasterJobDetails(masterJobSid: number): void {
     if (this.productDataLength) {
     for (const productData of productsFromResponse) {
       const formWithData = this.createBookingProductGroup(productData);
+      const productExists = this.productList?.some(
+      p => p.ProductName?.trim().toLowerCase() ===
+           productData.ProductName?.trim().toLowerCase()
+    );
+
+    // ✅ Set free-text flag correctly
+    formWithData
+      .get('isProductFreeText')
+      ?.setValue(!productExists);
+        
       this.bookingProducts.push(formWithData);
     }
     this.updateProductPagination();
@@ -1928,6 +1942,7 @@ onCurrencyChange(event: any) {
   }
   
   const houseJobFormValue = this.houseJobForm.getRawValue();
+  const existingBookingHeaderSid = this.bookingData?.BookingHeaderSid || null;
   const exportImportType = this.selectedDepartment?.ExportImport;
   const hblNo = houseJobFormValue.HBLNo;
   let CarrierSid = null;
@@ -2008,6 +2023,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     DepartmentMasterSid: houseJobFormValue.DepartmentMasterSid,
     CustomerMasterSid: houseJobFormValue.CustomerMasterSid,
     CustomerBranchSid: houseJobFormValue.CustomerBranchSid || null,
+    BookingHeaderSid: existingBookingHeaderSid,
     CustomerName: houseJobFormValue.CustomerName,
     CustomerAddress: houseJobFormValue.CustomerAddress,
     SalesmanSid: houseJobFormValue.SalesmanSid || null,
@@ -3112,9 +3128,11 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const ChargeableWeight = this.cargoForm.get('ChargeableWeight')?.value
     const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
     const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const BookingHeaderSid = this.b['BookingHeaderSid']?.value;
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
+      BookingHeaderSid,
       MasterJobNumber,
       MasterJobSid,
       ParentSid: this.HouseJobSid,
@@ -4753,7 +4771,16 @@ volumeAmount(): number {
       }
     }
   }
- 
+ toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+  event.stopPropagation();
+  const value = formGroup.get(flagCtrl)?.value;
+  formGroup.get(flagCtrl)?.setValue(!value);
+  formGroup.get(mainCtrl)?.reset();
+}
+getProductFormGroup(index: number): FormGroup {
+  return this.bookingProducts.at(index) as FormGroup;
+}
+
   
 }
 
