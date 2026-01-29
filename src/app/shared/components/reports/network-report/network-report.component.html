@@ -30,14 +30,10 @@
 
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Neywork </strong>
-                    <p class="ms-1">: {{ fullData?.branchNames }}</p>
+                    <strong style="margin-bottom: 4px;width: 130px;">Network </strong>
+                    <p class="ms-1">: {{ params?.Network ? params?.Network : 'All Networks' }}</p>
                 </div>
 
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 130px;">Network From </strong>
-                    <!-- <p class="ms-1">: {{ fullData?.departmentNames }}</p> -->
-                </div>
             </div>
         </div>
         <div class="table-responsive">
@@ -96,5 +92,6 @@
                 </tbody>
             </table>
         </div>
+        
     </div>
 </div>
