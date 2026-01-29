@@ -2921,6 +2921,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       MasterJobSid: [data?.MasterJobSid || null],
       POL: [data?.POL || null],
       POD: [data?.POD || null],
+      VesselName: [data?.VesselName || ''],
+      VoyageNo: [data?.VoyageNo || ''],
+      ETD: [data?.ETD || null],
+      ETA: [data?.ETA || null],
       FreightTerms: [data?.FreightTerms || ''],
       JobType: [data?.JobType || ''],
       HouseStatus: [data?.HouseStatus || '']

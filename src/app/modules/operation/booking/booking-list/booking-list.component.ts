@@ -135,6 +135,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 BookingDateTime: this.datePipe.transform(item?.BookingDateTime),
                 // Extract MasterJobNumber from houseJob array
                 MasterJobNumber: this.getMasterJobNumber(item),
+                HouseJobSid : item.houseJob?.[0]?.HouseJobSid || null,
+                HBLNo : item.houseJob?.[0]?.HBLNo || '',
                 MasterJobSid: this.getMasterJobSid(item)
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -254,6 +256,12 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     deleteBooking(Booking: any) {
+        if(Booking.HouseJobSid){
+            this.appSettingService.showWarning(
+                `This booking cannot be deleted.\n\nHouse Job with HBL No: ${Booking.HBLNo} is associated with it.`
+            );
+            return;
+        }
         const dialogRef = this.dialog.open(DeleteWarningComponent);
     
         dialogRef.afterClosed().subscribe(result => {
