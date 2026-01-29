@@ -476,7 +476,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			branchCountryMasterSid: [null, [Validators.required]],
 			branchWebSite: ['', [Validators.maxLength(100), this.customWebsiteValidator()]],
 			branchPhoneNumber: ['', [Validators.maxLength(20)]],
-			branchEmail: ['', [Validators.maxLength(100), EmailValidators.multipleEmails()]],
+			branchEmail: ['', [Validators.required,Validators.maxLength(100), EmailValidators.multipleEmails()]],
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
@@ -573,7 +573,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			IFSCCode: [bankData?.IFSCCode || '', [Validators.required]],
 			BankAccountNo: [bankData?.BankAccountNo || '', [Validators.required]],
 			PrintOnInvoice : [false],
-            CurrencyMasterSid : [null],
+            CurrencyMasterSid : [bankData?.CurrencyMasterSid || null],
 			status: [bankData?.status],
 			Remarks: [bankData?.Remarks || '']
 		});

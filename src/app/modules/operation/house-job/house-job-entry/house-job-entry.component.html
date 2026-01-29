@@ -164,7 +164,6 @@
       placeholder="" 
       class="form-control custom-input-field sm"
       formControlName="HBLNo"
-      [attr.disabled]="selectedDepartment?.ExportImport === 'Export' ? true : null"
       [ngClass]="{
         'is-invalid': (b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)) || 
                       (selectedDepartment?.ExportImport === 'Import' && !b['HBLNo'].value && b['HBLNo'].touched)

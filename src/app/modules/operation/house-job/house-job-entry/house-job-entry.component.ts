@@ -642,7 +642,7 @@ private setupMBLDateListener(): void {
       CarrierSid : [null],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
-      HBLNo: [{ value: '', disabled: true }],
+      HBLNo: [''],
       HBLDate: [null],
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
@@ -2339,7 +2339,7 @@ private handleHBLNoField(exportImport: string): void {
   
   if (exportImport === 'Export') {
     // For Export departments: disable HBLNo field (will be auto-generated)
-    hblNoControl.disable();
+    hblNoControl.enable();
     hblNoControl.setValue('');
     hblNoControl.clearValidators();
   } else if (exportImport === 'Import') {
