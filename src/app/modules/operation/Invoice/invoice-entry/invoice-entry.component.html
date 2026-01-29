@@ -1609,76 +1609,71 @@
               padding-left: 20px;
             "
           >
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-               
-                flex-wrap: wrap;
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  flex-direction: column;
-                "
-              >
+            <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            flex-wrap: wrap;
+                          ">
+              <div style="
+                              display: flex;
+                              flex-direction: column;
+                            ">
                 <!-- Print logo -->
-                <img
-                  [src]="logoService.reportLogo$ | async"
-                  alt="Company Logo"
-                  class="company-logo img-fluid"
-                  style="width: 100px; height: 100px"
-                />
-                <!-- <h4 style="margin: 0">
-                  <strong>{{
-                    currentCompany?.companyName || "Company Name"
-                  }}</strong>
-                </h4> -->
+                <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
+                  style="width: 110px; height: 110px" />
               </div>
-              <div
-                style="
-                  flex: 1;
-                  text-align: end;
-                  font-size: 17px;
-                  padding-right: 3%;
-                "
-              >
+              <div style="
+                              flex: 1;
+                              text-align: end;
+                              font-size: 17px;
+                              padding-right: 3%;
+                            ">
                 <h3 style="margin: 0; font-weight: 900">
                   {{ currentCompany?.companyName || "Company Name" }}
                 </h3>
                 <!-- <h5 style="margin: 0; font-weight: 900">
-                  {{ currentBranch?.branchName || "Company Branch" }}
-                </h5> -->
-                <p style="margin: 2px 0; font-size: 16px">
+                              {{ currentBranch?.branchName || "Company Branch" }}
+                            </h5> -->
+                <p style="margin: 0px 0; font-size: 16px">
                   {{ currentBranch?.addressLine1 || "" }}
                 </p>
-                <p style="margin: 2px 0; font-size: 16px">
-                  {{ currentBranch?.addressLine2 || "" }},
-                  {{
-                    currentBranch?.cityMaster?.cityName ||
-                      currentCompany?.City ||
-                      ""
-                  }}
-                 
-                  
+                <p style="margin: 0px 0; font-size: 16px">
+                  <ng-container *ngIf="currentBranch?.addressLine2 as addr">
+                    {{ addr }},
+                  </ng-container>
+                  <!-- {{
+                                currentBranch?.cityMaster?.cityName ||
+                                  currentCompany?.City ||
+                                  ""
+                              }} -->
+                  {{ currentBranch?.branchName || "Company Branch" }}
+            
+                  <ng-container *ngIf="currentcountryCode?.countryCode as code">
+                    - {{ code }}
+                  </ng-container>
+            
                 </p>
-            <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                <span>Postal Code</span>
-                <span>: {{currentBranch?.postalCode || currentBranch?.ZipCode || "UAE"}}</span>
-            </div>
-            <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                <span>Phn No</span>
-                <span>:{{ currentBranch?.phoneNumber || currentBranch?.Phone || "" }}</span>
-            </div>
-             <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
-                <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
-                <span>: {{ currentCompany?.Pan || '' }}</span>
-            </div>
-
+                <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
+                  style="display:flex;justify-content:end;align-items:center;gap:6px;width:100%;font-size:16px;">
+                  <span>Postal Code</span>
+                  <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
+                </div>
+            
+                <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
+                  style="display:flex;justify-content:end;align-items:center;gap:6px;width:100%;font-size:16px;">
+                  <span>Phone No</span>
+                  <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
+                </div>
+            
+                <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                  <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
+                  <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
+                  <span>: {{ currentCompany?.Pan || '' }}</span>
+                </div>
+            
               </div>
-
+            
             </div>
           </div>
 
@@ -1813,7 +1808,7 @@
                 <!-- Vessel -->
                 <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>Vessel</strong>
+                      <strong>{{isSeaDepartment() ? 'Vessel Name ' : 'Flight Name'}}</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
@@ -1824,7 +1819,7 @@
                 <!-- Vessel / Flight No -->
                <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>Voyage / Flight No.</strong>
+                      <strong>{{isSeaDepartment() ? 'Voyage No.' : 'Flight No.'}}</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
@@ -1854,7 +1849,7 @@
                </div>
 
                <!-- Place of Supply -->
-               <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+               <!-- <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
                       <strong>Place of Supply</strong>
                   </div>
@@ -1862,7 +1857,7 @@
                       <div style="flex: 1;line-height: 1.4;">
                          {{ invoicePrintData?.PlaceofSupply }}
                   </div>
-               </div>
+               </div> -->
 
                <!-- Final Destionation -->
                 <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
@@ -1920,7 +1915,7 @@
 
     <span
       *ngIf="invoicePrintData?.MasterJobNumber && invoicePrintData?.MasterJobDate">
-      /
+      -
     </span>
 
     <span *ngIf="invoicePrintData?.MasterJobDate">
@@ -1979,14 +1974,14 @@
                 </div>
               </div>
 
-              <div style="display: flex">
+              <!-- <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong>Sales Person</strong>
                 </div>
                 <div>
                   : {{ invoicePrintData?.SalesPerson || this.salesmanName }}
                 </div>
-              </div>
+              </div> -->
 
             </div>
           </div>
@@ -1994,7 +1989,7 @@
           <!-- Table with Dynamic Tax Columns -->
           <div style="width: 100%; overflow-x: auto; margin-top: 8px">
             <table
-              style="width: 100%; border-collapse: collapse; font-size: 16px"
+              style="width: 100%; border-collapse: collapse; font-size: 15px"
             >
               <thead>
                 <tr>
@@ -2446,9 +2441,9 @@
               </div>
               <div style="font-size: 16px">: {{ bankDetails.BankName }}</div>
             </div>
-            <div style="display: flex; font-size: 16px" *ngIf="isIndiaGST">
+            <div style="display: flex; font-size: 16px">
               <div style="width: 165px; font-weight: bolder" >
-                <strong>IFSC/SWIFT</strong>
+                <strong>{{isVATMode?'IBAN':"IFSC"}}</strong>
               </div>
               <div style="font-size: 16px">: {{ bankDetails.IFSCCode }}</div>
             </div>

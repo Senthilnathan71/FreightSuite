@@ -103,6 +103,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   currUserEmail: string | null = null;
   currentCompany: any;
   currentBranch: any;
+  currentcountryCode:any;
   currentCompanyCountry: {
     CountryMasterSid: number;
     countryName: string;
@@ -297,6 +298,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // Getting Data from appSettingService
       this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
       this.currentBranch = this.appSettingService.getCurrentBranchInfo();
+      this.currentcountryCode = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
@@ -1144,7 +1146,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       CustomerRefNo: this.invoiceData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
       ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
       ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
-
+      DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
       FreightTerms:
         isHouseJobInvoice ?
           this.invoiceData?.houseJob?.FreightTerms :
@@ -1177,7 +1179,26 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       TermsAndConditions : tandc,
     }
    
+    
   } 
+
+isSeaDepartment(): boolean {
+  const deptSid = this.invoiceData?.masterJob?.DepartmentMasterSid;
+
+  if (!deptSid || !Array.isArray(this.departmentList) || this.departmentList.length === 0) {
+    return false;
+  }
+
+  const dept = this.departmentList.find(
+    d => Number(d.DepartmentMasterSid) === Number(deptSid)
+  );
+
+  console.log('Dept SID:', deptSid, 'Found dept:', dept); 
+
+  if (!dept?.departmentType) return false;
+
+  return dept.departmentType.toUpperCase().includes('SEA');
+}
 
   gatherHyperLinkInfo(data){
     const isHouseJobInvoice = data.HouseJobSid && data.MasterJobSid;
