@@ -1625,7 +1625,7 @@
               </div>
               <div style="
                               flex: 1;
-                              text-align: end;
+                              text-align:center;
                               font-size: 17px;
                               padding-right: 3%;
                             ">
@@ -1649,24 +1649,27 @@
                               }} -->
                   {{ currentBranch?.branchName || "Company Branch" }}
             
-                  <ng-container *ngIf="currentcountryCode?.countryCode as code">
+                  <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
+                    - {{ code }}
+                  </ng-container> -->
+                   <ng-container *ngIf="currentBranch?.branchCode as code">
                     - {{ code }}
                   </ng-container>
             
                 </p>
                 <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
-                  style="display:flex;justify-content:end;align-items:center;gap:6px;width:100%;font-size:16px;">
+                  style="display:flex;justify-content:center;align-items:center;gap:6px;width:100%;font-size:16px;">
                   <span>Postal Code</span>
                   <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
                 </div>
             
                 <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
-                  style="display:flex;justify-content:end;align-items:center;gap:6px;width:100%;font-size:16px;">
+                  style="display:flex;justify-content:center;align-items:center;gap:6px;width:100%;font-size:16px;">
                   <span>Phone No</span>
                   <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
                 </div>
             
-                <div style="display: flex;justify-content: end;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                <div style="display: flex;justify-content: center;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
                   <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
                   <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
                   <span>: {{ currentCompany?.Pan || '' }}</span>
@@ -1974,7 +1977,7 @@
               </div> -->
 
               <table
-  style="width: 100%; border-collapse: collapse; font-size: 15px"
+  style="width: 100%; border-collapse: collapse;"
 >
   <thead>
     <tr>
@@ -2057,6 +2060,7 @@
         style="
           border: 1px solid black;
           padding: 2px 8px;
+          text-align: center;
         "
       >
         {{ invoicePrintData?.desc }}
@@ -2102,7 +2106,7 @@
           <!-- Table with Dynamic Tax Columns -->
           <div style="width: 100%; overflow-x: auto; margin-top: 8px">
             <table
-              style="width: 100%; border-collapse: collapse; font-size: 15px"
+              style="width: 100%; border-collapse: collapse; font-size: 12px"
             >
               <thead>
                 <tr>
@@ -2309,7 +2313,6 @@
               <tbody>
                 <tr
                   *ngFor="let detail of invoicePrintData?.voucherDetails; let i = index"
-                  style="font-size: 16px"
                 >
                   <td
                     style="

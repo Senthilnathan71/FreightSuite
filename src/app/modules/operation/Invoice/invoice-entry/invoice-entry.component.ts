@@ -1229,7 +1229,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   } 
 
 isSeaDepartment(): boolean {
-  const deptSid = this.invoiceData?.masterJob?.DepartmentMasterSid;
+ const deptSid = this.invoiceData?.masterJob?.DepartmentMasterSid || this.invoiceData?.BookingHeader?.DepartmentMasterSid;
 
   if (!deptSid || !Array.isArray(this.departmentList) || this.departmentList.length === 0) {
     return false;
