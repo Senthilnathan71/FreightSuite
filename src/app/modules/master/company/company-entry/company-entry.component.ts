@@ -1971,28 +1971,49 @@ getTaxIdErrorMessage(): string {
   
   return 'Invalid format';
 }
-
 	checkForBankDuplication() {
-		const bankArr = this.branchBanks(this.currentBranchIndex).getRawValue();
-		const currentCheckBoxValue = Boolean(this.branchBankForm.get('PrintOnInvoice')?.value);
+		const printOnInvoice = !!this.branchBankForm.get('PrintOnInvoice')?.value;
 		const currentCurrencySid = this.branchBankForm.get('CurrencyMasterSid')?.value;
-		const currencyList = this.currencyResults || []; 
+		const currencyList = this.currencyResults || [];
 
-		if (currentCheckBoxValue && currentCurrencySid) {
-			const matching = bankArr.find(bnk => bnk.PrintOnInvoice && bnk.CurrencyMasterSid === currentCurrencySid);
-
-			if (matching) {
-				const matchingBankName = matching.BankName || 'Unknown Bank';
-				const currencyName = currencyList.find(c => c.CurrencyMasterSid === currentCurrencySid)?.currencyName || 'Unknown Currency';
-
-				this.branchBankForm.setErrors({
-					currencyDuplication: `Already a bank "${matchingBankName}" having this currency "${currencyName}" as Print on Invoice.`
-				});
-			} else {
-				this.branchBankForm.setErrors(null);
-			}
-		} else {
+		// If PrintOnInvoice is not checked or no currency selected, clear any errors
+		if (!printOnInvoice || !currentCurrencySid) {
 			this.branchBankForm.setErrors(null);
+			return;
+		}
+
+		// Get all banks in the current branch
+		const bankArr = this.branchBanks(this.currentBranchIndex).getRawValue();
+
+		// Count banks with PrintOnInvoice = true AND same currency
+		// When editing, exclude the current bank being edited
+		const banksWithSameCurrency = bankArr.filter((bnk, index) => {
+			// If we're in edit mode, skip the current bank being edited
+			if (this.isBankModalEdit && index === this.currentBankIndex) {
+				return false;
+			}
+			return bnk.PrintOnInvoice === true && bnk.CurrencyMasterSid === currentCurrencySid;
+		}).length;
+
+		// Total count after saving this bank with PrintOnInvoice checked
+		const totalAfterChange = banksWithSameCurrency + 1;
+
+		// If total exceeds 3, set error
+		if (totalAfterChange > 3) {
+			const currencyName =
+				currencyList.find(c => c.CurrencyMasterSid === currentCurrencySid)
+					?.currencyName || 'Unknown Currency';
+
+			this.branchBankForm.setErrors({
+				currencyDuplication: `Only 3 banks are allowed for currency "${currencyName}" to Print on Invoice.`
+			});
+		} else {
+			// Clear the duplication error if it exists, but preserve other errors
+			const currentErrors = this.branchBankForm.errors;
+			if (currentErrors && currentErrors['currencyDuplication']) {
+				const { currencyDuplication, ...remainingErrors } = currentErrors;
+				this.branchBankForm.setErrors(Object.keys(remainingErrors).length > 0 ? remainingErrors : null);
+			}
 		}
 	}
 
