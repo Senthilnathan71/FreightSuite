@@ -54,6 +54,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -160,6 +161,7 @@ export class QuotationEntryComponent implements OnInit {
   packageTypes: any[] = [];
   carriers: any[] = [];
   customers: any[] = [];
+  customerlist: any[] = [];
   departments: any[] = [];
   ports: any[] = [];
   filteredPorts: any[] = [];
@@ -321,6 +323,7 @@ dataFromEnqPage:any;
     private masterService: MasterService,
     public logoService : LogoService,
     private sideBarService : VerticalSidebarService,
+    private operationService: OperationService,
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -1458,7 +1461,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       // carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
-      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+      customers: this.operationService.getAllDebtorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
+      customerlist:this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
@@ -1468,15 +1472,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
       measurementUnits : this.leadService.getUOMsByType('M').pipe(catchError(err => of([]))),
       weightUnits : this.leadService.getUOMsByType('W').pipe(catchError(err => of([]))),
-      vendors: this.leadService.getCustomerByItsType(supplierFilterOption).pipe(catchError(err => of([]))),
+      vendors: this.operationService.getAllCreditorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts().pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments , cargoTypes, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ departments , cargoTypes, leads, customers, customerlist, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
       // this.carriers = carriers || [];
       this.leadList = leads.data;
-      this.customers = customers || [];
+      this.customers = customers.data || [];
+      this.customerlist = customerlist|| [];
       this.departments = departments || [];
       this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.chargeMaster = masters.charges || [];
@@ -1527,7 +1532,7 @@ isRateLockDisabled(): boolean {
  patchValues(response: any) {
     
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
-    const selectedCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
+    const selectedCustomer = this.customerlist.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     if (selectedCustomer) {
       this.f['CustomerName']?.setValue(selectedCustomer?.CustomerName);
       this.getCustomerBranches(selectedCustomer?.CustomerMasterSid)
@@ -3366,7 +3371,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
       }
 
       if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
-        const customerEmail = this.customers.find(
+        const customerEmail = this.customerlist.find(
           cus => cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid
         )?.Email;
         if (customerEmail) {
@@ -4086,6 +4091,8 @@ private async createBookingFromQuotation() {
         CostAmount: charge.CostAmount || 0,
         CostLocalAmount: charge.CostLocalAmount || 0,
         AgentMasterSid: charge.CostAgentMasterSid,
+        CostAgentBranchSid: charge.CostAgentBranchSid,
+        CostAgentMasterSid: charge.CostAgentMasterSid,
 
         RevenueChargeUomSid: charge.RevenueChargeUomSid,
         RevenuePrepaidCollect: charge.RevenuePrepaidCollect || "Prepaid",
@@ -4096,6 +4103,8 @@ private async createBookingFromQuotation() {
         RevenueAmount: charge.RevenueAmount || 0,
         RevenueLocalAmount: charge.RevenueLocalAmount || 0,
         CustomerMasterSid: charge.RevenueCustomerMasterSid,
+        RevenueCustomerMasterSid: charge.RevenueCustomerMasterSid,
+        RevenueCustomerBranchSid: charge.RevenueCustomerBranchSid,
         QuoteChargeSid: charge.QuoteChargeSid,
         TariffDetailSid: charge.TariffDetailSid,
       }))
@@ -4660,6 +4669,8 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         CostAmount: charge.CostAmount || 0,
         CostLocalAmount: charge.CostLocalAmount || 0,
         AgentMasterSid: charge.CostAgentMasterSid,
+        AgentBranchSid: charge.CostAgentBranchSid,
+       
 
         RevenueChargeUomSid: charge.RevenueChargeUomSid,
         RevenuePrepaidCollect: charge.RevenuePrepaidCollect || "Prepaid",
@@ -4667,6 +4678,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
         RevenueExchangeRate: charge.RevenueExchangeRate || 1,
         RevenueRate: charge.RevenueRate || 0,
+        CustomerBranchSid: charge.RevenueCustomerBranchSid,
         RevenueAmount: charge.RevenueAmount || 0,
         RevenueLocalAmount: charge.RevenueLocalAmount || 0,
         CustomerMasterSid: charge.RevenueCustomerMasterSid,
@@ -4698,7 +4710,9 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
     console.error('Error creating booking from quotation route:', error);
     this.appSettingService.showError("Failed to create booking from quotation route");
   }
+  
 }
+
 hasPendingApprovalChanges(): boolean {
   if (!this.quotationData) return false;
   
