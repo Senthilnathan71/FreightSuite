@@ -215,7 +215,6 @@ export class LoadingPlanEntryComponent {
     this.loadAllLookups();
     this.loadHSSACLookups();
     this.branchDetails = this.appSettingsService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -253,19 +252,16 @@ export class LoadingPlanEntryComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
 
       },
       error: (error) => {
-        console.error("Failed to load city:", error);
 
       }
     });
@@ -315,7 +311,6 @@ export class LoadingPlanEntryComponent {
               (p) => p.PortCode === this.masterJobFormValue.POD
             );
 
-            console.log(this.selectedPOL, this.selectedPOD);
 
             this.onDeptChange(selectedDept);
 
@@ -521,7 +516,6 @@ export class LoadingPlanEntryComponent {
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
     const departmentId = this.loadingPlanForm.get('dept')?.getRawValue();
-    console.log(this.selectedPOL, this.selectedPOD);
     const polId = this.selectedPOL?.PortCode;
     const podId = this.selectedPOD?.PortCode;
     const isFreeText = this.loadingPlanForm.get('isVesselVoyage')?.value;
@@ -539,7 +533,6 @@ export class LoadingPlanEntryComponent {
       voyageNo = this.selectedVoyage?.VoyageNo || null;
     }
 
-    console.log(departmentId, polId, podId);
     if (!departmentId || !polId || !podId) {
       this.loadingPlanForm.markAllAsTouched();
       this.loadingPlanForm.updateValueAndValidity();
@@ -576,7 +569,6 @@ export class LoadingPlanEntryComponent {
             });
             this.totalLengthOfAvailableBookings = this.availableBookings.length;
             this.loadingPlanData = this.availableBookings;
-            console.log(this.loadingPlanData, "LOADING PLAN")
             this.showButton = true;
           }
           this.updateBookingList();
@@ -597,7 +589,6 @@ export class LoadingPlanEntryComponent {
   }
 
   toggleBooking(event, booking) {
-    console.log(this.selectedBookings);
     const target = event.target as HTMLInputElement;
     if (event instanceof KeyboardEvent) {
       target.checked = !target.checked;
@@ -947,7 +938,6 @@ formatContainerNumber(): void {
   }
 
   toggleSOC(event: any) {
-    console.log(event);
     const ctrl = this.containerForm.get('IsSoc');
     const element = event.target as HTMLInputElement;
     if (event instanceof KeyboardEvent) {
@@ -964,7 +954,6 @@ formatContainerNumber(): void {
     const formValue = this.loadingPlanForm.getRawValue();
     const containers = this.masterJobContainers.getRawValue();
     const allCargos = this.selectedBookings.map(booking => booking.CargoType);
-    console.log(allCargos);
     const isHaz = this.selectedBookings.some(bk => bk.CargoType === 'Haz');
 
     const bookings = this.selectedBookings.map(booking => {
@@ -1062,7 +1051,6 @@ formatContainerNumber(): void {
       shipmentList,
       masterJobContainers: containers
     }
-    console.log('Sending payload with ETA/ETD:', payload);
     this.operationService.createMasterJob(payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {

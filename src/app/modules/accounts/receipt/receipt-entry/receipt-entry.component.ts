@@ -537,10 +537,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         this.setCurrencyCode(companyCurrency);
 
         this.currencyConfigService.initializeConfigurations(this.currencyList);
-        console.log(
-          'CURRENCY CONFIG INITIALIZED',
-          this.currencyConfigService.getAllCurrencyConfigs()
-        );
 
         const cusMap = new Map<number, any>();
         this.partyList.forEach((customer) => {
@@ -608,7 +604,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
   searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
-    console.log('FormValue', form);
+
     let payload: any = {
       CompanyMasterSid: form.CompanyMasterSid,
       IncludeFullyPaid: form.IncludeFullyPaid,
@@ -632,8 +628,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         payload.InvoiceNumber = form.FilterText;
     }
 
-    console.log('Payload Sent:', payload);
-
     this.receiptService.searchOutstandingInvoices(payload).subscribe((res) => {
       if (res && Array.isArray(res) && res.length > 0) {
         this.patchHeaderValue(res);
@@ -648,7 +642,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   patchHeaderValue(res: any) {
-    console.log('RES', res);
     if (
       res.length > 0 &&
       res[0].LedgerMasterSid &&
@@ -1145,9 +1138,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.isPosted = response.PostStatus === 'P';
 
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
-    // console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
     const voucherMatchingRecords = response.voucherMatchings || [];
-    console.log('VOUCHER MATCHING RECORDS', voucherMatchingRecords);
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
     if (this.isPosted) {
@@ -1167,12 +1158,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       this.initialDetailCount = this.detailItems?.length || 0;
       this.initialMatchingCount = this.voucherMatchings?.length || 0;
 
-      console.log('✅ Form loaded and reset complete', {
-        isDirty: this.isDirty,
-        formSaved: this.formSaved,
-        isLoading: this.isLoading,
-        formStatus: this.receiptForm.status,
-      });
+
     }, 100);
     this.setupFormChangeDetection();
   }
@@ -1309,7 +1295,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
   checkAndUpdateForAllPartyDetail(patchRequired: boolean = true) {
     for (let i = 0; i < this.detailItems.length; i++) {
-      console.log('Calling checkAndUpdateForPartyDetail for index :' + i);
       this.checkAndUpdateForPartyDetail(i, patchRequired);
     }
   }
@@ -1321,7 +1306,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     if (headerCtrl && detailPartyCtrl) {
       if (headerCtrl.getRawValue() === detailPartyCtrl.getRawValue()) {
-        console.log('Party sid is same .Patch ? :', patch);
         if (patch) {
           detail
             .get('CurrencyMasterSid')
@@ -1389,10 +1373,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     bankCoaSid: number
   ): void {
     this.detailItems.clear();
-    console.log('Selected ITEMS', {
-      SelectedPartyId: partySid,
-      SelectedBankCoaId: bankCoaSid,
-    });
+
     // 1. Find the selected bank/cash ledger
     const isCashMode = this.receiptForm.get('CashOrBank')?.value;
     const bankLedgerSource = isCashMode
@@ -1408,10 +1389,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       (p) => p.CustomerBranchSid === partySid
     );
 
-    console.log('Selected Full ITEMS', {
-      SelectedParty: partyLedger,
-      SelectedBank: bankLedger,
-    });
+  
 
     if (!bankLedger || !partyLedger) {
       console.error(
@@ -1431,7 +1409,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount: outstandingCurrencyAmount,
     };
-    console.log('PartyData', partyData);
     this.addDetailRow(partyData, false);
     if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
       this.detailItems
@@ -1453,7 +1430,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount: outstandingCurrencyAmount,
     };
-    console.log('BankData', bankData);
     this.addDetailRow(bankData, false);
     if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
       this.detailItems
@@ -1469,7 +1445,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   handleCOAChange(coa: any, detailIndex: number, isPatching: boolean = false) {
-    console.log('Handle COA Change', coa);
     if (!coa) {
       if (!isPatching) {
         this.detailItems.at(detailIndex).get('LedgerMasterSid')?.setValue(null);
@@ -1498,7 +1473,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (bankDetailIndex === -1) bankCtrl?.setValue(null);
 
     const cashOrBank = this.r['CashOrBank']?.value ? 'Cash' : 'Bank';
-    console.log(cashOrBank);
     const instrumentMode = this.r['InstrumentMode']?.value;
     const instrumentNumber = this.r['InstrumentNumber']?.value;
     const bankPartyName = this.r['BankPartyName']?.value;
@@ -1558,7 +1532,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       ledgerCtrl.clearValidators();
       ledgerCtrl.updateValueAndValidity();
     }
-    console.log('LEDGER CTRL STATE', ledgerCtrl.enabled);
   }
 
   onCurrencyChangeForEachRow(selected: any, index: number) {
@@ -1665,11 +1638,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       const department = this.deptList.find(
         (dept) => dept.DepartmentMasterSid === deptId
       );
-      console.log('FILTER CHARGE BY DEPT FOR ALL ROW', {
-        deptId: deptId,
-        deptObj: department,
-        deptList: this.deptList,
-      });
+
       if (department) {
         this.filterChargeByDeptForARow(department, index);
       }
@@ -1677,10 +1646,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   filterChargeByDeptForARow(dept, rowIndex) {
-    console.log(`Filtering Dept from row ${rowIndex}`, {
-      department: dept,
-      chargeList: this.chargeList,
-    });
+
     const departmentName = dept.departmentName;
     this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(
       (charge) => {
@@ -1701,7 +1667,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const searchType = this.searchOutstandingForm.get('SearchType')?.value;
 
     transactions.forEach((tx) => {
-      console.log('Transaction', tx);
       const isMatchedRecord = !!tx.MatchingDetailSid; // <–– detect matched data
       const matchCurrencyForThisTxn = this.currencyList.find(
         (c) => c.currencyCode === tx.CurrencyCode
@@ -1794,7 +1759,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       this.voucherMatchings.push(form);
     });
 
-    console.log('Unified FormArray →', this.voucherMatchings.getRawValue());
   }
 
   patchExchangeRateForMatchRow(index: number) {
@@ -1858,13 +1822,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const localAmt = formGroup.get('matchLocalAmt')?.getRawValue();
     const currencyInMatchRow = formGroup.get('matchCurr')?.getRawValue();
     const target = formGroup.get('matchPartyAmt');
-    console.log('DEBUG - Calculate Party Amount', {
-      currencyInHeader,
-      exRateInHeader,
-      currAmt,
-      localAmt,
-      currencyInMatchRow,
-    });
+
     if (currencyInHeader && currencyInMatchRow) {
       const normalizedCurrAmt = toNumber(currAmt);
       const normalizedLocalAmt = toNumber(localAmt);
@@ -2008,7 +1966,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(
       (ubm) => ubm.branchMaster
     );
-    console.log(this.currentCompanyBranches);
   }
 
   get r(): { [key: string]: AbstractControl } {
@@ -2179,7 +2136,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   onPartyChange(party: any) {
-    console.log('Selected Party', party);
     const partyCountry = String(party?.countryMaster?.countryName)
       .trim()
       .toLowerCase();
@@ -2281,10 +2237,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const fromCurrencyId = currency as number;
     const toCurrencyId = this.currentCompany?.CurrencyMasterSid;
 
-    console.log('CURRENCY EXCHANGE IDS', { fromCurrencyId, toCurrencyId });
-
     if (fromCurrencyId === toCurrencyId) {
-      console.log('SAME CURRENCY FOUND ON EXCHANGE RATE');
       return of(this.getFormattedExchangeRate(1, fromCurrencyId));
     }
 
@@ -2295,13 +2248,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       (curr) => curr.CurrencyMasterSid === toCurrencyId
     )?.currencyCode;
 
-    console.log('CURRENCY EXCHANGE CODES', {
-      fromCurrencyCode,
-      toCurrencyCode,
-    });
-
     if (!fromCurrencyCode || !toCurrencyCode) {
-      console.log('NO CURRENCY CODE FOUND ON EXCHANGE RATE DEFAULTING TO 1');
       return of(this.getFormattedExchangeRate(1, fromCurrencyId));
     }
 
@@ -2319,7 +2266,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       map((resp: any) => {
         if (resp.status) {
           if (resp.data) {
-            console.log('EXCHANGE RATE FOUND', resp.data);
             return this.getFormattedExchangeRate(resp.data, fromCurrencyId);
           } else {
             this.appSettingService.showError(resp.message);
@@ -2389,13 +2335,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       .get('CurrencyMasterSid')
       ?.getRawValue();
     const target = formGroup.get('PartyAmount');
-    console.log('DEBUG - Calculate Party Amount', {
-      currencyInHeader,
-      exRateInHeader,
-      amount,
-      localAmount,
-      currencyInMatchRow,
-    });
+
     if (currencyInHeader && currencyInMatchRow) {
       const normalizedAmt = toNumber(amount);
       const normalizedLocalAmt = toNumber(localAmount);
@@ -2522,7 +2462,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     let totalCredits = 0;
     let totalDebits = 0;
     (this.detailItems.getRawValue() || []).forEach((vd) => {
-      // console.log(vd)
       if (vd.DrCr === 'C') {
         totalCredits += Number(vd.PartyAmount) || 0;
       } else {
@@ -2689,12 +2628,8 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const osLocalAmt = Number(row.get('osLocalAmt')?.value);
     const exRate = Number(row.get('exRate')?.value);
 
-    console.log('originalCurr:', originalCurr);
-
     // FIXED HERE
     const currencySid = this.getCurrencySidFromCode(originalCurr);
-
-    console.log('✔ FIXED currencySid:', currencySid);
 
     row.patchValue({
       matchCurr: currencySid,
@@ -2705,8 +2640,6 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.calculatePartyAmount(index);
     row.get('isTicked')?.setValue(checked);
     this.markAsDirty();
-
-    console.log('✔ PATCHED ROW:', row.value);
 
     // this.calculateLocalAmountForMatchRow(index);
   }

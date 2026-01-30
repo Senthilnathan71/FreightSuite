@@ -140,7 +140,7 @@ get difference(): number {
 getLedgerName(COAMasterSid: number): string {
   if (!COAMasterSid || this.coaList.length===0) return '';
 
-  console.log(COAMasterSid,"Ledger Id")
+  // console.log(COAMasterSid,"Ledger Id")
   const ledger = this.coaList.find(
     v => v.COAMasterSid === COAMasterSid
   );

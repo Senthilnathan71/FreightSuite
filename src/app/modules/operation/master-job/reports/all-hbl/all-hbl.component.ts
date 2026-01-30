@@ -50,7 +50,6 @@ export class AllHBLComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -68,16 +67,9 @@ export class AllHBLComponent {
           this.masterJobHouseJobs = response.data.houseJob || [];
 
           this.housejobData = this.masterJobHouseJobs[0];
-          console.log(
-            'Master Job:',
-            this.masterJobData.MasterJobNumber
-          );
 
-          console.log(
-            'House Jobs:',
-            this.masterJobHouseJobs
-          );
         }
+
         this.spinner.hide();
       },
       error: (error) => {

@@ -49,9 +49,6 @@ export class DeliveryOrderComponent {
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
-    console.log("CURRENT CURRENCY CODE", this.currentCurrencyCode);
-    console.log("CURRENT CURRENCY", this.companyCurrency);
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -69,13 +66,12 @@ export class DeliveryOrderComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
+          // console.log("Final City Name:", this.currentBranchCityName);
         }
 
 
@@ -93,7 +89,6 @@ export class DeliveryOrderComponent {
       next: (response: any) => {
         this.currency = response || [];
          this.numberToWords.initializeCurrencies(this.currency);
-        console.log('Currency List:', this.currency);
       },
       
       error: (error) => {
@@ -113,15 +108,13 @@ export class DeliveryOrderComponent {
   ) { }
 
   getUnitCode(ChargeUomSid: number) {
-    console.log("GETUNITCODE", {
-      currentUOMId: ChargeUomSid,
-      uomList: this.uomList
-    })
+
+ 
+
     if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
       return '';
     }
     const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
-    console.log(uom);
     return uom ? uom.UOMCode : '';
   }
 
@@ -169,10 +162,7 @@ export class DeliveryOrderComponent {
   }
 
   getPkgTypeName(PackageTypeMasterSid: number) {
-    console.log("getPkgMame", {
-      PackageTypeMasterSid,
-      pkgList: this.packageTypeList
-    })
+
     if (!PackageTypeMasterSid || this.packageTypeList.length === 0) {
       return "";
     }
@@ -180,11 +170,12 @@ export class DeliveryOrderComponent {
   }
 
   getContainerName(ContainerTypeMasterSid: number) {
-    console.log(ContainerTypeMasterSid);
+
+
     if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) {
       return "";
     }
-    console.log("HERE", this.containerTypeList)
+
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 

@@ -69,7 +69,6 @@ export class JobCardComponent implements OnChanges {
       localStorage.getItem('selected-branch')
     );
      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -93,13 +92,11 @@ export class JobCardComponent implements OnChanges {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
         this.spinner.hide();
@@ -121,10 +118,7 @@ export class JobCardComponent implements OnChanges {
   }
 
   getSalespersonName(UserMasterSid:number){
-    console.log("GetUserName",{
-      id : UserMasterSid,
-      list : this.salemanList
-    })
+
     if(!UserMasterSid||this.salemanList.length===0){
       return "";
     }
@@ -151,21 +145,15 @@ export class JobCardComponent implements OnChanges {
   }
 
   getUnitCode(ChargeUomSid: number):string {
-    console.log("GETUNITCODE", {
-      currentUOMId: ChargeUomSid,
-      uomList: this.uomList
-    })
+   
     if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
       return '';
     }
     const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
-    console.log(uom);
     return uom ? uom.UOMCode : '';
   }
 
   getCurrencyName(CurrencyMasterSid: number): string {
-    console.log('🔍 getCurrencyName called with:', CurrencyMasterSid);
-    console.log('📋 currencyList:', this.currencyList);
 
     if (
       !CurrencyMasterSid ||
@@ -275,7 +263,6 @@ get profit() {
     const data = [...rateFormValue];
 
     data.forEach(item => {
-      console.log(item);
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
@@ -321,7 +308,6 @@ get profit() {
       p.totalCost = p.totalCost.toFixed(2);
     });
 
-    console.log(this.profitSummary);
   }
 
   

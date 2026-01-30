@@ -49,9 +49,7 @@ export class ShipmentComponent {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    console.log('houseJobData',this.housejobData);
    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -64,19 +62,16 @@ export class ShipmentComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
  
       },
       error: (error) => {
-        console.error("Failed to load city:", error);
    
       }
     });
@@ -93,10 +88,9 @@ export class ShipmentComponent {
 
 
 getChargeName(ChargeMasterSid: number): string {
-  console.log("Status",{
-    ChargeMasterSid,
-    list : this.chargeList
-  })
+
+ 
+
   if (!ChargeMasterSid) return 'N/A';
   if (!this.chargeList?.length) return 'N/A';
 
@@ -104,7 +98,6 @@ getChargeName(ChargeMasterSid: number): string {
     c.ChargeMasterSid === ChargeMasterSid || c.ChargeMasterSID === ChargeMasterSid
   );
 
-  console.log(charge,"Charge Name")
   return charge ? (charge.chargeName || charge.chargeCode || charge.chargeCode ) : 'N/A';
 }
 
@@ -115,7 +108,6 @@ getChargeName(ChargeMasterSid: number): string {
     const data = [...rateFormValue];
 
     data.forEach(item => {
-      console.log(item);
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
@@ -161,7 +153,6 @@ getChargeName(ChargeMasterSid: number): string {
       p.totalCost = p.totalCost.toFixed(2);
     });
 
-    console.log(this.profitSummary);
   }
 
     calculateCustomerWiseAmount() {
@@ -210,8 +201,6 @@ getChargeName(ChargeMasterSid: number): string {
     });
 
     // --- LOGS & ASSIGNMENT ---
-    console.log("Cost Summary:", costHmap);
-    console.log("Revenue Summary:", revenueHmap);
 
     this.customerWiseSummary = {
       cost: Array.from(costHmap.values()),
@@ -370,11 +359,9 @@ getChargeName(ChargeMasterSid: number): string {
   }
 
    getContainerName(ContainerTypeMasterSid:number){
-    console.log(ContainerTypeMasterSid);
     if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
       return "";
     }
-    console.log("HERE",this.containerTypeList)
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 
