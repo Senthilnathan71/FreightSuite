@@ -2060,7 +2060,6 @@
         style="
           border: 1px solid black;
           padding: 2px 8px;
-          text-align: center;
         "
       >
         {{ invoicePrintData?.desc }}
@@ -2074,7 +2073,7 @@
           text-align: right;
         "
       >
-        {{ invoicePrintData?.grosswt }}
+        {{ invoicePrintData?.grosswt | number:'1.3-3'}}
       </td>
  
       <!-- CHARGEABLE WT (AIR ONLY) -->
