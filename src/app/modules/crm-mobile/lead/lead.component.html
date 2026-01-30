@@ -485,6 +485,9 @@
                                 <span *ngIf="leadForm.get('phone')?.hasError('maxlength')">
                                     Enter a Valid Phone Number
                                 </span>
+                                @if(leadForm.get('phone')?.hasError('required')) {
+                                <span>Required</span>
+                                }
                             </div>
 
 

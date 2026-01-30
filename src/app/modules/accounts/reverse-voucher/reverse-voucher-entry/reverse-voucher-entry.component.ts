@@ -1896,7 +1896,7 @@ export class ReverseVoucherEntryComponent {
       this.reverseVoucherForm.patchValue({ 
         ReversalVoucher: reversalVoucherDisplay,
         VoucherNumber: header.VoucherNumber,
-        VoucherDate: this.formatDateForNgb(header.VoucherDate),
+        VoucherDate: header.VoucherDate,
         CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
         PartyMasterSid: header.PartyMasterSid,
         PartyName: header.PartyName,
@@ -2107,7 +2107,7 @@ export class ReverseVoucherEntryComponent {
       Narration: formValue.Narration,
       MasterJobSid: formValue.MasterJobSid,
       HouseJobSid: formValue.HouseJobSid,
-      VoucherDate: this.fromNgbDate(formValue.VoucherDate),
+      VoucherDate: formValue.VoucherDate,
       PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
       status: formValue.Status,
       CreatedBy: this.currUserEmail || 'System',

@@ -272,6 +272,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
+        template:'link',
         width: '150px',
       },
         {
@@ -281,6 +282,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
+        template: 'link',  
         width: '150px',
       },
       {
@@ -290,6 +292,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
+        template: 'link',
         width: '150px',
       },
       {
@@ -380,12 +383,49 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
-    if (event.action === 'view') {
+    if (event.column?.template === "link") {
+      // Handle link template click (Master Job Number)
+      if (event.column.key === 'MasterNumber') {
+      this.navigateToMasterJob(event.row.MasterJobSid);
+      return;
+    }
+
+    if (event.column.key === 'HouseNumber') {
+      this.navigateToHouse(event.row);
+      return;
+    }
+    if (event.column.key === 'BookingNo') {
+      this.navigateToBooking(event.row);
+      return;
+    }
+    } else if (event.action === 'view') {
       this.editbyrow(event.row);
     } else if (event.action === 'delete') {
       this.deleteInvoiceByRow(event.row);
     }
   }
+navigateToMasterJob(masterJobSid: number): void {
+        if (masterJobSid) {
+            this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+        } else {
+            this.appSettingService.showWarning('Master Job not available');
+        }
+    }
+    navigateToHouse(row: any): void {
+  if (row?.HouseJobSid) {
+    this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
+  } else {
+    this.appSettingService.showWarning('House Job not available');
+  }
+}
+
+navigateToBooking(row: any): void {
+  if (row?.BookingHeaderSid) {
+    this.router.navigate(['/operation/booking/entry', row.BookingHeaderSid]);
+  } else {
+    this.appSettingService.showWarning('Booking not available');
+  }
+}
 
   // viewInvoice(item.VoucherHeaderSid)
   editbyrow(row:any) {

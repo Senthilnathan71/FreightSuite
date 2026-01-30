@@ -175,8 +175,8 @@
                 <tbody>
                     <tr *ngFor="let item of salesmanRows" style="white-space: nowrap;">
                         <td>{{item.SalesmanName}}</td>
-                        <td></td>
-                        <td class="text-end"></td>
+                        <td class="text-end">{{item.TotalLeads}}</td>
+                        <td class="text-end">{{item.TotalOpportunity}}</td>
                         <td class="text-end">{{ item.TotalMeetings}}</td>
                         <td class="text-end">{{item.TotalEnquiries}}</td>
                         <td class="text-end">{{item.TotalQuotations}}</td>

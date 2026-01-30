@@ -45,4 +45,88 @@ export class NetworkReportComponent {
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
+
+  getExcelData(): ComplexReportExportConfig {
+
+  const tableHeaders: ExcelHeader[] = [
+    { key: 'customerName', label: 'Customer' },
+    { key: 'network', label: 'Network' },
+    { key: 'departmentName', label: 'Department' },
+    { key: 'BookingNo', label: 'Booking No' },
+    { key: 'HouseNo', label: 'House Job No' },
+    { key: 'masterJobNo', label: 'Master Job No' },
+    { key: 'HblNo', label: 'HBL No' },
+    { key: 'MBLNo', label: 'MBL No' },
+    { key: 'totalRevenue', label: 'Revenue' },
+    { key: 'totalCost', label: 'Cost' },
+    { key: 'profit', label: 'Profit' },
+    { key: 'nominationBy', label: 'Nomination' },
+    { key: 'originAgent', label: 'Origin Agent' },
+    { key: 'originNetwork', label: 'Origin Agent Network' },
+    { key: 'destinationAgent', label: 'Destination Agent' },
+    { key: 'destinationNetwork', label: 'Destination Agent Network' },
+    { key: 'grossWt', label: 'Gross Wt' },
+    { key: 'netWt', label: 'Net Wt' },
+    { key: 'totalNoOfTEU', label: 'No of TEUs' }
+  ];
+
+  const rows: ExcelRow[] = (this.fullData?.data || []).map(item => ({
+    cells: [
+      { value: item.customerName || '' },
+      { value: item.network || '' },
+      { value: item.departmentName || '' },
+      { value: item.BookingNo || '' },
+      { value: item.HouseNo || '' },
+      { value: item.masterJobNo || '' },
+      { value: item.HblNo || '' },
+      { value: item.MBLNo || '' },
+      { value: item.totalRevenue ?? 0 },
+      { value: item.totalCost ?? 0 },
+      { value: item.profit ?? 0 },
+      { value: item.nominationBy || '' },
+      { value: item.originAgent || '' },
+      { value: item.originNetwork || '' },
+      { value: item.destinationAgent || '' },
+      { value: item.destinationNetwork || '' },
+      { value: item.grossWt ?? 0 },
+      { value: item.netWt ?? 0 },
+      { value: item.totalNoOfTEU ?? 0 }
+    ],
+    style: 'data'
+  }));
+
+  return {
+    fileName: 'Network-Report',
+    sheetName: 'NetworkReport',
+
+    reportHeader: {
+      companyName: this.currentCompany?.companyName || 'Company',
+      reportTitle: 'Network Report',
+      additionalInfo: [
+        { label: 'Branch', value: this.currentBranch?.branchName || '' },
+        { label: 'From Date', value: this.formatDate(this.fullData?.FromDate) },
+        { label: 'To Date', value: this.formatDate(this.fullData?.ToDate) },
+        { label: 'Network', value: this.params?.Network || '' }
+      ]
+    },
+
+    tableHeaders,
+    rows,
+
+    columnWidths: [
+      25, 15, 18, 15, 18, 18, 15, 15,
+      15, 15, 15, 15, 20, 20, 22, 22,
+      12, 12, 12
+    ]
+  };
+}
+
+ private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
+  }
 }

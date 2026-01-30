@@ -829,8 +829,8 @@
                                     <!-- <td>{{shipment.ShipperAddress}}</td> -->
                                     <td>{{shipment.VoyageNo}}</td>
                                     <!-- <td>{{shipment.ConsigneeAddress}}</td> -->
-                                    <td>{{shipment.ETD}}</td>
-                                    <td>{{shipment.ETA}}</td>
+                                    <td>{{shipment.ETD | formatDate}}</td>
+                                    <td>{{shipment.ETA | formatDate}}</td>
                                     <!-- <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td> -->
                                     <td>{{shipment.POL}}</td>
                                     <td>{{shipment.POD}}</td>

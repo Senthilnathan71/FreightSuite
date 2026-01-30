@@ -2115,7 +2115,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       );
       return config?.exchangeDecimal;
     }
-    return 2;
+    return 4;
   }
 
   public getFormattedAmount(
@@ -2142,7 +2142,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       );
       return config?.amountDecimal;
     }
-    return 2;
+    return 4;
   }
 
   patchExchangeRateForDetail(

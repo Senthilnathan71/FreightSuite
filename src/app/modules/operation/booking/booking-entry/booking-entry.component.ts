@@ -848,6 +848,7 @@ subscribeToFormChanges() {
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null,[Validators.required]],
+      isProductFreeText: [false],
       ShippingBillNo: [''],
       ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
@@ -1065,6 +1066,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
+      isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
@@ -1533,6 +1535,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (this.productDataLength) {
       for (const productData of productsFromResponse) {
         const formWithData = this.createBookingProductGroup(productData);
+        const productExists = this.productList?.some(
+      p => p.ProductName?.trim().toLowerCase() ===
+           productData.ProductName?.trim().toLowerCase()
+    );
+
+    // ✅ Set free-text flag correctly
+    formWithData
+      .get('isProductFreeText')
+      ?.setValue(!productExists);
         this.bookingProducts.push(formWithData);
       }
       this.updateProductPagination();
@@ -4907,6 +4918,16 @@ private applyTranshipmentRestrictions(): void {
       });
     });
   }
+}
+
+toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+  event.stopPropagation();
+  const value = formGroup.get(flagCtrl)?.value;
+  formGroup.get(flagCtrl)?.setValue(!value);
+  formGroup.get(mainCtrl)?.reset();
+}
+getProductFormGroup(index: number): FormGroup {
+  return this.bookingProducts.at(index) as FormGroup;
 }
 
 }

@@ -1,50 +1,46 @@
-<div style="width:100%; padding: 10px 20px;">
+<div style="width:100%; padding:10px 20px; box-sizing:border-box;">
 
   <!-- HEADER ROW -->
-  <div style="display:flex; width:100%; align-items:center;">
+  <div style="
+      display:flex;
+      width:100%;
+      align-items:center;
+      page-break-inside:avoid;
+  ">
 
     <!-- LEFT SLOT -->
     <div style="flex:1; text-align:left;">
       <ng-container *ngIf="logoPosition === 'left'">
-        <img
-          [src]="(logoService.reportLogo$ | async)"
-          class="company-logo"
-          style="width:100px; height:100px;"
-        />
+        <img [src]="(logoService.reportLogo$ | async)" style="width:100px; height:100px;" />
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'left'">
-        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context:{ alignment: companyAlignment }">
+        </ng-container>
       </ng-container>
     </div>
 
     <!-- CENTER SLOT -->
     <div style="flex:1; text-align:center;">
       <ng-container *ngIf="logoPosition === 'center'">
-        <img
-          [src]="(logoService.reportLogo$ | async)"
-          class="company-logo"
-          style="width:100px; height:100px;"
-        />
+        <img [src]="(logoService.reportLogo$ | async)" style="width:100px; height:100px;" />
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'center'">
-        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context:{ alignment:companyAlignment }">
+        </ng-container>
       </ng-container>
     </div>
 
     <!-- RIGHT SLOT -->
     <div style="flex:1; text-align:right;">
       <ng-container *ngIf="logoPosition === 'right'">
-        <img
-          [src]="(logoService.reportLogo$ | async)"
-          class="company-logo"
-          style="width:100px; height:100px;"
-        />
+        <img [src]="(logoService.reportLogo$ | async)" style="width:100px; height:100px;" />
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'right'">
-        <ng-container *ngTemplateOutlet="companyDetails; context: { alignment: companyAlignment }"></ng-container>
+        <ng-container *ngTemplateOutlet="companyDetails; context:{ alignment:companyAlignment }">
+        </ng-container>
       </ng-container>
     </div>
 
@@ -53,20 +49,23 @@
 
 <!-- COMPANY DETAILS TEMPLATE -->
 <ng-template #companyDetails let-alignment="alignment">
-  <div [style.text-align]="alignment" style="font-size:17px;">
-    <h3 style="margin:0; font-weight:900;">
+  <div [style.text-align]="alignment" style="
+      line-height:1.3;
+      white-space:nowrap;
+    ">
+    <div style="font-size:20px; font-weight:900; text-transform:uppercase;">
       {{ currentCompany?.companyName || 'XXXX COMPANY NAME' }}
-    </h3>
+    </div>
 
-    <h5 style="margin:0; font-weight:900;">
+    <div style="font-size:16px; font-weight:700;">
       {{ currentBranch?.branchName || 'XXXX BRANCH NAME' }}
-    </h5>
+    </div>
 
-    <p style="margin:2px 0; font-size:14px;">
+    <div style="font-size:13px;">
       {{ currentBranch?.addressLine1 || '' }}
-    </p>
+    </div>
 
-    <p style="margin:2px 0; font-size:14px;">
+    <div style="font-size:13px;">
       {{ currentBranch?.addressLine2 || '' }}
       <ng-container *ngIf="currentBranch?.cityMaster?.cityName">
         , {{ currentBranch.cityMaster.cityName }}
@@ -77,6 +76,6 @@
       <ng-container *ngIf="currentBranch?.phoneNumber">
         , {{ currentBranch.phoneNumber }}
       </ng-container>
-    </p>
+    </div>
   </div>
 </ng-template>
