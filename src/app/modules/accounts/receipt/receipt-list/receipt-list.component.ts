@@ -438,7 +438,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   }
 
   onTableFilterChange(filters: TableFilter[]): void {
-    console.log('Filters changed:', filters);
+    // console.log('Filters changed:', filters);
   }
 
   report(): void {

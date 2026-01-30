@@ -59,7 +59,6 @@ export class PreAlertComponent {
        localStorage.getItem('selected-branch')
      );
      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-     console.log(this.branchDetails, "BRANCH DETAILS");
      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
      this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -161,8 +160,6 @@ export class PreAlertComponent {
  
  
    getContainerSize(containerTypeMasterSid: number): string {
-     console.log("SID RECEIVED:", containerTypeMasterSid);
-     console.log("CONTAINER TYPE LIST:", this.containerTypeList);
  
      const containerType = this.containerTypeList?.find(
        ct => +ct.ContainerTypeMasterSid === +containerTypeMasterSid

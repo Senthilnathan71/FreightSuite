@@ -4930,4 +4930,15 @@ getProductFormGroup(index: number): FormGroup {
   return this.bookingProducts.at(index) as FormGroup;
 }
 
+  onStatusChange(){
+    const status = this.b['status']?.getRawValue();
+    const hblNo = this.b['HBLNo']?.getRawValue();
+    if (hblNo && (status === 'Suspended' || !status)) {
+      this.appSettingService.showWarning(
+        `This booking cannot be suspended.\n\nHouse Job with HBL No: ${hblNo} is associated with it.`
+      );
+      this.b['status']?.setValue('Active');
+    }
+  }
+
 }

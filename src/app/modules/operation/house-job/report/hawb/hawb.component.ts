@@ -79,7 +79,6 @@ export class HAWBComponent {
     this.currentCurrencyCode = this.getCurrencyCodeById(this.currentCurrency);
 
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -95,19 +94,16 @@ export class HAWBComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
 
       },
       error: (error) => {
-        console.error("Failed to load city:", error);
 
       }
     });
@@ -124,7 +120,6 @@ export class HAWBComponent {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['housejobData']) {
-      console.log('Data changed', changes['housejobData'])
       this.handleCharges();
     }
   }
@@ -151,23 +146,19 @@ export class HAWBComponent {
   handleCharges() {
     this.costRevenueCharges = this.housejobData.costRevenueCharges || [];
     const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
-    console.log("Filtered Charges", filteredCharges);
 
     this.freightCharges = filteredCharges.filter(cr => {
       const chargeGroupName = cr.chargeMaster?.chargeGroup?.GroupName || '';
       return chargeGroupName === "Freight"
     })
 
-    console.log("only freight charges", this.freightCharges);
 
     const freightChargeIds = this.freightCharges.map(c => c.ChargeMasterSid);
-    console.log("Freight Charge Ids", freightChargeIds)
 
     this.otherCharges = filteredCharges.filter(c => {
       return !freightChargeIds.includes(c.ChargeMasterSid);
     })
 
-    console.log("Other Charges", this.otherCharges)
   }
 
   getChargeCode(ChargeMasterSid: number) {
@@ -309,14 +300,12 @@ export class HAWBComponent {
       0
     );
 
-    console.log(totalExchangeRate, "Total Exchange Rate")
 
     const totalRevenueAmount = this.freightCharges.reduce(
       (sum, c) => sum + Number(c.RevenueAmount || 0),
       0
     );
 
-    console.log(totalRevenueAmount, "Total Revenue Amt")
 
     return { totalExchangeRate, totalRevenueAmount };
   }

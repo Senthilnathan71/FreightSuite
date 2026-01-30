@@ -45,7 +45,6 @@ export class CommericalInvoiceComponent {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
            this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -89,11 +88,9 @@ export class CommericalInvoiceComponent {
  
 
       getContainerName(ContainerTypeMasterSid: number) {
-    console.log(ContainerTypeMasterSid);
     if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) {
       return "";
     }
-    console.log("HERE", this.containerTypeList)
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 

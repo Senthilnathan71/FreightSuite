@@ -45,7 +45,6 @@ export class HblComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
@@ -59,13 +58,11 @@ export class HblComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
  
