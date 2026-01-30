@@ -508,6 +508,12 @@ export class FullcalendarComponent implements OnInit {
 
 
   onAddMeeting() {
+      if (this.meetingForm.invalid) {
+    // Mark all fields as touched to show validation errors
+    this.meetingForm.markAllAsTouched();  
+    this.appSettingService.showError('Please fill all required fields');
+    return;
+  }
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];

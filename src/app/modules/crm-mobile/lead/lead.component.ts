@@ -268,7 +268,7 @@ MenuMasterSid:any
       CityMasterSid: [, [Validators.required]],
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
-      phone: ['',[Validators.maxLength(15), this.phoneNumberValidator]],
+      phone: ['',[Validators.required,Validators.maxLength(15), this.phoneNumberValidator]],
       leadStatus: [{ value: LeadStatus.Discovery, disabled: true }],
       PreferredContactMode: ['Email'],
       LanguagePreferrence: ['', [
