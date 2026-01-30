@@ -386,7 +386,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     if (event.column?.template === "link") {
       // Handle link template click (Master Job Number)
       if (event.column.key === 'MasterNumber') {
-      this.navigateToMasterJob(event.row.MasterJobSid);
+      this.navigateToMasterJob(event.row);
       return;
     }
 
@@ -404,13 +404,22 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       this.deleteInvoiceByRow(event.row);
     }
   }
-navigateToMasterJob(masterJobSid: number): void {
-        if (masterJobSid) {
-            this.router.navigate(['/operation/master-job/entry', masterJobSid]);
-        } else {
-            this.appSettingService.showWarning('Master Job not available');
-        }
+  navigateToMasterJob(invoice: any): void {
+    const departmentType = String(invoice?.departmentMaster?.departmentType).toUpperCase();
+
+    if (invoice && departmentType) {
+      const masterJobSid = invoice.MasterJobSid;
+      if (departmentType === 'SEA') {
+        this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+      } else if (departmentType === 'AIR') {
+        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      } else {
+        console.warn('Unknown department type:', departmentType);
+      }
+    } else {
+      this.appSettingService.showWarning('Master Job not available');
     }
+  }
     navigateToHouse(row: any): void {
   if (row?.HouseJobSid) {
     this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
