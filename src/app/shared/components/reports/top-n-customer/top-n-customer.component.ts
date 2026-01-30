@@ -6,11 +6,12 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
+import { PrintHeaderComponent } from '../../print-header/print-header.component';
 
 @Component({
   selector: 'app-top-n-customer',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
   templateUrl: './top-n-customer.component.html',
   styles: ``
 })
@@ -49,61 +50,58 @@ export class TopNCustomerComponent {
   }
 
 
-  getExcelData(): ComplexReportExportConfig {
+ getExcelData(): ComplexReportExportConfig {
 
-    const tableHeaders: ExcelHeader[] = [
-      { key: 'customer', label: 'Customer' },
-      { key: 'gp', label: 'GP' },
-      { key: 'revenue', label: 'Revenue' },
-      { key: 'volume', label: 'Volume' },
-      { key: 'weight', label: 'Weight' },
-      { key: 'volumeWt', label: 'Volume Wt' },
-      { key: 'chargeableWt', label: 'Chargeable Wt' },
-      { key: 'noOfHouse', label: 'No of House' }
-    ];
+  const tableHeaders: ExcelHeader[] = [
+    { key: 'customer', label: 'Customer' },
+    { key: 'gp', label: 'GP' },
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'volume', label: 'Volume' },
+    { key: 'weight', label: 'Weight' },
+    { key: 'volumeWt', label: 'Volume Wt' },
+    { key: 'chargeableWt', label: 'Chargeable Wt' },
+    { key: 'noOfHouse', label: 'No of House' }
+  ];
 
-    const rows: ExcelRow[] = [];
+  const rows: ExcelRow[] = [];
+  const data = this.fullData?.data || [];
 
-    const data = this.fullData?.data || [];
-
-    data.forEach(item => {
-      if (!item.customerSummary || !item.customerSummary.length) return;
-
-      item.customerSummary.forEach(cust => {
-        const cells: ExcelCell[] = [
-          { value: cust.customerName || '' },
-          { value: this.formatNumber(cust.GP) },
-          { value: this.formatNumber(cust.totalRevenue) },
-          { value: this.formatNumber(item.Vol) },
-          { value: this.formatNumber(item.Weight) },
-          { value: this.formatNumber(item.netwt) },
-          { value: this.formatNumber(item.chargeable) },
-          { value: item.noOfShipment || 0 }
-        ];
-
-        rows.push({ cells, style: 'data' });
-      });
+  data.forEach(item => {
+    rows.push({
+      cells: [
+        { value: item.customerName || '' },
+        { value: this.formatNumber(item.GP) },
+        { value: this.formatNumber(item.totalRevenue) },
+        { value: this.formatNumber(item.Vol) },
+        { value: this.formatNumber(item.Weight) },
+        { value: this.formatNumber(item.netwt) },
+        { value: this.formatNumber(item.chargeable) },
+        { value: item.noOfShipment || 0 }
+      ],
+      style: 'data'
     });
+  });
 
-    return {
-      fileName: 'Top-N-Customer-Report',
-      sheetName: 'Top N Customer',
-      reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Top N Customer Report`,
-        additionalInfo: [
-          { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-          { label: 'Branch', value: this.fullData?.branchNames || '' },
-          { label: 'Dept', value: this.fullData?.departmentNames || '' },
-          { label: 'Top N', value: this.params?.TopN || '' }
-        ]
-      },
-      tableHeaders,
-      rows,
-      columnWidths: [30, 15, 15, 15, 15, 18, 18, 15]
-    };
-  }
+  return {
+    fileName: 'Top-N-Customer-Report',
+    sheetName: 'Top N Customer',
+    reportHeader: {
+      companyName: this.currentCompany?.companyName || 'Company',
+      reportTitle: 'Top N Customer Report',
+      additionalInfo: [
+        { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
+        { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+        { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+        { label: 'Dept', value: this.fullData?.departmentInvoled || '' },
+        { label: 'Top N', value: this.params?.TopN || '' }
+      ]
+    },
+    tableHeaders,
+    rows,
+    columnWidths: [30, 15, 15, 15, 15, 18, 18, 15]
+  };
+}
+
 
   private formatNumber(value: any): number | string {
     if (value === null || value === undefined) return '';

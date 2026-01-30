@@ -508,8 +508,8 @@
     </div>
 
     <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.f['isVesselFreeText']?.value">
-      <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="form-control" />
+    <div *ngIf="this.f['isVesselFreeText']?.value" class="mt-md-1">
+      <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="custom-input-field sm" style="width: 85%" />
       <button class="btn bi bi-calendar3 pe-0 ps-3" type="button"
         (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -553,8 +553,8 @@
     </div>
 
     <!-- Manual Text Input -->
-    <div class="input-group" *ngIf="this.f['isVoyageFreeText']?.value">
-      <input type="text" formControlName="VoyageNo" placeholder=""  [textWithNumbers]="10" class="form-control" />
+    <div class="mt-md-1" *ngIf="this.f['isVoyageFreeText']?.value">
+      <input type="text" formControlName="VoyageNo" placeholder=""  [textWithNumbers]="10" class="custom-input-field sm" style="width: 85%"/>
       <button class="btn bi bi-calendar3 pe-0" type="button"
         (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>

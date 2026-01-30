@@ -1,15 +1,5 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-     <div style="text-align: center;">
-        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
-        </h4>
-        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
-        </h5>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
-            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-    </div>
+    <app-print-header></app-print-header>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
         {{ params?.BLIssue ? ' BL Issue List' : 'BL Not Issue List' }}

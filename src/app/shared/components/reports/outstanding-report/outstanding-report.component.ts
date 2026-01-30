@@ -6,11 +6,12 @@ import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { PrintHeaderComponent } from '../../print-header/print-header.component';
 
 @Component({
   selector: 'app-outstanding-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
   templateUrl: './outstanding-report.component.html',
   styles: ``
 })
