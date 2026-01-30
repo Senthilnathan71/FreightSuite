@@ -6,11 +6,12 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
+import { PrintHeaderComponent } from '../../print-header/print-header.component';
 
 @Component({
   selector: 'app-vat-payable',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
   templateUrl: './vat-payable.component.html',
   styles: ``
 })

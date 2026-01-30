@@ -5027,4 +5027,15 @@ isHBLNoValid(): boolean {
   // Return false (disable button) when HBLNo has any value
   return !hblNo || hblNo.trim() === '';
 }
+  onStatusChange(){
+    const status = this.b['status']?.getRawValue();
+    const hblNo = this.b['HBLNo']?.getRawValue();
+    if (hblNo && (status === 'Suspended' || !status)) {
+      this.appSettingService.showWarning(
+        `This booking cannot be suspended.\n\nHouse Job with HBL No: ${hblNo} is associated with it.`
+      );
+      this.b['status']?.setValue('Active');
+    }
+  }
+
 }

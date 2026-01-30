@@ -2,9 +2,9 @@
 
     <div class="row compact-form">
         <div class="col-12">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="row  mb-2 align-items-center pt-1 mx-0">
                 <div class="col-md-4 pb-2">
-                    <h4 class="page-title mb-0">Edoc</h4>
+                    <h5 class="page-title mb-0">Edoc</h5>
                     <!-- <button type="button" class="btn-close" aria-label="Close"></button> -->
                 </div>
                 <div class="col-md-8 pb-2">
@@ -181,7 +181,7 @@
                             </aside>
 
                             <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select mt-md-1">
+                                <div class="custom-form-group custom-form-group-select mt-md-1"  [class.filled]="!!edocform.get('EdocStatus')?.value">
                                     <ng-select formControlName="EdocStatus" [items]="modeOfStatus" bindLabel="name"
                                         bindValue="id">
                                     </ng-select>
@@ -229,7 +229,7 @@
 
 
                             <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
-                                <div class="custom-form-group">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!edocform.get('FollowupAction')?.value">
 
                                     <ng-select formControlName="FollowupAction" [items]="modeOfAction" bindLabel="name"
                                         bindValue="name">

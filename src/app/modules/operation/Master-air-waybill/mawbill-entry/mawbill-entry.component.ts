@@ -300,24 +300,24 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-     console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
+    //  console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
      const storedMenuId = localStorage.getItem('currentMenuId');
      this.mps.init().subscribe();
-  console.log('📋 localStorage currentMenuId:', storedMenuId);
+  // console.log('📋 localStorage currentMenuId:', storedMenuId);
   
   this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
-  console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
+  // console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
-      console.log('📋 Filter Option:', this.filterOption);
-  console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
+      // console.log('📋 Filter Option:', this.filterOption);
+  // console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
 
     this.loadHSSACLookups();
     this.loadInitialData().subscribe(() => {
@@ -363,16 +363,16 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.operationService.getAllHssac().subscribe({
       next: (resp: any) => {
         this.hssacList = resp || [];
-        console.log('HSSAC List loaded:', this.hssacList);
+        // console.log('HSSAC List loaded:', this.hssacList);
       },
       error: (err) => {
-        console.error('Error loading HSSAC data:', err);
+        // console.error('Error loading HSSAC data:', err);
         this.hssacList = [];
       }
     });
   }
   patchLoadingPlanData(data : any){
-    console.log(data);
+    // console.log(data);
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     selectedDepartment ? this.onDeptChange(selectedDepartment) : null;
     const selectedPOL = this.portList.find(port => port.PortCode === data.POL);
@@ -702,7 +702,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.chargeList = charge || [];
-    console.log(this.chargeList,"CHARGELIST")
+    // console.log(this.chargeList,"CHARGELIST")
     // Update all customer type lists with data from the new API
     this.agentList = agents.data ;
     this.carrierList = carriers.data;
@@ -957,7 +957,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         voyage = data.voyages[0];
       }
 
-      console.log('Voyage data for patching PortCutoffDate:', voyage);
+      // console.log('Voyage data for patching PortCutoffDate:', voyage);
       this.masterJobForm.patchValue({
         MasterJobVoyageSid: voyage.MasterJobVoyageSid,
         VoyageMasterSid: voyage.VoyageMasterSid,
@@ -1418,8 +1418,8 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     formData['shipmentList'] = [...allShipments];
 
     // Debug to check the payload
-    console.log('Form Data to be saved:', formData);
-    console.log('Others data:', othersData);
+    // console.log('Form Data to be saved:', formData);
+    // console.log('Others data:', othersData);
 
     if (this.isEditMode && this.masterJobSid) {
         formData.MasterJobSid = this.masterJobSid;
@@ -1695,7 +1695,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
   // Add connection change handler
   handleConnectionChange(allConnections: any[]) {
-    console.log('Connections changed:', allConnections);
+    // console.log('Connections changed:', allConnections);
     if (allConnections && allConnections.length >= 0) {
       this.connectionResult = [...allConnections];
     }
@@ -1755,24 +1755,24 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
   // Add sync method for Edoc
 syncFormValueWithEdocComponent() {
-  console.log('🔍 === syncFormValueWithEdocComponent START ===');
+  // console.log('🔍 === syncFormValueWithEdocComponent START ===');
   
   // Log all relevant properties
-  console.log('📋 Current Component State:');
-  console.log('  - masterJobSid:', this.masterJobSid);
-  console.log('  - MenuMasterSid:', this.MenuMasterSid);
-  console.log('  - currentCompany:', this.currentCompany);
-  console.log('  - currentBranch:', this.currentBranch);
-  console.log('  - isEditMode:', this.isEditMode);
+  // console.log('📋 Current Component State:');
+  // console.log('  - masterJobSid:', this.masterJobSid);
+  // console.log('  - MenuMasterSid:', this.MenuMasterSid);
+  // console.log('  - currentCompany:', this.currentCompany);
+  // console.log('  - currentBranch:', this.currentBranch);
+  // console.log('  - isEditMode:', this.isEditMode);
   
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
   const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
   
-  console.log('📊 Form Values:');
-  console.log('  - CompanyMasterSid:', CompanyMasterSid);
-  console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
-  console.log('  - MasterJobNumber:', MasterJobNumber);
+  // console.log('📊 Form Values:');
+  // console.log('  - CompanyMasterSid:', CompanyMasterSid);
+  // console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
+  // console.log('  - MasterJobNumber:', MasterJobNumber);
   
   this.currentEdocFormValue = {
     CompanyMasterSid,
@@ -1781,7 +1781,7 @@ syncFormValueWithEdocComponent() {
     MasterJobNumber: MasterJobNumber,
   };
 
-  console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
+  // console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
 
   const data: any = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -1790,11 +1790,11 @@ syncFormValueWithEdocComponent() {
     DocumentSid: this.masterJobSid,
   };
 
-  console.log('🚀 Data being set to commonService:');
-  console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
-  console.log('  - BranchMasterSid:', data.BranchMasterSid);
-  console.log('  - MenuMasterSid:', data.MenuMasterSid);
-  console.log('  - DocumentSid:', data.DocumentSid);
+  // console.log('🚀 Data being set to commonService:');
+  // console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
+  // console.log('  - BranchMasterSid:', data.BranchMasterSid);
+  // console.log('  - MenuMasterSid:', data.MenuMasterSid);
+  // console.log('  - DocumentSid:', data.DocumentSid);
   
   // Check if any values are null/undefined
   const missingFields = [];
@@ -1806,30 +1806,30 @@ syncFormValueWithEdocComponent() {
   if (missingFields.length > 0) {
     console.warn('⚠️  Missing fields:', missingFields);
   } else {
-    console.log('✅ All fields are present');
+    // console.log('✅ All fields are present');
   }
 
-  console.log('📤 Setting data to commonService.documentData...');
+  // console.log('📤 Setting data to commonService.documentData...');
   this.commonService.documentData.set(data);
   
   // Verify the data was set
   const currentData = this.commonService.documentData();
-  console.log('✅ Data in commonService after set:', currentData);
+  // console.log('✅ Data in commonService after set:', currentData);
   
-  console.log('🔍 === syncFormValueWithEdocComponent END ===');
+  // console.log('🔍 === syncFormValueWithEdocComponent END ===');
 }
 
 // Add handler for Edoc data changes
 handleEdocChange(event: any) {
-  console.log('📨 === handleEdocChange START ===');
-  console.log('Event received:', event);
+  // console.log('📨 === handleEdocChange START ===');
+  // console.log('Event received:', event);
   
   this.edocData = event.dataItems || [];   
   this.currentEdocFormValue = event.formData; 
   
-  console.log('📊 Updated edocData:', this.edocData);
-  console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
-  console.log('📨 === handleEdocChange END ===');
+  // console.log('📊 Updated edocData:', this.edocData);
+  // console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
+  // console.log('📨 === handleEdocChange END ===');
 }
 
   // Add sync method for Email component

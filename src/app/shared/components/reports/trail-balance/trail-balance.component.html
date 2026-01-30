@@ -1,15 +1,5 @@
-<div class="print-a4">
-    <div style="text-align: center;">
-        <h4 style="margin: 0; font-weight: 800;">{{ currentCompany?.companyName || 'Company Name' }}
-        </h4>
-        <h5 style="margin: 0; font-weight: 800;">{{ currentBranch?.branchName || 'Company Branch' }}
-        </h5>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-            currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
-            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-    </div>
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
 
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
@@ -48,6 +38,10 @@
                     <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
                     <p class="ms-1">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
                 </div>
+                <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
+                    <p class="ms-1">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</p>
+                </div>
             </div>
         </div>
         <div>
@@ -60,6 +54,7 @@
                             <th class="bg-transparent text-light text-center">Group</th>
                             <th class="bg-transparent text-light text-center">Sub Group</th>
                             <th class="bg-transparent text-light">Ledger</th>
+                            <th class="bg-transparent text-light" *ngIf="params?.Subledger">Subledger</th>
                             <th class="bg-transparent text-light">Opening Debit</th>
                             <th class="bg-transparent text-light">Opening Credit</th>
                             <th class="bg-transparent text-light">Current Debit</th>
@@ -81,10 +76,39 @@
                             <!-- LEDGER ROWS -->
                             <tr *ngFor="let item of group.items">
 
-                              <td>{{item.Category}}</td>
-                                <td>{{item.GroupName}}</td>
-                                <td>{{item.SubGroupName}}</td>
-                                <td>{{item.LedgerName}}</td>
+                                <!-- TYPE -->
+                                <td>
+                                    <ng-container *ngIf="!params?.Subledger || item.showType">
+                                        {{ item.Category }}
+                                    </ng-container>
+                                </td>
+
+                                <!-- GROUP -->
+                                <td>
+                                    <ng-container *ngIf="!params?.Subledger || item.showGroup">
+                                        {{ item.GroupName }}
+                                    </ng-container>
+                                </td>
+
+                                <!-- SUB GROUP -->
+                                <td>
+                                    <ng-container *ngIf="!params?.Subledger || item.showSubGroup">
+                                        {{ item.SubGroupName }}
+                                    </ng-container>
+                                </td>
+
+                                <!-- LEDGER -->
+                                <td>
+                                    <ng-container *ngIf="!params?.Subledger || item.showLedger">
+                                        {{ item.LedgerName }}
+                                    </ng-container>
+                                </td>
+
+                                <!-- SUBLEDGER -->
+                                <td *ngIf="params?.Subledger ||  item.Subledger">
+                                    {{ item.SubledgerName }}
+                                </td>
+
                                 <td class="text-end">{{item.OpeningDebit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{item.OpeningCredit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{item.CurrentDebit | number:'1.2-2'}}</td>
@@ -97,8 +121,9 @@
 
                             <!-- SUBGROUP TOTAL -->
                             <tr class="bg-light fw-bold" *ngIf="params?.SubTotal">
-                                <td colspan="3" class="text-end"><strong>Total</strong></td>
-                                <td></td>
+                                <td [attr.colspan]="params?.Subledger ? 5 : 4" class="text-end"><strong>Total</strong>
+                                </td>
+                                <!-- <td></td> -->
                                 <td class="text-end">{{group.totals.OpeningDebit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{group.totals.OpeningCredit | number:'1.2-2'}}</td>
                                 <td class="text-end">{{group.totals.CurrentDebit | number:'1.2-2'}}</td>
@@ -112,7 +137,7 @@
 
                         <!-- GRAND TOTAL (NO ngFor) -->
                         <tr class="bg-secondary text-white fw-bold" *ngIf="data?.grandTotal">
-                            <td colspan="4" class="text-end">Grand Total</td>
+                            <td [attr.colspan]="params?.Subledger ? 5 : 4" class="text-end">Grand Total</td>
                             <!-- <td></td> -->
                             <td class="text-end">{{data.grandTotal.TotalOpeningDebit | number:'1.2-2'}}</td>
                             <td class="text-end">{{data.grandTotal.TotalOpeningCredit | number:'1.2-2'}}</td>
@@ -126,12 +151,12 @@
                     </tbody>
 
                     <ng-template #noRecords>
-    <tr>
-        <td colspan="11" class="text-center fw-bold py-1">
-            No Records Found
-        </td>
-    </tr>
-</ng-template>
+                        <tr>
+                            <td colspan="12" class="text-center fw-bold py-1">
+                                No Records Found
+                            </td>
+                        </tr>
+                    </ng-template>
 
                 </table>
             </div>

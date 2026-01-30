@@ -420,7 +420,7 @@ editJournalVoucher(item: any): void {
   }
 
   onTableFilterChange(filters: TableFilter[]): void {
-    console.log('Filters changed:', filters);
+    // console.log('Filters changed:', filters);
   }
 
   report(): void {

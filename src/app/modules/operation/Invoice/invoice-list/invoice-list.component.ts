@@ -459,7 +459,7 @@ navigateToBooking(row: any): void {
   onTableFilterChange(filters: TableFilter[]): void {
     // For now, we'll handle this with the existing search functionality
     // In a more advanced implementation, you could apply individual column filters
-    console.log('Filters changed:', filters);
+    // console.log('Filters changed:', filters);
   }
 
   report(): void {

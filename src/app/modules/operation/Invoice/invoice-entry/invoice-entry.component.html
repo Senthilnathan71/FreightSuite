@@ -1550,17 +1550,17 @@
   <!-- Print Modal Template -->
   <ng-template #printModal let-modal>
     <div
-      class="modal-header modalHeaderpart d-flex justify-content-between align-items-cente"
+      class="modal-header modalHeaderpart d-flex justify-content-between align-items-center"
     >
       <h5 class="modal-title">Invoice</h5>
       <div class="d-flex gap-1 align-items-center">
-        <button
+        <!-- <button
           type="button"
           class="btn btn-sm btn-warning rounded-5 py-0"
           (click)="printDiv('printContent')"
         >
           <i class="fas fa-print me-1"></i> Print
-        </button>
+        </button> -->
         <button
           type="button"
           class="btn btn-sm btn-danger rounded-5 py-0"
@@ -1582,6 +1582,7 @@
         ></button>
       </div>
     </div>
+
     <div class="modal-body">
       <div id="printContent" class="p-1">
         <div
@@ -1907,7 +1908,7 @@
 
               <div style="display: flex">
   <div style="width: 180px; font-weight: bolder">
-    <strong>Job No. / Job Date</strong>
+    <strong>Job No.</strong>
   </div>
 
   <div *ngIf="invoicePrintData?.MasterJobNumber || invoicePrintData?.MasterJobDate">
@@ -1918,12 +1919,13 @@
 
     <span
       *ngIf="invoicePrintData?.MasterJobNumber && invoicePrintData?.MasterJobDate">
-      -
+      
     </span>
 
-    <span *ngIf="invoicePrintData?.MasterJobDate">
+    <!-- <span *ngIf="invoicePrintData?.MasterJobDate">
       {{ invoicePrintData.MasterJobDate  | formatDate}}
-    </span>
+    </span> -->
+
   </div>
 </div>
 
@@ -2535,41 +2537,58 @@
           </div>
 
           <!-- Bank Details -->
-          <div *ngIf="bankDetails" style="padding: 0 20px; font-size: 16px">
-            <h4 style="font-weight: bolder; margin-top: 12px; margin-bottom: 0">
-             <strong> Bank Details</strong>
-            </h4>
-            <!-- <div style="display:flex;">
-            <div style="width:180px; font-size:12px;"><strong>Account Name</strong></div>
-            <div style="font-size:12px;">: {{bankDetails.BeneficiaryName}}</div>
-          </div> -->
-            <div style="display: flex">
-              <div style="width: 165px; font-size: 16px; font-weight: bolder">
-                <strong>Account No.</strong>
-              </div>
-              <div style="font-size: 16px">
-                : {{ bankDetails.BankAccountNo }}
-              </div>
-            </div>
-            <div style="display: flex; font-size: 16px">
-              <div style="width: 165px; font-weight: bolder">
-                <strong>Bank Name</strong>
-              </div>
-              <div style="font-size: 16px">: {{ bankDetails.BankName }}</div>
-            </div>
-            <div style="display: flex; font-size: 16px">
-              <div style="width: 165px; font-weight: bolder" >
-                <strong>{{isVATMode?'IBAN':"IFSC"}}</strong>
-              </div>
-              <div style="font-size: 16px">: {{ bankDetails.IFSCCode }}</div>
-            </div>
-            <div style="display: flex; font-size: 16px">
-              <div style="width: 165px; font-weight: bolder">
-                <strong>Address</strong>
-              </div>
-              <div style="font-size: 16px">: {{ bankDetails.BankAddress }}</div>
-            </div>
-          </div>
+       <div *ngIf="bankDetails && bankDetails.length > 0" style="padding: 0 20px; font-size: 16px">
+  <h4 style="font-weight: bolder; margin-top: 12px; margin-bottom: 0">
+    <strong> Bank Details</strong>
+  </h4>
+  
+  <!-- Loop through each bank detail -->
+  <div *ngFor="let bankDetail of bankDetails; let i = index" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+    <h5 *ngIf="bankDetails.length > 1" style="margin-bottom: 10px; color: #555;">
+      Bank {{ i + 1 }}
+    </h5>
+    
+    <!-- <div style="display:flex;">
+      <div style="width:180px; font-size:12px;"><strong>Account Name</strong></div>
+      <div style="font-size:12px;">: {{ bankDetail.BeneficiaryName }}</div>
+    </div> -->
+    
+    <div style="display: flex">
+      <div style="width: 165px; font-size: 16px; font-weight: bolder">
+        <strong>Account No.</strong>
+      </div>
+      <div style="font-size: 16px">
+        : {{ bankDetail.BankAccountNo }}
+      </div>
+    </div>
+    
+    <div style="display: flex; font-size: 16px">
+      <div style="width: 165px; font-weight: bolder">
+        <strong>Bank Name</strong>
+      </div>
+      <div style="font-size: 16px">: {{ bankDetail.BankName }}</div>
+    </div>
+    
+    <div style="display: flex; font-size: 16px">
+      <div style="width: 165px; font-weight: bolder">
+        <strong>{{ isVATMode ? 'IBAN' : 'IFSC' }}</strong>
+      </div>
+      <div style="font-size: 16px">: {{ bankDetail.IFSCCode }}</div>
+    </div>
+    
+    <div style="display: flex; font-size: 16px">
+      <div style="width: 165px; font-weight: bolder">
+        <strong>Address</strong>
+      </div>
+      <div style="font-size: 16px">: {{ bankDetail.BankAddress }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Show message if no bank details -->
+<div *ngIf="isBankFetched && (!bankDetails || bankDetails.length === 0)" style="padding: 0 20px; font-size: 16px; color: #888;">
+  No bank details available
+</div>
 
           <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px">
             <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
@@ -2629,6 +2648,7 @@
         </div>
       </div>
     </div>
+    
   </ng-template>
   <!-- Email Modal Template -->
   <ng-template #emailModal let-modal>

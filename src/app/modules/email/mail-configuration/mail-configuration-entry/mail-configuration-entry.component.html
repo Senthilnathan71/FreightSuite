@@ -9,11 +9,11 @@
 
 <div class="row compact-form">
   <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+    <div class="">
+      <div class=" d-flex justify-content-between align-items-center py-2">
         <h5 class="mb-0">Mail Configuration</h5>
         <div>
-          <button type="button" class="btn btn-sm btn-success me-2" (click)="addRow()">
+          <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
             <i class="fas fa-plus me-1"></i> Add Row
           </button>
           <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
@@ -24,67 +24,67 @@
 
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-bordered table-sm mb-0">
+          <table class="table table-borderless table-sm mb-0">
             <thead>
-              <tr>
-                <th class="text-center bg-success text-white" style="width: 60px;">Action</th>
-                <th class="text-center bg-success text-white" style="width: 60px;">Sno</th>
-                <th class="bg-success text-white" style="width: 150px;">Mail Name</th>
-                <th class="bg-success text-white" style="width: 150px;">Menu/Component</th>
-                <th class="bg-success text-white" style="width: 200px;">Mail Subject</th>
-                <th class="bg-success text-white" style="min-width: 250px;">Mail Body</th>
-                <th class="bg-success text-white" style="width: 130px;">To Email From</th>
-                <th class="bg-success text-white" style="width: 130px;">CC Email From</th>
-                <th class="text-center bg-success text-white" style="width: 90px;">Attachment</th>
-                <th class="text-center bg-success text-white" style="width: 90px;">Auto/Popup</th>
+              <tr class="bg-info">
+                <th class="text-center  bg-transparent text-light" style="width: 60px;"></th>
+                <th class="text-center bg-transparent text-light bg-transparent text-light" style="width: 40px;">Sno</th>
+                <th class=" bg-transparent text-light" style="width: 150px;">Mail Name</th>
+                <th class=" bg-transparent text-light" style="width: 150px;">Menu/Component</th>
+                <th class=" bg-transparent text-light" style="width: 200px;">Mail Subject</th>
+                <th class=" bg-transparent text-light" style="min-width: 250px;">Mail Body</th>
+                <th class=" bg-transparent text-light" style="width: 130px;">To Email From</th>
+                <th class=" bg-transparent text-light" style="width: 130px;">CC Email From</th>
+                <th class="text-center  bg-transparent text-light" style="width: 90px;">Attachment</th>
+                <th class="text-center  bg-transparent text-light" style="width: 90px;">Auto/Popup</th>
               </tr>
             </thead>
             <tbody>
               @for (row of rows; track row.Sno; let i = $index) {
                 <tr>
                   <!-- Action Buttons -->
-                  <td class="p-1">
-                    <div class="action-buttons">
+                  <td >
+                    <div class="d-flex align-items-center">
                       @if (row.isEditing) {
-                        <button type="button" class="btn-action btn-save" (click)="saveRow(i)" title="Save">
-                          <i class="fas fa-save"></i>
+                        <button type="button" class="btn  btn-sm" (click)="saveRow(i)" title="Save">
+                          <i class="fas fa-save fs-2 text-info"></i>
                         </button>
-                        <button type="button" class="btn-action btn-cancel" (click)="cancelEdit(i)" title="Cancel">
-                          <i class="fas fa-times"></i>
+                        <button type="button" class="btn btn-sm" (click)="cancelEdit(i)" title="Cancel">
+                          <i class="fas fa-times fs-2 text-danger"></i>
                         </button>
                       } @else {
-                        <button type="button" class="btn-action btn-edit" (click)="editRow(i)" title="Edit">
-                          <i class="fas fa-edit"></i>
+                        <button type="button" class="btn btn-sm" (click)="editRow(i)" title="Edit">
+                          <i class="fas fa-edit fs-2 text-secondary"></i>
                         </button>
-                        <button type="button" class="btn-action btn-delete" (click)="deleteRow(i)" title="Delete">
-                          <i class="fas fa-trash"></i>
+                        <button type="button" class="btn  btn-sm" (click)="deleteRow(i)" title="Delete">
+                          <i class="fas fa-trash fs-2 text-danger"></i>
                         </button>
                       }
                     </div>
                   </td>
 
                   <!-- Sno -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <input type="number" class="form-control form-control-sm text-center"
-                        [(ngModel)]="row.Sno" min="1" max="999" style="width: 50px;">
+                      <input type="number" class="custom-input-field sm"
+                        [(ngModel)]="row.Sno" min="1" max="999" style="width: 40px;">
                     } @else {
                       <span class="d-block text-center">{{ row.Sno }}</span>
                     }
                   </td>
 
                   <!-- Mail Name -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <input type="text" class="form-control form-control-sm"
-                        [(ngModel)]="row.MailName" maxlength="50" placeholder="Enter mail name">
+                      <input type="text" class="custom-input-field sm"
+                        [(ngModel)]="row.MailName" maxlength="50" placeholder="">
                     } @else {
                       <span>{{ row.MailName }}</span>
                     }
                   </td>
 
                   <!-- Menu/Component -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
                       <ng-select
                         [(ngModel)]="row.MenuMasterSid"
@@ -95,7 +95,7 @@
                         [clearable]="true"
                         [searchable]="true"
                         appendTo="body"
-                        class="custom-ng-select">
+                        class="ng-select">
                       </ng-select>
                     } @else {
                       <span>{{ getMenuName(row.MenuMasterSid) }}</span>
@@ -103,20 +103,20 @@
                   </td>
 
                   <!-- Mail Subject -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <input type="text" class="form-control form-control-sm"
-                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder="Enter subject">
+                      <input type="text" class="custom-input-field sm"
+                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder="">
                     } @else {
                       <span>{{ row.MailSubject }}</span>
                     }
                   </td>
 
                   <!-- Mail Body -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <textarea class="form-control form-control-sm"
-                        [(ngModel)]="row.MailBody" rows="2" maxlength="2000" placeholder="Enter mail body">
+                      <textarea class="custom-input-field sm"
+                        [(ngModel)]="row.MailBody" rows="1" maxlength="2000" placeholder="">
                       </textarea>
                     } @else {
                       <span class="mail-body-text">{{ row.MailBody }}</span>
@@ -124,27 +124,27 @@
                   </td>
 
                   <!-- To Email From -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <input type="text" class="form-control form-control-sm"
-                        [(ngModel)]="row.ToEmailidFrom" maxlength="200" placeholder="e.g., Quotation email">
+                      <input type="text" class="custom-input-field sm"
+                        [(ngModel)]="row.ToEmailidFrom" maxlength="200" placeholder="">
                     } @else {
                       <span>{{ row.ToEmailidFrom }}</span>
                     }
                   </td>
 
                   <!-- CC Email From -->
-                  <td class="p-1">
+                  <td >
                     @if (row.isEditing) {
-                      <input type="text" class="form-control form-control-sm"
-                        [(ngModel)]="row.CcEmailidFrom" maxlength="200" placeholder="e.g., Organization email">
+                      <input type="text" class="custom-input-field sm"
+                        [(ngModel)]="row.CcEmailidFrom" maxlength="200" placeholder="">
                     } @else {
                       <span>{{ row.CcEmailidFrom }}</span>
                     }
                   </td>
 
                   <!-- Attachment -->
-                  <td class="p-1 text-center">
+                  <td class=" text-center">
                     @if (row.isEditing) {
                       <ng-select
                         [(ngModel)]="row.AttachmentRequire"
@@ -154,7 +154,7 @@
                         [clearable]="false"
                         [searchable]="false"
                         appendTo="body"
-                        class="custom-ng-select">
+                        class="ng-select">
                       </ng-select>
                     } @else {
                       <span>{{ row.AttachmentRequire === 'Y' ? 'Yes' : 'No' }}</span>
@@ -162,7 +162,7 @@
                   </td>
 
                   <!-- Auto/Popup -->
-                  <td class="p-1 text-center">
+                  <td class=" text-center">
                     @if (row.isEditing) {
                       <ng-select
                         [(ngModel)]="row.AutoPopup"
@@ -172,7 +172,7 @@
                         [clearable]="false"
                         [searchable]="false"
                         appendTo="body"
-                        class="custom-ng-select">
+                        class="ng-select">
                       </ng-select>
                     } @else {
                       <span>{{ row.AutoPopup === 'A' ? 'Auto' : 'Popup' }}</span>

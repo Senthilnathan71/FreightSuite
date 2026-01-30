@@ -393,16 +393,16 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/trial-balance/report',
-        emailSubjectTemplate: 'Trail_Balance Report - Ledger: {GroupName}',
+        emailSubjectTemplate: 'Trail_Balance Report - Group: {GroupName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Trail Balance Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Please find attached the <strong>Trail Balance Report</strong> for Group: <strong>{GroupName}</strong></p>
             <p>Best regards,</p>
           </div>
         `,
         modalSize: 'xl',
-        pdfOrientation: 'portrait'
+        pdfOrientation: 'landscape'
       });
 
     } catch (error) {

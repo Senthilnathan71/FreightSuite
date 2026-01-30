@@ -56,10 +56,10 @@ export class CashReceiptComponent {
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     this.loadCityName()
     this.loadCurrencyList()
-    console.log("Current Country Code", this.currentUserCountryCode);
-    console.log("Current Country", this.currentUserCountry);
-    console.log("CURRENT COMPANY", this.currentCompany);
-    console.log("CURRENT BRANCH", this.currentBranch);
+    // console.log("Current Country Code", this.currentUserCountryCode);
+    // console.log("Current Country", this.currentUserCountry);
+    // console.log("CURRENT COMPANY", this.currentCompany);
+    // console.log("CURRENT BRANCH", this.currentBranch);
   }
 
   constructor(
@@ -76,7 +76,7 @@ export class CashReceiptComponent {
     const bank = this.bankTypedLedgers.find(
       (b) => b.COAMasterSid == COAMasterSid
     );
-    console.log(bank, 'BANK');
+    // console.log(bank, 'BANK');
     return bank ? bank.LedgerName : '';
   }
 
@@ -158,7 +158,7 @@ getAmountInWords(): string {
       next: (response: any) => {
         this.currency = response|| [];
         this.numberToWords.initializeCurrencies(this.currency);
-        console.log('Currency List:', this.currency);
+        // console.log('Currency List:', this.currency);
       },
       error: (error) => {
         console.error('Failed to load currencies:', error);
@@ -172,13 +172,13 @@ getAmountInWords(): string {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
+        // console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
+          // console.log("Final City Name:", this.currentBranchCityName);
         }
 
 

@@ -95,12 +95,19 @@ export function getConcatenatedPorts(portName: String, portCode: String): string
 }
 
 // Converts a JS Date to NgbDateStruct
-export function toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+export function toNgbDateStruct(
+  date: Date | string | null
+): NgbDateStruct | null {
   if (!date) return null;
+
+  const d = (date instanceof Date) ? date : new Date(date);
+
+  if (isNaN(d.getTime())) return null;
+
   return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate()
+    year: d.getFullYear(),
+    month: d.getMonth() + 1,
+    day: d.getDate()
   };
 }
 
