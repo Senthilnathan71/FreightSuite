@@ -93,14 +93,14 @@
 
           <div class="buttons">
             <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
-              [disabled]="!isEditMode || !rateFormArray?.length" title="Generate Invoice/Voucher from rates">
+              [disabled]="!isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Generate Invoice/Voucher from rates">
               <i class="fas fa-file-invoice me-1"></i>
               Generate Voucher
             </button>
-            <button class="btn btn-sm btn-info" (click)="addRateRow()">
+            <button class="btn btn-sm btn-info" (click)="addRateRow()" [disabled]="!isHBLNoValid()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid" [disabled]="!isHBLNoValid()">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
 

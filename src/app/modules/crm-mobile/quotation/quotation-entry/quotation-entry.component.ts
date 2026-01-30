@@ -672,6 +672,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteDate: [today],
       EnquirySid: [''],
       AgreedRate : [false],
+      BookingHeaderSid: [null],
       IsContract:[false],
       RateLock: [false],
       ContactPerson:[''],
@@ -1571,7 +1572,9 @@ isRateLockDisabled(): boolean {
     });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
-    
+     if (response.BookingHeaderSid) {
+    this.quotationForm.get('status')?.disable();
+  }
     // Track if any carrier is approved
     let hasApprovedCarrier = false;
     

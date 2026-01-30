@@ -559,7 +559,7 @@
               </ng-select>
               <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
             </div>
-          </aside>
+          </aside>  
           <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
@@ -569,6 +569,22 @@
               <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
             </div>
           </aside>
+          <!-- External Note -->
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <textarea rows="2" class="form-control custom-input-field" formControlName="ExternalNote"></textarea>
+              <label class="input-label">External Note</label>
+            </div>
+          </aside>
+          
+          <!-- Internal Note -->
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <textarea rows="2" class="form-control custom-input-field" formControlName="InternalNote"></textarea>
+              <label class="input-label">Internal Note</label>
+            </div>
+          </aside>
+
 
         </div>
       </div>

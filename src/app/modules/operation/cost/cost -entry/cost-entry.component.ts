@@ -1669,6 +1669,11 @@ createRateFormGroup(data?: any): FormGroup {
 
 
   openVoucherTypeModal() {
+     if (!this.isVoucherGenerationAllowed()) {
+        const status = this.parentFormValue?.status;
+        this.appSettingService.showWarning(`Cannot generate voucher. Booking status is '${status || 'Invalid'}'`);
+        return;
+    }
     if (!this.isEditMode || !this.rateFormArray?.length) {
       this.appSettingService.showWarning('No rates available for voucher generation');
       return;
@@ -1708,6 +1713,7 @@ createRateFormGroup(data?: any): FormGroup {
           ...rate,
           RateSid : rate.BookingRatesSid,
           ParentSid : rate.BookingHeaderSid,
+          status:rate.status,
           RevenueCustomerMasterSid : rate.CustomerMasterSid,
           RevenueCustomerBranchSid : rate.CustomerBranchSid,
           CostAgentMasterSid : rate.AgentMasterSid,
@@ -3720,6 +3726,23 @@ private getTaxGroupSidFromCharge(charge: any): number | null {
     });
   }
 
-
+isVoucherGenerationAllowed(): boolean {
+    if (this.screenName !== 'Booking') {
+        return true;
+    }
+    
+    const status = this.parentFormValue?.status;
+    return status === 'Active' || status === 'A';
+}
+isHBLNoValid(): boolean {
+    if (this.screenName !== 'Booking') {
+        return true;
+    }
+    
+    const HBLNo = this.parentFormValue?.HBLNo;
+    // Return true when HBLNo is null/undefined/empty (button enabled)
+    // Return false when HBLNo has a value (button disabled)
+    return !HBLNo;
+}
 
 }

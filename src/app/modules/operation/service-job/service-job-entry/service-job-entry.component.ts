@@ -355,7 +355,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MovementType: [null],
       FreightTerms: [null],
       ModeOfTransport: [null],
-      StuffingAt: ['Dock']
+      StuffingAt: ['Dock'],
+      ExternalNote: [''],
+    InternalNote: ['']
     })
     this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(this.cargoForm);
@@ -463,6 +465,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
     const cargoData = response.Cargo[0];
+    const othersData = response.Others?.[0];
     this.cargoForm.patchValue({
       HouseJobCargoSid: cargoData?.HouseJobCargoSid || null,
       CargoType: cargoData?.CargoType,
@@ -477,7 +480,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport: cargoData?.ModeOfTransport,
-      StuffingAt: cargoData?.StuffingAt
+      StuffingAt: cargoData?.StuffingAt,
+      ExternalNote: othersData?.ExternalNote || '',
+      InternalNote: othersData?.InternalNote || ''
     })
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
     
@@ -521,12 +526,12 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const isRateValid = this.costEntryComponent?.validateRateArray?.();
-    console.log(isRateValid);
-    if (!isRateValid) {
-      console.warn('Rate validation failed — submission stopped');
-      return;
-    }
+    // const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    // console.log(isRateValid);
+    // if (!isRateValid) {
+    //   console.warn('Rate validation failed — submission stopped');
+    //   return;
+    // }
     const serviceFormValue = this.serviceJobForm.getRawValue();
     const cargoFormValue = this.cargoForm.getRawValue();
 
@@ -566,6 +571,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
         Qty: 0,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
         WeightUnitSid: null
+      },
+      houseJobOthers: {
+        ExternalNote: cargoFormValue.ExternalNote || "",
+        InternalNote: cargoFormValue.InternalNote || ""
       },
       costRevenueCharges: this.serviceJobRateResults.map(rate => ({
         RateSid: rate.RateSid || null,

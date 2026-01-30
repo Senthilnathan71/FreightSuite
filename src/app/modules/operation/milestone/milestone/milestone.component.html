@@ -5,7 +5,7 @@
                
             </div>
             <div class="toolbar-right">
-                 <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)">
+                 <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)" [disabled]="!isHBLNoValid()">
                     <i class="fas fa-plus"></i> Add Milestone
                 </button>
                 <button class="table-action-btn export" (click)="reportMilestones()">

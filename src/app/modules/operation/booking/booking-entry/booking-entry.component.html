@@ -23,7 +23,7 @@
   <button class="btn btn-sm btn-info" 
            (click)="onGenerateJob()" 
           appPreventMultiClick
-          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed'">
+          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed' || bookingForm.get('status')?.getRawValue() === 'Suspended'">
     <i class="fas fa-save me-1"></i>
     <span>Generate Job</span>
   </button>
@@ -84,7 +84,7 @@
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"
           (click)="onSubmit()"  
-          [disabled]="(!mps.can('update') && isEditMode) || isSaving" >
+          [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid() " >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
     <span *ngIf="isFormDirty()"
@@ -170,16 +170,19 @@
     <label for="job-type-input" class="input-label">Job Type</label>
   </div>
 </div>
-      <div class="smart-field-group">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="HBLNo">
-          <label for="text-input" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+        <div class="smart-field-group">
+          <div class="custom-form-group">
+            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+            [style]="b['HBLNo']?.value ? 
+        'color: red !important;' : 
+        ''"
+              formControlName="HBLNo">
+            <label for="text-input" [ngClass]="{
+              'input-label': true,
+              'bg-transparent': !b['HBLNo']?.getRawValue()
+            }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+          </div>
         </div>
-      </div>
       <div class="smart-field-group">
         <aside>
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('status')?.value">
@@ -390,8 +393,8 @@
 
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="this.b['isShipperFreeText']?.value">
-                        <input type="text" formControlName="ShipperName" placeholder="" class="form-control" />
-                        <button class="btn bi bi-calendar3 " type="button"
+                        <input type="text" formControlName="ShipperName" placeholder="" class="custom-input-field sm" style="width:85%"/>
+                        <button class="btn bi bi-calendar3 pe-0" type="button"
                           (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown">
                           </i>
@@ -475,7 +478,7 @@
                         </dofi-searchable-dropdown>
 
                         <!-- Swap icon -->
-                        <button class="btn  bi bi-calendar3  " type="button"
+                        <button class="btn  bi bi-calendar3  pe-0 " type="button"
                           (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry">
                           </i>
@@ -484,8 +487,8 @@
 
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="this.b['isConsigneeFreeText']?.value">
-                        <input type="text" formControlName="ConsigneeName" placeholder="" class="form-control" />
-                        <button class="btn bi bi-calendar3 " type="button"
+                        <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width:85%" />
+                        <button class="btn bi bi-calendar3 pe-0" type="button"
                           (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown">
                           </i>
@@ -567,7 +570,7 @@
 
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="this.b['isNotifyFreeText']?.value">
-                        <input type="text" formControlName="Notify" placeholder="" class="form-control" />
+                        <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width:85%"/>
                         <button class="btn bi bi-calendar3 px-0 " type="button"
                           (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown">
@@ -670,7 +673,7 @@
 
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="this.b['isCarrierFreeText']?.value">
-                        <input type="text" formControlName="CarrierName" placeholder="" class="form-control" />
+                        <input type="text" formControlName="CarrierName" placeholder="" class="custom-input-field sm" style="width:85%" />
                         <button class="btn bi bi-calendar3 pe-0 " type="button"
                           (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown">
@@ -1412,7 +1415,7 @@
           <div class="toolbar-left"></div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="!isHBLNoValid()">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -1547,7 +1550,7 @@
                     </button>
                   </td>
                   <td>
-  <div class="custom-form-group custom-form-group-select inputChnages"
+  <div class="custom-form-group custom-form-group-select inputChnages my-0"
        [class.filled]="!!product.get('ProductName')?.value">
     
     <!-- Dropdown mode -->
@@ -1566,7 +1569,7 @@
       </dofi-searchable-dropdown>
       
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 pe-0" type="button"
+      <button class="btn bi bi-calendar3 p-0" type="button"
               (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
@@ -1576,7 +1579,7 @@
     <div class="input-group" *ngIf="product.get('isProductFreeText')?.value">
       <input type="text" formControlName="ProductName" 
              placeholder="" class="form-control" />
-      <button class="btn bi bi-calendar3 pe-0" type="button"
+      <button class="btn bi bi-calendar3 p-0" type="button"
               (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
@@ -2226,6 +2229,7 @@
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
       <app-connection screenName="Booking" [connectionIdField]="'BookingConnectionSid'" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
         [minDate]="minStartDate" [portList]="portList"  [vesselList]="vesselList"
+        [hblNo]="b['HBLNo']?.value" 
         (dataEmitter)="handleConnectionChange($event)">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
@@ -2238,6 +2242,7 @@
         screenName="Booking" 
         [resetTrigger]="resetTriggerMilestone"
         [shipmentNo]="bookingHeader?.ShipmentNo" 
+        [hblNo]="b['HBLNo']?.value"
         (dataEmitter)="handleMilestoneChange($event)"
         
       ></app-milestone>
@@ -2819,9 +2824,9 @@
         <div class="spinner-overlay">
           <div class="spinner"></div>
         </div>
-           <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"  *ngIf="b['JobType']?.value !== 'Transhipment'" (click)="printDiv('printContent')" >
+           <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"  *ngIf="b['JobType']?.value !== 'Transhipment'" (click)="printDiv('printContent')" >
             <i class="fas fa-download me-1"></i> Print
-        </button>
+        </button> -->
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF('booking')">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>

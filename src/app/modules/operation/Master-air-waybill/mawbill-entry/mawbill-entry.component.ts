@@ -1452,29 +1452,33 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
             }
         });
     } else {
-         this.operationService.createMasterJob(formData).subscribe({
-            next: (response: any) => {
-                this.isLoading = false;
-                if (response.status) {
-                    if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
-                        const deptType = this.selectedDepartment?.ExportImport?.toUpperCase();
-                        let successMessage = 'Master Job created successfully';
-                        
-                        if (deptType === 'EXPORT') {
-                            successMessage = `Master Job created successfully. MAWB Allocated: ${response.newMasterJob.MBLNo}`;
-                        } else if (deptType === 'IMPORT') {
-                            successMessage = `Master Job created successfully. MAWB: ${response.newMasterJob.MBLNo}`;
-                        }
-                        
-                        this.toastr.success(successMessage, 'Success', { timeOut: 5000 });
-                    } else {
-                        this.toastr.success('Master Job created successfully');
-                    }
-                    this.router.navigate(['/operation/mawbill/list']);
-                } else {
-                    this.toastr.error(response.message || 'Failed to create Master Job');
-                }
-            },
+    this.operationService.createMasterJob(formData).subscribe({
+  next: (response: any) => {
+    this.isLoading = false;
+
+    if (response.status) {
+
+      const masterJobSid = response.data?.newMasterJob?.MasterJobSid;
+
+      if (this.isAirDepartment && response.data?.newMasterJob?.MBLNo) {
+
+        let successMessage = 'Master Job created successfully';
+
+        if (masterJobSid) {
+          this.toastr.success(successMessage);
+          this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+          return; // ✅ stop list navigation
+        }
+      }
+
+      this.toastr.success('Master Job created successfully');
+      this.router.navigate(['/operation/mawbill/list']);
+
+    } else {
+      this.toastr.error(response.message || 'Failed to create Master Job');
+    }
+  },
+
             error: (error) => {
                 this.isLoading = false;
                 if (error.error?.message?.includes('No free MAWB stock available')) {

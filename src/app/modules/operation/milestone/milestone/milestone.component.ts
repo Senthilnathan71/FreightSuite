@@ -47,6 +47,7 @@ export class MilestoneComponent implements OnInit {
 
 
   @Input() screenName: string;
+  @Input() hblNo: string;
    private _shipmentNo: string;
    @Input()
   get shipmentNo(): string {
@@ -321,4 +322,15 @@ export class MilestoneComponent implements OnInit {
     });
 }
 
+isHBLNoValid(): boolean {
+    // Only apply this validation for Booking screen
+    if (this.screenName !== 'Booking') {
+      return true;
+    }
+    
+    // Return true (enable button) when HBLNo is null/undefined/empty string
+    // Return false (disable button) when HBLNo has any value
+    return !this.hblNo || this.hblNo.trim() === '';
+  }
+  
 }

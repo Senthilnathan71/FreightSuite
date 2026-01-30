@@ -38,7 +38,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
   ],
 })
 export class ConnectionComponent implements OnInit {
-
+  @Input() hblNo: string;
   page1 = 1;
   pageSize1 = 5;
   currentConnectIndex: number;
@@ -679,6 +679,16 @@ getVoyageLabel(): string {
       title: companyName
     });
   }
-
+isHBLNoValid(): boolean {
+    // Only apply this validation for Booking screen
+    if (this.screenName !== 'Booking') {
+      return true;
+    }
+    
+    // Return true (enable button) when HBLNo is null/undefined/empty string
+    // Return false (disable button) when HBLNo has any value
+    return !this.hblNo || this.hblNo.trim() === '';
+  }
+  
 
 }

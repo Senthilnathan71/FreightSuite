@@ -131,7 +131,10 @@
             <!-- Posted On (readonly) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="PostedOn" formControlName="PostedOn" placeholder="" class="custom-input-field sm"
+                <input type="text" id="PostedOn" formControlName="PostedOn" 
+                placeholder=""ngbDatepicker #d4="ngbDatepicker"
+                 (click)="d4.toggle()"  class="custom-input-field sm" 
+                  [class.is-invalid]="isFieldInvalid('PostedOn')" 
                   readonly />
                 <label for="PostedOn" class="input-label">Posted On</label>
               </div>

@@ -161,6 +161,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   currentBranch: any;
   MenuMasterSid: any;
   filterOption: any;
+  isFormDisabled: boolean = false;
   private hasShownVesselWarning = false;
   public rateComponent = CostEntryComponent;
   public ArApcomponent = ArApComponent;
@@ -1372,6 +1373,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if(response.BookingNo){
       this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     }
+      const hasHBLNo = response.HBLNo && response.HBLNo.trim() !== '' && 
+                   response.HBLNo !== null && response.HBLNo !== undefined;
+  
+  if (hasHBLNo) {
+    // Disable all form fields if HBLNo exists
+    this.disableAllForms();
+  }
     // this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1434,6 +1442,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
+    if (hasHBLNo) {
+    this.b['HBLNo']?.disable();
+  }
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
@@ -3083,11 +3094,15 @@ getVesselVoyBasedOnPorts() {
     const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
     const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
+    const status=this.b['status']?.value;
+    const HBLNo = this.b['HBLNo']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingNumber,
+      status,
+      HBLNo,
       ParentSid : BookingHeaderSid,
       CustomerMasterSid,
       CustomerBranchSid,
@@ -4929,5 +4944,87 @@ toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string,
 getProductFormGroup(index: number): FormGroup {
   return this.bookingProducts.at(index) as FormGroup;
 }
+/**
+ * Disables all form fields in the booking screen
+ */
+private disableAllForms(): void {
+  // Disable booking form controls
+  Object.keys(this.bookingForm.controls).forEach(key => {
+    // Keep some fields enabled if needed (like status or readonly fields)
+    if (!['status'].includes(key)) {
+      this.bookingForm.get(key)?.disable();
+    }
+  });
 
+  // Disable cargo form controls
+  Object.keys(this.cargoForm.controls).forEach(key => {
+    this.cargoForm.get(key)?.disable();
+  });
+
+  // Disable other form controls
+  Object.keys(this.otherForm.controls).forEach(key => {
+    this.otherForm.get(key)?.disable();
+  });
+
+  // Disable CRO form controls
+  Object.keys(this.croForm.controls).forEach(key => {
+    this.croForm.get(key)?.disable();
+  });
+
+  // Disable all product controls
+  this.bookingProducts.controls.forEach((product: FormGroup) => {
+    Object.keys(product.controls).forEach(key => {
+      product.get(key)?.disable();
+    });
+  });
+
+  // Disable child components
+  this.isFormDisabled = true;
+  
+  // Also disable tabs/actions if needed
+  this.showGenerateJobButton = false;
+}
+
+/**
+ * Enables all form fields in the booking screen
+ */
+private enableAllForms(): void {
+  // Enable booking form controls except some
+  Object.keys(this.bookingForm.controls).forEach(key => {
+    if (key !== 'DepartmentMasterSid' && key !== 'CustomerMasterSid') {
+      this.bookingForm.get(key)?.enable();
+    }
+  });
+
+  // Enable cargo form controls
+  Object.keys(this.cargoForm.controls).forEach(key => {
+    this.cargoForm.get(key)?.enable();
+  });
+
+  // Enable other form controls
+  Object.keys(this.otherForm.controls).forEach(key => {
+    this.otherForm.get(key)?.enable();
+  });
+
+  // Enable CRO form controls
+  Object.keys(this.croForm.controls).forEach(key => {
+    this.croForm.get(key)?.enable();
+  });
+
+  // Enable all product controls
+  this.bookingProducts.controls.forEach((product: FormGroup) => {
+    Object.keys(product.controls).forEach(key => {
+      product.get(key)?.enable();
+    });
+  });
+
+  this.isFormDisabled = false;
+}
+isHBLNoValid(): boolean {
+    const hblNo = this.b['HBLNo']?.value;
+  
+  // Return true (enable button) when HBLNo is null/undefined/empty string
+  // Return false (disable button) when HBLNo has any value
+  return !hblNo || hblNo.trim() === '';
+}
 }

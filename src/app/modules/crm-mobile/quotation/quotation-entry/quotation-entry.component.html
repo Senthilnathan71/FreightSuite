@@ -375,8 +375,9 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('status')?.value">
-                <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-
+                <ng-select formControlName="status" [items]="modeOfStatus" 
+                bindLabel="name" bindValue="name"[disabled]="quotationForm.get('BookingHeaderSid')?.value">
+  
                 </ng-select>
                 <label for="" class="input-label">Status <span class="text-danger"></span></label>
               </div>
@@ -791,7 +792,7 @@
        *ngIf="isEditMode && isRouteApproved(routeIndex)">
     <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
             (click)="goForBookingCreationForRoute(routeIndex)"
-            [disabled]="!isContractValid() || doesBookingExistForRoute(routeIndex) || !isQuotationSavedAfterApproval(routeIndex)">
+            [disabled]="!isContractValid() || doesBookingExistForRoute(routeIndex) || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'">
       <!-- Show appropriate text based on contract status and booking existence -->
       @if(doesBookingExistForRoute(routeIndex) && quotationForm.get('IsContract')?.value) {
         <i class="fas fa-plus me-1"></i> Create Booking
@@ -2773,9 +2774,9 @@
       </h5>
     <div class="d-flex gap-2 align-items-center">
 
-        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
-           <i class="fas fa-print me-1"></i> Print
-        </button>
+        // <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
+        //    <i class="fas fa-print me-1"></i> Print
+        // </button>
       <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
         <i class="fas fa-download me-1"></i> Download PDF
       </button>
