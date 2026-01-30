@@ -3068,7 +3068,10 @@ getChargeTaxPercentage(charge: any): string {
         DocumentDate: null,
         SetoffStatus: null,
         TaxType: this.isIndianCompany() ? 'GST' : (this.isUAECompany() ? 'VAT' : (this.isUSCompany() ? 'TAX' : null)),
-        BookingHeaderSid: this.screenName === 'Booking' ? this.getParentSid() : null,
+        BookingHeaderSid: 
+        this.screenName === 'Booking' ? this.getParentSid() : (
+          this.screenName === 'House Job' || this.screenName === "House Air Waybill" ? this.parentFormValue.BookingHeaderSid : null
+        ),
         YearMasterSid : currentYearId ?? null,
       };
       console.log("Header payload",headerDetails)
