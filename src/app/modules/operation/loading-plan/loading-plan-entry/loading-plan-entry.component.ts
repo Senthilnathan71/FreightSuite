@@ -1023,12 +1023,12 @@ formatContainerNumber(): void {
     const shipmentList = this.selectedBookings.map(booking => {
       return {
         BookingHeaderSid: booking.BookingHeaderSid,
-        HBLNo: booking.HBLNo,
+        HouseJobSid: booking.HouseJobSid ?? null,
         JobType: booking.JobType
       }
     });
     const payload = {
-      CreatedBy: userEmail,
+      createdBy: userEmail,
       MenuMasterSid: currentMenuId,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,

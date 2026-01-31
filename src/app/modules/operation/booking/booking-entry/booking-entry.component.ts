@@ -756,6 +756,7 @@ subscribeToFormChanges() {
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
+      HouseJobSid:[null],
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
@@ -1375,11 +1376,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }
       const hasHBLNo = response.HBLNo && response.HBLNo.trim() !== '' && 
                    response.HBLNo !== null && response.HBLNo !== undefined;
+      const hasHouseJobSid = response.HouseJobSid || null;
+                   if(hasHBLNo || hasHouseJobSid){
+                     this.disableAllForms();
+                   }
   
-  if (hasHBLNo) {
-    // Disable all form fields if HBLNo exists
-    this.disableAllForms();
-  }
+
     // this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1407,6 +1409,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       QuotationHeaderSid: response.QuotationHeaderSid,
       QuoteRouteSid: response.QuoteRouteSid,
       HBLNo: response.HBLNo,
+      HouseJobSid: response.HouseJobSid,
       MBLNo: response.MBLNo,
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
       status: response.status === "A" ? "Active" : "Suspended",
@@ -1442,9 +1445,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
-    if (hasHBLNo) {
-    this.b['HBLNo']?.disable();
-  }
+    if (hasHBLNo||hasHouseJobSid) {
+      this.b['HBLNo']?.disable();
+      this.b['HouseJobSid']?.disable();
+    }
+   
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
@@ -1915,6 +1920,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
       QuoteRouteSid: QuoteRouteSid, 
       HBLNo: bookingFormValue.HBLNo || '',
+      HouseJobSid: bookingFormValue.HouseJobSid || '',
       MBLNo: bookingFormValue.MBLNo || '',
       MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,
       status: bookingFormValue.status === 'Active' ? 'A' : 'S',
@@ -3095,7 +3101,8 @@ getVesselVoyBasedOnPorts() {
     const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
     const status=this.b['status']?.value;
-    const HBLNo = this.b['HBLNo']?.value;
+    const HBLNo = this.b['HBLNo']?.getRawValue()||'';
+    const HouseJobSid = this.b['HouseJobSid']?.getRawValue()||'';
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -3103,6 +3110,7 @@ getVesselVoyBasedOnPorts() {
       BookingNumber,
       status,
       HBLNo,
+      HouseJobSid,
       ParentSid : BookingHeaderSid,
       CustomerMasterSid,
       CustomerBranchSid,
@@ -4075,14 +4083,14 @@ deepEqual(obj1: any, obj2: any): boolean {
 
   const shipmentList = [{
     BookingHeaderSid: this.BookingHeaderSid,
-    HBLNo: this.b['HBLNo']?.value || '',
+    HouseJobSid: this.b['HouseJobSid']?.getRawValue() || null,
   }];
 
   const isHaz = this.c['CargoType']?.value === 'Haz';
 
 
   const payload = {
-    CreatedBy: userEmail,
+    createdBy: userEmail,
     MenuMasterSid: currentMenuId,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -4615,6 +4623,7 @@ loadBookingARAPData() {
                     CurrencyCode: item.CurrencyCode,
                     LocalAmount: Number(item.LocalAmount) || 0,
                     HBLNo: item.HBLNo || '-',
+                    HouseJobSid: item.HouseJobSid || '-',
                     PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
                 }));
                 
@@ -5030,7 +5039,8 @@ isHBLNoValid(): boolean {
   onStatusChange(){
     const status = this.b['status']?.getRawValue();
     const hblNo = this.b['HBLNo']?.getRawValue();
-    if (hblNo && (status === 'Suspended' || !status)) {
+    const houseJobSid = this.b['HouseJobSid']?.getRawValue();
+    if (hblNo|| houseJobSid && (status === 'Suspended' || !status)) {
       this.appSettingService.showWarning(
         `This booking cannot be suspended.\n\nHouse Job with HBL No: ${hblNo} is associated with it.`
       );

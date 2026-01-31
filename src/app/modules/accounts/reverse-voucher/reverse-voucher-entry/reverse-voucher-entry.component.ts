@@ -77,6 +77,8 @@ export class ReverseVoucherEntryComponent {
     coaList: any[] = [];
     MenuMasterSid: any;
     currentMenuId: number;
+    totalCredits: number = 0;
+    totalDebits: number = 0;
   TandCList: any[]=[];
   currentClauseId: any;
     costCenterList: any[] = [];
@@ -299,6 +301,14 @@ export class ReverseVoucherEntryComponent {
       this.reverseVoucherForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
         this.recalculateAllRows();
       });
+       this.details.valueChanges.subscribe(() => {
+    this.validateAmount();
+  });
+
+  // Also call validateAmount initially
+  setTimeout(() => {
+    this.validateAmount();
+  }, 100);
     }
   
     initForm() {
@@ -943,6 +953,7 @@ export class ReverseVoucherEntryComponent {
   
     // Update Bill Amount
     this.updateBillAmount();
+    this.validateAmount();
     // this.calculateTDS();
   }
   
@@ -995,6 +1006,7 @@ export class ReverseVoucherEntryComponent {
   
       // Subscribe to changes for auto-calculation
       this.subscribeToRowChanges(newRow);
+      this.validateAmount();
     }
   
     subscribeToRowChanges(row: FormGroup) {
@@ -2282,7 +2294,7 @@ export class ReverseVoucherEntryComponent {
         this.appSettingService.showError('Please add at least one detail row');
         return;
       }
-  
+      
       const payload = this.preparePayload();
       this.isSaving = true;
       this.spinner.show();
@@ -2401,6 +2413,7 @@ export class ReverseVoucherEntryComponent {
     removeDetailRow(index: number) {
     if (this.details.length > index) this.details.removeAt(index);
     this.recalculateAllRows();
+    this.validateAmount();
   }
 
   getPostStatusDisplay(): string {
@@ -2493,4 +2506,29 @@ showInfo() {
   openFollowup() {
 
   }
+
+validatePartyMatchingAmount() {
+  // Check if debits and credits are balanced
+  const isBalanced = Math.abs(this.totalDebits - this.totalCredits) < 0.01;
+  return !isBalanced; // Returns true if unbalanced
+}
+  validateAmount() {
+  let totalCredits = 0;
+  let totalDebits = 0;
+  
+  // Use getRawValue() to get values from disabled controls
+  const details = this.details.getRawValue() || [];
+  
+  details.forEach((vd) => {
+    const amount = Number(vd.Amount) || 0;
+    if (vd.DrCr === 'C') {
+      totalCredits += amount;
+    } else if (vd.DrCr === 'D') {
+      totalDebits += amount;
+    }
+  });
+  
+  this.totalCredits = totalCredits;
+  this.totalDebits = totalDebits;
+}
 }

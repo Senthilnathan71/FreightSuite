@@ -4543,7 +4543,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
     }
 
     const QuoteData = quoteResponse.data;
-
+    
     
     // Get the specific route data
     const routeData = QuoteData.quoteRoute?.[routeIndex] || {};

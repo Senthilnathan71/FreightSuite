@@ -19,7 +19,7 @@
     </div>
 
     <div class="header-actions">
-      <div class="action-group" *ngIf="showGenerateJobButton && isEditMode && bookingData">
+      <div class="action-group" *ngIf="showGenerateJobButton && isEditMode && bookingData && !bookingData.HouseJobSid">
   <button class="btn btn-sm btn-info" 
            (click)="onGenerateJob()" 
           appPreventMultiClick

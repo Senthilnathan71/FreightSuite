@@ -145,7 +145,7 @@
             <td class="d-flex pt-1">
               <!-- Change the delete button condition -->
               <button class="action-icon delete py-0" (click)="deleteRate(i,row.value.RateSid)"
-                [disabled]="!canEditRate(i) || rateFormArray.length === 1" [class.disabled]="rateFormArray.length === 1"
+                [disabled]="isFromQuotation(i)||!canEditRate(i) || rateFormArray.length === 1" [class.disabled]="rateFormArray.length === 1"
                 title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
                 <i class="fas fa-trash fs-2" [class.text-muted]="rateFormArray.length === 1"></i>
               </button>
@@ -178,7 +178,7 @@
                   </ng-select> -->
                       <dofi-searchable-dropdown [items]="filteredChargeList" formControlName="ChargeMasterSid" [placeholder]="''"
                         [displayFields]="chargeDropdownConfig.displayFields" [displayLabels]="chargeDropdownConfig.displayLabels"
-                        [labelFields]="chargeDropdownConfig.labelFields" [bindValue]="'ChargeMasterSid'" [disabled]="!canEditRate(i)"
+                        [labelFields]="chargeDropdownConfig.labelFields" [bindValue]="'ChargeMasterSid'" [disabled]="!canEditRate(i) || isFromQuotation(i)"
                         (itemSelected)="onChargeChangeForRow($event,i)" appendTo="body">
                       </dofi-searchable-dropdown>
                 </div>
@@ -186,7 +186,7 @@
               <td>
                 <div class="custom-form-group dofi-max-w-200 dofi-min-w-200">
                   <input type="text" id="text-input" class="custom-input-field sm" formControlName="ChargeDescription"
-                    [textWithNumbers]="100" [disabled]="!canEditRate(i)">
+                    [textWithNumbers]="100" [disabled]="!canEditRate(i) || isFromQuotation(i)">
                 </div>
               </td>
 
@@ -194,7 +194,7 @@
                 <div class="custom-form-group custom-form-group-select dofi-max-w-100">
                   <dofi-searchable-dropdown [items]="uomList" formControlName="ChargeUomSid" [placeholder]="''"
                         [displayFields]="uomDropdownConfig.displayFields" [displayLabels]="uomDropdownConfig.displayLabels"
-                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i)" appendTo="body">
+                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i) || isFromQuotation(i)" appendTo="body">
                   </dofi-searchable-dropdown>
 
                 </div>
@@ -204,7 +204,7 @@
                   <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
-                    [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
+                    [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
                 </div>
               </td>
             </tr>
@@ -260,7 +260,7 @@
                     <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" [disabled]="!canEditRate(i)" appendTo="body"> </ng-select> -->
                     <dofi-searchable-dropdown [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
                       [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+                      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i) || isFromQuotation(i)"
                       (itemSelected)="getRevenueExchangeRate(i, $event)" appendTo="body">
                     </dofi-searchable-dropdown>
                   </div>
@@ -269,7 +269,7 @@
                 <td>
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
-                      (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
+                      (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision
                       [DecimalPrecisionBefore]="4"
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
@@ -277,14 +277,14 @@
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
-                      (change)="calculateRevenueAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
+                      (change)="calculateRevenueAmount(i)" [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
-                      (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
+                      (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision
                       [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
                   </div>
@@ -299,7 +299,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-60">
-                    <ng-select formControlName="RevenueDrCr" appendTo="body">
+                    <ng-select formControlName="RevenueDrCr" appendTo="body" [disabled]="isFromQuotation(i)">
                       <ng-option value="D">Dr</ng-option>
                       <ng-option value="C">Cr</ng-option>
                     </ng-select>
