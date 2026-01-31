@@ -71,6 +71,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   IncoMasterSid!: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
+  isLogLoading: boolean = false;
   incoList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'IncoName';
@@ -964,19 +965,26 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.IncoMasterSid) return;
 
+    if (this.isLogLoading) {
+      return; 
+    }
+    this.isLogLoading = true; 
+
     this.masterService.getAuditLogs(
       'IncoMaster',
       this.IncoMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
+        this.isLogLoading = false;
+
+        const ignoredFields = ['UpdatedOn', 'UpdatedBy'];
 
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
           if (Object.keys(obj).length === 0) return [];
           return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .filter(([key]) => !ignoredFields.includes(key))
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
 
@@ -994,7 +1002,10 @@ export class IncoComponent extends BaseListComponent implements OnInit {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: (err) => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
     });
   }
 }

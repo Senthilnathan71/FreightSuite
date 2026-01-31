@@ -102,6 +102,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   MenuMasterSid: any;
   currentMenuId: number;
   TandCList: any;
+  isLogLoading: boolean = false;
 
   loading = true;
   // Alias for compatibility with existing template
@@ -758,7 +759,7 @@ editHssac(id: number, content: TemplateRef<any>) {
           (resp: any) => {
             console.log(resp.message);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
               this.loadHssacs()
@@ -965,12 +966,15 @@ editHssac(id: number, content: TemplateRef<any>) {
   // }
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.HSSACMasterSid) return;
+    if (this.isLogLoading) return; 
+    this.isLogLoading = true;
 
     this.masterService.getAuditLogs(
       'HSSACMaster',
       this.HSSACMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
+        this.isLogLoading = false;
         const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
         const formatFields = (val: any) => {
@@ -996,7 +1000,10 @@ editHssac(id: number, content: TemplateRef<any>) {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: err => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err)
+      }
     });
   }
 }
