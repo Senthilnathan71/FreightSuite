@@ -201,7 +201,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   hyperLinkInfo = {
     id : null,
     number : null,
-    path : null
+    path : null,
+    label : null
   }
   
   
@@ -1111,7 +1112,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     if(!this.isBankFetched){
       await this.getAndStoreBankDetails();
     }
-    const bankDetails = this.bankDetails ?? null;
+    const bankDetails = this.bankDetails ?? [];
     
     // Get Terms and Conditions if not already fetched 
     if(!this.TandCFetched) {
@@ -1247,6 +1248,7 @@ isSeaDepartment(): boolean {
 }
 
   gatherHyperLinkInfo(data){
+    const airDept = String(data.departmentMaster?.departmentType)?.toUpperCase() === 'AIR';
     const isHouseJobInvoice = data.HouseJobSid && data.MasterJobSid;
     const isMasterJobInvoice = data.MasterJobSid && !data.HouseJobSid;
     const isBookingInvoice = !!data.BookingHeaderSid;
@@ -1256,24 +1258,28 @@ isSeaDepartment(): boolean {
         id : data?.HouseJobSid,
         number : data?.houseJob?.HBLNo,
         path : `/operation/house-job/entry/${data.HouseJobSid}`,
+        label : airDept ? 'HAWBL No.' : 'HBL No.'
       }
     } else if (isMasterJobInvoice) {
       this.hyperLinkInfo = {
         id: data.MasterJobSid,
         number : data?.masterJob?.MasterJobNumber,
-        path: `/operation/master-job/entry/${data.MasterJobSid}`,
+        path: `/operation/${airDept ? 'mawbill' :  'master-job'}/entry/${data.MasterJobSid}`,
+        label : airDept ? 'MAWB No.' : 'MBL No.'
       }
     } else if (isBookingInvoice){
       this.hyperLinkInfo = {
         id: data.BookingHeaderSid,
         number : data?.BookingHeader?.BookingNo,
         path: `/operation/booking/entry/${data.BookingHeaderSid}`,
+        label : 'Booking No.'
       }
     } else {
       this.hyperLinkInfo = {
         id : null,
         number : null,
-        path : null
+        path : null,
+        label : null
       }
     }
 
@@ -2639,11 +2645,11 @@ isSeaDepartment(): boolean {
     try {
       const resp: any = await firstValueFrom(this.getBankDetails());
       this.isBankFetched = true;
-      this.bankDetails = resp?.status && resp.data ? resp.data : null;
+      this.bankDetails = resp?.status && resp.data ? resp.data : [];
 
     } catch (err) {
       console.error('Error fetching bank details', err);
-      this.bankDetails = null;
+      this.bankDetails = [];
     }
   }
 

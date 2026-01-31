@@ -162,23 +162,38 @@
                         <th class="bg-transparent text-light">Booking</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr *ngFor="let item of salesmanRows" style="white-space: nowrap;">
-                        <td>{{item.SalesmanName}}</td>
-                        <td class="text-end">{{item.TotalLeads}}</td>
-                        <td class="text-end">{{item.TotalOpportunity}}</td>
-                        <td class="text-end">{{ item.TotalMeetings}}</td>
-                        <td class="text-end">{{item.TotalEnquiries}}</td>
-                        <td class="text-end">{{item.TotalQuotations}}</td>
-                        <td class="text-end">{{item.TotalBookings}}</td>
-                    </tr>
+               <tbody>
 
-                    <tr *ngIf="salesmanRows.length === 0">
-                        <td colspan="9" class="text-center fw-bold py-1">
-                            No Record Found
+                <ng-container *ngFor="let dept of groupedSalesmanRows">
+
+                    <!-- Department Header Row -->
+                    <tr class="table-light fw-bold">
+                        <td colspan="7">
+                            {{ dept.DepartmentName }}
                         </td>
                     </tr>
+
+                    <!-- Salesman Rows -->
+                    <tr *ngFor="let item of dept.salesmen" style="white-space: nowrap;">
+                        <td>{{ item.SalesmanName }}</td>
+                        <td class="text-end">{{ item.TotalLeads }}</td>
+                        <td class="text-end">{{ item.TotalOpportunity }}</td>
+                        <td class="text-end">{{ item.TotalMeetings }}</td>
+                        <td class="text-end">{{ item.TotalEnquiries }}</td>
+                        <td class="text-end">{{ item.TotalQuotations }}</td>
+                        <td class="text-end">{{ item.TotalBookings }}</td>
+                    </tr>
+
+                </ng-container>
+
+                <tr *ngIf="groupedSalesmanRows.length === 0">
+                    <td colspan="7" class="text-center fw-bold py-1">
+                        No Record Found
+                    </td>
+                </tr>
+
                 </tbody>
+
             </table>
         </div>
 
@@ -273,7 +288,7 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of cashBankRows" style="white-space: nowrap;">
-                        <td>{{ item.Account }}</td>
+                        <td>{{ item.SubledgerName }}</td>
                         <td class="text-end">{{ item.DrAmount | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.CrAmount | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.Balance | number:'1.2-2' }}</td>

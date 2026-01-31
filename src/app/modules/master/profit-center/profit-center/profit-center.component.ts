@@ -70,6 +70,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   ProfitCenterMasterSid!: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
+  isLogLoading: boolean = false;
   profitCenterList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'ProfitCenterName';
@@ -603,19 +604,26 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ProfitCenterMasterSid) return;
 
+    if (this.isLogLoading) {
+      return; 
+    }
+    this.isLogLoading = true; 
+
     this.masterService.getAuditLogsProfitCenter(
       'ProfitCenterMaster',
       this.ProfitCenterMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['UpdatedOn']; // ✅ add more if needed later
+        this.isLogLoading = false;
+
+        const ignoredFields = ['UpdatedOn'];
 
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
           if (Object.keys(obj).length === 0) return [];
           return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .filter(([key]) => !ignoredFields.includes(key))
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
 
@@ -633,7 +641,10 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: (err) => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
     });
   }
 
@@ -694,7 +705,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
           (resp: any) => {
             console.log(resp.message);
             if (resp.Status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
               this.closeModal();
               // this.loadProfitCenters()
               this.searchProfitCenter();

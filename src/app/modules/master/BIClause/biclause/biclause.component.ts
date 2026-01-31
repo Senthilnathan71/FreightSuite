@@ -80,6 +80,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   loading = false;
   btnDisable = false;
   isEditMode = false;
+  isLogLoading: boolean = false;
   currentClauseId: number | null = null;
   userData: any;
   blclauseData: any;
@@ -584,11 +585,15 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.blclauseData?.BLClauseMasterSid) return;
  
+  if (this.isLogLoading) return; 
+  this.isLogLoading = true;
+
   this.masterService.getAuditLogsBlclause(
     'BLClauseMaster',
     this.blclauseData?.BLClauseMasterSid.toString()
   ).subscribe({
     next: (logs: any[]) => {
+      this.isLogLoading = false;
       const ignoredFields = ['updatedOn','updatedBy']; 
  
       const formatFields = (val: any) => {
@@ -614,7 +619,10 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
         windowClass: 'audit-log-modal'
       });
     },
-    error: err => console.error('Error fetching audit logs:', err)
+   error: err => {
+      this.isLogLoading = false; 
+      console.error('Error fetching audit logs:', err);
+    }
   });
 }
 

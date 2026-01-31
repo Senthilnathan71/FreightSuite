@@ -314,7 +314,7 @@
           ngbDropdownToggle>
         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
-        <div class="dropdown-menu w-100" style="max-height: 350px; min-width: 300px; overflow-y: auto;" ngbDropdownMenu>
+        <div class="dropdown-menu w-100" style="max-height: 350px; min-width: 200px; overflow-y: auto;" ngbDropdownMenu>
           <!-- Loading State -->
           <div *ngIf="isSearchingDocs" class="dropdown-item text-center py-3">
             <span class="spinner-border spinner-border-sm text-info me-2" role="status"></span>
@@ -345,10 +345,10 @@
                     'bg-warning text-dark': result.documentType === 'QUOTATION',
                     'bg-secondary': result.documentType !== 'BOOKING' && result.documentType !== 'MASTER_JOB' && result.documentType !== 'HOUSE_JOB' && result.documentType !== 'ENQUIRY' && result.documentType !== 'QUOTATION'
                   }"
-                  style="min-width: 85px; font-size: 0.75rem;">
+                  style="font-size: 0.75rem;">
                   {{ result.displayType }}
                 </span>
-                <span class="text-truncate" style="font-size: 0.9rem;">{{ result.documentNumber }}</span>
+                <span class="text-truncate" style="font-size: 0.9rem;" [ngbTooltip]="result.documentNumber">{{ result.documentNumber }}</span>
               </a>
             </div>
             <ng-template #noDocResults>
@@ -357,7 +357,7 @@
                   <i class="fas fa-search me-2"></i>No documents found
                 </span>
                 <span *ngIf="!docSearchInput?.value || docSearchInput?.value?.length < 3">
-                  <i class="fas fa-info-circle me-2"></i>Type at least 3 characters to search
+                  <i class="fas fa-info-circle me-1"></i>Type at least 3 characters
                 </span>
               </div>
             </ng-template>

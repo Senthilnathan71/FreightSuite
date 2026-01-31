@@ -86,6 +86,7 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[] = [];
   isFavorite: boolean = false;
+  isLogLoading: boolean = false;
   // sortColumn: string = 'GroupName';
   // sortDirection: string = 'asc';
   permissions: string[] = [];
@@ -640,11 +641,18 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ChargeGroupSid) return;
 
+    if (this.isLogLoading) {
+      return; 
+    }
+    this.isLogLoading = true; 
+
     this.masterService.getAuditLogsChargeGroups(
       'ChargeGroup',
       this.ChargeGroupSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
+        this.isLogLoading = false;
+
         const ignoredFields = ['updatedOn', 'updatedBy'];
 
         const formatFields = (val: any) => {
@@ -670,7 +678,10 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: (err) => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
     });
   }
 
