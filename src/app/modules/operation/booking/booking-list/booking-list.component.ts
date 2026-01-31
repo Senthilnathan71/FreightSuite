@@ -134,10 +134,10 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 status: item.status === 'A' ? 'Active' : 'Suspended',
                 BookingDateTime: this.datePipe.transform(item?.BookingDateTime),
                 // Extract MasterJobNumber from houseJob array
-                MasterJobNumber: this.getMasterJobNumber(item),
-                HouseJobSid : item.houseJob?.[0]?.HouseJobSid || null,
-                HBLNo : item.houseJob?.[0]?.HBLNo || '',
-                MasterJobSid: this.getMasterJobSid(item)
+                MasterJobNumber: item.houseJob?.masterJob?.MasterJobNumber || '',
+                HouseJobSid : item.houseJob?.HouseJobSid || null,
+                HBLNo : item.houseJob?.HBLNo || '',
+                MasterJobSid: item.houseJob?.masterJob?.MasterJobSid || null
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
             this.applySorting();
@@ -147,30 +147,6 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             this.allItems = [];
             this.totalLengthOfCollection = 0;
         }
-    }
-
-    // Helper method to extract MasterJobNumber from houseJob array
-    private getMasterJobNumber(item: any): string {
-        if (item.houseJob && item.houseJob.length > 0) {
-            // Find the first houseJob that has a masterJob with MasterJobNumber
-            const houseJobWithMaster = item.houseJob.find((hj: any) => 
-                hj.masterJob && hj.masterJob.MasterJobNumber
-            );
-            return houseJobWithMaster?.masterJob?.MasterJobNumber || '';
-        }
-        return '';
-    }
-
-    // Helper method to extract MasterJobSid from houseJob array
-    private getMasterJobSid(item: any): number | null {
-        if (item.houseJob && item.houseJob.length > 0) {
-            // Find the first houseJob that has a masterJob with MasterJobSid
-            const houseJobWithMaster = item.houseJob.find((hj: any) => 
-                hj.masterJob && hj.MasterJobSid
-            );
-            return houseJobWithMaster?.MasterJobSid || null;
-        }
-        return null;
     }
 
     protected override handleSearchError(error: any): void {
