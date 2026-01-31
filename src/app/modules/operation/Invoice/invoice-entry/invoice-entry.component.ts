@@ -1111,7 +1111,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     if(!this.isBankFetched){
       await this.getAndStoreBankDetails();
     }
-    const bankDetails = this.bankDetails ?? [];
+    const bankDetails = this.bankDetails ?? null;
     
     // Get Terms and Conditions if not already fetched 
     if(!this.TandCFetched) {
@@ -1239,7 +1239,7 @@ isSeaDepartment(): boolean {
     d => Number(d.DepartmentMasterSid) === Number(deptSid)
   );
 
-  // console.log('Dept SID:', deptSid, 'Found dept:', dept); 
+  console.log('Dept SID:', deptSid, 'Found dept:', dept); 
 
   if (!dept?.departmentType) return false;
 
@@ -2453,7 +2453,7 @@ isSeaDepartment(): boolean {
 
     try {
       await this.preparePrintData();
-      // console.log("PRINT DATA", this.invoicePrintData);
+      console.log("PRINT DATA", this.invoicePrintData);
       this.modalService.open(this.printModalRef, {
         size: 'xl',
         scrollable: true
@@ -2639,11 +2639,11 @@ isSeaDepartment(): boolean {
     try {
       const resp: any = await firstValueFrom(this.getBankDetails());
       this.isBankFetched = true;
-      this.bankDetails = resp?.status && resp.data ? resp.data : [];
+      this.bankDetails = resp?.status && resp.data ? resp.data : null;
 
     } catch (err) {
       console.error('Error fetching bank details', err);
-      this.bankDetails = [];
+      this.bankDetails = null;
     }
   }
 
@@ -2923,8 +2923,8 @@ isSeaDepartment(): boolean {
     };
     const formattedAmount = this.currencyFormatter.formatAmount(input, false);
     const digitForPadding = this.getAmountDecimalPlaces(CurrencyMasterSid);
-    // console.log("formattedAmount", formattedAmount);
-    // console.log("digitForPadding", digitForPadding);
+    console.log("formattedAmount", formattedAmount);
+    console.log("digitForPadding", digitForPadding);
     return Number(formattedAmount).toFixed(digitForPadding);
   }
 
