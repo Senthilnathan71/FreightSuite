@@ -1398,8 +1398,8 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         ATD: this.formatDate(formValue.ATD),
         DestinationATA: this.formatDate(formValue.DestinationATA),
         Haz: formValue.Haz ? 'Y' : 'N',
-        
-        CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+        updatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+        createdBy: this.appSettingsService.userSettingSource.value['userEmail'],
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Air Waybill") || Number(localStorage.getItem('currentMenuId')),
@@ -1412,7 +1412,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
       .map(shipment => {
         return {
           BookingHeaderSid: shipment.BookingHeaderSid,
-          HBLNo: shipment.HBLNo,
+          HouseJobSid: shipment.HouseJobSid,
         }
     });
     formData['shipmentList'] = [...allShipments];
