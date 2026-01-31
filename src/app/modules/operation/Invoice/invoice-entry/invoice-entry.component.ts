@@ -1111,7 +1111,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     if(!this.isBankFetched){
       await this.getAndStoreBankDetails();
     }
-    const bankDetails = this.bankDetails ?? null;
+    const bankDetails = this.bankDetails ?? [];
     
     // Get Terms and Conditions if not already fetched 
     if(!this.TandCFetched) {
@@ -2639,11 +2639,11 @@ isSeaDepartment(): boolean {
     try {
       const resp: any = await firstValueFrom(this.getBankDetails());
       this.isBankFetched = true;
-      this.bankDetails = resp?.status && resp.data ? resp.data : null;
+      this.bankDetails = resp?.status && resp.data ? resp.data : [];
 
     } catch (err) {
       console.error('Error fetching bank details', err);
-      this.bankDetails = null;
+      this.bankDetails = [];
     }
   }
 
