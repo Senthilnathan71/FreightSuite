@@ -234,7 +234,7 @@ calculateEndDate(startDate: any): any {
           (resp: any) => {
             console.log(resp.message);
             if(resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
               this.router.navigate(['master/year/list']);
             } else {
               this.appSettingService.showError(resp.message);

@@ -55,6 +55,9 @@ export class ComprehensiveManagementReportComponent {
     const SalesmanObj = this.fullData?.salesmanSummary;
     this.salesmanRows = SalesmanObj ? Object.values(SalesmanObj) : [];
 
+    this.salesmanRows = this.fullData?.salesmanSummary;
+    this.groupByDepartment(this.salesmanRows);
+
     const CustomerObj = this.fullData?.customerRows;
     this.customerRows = CustomerObj ? Object.values(CustomerObj) : [];
 
@@ -64,6 +67,26 @@ export class ComprehensiveManagementReportComponent {
     const CashOrBank = this.fullData?.AllCashAndBank;
     this.cashBankRows = CashOrBank ? Object.values(CashOrBank) : [];
   }
+
+  groupedSalesmanRows: any[] = [];
+
+    groupByDepartment(data: any[]) {
+      const map = new Map<number, any>();
+
+      data.forEach(item => {
+        if (!map.has(item.DepartmentMasterSid)) {
+          map.set(item.DepartmentMasterSid, {
+            DepartmentMasterSid: item.DepartmentMasterSid,
+            DepartmentName: item.DepartmentName,
+            salesmen: []
+          });
+        }
+        map.get(item.DepartmentMasterSid).salesmen.push(item);
+      });
+
+      this.groupedSalesmanRows = Array.from(map.values());
+    }
+
 
   get fullData(): any {
     return this.data || {};
