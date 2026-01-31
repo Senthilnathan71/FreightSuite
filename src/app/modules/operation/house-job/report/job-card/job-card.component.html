@@ -110,14 +110,31 @@
                         <div style="width:120px;font-weight: bolder;"><strong>POL</strong></div>
                         <div>: {{getPortName(housejobData?.POL)}}</div>
                     </div>
-                    <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:120px;font-weight: bolder;"><strong>POD</strong></div>
-                        <div>: {{getPortName(housejobData?.POD)}}</div>
-                    </div>
-                    <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:120px;font-weight: bolder;"><strong>FPD</strong></div>
-                        <div>: {{getPortName(housejobData?.FPD)}}</div>
-                    </div>
+                   <div style="display: flex; margin-bottom: 1px;">
+  <div style="width: 120px; font-weight: bolder; white-space: nowrap;">
+    <strong>POD</strong>
+  </div>
+
+  <div style="width: 10px;">:</div>
+
+  <div style="flex: 1;">
+    {{ getPortName(housejobData?.POD) }}
+  </div>
+</div>
+
+<div style="display: flex; margin-bottom: 1px;">
+  <div style="width: 120px; font-weight: bolder; white-space: nowrap;">
+    <strong>FPD</strong>
+  </div>
+
+  <div style="width: 10px;">:</div>
+
+  <div style="flex: 1;">
+    {{ getPortName(housejobData?.FPD) }}
+  </div>
+</div>
+
+
                     @if(selectedDepartmentType === 'SEA'){
                         <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Service Type</strong></div>
@@ -131,27 +148,27 @@
                 </div>
                 <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>{{ selectedDepartmentType === 'SEA' ? 'MBL No.' : 'MAWB No.'}}</strong></div>
+                        <div style="width:150px;font-weight: bolder;"><strong>{{ selectedDepartmentType === 'SEA' ? 'MBL No.' : 'MAWB No.'}}</strong></div>
                         <div>: {{housejobData?.masterJob?.MBLNo}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>Place of Receipt</strong></div>
+                        <div style="width:150px;font-weight: bolder;"><strong>Place of Receipt</strong></div>
                         <div>: {{getPortName(housejobData?.POO)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>Place of Delivery</strong></div>
+                        <div style="width:150px;font-weight: bolder;"><strong>Place of Delivery</strong></div>
                         <div>: {{getPortName(housejobData?.FPD)}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>ETA</strong></div>
+                        <div style="width:150px;font-weight: bolder;"><strong>ETA</strong></div>
                         <div>: {{ housejobData?.ETA | formatDate }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;font-weight: bolder;"><strong>ETD</strong></div>
+                        <div style="width:150px;font-weight: bolder;"><strong>ETD</strong></div>
                         <div>: {{ housejobData?.ETD | formatDate }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px; font-weight:bolder;">
+                        <div style="width:150px; font-weight:bolder;">
                             <strong>{{selectedDepartmentType === 'SEA' ? 'Vessel / Voy.' : 'Flight Name / No. '}}</strong>
                         </div>
                         <div>
@@ -164,11 +181,11 @@
 
 
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;"><strong>Carrier</strong></div>
+                        <div style="width:150px;"><strong>Carrier</strong></div>
                         <div>: {{ housejobData?.CarrierName }}</div>
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
-                        <div style="width:135px;"><strong>PP/CC</strong></div>
+                        <div style="width:150px;"><strong>PP/CC</strong></div>
                         <div>: {{ housejobData?.FreightTerms }}</div>
                     </div>
                 </div>
