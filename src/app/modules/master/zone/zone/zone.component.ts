@@ -72,6 +72,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   ZoneMasterSid!: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
+  isLogLoading: boolean = false;
   zoneList: any[] = [];
   statusList = ["Active", "Suspended"]
   modalRef!: NgbModalRef;
@@ -907,12 +908,16 @@ openEditModal(content: TemplateRef<any>, id: number): void {
 
   openAuditLogs(modal: TemplateRef<any>) {
   if (!this.ZoneMasterSid) return;
-
+  if (this.isLogLoading) {
+      return; 
+    }
+this.isLogLoading = true;
   this.masterService.getAuditLogs(
     'ZoneMaster',
     this.ZoneMasterSid.toString()
   ).subscribe({
     next: (logs: any[]) => {
+      this.isLogLoading = false;
       const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
 
       const formatFields = (val: any) => {
@@ -938,7 +943,9 @@ openEditModal(content: TemplateRef<any>, id: number): void {
         windowClass: 'audit-log-modal'
       });
     },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
+error: err => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }  });
 }
 }

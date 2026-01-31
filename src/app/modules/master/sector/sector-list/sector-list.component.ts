@@ -65,6 +65,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   @ViewChild('content') content: TemplateRef<any>
   sectorForm!: FormGroup;
   isEditMode: boolean = false;
+  isLogLoading: boolean = false;
   results: any[] = [];
   SectorMasterSid!: number;
   errorMessage: string = '';
@@ -958,22 +959,28 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   //     error: err => console.error('Error fetching audit logs:', err)
   //   });
   // }
-  openAuditLogs(modal: TemplateRef<any>) {
+ openAuditLogs(modal: TemplateRef<any>) {
     if (!this.SectorMasterSid) return;
 
+    if (this.isLogLoading) {
+      return; 
+    }
+    this.isLogLoading = true; 
     this.masterService.getAuditLogs(
       'SectorMaster',
       this.SectorMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+        this.isLogLoading = false;
+
+        const ignoredFields = ['updatedOn', 'updatedBy'];
 
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
           if (Object.keys(obj).length === 0) return [];
           return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .filter(([key]) => !ignoredFields.includes(key))
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
 
@@ -991,7 +998,10 @@ export class SectorComponent extends BaseListComponent implements OnInit {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: (err) => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
     });
   }
 
