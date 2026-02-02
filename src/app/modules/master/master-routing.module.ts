@@ -83,6 +83,8 @@ import { TaxGroupComponent } from './tax-group/tax-group/tax-group.component';
 import { TaxMasterComponent } from './tax-master/tax-master.component';
 import { CompanyConfigComponent } from './company/company-config/company-config.component';
 import { VoucherPeriodEntryComponent } from './voucher-period/voucher-period-entry/voucher-period-entry.component';
+import { StandardChargeListComponent } from './standard-charge/standard-charge-list/standard-charge-list.component';
+import { StandardChargeEntryComponent } from './standard-charge/standard-charge-entry/standard-charge-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1268,5 +1270,37 @@ export const MasterRoutes: Routes = [
       ]
     }
   },
-
+   {
+    path: 'standard-charge/list',
+    component: StandardChargeListComponent,
+    data: {
+      title: 'Standard Charge',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Standard Charge' },
+      ]
+    }
+  },
+    {
+    path: 'standard-charge/entry',
+    component: StandardChargeEntryComponent,
+    data: {
+      title: 'Standard Charge',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Standard Charge' },
+      ]
+    }
+  },
+    {
+    path: 'standard-charge/entry/:StdRateHeaderSid',
+    component: StandardChargeEntryComponent,
+    data: {
+      title: 'Standard Charge',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Standard Charge' },
+      ]
+    }
+  },
 ];

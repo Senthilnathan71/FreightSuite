@@ -1,0 +1,208 @@
+<form [formGroup]="standardChargeForm">
+
+    <div class="row compact-form">
+        <div class="col-12 px-0">
+            <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+                <div class="col-md-4 d-flex pb-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="brand-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h5 class="page-title mb-0 text-info">Standard Charge</h5>
+                    </div>
+                </div>
+                <div class="col-md-8 pb-1">
+                    <div
+                        class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-history me-1"></i>Logs
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="goBack()">
+                            <i class="fas fa-chevron-left me-1"></i>Back
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="reset()">
+                            <i class="fas fa-sync-alt me-1"></i>Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSubmit()">
+                            <i class="fas fa-save me-1"></i>Save
+                        </button>
+
+                        <!-- <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+                            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                                ngbDropdownToggle>
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                                <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                    (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                                <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem
+                                    appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i>
+                                    Terms & Condition</button>
+                                <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem
+                                    appPreventMultiClick (click)="openAuthority()"><i
+                                        class="fas fa-shield-alt me-1"></i> Authorize</button>
+                                <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                    (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                                <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark"
+                                    (click)="openFollowup()">
+                                    <i class="fas fa-paperclip me-1"></i> Followup
+                                </button>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEADER FORM -->
+        <div class="col-md-12 px-0">
+            <div class="card h-100 mb-0">
+                <div class="card-body">
+                    <div class="row">
+                        <aside class="col-md-3 d-md-block d-none"></aside>
+
+                        <div class="col-md-2">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!standardChargeForm.get('DepartmentMasterSid')?.value">
+                                <dofi-searchable-dropdown #departmentLookup [items]="departments"
+                                    formControlName="DepartmentMasterSid" id="" placeholder=""
+                                    [displayFields]="departmentLookupConfig.displayFields"
+                                    [displayLabels]="departmentLookupConfig.displayLabels"
+                                    [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid">
+                                </dofi-searchable-dropdown>
+                                <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+                                @if(standardChargeForm.get('DepartmentMasterSid')?.touched &&
+                                standardChargeForm.get('DepartmentMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(standardChargeForm.get('DepartmentMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </div>
+
+                        <aside class="col-md-2">
+                            <div class="custom-form-group">
+                                <textarea class="custom-input-field sm" rows="1" formControlName="Remarks"
+                                    placeholder=""></textarea>
+                                <label class="input-label">Remarks</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-2">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!standardChargeForm.get('Status')?.value">
+                                <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
+                                    formControlName="Status">
+                                </ng-select>
+                                <label class="input-label">Status</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-2 d-md-block d-none"></aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-0 mt-1">
+            <div class="card-body py-0">
+                <div class="d-flex justify-content-end py-1">
+                    <button class="btn btn-sm btn-info" (click)="addRow()">
+                        Add
+                    </button>
+                </div>
+                <div class="table-responsive table-borderless">
+                    <table class="table table-hover align-middle no-wrap table-sm">
+                        <thead class="bg-info">
+                            <tr>
+                                <th class="bg-transparent text-light" width="10%">Cargo Type</th>
+                                <th class="bg-transparent text-light" width="10%">Charge</th>
+                                <th class="bg-transparent text-light" width="10%">Uom</th>
+                                <th class="bg-transparent text-light" width="10%">Sale Cur</th>
+                                <th class="bg-transparent text-light">Sales Amt</th>
+                                <th class="bg-transparent text-light" width="10%">Cost Cur</th>
+                                <th class="bg-transparent text-light">Cost Amt</th>
+                                <th class="bg-transparent text-light">Valid From</th>
+                                <th class="bg-transparent text-light">Valid To</th>
+                            </tr>
+                        </thead>
+
+                        <tbody formArrayName="StdTariffDetails">
+                            <tr [formGroupName]="0">
+                                <td>
+                                    <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name"
+                                        class="ng-select" formControlName="CargoType" placeholder="" appendTo="body">
+                                    </ng-select>
+                                </td>
+                                <td>
+                                    <dofi-searchable-dropdown [items]="charge" formControlName="ChargeMasterSid"
+                                        [displayFields]="chargeLookupConfig.displayFields"
+                                        [displayLabels]="chargeLookupConfig.displayLabels"
+                                        [labelFields]="chargeLookupConfig.labelFields" bindValue="ChargeMasterSid"
+                                        (itemSelected)="onCharge($event)">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td>
+                                    <dofi-searchable-dropdown #uomLookup [items]="UOMType" formControlName="UomSid"
+                                        id="" placeholder="" [displayFields]="UOMLookupConfig.displayFields"
+                                        [displayLabels]="UOMLookupConfig.displayLabels"
+                                        [labelFields]="UOMLookupConfig.labelFields" bindValue="UOMMasterSid">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td>
+                                    <dofi-searchable-dropdown #currenciesLookup [items]="currencyList"
+                                        formControlName="CostCurrency" id="" placeholder=""
+                                        [displayFields]="currenciesLookupConfig.displayFields"
+                                        [displayLabels]="currenciesLookupConfig.displayLabels"
+                                        [labelFields]="currenciesLookupConfig.labelFields"
+                                        bindValue="CurrencyMasterSid">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td>
+                                    <input class="custom-input-field sm" formControlName="SaleAmount">
+                                </td>
+                                <td>
+                                    <dofi-searchable-dropdown #currenciesLookup [items]="currencyList"
+                                        formControlName="SaleCurrency" id="" placeholder=""
+                                        [displayFields]="currenciesLookupConfig.displayFields"
+                                        [displayLabels]="currenciesLookupConfig.displayLabels"
+                                        [labelFields]="currenciesLookupConfig.labelFields"
+                                        bindValue="CurrencyMasterSid">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td>
+                                    <input class="custom-input-field sm" formControlName="CostAmount">
+                                </td>
+                                <td>
+                                    <div class="d-flex pt-2">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="ValidFrom"
+                                            (keydown.arrowDown)="d1.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex pt-2">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="ValidTo"
+                                            (keydown.arrowDown)="d2.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>

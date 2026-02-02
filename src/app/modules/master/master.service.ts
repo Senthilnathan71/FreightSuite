@@ -4300,6 +4300,60 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
       })
     );
   }
+
+  // Standard Charge
+   getAllStdCharges() {
+    return this.http.get<{ data: any[] }>('standard-charge', {  }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewStdCharge(payload) {
+    return this.http.post<{ data: any }>('standard-charge/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  fetchStdChargeById(StdRateHeaderSid) {
+    return this.http.get<{ data: any }>(`standard-charge/fetch/${StdRateHeaderSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateStdChargeById(StdRateHeaderSid, payload) {
+    return this.http.patch<{ data: any }>(`standard-charge/update/${StdRateHeaderSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteStdCharge(id:number) {
+    return this.http.delete<{ data: any }>(`standard-charge/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+   searchStdHeaderNew(params) {
+    return this.http.post("standard-charge/search-list", params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
 }
 
 
