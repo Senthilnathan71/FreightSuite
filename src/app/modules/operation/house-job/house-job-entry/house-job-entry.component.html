@@ -22,7 +22,13 @@
       }
       @if(isEditMode){
         <!-- <button class="btn btn-link text-info focus-ring">{{houseJobForm.get('MasterJobNumber')?.value || ''}}</button> -->
-        <a class="fw-bold px-2 text-decoration-underline" [routerLink]="['/operation/master-job/entry',housejobData?.masterJob?.MasterJobSid]">
+        <a class="fw-bold px-2 text-decoration-underline" [routerLink]="[
+          '/operation',
+          selectedDepartmentType === 'AIR' ? 'mawbill' : 'master-job',
+          'entry',
+          housejobData?.masterJob?.MasterJobSid
+        ]"
+        >
           {{housejobData?.masterJob?.MasterJobNumber || ''}}
         </a>
       }

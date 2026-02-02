@@ -308,6 +308,7 @@
           style="border-radius: 20px; min-width: 200px;height: 28px;"
           (click)="$event.stopPropagation(); docSearchDropdown.open()"
           (input)="searchDocuments($event)"
+          (change)="searchDocuments($event)"
           (keydown)="onDocSearchKeyDown($event)"
           (blur)="onDocSearchBlur($event)"
           name="docSearch"

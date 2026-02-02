@@ -25,6 +25,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { ToastrService } from 'ngx-toastr';
 import { toNumber } from 'src/app/common/helper';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 
 @Component({
   selector: 'app-cost-entry',
@@ -460,106 +461,59 @@ export class CostEntryComponent implements OnInit {
   }
 
   validateRateArray(): boolean {
-    console.log(this.rateFormArray.getRawValue())
+    const errorMessages: string[] = [];
+    
+    this.rateFormArray.markAllAsTouched();
+    this.rateFormArray.updateValueAndValidity();
+
     if (!this.rateFormArray || this.rateFormArray.length === 0) {
-      this.appSettingService.showWarning('No rate entries found.');
-      this.validationResult.emit(false);
-      return false;
+      this.validationResult.emit(true);
+      return true;
     }
-    if (this.rateFormArray.invalid) {
-      this.rateFormArray.markAllAsTouched();
-      this.rateFormArray.updateValueAndValidity();
-      this.appSettingService.showError("Please fill all the required fields correctly");
-      this.validationResult.emit(false);
-      return false;
-    }
+
+
+    const requiredFieldMap = [
+      { key: 'ChargeMasterSid', label: 'Charge' },
+      { key: 'ChargeDescription', label: 'Charge Description' },
+      { key: 'ChargeUomSid', label: 'Unit' },
+      { key: 'NoOfUnit', label: 'No of Units' }
+    ];
 
     for (let rateIndex = 0; rateIndex < this.rateFormArray.length; rateIndex++) {
       const rate = this.rateFormArray.at(rateIndex) as FormGroup;
 
-      const requiredFields = [
-        'ChargeMasterSid',
-        'ChargeDescription',
-        'ChargeUomSid',
-        'NoOfUnit'
-      ];
+      // Required field validation
+      for (const field of requiredFieldMap) {
+        const control = rate.get(field.key);
+        const value = control?.value;
 
-      const hasAllRequired = requiredFields.every(field => {
-        const control = rate.get(field);
-        control?.markAsTouched();
-        control?.updateValueAndValidity();
-        return !!control?.value;
-      });
-
-      if (!hasAllRequired) {
-        this.appSettingService.showWarning(
-          `[SNo: ${rateIndex + 1}] Please fill all required mandatory (*) fields.`
-        );
-        this.validationResult.emit(false);
-        return false;
+        if (value === null || value === undefined || value === '') {
+          errorMessages.push(
+            `[SNo: ${rateIndex + 1}] ${field.label} is required.`
+          );
+        }
       }
 
+      //  Revenue / Cost side validation
       const hasLocalAmountAtLeastOneSide =
-        !!Number(rate.get('CostLocalAmount')?.value) || !!Number(rate.get('RevenueLocalAmount')?.value);
+        !!Number(rate.get('CostLocalAmount')?.value) ||
+        !!Number(rate.get('RevenueLocalAmount')?.value);
 
       if (!hasLocalAmountAtLeastOneSide) {
-        this.appSettingService.showWarning(
-          `[Sno: ${rateIndex + 1}] Please fill at least one side: either Revenue or Cost.`
+        errorMessages.push(
+          `[SNo: ${rateIndex + 1}] Please fill at least one side: Revenue or Cost.`
         );
-        this.validationResult.emit(false);
-        return false;
-      }
-
-      // Validate Cost side
-      if (!Number(rate.get('CostLocalAmount')?.value)) {
-        const hasCostCurrency = !!rate.get('CostCurrencyMasterSid')?.value;
-        const hasCostExchangeRate = rate.get('CostExchangeRate')?.value != null;
-        const hasCostRate = !!rate.get('CostRate')?.value;
-
-        if (hasCostCurrency || !hasCostExchangeRate) {
-          this.appSettingService.showWarning(
-            `[Sno: ${rateIndex + 1}] Please fill Exchange Rate for cost currency.`
-          );
-          this.validationResult.emit(false);
-          return false;
-        }
-
-        if (hasCostExchangeRate && !hasCostRate) {
-          this.appSettingService.showWarning(
-            `[Sno: ${rateIndex + 1}] Please fill Cost Per Unit Rate.`
-          );
-          this.validationResult.emit(false);
-          return false;
-        }
-      } else {
-
-      }
-
-      // Validate Revenue side
-      if (!Number(rate.get('RevenueLocalAmount')?.value)) {
-        const hasRevenueCurrency = !!rate.get('RevenueCurrencyMasterSid')?.value;
-        const hasRevenueExchangeRate = rate.get('RevenueExchangeRate')?.value != null;
-        const hasRevenueRate = !!rate.get('RevenueRate')?.value;
-
-        if (hasRevenueCurrency || !hasRevenueExchangeRate) {
-          this.appSettingService.showWarning(
-            `[Row: ${rateIndex + 1}] Please select Exchange Rate for Revenue currency.`
-          );
-          this.validationResult.emit(false);
-          return false;
-        }
-
-        if (!hasRevenueRate) {
-          this.appSettingService.showWarning(
-            `[Row: ${rateIndex + 1}] Please fill Revenue Per Unit Rate.`
-          );
-          this.validationResult.emit(false);
-          return false;
-        }
       }
     }
 
-    // ✅ Always return true if all checks passed
+    //  Show all errors together
+    if (errorMessages.length > 0) {
+      this.appSettingService.showWarning(errorMessages.join('\n'));
+      this.validationResult.emit(false);
+      return false;
+    }
+
+    // All good
     this.validationResult.emit(true);
     return true;
   }
@@ -616,15 +570,18 @@ createRateFormGroup(data?: any): FormGroup {
     ],
 
     ChargeUomSid: [
-      { value: (data?.ChargeUomSid || data?.RevenueChargeUomSid || data?.CostChargeUomSid) ?? null, disabled: isFromQuotation }
+      { value: (data?.ChargeUomSid || data?.RevenueChargeUomSid || data?.CostChargeUomSid) ?? null, disabled: isFromQuotation },
+      [Validators.required]
     ],
     RevenueChargeUomSid: [
-      { value: (data?.RevenueChargeUomSid || data?.ChargeUomSid) ?? null, disabled: isFromQuotation }
+      { value: (data?.RevenueChargeUomSid || data?.ChargeUomSid) ?? null, disabled: isFromQuotation },
+      [Validators.required]
     ],
-    CostChargeUomSid: [(data?.CostChargeUomSid || data?.ChargeUomSid) ?? null],
+    CostChargeUomSid: [(data?.CostChargeUomSid || data?.ChargeUomSid) ?? null , [Validators.required]],
 
     NoOfUnit: [
-      { value: (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '', disabled: isFromQuotation }
+      { value: (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '', disabled: isFromQuotation },
+      [ Validators.required , greaterThanZero()]
     ],
     RevenueNumberOfUnit: [
       { value: (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? '', disabled: isFromQuotation }
@@ -868,15 +825,17 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
+    const selectedUnit = this.uomList.find(uom => uom.UOMMasterSid === charge.UOM);
+
     formGroup.patchValue({
       ChargeMasterSid: charge.ChargeMasterSid,
       ChargeDescription: charge.chargeName,
       unitQtyBasis: charge.UnitQty,
       RevenueCurrencyMasterSid: charge.CurrencyMasterSid,
       CostCurrencyMasterSid: charge.CurrencyMasterSid,
-      ChargeUomSid: charge.UOM,
-      RevenueChargeUomSid: charge.UOM,
-      CostChargeUomSid: charge.UOM,
+      ChargeUomSid: selectedUnit ? selectedUnit.UOMMasterSid : null,
+      RevenueChargeUomSid: selectedUnit ? selectedUnit.UOMMasterSid : null,
+      CostChargeUomSid: selectedUnit ? selectedUnit.UOMMasterSid : null,
     });
 
     this.updateSingleChargeQty(index);

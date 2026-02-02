@@ -420,7 +420,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
    onTableActionClick(event: TableEventData): void {
     if (event.column?.template === "link") {
         // Handle link template click (Master Job Number)
-        this.navigateToMasterJob(event.row.MasterJobSid)
+        this.navigateToMasterJob(event.row.MasterNoSid)
     } else if (event.action === 'view') {
         // Handle view action - navigate to booking entry page
         this.viewBooking(event.row);
