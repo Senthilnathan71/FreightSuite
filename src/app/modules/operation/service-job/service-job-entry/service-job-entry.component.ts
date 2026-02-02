@@ -526,6 +526,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return;
+    }
+
     // const isRateValid = this.costEntryComponent?.validateRateArray?.();
     // console.log(isRateValid);
     // if (!isRateValid) {

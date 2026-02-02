@@ -244,6 +244,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 					 if (data) {
                     // Trigger the COA selection change to load subledgers
                     this.onCOASelected(data);
+					this.handleReverseVoucherPosting(data);
                     
                     // After a small delay (to allow subledgers to load), set the subledger value
                     setTimeout(() => {
@@ -452,6 +453,24 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 
 		control.updateValueAndValidity();
 	}
+
+	handleReverseVoucherPosting(documentType : any) {
+		const code = documentType.code || documentType.DocumentTypeCode;
+		const autoPostCtrl = this.documentForm.get('IsAutoPosting');
+
+		const reverseTypes = ['CRN', 'VRN', 'RJV'];
+
+		if (reverseTypes.includes(code)) {
+			autoPostCtrl?.setValue('Y', { emitEvent: false });
+			autoPostCtrl?.disable({ emitEvent: false });
+		} else {
+			autoPostCtrl?.enable({ emitEvent: false });
+
+			// optional: reset to default if you want
+			// autoPostCtrl?.setValue('N', { emitEvent: false });
+		}
+	}
+
 
 
 	createVoucherNumber() {

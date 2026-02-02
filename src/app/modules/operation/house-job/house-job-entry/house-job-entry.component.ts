@@ -1940,6 +1940,11 @@ onCurrencyChange(event: any) {
     this.appSettingService.showWarning('Please fill all required fields correctly.');
     return;
   }
+
+    if (!this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return;
+    }
   
   const houseJobFormValue = this.houseJobForm.getRawValue();
   const existingBookingHeaderSid = this.bookingData?.BookingHeaderSid || null;
