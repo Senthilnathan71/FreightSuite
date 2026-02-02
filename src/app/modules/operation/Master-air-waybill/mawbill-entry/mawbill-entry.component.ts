@@ -1466,7 +1466,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
         if (masterJobSid) {
           this.toastr.success(successMessage);
-          this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+          this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
           return; // ✅ stop list navigation
         }
       }

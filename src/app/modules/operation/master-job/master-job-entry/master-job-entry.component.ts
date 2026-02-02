@@ -2190,7 +2190,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       DestinationATA: this.formatDate(formValue.DestinationATA),
       Haz: formValue.Haz ? 'Y' : 'N',
 
-      CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      createdBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      updatedBy : this.appSettingsService.userSettingSource.value['userEmail'],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Job") || Number(localStorage.getItem('currentMenuId')),
