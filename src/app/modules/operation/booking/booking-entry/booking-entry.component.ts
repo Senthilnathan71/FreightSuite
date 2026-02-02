@@ -1865,6 +1865,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     return;
   }
 
+  if(!this.costEntryComponent.validateRateArray()){
+    this.selectedTab = 'Rate';
+    this.isSaving = false;
+    return;
+  }
+
 
     // const isRateValid = this.costEntryComponent?.validateRateArray?.();
     // console.log(isRateValid);

@@ -107,6 +107,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   private isLoadingVessels = false;
   private lastVesselSearchParams: {POL: string | number, POD: string | number, MovementType: string} | null = null;
 
+  @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
   public ratecomponent = CostEntryComponent;
   public revenuecomponent = RevenueEntryComponent;
   public connectionComponent = ConnectionComponent;
@@ -1310,6 +1311,11 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     if (this.masterJobForm.invalid) {
         this.toastr.error('Please fill all required fields');
         return;
+    }
+
+    if (!this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return;
     }
 
     this.isLoading = true;

@@ -2079,6 +2079,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return;
     }
 
+    if (!this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return;
+    }
+
     this.isLoading = true;
     //   const exportImportType = this.selectedDepartment?.ExportImport;
     // const hblNo = houseJobFormValue.HBLNo;

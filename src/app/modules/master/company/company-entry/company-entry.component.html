@@ -2037,11 +2037,9 @@
       </a>
       }
     </h5>
-    @if(branchBankForm.invalid && hasDuplicationError()){
-    <div class="alert alert-warning py-0 px-1 m-0" role="alert">
-      <strong>Warning!</strong> {{ branchBankForm.getError('currencyDuplication') }}
+    <div *ngIf="branchBankForm.hasError('currencyDuplication')" class="alert alert-warning py-1 px-2 mt-1">
+      {{ branchBankForm.getError('currencyDuplication') }}
     </div>
-    }
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeBranchBankForm()"></button>
   </div>
 
@@ -2134,7 +2132,7 @@
             <div class="form-check form-check-inline p-0">
               <div class="form-check d-flex align-items-center">
                 <input type="checkbox" formControlName="PrintOnInvoice" id="IsMSME" class="form-check-input sm"
-                  (change)="checkForBankDuplication()">
+                >
                 <label for="PrintOnInvoice" class="form-check-label sm">Print On Invoice</label>
               </div>
             </div>
@@ -2146,7 +2144,7 @@
               <dofi-searchable-dropdown [items]="currencyResults" formControlName="CurrencyMasterSid" [placeholder]="''"
                 [displayFields]="CurrencyLookupConfig.displayFields"
                 [displayLabels]="CurrencyLookupConfig.displayLabels" [labelFields]="CurrencyLookupConfig.labelFields"
-                [bindValue]="'CurrencyMasterSid'" (itemSelected)="checkForBankDuplication()">
+                [bindValue]="'CurrencyMasterSid'">
               </dofi-searchable-dropdown>
               <label class="input-label">Currency <span class="text-danger">*</span></label>
               <div

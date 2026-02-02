@@ -135,7 +135,7 @@
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!documentForm.get('DocumentTypeCode')?.value">
                                         <ng-select formControlName="DocumentTypeCode" [items]="docTypeCodeDropdown"
-                                            bindLabel="code" bindValue="code" placeholder="">
+                                            bindLabel="code" bindValue="code" placeholder="" (change)="handleReverseVoucherPosting($event)">
                                         </ng-select>
                                         <label for="text-input" class="input-label">Code</label>
                                         @if(documentForm.get('DocumentTypeCode').touched &&
