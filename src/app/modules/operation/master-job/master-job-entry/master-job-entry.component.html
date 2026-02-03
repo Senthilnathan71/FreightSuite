@@ -68,6 +68,12 @@
                     </div>
                 </div>
             </div>
+             <div class="action-group"  *ngIf="isEditMode">  
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToMasterJob()">    
+                    <i class="fas fa-plus me-1"></i>
+                    <span>Create </span>    
+                    </button>
+            </div>
             <div class="action-group">
                 <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
                     <i class="fas fa-chevron-left me-1"></i>
@@ -81,12 +87,7 @@
                     <span>Reset</span>
                 </button>
             </div>
- <div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToMasterJob()">    
-                    <i class="fas fa-plus me-1"></i>
-                    <span>Create </span>    
-                    </button>
-            </div>
+
 
 
             <div class="action-group">
@@ -2935,7 +2936,7 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()"
-                [disabled]="containerFormGroup.invalid">Add</button>
+                [disabled]="containerFormGroup.invalid"> {{ isEditContainer ? 'Edit' : 'Add' }}</button>
         </div>
     </ng-template>
 
