@@ -2098,12 +2098,12 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode"
-                [textWithNumbers]="20">
-              <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
+                [textWithNumbers]="30">
+              <label for="ifscCode" class="input-label">IFSC / IBAN Code <span class="text-danger">*</span></label>
               @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
               <div class="error-message">
                 @if(branchBankForm.get('IFSCCode')?.hasError('required')){ <span>Required</span> }
-                @if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){ <span>Max 20 characters</span> }
+                @if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){ <span>Max 30 characters</span> }
               </div>
               }
             </div>
@@ -2138,7 +2138,20 @@
             </div>
           </aside>
 
-          <aside class="col-md-4">
+           <aside class="col-12 col-sm-6 col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="BeneficiaryName" placeholder="" class="custom-input-field sm"
+                formControlName="BeneficiaryName" [textWithNumbers]="100">
+              <label for="bankAddress" class="input-label">Beneficiary Name</label>
+              @if(branchBankForm.get('BeneficiaryName')?.touched && branchBankForm.get('BeneficiaryName')?.invalid){
+              <div class="error-message">
+                @if(branchBankForm.get('BeneficiaryName')?.hasError('maxlength')){ <span>Max 100 characters</span> }
+              </div>
+              }
+            </div>
+          </aside>
+
+          <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!branchBankForm.get('CurrencyMasterSid')?.value">
               <dofi-searchable-dropdown [items]="currencyResults" formControlName="CurrencyMasterSid" [placeholder]="''"
@@ -2156,7 +2169,7 @@
           </aside>
 
           <!-- Remarks -->
-          <aside class="col-12 col-sm-6 col-md-4 ">
+          <aside class="col-12 col-sm-6 col-md-3 ">
             <div class="custom-form-group">
               <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks" [textWithNumbers]="300"
                 class="custom-input-field sm"></textarea>
@@ -2170,7 +2183,7 @@
           </aside>
 
           <!-- Status -->
-          <aside class="col-12 col-sm-6 col-md-4 ">
+          <aside class="col-12 col-sm-6 col-md-3 ">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!companyForm.get('status')?.value">
               @if(isBankModalEdit){
               <ng-select id="bankStatus" class="ng-select" formControlName="status">
