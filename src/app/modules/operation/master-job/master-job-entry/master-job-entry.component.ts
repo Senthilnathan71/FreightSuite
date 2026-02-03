@@ -3038,9 +3038,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
 
     const HouseJobSid = booking.HouseJobSid;
+    const userEmail = this.appSettingsService.userSettingSource.value['userEmail'];
 
     if (HouseJobSid) {
-      this.operationService.detachBooking(HouseJobSid).subscribe
+      this.operationService.detachBooking(HouseJobSid,userEmail).subscribe
         ({
           next: (resp: any) => {
             if (resp.status) {

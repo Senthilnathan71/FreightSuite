@@ -1,74 +1,205 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
 
 <div class="row compact-form">
   <div class="col-12 px-0">
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+    <div
+      class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
+    >
       <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title my-0 pt-1 text-info">Vendor Credit Note</h5>
+        <h5 class="page-title mb-0 text-info">
+          {{
+            isViewMode
+              ? " Vendor Credit Note"
+              : isEditMode
+                ? "Edit Vendor Credit Note"
+                : "Create Vendor Credit Note"
+          }}
+          <span class="fw-bold text-info">{{
+            isNonJob ? "[Non Job]" : ""
+          }}</span>
+        </h5>
+        @if (isEditMode) {
+          <a
+            class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"
+            (click)="showInfo()"
+          >
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+        }
         <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
-      <div class="pill-icon">
-        <i class="fas fa-file-invoice-dollar"></i>
+          <div class="pill-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <span class="mb-0 text-dark">
+            <strong style="color: #333">Outstanding :</strong>
+            {{ invoiceOutstandingAmount | numberFormat }}
+            {{ selectedOutstandingInvoice?.CurrencyCode }}
+          </span>
+        </div>
       </div>
-      <span class=" mb-0 text-dark">
-        <strong style="color: #333;">Outstanding :</strong> {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
-      </span>
-    </div>
-      </div>
-      
+
       <div class="col-md-8 pb-1">
         <div
-          class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-             
-          <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-        (click)="openVendorInvoiceUploadModal()" 
-        [disabled]="isViewMode">
-  <i class="fas fa-upload me-1"></i> Upload
-</button> -->
- 
-
-    <!-- <button *ngIf="isViewMode && isPosted" type="button" 
-            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
-            disabled>
-      <i class="fas fa-check-circle me-1"></i> Posted
-    </button> -->
-    
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
+          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0"
+        >
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onCancel()"
+          >
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
 
-          <button *ngIf="!isEditMode" type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onReset()">
+          <button
+            *ngIf="!isViewMode"
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onReset()"
+            [disabled]="isPosted"
+          >
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button [disabled]="isPosted" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSubmit()">
-            <i class="fas fa-save me-1"></i> Save
-          </button>
-          <button  type="button" 
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
-            (click)="onFinalSave()" [disabled]="isPosted"
+          @if (isAutoPosting) {
+            <button
+              type="button"
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
+              (click)="onSubmit(undefined, true)"
+              [disabled]="
+                isPosted || (!mps.can('update') && isEditMode) || isSaving
+              "
             >
-      <i class="fas fa-check-circle me-1"></i> Post
-    </button>
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+            <button
+              *ngIf="isEditMode"
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              disabled="true"
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          } @else {
+            <!-- Draft Save Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
+              (click)="onSubmit()"
+              [disabled]="
+                isPosted || (!mps.can('update') && isEditMode) || isSaving
+              "
+            >
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
 
-             <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
-                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                        <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                        <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                        <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem (click)="openFollowup()">
-                            <i class="fas fa-paperclip me-1"></i> Followup
-                        </button>
-                    </div>
-                </div>
+            <!-- Final Save/Post Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="postVoucher(true)"
+              [disabled]="
+                vendorCreditNoteForm.invalid ||
+                isPosted ||
+                (!mps.can('update') && isEditMode) ||
+                isDirty ||
+                isSaving
+              "
+              [title]="
+                isDirty ? 'Please save the draft first before posting' : ''
+              "
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          }
+
+          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+            <button
+              type="button"
+              class="btn btn-light-secondary btn-sm has-arrow"
+              id="dropdownBasic1"
+              ngbDropdownToggle
+            >
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button
+                *ngIf="mps.has('edoc')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openEDoc()"
+              >
+                <i class="fas fa-file-alt me-1"></i> Edoc
+              </button>
+              <button
+                *ngIf="mps.has('terms_and_condition')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openTandC()"
+              >
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+              </button>
+              <button
+                *ngIf="mps.has('authority')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openAuthority()"
+              >
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+              </button>
+              <button
+                *ngIf="mps.has('email')"
+                class="text-dark"
+                ngbDropdownItem
+                appPreventMultiClick
+                (click)="openEmail()"
+              >
+                <i class="fas fa-envelope me-1"></i> Email
+              </button>
+              <button
+                type="button"
+                appPreventMultiClick
+                class="text-dark"
+                ngbDropdownItem
+                (click)="openFollowup()"
+              >
+                <i class="fas fa-paperclip me-1"></i> Followup
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -80,60 +211,85 @@
       <div class="card-body">
         <form [formGroup]="vendorCreditNoteForm">
           <div class="row">
-
             <!-- Vendor Invoice No -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
-                  class="custom-input-field sm" readonly />
+                <input
+                  type="text"
+                  id="VoucherNumber"
+                  formControlName="VoucherNumber"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  readonly
+                />
                 <label for="VoucherNumber" class="input-label">
-                  Vendor CreditNote No. <span class="text-danger">*</span>
+                  Vendor Credit Note No. <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
 
             <aside class="col-md-3">
-  <div class="d-flex gap-1 align-items-end">
-    <!-- Invoice Dropdown -->
-    <div class="custom-form-group custom-form-group-select flex-grow-1" 
-         [class.filled]="!!vendorCreditNoteForm.get('ReversalVoucher')?.value">  
-
-      <dofi-searchable-dropdown 
-  [items]="vendorInvoiceList" 
-  formControlName="ReversalVoucher"
-  [placeholder]="''"
-  [displayFields]="invoiceLookupConfig.displayFields"
-  [displayLabels]="invoiceLookupConfig.displayLabels"
-  [labelFields]="invoiceLookupConfig.labelFields"
-  [bindValue]="'VoucherHeaderSid'">
-</dofi-searchable-dropdown>
-      <label class="input-label">Invoice No</label>
-    </div>
-    
-    <!-- Get Button with proper styling and disable state -->
-    <button 
-      type="button" 
-      class="btn btn-info btn-sm mb-1" 
-      style="min-width: 30px; height: 25x;"
-      (click)="getVendorInvoiceData()"
-      [disabled]="!vendorCreditNoteForm.get('ReversalVoucher')?.value">Get
-    </button>
-  </div>
-</aside>
-
+              <div class="d-flex align-items-end">
+                <div class="custom-form-group custom-form-group-select-date w-100">
+                  <input
+                    type="text"
+                    id="ReversalVoucherNumber"
+                    formControlName="ReversalVoucherNumber"
+                    class="form-control mb-0"
+                    [readonly] = "isEditMode"
+                  />
+                  <label class="input-label">
+                    Invoice No. <span class="text-danger">*</span>
+                  </label>
+                </div>
+                @if(!isEditMode){
+                  <!-- Get button -->
+                <button
+                  type="button"
+                  class="btn btn-info btn-sm mb-1 flex-shrink-0"
+                  style="width: 40px; height: 26px"
+                  (click)="getVendorInvoiceData()"
+                  [disabled]="
+                    !vendorCreditNoteForm.get('ReversalVoucherNumber')?.value || 
+                    vendorCreditNoteForm.get('ReversalVoucher')?.value
+                  "
+                >
+                  Get
+                </button>
+                }
+              </div>
+            </aside>
 
             <!-- Invoice Date -->
             <aside class="col-md-3">
               <div class="d-flex">
-                <div class="custom-form-group custom-form-group-select-date w-100">
-                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker id="VoucherDate"
-                    #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="VoucherDate"
-                    [footerTemplate]="footerTemplate1" [class.is-invalid]="isFieldInvalid('VoucherDate')" />
+                <div
+                  class="custom-form-group custom-form-group-select-date w-100"
+                >
+                  <input
+                    class="form-control mb-0"
+                    placeholder="dd-mm-yyyy"
+                    name="voucherDate"
+                    ngbDatepicker
+                    id="VoucherDate"
+                    #d1="ngbDatepicker"
+                    (click)="d1.toggle()"
+                    readonly
+                    formControlName="VoucherDate"
+                    [footerTemplate]="footerTemplate1"
+                    [class.is-invalid]="isFieldInvalid('VoucherDate')"
+                    (dateSelect)="onVoucherDateChange()"
+                    [minDate]="minVoucherDate"
+                  />
                   <label class="input-label" for="VoucherDate">
                     Vendor Credit Date <span class="text-danger">*</span>
                   </label>
                 </div>
-                <button class="btn bi bi-calendar3 mt-2" (click)="d1.toggle()" type="button">
+                <button
+                  class="btn bi bi-calendar3 mt-2"
+                  (click)="d1.toggle()"
+                  type="button"
+                >
                   <i-feather name="calendar" class="feather-sm"></i-feather>
                 </button>
               </div>
@@ -141,51 +297,75 @@
 
             <ng-template #footerTemplate1>
               <hr class="my-0" />
-              <button class="btn btn-info btn-sm m-2 float-start" (click)="setToday('VoucherDate', d1)">
+              <button
+                class="btn btn-info btn-sm m-2 float-start"
+                (click)="setToday('VoucherDate', d1)"
+                [disabled]="isPosted"
+              >
                 Today
               </button>
-              <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+              <button
+                class="btn btn-secondary btn-sm m-2 float-end"
+                (click)="d1.close()"
+              >
                 Close
               </button>
             </ng-template>
 
-
             <!-- Posted On (readonly) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="PostedOn" formControlName="PostedOn" placeholder="" class="custom-input-field sm"
-                  readonly />
+                <input
+                  type="text"
+                  ngbDatepicker
+                  id="VoucherDate"
+                  #d2="ngbDatepicker"
+                  id="PostedOn"
+                  formControlName="PostedOn"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  readonly
+                />
                 <label for="PostedOn" class="input-label">Posted On</label>
               </div>
             </aside>
 
-
             <!-- Narration -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="Narration" formControlName="Narration" placeholder=""
-                  class="custom-input-field sm" />
+                <input
+                  type="text"
+                  id="Narration"
+                  formControlName="Narration"
+                  placeholder=""
+                  class="custom-input-field sm"
+                />
                 <label for="Narration" class="input-label">Narration</label>
               </div>
             </aside>
 
-           <aside class="col-md-3">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorCreditNoteForm.get('PartyName')?.value">
-    <dofi-searchable-dropdown 
-      [items]="vendorList" 
-      formControlName="PartyName"
-      placeholder="" 
-      [displayFields]="customerLookupConfig.displayFields"
-      [displayLabels]="customerLookupConfig.displayLabels"
-      [labelFields]="customerLookupConfig.labelFields" 
-      bindLabel="CustomerName"
-      bindValue="CustomerName" 
-      (itemSelected)="onVendorChange($event)">
-    </dofi-searchable-dropdown>
-    <label class="input-label">Vendor <span class="text-danger"></span></label>
-  </div>
-</aside>
+            <aside class="col-md-3">
+              <div
+                class="custom-form-group custom-form-group-select"
+                [class.filled]="!!vendorCreditNoteForm.get('PartyName')?.value"
+              >
+                <dofi-searchable-dropdown
+                  [items]="vendorList"
+                  formControlName="PartyName"
+                  placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
+                  [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields"
+                  bindLabel="CustomerName"
+                  bindValue="CustomerName"
+                  (itemSelected)="onVendorChange($event)"
+                >
+                </dofi-searchable-dropdown>
+                <label class="input-label"
+                  >Vendor <span class="text-danger"></span
+                ></label>
+              </div>
+            </aside>
 
             <!-- Vendor Name (readonly) -->
             <!-- <aside class="col-md-3">
@@ -203,67 +383,119 @@
 
             <!-- Vendor Address (readonly) -->
             <!-- Vendor Branch Selection -->
-             <aside class="col-md-3">
-  <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder="" readonly id="PartyAddress">
-    <label class="input-label" for="PartyAddress">Vendor Address</label>
-  </div>
-</aside>
-
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="PartyAddress"
+                  placeholder=""
+                  readonly
+                  id="PartyAddress"
+                />
+                <label class="input-label" for="PartyAddress"
+                  >Vendor Address</label
+                >
+              </div>
+            </aside>
 
             <!-- GST No (readonly) -->
 
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text"  formControlName="GSTNo" placeholder="" class="custom-input-field sm"
-                  readonly />
-                  <label class="input-label" *ngIf="currentUserCountry === 'india'">GST No</label>
-    <label class="input-label" *ngIf="currentUserCountry !== 'india'">VAT No</label>
+                <input
+                  type="text"
+                  formControlName="GST_VAT"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  readonly
+                />
+                @if (currentCompanyCountryCode === "in") {
+                  <label class="input-label">GST No</label>
+                } @else if (currentCompanyCountryCode !== "ae") {
+                  <label class="input-label">VAT No</label>
+                } @else {
+                  <label class="input-label">Tax No</label>
+                }
               </div>
             </aside>
-           
-<!-- GST Type -->
-<aside class="col-md-3">
-  <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" >
-    <label class="input-label" *ngIf="currentUserCountry === 'india'">GST Type</label>
-    <label class="input-label" *ngIf="currentUserCountry !== 'india'">Tax Type</label>
-  </div>
-</aside>
 
-           <!-- Add this temporarily for debugging -->
-<aside class="col-md-3">
-  <div class="custom-form-group">
-    <input type="text" formControlName="PlaceOfSupply" placeholder="" id="PlaceOfSupply"
-      class="custom-input-field sm" readonly />
-    <label class="input-label" for="PlaceOfSupply">Place of Supply</label>
-  </div>
-  
-</aside>
-<!-- Invoice Type with auto-determination -->
-<aside class="col-md-3">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorCreditNoteForm.get('InvoiceType')?.value">
-    <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" 
-      formControlName="InvoiceType" [readonly]="true">
-    </ng-select>
-    <label class="input-label">Invoice Type</label>
-  </div>
-</aside>
-
-            <!-- Currency -->
+            <!-- GST Type -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!vendorCreditNoteForm.get('CurrencyCode')?.value">
-                <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
-                  formControlName="CurrencyCode" (change)="onCurrencyChange($event)"
-                  [class.is-invalid]="isFieldInvalid('CurrencyCode')" appendTo="body" class="ng-select"
-                  placeholder="Select Currency">
-                  <!-- <ng-template ng-option-tmp let-item="item">
-                    {{ item.CurrencyCode }} - {{ item.CurrencyName }}
-                  </ng-template> -->
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="GSTType"
+                  placeholder=""
+                  readonly
+                  style="cursor: not-allowed"
+                />
+                @if (currentCompanyCountryCode === "in") {
+                  <label class="input-label">GST Type</label>
+                } @else {
+                  <label class="input-label">Tax Type</label>
+                }
+              </div>
+            </aside>
+
+            <!-- Add this temporarily for debugging -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  formControlName="PlaceOfSupply"
+                  placeholder=""
+                  id="PlaceOfSupply"
+                  class="custom-input-field sm"
+                  readonly
+                />
+                <label class="input-label" for="PlaceOfSupply"
+                  >Place of Supply</label
+                >
+              </div>
+            </aside>
+
+            <!-- Invoice Type with auto-determination -->
+            <aside class="col-md-3">
+              <div
+                class="custom-form-group custom-form-group-select"
+                [class.filled]="
+                  !!vendorCreditNoteForm.get('InvoiceType')?.value
+                "
+              >
+                <ng-select
+                  [items]="invoiceTypes"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="InvoiceType"
+                >
                 </ng-select>
-                <label class="input-label">
+                <label class="input-label">Invoice Type</label>
+              </div>
+            </aside>
+
+            <!-- Currency Dropdown -->
+            <aside class="col-md-3">
+              <div
+                class="custom-form-group custom-form-group-select"
+                [class.filled]="
+                  !!vendorCreditNoteForm.get('CurrencyCode')?.value
+                "
+              >
+                <dofi-searchable-dropdown
+                  [items]="currencyList"
+                  formControlName="CurrencyCode"
+                  placeholder=""
+                  [displayFields]="CurrencyLookupConfig.displayFields"
+                  [displayLabels]="CurrencyLookupConfig.displayLabels"
+                  [labelFields]="CurrencyLookupConfig.labelFields"
+                  [bindValue]="'currencyCode'"
+                  (itemSelected)="onHeaderCurrencyChange($event)"
+                >
+                </dofi-searchable-dropdown>
+
+                <label for="CurrencyMasterSid" class="input-label">
                   Currency <span class="text-danger">*</span>
                 </label>
               </div>
@@ -272,38 +504,94 @@
             <!-- Exchange Rate -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="number" id="ExchangeRate" formControlName="ExchangeRate" placeholder=""
-                  class="custom-input-field sm" (blur)="onExchangeRateChange()" step="0.01"
-                  [class.is-invalid]="isFieldInvalid('ExchangeRate')" />
+                <input
+                  type="text"
+                  id="ExchangeRate"
+                  formControlName="ExchangeRate"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="3"
+                  [DecimalPrecisionAfter]="
+                    getExchangeRateDecimalPlaces(
+                      vendorCreditNoteForm.get('CurrencyMasterSid')?.value
+                    )
+                  "
+                  [class.is-invalid]="isFieldInvalid('ExchangeRate')"
+                />
                 <label for="ExchangeRate" class="input-label">
                   Ex. Rate <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
 
-
             <!-- Bill Amount (readonly calculated) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="number" id="BillAmount" [value]="calculateTotalLocalAmount()" placeholder=""
-                  class="custom-input-field sm" readonly />
+                <input
+                  type="number"
+                  id="BillAmount"
+                  formControlName="BillAmt"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="12"
+                  [DecimalPrecisionAfter]="
+                    getAmountDecimalPlaces(
+                      vendorCreditNoteForm.get('CurrencyMasterSid')?.value
+                    )
+                  "
+                  readonly
+                />
                 <label for="BillAmount" class="input-label">Bill Amt</label>
               </div>
             </aside>
 
+            <!-- Bill No -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  id="BillNo"
+                  formControlName="BillNo"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  [class.is-invalid]="isFieldInvalid('BillNo')"
+                />
+                <label for="BillNo" class="input-label">
+                  Bill No. <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
 
             <!-- Bill Date -->
             <aside class="col-md-3">
               <div class="d-flex">
-                <div class="custom-form-group custom-form-group-select-date w-100">
-                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker id="BillDate"
-                    #d="ngbDatepicker" (click)="d.toggle()" readonly formControlName="BillDate"
-                    [footerTemplate]="footerTemplate" [class.is-invalid]="isFieldInvalid('BillDate')" />
+                <div
+                  class="custom-form-group custom-form-group-select-date w-100"
+                >
+                  <input
+                    class="form-control mb-0"
+                    placeholder="dd-mm-yyyy"
+                    name="billDate"
+                    ngbDatepicker
+                    id="BillDate"
+                    #d3="ngbDatepicker"
+                    (click)="d3.toggle()"
+                    readonly
+                    formControlName="BillDate"
+                    [footerTemplate]="footerTemplate"
+                    [class.is-invalid]="isFieldInvalid('BillDate')"
+                  />
                   <label class="input-label" for="BillDate">
                     Bill Date <span class="text-danger">*</span>
                   </label>
                 </div>
-                <button class="btn bi bi-calendar3 mt-2" (click)="d.toggle()" type="button">
+                <button
+                  class="btn bi bi-calendar3 mt-2"
+                  (click)="d3.toggle()"
+                  type="button"
+                >
                   <i-feather name="calendar" class="feather-sm"></i-feather>
                 </button>
               </div>
@@ -311,29 +599,31 @@
 
             <ng-template #footerTemplate>
               <hr class="my-0" />
-              <button class="btn btn-info btn-sm m-2 float-start" (click)="setToday('BillDate', d)">
+              <button
+                class="btn btn-info btn-sm m-2 float-start"
+                (click)="setToday('BillDate', d3)"
+                [disabled]="isPosted"
+              >
                 Today
               </button>
-              <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+              <button
+                class="btn btn-secondary btn-sm m-2 float-end"
+                (click)="d3.close()"
+              >
                 Close
               </button>
             </ng-template>
 
-            <!-- Bill No -->
-            <aside class="col-md-3">
-              <div class="custom-form-group">
-                <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
-                  [class.is-invalid]="isFieldInvalid('BillNo')" />
-                <label for="BillNo" class="input-label">
-                  Bill No. <span class="text-danger">*</span>
-                </label>
-              </div>
-            </aside>
-
             <!-- MBL No -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm" />
+                <input
+                  type="text"
+                  id="MBLNo"
+                  formControlName="MBLNo"
+                  placeholder=""
+                  class="custom-input-field sm"
+                />
                 <label for="MBLNo" class="input-label">MBL No.</label>
               </div>
             </aside>
@@ -341,447 +631,1002 @@
             <!-- HBL No -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm" />
+                <input
+                  type="text"
+                  id="HBLNo"
+                  formControlName="HBLNo"
+                  placeholder=""
+                  class="custom-input-field sm"
+                />
                 <label for="HBLNo" class="input-label">HBL No.</label>
               </div>
             </aside>
 
-        
-
             <!-- Remarks -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
-                  formControlName="Remarks"></textarea>
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="Remarks"
+                  placeholder=""
+                />
                 <label for="Remarks" class="input-label">Remarks</label>
               </div>
             </aside>
 
             <aside class="col-md-3">
-
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!vendorCreditNoteForm.get('CreditNoteReason')?.value">  
-                  <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
-                    formControlName="CreditNoteReason">
-                  </ng-select>
-                      <label class="input-label">CreditNote Reason</label>
-                    </div>
-              </aside>
+              <div
+                class="custom-form-group custom-form-group-select"
+                [class.filled]="
+                  !!vendorCreditNoteForm.get('CreditNoteReason')?.getRawValue()
+                "
+              >
+                <ng-select
+                  [items]="reason"
+                  bindLabel="name"
+                  bindValue="name"
+                  placeholder=""
+                  formControlName="CreditNoteReason"
+                >
+                </ng-select>
+                <label class="input-label">Credit Note Reason </label>
+              </div>
+            </aside>
 
             <!-- Status -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!vendorCreditNoteForm.get('Status')?.value">
-                <ng-select [items]="statusList" bindLabel="name" bindValue="value" formControlName="Status"
-                  appendTo="body" class="ng-select">
+              <div
+                class="custom-form-group custom-form-group-select"
+                [class.filled]="!!vendorCreditNoteForm.get('Status')?.value"
+              >
+                <ng-select
+                  [items]="statusList"
+                  bindLabel="name"
+                  bindValue="value"
+                  formControlName="Status"
+                  appendTo="body"
+                  class="ng-select"
+                >
                 </ng-select>
                 <label class="input-label">Status</label>
               </div>
             </aside>
-
           </div>
 
-          <!-- Search Costs Button -->
-          <!-- <div class="col-12 px-0 mt-2" *ngIf="!isViewMode">
-            
-            <button type="button" class="btn btn-success btn-sm ms-2" (click)="addDetailRow()">
-              <i class="fas fa-plus me-2"></i>Add Row
-            </button>
-          </div> -->
-         
-            <div class="d-flex justify-content-end align-items-center mb-1 gap-2">
-               <div *ngIf="getFirstRateError()" class="d-block me-2">
-    <div class="text-danger">
-      {{ getFirstRateError() }}
-    </div>
-  </div>
+          <div class="d-flex justify-content-end align-items-center mb-1 gap-2">
+            <div *ngIf="getFirstRateError()" class="d-block me-2">
+              <div class="text-danger">
+                {{ getFirstRateError() }}
+              </div>
             </div>
+          </div>
 
-          <!-- Detail Grid -->
-        <!-- Details Grid -->
-<div class="row bg-white rounded shadow-sm mx-auto">
-  <div class="col-12 px-0">
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover table-sm mb-0 text-center">
-        <thead class="table-header-booking">
-          <tr class="align-middle bg-info">
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px; border-top-left-radius: 10px;"></th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">SNo.</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
-            <ng-container *ngIf="currentUserCountry === 'india'">
-            <!-- India GST Logic -->
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
-                <!-- CGST+SGST for same state -->
-                <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
-                <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
-            </ng-container>
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
-                <!-- IGST for different state -->
-                <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
-            </ng-container>
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
-                <!-- B2C - CGST only -->
-                <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
-            </ng-container>
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'EXWP' || vendorCreditNoteForm.get('GSTType')?.value === 'EXWOP'">
-                <!-- Export - No Tax Headers -->
-            </ng-container>
-        </ng-container>
-        
-        <!-- Non-India VAT Logic -->
-        <ng-container *ngIf="currentUserCountry !== 'india'">
-            <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
-        </ng-container>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
-             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
-          </tr>
-          <tr class="align-middle bg-info">
-        <ng-container *ngIf="currentUserCountry === 'india'">
-            <!-- India GST Sub-headers -->
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
-                <!-- CGST+SGST sub-headers -->
-                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
-                <!-- IGST sub-headers -->
-                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-            <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
-                <!-- B2C sub-headers -->
-                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-        </ng-container>
-        
-        <!-- Non-India VAT Sub-headers -->
-        <ng-container *ngIf="currentUserCountry !== 'india'">
-            <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-            <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-        </ng-container>
-    </tr>
-        </thead>
-        <tbody formArrayName="voucherDetails">
-          <ng-container *ngFor="let row of details.controls; let i = index">
-            <tr [formGroupName]="i">
-              <!-- Delete Button -->
-              <td>
-                <button type="button" class="btn btn-sm pt-1" (click)="removeDetailRow(i)">
-                  <i class="fas fa-trash text-danger"></i>
-                </button>
-              </td>
-              <td class="pt-1"><span  style="color: black; font-weight: 600;">
-                {{ i + 1 }}
-              </span></td>
+          <!-- Details Grid -->
+          <div class="row bg-white rounded shadow-sm mx-auto">
+            <div class="col-12 px-0">
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover table-sm mb-0 text-center">
+                  <!-- Replace the entire table header section with this: -->
+                  <thead class="table-header-booking">
+                    <tr class="align-middle bg-info">
+                      <th
+                        rowspan="2"
+                        *ngIf="!isEditMode"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 30px; border-top-left-radius: 10px"
+                      ></th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 50px"
+                      >
+                        Sno
+                      </th>
+                      @if (isNonJob) {
+                        <th
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 120px"
+                        >
+                          Ledger
+                        </th>
+                        <th
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 120px"
+                        >
+                          Subledger
+                        </th>
+                      } @else {
+                        <th
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 120px"
+                        >
+                          Charge
+                        </th>
+                        <th
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 200px"
+                        >
+                          Description
+                        </th>
+                      }
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 120px"
+                      >
+                        SACCode
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 70px"
+                      >
+                        Unit
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 80px"
+                      >
+                        No of Unit
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 50px"
+                      >
+                        Dr/Cr
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 70px"
+                      >
+                        Curr
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 100px"
+                      >
+                        Ex Rate
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 100px"
+                      >
+                        Rate
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 100px"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 100px"
+                      >
+                        Taxable Amt
+                      </th>
 
-              <!-- Charge -->
-              <td>
-                <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid" [placeholder]="''"
-                  [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
-                  [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'" 
-                  (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
-                </dofi-searchable-dropdown>
-              </td>
+                      <!-- Dynamic Tax Headers Based on Country and GST Type -->
+                      @if (currentCompanyCountryCode === "in") {
+                        <!-- India GST Logic -->
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'CGST+SGST'
+                          "
+                        >
+                          <!-- CGST+SGST for same state -->
+                          <th
+                            colspan="2"
+                            class="text-center bg-transparent text-light"
+                          >
+                            CGST
+                          </th>
+                          <th
+                            colspan="2"
+                            class="text-center bg-transparent text-light"
+                          >
+                            SGST
+                          </th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'IGST'
+                          "
+                        >
+                          <!-- IGST for different state -->
+                          <th
+                            colspan="2"
+                            class="text-center bg-transparent text-light"
+                          >
+                            IGST
+                          </th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'B2C'
+                          "
+                        >
+                          <!-- B2C - CGST only -->
+                          <th
+                            colspan="2"
+                            class="text-center bg-transparent text-light"
+                          >
+                            CGST
+                          </th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'EXWP' ||
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'EXWOP'
+                          "
+                        >
+                          <!-- Export - No Tax Headers -->
+                        </ng-container>
+                      } @else if (currentCompanyCountryCode === "ae") {
+                        <!-- Dubai VAT Logic -->
+                        <th
+                          colspan="2"
+                          class="text-center bg-transparent text-light"
+                        >
+                          VAT
+                        </th>
+                      } @else {
+                        <th
+                          colspan="2"
+                          class="text-center bg-transparent text-light"
+                        >
+                          TAX
+                        </th>
+                      }
 
-              <!-- Description -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('ChargeDescription')?.value || '-' }}</span>
-              </td>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 120px"
+                      >
+                        Local Amount
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 120px"
+                      >
+                        Party Amount
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 180px"
+                      >
+                        Job No.
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 180px"
+                      >
+                        House No.
+                      </th>
+                      <th
+                        rowspan="2"
+                        class="text-center bg-transparent text-light"
+                        style="min-width: 180px; border-top-right-radius: 10px"
+                      >
+                        Dept.
+                      </th>
+                    </tr>
 
-              <!-- HSN/SAC -->
-              <td>
-                <!-- <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
-                  [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
-                  [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
-                </dofi-searchable-dropdown> -->
-                <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
-                  placeholder="" formControlName="HSSACMasterSid" appendTo="body">
-                </ng-select>
-              </td>
+                    <!-- Second Header Row for Tax Sub-headers -->
+                    <tr class="align-middle bg-info">
+                      <ng-container *ngIf="currentCompanyCountryCode === 'in'">
+                        <!-- India GST Sub-headers -->
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'CGST+SGST'
+                          "
+                        >
+                          <!-- CGST+SGST sub-headers -->
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 80px"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 100px"
+                          >
+                            Amount
+                          </th>
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 80px"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 100px"
+                          >
+                            Amount
+                          </th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'IGST'
+                          "
+                        >
+                          <!-- IGST sub-headers -->
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 80px"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 100px"
+                          >
+                            Amount
+                          </th>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            vendorCreditNoteForm
+                              .get('GSTType')
+                              ?.getRawValue() === 'B2C'
+                          "
+                        >
+                          <!-- B2C sub-headers -->
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 80px"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            class="text-center bg-transparent text-light"
+                            style="min-width: 100px"
+                          >
+                            Amount
+                          </th>
+                        </ng-container>
+                      </ng-container>
 
-              <!-- Unit -->
-              <td>
-                <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid"
-                  placeholder="" formControlName="ChargeUOMSid" appendTo="body">
-                </ng-select>
-              </td>
+                      <!-- Non-India VAT Sub-headers -->
+                      <ng-container *ngIf="currentCompanyCountryCode !== 'in'">
+                        <th
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 80px"
+                        >
+                          Rate
+                        </th>
+                        <th
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 100px"
+                        >
+                          Amount
+                        </th>
+                      </ng-container>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="voucherDetails">
+                    <ng-container
+                      *ngFor="let row of details.controls; let i = index"
+                    >
+                      <tr [formGroupName]="i">
+                        <!-- Delete Button -->
+                        <td *ngIf="!isEditMode">
+                          <button
+                            type="button"
+                            class="btn border-0 btn-sm pt-1"
+                            (click)="removeDetailRow(i)"
+                          >
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+                        <td class="text-center pt-1">
+                          <span style="font-weight: 600; color: black">
+                            {{ i + 1 }}
+                          </span>
+                        </td>
 
-              <!-- No of Unit -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
-              </td>
+                        @if (isNonJob) {
+                          <td>
+                            <ng-select
+                              formControlName="COAMasterSid"
+                              [items]="coaList"
+                              bindLabel="LedgerName"
+                              bindValue="COAMasterSid"
+                              appendTo="body"
+                              placeholder=""
+                              (change)="onCOAChange($event, i)"
+                            >
+                            </ng-select>
+                          </td>
 
-              <!-- Dr/Cr -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('DrCr')?.value || '-' }}</span>
-              </td>
+                          <td>
+                            <ng-select
+                              formControlName="LedgerMasterSid"
+                              [items]="subledgerListDetail[i] || []"
+                              bindLabel="SubledgerName"
+                              bindValue="SubledgerMasterSid"
+                              appendTo="body"
+                              placeholder=""
+                            >
+                            </ng-select>
+                          </td>
+                        } @else {
+                          <!-- Charge -->
+                          <td class="text-center">
+                            <dofi-searchable-dropdown
+                              [items]="chargeList"
+                              formControlName="ChargeMasterSid"
+                              [placeholder]="''"
+                              [displayFields]="chargeLookupConfig.displayFields"
+                              [displayLabels]="chargeLookupConfig.displayLabels"
+                              [labelFields]="chargeLookupConfig.labelFields"
+                              [bindValue]="'ChargeMasterSid'"
+                              (itemSelected)="
+                                onDetailChange(i, 'ChargeMasterSid')
+                              "
+                            >
+                            </dofi-searchable-dropdown>
+                          </td>
 
-              <!-- Currency -->
-              <td>
-                <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
-                  [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                  [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'" 
-                  (itemSelected)="onDetailChange(i,'CurrencyCode')">
-                </dofi-searchable-dropdown>
-              </td>
+                          <!-- Description -->
+                          <td>
+                            <input
+                              class="custom-input-field sm"
+                              formControlName="ChargeDescription"
+                              readonly
+                              style="cursor: not-allowed"
+                            />
+                          </td>
+                        }
 
-              <!-- Rate -->
-              <td>
-                                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
-                                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                                <span *ngIf="isEditMode" style="color: black; font-weight: 600;">{{ row.get('Rate')?.value | numberFormat }}</span>
-                                <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
-    <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
-      Credit note rate cannot exceed original invoice rate
-    </div>
-    <div *ngIf="row.get('Rate')?.errors?.['required']">
-      Rate is required
-    </div>
-    <div *ngIf="row.get('Rate')?.errors?.['min']">
-      Rate must be greater than or equal to 0
-    </div>
-  </div>
-                              </td>
+                        <!-- HSN/SAC -->
+                        @if (isNonJob) {
+                          <td>
+                            <dofi-searchable-dropdown
+                              [items]="hssacListForNonJob"
+                              formControlName="HSSACMasterSid"
+                              [placeholder]="''"
+                              [displayFields]="HSSACLookupConfig.displayFields"
+                              [displayLabels]="HSSACLookupConfig.displayLabels"
+                              [labelFields]="HSSACLookupConfig.labelFields"
+                              [bindValue]="'HSSACMasterSid'"
+                              appendTo="body"
+                              (itemSelected)="
+                                onDetailChange(i, 'HSSACMasterSid')
+                              "
+                            >
+                            </dofi-searchable-dropdown>
+                          </td>
+                        } @else {
+                          <td>
+                            <dofi-searchable-dropdown
+                              [items]="hssacList[i]"
+                              formControlName="HSSACMasterSid"
+                              [placeholder]="''"
+                              [displayFields]="HSSACLookupConfig.displayFields"
+                              [displayLabels]="HSSACLookupConfig.displayLabels"
+                              [labelFields]="HSSACLookupConfig.labelFields"
+                              [bindValue]="'HSSACMasterSid'"
+                              appendTo="body"
+                              (itemSelected)="
+                                onDetailChange(i, 'HSSACMasterSid')
+                              "
+                            >
+                            </dofi-searchable-dropdown>
+                          </td>
+                        }
 
-              <!-- Exchange Rate -->
-              <td>
-                <input type="number" step="0.0001" class="custom-input-field sm"
-                  formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-              </td>
+                        <!-- Unit -->
+                        <td>
+                          <ng-select
+                            [items]="uomList"
+                            bindLabel="UOMCode"
+                            bindValue="UOMMasterSid"
+                            placeholder=""
+                            formControlName="ChargeUOMSid"
+                            appendTo="body"
+                          >
+                          </ng-select>
+                        </td>
 
-              <!-- Amount -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('Amount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- No of Unit -->
+                        <td>
+                          <input
+                            type="text"
+                            class="custom-input-field sm"
+                            formControlName="NumberOfUnit"
+                            (input)="onDetailChange(i, 'NumberOfUnit')"
+                            DecimalPrecision
+                            [DecimalPrecisionBefore]="4"
+                            [DecimalPrecisionAfter]="3"
+                          />
+                        </td>
 
-              <!-- Taxable Amount -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
-              </td>
+                        <!-- Dr/Cr -->
+                        <td>
+                          <ng-select
+                            [items]="[
+                              { id: 'D', name: 'D' },
+                              { id: 'C', name: 'C' },
+                            ]"
+                            bindLabel="name"
+                            bindValue="id"
+                            formControlName="DrCr"
+                            appendTo="body"
+                          ></ng-select>
+                        </td>
 
-              <!-- India GST Columns -->
-              <ng-container *ngIf="currentUserCountry === 'india'">
-    <!-- CGST+SGST Scenario -->
-    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'CGST+SGST'">
-        <!-- CGST Rate -->
-        <td>
-            <div *ngIf="!isEditMode" class="input-group input-group-sm">
-                <div class="d-flex">
-                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
-                    <span class="" style="font-weight: 600; color: black;">%</span>
-                </div>
+                        <!-- Currency -->
+                        <!-- Currency in Details Table -->
+                        <td>
+                          <dofi-searchable-dropdown
+                            [items]="currencyList"
+                            formControlName="CurrencyCode"
+                            placeholder=""
+                            [displayFields]="CurrencyLookupConfig.displayFields"
+                            [displayLabels]="CurrencyLookupConfig.displayLabels"
+                            [labelFields]="CurrencyLookupConfig.labelFields"
+                            [bindValue]="'currencyCode'"
+                            (itemSelected)="onDetailChange(i, 'CurrencyCode')"
+                          >
+                          </dofi-searchable-dropdown>
+                        </td>
+
+                        <!-- Exchange Rate -->
+                        <td>
+                          <input
+                            type="text"
+                            class="custom-input-field sm"
+                            formControlName="ExchangeRate"
+                            (input)="onDetailChange(i, 'ExchangeRate')"
+                            DecimalPrecision
+                            [DecimalPrecisionBefore]="3"
+                            [DecimalPrecisionAfter]="
+                              getExchangeRateDecimalPlaces(
+                                row.get('CurrencyMasterSid')?.getRawValue()
+                              )
+                            "
+                          />
+                        </td>
+
+                        <!-- Rate -->
+                        <td>
+                          <input
+                            type="text"
+                            class="custom-input-field sm"
+                            formControlName="Rate"
+                            (input)="onDetailChange(i, 'Rate')"
+                            DecimalPrecision
+                            [DecimalPrecisionBefore]="12"
+                            [DecimalPrecisionAfter]="
+                              getAmountDecimalPlaces(
+                                row.get('CurrencyMasterSid')?.getRawValue()
+                              )
+                            "
+                          />
+                        </td>
+
+                        <!-- Amount -->
+                        <td class="pt-1">
+                          <span style="font-weight: 600; color: black">{{
+                            getFormattedAmount(
+                              row.get("Amount")?.value,
+                              row.get("CurrencyMasterSid")?.getRawValue()
+                            )
+                          }}</span>
+                        </td>
+
+                        <!-- Taxable Amount -->
+                        <td class="pt-1">
+                          <span style="font-weight: 600; color: black">{{
+                            getFormattedAmount(
+                              row.get("TaxableAmount")?.getRawValue(),
+                              currentCompany.CurrencyMasterSid
+                            )
+                          }}</span>
+                        </td>
+
+                        <!-- India GST Columns -->
+                        <ng-container
+                          *ngIf="currentCompanyCountryCode === 'in'"
+                        >
+                          <!-- CGST+SGST Scenario -->
+                          <ng-container
+                            *ngIf="
+                              vendorCreditNoteForm.get('GSTType')?.value ===
+                              'CGST+SGST'
+                            "
+                          >
+                            <!-- CGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex">
+                                  <input
+                                    type="number"
+                                    class="custom-input-field sm"
+                                    formControlName="TaxPercentage1"
+                                    (input)="
+                                      onDetailChange(i, 'TaxPercentage1')
+                                    "
+                                    readonly
+                                  />
+                                  <span
+                                    class="pt-1"
+                                    style="font-weight: 600; color: black"
+                                    >%</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <!-- CGST Amount -->
+                            <td>
+                              <span
+                                class="pt-1"
+                                style="font-weight: 600; color: black"
+                                >{{
+                                  getFormattedAmount(
+                                    row.get("TaxAmount1")?.getRawValue(),
+                                    currentCompany.CurrencyMasterSid
+                                  )
+                                }}</span
+                              >
+                            </td>
+                            <!-- SGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex gap-1">
+                                  <input
+                                    type="number"
+                                    class="custom-input-field sm"
+                                    formControlName="TaxPercentage2"
+                                    (input)="
+                                      onDetailChange(i, 'TaxPercentage2')
+                                    "
+                                    readonly
+                                  />
+                                  <span
+                                    class="pt-1"
+                                    style="font-weight: 600; color: black"
+                                    >%</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <!-- SGST Amount -->
+                            <td>
+                              <span
+                                class="pt-1"
+                                style="font-weight: 600; color: black"
+                                >{{
+                                  getFormattedAmount(
+                                    row.get("TaxAmount2")?.getRawValue(),
+                                    currentCompany.CurrencyMasterSid
+                                  )
+                                }}</span
+                              >
+                            </td>
+                          </ng-container>
+
+                          <!-- IGST Scenario -->
+                          <ng-container
+                            *ngIf="
+                              vendorCreditNoteForm.get('GSTType')?.value ===
+                              'IGST'
+                            "
+                          >
+                            <!-- IGST Rate -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex gap-1">
+                                  <input
+                                    type="number"
+                                    class="custom-input-field sm"
+                                    formControlName="TaxPercentage1"
+                                    (input)="
+                                      onDetailChange(i, 'TaxPercentage1')
+                                    "
+                                    readonly
+                                  />
+                                  <span
+                                    class="pt-1"
+                                    style="font-weight: 600; color: black"
+                                    >%</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <!-- IGST Amount -->
+                            <td>
+                              <span
+                                class="pt-1"
+                                style="font-weight: 600; color: black"
+                                >{{
+                                  getFormattedAmount(
+                                    row.get("TaxAmount1")?.getRawValue(),
+                                    currentCompany.CurrencyMasterSid
+                                  )
+                                }}</span
+                              >
+                            </td>
+                          </ng-container>
+
+                          <!-- B2C Scenario -->
+                          <ng-container
+                            *ngIf="
+                              vendorCreditNoteForm.get('GSTType')?.value ===
+                              'B2C'
+                            "
+                          >
+                            <!-- CGST Rate (for B2C) -->
+                            <td>
+                              <div class="input-group input-group-sm">
+                                <div class="d-flex">
+                                  <input
+                                    type="number"
+                                    class="custom-input-field sm"
+                                    formControlName="TaxPercentage1"
+                                    (input)="
+                                      onDetailChange(i, 'TaxPercentage1')
+                                    "
+                                    readonly
+                                  />
+                                  <span
+                                    class="pt-1"
+                                    style="font-weight: 600; color: black"
+                                    >%</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <!-- CGST Amount (for B2C) -->
+                            <td>
+                              <span
+                                class="pt-1"
+                                style="font-weight: 600; color: black"
+                                >{{
+                                  getFormattedAmount(
+                                    row.get("TaxAmount1")?.getRawValue(),
+                                    currentCompany.CurrencyMasterSid
+                                  )
+                                }}</span
+                              >
+                            </td>
+                          </ng-container>
+
+                          <!-- Export (No Tax Columns) -->
+                          <ng-container
+                            *ngIf="
+                              vendorCreditNoteForm.get('GSTType')?.value ===
+                                'EXWP' ||
+                              vendorCreditNoteForm.get('GSTType')?.value ===
+                                'EXWOP'
+                            "
+                          >
+                            <!-- No tax columns for export -->
+                          </ng-container>
+                        </ng-container>
+
+                        <!-- Non-India VAT Columns -->
+                        <ng-container
+                          *ngIf="currentCompanyCountryCode !== 'in'"
+                        >
+                          <!-- VAT Rate -->
+                          <td>
+                            <div class="input-group input-group-sm">
+                              <div class="d-flex">
+                                <input
+                                  type="number"
+                                  class="custom-input-field sm"
+                                  formControlName="TaxPercentage1"
+                                  (input)="onDetailChange(i, 'TaxPercentage1')"
+                                  readonly
+                                />
+                                <span
+                                  class="pt-1"
+                                  style="font-weight: 600; color: black"
+                                  >%</span
+                                >
+                              </div>
+                            </div>
+                          </td>
+                          <!-- VAT Amount -->
+                          <td>
+                            <span
+                              class="pt-1"
+                              style="font-weight: 600; color: black"
+                              >{{
+                                getFormattedAmount(
+                                  row.get("TaxAmount1")?.getRawValue(),
+                                  currentCompany.CurrencyMasterSid
+                                )
+                              }}</span
+                            >
+                          </td>
+                        </ng-container>
+
+                        <!-- Local Amount -->
+                        <td>
+                          <span
+                            class="pt-1"
+                            style="font-weight: 600; color: black"
+                          >
+                            {{
+                              getFormattedAmount(
+                                row.get("LocalAmount")?.getRawValue(),
+                                currentCompany.CurrencyMasterSid
+                              )
+                            }}</span
+                          >
+                        </td>
+
+                        <!-- Party Amount -->
+                        <td>
+                          <span
+                            class="pt-1"
+                            style="font-weight: 600; color: black"
+                          >
+                            {{
+                              getFormattedAmount(
+                                row.get("PartyAmount")?.getRawValue(),
+                                currentCompany.CurrencyMasterSid
+                              )
+                            }}
+                          </span>
+                        </td>
+
+                        <!-- MasterJobSid column -->
+                        <td style="min-width: 200px">
+                          <dofi-searchable-dropdown
+                            [items]="masterJobList"
+                            formControlName="MasterJobSid"
+                            [placeholder]="''"
+                            [displayFields]="
+                              masterJobLookupConfig.displayFields
+                            "
+                            [displayLabels]="
+                              masterJobLookupConfig.displayLabels
+                            "
+                            [labelFields]="masterJobLookupConfig.labelFields"
+                            [bindValue]="'MasterJobSid'"
+                            (itemSelected)="
+                              onDetailMasterJobSelected($event, i)
+                            "
+                            appendTo="body"
+                          >
+                          </dofi-searchable-dropdown>
+                        </td>
+
+                        <!-- HouseJobSid -->
+                        <td style="min-width: 200px">
+                          <ng-select
+                            [items]="houseJobList[i] || []"
+                            bindLabel="HBLNo"
+                            bindValue="HouseJobSid"
+                            formControlName="HouseJobSid"
+                            placeholder=""
+                            [clearable]="true"
+                            [searchable]="true"
+                            appendTo="body"
+                          >
+                            <ng-template ng-option-tmp let-item="item">
+                              <div>
+                                <strong
+                                  style="font-weight: 600; color: black"
+                                  >{{ item.HBLNo }}</strong
+                                >
+                              </div>
+                            </ng-template>
+                            <ng-template ng-label-tmp let-item="item">
+                              {{ item.HBLNo }}
+                            </ng-template>
+                          </ng-select>
+                        </td>
+                        <!-- Department Column -->
+                        <td style="min-width: 200px">
+                          <dofi-searchable-dropdown
+                            [items]="departmentList"
+                            formControlName="DepartmentMasterSid"
+                            [placeholder]="''"
+                            [displayFields]="
+                              departmentLookupConfig.displayFields
+                            "
+                            [displayLabels]="
+                              departmentLookupConfig.displayLabels
+                            "
+                            [labelFields]="departmentLookupConfig.labelFields"
+                            [bindValue]="'DepartmentMasterSid'"
+                            appendTo="body"
+                          >
+                          </dofi-searchable-dropdown>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
-        </td>
-        <!-- CGST Amount -->
-        <td class="pt-1">
-            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-        </td>
-        <!-- SGST Rate -->
-        <td>
-            <div *ngIf="!isEditMode" class="input-group input-group-sm">
-                <div class="d-flex gap-1">
-                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
-                        (input)="onDetailChange(i, 'TaxPercentage2')">
-                    <span class="" style="font-weight: 600; color: black;">%</span>
-                </div>
-            </div>
-            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
-        </td>
-        <!-- SGST Amount -->
-        <td class="pt-1">
-            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
-        </td>
-    </ng-container>
-    
-    <!-- IGST Scenario -->
-    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'IGST'">
-        <!-- IGST Rate -->
-        <td>
-            <div *ngIf="!isEditMode" class="input-group input-group-sm">
-                <div class="d-flex gap-1">
-                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
-                    <span class="" style="font-weight: 600; color: black;">%</span>
-                </div>
-            </div>
-            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
-        </td>
-        <!-- IGST Amount -->
-        <td class="pt-1"> 
-            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-        </td>
-    </ng-container>
-    
-    <!-- B2C Scenario -->
-    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'B2C'">
-        <!-- CGST Rate (for B2C) -->
-        <td>
-            <div *ngIf="!isEditMode" class="input-group input-group-sm">
-                <div class="d-flex">
-                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
-                    <span class="" style="font-weight: 600; color: black;">%</span>
-                </div>
-            </div>
-            <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
-        </td>
-        <!-- CGST Amount (for B2C) -->
-        <td class="pt-1">
-            <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-        </td>
-    </ng-container>
-    
-    <!-- Export (No Tax Columns) -->
-    <ng-container *ngIf="vendorCreditNoteForm.get('GSTType')?.value === 'EXWP' || vendorCreditNoteForm.get('GSTType')?.value === 'EXWOP'">
-        <!-- No tax columns for export -->
-    </ng-container>
-</ng-container>
+          </div>
 
-<!-- Non-India VAT Columns -->
-<ng-container *ngIf="currentUserCountry !== 'india'">
-    <!-- VAT Rate -->
-    <td>
-        <div *ngIf="!isEditMode" class="input-group input-group-sm">
-            <div class="d-flex">
-                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
-                    (input)="onDetailChange(i, 'TaxPercentage1')">
-                <span class="" style="font-weight: 600; color: black;">%</span>
-            </div>
-        </div>
-        <span *ngIf="isEditMode" style="font-weight: 600; color: black;">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
-    </td>
-    <!-- VAT Amount -->
-    <td class="pt-1">
-        <span style="font-weight: 600; color: black;">{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
-    </td>
-</ng-container>
-
-              <!-- Local Amount -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('LocalAmount')?.value | numberFormat }}</span>
-              </td>
-
-              <!-- Party Amount -->
-              <td class="pt-1">
-                <span  style="color: black; font-weight: 600;">{{ row.get('PartyAmount')?.value | numberFormat }}</span>
-              </td>
-
-              <!-- MasterJobSid column -->
-<td style="min-width:200px;">
-  <dofi-searchable-dropdown 
-    [items]="masterJobList" 
-    formControlName="MasterJobSid" 
-    [placeholder]="''"
-    [displayFields]="masterJobLookupConfig.displayFields" 
-    [displayLabels]="masterJobLookupConfig.displayLabels"
-    [labelFields]="masterJobLookupConfig.labelFields" 
-    [bindValue]="'MasterJobSid'"
-    appendTo="body">
-  </dofi-searchable-dropdown>
-</td>
-
-              <!-- HouseJobSid -->
-              <td style="min-width:200px;">
-                <ng-select [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []" bindLabel="displayLabel"
-                  bindValue="HouseJobSid" formControlName="HouseJobSid" placeholder="" [clearable]="true"
-                  [searchable]="true" appendTo="body">
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>
-                      <strong>{{ item.HouseJobNumber }}</strong>
-                    </div>
-                  </ng-template>
-                  <ng-template ng-label-tmp let-item="item">
-                    {{ item.HouseJobNumber }}
-                  </ng-template>
-                </ng-select>
-              </td>
-               <!-- Department Column -->
-<td style="min-width:200px;">
-  <dofi-searchable-dropdown 
-    *ngIf="!isEditMode"
-    [items]="departmentList" 
-    formControlName="DepartmentMasterSid" 
-    [placeholder]="''"
-    [displayFields]="departmentLookupConfig.displayFields" 
-    [displayLabels]="departmentLookupConfig.displayLabels"
-    [labelFields]="departmentLookupConfig.labelFields" 
-    [bindValue]="'DepartmentMasterSid'"
-    appendTo="body">
-  </dofi-searchable-dropdown>
-  <span *ngIf="isEditMode">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span>
-</td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-          <div class="row  border border-bottom-0 pt-2 align-items-center text-nowrap">
-          
+          <!-- Totals Section -->
+          <div
+            class="row border border-bottom-0 pt-2 align-items-center text-nowrap"
+          >
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="fw-bold small text-black">Total Credit</span>
+              <span class="text-black small fw-bold">Total Credit</span>
               <span class="fw-semibold text-success">
                 {{ getTotalLocalCredits() }}
               </span>
             </div>
-          
+
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="fw-bold small text-black">Total Debit</span>
+              <span class="text-black small fw-bold">Total Debit</span>
               <span class="fw-semibold text-danger">
                 {{ getTotalLocalDebits() }}
               </span>
             </div>
-          
+
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="fw-bold small text-black">Net (Cr - Dr)</span>
+              <span class="text-black small fw-bold">Net (Cr - Dr)</span>
               <span class="fw-semibold text-primary">
                 {{ getNetCrDr() }}
               </span>
             </div>
-          
+
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="fw-bold small text-black">Party Curr Credit</span>
+              <span class="text-black small fw-bold">Party Curr Credit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrCreditAmt() }}
               </span>
             </div>
-          
+
             <div class="col d-flex justify-content-between border-end px-2">
-              <span class="fw-bold small text-black">Party Curr Debit</span>
+              <span class="text-black small fw-bold">Party Curr Debit</span>
               <span class="fw-semibold">
                 {{ getPartyCurrDebitAmt() }}
               </span>
             </div>
-          
+
             <div class="col d-flex justify-content-between px-2">
-              <span class="fw-bold small text-black">Tax Amount</span>
+              <span class="text-black fw-bold small">Tax Amount</span>
               <span class="fw-semibold text-warning">
                 {{ getTotalTaxAmount() }}
               </span>
             </div>
-          
           </div>
 
-<!-- Totals Section
+          <!-- Totals Section
 <div class="row mt-1">
   <div class="col-md-6"></div>
   <div class="col-md-6">
@@ -895,10 +1740,8 @@
               </div>
             </div>
           </div> -->
-
         </form>
       </div>
     </div>
   </div>
 </div>
-

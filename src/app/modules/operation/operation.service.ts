@@ -679,8 +679,10 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  detachBooking(BookingHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`master-job/detach/${BookingHeaderSid}`).pipe(
+  detachBooking(BookingHeaderSid: number,userEmail: string) {
+    return this.http.delete<{ data: any }>(`master-job/detach/${BookingHeaderSid}`,{
+      params: { email: userEmail }
+    }).pipe(
       map((resp) => {
         return resp;
       })
@@ -1036,6 +1038,18 @@ processProductUpload(payload: any): Observable<any> {
   getVendorInvoicesById(VoucherHeaderSid: number) {
     return this.http.get<{ status: boolean; data: any }>(`vendor-credit-note/fetch/vendor-invoice/${VoucherHeaderSid}`).pipe(
       map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getVendorInvoiceByNumber(payload: {
+    VoucherNumber: string,
+    CompanyMasterSid: number,
+    BranchMasterSid: number
+  }) {
+    return this.http.post<{ status: boolean; data: any }>(`vendor-credit-note/fetch/vendor-invoice`,payload).pipe(
+      map((resp: any) => {
         return resp;
       })
     );
