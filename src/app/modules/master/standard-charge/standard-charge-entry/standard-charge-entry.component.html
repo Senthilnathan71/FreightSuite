@@ -9,12 +9,18 @@
                             <i class="fas fa-credit-card"></i>
                         </div>
                         <h5 class="page-title mb-0 text-info">Standard Charge</h5>
+                        @if(isEditMode){
+                        <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                        }
                     </div>
                 </div>
                 <div class="col-md-8 pb-1">
                     <div
                         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button>
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -30,7 +36,7 @@
                             <i class="fas fa-save me-1"></i>Save
                         </button>
 
-                        <!-- <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+                        <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                                 ngbDropdownToggle>
                                 <i class="fas fa-ellipsis-v"></i>
@@ -51,7 +57,7 @@
                                     <i class="fas fa-paperclip me-1"></i> Followup
                                 </button>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,30 +122,38 @@
                         Add
                     </button>
                 </div>
-                <div class="table-responsive table-borderless">
+                <div class="table-responsive table-borderless" style="max-height: 380px; overflow-y: scroll;">
                     <table class="table table-hover align-middle no-wrap table-sm">
                         <thead class="bg-info">
                             <tr>
+                                <th class="bg-transparent text-light" width="2%"></th>
                                 <th class="bg-transparent text-light" width="10%">Cargo Type</th>
-                                <th class="bg-transparent text-light" width="10%">Charge</th>
-                                <th class="bg-transparent text-light" width="10%">Uom</th>
-                                <th class="bg-transparent text-light" width="10%">Sale Cur</th>
-                                <th class="bg-transparent text-light">Sales Amt</th>
+                                <th class="bg-transparent text-light">Charge</th>
+                                <th class="bg-transparent text-light">Uom</th>
                                 <th class="bg-transparent text-light" width="10%">Cost Cur</th>
                                 <th class="bg-transparent text-light">Cost Amt</th>
+                                <th class="bg-transparent text-light" width="10%">Sales Cur</th>
+                                <th class="bg-transparent text-light">Sales Amt</th>
                                 <th class="bg-transparent text-light">Valid From</th>
                                 <th class="bg-transparent text-light">Valid To</th>
                             </tr>
                         </thead>
 
                         <tbody formArrayName="StdTariffDetails">
-                            <tr [formGroupName]="0">
+                            @for(std of StdTariffDetails.controls ; track std ; let i = $index){
+                            <tr [formGroupName]="i">
                                 <td>
+                                    <button class="btn btn-sm" (click)="removeRow(i)">
+                                        <i class="fas fa-trash text-danger fs-2"></i>
+                                    </button>
+                                </td>
+                                <td style="padding:2px; vertical-align:middle; width:120px;">
                                     <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name"
-                                        class="ng-select" formControlName="CargoType" placeholder="" appendTo="body">
+                                        formControlName="CargoType" appendTo="body" style="font-size:12px;">
                                     </ng-select>
                                 </td>
-                                <td>
+
+                                <td style="padding:2px; vertical-align:middle; width:80px;">
                                     <dofi-searchable-dropdown [items]="charge" formControlName="ChargeMasterSid"
                                         [displayFields]="chargeLookupConfig.displayFields"
                                         [displayLabels]="chargeLookupConfig.displayLabels"
@@ -147,62 +161,127 @@
                                         (itemSelected)="onCharge($event)">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td>
-                                    <dofi-searchable-dropdown #uomLookup [items]="UOMType" formControlName="UomSid"
-                                        id="" placeholder="" [displayFields]="UOMLookupConfig.displayFields"
+
+                                <td style="padding:2px; vertical-align:middle; width:80px;">
+                                    <dofi-searchable-dropdown [items]="UOMType" formControlName="UomSid"
+                                        [displayFields]="UOMLookupConfig.displayFields"
                                         [displayLabels]="UOMLookupConfig.displayLabels"
                                         [labelFields]="UOMLookupConfig.labelFields" bindValue="UOMMasterSid">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td>
-                                    <dofi-searchable-dropdown #currenciesLookup [items]="currencyList"
-                                        formControlName="CostCurrency" id="" placeholder=""
+
+                                <td style="padding:2px; vertical-align:middle; width:80px;">
+                                    <dofi-searchable-dropdown [items]="currencyList" formControlName="CostCurrency"
                                         [displayFields]="currenciesLookupConfig.displayFields"
                                         [displayLabels]="currenciesLookupConfig.displayLabels"
                                         [labelFields]="currenciesLookupConfig.labelFields"
                                         bindValue="CurrencyMasterSid">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td>
-                                    <input class="custom-input-field sm" formControlName="SaleAmount">
+
+                                <td style="padding:2px; vertical-align:middle; width:120px;">
+                                    <input class="custom-input-field sm" formControlName="CostAmount"
+                                        style="height:28px; font-size:12px; padding:2px 6px;" DecimalPrecision
+                                        [DecimalPrecisionBefore]="12"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(std.get('CostCurrency')?.value)">
                                 </td>
-                                <td>
-                                    <dofi-searchable-dropdown #currenciesLookup [items]="currencyList"
-                                        formControlName="SaleCurrency" id="" placeholder=""
+
+                                <td style="padding:2px; vertical-align:middle; width:80px;">
+                                    <dofi-searchable-dropdown [items]="currencyList" formControlName="SaleCurrency"
                                         [displayFields]="currenciesLookupConfig.displayFields"
                                         [displayLabels]="currenciesLookupConfig.displayLabels"
                                         [labelFields]="currenciesLookupConfig.labelFields"
                                         bindValue="CurrencyMasterSid">
                                     </dofi-searchable-dropdown>
                                 </td>
-                                <td>
-                                    <input class="custom-input-field sm" formControlName="CostAmount">
+
+                                <td style="padding:2px; vertical-align:middle; width:120px;">
+                                    <input class="custom-input-field sm" formControlName="SaleAmount"
+                                        style="height:28px; font-size:12px; padding:2px 6px;" DecimalPrecision
+                                        [DecimalPrecisionBefore]="12"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(std.get('SaleCurrency')?.value)">
                                 </td>
-                                <td>
-                                    <div class="d-flex pt-2">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                            #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="ValidFrom"
-                                            (keydown.arrowDown)="d1.open()" container="body" />
-                                        <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+
+                                <td style="padding:2px; vertical-align:middle; width:120px;">
+                                    <div style="display:flex; align-items:center;">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
+                                            #d1="ngbDatepicker" formControlName="ValidFrom" (click)="d1.toggle()"
+                                            style="height:28px; font-size:12px; padding:2px 6px;"
+                                            [minDate]="minValidFrom"
+                                            [maxDate]="toNgbDateStruct(std.get('ValidTo').value)"
+                                            (dateSelect)="onValidFromChange($event, i)">
+                                        <button type="button" class="btn bi bi-calendar3 " (click)="d1.toggle()"
+                                            style="height:28px; padding:2px 6px;">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                                        </button>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="d-flex pt-2">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                            #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="ValidTo"
-                                            (keydown.arrowDown)="d2.open()" container="body" />
-                                        <button class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+
+                                <td style="padding:2px; vertical-align:middle; width:120px;">
+                                    <div style="display:flex; align-items:center;">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
+                                            #d2="ngbDatepicker" formControlName="ValidTo" (click)="d2.toggle()"
+                                            style="height:28px; font-size:12px; padding:2px 6px;"
+                                            [minDate]="StdTariffDetails.at(i).get('minValidTo')?.value">
+                                        <button type="button" class="btn bi bi-calendar3 " (click)="d2.toggle()"
+                                            style="height:28px; padding:2px 6px;">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
     </div>
-
 </form>
+
+
+
+<ng-template #auditLogModal let-modal>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
+</ng-template>
