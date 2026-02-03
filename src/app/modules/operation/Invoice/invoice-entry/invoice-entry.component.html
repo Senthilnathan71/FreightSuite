@@ -2545,14 +2545,16 @@
           <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
           <div class="table-responsive">
         <table class="table align-middle mb-0" style="
-            width: 100%;
             border-collapse: collapse;
             /* display: inline-table; */
             color: #000;
             /* border : 1px solid #000; */
             font-size: 13px;
              border: 0.5px solid #000;
-          ">
+          "   [ngStyle]="{
+    width: bankDetails.length === 1 ? 'auto' : '100%',
+    'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
+  }">
           <thead>
             <tr>
               <th style="width:180px;padding:2px;color:#000;border-color:#000; text-align: center; border: 0.5px solid #000;">
@@ -2569,6 +2571,7 @@
             <tr>
               <th style="padding:4px 6px;color:#000;border-color:#000;  border: 0.5px solid #000;"><strong>Beneficiary Name</strong></th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  white-space: normal;  word-break: break-word; border: 0.5px solid #000;">
+                   {{ bankDetail.BeneficiaryName }}
               </td>
             </tr>
         
@@ -2588,7 +2591,7 @@
         
             <tr>
               <th style="padding:4px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
-                {{ isVATMode ? 'IBAN' : 'IFSC' }}
+                <strong>{{ isVATMode ? 'IBAN' : 'IFSC' }}</strong>
               </th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  word-break: break-word;white-space: normal; border: 0.5px solid #000; ">
                 {{ bankDetail.IFSCCode }}
@@ -2636,7 +2639,6 @@
           <!-- Footer -->
           <footer
             style="
-               position: absolute; 
               bottom: 0;
               left: 0;
               width: 100%;
@@ -2644,6 +2646,7 @@
               font-size: 10pt;
               padding: 10px;
               box-sizing: border-box;
+              position:absolute;
             "
           >
             <div
