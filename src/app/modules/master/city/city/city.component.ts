@@ -71,6 +71,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
   @ViewChild('content') content: TemplateRef<any>
   cityForm!: FormGroup;
   isEditMode: boolean = false;
+  isLogLoading: boolean = false;
   citys: City[] = [];        // Array to store the leads
   results: any[] = [];
   CityMasterSid!: number;
@@ -711,19 +712,28 @@ private initializeTableConfig() {
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.CityMasterSid) return;
 
+    // 1. PREVENT MULTIPLE CLICKS (The Lock)
+    if (this.isLogLoading) {
+      return; 
+    }
+    this.isLogLoading = true; // Lock the button
+
     this.masterService.getAuditLogsCity(
       'CityMaster',
       this.CityMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+        // 2. UNLOCK (Success)
+        this.isLogLoading = false; 
+
+        const ignoredFields = ['updatedOn', 'updatedBy'];
 
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
           if (Object.keys(obj).length === 0) return [];
           return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .filter(([key]) => !ignoredFields.includes(key))
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
 
@@ -741,7 +751,11 @@ private initializeTableConfig() {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: err => {
+        // 3. UNLOCK (Error Case)
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
     });
   }
   closeModal(): void {

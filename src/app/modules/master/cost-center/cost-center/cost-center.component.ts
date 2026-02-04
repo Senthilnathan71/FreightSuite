@@ -711,6 +711,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
+      this.btnDisable = true;
       let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.costCenterForm.value;
@@ -731,17 +732,17 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         this.masterService.editCostCenter(this.CostCenterMasterSid, payload).subscribe(
           (resp: any) => {
             console.log(resp.message);
-            if (resp.Status) {
-              this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
+            if (resp.Status || resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
               this.closeModal();
-              // this.loadCostCenters();
               this.searchCostCenter();
-              this.router.navigate(['master/cost-center']);
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false; 
           },
           (error) => {
+            this.btnDisable = false; 
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -749,18 +750,18 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       } else {
         this.masterService.createCostCenter(payload).subscribe(
           (resp: any) => {
+            this.btnDisable = false;
             console.log(resp);
-            if (resp.Status) {
-              this.appSettingService.showSuccess(resp.message);
+            if (resp.Status || resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
               this.closeModal();
-              // this.loadCostCenters();
               this.searchCostCenter();
-              this.router.navigate(['master/cost-center']);
             } else {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showError(resp.message);
             }
           },
           (error) => {
+            this.btnDisable = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
