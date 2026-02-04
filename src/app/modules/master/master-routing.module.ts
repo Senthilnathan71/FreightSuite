@@ -1293,7 +1293,7 @@ export const MasterRoutes: Routes = [
     }
   },
     {
-    path: 'standard-charge/entry/:StdRateHeaderSid',
+    path: 'standard-charge/entry/:id',
     component: StandardChargeEntryComponent,
     data: {
       title: 'Standard Charge',

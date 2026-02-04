@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit,ViewChild  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateStruct, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -27,6 +27,9 @@ import { JournalVoucherPrintComponent } from '../print/journal-voucher-print/jou
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject } from 'rxjs';
+import { takeUntil, debounceTime } from 'rxjs/operators';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -44,7 +47,12 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
 })
-export class JournalVoucherEntryComponent implements OnInit {
+export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges, OnDestroy  {
+
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
+
   form!: FormGroup;
   currentCompanyCurrency: CurrencySettings;
   currentCompanyCountry: {
@@ -127,6 +135,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   // difference = 0;
 
   private showWarningFlags: boolean[] = [];
+  manuallyEditedNarrationRows: Set<number> = new Set<number>();
 
   constructor(
     private router: Router,
@@ -156,7 +165,188 @@ export class JournalVoucherEntryComponent implements OnInit {
     this.loadMasterData();
     this.checkEditMode();
     this.subledgerTypes = [];
+    if (!this.editMode) {
+    setTimeout(() => {
+      this.initialFormValue = this.form.getRawValue();
+      this.subscribeToFormChanges();
+    }, 0);
   }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+unloadNotification($event: BeforeUnloadEvent): void {
+  if (this.hasUnsavedChanges()) {
+    $event.preventDefault();
+    $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+  }
+}
+
+hasUnsavedChanges(): boolean {
+  return this.isDirty;
+}
+
+async saveChanges(): Promise<boolean> {
+  return new Promise((resolve) => {
+    this.saveDraftWithCallback(resolve);
+  });
+}
+
+private subscribeToFormChanges() {
+  this.form.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.form.getRawValue()
+      );
+    });
+}
+
+// Add this method to handle save with callback
+private saveDraftWithCallback(resolve?: (value: boolean) => void) {
+  if (!this.isFormValid()) {
+    if (resolve) resolve(false);
+    return;
+  }
+
+  const raw = this.form.getRawValue();
+  
+  if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+    this.appSettingService.showWarning('No changes to save');
+    this.form.markAsUntouched();
+    if (resolve) resolve(false);
+    return;
+  }
+
+  this.saveJournalVoucherWithCallback(false, resolve);
+}
+
+private saveJournalVoucherWithCallback(isFinal: boolean, resolve?: (value: boolean) => void) {
+  if (this.form.hasError('inconsistentExchangeRates')) {
+    const errorMsg = getExchangeRateErrorMessage(this.form, this.currencyList);
+    this.appSettingService.showError(errorMsg);
+    if (resolve) resolve(false);
+    return;
+  }
+
+  let hasInvalidExchangeRate = false;
+  this.details.controls.forEach((control, index) => {
+    const detailGroup = control as FormGroup;
+    const currencyId = detailGroup.get('currencyMasterSid')?.value;
+    const exchangeRate = detailGroup.get('exchangeRate')?.value;
+    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    
+    if (currencyId && currencyId !== companyCurrencyId && 
+        (!exchangeRate || exchangeRate === 0)) {
+      hasInvalidExchangeRate = true;
+      this.appSettingService.showError(`Row ${index + 1}: Exchange rate cannot be 0.`);
+    }
+  });
+
+  if (hasInvalidExchangeRate) {
+    if (resolve) resolve(false);
+    return;
+  }
+
+  if (!this.isFormValid()) {
+    if (resolve) resolve(false);
+    return;
+  }
+
+  const payload = this.preparePayload();
+
+  this.isSaving = true;
+  this.spinner.show();
+
+  const saveObservable = this.voucherHeaderSid
+    ? this.journalVoucherService.updateJournalVoucherById(this.voucherHeaderSid, payload)
+    : this.journalVoucherService.createJournalVoucher(payload);
+
+  saveObservable.subscribe({
+    next: async (response: any) => {
+      if (response?.status) {
+        const voucherHeaderSid = response.data?.VoucherHeaderSid || this.voucherHeaderSid;
+        
+        this.isDirty = false;
+        
+        if (isFinal && voucherHeaderSid) {
+          await this.postVoucher(voucherHeaderSid);
+          if (resolve) resolve(true);
+        } else {
+          this.spinner.hide();
+          this.isSaving = false;
+          const message = isFinal ? 'Journal voucher saved and posted successfully!' : 'Journal voucher saved as draft successfully!';
+          this.appSettingService.showSuccess(message);
+
+          if (!this.voucherHeaderSid && voucherHeaderSid) {
+            this.voucherHeaderSid = voucherHeaderSid;
+            this.initialFormValue = this.form.getRawValue();
+            this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+          }
+          
+          if (resolve) resolve(true);
+        }
+      } else {
+        this.spinner.hide();
+        this.isSaving = false;
+        const errorMessage = response?.message || 'Error saving journal voucher';
+        this.appSettingService.showError(errorMessage);
+        if (resolve) resolve(false);
+      }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      this.isSaving = false;
+      console.error('Save journal voucher error', err);
+      this.appSettingService.showError('Failed to save journal voucher.');
+      if (resolve) resolve(false);
+    }
+  });
+}
+
+// Add the deepEqual method (same as invoice component)
+private normalizeValue(value: any): any {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  // Handle Date
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0];
+  }
+
+  // Handle numeric strings and numbers
+  if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+    return Number(value);
+  }
+
+  if (typeof value === 'number') {
+    return Number(value.toFixed(6));
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return value.map(v => this.normalizeValue(v));
+  }
+
+  // Handle objects
+  if (typeof value === 'object') {
+    return Object.keys(value)
+      .sort()
+      .reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+  }
+
+  return value;
+}
+
+private deepEqual(obj1: any, obj2: any): boolean {
+  const normalizedObj1 = this.normalizeValue(obj1);
+  const normalizedObj2 = this.normalizeValue(obj2);
+  return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+}
 
   // ========== ADD THESE GETTERS ==========
 
@@ -307,18 +497,40 @@ export class JournalVoucherEntryComponent implements OnInit {
     const companyCurrencyId = this.currentCompany?.CurrencyMasterSid ||
       this.currentCompanyCurrency?.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency?.code;
-
+    this.form.get('narration')?.valueChanges.subscribe((newNarration)=>{
+      this.propagateHeaderNarrationToDetails(newNarration);
+    });
     if (companyCurrencyId && companyCurrencyCode) {
       this.form.setValidators(
         consistentExchangeRatesValidator(companyCurrencyId, companyCurrencyCode)
       );
     }
-
+    
     if (!this.editMode) {
       this.initializeDefaultCurrency();
     }
 
   }
+  private propagateHeaderNarrationToDetails(headerNarration: string): void {
+  // Only propagate if there's a header narration
+  if (!headerNarration) return;
+  
+  // Propagate to all detail rows that haven't been manually edited
+  this.details.controls.forEach((control, index) => {
+    const detailGroup = control as FormGroup;
+    
+    // Skip if this row was manually edited
+    if (this.manuallyEditedNarrationRows.has(index)) return;
+    
+    // Skip auto-generated rows
+    if (detailGroup.get('IsAutoGenerated')?.value === 'Y') return;
+    
+    // Update the detail narration
+    detailGroup.patchValue({
+      narration: headerNarration
+    }, { emitEvent: false });
+  });
+}
 
   initializeDefaultCurrency(): void {
     // Get company currency ID (from user company data or company settings)
@@ -542,6 +754,11 @@ export class JournalVoucherEntryComponent implements OnInit {
         }
 
         this.form.patchValue(formPatchData);
+           // Clear the manually edited tracking set
+      this.manuallyEditedNarrationRows.clear();
+      
+      // Store header narration for comparison
+      const headerNarration = voucher.Narration;
 
         // IMPORTANT: Don't disable the entire form for posted vouchers
         // Instead, we'll handle field disabling at the individual control level
@@ -555,6 +772,7 @@ export class JournalVoucherEntryComponent implements OnInit {
         this.details.clear();
 
         if (voucher.VoucherDetail && Array.isArray(voucher.VoucherDetail)) {
+          
           this.subledgerTypes = new Array(voucher.VoucherDetail.length).fill('');
 
           // Load all details
@@ -568,7 +786,9 @@ export class JournalVoucherEntryComponent implements OnInit {
             if (isPosted) {
               detailGroup.disable({ emitEvent: false });
             }
-
+             if (detail.Narration && detail.Narration !== headerNarration) {
+            this.manuallyEditedNarrationRows.add(index);
+          }
             // Patch basic values first
             detailGroup.patchValue({
               VoucherDetailSid: detail.VoucherDetailSid,
@@ -697,6 +917,11 @@ export class JournalVoucherEntryComponent implements OnInit {
         } else {
           this.spinner.hide();
         }
+         setTimeout(() => {
+        this.initialFormValue = this.form.getRawValue();
+        this.isDirty = false;
+        this.subscribeToFormChanges();
+      }, 0);
       },
       error: (err) => {
         console.error('Error loading voucher:', err);
@@ -913,6 +1138,12 @@ export class JournalVoucherEntryComponent implements OnInit {
 
   addDetailLine(): void {
     const detailGroup = this.createDetailGroup();
+    const headerNarration = this.form.get('narration')?.value;
+  if (headerNarration) {
+    detailGroup.patchValue({
+      narration: headerNarration
+    }, { emitEvent: false });
+  }
     this.setupDetailCalculations(detailGroup);
     this.details.push(detailGroup);
 
@@ -939,6 +1170,16 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   setupDetailCalculations(detailGroup: FormGroup): void {
+  const rowIndex = this.getRowIndex(detailGroup);
+   detailGroup.get('narration')?.valueChanges.subscribe((value) => {
+    // Check if this is a user-initiated change (not from header propagation)
+    const headerNarration = this.form.get('narration')?.value;
+    
+    // If the value is different from header narration and not empty, mark as manually edited
+    if (value !== headerNarration && value !== '') {
+      this.manuallyEditedNarrationRows.add(rowIndex);
+    }
+  });
     // Simplified: Only update the local amount, tax will be recalculated automatically
     detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
       this.calculateLocalAmount(detailGroup);
@@ -1075,6 +1316,8 @@ export class JournalVoucherEntryComponent implements OnInit {
   // Clear previous subledger type
   this.subledgerTypes[rowIndex] = '';
 
+   this.clearRelatedFieldsForRow(detailGroup, rowIndex);
+
   // Fetch subledger details when COA changes
   if (coaId && this.currentCompany?.CompanyMasterSid) {
     const payload = {
@@ -1149,6 +1392,37 @@ export class JournalVoucherEntryComponent implements OnInit {
     }, { emitEvent: false });
     this.refreshSubledgerFiltersForRow(rowIndex);
   }
+}
+private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void {
+  // Clear the subledger (ledgerMasterSid)
+  detailGroup.patchValue({
+    ledgerMasterSid: null,
+    filteredSubledgers: []
+  }, { emitEvent: false });
+
+  // Clear all charge-related fields
+  detailGroup.patchValue({
+    departmentMasterSid: null,
+    chargeMasterSid: null,
+    chargeDescription: '',
+    hssacMasterSid: null,
+    HSSACCode: '',
+    masterJobSid: null,
+    houseJobSid: null,
+    taxPercentage: 0,
+    taxAmount: 0,
+    costCenterMasterSid: null,
+    profitCenterMasterSid: null
+  }, { emitEvent: false });
+
+  // Clear the filtered lists for this row
+  this.filteredChargeList[rowIndex] = [];
+  this.masterJobList[rowIndex] = [];
+  this.houseJobList[rowIndex] = [];
+  this.hssacList[rowIndex] = [];
+
+  // Disable charge fields
+  this.disableChargeFieldsForRow(detailGroup);
 }
 
 
@@ -1510,6 +1784,18 @@ export class JournalVoucherEntryComponent implements OnInit {
 
   deleteDetailLine(index: number): void {
     if (this.details.length > 1) {
+       this.manuallyEditedNarrationRows.delete(index);
+    
+    // Shift indices for rows after the deleted one
+    const updatedSet = new Set<number>();
+    this.manuallyEditedNarrationRows.forEach((editedIndex) => {
+      if (editedIndex > index) {
+        updatedSet.add(editedIndex - 1);
+      } else if (editedIndex < index) {
+        updatedSet.add(editedIndex);
+      }
+    });
+    this.manuallyEditedNarrationRows = updatedSet;
       this.details.removeAt(index);
       // REMOVED: this.calculateTotals(); - Not needed with getters
     } else {
@@ -1615,7 +1901,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       next: async (response: any) => {
         if (response?.status) {
           const voucherHeaderSid = response.data?.VoucherHeaderSid || this.voucherHeaderSid;
-
+           this.isDirty = false;
           if (isFinal && voucherHeaderSid) {
             // If final save, post the voucher
             await this.postVoucher(voucherHeaderSid);
@@ -1705,9 +1991,18 @@ export class JournalVoucherEntryComponent implements OnInit {
 
   // Existing saveDraft method (for draft saving)
   saveDraft(): void {
-    if (!this.isFormValid()) return;
-    this.saveJournalVoucher(false); // false indicates draft save without posting
+  if (!this.isFormValid()) return;
+  
+  const raw = this.form.getRawValue();
+  
+  if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+    this.appSettingService.showWarning('No changes to save');
+    this.form.markAsUntouched();
+    return;
   }
+  
+  this.saveJournalVoucher(false);
+}
 
   preparePayload(): any {
     const formValue = this.form.getRawValue();
@@ -1759,8 +2054,14 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   navigateToBack(): void {
+  if (this.isDirty) {
+    if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      this.router.navigate(['/accounts/journal-voucher/list']);
+    }
+  } else {
     this.router.navigate(['/accounts/journal-voucher/list']);
   }
+}
 
   private fromNgbDate(s: NgbDateStructLike | null): Date | null {
     if (!s || !s.year) return null;
@@ -2212,6 +2513,28 @@ export class JournalVoucherEntryComponent implements OnInit {
   // taxPercentage > 0 => taxAmount readonly
   return taxPercentage === 0;
 }
-
+ngOnDestroy(): void {
+  this.destroy$.next();
+  this.destroy$.complete();
+}
+resetForm(): void {
+  if (this.isDirty) {
+    if (confirm('You have unsaved changes. Are you sure you want to reset?')) {
+      this.form.reset();
+      this.setTodayDate();
+      this.details.clear();
+      this.addDetailLine();
+      this.manuallyEditedNarrationRows.clear();
+      this.initialFormValue = this.form.getRawValue();
+      this.isDirty = false;
+    }
+  } else {
+    this.form.reset();
+    this.setTodayDate();
+    this.details.clear();
+    this.addDetailLine();
+    this.manuallyEditedNarrationRows.clear();
+  }
+}
 
 }
