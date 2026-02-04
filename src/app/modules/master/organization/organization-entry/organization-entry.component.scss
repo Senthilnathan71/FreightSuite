@@ -51,3 +51,34 @@
   top: 0;
   z-index: 1;
 }
+
+// Accordion Preview Styles
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-danger-subtle {
+  background-color: #f8d7da !important;
+}
+
+.preview-branch-table {
+  font-size: 0.8rem;
+
+  th, td {
+    padding: 0.25rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  td.table-danger {
+    background-color: #f8d7da;
+  }
+}
+
+.cell-truncate {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}

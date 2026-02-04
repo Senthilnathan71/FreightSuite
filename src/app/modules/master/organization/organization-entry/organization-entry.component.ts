@@ -44,7 +44,7 @@ import { MasterService } from '../../master.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import {  forkJoin, Subject } from 'rxjs';
+import {  firstValueFrom, forkJoin, Subject } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -396,6 +396,7 @@ onCountryChange(): void {
   modalRef: NgbModalRef;
   modalRef1: NgbModalRef;
   stateList: any;
+  stateNewList:any
   customerForm!: FormGroup;
   customerBranchForm!: FormGroup;
   customerBranchContactForm!: FormGroup;
@@ -410,6 +411,7 @@ onCountryChange(): void {
   btnDisable: boolean = false;
   CustomerMasterSid: number;
   cityList: any;
+  cityNewList:any
   countryList: any;
   status: any;
   currentCountyID: any;
@@ -443,6 +445,52 @@ onCountryChange(): void {
   excelUploadError: string | null = null;
   parsedCustomers: any[] = [];
   hasValidationErrors = false;
+
+  // Excel Preview Accordion Properties
+  expandedPreviewCustomers: Set<number> = new Set();
+
+  customerFieldLabels: { key: string; label: string }[] = [
+    { key: 'CustomerName', label: 'Customer Name' },
+    { key: 'CustomerShortCode', label: 'Short Code' },
+    { key: 'CustomerAliasName', label: 'Alias Name' },
+    { key: 'CustomerAddress1', label: 'Address 1' },
+    { key: 'CustomerAddress2', label: 'Address 2' },
+    { key: 'CountryName', label: 'Country' },
+    { key: 'CompanyType', label: 'Company Type' },
+    { key: 'PanAvailable', label: 'PAN Available' },
+    { key: 'PanName', label: 'PAN Name' },
+    { key: 'GroupName', label: 'Group Name' },
+    { key: 'Website', label: 'Website' },
+    { key: 'paymentType', label: 'Payment Type' },
+    { key: 'IsMSME', label: 'Is MSME' },
+    { key: 'RegistrationNo', label: 'Registration No' },
+    { key: 'Remarks', label: 'Remarks' },
+    { key: 'CIN', label: 'CIN' },
+    { key: 'TAN', label: 'TAN' },
+    { key: 'status', label: 'Status' },
+    { key: 'CustomerType', label: 'Customer Type' },
+    { key: 'Network', label: 'Network' }
+  ];
+
+  branchFieldColumns: { key: string; label: string }[] = [
+    { key: 'CustBranchName', label: 'Branch Name' },
+    { key: 'CustBranchType', label: 'Type' },
+    { key: 'CustBranchCode', label: 'Code' },
+    { key: 'StateName', label: 'State' },
+    { key: 'CityName', label: 'City' },
+    { key: 'Contact_Person', label: 'Contact Person' },
+    { key: 'CustBranchZipPostCode', label: 'Zip/Post Code' },
+    { key: 'CustBranchPhone', label: 'Phone' },
+    { key: 'CustBranchEmail', label: 'Email' },
+    { key: 'CustBranchAddress', label: 'Address' },
+    { key: 'CustBranchRegistered', label: 'Registered' },
+    { key: 'CustBranchGSTtype', label: 'GST Type' },
+    { key: 'CustBranchGSTIN', label: 'GSTIN' },
+    { key: 'status', label: 'Status' }
+  ];
+
+  requiredCustomerFields: string[] = ['CustomerName', 'CustomerAddress1', 'CountryName'];
+  requiredBranchFields: string[] = ['CustBranchName', 'CustBranchType', 'StateName', 'CityName', 'CustBranchEmail', 'CustBranchAddress'];
 
   switchToEditMode() {
     this.isEditMode = true;
@@ -3800,7 +3848,7 @@ private loadNetworks(): void {
   openExcelUploadModal(content: TemplateRef<any>) {
     this.resetExcelUploadState();
     this.excelUploadModalRef = this.modalService.open(content, {
-      size: 'lg',
+      size: 'xl',
       backdrop: 'static',
       centered: true
     });
@@ -3815,6 +3863,7 @@ private loadNetworks(): void {
     this.excelUploadError = null;
     this.parsedCustomers = [];
     this.hasValidationErrors = false;
+    this.expandedPreviewCustomers = new Set();
   }
 
   onDragOver(event: DragEvent) {
@@ -3894,16 +3943,16 @@ private loadNetworks(): void {
     this.cdRef.markForCheck();
 
     // Ensure all dropdown data is loaded before processing
-    try {
-      await Promise.all([
-        this.dropdownStore.loadCountries().toPromise(),
-        this.dropdownStore.loadStates().toPromise(),
-        this.dropdownStore.loadCities().toPromise()
-      ]);
-      console.log('Dropdown data loaded - Countries:', this.countryList?.length, 'States:', this.stateList?.length, 'Cities:', this.cityList?.length);
-    } catch (error) {
-      console.error('Error loading dropdown data:', error);
-    }
+    // try {
+    //   await Promise.all([
+    //     this.dropdownStore.loadCountries().toPromise(),
+    //     this.dropdownStore.loadStates().toPromise(),
+    //     this.dropdownStore.loadCities().toPromise()
+    //   ]);
+    //   console.log('Dropdown data loaded - Countries:', this.countryList?.length, 'States:', this.stateList?.length, 'Cities:', this.cityList?.length);
+    // } catch (error) {
+    //   console.error('Error loading dropdown data:', error);
+    // }
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -4043,7 +4092,7 @@ private loadNetworks(): void {
       }
 
       // Country validation - check numeric ID first, then name lookup
-      const hasCountry = customer.CountryMasterSid ||
+      const hasCountry = customer.CountryName ||
         (customer.CountryName && this.resolveCountryId(customer.CountryName));
       if (!hasCountry) {
         customer.errors.push('Country is required or not found');
@@ -4062,14 +4111,14 @@ private loadNetworks(): void {
           }
 
           // State - check numeric ID first, then name lookup
-          const hasState = branch.StateMasterSid ||
+          const hasState = branch.StateName ||
             (branch.StateName && this.resolveStateId(branch.StateName));
           if (!hasState) {
             customer.errors.push(`Branch ${idx + 1}: State is required or not found`);
           }
 
           // City - check numeric ID first, then name lookup
-          const hasCity = branch.CityMasterSid ||
+          const hasCity = branch.CityName ||
             (branch.CityName && this.resolveCityId(branch.CityName, branch.StateName));
           if (!hasCity) {
             customer.errors.push(`Branch ${idx + 1}: City is required or not found`);
@@ -4100,7 +4149,36 @@ private loadNetworks(): void {
     return customer.CountryName || '';
   }
 
-  resolveCountryId(countryValue: string): number | null {
+  togglePreviewCustomer(index: number) {
+    if (this.expandedPreviewCustomers.has(index)) {
+      this.expandedPreviewCustomers.delete(index);
+    } else {
+      this.expandedPreviewCustomers.add(index);
+    }
+  }
+
+  isPreviewCustomerExpanded(index: number): boolean {
+    return this.expandedPreviewCustomers.has(index);
+  }
+
+  isFieldMissing(value: any): boolean {
+    return value === null || value === undefined || value === '';
+  }
+
+  isRequiredCustomerField(key: string): boolean {
+    return this.requiredCustomerFields.includes(key);
+  }
+
+  isRequiredBranchField(key: string): boolean {
+    return this.requiredBranchFields.includes(key);
+  }
+
+  private cleanLookupName(value: string): string {
+    if (!value) return '';
+    return value.toString().trim().replace(/\d+$/, '').trim();
+  }
+
+   resolveCountryId(countryValue: string) {
     if (!countryValue || !this.countryList || this.countryList.length === 0) {
       console.log('resolveCountryId: No value or empty countryList', { countryValue, listLength: this.countryList?.length });
       return null;
@@ -4127,99 +4205,177 @@ private loadNetworks(): void {
       );
     }
 
-    // Try numeric ID
-    if (!country && !isNaN(Number(countryValue))) {
-      country = this.countryList.find((c: any) => c.CountryMasterSid === Number(countryValue));
-    }
+  //     console.log('resolveCountryId', {
+  //   input: countryValue,
+  //   matched: country?.countryName,
+  //   id: country?.CountryMasterSid
+  // });
 
-    console.log('resolveCountryId:', { input: countryValue, found: country?.countryName, id: country?.CountryMasterSid });
-    return country?.CountryMasterSid || null;
+  return country?.CountryMasterSid ?? null;
   }
 
-  resolveStateId(stateValue: string): number | null {
-    if (!stateValue || !this.stateList || this.stateList.length === 0) {
-      console.log('resolveStateId: No value or empty stateList', { stateValue, listLength: this.stateList?.length });
+   async resolveStateId(stateValue: string, countryValue?: string): Promise<number | null> {
+    const countryId = this.resolveCountryId(countryValue);
+    console.log(countryId);
+
+    if (countryId == null) {
+      console.log('resolveStateId: No countryId resolved, returning null');
       return null;
     }
+
+    try {
+      const resp: any = await firstValueFrom(this.masterService.getStateByCountryId(Number(countryId)));
+      console.log(resp, 'getStateByCountryId');
+      if (resp.status) {
+        this.stateNewList = resp.data;
+        this.cdRef.markForCheck();
+      } else {
+        console.error('Error fetching States with Country Id');
+        this.stateList = [];
+      }
+    } catch (error) {
+      console.error('Error fetching states:', error);
+      return null;
+    }
+
+    if (!stateValue || !this.stateNewList || this.stateNewList.length === 0) {
+      console.log('resolveStateId: No value or empty stateList', { stateValue, listLength: this.stateNewList?.length });
+      return null;
+    }
+
     const val = stateValue.toString().trim().toLowerCase();
+    const cleanedVal = this.cleanLookupName(stateValue).toLowerCase();
 
     // Try exact match on name
-    let state = this.stateList.find((s: any) =>
+    let state = this.stateNewList.find((s: any) =>
       s.stateName?.toLowerCase() === val
     );
 
+    // Try cleaned name match (trailing digits stripped)
+    if (!state && cleanedVal !== val) {
+      state = this.stateNewList.find((s: any) =>
+        s.stateName?.toLowerCase() === cleanedVal
+      );
+    }
+
     // Try match on code
     if (!state) {
-      state = this.stateList.find((s: any) =>
+      state = this.stateNewList.find((s: any) =>
         s.stateCode?.toLowerCase() === val
       );
     }
 
     // Try partial/contains match
     if (!state) {
-      state = this.stateList.find((s: any) =>
+      state = this.stateNewList.find((s: any) =>
         s.stateName?.toLowerCase().startsWith(val) ||
         s.stateName?.toLowerCase().includes(val)
       );
     }
 
-    console.log('resolveStateId:', { input: stateValue, found: state?.stateName, id: state?.StateMasterSid });
+    // Try partial/contains with cleaned name
+    if (!state && cleanedVal !== val) {
+      state = this.stateNewList.find((s: any) =>
+        s.stateName?.toLowerCase().startsWith(cleanedVal) ||
+        s.stateName?.toLowerCase().includes(cleanedVal)
+      );
+    }
+
+    if (!state) {
+      console.log('resolveStateId: No match found. Input:', stateValue, 'Sample item:', this.stateNewList?.[0]);
+    }
+
     return state?.StateMasterSid || null;
   }
 
-  resolveCityId(cityValue: string, stateValue?: string): number | null {
-    if (!cityValue || !this.cityList || this.cityList.length === 0) {
-      console.log('resolveCityId: No value or empty cityList', { cityValue, listLength: this.cityList?.length });
+   async resolveCityId(cityValue: string, stateValue?: string, country?: string, resolvedStateId?: number): Promise<number | null> {
+    const stateId = resolvedStateId ?? await this.resolveStateId(stateValue, country);
+    console.log(stateId);
+
+    if (stateId == null) {
+      console.log('resolveCityId: No stateId resolved, returning null');
       return null;
     }
+
+    try {
+      const resp: any = await firstValueFrom(this.leadService.getCityByStateId(Number(stateId)));
+      if (resp.status) {
+        this.cityNewList = resp.data;
+      } else {
+        console.error('Error fetching Cities with State Id');
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      return null;
+    }
+
+    if (!cityValue || !this.cityNewList || this.cityNewList.length === 0) {
+      console.log('resolveCityId: No value or empty cityList', { cityValue, listLength: this.cityNewList?.length });
+      return null;
+    }
+
     const val = cityValue.toString().trim().toLowerCase();
+    const cleanedVal = this.cleanLookupName(cityValue).toLowerCase();
 
     // Try exact match on name
-    let city = this.cityList.find((c: any) =>
+    let city = this.cityNewList.find((c: any) =>
       c.cityName?.toLowerCase() === val
     );
 
+    // Try cleaned name match (trailing digits stripped)
+    if (!city && cleanedVal !== val) {
+      city = this.cityNewList.find((c: any) =>
+        c.cityName?.toLowerCase() === cleanedVal
+      );
+    }
+
     // Try match on code
     if (!city) {
-      city = this.cityList.find((c: any) =>
+      city = this.cityNewList.find((c: any) =>
         c.cityCode?.toLowerCase() === val
       );
     }
 
     // Try partial/contains match
     if (!city) {
-      city = this.cityList.find((c: any) =>
+      city = this.cityNewList.find((c: any) =>
         c.cityName?.toLowerCase().startsWith(val) ||
         c.cityName?.toLowerCase().includes(val)
       );
     }
 
-    // If still not found and state provided, filter by state
-    if (!city && stateValue) {
-      const stateId = this.resolveStateId(stateValue);
-      if (stateId) {
-        city = this.cityList.find(
-          (c: any) => (c.cityName?.toLowerCase() === val ||
-                      c.cityCode?.toLowerCase() === val ||
-                      c.cityName?.toLowerCase().startsWith(val) ||
-                      c.cityName?.toLowerCase().includes(val)) &&
-            c.stateMaster?.StateMasterSid === stateId
-        );
-      }
+    // Try partial/contains with cleaned name
+    if (!city && cleanedVal !== val) {
+      city = this.cityNewList.find((c: any) =>
+        c.cityName?.toLowerCase().startsWith(cleanedVal) ||
+        c.cityName?.toLowerCase().includes(cleanedVal)
+      );
     }
 
-    console.log('resolveCityId:', { input: cityValue, state: stateValue, found: city?.cityName, id: city?.CityMasterSid });
+    if (!city) {
+      console.log('resolveCityId: No match found. Input:', cityValue, 'Sample item:', this.cityNewList?.[0]);
+    }
+
+    console.log('resolveCityId:', { input: cityValue, cleaned: this.cleanLookupName(cityValue), state: stateValue, found: city?.cityName, id: city?.CityMasterSid });
     return city?.CityMasterSid || null;
   }
 
-  prepareCustomerPayloadFromExcel(customer: any): any {
+  async prepareCustomerPayloadFromExcel(customer: any): Promise<any> {
     const countryId = customer.CountryMasterSid || this.resolveCountryId(customer.CountryName);
 
-    const branches = customer.branches.map((branch: any) => {
-      const stateId = branch.StateMasterSid || this.resolveStateId(branch.StateName);
-      const cityId = branch.CityMasterSid || this.resolveCityId(branch.CityName, branch.StateName);
+    const branches: any[] = [];
+    for (const branch of customer.branches) {
+      const stateId = branch.StateMasterSid || await this.resolveStateId(branch.StateName, customer.CountryName);
+      const cityId = branch.CityMasterSid || await this.resolveCityId(branch.CityName, branch.StateName, customer.CountryName, stateId);
 
-      return {
+      if (!stateId) {
+        console.error(`Branch "${branch.CustBranchName}": Could not resolve state "${branch.StateName}". stateNewList sample:`, this.stateNewList?.[0]);
+      }
+      if (!cityId) {
+        console.error(`Branch "${branch.CustBranchName}": Could not resolve city "${branch.CityName}" in state "${branch.StateName}". cityNewList sample:`, this.cityNewList?.[0]);
+      }
+
+      branches.push({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchName: branch.CustBranchName,
         StateMasterSid: stateId,
@@ -4234,10 +4390,10 @@ private loadNetworks(): void {
         Registered: branch.CustBranchRegistered === 'Y' ? 'Y' : 'N',
         CustomerGstType: branch.CustBranchGSTtype || 'Regular',
         GSTNo: branch.CustBranchGSTIN || '',
-        status: branch.status === 'Active' ? 'A' : 'S',
+        status: branch.status === 'A' ? 'A' : 'S',
         customerBranchContacts: []
-      };
-    });
+      });
+    }
 
     const customerTypes = customer.CustomerType ?
       customer.CustomerType.split(',').map((t: string) => t.trim()) : [];
@@ -4264,7 +4420,7 @@ private loadNetworks(): void {
         IsMSME: customer.IsMSME === 'Y' ? 'A' : 'I',
         RegistrationNo: customer.RegistrationNo || '',
         CompanyType: customer.CompanyType || '',
-        status: customer.status === 'Active' ? 'A' : 'S',
+        status: customer.status === 'A' ? 'A' : 'S',
         AirlineNumber: '',
         AirlineCode: ''
       },
@@ -4283,9 +4439,11 @@ private loadNetworks(): void {
 
     try {
       // Prepare all customer payloads
-      const customerPayloads = this.parsedCustomers.map(customer =>
-        this.prepareCustomerPayloadFromExcel(customer)
-      );
+      const customerPayloads: any[] = [];
+      for (const customer of this.parsedCustomers) {
+        const payload = await this.prepareCustomerPayloadFromExcel(customer);
+        customerPayloads.push(payload);
+      }
 
       // Call bulk API
       const result = await this.masterService.createBulkCustomers({
@@ -4302,12 +4460,13 @@ private loadNetworks(): void {
             this.excelUploadModalRef.close();
           }
           this.resetExcelUploadState();
+          this.router.navigate(['/master/organization/list']);
         } else {
           const failedNames = result.data.failed.map((f: any) => f.CustomerName).join(', ');
           this.appSettingService.showWarning(
             `Imported ${successCount}, Failed ${failCount}: ${failedNames}`
           );
-        }
+        } 
       } else {
         this.appSettingService.showError(result.message || 'Bulk import failed');
       }
@@ -4321,7 +4480,7 @@ private loadNetworks(): void {
     }
   }
 
-  populateFormsFromExcel(customer: any) {
+  async populateFormsFromExcel(customer: any) {
     // Resolve country ID
     const countryId = this.resolveCountryId(customer.CountryName);
 
@@ -4372,9 +4531,10 @@ private loadNetworks(): void {
     this.activeBranchIds = [];
 
     // Add branches from Excel data
-    customer.branches.forEach((branch: any, index: number) => {
-      const stateId = this.resolveStateId(branch.StateName);
-      const cityId = this.resolveCityId(branch.CityName, branch.StateName);
+    for (let index = 0; index < customer.branches.length; index++) {
+      const branch = customer.branches[index];
+      const stateId = await this.resolveStateId(branch.StateName, customer.CountryName);
+      const cityId = await this.resolveCityId(branch.CityName, branch.StateName, customer.CountryName);
 
       const branchForm = this.addBranchFormGroup({
         BranchName: branch.CustBranchName,
@@ -4395,7 +4555,7 @@ private loadNetworks(): void {
 
       this.branchFormArray.push(branchForm);
       this.activeBranchIds.push('branch-' + index);
-    });
+    }
 
     this.updateAvailableBranchesCache();
     this.cdRef.markForCheck();
