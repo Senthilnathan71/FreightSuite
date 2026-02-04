@@ -13,8 +13,8 @@
     <div
       class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
     >
-      <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title mb-0 text-info">
+      <div class="col-md-5 d-flex pb-1">
+        <h5 class="page-title mb-0 text-info align-items-center">
           {{
             isViewMode
               ? " Vendor Credit Note"
@@ -34,19 +34,19 @@
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
         }
-        <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
+        <div class="nav-pill outstanding-info-pill" *ngIf="invoiceOutstandingAmount">
           <div class="pill-icon">
             <i class="fas fa-file-invoice-dollar"></i>
           </div>
           <span class="mb-0 text-dark">
             <strong style="color: #333">Outstanding :</strong>
-            {{ invoiceOutstandingAmount | numberFormat }}
-            {{ selectedOutstandingInvoice?.CurrencyCode }}
+            {{ invoiceOutstandingAmount }}
+            {{ vendorCreditNoteForm.get('CurrencyCode')?.getRawValue() }}
           </span>
         </div>
       </div>
 
-      <div class="col-md-8 pb-1">
+      <div class="col-md-7 pb-1">
         <div
           class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0"
         >
@@ -229,31 +229,31 @@
             </aside>
 
             <aside class="col-md-3">
-              <div class="d-flex align-items-end">
-                <div class="custom-form-group custom-form-group-select-date w-100">
-                  <input
-                    type="text"
-                    id="ReversalVoucherNumber"
-                    formControlName="ReversalVoucherNumber"
-                    class="form-control mb-0"
-                    [readonly] = "isEditMode"
-                  />
-                  <label class="input-label">
+              <div class="d-flex align-items-end gap-1">
+            
+                <div class="custom-form-group w-100">
+                  <input type="text" id="ReversalVoucherNumber" formControlName="ReversalVoucherNumber"
+                    class="custom-input-field sm" [readonly]="isEditMode || vendorCreditNoteForm.get('ReversalVoucher')?.value" />
+                  <label for="ReversalVoucherNumber" class="input-label">
                     Invoice No. <span class="text-danger">*</span>
                   </label>
                 </div>
+            
+                <!-- ❌ clear -->
+                <button type="button" class="btn btn-sm mb-1 text-danger fw-bold" style="width: 28px; height: 26px" *ngIf="
+                    vendorCreditNoteForm.get('ReversalVoucherNumber')?.value &&
+                    !isEditMode
+                  " (click)="onReset()">
+                  &times;
+                </button>
+            
+                <!-- Get -->
                 @if(!isEditMode){
-                  <!-- Get button -->
-                <button
-                  type="button"
-                  class="btn btn-info btn-sm mb-1 flex-shrink-0"
-                  style="width: 40px; height: 26px"
-                  (click)="getVendorInvoiceData()"
-                  [disabled]="
-                    !vendorCreditNoteForm.get('ReversalVoucherNumber')?.value || 
-                    vendorCreditNoteForm.get('ReversalVoucher')?.value
-                  "
-                >
+                <button type="button" class="btn btn-info btn-sm mb-1" style="width: 40px; height: 26px"
+                  (click)="getVendorInvoiceData()" [disabled]="
+                      !vendorCreditNoteForm.get('ReversalVoucherNumber')?.value ||
+                      vendorCreditNoteForm.get('ReversalVoucher')?.value
+                    ">
                   Get
                 </button>
                 }
@@ -278,7 +278,6 @@
                     formControlName="VoucherDate"
                     [footerTemplate]="footerTemplate1"
                     [class.is-invalid]="isFieldInvalid('VoucherDate')"
-                    (dateSelect)="onVoucherDateChange()"
                     [minDate]="minVoucherDate"
                   />
                   <label class="input-label" for="VoucherDate">
@@ -670,7 +669,7 @@
                   formControlName="CreditNoteReason"
                 >
                 </ng-select>
-                <label class="input-label">Credit Note Reason </label>
+                <label class="input-label">Credit Note Reason <span class="text-danger">*</span></label>
               </div>
             </aside>
 
@@ -694,11 +693,11 @@
             </aside>
           </div>
 
-          <div class="d-flex justify-content-end align-items-center mb-1 gap-2">
+          <div class="d-flex justify-content-end align-items-center">
             <div *ngIf="getFirstRateError()" class="d-block me-2">
-              <div class="text-danger">
+              <small class="text-danger">
                 {{ getFirstRateError() }}
-              </div>
+              </small>
             </div>
           </div>
 
@@ -1235,6 +1234,11 @@
                                 row.get('CurrencyMasterSid')?.getRawValue()
                               )
                             "
+                            [ngClass]="{
+                            'class-invalid':
+                              row.get('Rate')?.invalid &&
+                              (row.get('Rate')?.touched || row.get('Rate')?.dirty)
+                          }"
                           />
                         </td>
 
@@ -1500,7 +1504,7 @@
                             {{
                               getFormattedAmount(
                                 row.get("PartyAmount")?.getRawValue(),
-                                currentCompany.CurrencyMasterSid
+                                 vendorCreditNoteForm.get('CurrencyMasterSid')?.getRawValue()
                               )
                             }}
                           </span>

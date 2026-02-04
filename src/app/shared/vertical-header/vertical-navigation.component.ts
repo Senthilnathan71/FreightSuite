@@ -350,7 +350,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   this.userData = updatedUserData;
 
   // this.appSettingsService.showSuccess('Switched to new branch and company');
-  // this.logoService.refreshBothLogos();
+  this.logoService.refreshBothLogos();
 
   // ✅ Step 5: Reload the page
     if (
@@ -685,7 +685,6 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   private setupDocumentSearchSubscription(): void {
     this.docSearchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
       takeUntil(this.unsubscribe$),
       switchMap(searchTerm => {
         if (!searchTerm || searchTerm.length < 3) {
@@ -786,6 +785,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     // Delay to allow click events on dropdown items to fire first
     setTimeout(() => {
       if (this.docSearchDropdown) {
+        this.docSearchInput.nativeElement.value = '';
         this.docSearchDropdown.close();
       }
     }, 200);

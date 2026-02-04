@@ -922,6 +922,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
         const selectedCOA = this.coaList.find(coa => coa.COAMasterSid === det.COAMasterSid);
         if (selectedCOA && selectedCOA.SubledgerName === "Y") {
           this.onCOAChange(selectedCOA,index,false);
+        } else {
+          this.details.at(index)?.get('LedgerMasterSid')?.disable();
         }
       }
       index++;
@@ -2473,6 +2475,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
           console.error('Error fetching subledger for COA', err);
         }
       })
+    } else {
+      ctrl.get('LedgerMasterSid')?.disable();
     }
 
   }
