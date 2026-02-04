@@ -2562,7 +2562,7 @@
               </th>
               <th *ngFor="let bankDetail of bankDetails; let i = index"
                 style="padding:2px 6px;color:#000;border-color:#000; text-align: start;border: 0.5px solid #000;">
-                Bank {{ i + 1 }}
+                <strong>Bank ({{ invoiceData?.CurrencyCode }})</strong>
               </th>
             </tr>
           </thead>
