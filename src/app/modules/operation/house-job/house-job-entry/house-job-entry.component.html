@@ -27,14 +27,14 @@
 <div class="master-job-link ms-3">
   <span class="fw-bold me-1">
     @if(selectedDepartmentType === "SEA"){
-      MBL:
+      MBL :
     }@else if(selectedDepartmentType === "AIR"){
-      MAWB:
+      MAWB :
     }
   </span>
   
   @if(housejobData?.masterJob?.MasterJobSid){
-    <a class="text-decoration-underline text-primary fw-bold cursor-pointer"
+    <a class="text-primary fw-bold cursor-pointer"
       [routerLink]="selectedDepartmentType === 'SEA' 
         ? ['/operation/master-job/entry', housejobData?.masterJob?.MasterJobSid]
         : ['/operation/mawbill/entry', housejobData?.masterJob?.MasterJobSid]">
@@ -224,50 +224,25 @@
         <label for="" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
       </div>
     </div>
-<!-- Booking No -->
-<div class="col-md-2">
-  <div class="custom-form-group" style="position: relative;">
-
-    @if (isEditMode && b['BookingHeaderSid']?.value) {
-      <a
-        [routerLink]="['/operation/booking/entry', b['BookingHeaderSid']?.value]"
-        [title]="'Click to view Booking ' + b['BookingNo']?.value"
-        style="
-          display: flex;
-          align-items: center;
-          height: 34px;
-          padding: 6px 12px;
-          text-decoration: none;
-          color: #0d6efd;
-          font-size: 13px;
-        ">
-        {{ b['BookingNo']?.value }}
-      </a>
-    } @else {
-      <input
-        type="text"
-        id="booking-input"
-        class="form-control custom-input-field sm"
-        formControlName="BookingNo" />
-    }
-
-    <label
-      for="booking-input"
-      style="
-        position: absolute;
-        top: {{ (isEditMode && b['BookingHeaderSid']?.value) || b['BookingNo']?.value ? '-6px' : '10px' }};
-        left: 10px;
-        font-size: {{ (isEditMode && b['BookingHeaderSid']?.value) || b['BookingNo']?.value ? '12px' : '13px' }};
-        background: #fff;
-        padding: 0 4px;
-        pointer-events: none;
-        transition: all 0.2s ease;
-      ">
-      Booking No <span class="text-danger">*</span>
-    </label>
-
-  </div>
-</div>
+      <!-- Booking No -->
+      <div class="col-md-2">
+        <div class="custom-form-group" style="position: relative;">
+          @if (isEditMode && b['BookingHeaderSid']?.value) {
+          <a [routerLink]="['/operation/booking/entry', b['BookingHeaderSid']?.value]"
+            [title]="'Click to view Booking ' + b['BookingNo']?.value" class="form-control custom-input-field sm" style="
+            text-decoration: none;
+            color: #0d6efd;
+          ">
+            {{ b['BookingNo']?.value }}
+          </a>
+          } @else {
+          <input type="text" id="booking-input" class="custom-input-field sm" formControlName="BookingNo" placeholder="" />
+          }
+          <label for="booking-input" class="input-label" >
+            Booking No <span class="text-danger">*</span>
+          </label>
+        </div>
+      </div>
 
 
     <!-- Shipment No -->

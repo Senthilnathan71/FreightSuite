@@ -1,0 +1,563 @@
+/* MAWB Preprint Component Styles */
+
+/* Page Container */
+.mawb-preprint-page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    margin: 0 auto;
+    color: #000;
+    background: white;
+}
+
+/* Data Field Base Styles */
+.data-field {
+    position: absolute;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.data-checkbox {
+    position: absolute;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Shipper Section */
+.shipper-name {
+    top: 25mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 80mm;
+}
+
+.shipper-address {
+    top: 30mm;
+    left: 20mm;
+    font-size: 10px;
+    max-width: 80mm;
+    white-space: pre-line;
+}
+
+.shipper-account {
+    top: 25mm;
+    left: 105mm;
+    font-size: 11px;
+    max-width: 30mm;
+}
+
+/* Consignee Section */
+.consignee-name {
+    top: 45mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 80mm;
+}
+
+.consignee-address {
+    top: 50mm;
+    left: 20mm;
+    font-size: 10px;
+    max-width: 80mm;
+    white-space: pre-line;
+}
+
+.consignee-account {
+    top: 45mm;
+    left: 105mm;
+    font-size: 11px;
+    max-width: 30mm;
+}
+
+/* Agent Section */
+.agent-name {
+    top: 70mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 80mm;
+}
+
+.agent-address {
+    top: 75mm;
+    left: 20mm;
+    font-size: 10px;
+    max-width: 80mm;
+    white-space: pre-line;
+}
+
+.agent-iata {
+    top: 85mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 20mm;
+}
+
+.agent-account {
+    top: 85mm;
+    left: 60mm;
+    font-size: 11px;
+    max-width: 30mm;
+}
+
+/* Airport Departure */
+.airport-departure {
+    top: 95mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 80mm;
+}
+
+/* Right Column */
+.mawb-number {
+    top: 25mm;
+    left: 150mm;
+    font-size: 11px;
+    max-width: 50mm;
+}
+
+.account-info {
+    top: 45mm;
+    left: 150mm;
+    font-size: 11px;
+    max-width: 50mm;
+}
+
+.reference-number {
+    top: 60mm;
+    left: 150mm;
+    font-size: 11px;
+    max-width: 60mm;
+}
+
+.optional-shipping-info {
+    top: 75mm;
+    left: 150mm;
+    font-size: 11px;
+    max-width: 60mm;
+    white-space: pre-line;
+}
+
+/* Routing Section */
+.routing-to-1 {
+    top: 110mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+.routing-by-1 {
+    top: 110mm;
+    left: 40mm;
+    font-size: 11px;
+    width: 40mm;
+    text-align: center;
+}
+
+.routing-to-2 {
+    top: 110mm;
+    left: 85mm;
+    font-size: 11px;
+    width: 10mm;
+    text-align: center;
+}
+
+.routing-by-2 {
+    top: 110mm;
+    left: 100mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+.routing-to-3 {
+    top: 110mm;
+    left: 120mm;
+    font-size: 11px;
+    width: 10mm;
+    text-align: center;
+}
+
+.routing-by-3 {
+    top: 110mm;
+    left: 135mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+/* Currency and Codes */
+.currency-code {
+    top: 110mm;
+    left: 155mm;
+    font-size: 11px;
+    width: 10mm;
+    text-align: center;
+}
+
+.chgs-code {
+    top: 110mm;
+    left: 170mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+/* Checkboxes */
+.wt-val-pp {
+    top: 115mm;
+    left: 155mm;
+    width: 5mm;
+    text-align: center;
+}
+
+.wt-val-col {
+    top: 115mm;
+    left: 170mm;
+    width: 5mm;
+    text-align: center;
+}
+
+.other-pp {
+    top: 115mm;
+    left: 180mm;
+    width: 5mm;
+    text-align: center;
+}
+
+.other-col {
+    top: 115mm;
+    left: 195mm;
+    width: 5mm;
+    text-align: center;
+}
+
+/* Declared Values */
+.declared-carriage {
+    top: 110mm;
+    left: 200mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+.declared-customs {
+    top: 115mm;
+    left: 200mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+/* Flight and Insurance */
+.airport-destination {
+    top: 125mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.flight-date {
+    top: 125mm;
+    left: 60mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.insurance-amount {
+    top: 125mm;
+    left: 100mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.insurance-info {
+    top: 125mm;
+    left: 140mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+/* Handling Information */
+.handling-info {
+    top: 135mm;
+    left: 20mm;
+    font-size: 11px;
+    max-width: 180mm;
+    white-space: pre-line;
+}
+
+/* Goods Data Section */
+.pieces-rcp {
+    top: 150mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+}
+
+.gross-weight {
+    top: 150mm;
+    left: 40mm;
+    font-size: 11px;
+    width: 20mm;
+    text-align: center;
+}
+
+.weight-unit {
+    top: 150mm;
+    left: 65mm;
+    font-size: 11px;
+    width: 10mm;
+    text-align: center;
+}
+
+.chargeable-weight {
+    top: 150mm;
+    left: 80mm;
+    font-size: 11px;
+    width: 25mm;
+    text-align: center;
+}
+
+.rate-charge {
+    top: 150mm;
+    left: 110mm;
+    font-size: 11px;
+    width: 20mm;
+    text-align: center;
+}
+
+.goods-total {
+    top: 150mm;
+    left: 135mm;
+    font-size: 11px;
+    width: 20mm;
+    text-align: center;
+}
+
+.goods-description {
+    top: 150mm;
+    left: 160mm;
+    font-size: 11px;
+    width: 45mm;
+    white-space: pre-line;
+    text-align: left;
+}
+
+.marks-numbers {
+    top: 160mm;
+    left: 160mm;
+    font-size: 10px;
+    width: 45mm;
+    white-space: pre-line;
+    text-align: left;
+}
+
+/* Totals Row */
+.total-pieces {
+    top: 170mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 15mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.total-gross-weight {
+    top: 170mm;
+    left: 65mm;
+    font-size: 11px;
+    width: 10mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.total-chargeable-weight {
+    top: 170mm;
+    left: 80mm;
+    font-size: 11px;
+    width: 25mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.total-rate-charge {
+    top: 170mm;
+    left: 110mm;
+    font-size: 11px;
+    width: 20mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.total-amount {
+    top: 170mm;
+    left: 135mm;
+    font-size: 11px;
+    width: 20mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Charges Section */
+.prepaid-weight {
+    top: 180mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.collect-weight {
+    top: 180mm;
+    left: 60mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.other-charge {
+    position: absolute;
+    font-size: 10px;
+    left: 20mm;
+    font-weight: 600;
+}
+
+.total-other-charges {
+    top: 210mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 80mm;
+}
+
+/* Shipper Certificate */
+.shipper-certificate {
+    top: 185mm;
+    left: 110mm;
+    font-size: 8px;
+    width: 95mm;
+    line-height: 1.2;
+    text-align: justify;
+    font-weight: bold;
+}
+
+.certificate-agent {
+    top: 200mm;
+    left: 110mm;
+    font-size: 10px;
+    width: 95mm;
+    text-align: center;
+}
+
+/* Totals Section */
+.total-prepaid {
+    top: 230mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.total-collect {
+    top: 230mm;
+    left: 60mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+    font-weight: bold;
+}
+
+.currency-conversion {
+    top: 240mm;
+    left: 20mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+.cc-charges {
+    top: 240mm;
+    left: 60mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+/* Execution Info */
+.executed-date {
+    top: 230mm;
+    left: 110mm;
+    font-size: 11px;
+    width: 25mm;
+    text-align: center;
+}
+
+.executed-place {
+    top: 230mm;
+    left: 140mm;
+    font-size: 11px;
+    width: 25mm;
+    text-align: center;
+}
+
+.signature-carrier {
+    top: 230mm;
+    left: 170mm;
+    font-size: 11px;
+    width: 35mm;
+    text-align: center;
+}
+
+/* Footer Section */
+.printed-by {
+    top: 270mm;
+    left: 20mm;
+    font-size: 10px;
+    max-width: 50mm;
+}
+
+.printed-on {
+    top: 270mm;
+    left: 150mm;
+    font-size: 10px;
+    max-width: 50mm;
+}
+
+.document-note {
+    top: 273mm;
+    left: 80mm;
+    font-size: 9px;
+    width: 70mm;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Print Styles */
+@media print {
+    .mawb-preprint-page {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .modal-header,
+    .modal-body > div:not(#printContent) {
+        display: none;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+}

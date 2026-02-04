@@ -35,7 +35,6 @@
                             (click)="onSubmit()">
                             <i class="fas fa-save me-1"></i>Save
                         </button>
-
                         <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
                             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                                 ngbDropdownToggle>
@@ -52,10 +51,9 @@
                                         class="fas fa-shield-alt me-1"></i> Authorize</button>
                                 <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
                                     (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                                <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark"
-                                    (click)="openFollowup()">
-                                    <i class="fas fa-paperclip me-1"></i> Followup
-                                </button>
+                                <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem
+                                    appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i>
+                                    Followup</button>
                             </div>
                         </div>
                     </div>
@@ -158,7 +156,7 @@
                                         [displayFields]="chargeLookupConfig.displayFields"
                                         [displayLabels]="chargeLookupConfig.displayLabels"
                                         [labelFields]="chargeLookupConfig.labelFields" bindValue="ChargeMasterSid"
-                                        (itemSelected)="onCharge($event)">
+                                        (itemSelected)="onCharge($event,i)">
                                     </dofi-searchable-dropdown>
                                 </td>
 
@@ -182,7 +180,7 @@
                                 <td style="padding:2px; vertical-align:middle; width:120px;">
                                     <input class="custom-input-field sm" formControlName="CostAmount"
                                         style="height:28px; font-size:12px; padding:2px 6px;" DecimalPrecision
-                                        [DecimalPrecisionBefore]="12"
+                                        [DecimalPrecisionBefore]="9"
                                         [DecimalPrecisionAfter]="getAmountDecimalPlaces(std.get('CostCurrency')?.value)">
                                 </td>
 
@@ -198,7 +196,7 @@
                                 <td style="padding:2px; vertical-align:middle; width:120px;">
                                     <input class="custom-input-field sm" formControlName="SaleAmount"
                                         style="height:28px; font-size:12px; padding:2px 6px;" DecimalPrecision
-                                        [DecimalPrecisionBefore]="12"
+                                        [DecimalPrecisionBefore]="9"
                                         [DecimalPrecisionAfter]="getAmountDecimalPlaces(std.get('SaleCurrency')?.value)">
                                 </td>
 
@@ -207,9 +205,9 @@
                                         <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
                                             #d1="ngbDatepicker" formControlName="ValidFrom" (click)="d1.toggle()"
                                             style="height:28px; font-size:12px; padding:2px 6px;"
-                                            [minDate]="minValidFrom"
+                                            [minDate]="minValidFromDates[i] || minValidFrom "
                                             [maxDate]="toNgbDateStruct(std.get('ValidTo').value)"
-                                            (dateSelect)="onValidFromChange($event, i)">
+                                            (dateSelect)="onValidFromChange($event, i)" [disabled]="isEditMode">
                                         <button type="button" class="btn bi bi-calendar3 " (click)="d1.toggle()"
                                             style="height:28px; padding:2px 6px;">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -222,7 +220,7 @@
                                         <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
                                             #d2="ngbDatepicker" formControlName="ValidTo" (click)="d2.toggle()"
                                             style="height:28px; font-size:12px; padding:2px 6px;"
-                                            [minDate]="StdTariffDetails.at(i).get('minValidTo')?.value">
+                                            [minDate]="minValidToDates[i]" [disabled]="isEditMode">
                                         <button type="button" class="btn bi bi-calendar3 " (click)="d2.toggle()"
                                             style="height:28px; padding:2px 6px;">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>

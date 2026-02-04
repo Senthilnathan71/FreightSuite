@@ -50,6 +50,19 @@ export class VatReportComponent {
     return this.fullData?.bucketLabels || [];
   }
 
+   getTotalTaxableAmt() {
+    return this.fullData?.data?.outputTax?.reduce(
+      (sum: number, item: any) => sum + (+item.taxableAmt || 0),
+      0
+    );
+  }
+
+  getTotalTaxAmt() {
+    return this.fullData?.data?.outputTax?.reduce(
+      (sum: number, item: any) => sum + (+item.taxAmt || 0),
+      0
+    );
+  }
 
 getExcelData(): ComplexReportExportConfig {
 
