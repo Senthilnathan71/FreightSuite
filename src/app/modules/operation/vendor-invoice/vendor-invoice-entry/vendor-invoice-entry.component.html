@@ -1006,7 +1006,7 @@
                             {{ 
                               getFormattedAmount(
                                 row.get("PartyAmount")?.value,
-                                currentCompany.CurrencyMasterSid
+                                vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue()
                               )
                             }}
                           </span>

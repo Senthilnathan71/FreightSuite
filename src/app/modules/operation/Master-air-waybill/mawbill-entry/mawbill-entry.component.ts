@@ -2137,9 +2137,10 @@ handleEdocChange(event: any) {
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
     console.log(booking);
     const HouseJobSid = booking.HouseJobSid;
+    const userEmail = this.appSettingsService.userSettingSource.value['userEmail'];
     console.log(HouseJobSid);
     if (HouseJobSid) {
-      this.operationService.detachBooking(HouseJobSid).subscribe({
+      this.operationService.detachBooking(HouseJobSid,userEmail).subscribe({
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess('Booking detached successfully');

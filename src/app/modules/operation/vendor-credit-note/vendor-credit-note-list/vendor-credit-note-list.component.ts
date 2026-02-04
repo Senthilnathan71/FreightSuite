@@ -423,7 +423,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     return;
   }
       if (event.action === 'view') {
-        this.viewVendorCreditNote(event.row);
+        this.editVendorCreditNote(event.row);
       } else if (event.action === 'delete') {
         this.deleteVendorCreditNote(event.row);
       }
