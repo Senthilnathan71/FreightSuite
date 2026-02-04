@@ -1264,6 +1264,10 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   handlePODChange(selectedPort: any) {
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
+      
+    // Explicitly mark POD as invalid if cleared
+    this.masterJobForm.get('POD')?.setErrors({ required: true });
+    this.masterJobForm.get('POD')?.markAsTouched();
       this.masterJobForm.get('FPD')?.setValue(null);
       return;
     }
@@ -1305,7 +1309,18 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     this.masterJobForm.get('POD')?.setErrors({ samePort: true });
     return;
   }
-
+if (polSid && !podSid) {
+    this.toastr.error('POD is required when POL is selected');
+    this.masterJobForm.get('POD')?.setErrors({ required: true });
+    this.masterJobForm.get('POD')?.markAsTouched();
+    return;
+  }
+  if(podSid && !polSid){
+    this.toastr.error('POL is required when POD is selected');
+    this.masterJobForm.get('POL')?.setErrors({ required: true });
+    this.masterJobForm.get('POL')?.markAsTouched();
+    return;
+  }
     
     // Check general form validity
     if (this.masterJobForm.invalid) {

@@ -1745,6 +1745,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.clearVesselAndVoyageData();
+       this.masterJobForm.get('POD')?.setErrors({ required: true });
+    this.masterJobForm.get('POD')?.markAsTouched();
       // Clear FPOD if POD is cleared
       this.masterJobForm.get('FPD')?.setValue(null);
       return;
@@ -2071,6 +2073,18 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.toastr.error('POL and POD cannot be the same port');
     this.masterJobForm.get('POL')?.setErrors({ samePort: true });
     this.masterJobForm.get('POD')?.setErrors({ samePort: true });
+    return;
+  }
+  if (polSid && !podSid) {
+    this.toastr.error('POD is required when POL is selected');
+    this.masterJobForm.get('POD')?.setErrors({ required: true });
+    this.masterJobForm.get('POD')?.markAsTouched();
+    return;
+  }
+  if(podSid && !polSid){
+    this.toastr.error('POL is required when POD is selected');
+    this.masterJobForm.get('POL')?.setErrors({ required: true });
+    this.masterJobForm.get('POL')?.markAsTouched();
     return;
   }
     if (this.masterJobForm.invalid) {

@@ -658,6 +658,21 @@ createRateFormGroup(data?: any): FormGroup {
     form.get('RevenueChargeUomSid')?.setValue(value);
     form.get('CostChargeUomSid')?.setValue(value);
   });
+   const revenueCurrency = data?.RevenueCurrencyMasterSid;
+  const costCurrency = data?.CostCurrencyMasterSid;
+  const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
+
+  // Check Revenue side
+  if (revenueCurrency && revenueCurrency === companyCurrencySid) {
+    form.get('RevenueExchangeRate')?.setValue(this.getFormattedExchangeRate(1, revenueCurrency));
+    form.get('RevenueExchangeRate')?.disable();
+  }
+
+  // Check Cost side
+  if (costCurrency && costCurrency === companyCurrencySid) {
+    form.get('CostExchangeRate')?.setValue(this.getFormattedExchangeRate(1, costCurrency));
+    form.get('CostExchangeRate')?.disable();
+  }
   // if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid){
   //   form.disable();
   // }
@@ -987,21 +1002,23 @@ createRateFormGroup(data?: any): FormGroup {
    */
   getCostExchangeRate(index: number, currency: any) {
     if (!currency) return;
-
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
     const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
     const fromCurrencyCode = currency?.currencyCode;
     const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
 
     if (!fromCurrencyCode || !toCurrencyCode) return;
+    const currentCostCurrency = formGroup.get('CostCurrencyMasterSid')?.value;
+  const isSameCurrency = currentCostCurrency && currentCostCurrency === toCurrency;
 
-    if (fromCurrencyCode === toCurrencyCode) {
+    if (fromCurrencyCode === toCurrencyCode|| isSameCurrency) {
       const formGroup = this.rateFormArray.at(index) as FormGroup;
-      formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(1, fromCurrencyCode), });
+      formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(1, currentCostCurrency || toCurrency), });
       formGroup.get('CostExchangeRate')?.disable();
       this.calculateCostLocalAmount(index);
       return;
     }
-
+   formGroup.get('CostExchangeRate')?.enable();
     const payload = { 
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1015,7 +1032,7 @@ createRateFormGroup(data?: any): FormGroup {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
           formGroup.get('CostExchangeRate')?.enable();
-          formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
+          formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(Number(resp.data), currentCostCurrency || toCurrency), });
           this.calculateCostLocalAmount(index);
         }
       }
@@ -1027,20 +1044,23 @@ createRateFormGroup(data?: any): FormGroup {
    */
   getRevenueExchangeRate(index: number, currency: any) {
     if (!currency) return;
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
     const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
     const fromCurrencyCode = currency?.currencyCode;
     const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
     if (!fromCurrencyCode || !toCurrencyCode) return;
-
-    if (fromCurrencyCode === toCurrencyCode) {
+    const currentRevenueCurrency = formGroup.get('RevenueCurrencyMasterSid')?.value;
+  const isSameCurrency = currentRevenueCurrency && currentRevenueCurrency === toCurrency;
+    if (fromCurrencyCode === toCurrencyCode  || isSameCurrency) {
       const formGroup = this.rateFormArray.at(index) as FormGroup;
       formGroup.patchValue({ 
-        RevenueExchangeRate:  this.getFormattedExchangeRate(1, fromCurrencyCode),
+        RevenueExchangeRate:  this.getFormattedExchangeRate(1, currentRevenueCurrency || toCurrency),
       });
       formGroup.get('RevenueExchangeRate')?.disable();
       this.calculateRevenueLocalAmount(index);
       return;
     }
+    formGroup.get('RevenueExchangeRate')?.enable();
 
     const payload = { 
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -1055,7 +1075,7 @@ createRateFormGroup(data?: any): FormGroup {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
           formGroup.get('RevenueExchangeRate')?.enable();
-          formGroup.patchValue({ RevenueExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
+          formGroup.patchValue({ RevenueExchangeRate: this.getFormattedExchangeRate(Number(resp.data), currentRevenueCurrency || toCurrency), });
           this.calculateRevenueLocalAmount(index);
         }
       }

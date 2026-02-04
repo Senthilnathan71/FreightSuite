@@ -1114,7 +1114,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
       Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
-      Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required] : []],
+      Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
@@ -1874,10 +1874,28 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.appSettingService.showWarning('Gross Weight cannot be less than Net Weight');
     return;
   }
+
+    if (!grossWeight || parseFloat(grossWeight) === 0) {
+    this.appSettingService.showWarning('Gross Weight cannot be zero. Please enter a valid Gross Weight.');
+    return;
+  }
     if(this.productForm.invalid){
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all the required fields correctly.')
+      // Get all invalid fields for better error message
+    const invalidFields = [];
+    Object.keys(this.productForm.controls).forEach(key => {
+      const control = this.productForm.get(key);
+      if (control && control.invalid) {
+        invalidFields.push(this.getFieldLabel(key));
+      }
+    });
+    
+    if (invalidFields.length > 0) {
+      this.appSettingService.showWarning(`Please fill all required fields: ${invalidFields.join(', ')}`);
+    } else {
+      this.appSettingService.showWarning('Please fill all the required fields correctly.');
+    }
       return;
     }
     if (this.currentProductIndex === -1) {
@@ -1898,6 +1916,18 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.updateProductPagination();
     this.modalService.dismissAll();
   }
+  private getFieldLabel(fieldName: string): string {
+  const fieldLabels: { [key: string]: string } = {
+    'ProductName': 'Commodity',
+    'ExternaPkg': 'External Pkg',
+    'ExternlQty': 'No of Pkg',
+    'GrossWeight': 'Gross Weight',
+    'Volume': 'CBM',
+    'UomMasterSid': 'UOM',
+    'Volumetric': 'Volumetric'
+  };
+  return fieldLabels[fieldName] || fieldName;
+}
 
   handleConnectionChange(allConnections:any[]){
     console.log(allConnections);
@@ -1940,6 +1970,17 @@ onCurrencyChange(event: any) {
     this.appSettingService.showWarning('Please fill all required fields correctly.');
     return;
   }
+  // In onSubmit() - Added this check:
+if (this.bookingProducts.length > 0) {
+  const hasInvalidProduct = this.bookingProducts.controls.some(control => control.invalid);
+  
+  if (hasInvalidProduct) {
+    this.bookingProducts.markAllAsTouched();
+    this.appSettingService.showWarning('Please fill all required product fields correctly.');
+    this.selectedTab = 'Cargo';
+    return;
+  }
+}
 
     if (!this.costEntryComponent.validateRateArray()) {
       this.selectedTab = 'Rate';

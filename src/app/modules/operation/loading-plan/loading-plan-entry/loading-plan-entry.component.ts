@@ -946,7 +946,7 @@ formatContainerNumber(): void {
     ctrl?.setValue(element.checked);
   }
 
-  onGenerateJob() {
+   onGenerateJob() {
     if (this.selectedBookings.length === 0) {
       this.appSettingService.showWarning('Please select at least one booking.');
       return;
@@ -1020,6 +1020,26 @@ formatContainerNumber(): void {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const isHaz = this.selectedBookings.map(booking => booking.CargoType).some(bk => bk === 'Haz');
     const containers = this.masterJobContainers.getRawValue();
+     let vesselName: string | null = null;
+  let voyageNo: string | null = null;
+  let voyageMasterSid: number | null = null;
+  let ETD: Date | null = null;
+  let ETA: Date | null = null;
+  
+  if (formValue.isVesselVoyage) {
+    // Free text entry - get value from form control
+    vesselName = formValue.vesselVoyage;
+    voyageNo = formValue.voyageNo;
+    ETD = formValue.ETD;
+    ETA = formValue.ETA;
+    voyageMasterSid = null;
+  } else {
+    // Dropdown selection - get value from selectedVoyage object
+    vesselName = this.selectedVoyage?.VesselName || null;
+    voyageNo = this.selectedVoyage?.VoyageNo || null;
+
+    voyageMasterSid = this.selectedVoyage?.VoyageMasterSid || null;
+  }
     const shipmentList = this.selectedBookings.map(booking => {
       return {
         BookingHeaderSid: booking.BookingHeaderSid,
@@ -1040,13 +1060,13 @@ formatContainerNumber(): void {
       NetWeight: this.totalNetWeight,
       Volume: this.totalVolume,
       Haz: isHaz ? 'Y' : 'N',
-      VoyageMasterSid: this.selectedVoyage?.VoyageMasterSid,
-      VesselName: this.selectedVoyage?.VesselName,
-      VoyageNo: this.selectedVoyage?.VoyageNo,
+       VoyageMasterSid: voyageMasterSid, // Use the variable we set above
+    VesselName: vesselName, // Use the variable we set above
+    VoyageNo: voyageNo, 
       CarrierName: formValue.carrier,
       CarrierMasterSid: formValue.CarrierMasterSid,
-      ETD: formValue.ETD,
-      ETA: formValue.ETA,
+      ETD: ETD,
+      ETA: ETA,
       CutOffDate: this.selectedVoyage?.PortCutoff,
       shipmentList,
       masterJobContainers: containers
