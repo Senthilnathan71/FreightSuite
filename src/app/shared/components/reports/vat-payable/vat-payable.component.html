@@ -37,7 +37,8 @@
                         <td>{{item.voucherDate | formatDate}}</td>
                         <td>{{item.subledgerName}}</td>
                         <td>{{item.panType}}</td>
-                        <td>{{ item.voucherType2 }}</td>
+                        <!-- <td>{{ item.voucherType2 }}</td> -->
+                         <td>{{item.vocuherType}}</td>
                         <td>{{ item.voucherNo }}</td>
                         <td>
                             {{ item.documentNo && item.documentDate
@@ -47,14 +48,25 @@
                         <td class="text-end">{{item.taxableAmt | number:'1.2-2' }}</td>
                         <td class="text-end">{{item.taxAmt | number:'1.2-2' }}</td>
                     </tr>
+                    <tr class="fw-bold bg-light">
+                        <td colspan="6" class="text-end">Total</td>
+                    
+                        <td class="text-end">
+                            {{ getTotalTaxableAmt() | number:'1.2-2' }}
+                        </td>
+                    
+                        <td class="text-end">
+                            {{ getTotalTaxAmt() | number:'1.2-2' }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
      <div class="pt-2">
-      Note:
+      Note :
       <ul>
-        <li>VAT Payable Report is generated based only on Invoice and Journal Voucher types.</li>
+        <li>VAT Payable Report is generated based only on Invoice , Credit Note and Journal Voucher types.</li>
       </ul>
     </div>
 </div>

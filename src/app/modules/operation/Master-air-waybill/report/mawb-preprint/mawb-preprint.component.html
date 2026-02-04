@@ -1,0 +1,340 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">MAWB Preprint</h5>
+    <div class="d-flex gap-2 align-items-center">
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+    </div>
+</div>
+
+<div class="modal-body">
+    <div id="printContent" class="p-1">
+        <!-- A4 Page Container -->
+        <div class="mawb-preprint-page">
+
+            <!-- SHIPPER SECTION -->
+            <!-- Shipper Name -->
+            <span class="data-field shipper-name">
+                {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
+            </span>
+            
+            <!-- Shipper Address -->
+            <span class="data-field shipper-address">
+                {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
+            </span>
+            
+            <!-- Shipper Account No -->
+            <span class="data-field shipper-account">
+                {{ getShipperAccountNo() }}
+            </span>
+
+            <!-- CONSIGNEE SECTION -->
+            <!-- Consignee Name -->
+            <span class="data-field consignee-name">
+                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }}
+            </span>
+            
+            <!-- Consignee Address -->
+            <span class="data-field consignee-address">
+                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
+            </span>
+            
+            <!-- Consignee Account No -->
+            <span class="data-field consignee-account">
+                {{ getConsigneeAccountNo() }}
+            </span>
+
+            <!-- AGENT SECTION -->
+            <!-- Issuing Carrier's Agent Name -->
+            <span class="data-field agent-name">
+                {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+            </span>
+            
+            <!-- Agent Address -->
+            <span class="data-field agent-address">
+                {{ getAgentName(masterAirWayData?.DestinationAgentAddress) }}
+            </span>
+            
+            <!-- Agent's IATA Code -->
+            <span class="data-field agent-iata">
+                {{ currentUserCode }}
+            </span>
+            
+            <!-- Agent Account No -->
+            <span class="data-field agent-account">
+                {{ getAgentAccountNo() }}
+            </span>
+
+            <!-- AIRPORT DEPARTURE -->
+            <span class="data-field airport-departure">
+                {{ masterAirWayData?.POL }}
+            </span>
+
+            <!-- RIGHT COLUMN DATA -->
+            <!-- MAWB Number -->
+            <span class="data-field mawb-number">
+                {{ masterAirWayData?.MBLNo }}
+            </span>
+            
+            <!-- Account Information -->
+            <span class="data-field account-info">
+                {{ masterAirWayData?.FreightPPCC }}
+            </span>
+            
+            <!-- Reference Number -->
+            <span class="data-field reference-number">
+                {{ getReferenceNumber() }}
+            </span>
+            
+            <!-- Optional Shipping Information -->
+            <span class="data-field optional-shipping-info">
+                {{ getOptionalShippingInfo() }}
+            </span>
+
+            <!-- ROUTING SECTION -->
+            <!-- First To (POD) -->
+            <span class="data-field routing-to-1">
+                {{ masterAirWayData?.POD }}
+            </span>
+            
+            <!-- By First Carrier -->
+            <span class="data-field routing-by-1">
+                {{ masterAirWayData?.voyages?.[0]?.CarrierName }}
+            </span>
+            
+            <!-- Second To -->
+            <span class="data-field routing-to-2">
+                {{ getSecondDestination() }}
+            </span>
+            
+            <!-- By Second Carrier -->
+            <span class="data-field routing-by-2">
+                {{ getSecondCarrier() }}
+            </span>
+            
+            <!-- Third To -->
+            <span class="data-field routing-to-3">
+                {{ getThirdDestination() }}
+            </span>
+            
+            <!-- By Third Carrier -->
+            <span class="data-field routing-by-3">
+                {{ getThirdCarrier() }}
+            </span>
+
+            <!-- CURRENCY AND CODES -->
+            <!-- Currency -->
+            <span class="data-field currency-code">
+                {{ getCurrencyCodeById(currentCurrency) }}
+            </span>
+            
+            <!-- CHGS Code -->
+            <span class="data-field chgs-code">
+                {{ getChgsCode() }}
+            </span>
+
+            <!-- WT/VAL CHECKBOXES -->
+            <!-- WT/VAL PP/CC Mark -->
+            <span class="data-checkbox wt-val-pp" *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'">
+                X
+            </span>
+            
+            <!-- WT/VAL COL Mark -->
+            <span class="data-checkbox wt-val-col" *ngIf="masterAirWayData?.FreightPPCC === 'Collect'">
+                X
+            </span>
+
+            <!-- OTHER CHECKBOXES -->
+            <!-- Other PP/CC Mark -->
+            <span class="data-checkbox other-pp" *ngIf="masterAirWayData?.OtherPPCC === 'Prepaid'">
+                X
+            </span>
+            
+            <!-- Other COL Mark -->
+            <span class="data-checkbox other-col" *ngIf="masterAirWayData?.OtherPPCC === 'Collect'">
+                X
+            </span>
+
+            <!-- DECLARED VALUES -->
+            <!-- Declared Value of Carriage -->
+            <span class="data-field declared-carriage">
+                {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCarriage }}
+            </span>
+            
+            <!-- Declared Value of Customs -->
+            <span class="data-field declared-customs">
+                {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
+            </span>
+
+            <!-- FLIGHT AND INSURANCE -->
+            <!-- Airport of Destination -->
+            <span class="data-field airport-destination">
+                {{ masterAirWayData?.FPD }}
+            </span>
+            
+            <!-- Requested Flight/Date -->
+            <span class="data-field flight-date">
+                {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
+            </span>
+            
+            <!-- Amount of Insurance -->
+            <span class="data-field insurance-amount">
+                {{ getInsuranceAmount() }}
+            </span>
+            
+            <!-- Insurance Info -->
+            <span class="data-field insurance-info">
+                {{ getInsuranceInfo() }}
+            </span>
+
+            <!-- HANDLING INFORMATION -->
+            <span class="data-field handling-info">
+                {{ masterAirWayData?.others?.[0]?.HandlingInformation }}
+            </span>
+
+            <!-- GOODS DATA SECTION -->
+            <!-- No of Pieces RCP -->
+            <span class="data-field pieces-rcp">
+                {{ masterAirWayData?.NoOfPkg }}
+            </span>
+            
+            <!-- Gross Weight -->
+            <span class="data-field gross-weight">
+                {{ masterAirWayData?.GrossWeight | number:'1.2-2' }}
+            </span>
+            
+            <!-- Weight Unit (Kg/Lb) -->
+            <span class="data-field weight-unit">
+                {{ masterAirWayData?.WeightIn }}
+            </span>
+            
+            <!-- Chargeable Weight -->
+            <span class="data-field chargeable-weight">
+                {{ masterAirWayData?.ChargeableWeight | number:'1.2-2' }}
+            </span>
+            
+            <!-- Rate/Charge -->
+            <span class="data-field rate-charge">
+                {{ getFreightTotals().totalExchangeRate }}
+            </span>
+            
+            <!-- Total -->
+            <span class="data-field goods-total">
+                {{ getFreightTotals().totalRevenueAmount }}
+            </span>
+            
+            <!-- Nature and Quantity of Goods -->
+            <span class="data-field goods-description">
+                {{ masterAirWayData?.CommodityDescription }}
+            </span>
+            
+            <!-- Marks and Numbers -->
+            <span class="data-field marks-numbers">
+                {{ masterAirWayData?.MarksandNumber }}
+            </span>
+
+            <!-- TOTALS ROW -->
+            <!-- Total Pieces -->
+            <span class="data-field total-pieces">
+                {{ masterAirWayData?.NoOfPkg }}
+            </span>
+            
+            <!-- Total Gross Weight -->
+            <span class="data-field total-gross-weight">
+                {{ masterAirWayData?.GrossWeight }}
+            </span>
+            
+            <!-- Total Chargeable Weight -->
+            <span class="data-field total-chargeable-weight">
+                {{ masterAirWayData?.ChargeableWeight }}
+            </span>
+            
+            <!-- Total Rate/Charge -->
+            <span class="data-field total-rate-charge">
+                {{ getFreightTotals().totalExchangeRate }}
+            </span>
+            
+            <!-- Total Amount -->
+            <span class="data-field total-amount">
+                {{ getFreightTotals().totalRevenueAmount }}
+            </span>
+
+            <!-- CHARGES SECTION -->
+            <!-- Prepaid Weight Charge -->
+            <span class="data-field prepaid-weight">
+                {{ freightCharges[0]?.RevenueAmount }}
+            </span>
+            
+            <!-- Collect Weight Charge -->
+            <span class="data-field collect-weight">
+                {{ freightCharges[0]?.CostAmount }}
+            </span>
+            
+            <!-- Other Charges List -->
+            <span *ngFor="let charge of otherCharges; let i = index" 
+                  class="data-field other-charge" 
+                  [style.top]="getOtherChargePosition(i)">
+                {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}
+            </span>
+            
+            <!-- Total Other Charges Due Carrier -->
+            <span class="data-field total-other-charges">
+                {{ getTotalExchangeRate() }}
+            </span>
+
+            <!-- SHIPPER CERTIFICATE -->
+            <!-- Shipper Certificate Text -->
+            <div class="data-field shipper-certificate">
+                Shipper certifies that the particulars on the face hereof are correct and that insofar as
+                any part of the consignment contains dangerous goods such part is properly described by name and
+                is in proper condition for carriage by air according to the applicable Dangerous Goods Regulations.
+            </div>
+            
+            <!-- Agent Name -->
+            <span class="data-field certificate-agent">
+                {{ getAgentName(masterAirWayData?.DestinationAgent) }} <strong>As Agent</strong>
+            </span>
+
+            <!-- TOTALS SECTION -->
+            <!-- Total Prepaid -->
+            <span class="data-field total-prepaid">
+                {{ getGrandTotal() }}
+            </span>
+            
+            <!-- Total Collect -->
+            <span class="data-field total-collect">
+                {{ getTotalCollect() }}
+            </span>
+            
+            <!-- Currency Conversion Rates -->
+            <span class="data-field currency-conversion">
+                {{ getCurrencyConversion() }}
+            </span>
+            
+            <!-- CC Charges in Dest. Currency -->
+            <span class="data-field cc-charges">
+                {{ getCCCharges() }}
+            </span>
+
+            <!-- EXECUTION INFO -->
+            <!-- Executed on Date -->
+            <span class="data-field executed-date">
+                {{ masterAirWayData?.MBLDate | formatDate }}
+            </span>
+            
+            <!-- At Place -->
+            <span class="data-field executed-place">
+                {{ currentCountryName }}
+            </span>
+            
+            <!-- Signature of Issuing Carrier -->
+            <span class="data-field signature-carrier">
+                {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+            </span>
+        </div>
+    </div>
+</div>

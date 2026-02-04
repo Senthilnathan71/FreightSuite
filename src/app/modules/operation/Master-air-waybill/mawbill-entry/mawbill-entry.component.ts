@@ -57,6 +57,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -2516,6 +2517,20 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.agentList = this.agentList;
         modalRef.componentInstance.yardList = this.yardList;
       }
+
+        reportMAWBpreprintedModel() {
+          const modalRef = this.modalService.open(MawbPreprintComponent, {
+            size: 'xl',
+            scrollable: true,
+          })
+          console.log("Master Air way data", this.masterAirWayData);
+          modalRef.componentInstance.masterAirWayData = this.masterAirWayData || [];
+          modalRef.componentInstance.containerTypeList = this.containerTypeList;
+          modalRef.componentInstance.packageTypeList = this.packageTypeList;
+          modalRef.componentInstance.agentList = this.agentList;
+          modalRef.componentInstance.currencyList = this.currencyList;
+          modalRef.componentInstance.chargeList = this.chargeList;
+        }
 
       
 }

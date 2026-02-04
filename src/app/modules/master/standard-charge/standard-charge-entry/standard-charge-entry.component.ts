@@ -40,7 +40,7 @@ import { CommonService } from 'src/app/common/common.service';
     CommonModule,
     CustomDatePipe,
     DecimalPrecisionDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
   ],
   templateUrl: './standard-charge-entry.component.html',
   styles: ``,
@@ -79,6 +79,9 @@ export class StandardChargeEntryComponent implements OnInit {
   MenuMasterSid: any;
   TandCList: any;
   userData: any;
+  minValidToDates: NgbDateStruct[] = [];
+  minValidFromDates: NgbDateStruct[] = [];
+
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
@@ -201,7 +204,6 @@ export class StandardChargeEntryComponent implements OnInit {
       ValidFrom: ['', Validators.required],
       ValidTo: ['', Validators.required],
       ChargeName: [''],
-      minValidTo: [null],
       Status: 'A'
     });
   }
@@ -217,10 +219,7 @@ export class StandardChargeEntryComponent implements OnInit {
       day: date.day + 1
     };
 
-    row.patchValue({
-      minValidTo: nextDay,
-      ValidTo: null
-    });
+    this.minValidToDates[index] = nextDay;
   }
 
 
@@ -237,8 +236,9 @@ export class StandardChargeEntryComponent implements OnInit {
     this.masterService.fetchStdChargeById(id).subscribe({
       next: (res: any) => {
         const data = res.data;
-        const standardChargeData = res.data;
+
         if (!data) return;
+        this.standardChargeData = data;
         const header = data;
         const details = data.StdTariffDetails || [];
         this.standardChargeForm.patchValue({
@@ -246,6 +246,10 @@ export class StandardChargeEntryComponent implements OnInit {
           Remarks: header.Remarks,
           Status: header.Status
         });
+
+        if (this.isEditMode) {
+          this.standardChargeForm.get('DepartmentMasterSid')?.disable();
+        }
 
         this.StdTariffDetails.clear();
 
@@ -260,11 +264,15 @@ export class StandardChargeEntryComponent implements OnInit {
             SaleAmount: row.SaleAmount,
             CostCurrency: row.CostCurrency,
             CostAmount: row.CostAmount,
-            ValidFrom: this.toNgbDateStruct(row.ValidFrom),
-            ValidTo: this.toNgbDateStruct(row.ValidTo),
+            ValidFrom: row.ValidFrom,
+            ValidTo: row.ValidTo,
             ChargeName: row.ChargeName,
             Status: row.Status
           });
+          if (this.isEditMode) {
+            fg.get('ValidFrom')?.disable();
+            fg.get('ValidTo')?.disable();
+          }
           this.StdTariffDetails.push(fg);
         });
         this.spinner.hide();
@@ -274,20 +282,40 @@ export class StandardChargeEntryComponent implements OnInit {
     this.spinner.hide();
   }
 
+  onCharge(event: any, index: number) {
 
-  onCharge(event: any, index?: number) {
-    const selectedCharge = this.charge.find(
-      c => c.ChargeMasterSid === event?.ChargeMasterSid
-    );
-    if (!selectedCharge) return;
+    const selectedChargeSid = event?.ChargeMasterSid;
 
-    if (index !== undefined) {
-      const row = this.StdTariffDetails.at(index);
-      row.patchValue({
-        ChargeName: selectedCharge.chargeName
-      });
+    // ✅ Department selected from header
+    const deptSid =
+      this.standardChargeForm.get('DepartmentMasterSid')?.value;
+
+    // ✅ Find previous row with SAME Charge + SAME Dept
+    const previousRow = this.StdTariffDetails.controls
+      .slice(0, index)
+      .map(ctrl => ctrl.getRawValue())
+      .reverse()
+      .find(r =>
+        r.ChargeMasterSid === selectedChargeSid &&
+        deptSid === this.standardChargeForm.get('DepartmentMasterSid')?.value
+      );
+
+    // ✅ If found → Restrict ValidFrom
+    if (previousRow?.ValidTo) {
+
+      const prevTo = new Date(previousRow.ValidTo);
+      prevTo.setDate(prevTo.getDate() + 1);
+
+      this.minValidFromDates[index] = {
+        year: prevTo.getFullYear(),
+        month: prevTo.getMonth() + 1,
+        day: prevTo.getDate()
+      };
     }
   }
+
+
+
 
 
   onSubmit() {
@@ -298,7 +326,7 @@ export class StandardChargeEntryComponent implements OnInit {
       return;
     }
 
-    const formValue = this.standardChargeForm.value;
+    const formValue = this.standardChargeForm.getRawValue();
     const mappedDetails = formValue.StdTariffDetails.map((row: any) => {
       const selectedCharge = this.charge.find(
         c => c.ChargeMasterSid === row.ChargeMasterSid
@@ -341,7 +369,7 @@ export class StandardChargeEntryComponent implements OnInit {
           } else {
             this.appSettingService.showSuccess("Standard-Charge is created successfully");
           }
-          this.router.navigate(['/master/standard-charge/list']);
+          // this.router.navigate(['/master/standard-charge/list']);
         } else {
           this.appSettingService.showError("Internal Server Error");
         }
@@ -355,7 +383,7 @@ export class StandardChargeEntryComponent implements OnInit {
     if (this.isEditMode) {
       this.loadStandardChargeById(this.StdRateHeaderSid);
     } else {
-      this.standardChargeForm.reset({ Status: 'Active' });
+      this.standardChargeForm.reset({ Status: 'A' });
       this.StdTariffDetails.clear();
       this.StdTariffDetails.push(this.createChargeRow());
     }
@@ -428,19 +456,17 @@ export class StandardChargeEntryComponent implements OnInit {
       size: 'lg',
       centered: true,
       backdrop: 'static'
-    });
-    modalRef.componentInstance.item = this.standardChargeData;
-    modalRef.componentInstance.idLabel = 'Standard Charge Id';
-    modalRef.componentInstance.idValue = this.standardChargeData?.StdRateHeaderSid;
+    })
     const data: any = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       BranchMasterSid: this.currentBranch.BranchMasterSid,
       MenuMasterSid: this.MenuMasterSid,
       DocumentSid: this.StdRateHeaderSid
     }
-
+    console.log(this.MenuMasterSid)
     this.commonService.documentData.set(data)
   }
+
   openFollowup() {
     if (!this.standardChargeData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
