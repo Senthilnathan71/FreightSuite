@@ -11,7 +11,7 @@
     <!-- LEFT SLOT -->
     <div style="flex:1; text-align:left;">
       <ng-container *ngIf="logoPosition === 'left'">
-        <img [src]="(logoService.reportLogo$ | async)" style="width:100px; height:100px;" />
+        <img [src]="(logoService.reportLogo$ | async)" style="width:auto; height:100px;" />
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'left'">
@@ -35,7 +35,7 @@
     <!-- RIGHT SLOT -->
     <div style="flex:1; text-align:right;">
       <ng-container *ngIf="logoPosition === 'right'">
-        <img [src]="(logoService.reportLogo$ | async)" style="width:100px; height:100px;" />
+        <img [src]="(logoService.reportLogo$ | async)" style="width:auto; height:100px;" />
       </ng-container>
 
       <ng-container *ngIf="companyPosition === 'right'">
