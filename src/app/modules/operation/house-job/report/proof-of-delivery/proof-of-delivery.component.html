@@ -1,0 +1,444 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Proof of Delivery</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+            <i class="fas fa-print me-1"></i> Print
+        </button> -->
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
+    </div>
+</div>
+
+
+<div class="modal-body">
+    <div id="printContent" class="p-1">
+        <div
+            style="width:280mm; min-height:400mm; margin:10px auto;  background:#fff; border:1px solid #000; box-sizing:border-box; font-size:16px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always;position: relative; ">
+
+            <!-- Main Content -->
+            <div>
+
+                <!-- Company Info -->
+
+                <app-print-header></app-print-header>
+
+                <h3
+                    style="text-align:center; font-weight:bolder; margin:0; padding:10px 0; border-top: 1px solid black;font-size: 25px; margin-top: 10px;">
+                    <strong>Proof of Delivery</strong>
+                </h3>
+
+                <div style="display:flex; flex-wrap:wrap; margin-bottom:5px; ">
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none; box-sizing:border-box;">
+                        <div style="padding-top: 5px;padding-bottom: 30px;font-size: 16px;">
+                            <div style="display:flex;margin-left: 10px;margin-top: 2px;">
+                                <div style="width:180px; font-weight:bolder;"><strong>Client</strong></div>
+                            </div>
+
+                            <div style="margin-top:5px;margin-left:40px;">
+                                {{housejobData?.CustomerName}}<br>
+                                {{housejobData?.CustomerAddress}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-right:none; border-left: none; box-sizing:border-box;">
+                        <div style="padding-top: 5px;padding-bottom: 30px;font-size: 16px;">
+                            <div style="display:flex;margin-left: 10px;margin-top: 2px;">
+                                <div style="width:180px; font-weight:bolder;"><strong>Delivery To</strong></div>
+                            </div>
+
+                            <div style="margin-top:5px;margin-left:40px;">
+                                {{housejobData?.Others?.[0]?.DeliveryPlace}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div style="display:flex; flex-wrap:wrap; margin-bottom:5px;font-size: 16px; ">
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none; box-sizing:border-box;">
+                        <div style="padding-top: 5px;padding-bottom: 30px;font-size: 16px;">
+                            <div style="display:flex;margin-left: 10px;margin-top: 2px;">
+                                <div style="width:180px; font-weight:bolder;"><strong>Consignee</strong></div>
+                            </div>
+
+                            <div style="margin-top:5px;margin-left:40px;">
+                                {{housejobData?.ConsigneeName}}<br>
+                                {{housejobData?.ConsigneeAddress}}
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-right:none; border-left: none; box-sizing:border-box;">
+                        <div style="padding-top: 5px;padding-bottom: 30px;font-size: 16px;">
+                            <div style="display:flex;">
+                                <div style="display:flex;margin-left: 10px;margin-top: 2px;font-weight: bolder;">
+                                    <strong>Shipper</strong>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:5px;margin-left:40px;">
+                                {{housejobData?.ShipperName}}<br>
+                                {{housejobData?.ShipperAddress}}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Details -->
+                <div style="display:flex; flex-wrap:wrap;  margin-bottom:5px;">
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none; box-sizing:border-box;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Job Ref.</strong>
+                            </div>
+                            <div>: {{housejobData?.masterJob?.MasterJobNumber }}</div>
+                        </div>
+
+                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>HBL No.</strong>
+                            </div>
+                            <div>: {{ housejobData?.HBLNo }}</div>
+                        </div>
+                        }@else{
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>HAWB No.</strong>
+                            </div>
+                            <div>: {{ housejobData?.HBLNo }}</div>
+                        </div>
+                        }
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>ETA</strong></div>
+                            <div>: {{ housejobData?.ETA | formatDate }}</div>
+                        </div>
+
+                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Vessel /
+                                    Voyage</strong></div>
+                            <div>: {{ housejobData?.VesselName }} / {{ housejobData?.VoyageNo }}</div>
+                        </div>
+
+                        }@else{
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Flight Name /
+                                    No.</strong></div>
+                            <div>: {{ housejobData?.VesselName }} / {{ housejobData?.VoyageNo }}</div>
+                        </div>
+                        }
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left:10px; font-weight:bolder;">
+                                <strong>Port of Discharge</strong>
+                            </div>
+
+                            <div style="width:10px;">:</div>
+
+                            <div style="flex:1;">
+                                {{ getPortName(housejobData?.POD) }}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left:10px; font-weight:bolder;">
+                                <strong>Place of Delivery</strong>
+                            </div>
+
+                          
+                            <div style="flex:1;">
+                                {{ getPortName(housejobData?.POD) }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-right:none; border-left: none; box-sizing:border-box;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Shipment
+                                    Ref.</strong></div>
+                            <div>: {{ housejobData?.Others?.[0]?.CustomerRefNo }}</div>
+                        </div>
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>BOE No.</strong>
+                            </div>
+                            <div>: {{ housejobData?.houseJobBOE?.[0]?.BOENo }}</div>
+                        </div>
+                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>MBL No.</strong>
+                            </div>
+                            <!-- <div>: {{ getPortName(housejobData?.POL) }}</div> -->
+                            <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
+                        </div>
+                        }@else{
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>MAWB No.</strong>
+                            </div>
+                            <!-- <div>: {{ getPortName(housejobData?.POL) }}</div> -->
+                            <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
+                        </div>
+                        }
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>ETD</strong></div>
+                            <div>: {{ housejobData?.ETD | formatDate }}</div>
+                        </div>
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Carrier</strong>
+                            </div>
+                            <div>: {{ housejobData?.CarrierName }}</div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left:10px; font-weight:bolder;">
+                                <strong>Port of Loading</strong>
+                            </div>
+
+                            <div style="width:10px;">:</div>
+
+                            <div style="flex:1;">
+                                {{ getPortName(housejobData?.POL) }}
+                            </div>
+                        </div>
+
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left:10px; font-weight:bolder;">
+                                <strong>Final Destination</strong>
+                            </div>
+
+                            <div style="width:10px;">:</div>
+
+                            <div style="flex:1;">
+                                {{ getPortName(housejobData?.FPD) }}
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table
+                        style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:16px;margin-top: 20px;">
+                        <!-- TABLE HEADER -->
+                        <thead style="background-color:#f8f9fa;">
+                            <tr>
+
+                                     
+                                <th
+                                    style="border:1px solid black; padding:4px; text-align:center; border-left:none;font-weight: bolder;">
+                                    <strong>Container</strong>
+                                </th>
+
+                                <th
+                                    style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    <strong>Type</strong>
+                                </th>
+                            
+
+                                <th style="border:1px solid black; padding:4px; text-align:center;">
+                                    <strong>Pkgs</strong>
+                                </th>
+
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    <strong>Volume</strong>
+                                </th>
+
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    <strong>Net Wt.</strong>
+                                </th>
+
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    <strong>Gross Wt.</strong>
+                                </th>
+
+                                <th
+                                    style="border:1px solid black; padding:4px; text-align:center; border-right:none;font-weight: bolder;">
+                                    <strong>Volume wt.</strong>
+                                </th>
+
+                                <th
+                                    style="border:1px solid black; padding:4px; text-align:center; border-right:none;font-weight: bolder;">
+                                    <strong>Commodity</strong>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            
+                            <tr *ngFor="let item of  housejobData?.Products">
+                           
+                                <td style="border:1px solid black; padding:4px; text-align:left; border-left:none;">
+                                    {{ item.ContainerNo }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:center;">
+                                      {{ getContainerName(item.masterJobContainer?.ContainerType) }}
+                                </td>
+                            
+
+                                <td style="border:1px solid black; padding:4px; text-align:right;">
+                                    {{ item?.ExternlQty }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:right;">
+                                    {{ item?.Volume | number:'1.3-3' }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:right;">
+                                     {{ item?.NetWeight | number:'1.3-3' }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                                    {{ item?.GrossWeight | number:'1.3-3' }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                                    {{ item?.Volumetric | number:'1.3-3' }}
+                                </td>
+
+                                <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                                     {{ item?.ProductName }}
+                                </td>
+                            </tr>
+
+                            <!-- TOTAL ROW -->
+
+                           
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+
+                <!-- Remarks -->
+                <div style="display:flex; align-items:center; margin-top:10px; padding-left:18px;">
+                    <div style=" width:140px;font-weight: bolder;font-size:16px;"><strong>Remarks</strong></div>
+                    <div>: {{ housejobData?.InternalNote }}</div>
+                </div>
+
+                <div style="text-align: center;margin-top: 10px;">
+                    <h5><strong>Received the above goods in good condition</strong></h5>
+                </div>
+
+                     <!-- Job Details -->
+                <div style="display:flex; flex-wrap:wrap;  margin-bottom:5px;">
+                    <div
+                        style="flex:0 0 50%; max-width:50%; border:1px solid black; border-left:none; box-sizing:border-box;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Delivery Received </strong></div>
+                            <div>: </div>
+                        </div>
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Truck No.</strong></div>
+                            <div>: </div>
+                        </div>
+            
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Driver Name</strong></div>
+                            <div>: </div>
+                        </div>
+                        
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Truck Out Date</strong></div>
+                            <div>: </div>
+                        </div>
+                        
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Delivery <br>(Date & Time)</strong></div>
+                            <div>: </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Arrival at Site <br>(Date & Time)</strong></div>
+                            <div>: </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Offloading Start <br>(Date & Time)</strong></div>
+                            <div>: </div>
+                        </div>
+                        
+                     
+
+                    </div>
+
+                    <div style="flex:0 0 50%; max-width:50%; border:1px solid black; border-right:none; border-left: none; box-sizing:border-box;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">
+                        
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Offloading Finish <br>(Date & Time)</strong></div>
+                            <div>: </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left:10px; font-weight:bolder;">
+                                <strong>Cargo Received </strong>
+                            </div>
+
+                            <div style="width:10px;">:</div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Name</strong></div>
+                            <div>: </div>
+                        </div>
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Sign & Seal</strong></div>
+                            <div>: </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>Mobile No.</strong>
+                            </div>
+                            <div>: </div>
+                        </div>
+
+                        <div style="display:flex; padding:3px;">
+                            <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>Date & Time</strong>
+                            </div>
+                            <div>: </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Terms & Conditions -->
+                <!-- <div style="margin-top: 1rem;font-size: 16px;padding-left: 16px;margin-top: 35px;">
+                    <h4 style=" margin-bottom: 0.5rem;font-weight: bolder;"><strong>Terms and Conditions</strong></h4>
+                    <ul style="margin-top: 0; padding-left: 1.2rem;">
+                        @for(term of TandCList; track term){
+                        <li>{{ term.TandC }}</li>
+                        }
+                    </ul>
+                </div> -->
+
+            </div>
+
+            <!-- Footer -->
+            <app-print-footer></app-print-footer>
+
+        </div>
+
+
+    </div>
+</div>

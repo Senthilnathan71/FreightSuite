@@ -61,6 +61,7 @@ import { PackingListComponent } from '../report/packing-list/packing-list.compon
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
 import { JobCardComponent } from '../report/job-card/job-card.component';
+import { ProofOfDeliveryComponent } from '../report/proof-of-delivery/proof-of-delivery.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3936,18 +3937,30 @@ ${this.userData['userName']}`;
         scrollable: true,
       });
       // modalRef.componentInstance.masterJobData = this.masterJobData;
-          modalRef.componentInstance.housejobData = this.housejobData || [];
+      modalRef.componentInstance.housejobData = this.housejobData || [];
       // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
-          modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
       modalRef.componentInstance.packageTypeList = this.packageTypeList;
       modalRef.componentInstance.TandCList = this.TandCList || [];
-       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
-         modalRef.componentInstance.portList = this.portList || [];
-
-       
-   
+      modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+      modalRef.componentInstance.portList = this.portList || [];
     }
 
+      reportProofofDelivery() {
+      const modalRef = this.modalService.open(ProofOfDeliveryComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      // modalRef.componentInstance.masterJobData = this.masterJobData;
+      modalRef.componentInstance.housejobData = this.housejobData || [];
+      // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.TandCList = this.TandCList || [];
+      modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+      modalRef.componentInstance.portList = this.portList || [];
+      modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    }
 
       reportMilestoneSummary() {
         const modalRef = this.modalService.open(MilestoneSummaryComponent,{
