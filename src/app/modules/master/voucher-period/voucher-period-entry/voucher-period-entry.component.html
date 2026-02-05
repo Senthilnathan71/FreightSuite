@@ -19,12 +19,12 @@
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
 
-                    <div class="action-group" *ngIf="isEditMode">
+                    <!-- <div class="action-group" *ngIf="isEditMode">
                         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateVoucherPeriod()" [disabled]="!mps.can('insert')">
                             <i class="fas fa-plus me-1"></i>
                             <span>Create</span>
                         </button>
-                    </div>
+                    </div> -->
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -80,9 +80,9 @@
                             {{ period.PeriodName }}
                         </button>
                     </div>
-                    <button type="button" class="btn btn-sm btn-success" (click)="createNewPeriod()" *ngIf="mps.can('insert')">
+                    <!-- <button type="button" class="btn btn-sm btn-success" (click)="createNewPeriod()" *ngIf="mps.can('insert')">
                         <i class="fas fa-plus me-1"></i>Add New Period
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </div>
@@ -137,8 +137,8 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="startDate" ngbDatepicker
-                                        #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="StartDate" readonly />
-                                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                        #d1="ngbDatepicker" formControlName="StartDate" readonly />
+                                    <button class="btn bi bi-calendar3" type="button" disabled>
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -154,8 +154,8 @@
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="endDate" ngbDatepicker
-                                        #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EndDate" readonly />
-                                    <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                        #d2="ngbDatepicker" formControlName="EndDate" readonly />
+                                    <button class="btn bi bi-calendar3" type="button" disabled>
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -194,7 +194,8 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="glClosed"
                                             [checked]="voucherPeriodForm.get('GLClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({GLClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({GLClosed: $any($event.target).checked ? 'Y' : 'N'})"
+                                            [disabled]="isEditMode && !mps.can('update')">
                                         <label class="form-check-label" for="glClosed">G/L Closed</label>
                                     </div>
                                 </div>
@@ -204,7 +205,8 @@
                         <!-- GL Grace Days -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" formControlName="GLGraceDays" id="gl-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <input type="number" formControlName="GLGraceDays" id="gl-grace-days" placeholder="" class="custom-input-field sm" min="0"
+                                    [readonly]="isEditMode && !mps.can('update')">
                                 <label for="gl-grace-days" class="input-label">GL Grace Days</label>
                             </div>
                         </aside>
@@ -218,7 +220,8 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="arClosed"
                                             [checked]="voucherPeriodForm.get('ARClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({ARClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({ARClosed: $any($event.target).checked ? 'Y' : 'N'})"
+                                            [disabled]="isEditMode && !mps.can('update')">
                                         <label class="form-check-label" for="arClosed">AR Closed</label>
                                     </div>
                                 </div>
@@ -228,7 +231,8 @@
                         <!-- AR Grace Days -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" formControlName="ARGraceDays" id="ar-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <input type="number" formControlName="ARGraceDays" id="ar-grace-days" placeholder="" class="custom-input-field sm" min="0"
+                                    [readonly]="isEditMode && !mps.can('update')">
                                 <label for="ar-grace-days" class="input-label">AR Grace Days</label>
                             </div>
                         </aside>
@@ -242,7 +246,8 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="apClosed"
                                             [checked]="voucherPeriodForm.get('APClosed')?.value === 'Y'"
-                                            (change)="voucherPeriodForm.patchValue({APClosed: $any($event.target).checked ? 'Y' : 'N'})">
+                                            (change)="voucherPeriodForm.patchValue({APClosed: $any($event.target).checked ? 'Y' : 'N'})"
+                                            [disabled]="isEditMode && !mps.can('update')">
                                         <label class="form-check-label" for="apClosed">AP Closed</label>
                                     </div>
                                 </div>
@@ -252,7 +257,8 @@
                         <!-- AP Grace Days -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" formControlName="APGraceDays" id="ap-grace-days" placeholder="" class="custom-input-field sm" min="0">
+                                <input type="number" formControlName="APGraceDays" id="ap-grace-days" placeholder="" class="custom-input-field sm" min="0"
+                                    [readonly]="isEditMode && !mps.can('update')">
                                 <label for="ap-grace-days" class="input-label">AP Grace Days</label>
                             </div>
                         </aside>

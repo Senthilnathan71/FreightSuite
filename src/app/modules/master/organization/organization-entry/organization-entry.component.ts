@@ -436,6 +436,7 @@ onCountryChange(): void {
 
   // Excel Upload Properties
   @ViewChild('excelUploadModal') excelUploadModal!: TemplateRef<any>;
+  @ViewChild('importErrorsModal') importErrorsModal!: TemplateRef<any>;
   excelUploadModalRef!: NgbModalRef;
   selectedExcelFile: File | null = null;
   isDragOver = false;
@@ -445,6 +446,7 @@ onCountryChange(): void {
   excelUploadError: string | null = null;
   parsedCustomers: any[] = [];
   hasValidationErrors = false;
+  importFailedRecords: any[] = [];
 
   // Excel Preview Accordion Properties
   expandedPreviewCustomers: Set<number> = new Set();
@@ -3866,6 +3868,111 @@ private loadNetworks(): void {
     this.expandedPreviewCustomers = new Set();
   }
 
+  openImportErrorsModal() {
+    this.modalService.open(this.importErrorsModal, {
+      size: 'xl',
+      centered: true,
+      scrollable: true,
+      backdrop: 'static'
+    });
+  }
+
+  parseValidationErrors(messages: string[]): any[] {
+    // Map to collect errors by customer index and branch
+    const errorsByCustomer: Map<number, Map<number, { errors: string[], branchData: any }>> = new Map();
+
+    // Field name mappings for user-friendly display
+    const fieldLabels: { [key: string]: string } = {
+      'CityMasterSid': 'City',
+      'StateMasterSid': 'State',
+      'CountryMasterSid': 'Country',
+      'CustomerName': 'Customer Name',
+      'BranchName': 'Branch Name',
+      'BranchCode': 'Branch Code',
+      'BranchAddress1': 'Branch Address',
+      'PinCode': 'Pin Code',
+      'ContactPerson': 'Contact Person',
+      'ContactNumber': 'Contact Number',
+      'EmailId': 'Email'
+    };
+
+    for (const msg of messages) {
+      // Parse format: "customers.INDEX.customerBranches.BRANCH_INDEX.FIELD validation"
+      // or "customers.INDEX.FIELD validation"
+      const customerMatch = msg.match(/^customers\.(\d+)/);
+      if (customerMatch) {
+        const customerIndex = parseInt(customerMatch[1], 10);
+
+        if (!errorsByCustomer.has(customerIndex)) {
+          errorsByCustomer.set(customerIndex, new Map());
+        }
+
+        // Check if it's a branch field
+        const branchMatch = msg.match(/customerBranches\.(\d+)\.(\w+)\s+(.+)/);
+        if (branchMatch) {
+          const branchIndex = parseInt(branchMatch[1], 10);
+          const fieldName = branchMatch[2];
+          const errorMsg = branchMatch[3];
+          const fieldLabel = fieldLabels[fieldName] || fieldName;
+
+          const customerBranches = errorsByCustomer.get(customerIndex)!;
+          if (!customerBranches.has(branchIndex)) {
+            // Get branch data from parsedCustomers
+            const branchData = this.parsedCustomers[customerIndex]?.branches?.[branchIndex] || {};
+            customerBranches.set(branchIndex, { errors: [], branchData });
+          }
+          customerBranches.get(branchIndex)!.errors.push(`${fieldLabel} ${errorMsg}`);
+        } else {
+          // Customer-level field (use -1 as branch index)
+          const fieldMatch = msg.match(/customers\.\d+\.(\w+)\s+(.+)/);
+          if (fieldMatch) {
+            const fieldName = fieldMatch[1];
+            const errorMsg = fieldMatch[2];
+            const fieldLabel = fieldLabels[fieldName] || fieldName;
+
+            const customerBranches = errorsByCustomer.get(customerIndex)!;
+            if (!customerBranches.has(-1)) {
+              customerBranches.set(-1, { errors: [], branchData: {} });
+            }
+            customerBranches.get(-1)!.errors.push(`${fieldLabel} ${errorMsg}`);
+          }
+        }
+      }
+    }
+
+    // Convert to array format for display
+    const result: any[] = [];
+    errorsByCustomer.forEach((branchErrors, customerIndex) => {
+      const customer = this.parsedCustomers[customerIndex];
+      const customerName = customer?.CustomerName || `Customer ${customerIndex + 1}`;
+
+      branchErrors.forEach((data, branchIndex) => {
+        if (branchIndex === -1) {
+          // Customer-level error
+          result.push({
+            CustomerName: customerName,
+            BranchName: '-',
+            StateName: '-',
+            CityName: '-',
+            error: data.errors.join('; ')
+          });
+        } else {
+          // Branch-level error
+          const branch = data.branchData;
+          result.push({
+            CustomerName: customerName,
+            BranchName: branch.CustBranchName || `Branch ${branchIndex + 1}`,
+            StateName: branch.StateName || '-',
+            CityName: branch.CityName || '-',
+            error: data.errors.join('; ')
+          });
+        }
+      });
+    });
+
+    return result;
+  }
+
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -4462,10 +4569,17 @@ private loadNetworks(): void {
           this.resetExcelUploadState();
           this.router.navigate(['/master/organization/list']);
         } else {
-          const failedNames = result.data.failed.map((f: any) => f.CustomerName).join(', ');
-          this.appSettingService.showWarning(
-            `Imported ${successCount}, Failed ${failCount}: ${failedNames}`
-          );
+          // Store failed records for display
+          this.importFailedRecords = result.data.failed || [];
+
+          // Open modal to show detailed errors
+          this.openImportErrorsModal();
+
+          if (successCount > 0) {
+            this.appSettingService.showWarning(
+              `Imported ${successCount} successfully. ${failCount} failed - see details.`
+            );
+          }
         } 
       } else {
         this.appSettingService.showError(result.message || 'Bulk import failed');
@@ -4473,7 +4587,14 @@ private loadNetworks(): void {
 
     } catch (error: any) {
       console.error('Bulk import error:', error);
-      this.appSettingService.showError(error.message || 'Error during bulk import');
+
+      // Handle NestJS validation errors (400 Bad Request)
+      if (error?.error?.message && Array.isArray(error.error.message)) {
+        this.importFailedRecords = this.parseValidationErrors(error.error.message);
+        this.openImportErrorsModal();
+      } else {
+        this.appSettingService.showError(error.message || error?.error?.message || 'Error during bulk import');
+      }
     } finally {
       this.isImporting = false;
       this.cdRef.markForCheck();

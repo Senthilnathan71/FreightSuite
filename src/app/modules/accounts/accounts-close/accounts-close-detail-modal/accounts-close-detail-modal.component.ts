@@ -1,10 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, Input, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-accounts-close-detail-modal',
@@ -12,7 +13,8 @@ import { AccountsService } from '../../accounts.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    DatePipe
   ],
   templateUrl: './accounts-close-detail-modal.component.html',
   styleUrl: './accounts-close-detail-modal.component.scss'
@@ -27,12 +29,18 @@ export class AccountsCloseDetailModalComponent implements OnInit {
     { value: 'N', label: 'No' }
   ];
 
+  auditLogs: any[] = [];
+  auditLogModalRef!: NgbModalRef;
+  isLogLoading: boolean = false;
+
   constructor(
     public activeModal: NgbActiveModal,
     private fb: FormBuilder,
     private accountsService: AccountsService,
     private spinner: NgxSpinnerService,
-    private appSettingsService: AppSettingsService
+    private appSettingsService: AppSettingsService,
+    private modalService: NgbModal,
+    private masterService: MasterService
   ) {}
 
   ngOnInit(): void {
@@ -101,5 +109,49 @@ export class AccountsCloseDetailModalComponent implements OnInit {
 
   onCancel(): void {
     this.activeModal.dismiss('cancel');
+  }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.voucherPeriod?.VoucherPeriodSid) return;
+    if (this.isLogLoading) return;
+
+    this.isLogLoading = true;
+
+    this.masterService.getAuditLogsVoucherPeriod(
+      'VoucherPeriod',
+      this.voucherPeriod.VoucherPeriodSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        this.isLogLoading = false;
+        const ignoredFields = ['updatedOn', 'updatedBy', 'UpdatedOn', 'UpdatedBy'];
+
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key))
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
+
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err);
+      }
+    });
   }
 }

@@ -343,6 +343,7 @@ calculateEndDate(startDate: any): any {
         const endDate = data.EndDate? new Date(data.EndDate) : this.todayDate;
         this.yearForm.patchValue({
           ...data,
+
           StartDate:startDate,
           EndDate: endDate,
            CurrentYear: data.CurrentYear === 'Y',
@@ -376,6 +377,7 @@ calculateEndDate(startDate: any): any {
         this.router.navigate(['master/voucher-period/entry'], {
           state: {
             YearMasterSid: this.YearMasterSid,
+            YearCode: this.yearData.YearCode,
             YearName: this.yearData.YearName,
             StartDate: this.yearData.StartDate,
             EndDate: this.yearData.EndDate,

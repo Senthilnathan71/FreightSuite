@@ -305,7 +305,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
       this.currentBranchCity = this.appSettingService.getCurrentBranchCity();
       const currentFinancialYear =
-        this.appSettingService.getCurrentFinancialYear();
+      this.appSettingService.getCurrentFinancialYear();
 
       // Getting Menu Id from MenuPermissionService
       this.currentMenuId = this.mps.getMenuId();

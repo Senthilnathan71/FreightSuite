@@ -103,6 +103,7 @@ export class VoucherPeriodEntryComponent {
     }
     this.loadYears();
     this.initForm();
+    this.disableHeaderFields(); // Disable header fields for create mode
     this.voucherPeriodForm.valueChanges.subscribe(() => {
       this.btnDisable = !this.voucherPeriodForm.valid;
     });
@@ -130,6 +131,7 @@ export class VoucherPeriodEntryComponent {
   }
 
   private applyYearEntryParams(state: any): void {
+    console.log(state,'applyYearEntryParams')
     // Store flag for navigation back
     this.fromYearEntry = true;
     this.sourceYearMasterSid = +state.YearMasterSid;
@@ -146,6 +148,8 @@ export class VoucherPeriodEntryComponent {
       const endDate = state.EndDate ? new Date(state.EndDate) : this.todayDate;
 
       this.voucherPeriodForm.patchValue({
+        PeriodName: state.YearName,
+        PeriodCode: state.YearCode,
         YearMasterSid: +state.YearMasterSid,
         StartDate: startDate,
         EndDate: endDate,
@@ -153,6 +157,7 @@ export class VoucherPeriodEntryComponent {
       });
 
       // Disable pre-filled fields for new period creation
+
       this.voucherPeriodForm.get('YearMasterSid')?.disable();
       this.voucherPeriodForm.get('StartDate')?.disable();
       this.voucherPeriodForm.get('EndDate')?.disable();
@@ -186,6 +191,7 @@ export class VoucherPeriodEntryComponent {
 
     // Enable status field for editing
     this.voucherPeriodForm.get('status')?.enable();
+    this.disableHeaderFields(); // Disable header fields for edit mode
   }
 
   selectPeriod(index: number): void {
@@ -229,6 +235,15 @@ export class VoucherPeriodEntryComponent {
       GLGraceDays: [0],
       status: [{ value: 'Active', disabled: false }, Validators.required],
     });
+  }
+
+  private disableHeaderFields(): void {
+    // Disable header fields in BOTH create and edit modes
+    this.voucherPeriodForm.get('PeriodCode')?.disable();
+    this.voucherPeriodForm.get('PeriodName')?.disable();
+    this.voucherPeriodForm.get('YearMasterSid')?.disable();
+    this.voucherPeriodForm.get('StartDate')?.disable();
+    this.voucherPeriodForm.get('EndDate')?.disable();
   }
 
   resetForm(): void {
@@ -382,6 +397,7 @@ export class VoucherPeriodEntryComponent {
           status: this.statusMap[data.status] || 'Active'
         });
         this.voucherPeriodData = data;
+        this.disableHeaderFields(); // Disable header fields for edit mode
       },
       (error) => {
         this.appSettingService.showError('Error loading voucher period data.');
