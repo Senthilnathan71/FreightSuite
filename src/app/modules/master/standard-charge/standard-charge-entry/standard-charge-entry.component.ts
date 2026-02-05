@@ -81,7 +81,7 @@ export class StandardChargeEntryComponent implements OnInit {
   userData: any;
   minValidToDates: NgbDateStruct[] = [];
   minValidFromDates: NgbDateStruct[] = [];
-
+  filteredChargeList: any[] = [];
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
@@ -124,6 +124,9 @@ export class StandardChargeEntryComponent implements OnInit {
     private commonService: CommonService,
     private ngbModal: NgbModal,
   ) { }
+
+
+
 
   ngOnInit(): void {
     this.initForm();
@@ -176,6 +179,9 @@ export class StandardChargeEntryComponent implements OnInit {
         }));
         this.currencyConfigService.initializeConfigurations(this.currencyList);
         this.charge = Array.isArray(charge) ? charge : charge?.data || [];
+
+        // ✅ ADD HERE (Default show all charges)
+        this.filteredChargeList = this.charge;
       })
     );
   }
@@ -272,6 +278,13 @@ export class StandardChargeEntryComponent implements OnInit {
           if (this.isEditMode) {
             fg.get('ValidFrom')?.disable();
             fg.get('ValidTo')?.disable();
+            fg.get('SaleCurrency').disable();
+            fg.get('SaleAmount')?.disable();
+            fg.get('CostAmount')?.disable();
+            fg.get('CostCurrency').disable();
+            fg.get('UomSid').disable();
+            fg.get('CargoType').disable();
+            fg.get('ChargeMasterSid').disable();
           }
           this.StdTariffDetails.push(fg);
         });
@@ -286,21 +299,13 @@ export class StandardChargeEntryComponent implements OnInit {
 
     const selectedChargeSid = event?.ChargeMasterSid;
 
-    // ✅ Department selected from header
-    const deptSid =
-      this.standardChargeForm.get('DepartmentMasterSid')?.value;
-
-    // ✅ Find previous row with SAME Charge + SAME Dept
     const previousRow = this.StdTariffDetails.controls
       .slice(0, index)
       .map(ctrl => ctrl.getRawValue())
       .reverse()
-      .find(r =>
-        r.ChargeMasterSid === selectedChargeSid &&
-        deptSid === this.standardChargeForm.get('DepartmentMasterSid')?.value
-      );
+      .find(r => r.ChargeMasterSid === selectedChargeSid);
 
-    // ✅ If found → Restrict ValidFrom
+    // ✅ Already Exists → Next Day
     if (previousRow?.ValidTo) {
 
       const prevTo = new Date(previousRow.ValidTo);
@@ -312,11 +317,31 @@ export class StandardChargeEntryComponent implements OnInit {
         day: prevTo.getDate()
       };
     }
+
+    // ✅ Not Exists → Today Date
+    else {
+
+      const today = new Date();
+
+      this.minValidFromDates[index] = {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        day: today.getDate()
+      };
+    }
   }
 
-
-
-
+  filterDepartment(dept: any) {
+    const deptName = dept?.departmentName;
+    if (!deptName) {
+      this.filteredChargeList = [...this.charge];
+      return;
+    }
+    this.filteredChargeList = this.charge.filter(c =>
+      Array.isArray(c.DepartmentMasterSid) &&
+      c.DepartmentMasterSid.includes(deptName)
+    );
+  }
 
   onSubmit() {
     if (this.standardChargeForm.invalid) {
@@ -368,10 +393,10 @@ export class StandardChargeEntryComponent implements OnInit {
             this.appSettingService.showSuccess('Standard-Charge is updated successfully');
           } else {
             this.appSettingService.showSuccess("Standard-Charge is created successfully");
+            this.router.navigate(['/master/standard-charge/entry']);
           }
-          // this.router.navigate(['/master/standard-charge/list']);
         } else {
-          this.appSettingService.showError("Internal Server Error");
+          this.appSettingService.showError(res.message);
         }
       },
       error: err => console.error('Error saving standard charge:', err)

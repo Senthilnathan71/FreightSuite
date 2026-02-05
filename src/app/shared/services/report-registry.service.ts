@@ -324,7 +324,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'outstanding-report',
-        title: 'Oustanding',
+        title: 'Outstanding',
         component: OutstandingReportComponent,
         filenameTemplate: 'Outstanding_Report_{LedgerName}_{date}',
         module: 'accounts-report',

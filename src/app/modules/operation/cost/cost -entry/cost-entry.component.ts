@@ -26,6 +26,7 @@ import { ToastrService } from 'ngx-toastr';
 import { toNumber } from 'src/app/common/helper';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
+import { GetStandardChargesComponent } from '../get-standard-charges/get-standard-charges.component';
 
 @Component({
   selector: 'app-cost-entry',
@@ -3758,5 +3759,182 @@ isHBLNoValid(): boolean {
 isFromQuotation(index: number): boolean {
   const formGroup = this.rateFormArray.at(index) as FormGroup;
   return !!formGroup.get('isFromQuotation')?.value;
+}
+
+  getStdChargeModal() {
+  const modalRef = this.modalService.open(GetStandardChargesComponent, {
+    size: 'xl',
+    scrollable: true,
+  });
+  
+  modalRef.componentInstance.parentFormValue = this.parentFormValue;
+  modalRef.componentInstance.currentCompany = this.currentCompany;
+  modalRef.componentInstance.currentBranch = this.currentBranch;
+  modalRef.componentInstance.chargeList = this.chargeList;
+  modalRef.componentInstance.uomList = this.uomList;
+  modalRef.componentInstance.currencyList = this.currencyList;
+  
+  // Handle single charge selection (original functionality)
+  modalRef.componentInstance.chargeSelected.subscribe((selectedCharge: any) => {
+    console.log('Standard charge selected from modal:', selectedCharge);
+    this.patchStandardChargeToRateForm(selectedCharge);
+  });
+  
+  // Handle multiple charge selection (new functionality)
+  modalRef.componentInstance.chargesSelected.subscribe((selectedCharges: any[]) => {
+    console.log('Multiple standard charges selected:', selectedCharges);
+    this.patchMultipleStandardCharges(selectedCharges);
+  });
+}
+
+// Add this new method to handle multiple charges
+patchMultipleStandardCharges(charges: any[]) {
+  console.log('Patching multiple standard charges:', charges.length);
+  
+  charges.forEach((charge, index) => {
+    // Add new row for each selected charge
+    this.addRateRow();
+    
+    // Patch the charge data to the last row (which we just added)
+    const lastIndex = this.rateFormArray.length - 1;
+    const rateGroup = this.rateFormArray.at(lastIndex) as FormGroup;
+    
+    // Patch the charge data
+    rateGroup.patchValue({
+      RateSid: null,
+      ChargeMasterSid: charge.ChargeMasterSid,
+      ChargeDescription: charge.ChargeDescription,
+      ChargeUomSid: charge.ChargeUomSid,
+      RevenueChargeUomSid: charge.RevenueChargeUomSid,
+      CostChargeUomSid: charge.CostChargeUomSid,
+      NoOfUnit: 1,
+      RevenueNumberOfUnit: 1,
+      CostNumberOfUnit: 1,
+      
+      // Revenue side
+      RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+      RevenueAmount: charge.RevenueAmount,
+      RevenueRate: charge.RevenueAmount,
+      RevenueLocalAmount: null,
+      RevenueExchangeRate: null,
+      RevenueDrCr: 'C',
+      RevenuePrepaidCollect: 'Prepaid',
+      
+      // Cost side
+      CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
+      CostAmount: charge.CostAmount,
+      CostRate: charge.CostAmount,
+      CostLocalAmount: null,
+      CostExchangeRate: null,
+      CostDrCr: 'D',
+      CostPrepaidCollect: 'Prepaid',
+      
+      Remarks: charge.Remarks || `Standard Charge - ${charge.CargoType}`
+    });
+    
+    // Get currency objects to fetch exchange rates
+    const revenueCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.RevenueCurrencyMasterSid);
+    const costCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.CostCurrencyMasterSid);
+    
+    // Fetch exchange rates if currencies exist
+    if (revenueCurrency) {
+      this.getRevenueExchangeRate(lastIndex, revenueCurrency);
+    }
+    if (costCurrency) {
+      this.getCostExchangeRate(lastIndex, costCurrency);
+    }
+    
+    // Trigger calculations
+    this.calculateRevenueAmount(lastIndex);
+    this.calculateCostAmount(lastIndex);
+  });
+  
+  this.calculateProfit();
+}
+
+patchStandardChargeToRateForm(charge: any) {
+  // Create the charge data object that matches your rate form structure
+  const chargeData = {
+    RateSid:null,
+    ChargeMasterSid: charge.ChargeMasterSid,
+    ChargeDescription: charge.ChargeDescription,
+    ChargeUomSid: charge.UomSid,
+    RevenueChargeUomSid: charge.UomSid,
+    CostChargeUomSid: charge.UomSid,
+    NoOfUnit: 1,
+    RevenueNumberOfUnit: 1,
+    CostNumberOfUnit: 1,
+    
+    // Revenue side
+    RevenueCurrencyMasterSid: charge.SaleCurrency,
+    RevenueAmount: charge.SaleAmount,
+    RevenueRate: charge.SaleAmount, // Assuming rate = amount when NoOfUnit = 1
+    RevenueLocalAmount: null, // Will be calculated
+    RevenueExchangeRate: null, // Will be fetched
+    RevenueDrCr: 'C',
+    RevenuePrepaidCollect: 'Prepaid',
+    
+    // Cost side
+    CostCurrencyMasterSid: charge.CostCurrency,
+    CostAmount: charge.CostAmount,
+    CostRate: charge.CostAmount, // Assuming rate = amount when NoOfUnit = 1
+    CostLocalAmount: null, // Will be calculated
+    CostExchangeRate: null, // Will be fetched
+    CostDrCr: 'D',
+    CostPrepaidCollect: 'Prepaid',
+    
+    // Additional info
+    Remarks: charge.Remarks || `Standard Charge - ${charge.CargoType}`,
+    CargoType: charge.CargoType
+  };
+
+  // Check if last row is empty
+  if (this.checkIfLastChargeEmpty()) {
+    const lastIndex = this.rateFormArray.length - 1;
+    const rateGroup = this.rateFormArray.at(lastIndex) as FormGroup;
+    
+    // Patch the charge data
+    rateGroup.patchValue(chargeData);
+    
+    // Get currency objects to fetch exchange rates
+    const revenueCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.SaleCurrency);
+    const costCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.CostCurrency);
+    
+    // Fetch exchange rates if currencies exist
+    if (revenueCurrency) {
+      this.getRevenueExchangeRate(lastIndex, revenueCurrency);
+    }
+    if (costCurrency) {
+      this.getCostExchangeRate(lastIndex, costCurrency);
+    }
+    
+    // Trigger calculations
+    this.calculateRevenueAmount(lastIndex);
+    this.calculateCostAmount(lastIndex);
+    
+  } else {
+    // Add new row with the charge data
+    this.addRateRow(chargeData);
+    
+    // After adding, get the new row index and fetch exchange rates
+    setTimeout(() => {
+      const newIndex = this.rateFormArray.length - 1;
+      const revenueCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.SaleCurrency);
+      const costCurrency = this.currencyList.find(c => c.CurrencyMasterSid === charge.CostCurrency);
+      
+      if (revenueCurrency) {
+        this.getRevenueExchangeRate(newIndex, revenueCurrency);
+      }
+      if (costCurrency) {
+        this.getCostExchangeRate(newIndex, costCurrency);
+      }
+      
+      // Trigger calculations
+      this.calculateRevenueAmount(newIndex);
+      this.calculateCostAmount(newIndex);
+    }, 100);
+  }
+  
+  this.calculateProfit();
 }
 }

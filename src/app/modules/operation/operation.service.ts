@@ -1707,4 +1707,19 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     )
   }
 
+    getStdCharges(CompanyMasterSid: number, DepartmentMasterSid: number) {
+    return this.http.post<{ data: any }>(
+      `standard-charge/department-wise`,
+      {
+        CompanyMasterSid: CompanyMasterSid,
+        DepartmentMasterSid: DepartmentMasterSid
+      }
+    ).pipe(
+      map((res) => {
+        let response = res;
+        return response;
+      })
+    );
+  }
+
 }

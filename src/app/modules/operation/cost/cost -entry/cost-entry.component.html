@@ -103,7 +103,9 @@
             <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid" [disabled]="!isHBLNoValid()">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
-
+             <button class="table-action-btn primary" (click)="getStdChargeModal()" [disabled]="!isHBLNoValid()" *ngIf="isEditMode">
+              <i class="fas fa-plus"></i> Get Standard Charges
+            </button>
             <!-- <button class="table-action-btn export">
               <i class="fas fa-download"></i> Export
             </button> -->
@@ -1329,3 +1331,4 @@
     </button>
   </div>
 </ng-template>
+

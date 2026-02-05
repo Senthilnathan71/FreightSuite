@@ -51,8 +51,8 @@
                         <th class="bg-transparent text-light text-center">Voucher Type</th>                      
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th> -->
-                        <th class="bg-transparent text-light">HBL No</th>
-                        <th class="bg-transparent text-light">Dept</th>
+                        <!-- <th class="bg-transparent text-light">HBL No</th>
+                        <th class="bg-transparent text-light">Dept</th> -->
                         <th class="bg-transparent text-light">Desc</th>
                         <th class="bg-transparent text-light">Salesperson</th>
                         <th class="bg-transparent text-light">Dr/Cr</th>
@@ -72,8 +72,8 @@
                         <td >{{item?.voucherType}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td> -->
-                        <td>{{item?.HouseJobNumber}}</td>
-                        <td>{{item?.deptname}}</td>
+                        <!-- <td>{{item?.HouseJobNumber}}</td>
+                        <td>{{item?.deptname}}</td> -->
                         <td>{{item?.naration}}</td>
                         <td>{{item?.salesmanSid}}</td>
                         <td class="text-center">{{item?.drCr}}</td>
@@ -87,7 +87,7 @@
                         </td>
                     </tr>
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="9" class="text-end">TOTAL :</td>
+                        <td colspan="7" class="text-end">TOTAL :</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') | number:'1.2-2'}}</td>
 

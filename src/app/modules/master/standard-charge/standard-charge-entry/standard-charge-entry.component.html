@@ -75,7 +75,8 @@
                                     formControlName="DepartmentMasterSid" id="" placeholder=""
                                     [displayFields]="departmentLookupConfig.displayFields"
                                     [displayLabels]="departmentLookupConfig.displayLabels"
-                                    [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid">
+                                    [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                                     (itemSelected)="filterDepartment($event)">
                                 </dofi-searchable-dropdown>
                                 <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                                 @if(standardChargeForm.get('DepartmentMasterSid')?.touched &&
@@ -134,6 +135,7 @@
                                 <th class="bg-transparent text-light">Sales Amt</th>
                                 <th class="bg-transparent text-light">Valid From</th>
                                 <th class="bg-transparent text-light">Valid To</th>
+                                <th class="bg-transparent text-light">Status</th>
                             </tr>
                         </thead>
 
@@ -152,7 +154,7 @@
                                 </td>
 
                                 <td style="padding:2px; vertical-align:middle; width:80px;">
-                                    <dofi-searchable-dropdown [items]="charge" formControlName="ChargeMasterSid"
+                                    <dofi-searchable-dropdown [items]="filteredChargeList" formControlName="ChargeMasterSid"
                                         [displayFields]="chargeLookupConfig.displayFields"
                                         [displayLabels]="chargeLookupConfig.displayLabels"
                                         [labelFields]="chargeLookupConfig.labelFields" bindValue="ChargeMasterSid"
@@ -226,6 +228,10 @@
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
                                         </button>
                                     </div>
+                                </td>
+                                <td>           
+                                        <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="Status">
+                                        </ng-select>
                                 </td>
                             </tr>
                             }

@@ -68,7 +68,7 @@ export class OperationReportsComponent implements OnInit {
       .pipe(finalize(() => this.loadingReports = false))
       .subscribe({
         next: (reports) => {
-          this.reports = reports;
+          this.reports = (reports || []).map((rp) => ({...rp,ReportFormat : String(rp.ReportFormat)?.trim().toUpperCase()}));
         },
         error: (error) => {
           console.error('Error loading reports:', error);
