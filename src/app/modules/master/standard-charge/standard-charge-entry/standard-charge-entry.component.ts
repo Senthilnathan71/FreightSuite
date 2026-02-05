@@ -572,6 +572,42 @@ export class StandardChargeEntryComponent implements OnInit {
       day: d.getDate()
     };
   }
+// Add this method to your component class
+deleteStdTariffDetail(index: number) {
+  const row = this.StdTariffDetails.at(index) as FormGroup;
+  const StdTariffDetailSid = row.get('StdTariffDetailSid')?.value;
+  const currentUser = this.appSettingService.userSettingSource.value['userEmail'];
+  
+  if (!StdTariffDetailSid) {
+    this.appSettingService.showWarning('Cannot delete unsaved detail row');
+    return;
+  }
 
+ 
+    this.spinner.show();
+    
+    this.masterService.deleteStdTariffDetail(StdTariffDetailSid, currentUser).subscribe({
+      next: (res: any) => {
+        this.spinner.hide();
+        if (res.status) {
+          this.appSettingService.showSuccess('Charge detail deleted successfully');
+          // Remove the row from UI
+          this.StdTariffDetails.removeAt(index);
+          // Reload the main data to reflect changes
+          if (this.isEditMode) {
+            this.loadStandardChargeById(this.StdRateHeaderSid);
+          }
+        } else {
+          this.appSettingService.showError(res.message || 'Failed to delete charge detail');
+        }
+      },
+      error: (err) => {
+        this.spinner.hide();
+        this.appSettingService.showError(err?.message || 'Error deleting charge detail');
+        console.error('Delete error:', err);
+      }
+    });
+  
+}
 
 }

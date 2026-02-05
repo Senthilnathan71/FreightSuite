@@ -4364,6 +4364,19 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
       map((resp) => resp.data)
     );
   }
+
+  deleteStdTariffDetail(StdTariffDetailSid: number, email?: string) {
+  const url = email 
+    ? `standard-charge/delete-detail/${StdTariffDetailSid}?email=${encodeURIComponent(email)}`
+    : `standard-charge/delete-detail/${StdTariffDetailSid}`;
+    
+  return this.http.delete<{ data: any }>(url).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 }
 
 
