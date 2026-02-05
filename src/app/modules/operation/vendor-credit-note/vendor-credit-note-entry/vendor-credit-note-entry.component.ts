@@ -3313,7 +3313,9 @@ export class VendorCreditNoteEntryComponent {
         IRNNumber: voucherOthersSource.IRNNumber || '',
       });
     }
-    this.invoiceOutstandingAmount = toNumber(this.getPartyCurrCreditAmt()) + toNumber(this.getTotalTaxAmount());
+    if(data.hasOutstandingAmount){
+      this.invoiceOutstandingAmount = data.totalOSAmount;
+    }
     this.spinner.hide();
   }
 
