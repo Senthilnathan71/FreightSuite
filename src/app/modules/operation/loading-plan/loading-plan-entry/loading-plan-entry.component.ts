@@ -1010,88 +1010,116 @@ formatContainerNumber(): void {
   }
 
   onClickGenerateJob() {
-    if (this.selectedBookings.length === 0) {
-      this.appSettingService.showWarning('Please select at least one booking.');
-      return;
-    }
-    this.spinnerService.show()
-    const formValue = this.loadingPlanForm.getRawValue();
-    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const isHaz = this.selectedBookings.map(booking => booking.CargoType).some(bk => bk === 'Haz');
-    const containers = this.masterJobContainers.getRawValue();
-     let vesselName: string | null = null;
+  if (this.selectedBookings.length === 0) {
+    this.appSettingService.showWarning('Please select at least one booking.');
+    return;
+  }
+
+  this.spinnerService.show();
+  const formValue = this.loadingPlanForm.getRawValue();
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  
+  const isHaz = this.selectedBookings
+    .map(booking => booking.CargoType)
+    .some(bk => bk === 'Haz');
+  
+  const containers = this.masterJobContainers.getRawValue();
+
+  let vesselName: string | null = null;
   let voyageNo: string | null = null;
   let voyageMasterSid: number | null = null;
   let ETD: Date | null = null;
   let ETA: Date | null = null;
-  
-  if (formValue.isVesselVoyage) {
-    // Free text entry - get value from form control
-    vesselName = formValue.vesselVoyage;
-    voyageNo = formValue.voyageNo;
-    ETD = formValue.ETD;
-    ETA = formValue.ETA;
-    voyageMasterSid = null;
-  } else {
-    // Dropdown selection - get value from selectedVoyage object
-    vesselName = this.selectedVoyage?.VesselName || null;
-    voyageNo = this.selectedVoyage?.VoyageNo || null;
+  let CutOffDate: Date | null = null;
 
-    voyageMasterSid = this.selectedVoyage?.VoyageMasterSid || null;
+  const isFreeText = formValue.isVesselVoyage;
+
+  if (isFreeText) {
+    // ✅ FREE TEXT MODE: Get vessel name from form, but VoyageNo/ETD/ETA from selected booking
+    vesselName = formValue.vesselVoyage; // Free text vessel name from form
+    
+    // Get VoyageNo, ETD, ETA from the selected booking
+    const firstBooking = this.selectedBookings[0];
+    voyageNo = firstBooking.VoyageNo || null;
+    ETD = firstBooking.ETDDate ? new Date(firstBooking.ETDDate) : null;
+    ETA = firstBooking.ETADate ? new Date(firstBooking.ETADate) : null;
+    voyageMasterSid = firstBooking.VoyageMasterSid || null;
+    CutOffDate = firstBooking.CutOffDate ? new Date(firstBooking.CutOffDate) : null;
+    
+  } else if (this.selectedVoyage) {
+    // ✅ DROPDOWN MODE: Get all values from selectedVoyage
+    vesselName = this.selectedVoyage.VesselName;
+    voyageNo = this.selectedVoyage.VoyageNo;
+    voyageMasterSid = this.selectedVoyage.VoyageMasterSid;
+    ETD = this.selectedVoyage.ETD ? new Date(this.selectedVoyage.ETD) : null;
+    ETA = this.selectedVoyage.ETA ? new Date(this.selectedVoyage.ETA) : null;
+    CutOffDate = this.selectedVoyage.PortCutoff ? new Date(this.selectedVoyage.PortCutoff) : null;
+    
+  } else {
+    // ✅ FALLBACK: No vessel selected, use booking data
+    const firstBooking = this.selectedBookings[0];
+    vesselName = firstBooking.VesselName || null;
+    voyageNo = firstBooking.VoyageNo || null;
+    ETD = firstBooking.ETDDate ? new Date(firstBooking.ETDDate) : null;
+    ETA = firstBooking.ETADate ? new Date(firstBooking.ETADate) : null;
+    voyageMasterSid = firstBooking.VoyageMasterSid || null;
+    CutOffDate = firstBooking.CutOffDate ? new Date(firstBooking.CutOffDate) : null;
   }
-    const shipmentList = this.selectedBookings.map(booking => {
-      return {
-        BookingHeaderSid: booking.BookingHeaderSid,
-        HouseJobSid: booking.HouseJobSid ?? null,
-        JobType: booking.JobType
-      }
-    });
-    const payload = {
-      createdBy: userEmail,
-      MenuMasterSid: currentMenuId,
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: formValue.dept,
-      POL: formValue.pol,
-      POD: formValue.pod,
-      NoOfPkg: this.totalPkg,
-      GrossWeight: this.totalGrossWeight,
-      NetWeight: this.totalNetWeight,
-      Volume: this.totalVolume,
-      Haz: isHaz ? 'Y' : 'N',
-       VoyageMasterSid: voyageMasterSid, // Use the variable we set above
-    VesselName: vesselName, // Use the variable we set above
-    VoyageNo: voyageNo, 
-      CarrierName: formValue.carrier,
-      CarrierMasterSid: formValue.CarrierMasterSid,
-      ETD: ETD,
-      ETA: ETA,
-      CutOffDate: this.selectedVoyage?.PortCutoff,
-      shipmentList,
-      masterJobContainers: containers
-    }
-    this.operationService.createMasterJob(payload).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess('Master Job generated successfully');
-          this.spinnerService.hide();
-          if (resp.data) {
-            this.router.navigate(['/operation/master-job/entry', resp.data?.newMasterJob?.MasterJobSid]);
-          }
-        } else {
-          this.appSettingService.showError('Error generating master job');
-          this.spinnerService.hide();
+
+  const shipmentList = this.selectedBookings.map(booking => ({
+    BookingHeaderSid: booking.BookingHeaderSid,
+    HouseJobSid: booking.HouseJobSid ?? null,
+    JobType: booking.JobType
+  }));
+
+  const payload = {
+    createdBy: userEmail,
+    MenuMasterSid: currentMenuId,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    DepartmentMasterSid: formValue.dept,
+    POL: formValue.pol,
+    POD: formValue.pod,
+    NoOfPkg: this.totalPkg,
+    GrossWeight: this.totalGrossWeight,
+    NetWeight: this.totalNetWeight,
+    Volume: this.totalVolume,
+    Haz: isHaz ? 'Y' : 'N',
+    VoyageMasterSid: voyageMasterSid,
+    VesselName: vesselName,
+    VoyageNo: voyageNo,
+    CarrierName: formValue.carrier,
+    CarrierMasterSid: formValue.CarrierMasterSid || null,
+    ETD: ETD,
+    ETA: ETA,
+    CutOffDate: CutOffDate,
+    shipmentList,
+    masterJobContainers: containers
+  };
+
+  console.log('Generate Job Payload:', payload);
+
+  this.operationService.createMasterJob(payload).subscribe({
+    next: (resp: any) => {
+      if (resp.status) {
+        this.appSettingService.showSuccess('Master Job generated successfully');
+        this.spinnerService.hide();
+        if (resp.data) {
+          this.router.navigate(['/operation/master-job/entry', resp.data?.newMasterJob?.MasterJobSid]);
         }
-      },
-      error: (error) => {
-        this.appSettingService.showError('Failed to generate master job');
-        console.error('Error generating master job:', error);
+      } else {
+        this.appSettingService.showError('Error generating master job');
         this.spinnerService.hide();
       }
-    });
-
-  }
+    },
+    error: (error) => {
+      this.appSettingService.showError('Failed to generate master job');
+      console.error('Error generating master job:', error);
+      this.spinnerService.hide();
+    }
+  });
+}
 
 
 

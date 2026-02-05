@@ -1398,7 +1398,7 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid'];
+    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid','ChargeDescription'];
 
     Object.keys(group.controls).forEach((controlName) => {
       if (!allowedControls.includes(controlName)) {

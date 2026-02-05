@@ -545,7 +545,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
       this.currentRoute.queryParams.pipe(take(1)).subscribe(params => {
         if (params['fromMasterJob'] === 'true' || params['fromMasterAirWaybill'] === 'true') {
           const masterJobState = window.history.state?.masterJobData;
-          console.log('Creating house job from master job:', masterJobState);
+          
           if (masterJobState) {
             this.loadMasterJobDataForHouseJob(masterJobState);
           }
@@ -574,7 +574,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     });
   
   this.otherForm.get('CargoCurrency')?.valueChanges.subscribe(value => {
-    console.log('CargoCurrency value changed:', value);
+    
   });
   this.loadHSSACLookups();
 }
@@ -833,7 +833,7 @@ existsInList(list: any[], value: any) {
         }, { emitEvent: false });
       }
       // If it's Collect, don't change from Prepaid (default for AIR)
-      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms remains as: ${this.b['FreightTerms']?.value}`);
+    
     }
   } else {
     // For non-AIR departments, use the original logic
@@ -842,7 +842,7 @@ existsInList(list: any[], value: any) {
       this.houseJobForm.patchValue({
         FreightTerms: freightValue
       }, { emitEvent: false });
-      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+     
     }
   }
 }
@@ -968,7 +968,7 @@ loadHSSACLookups() {
   this.operationService.getAllHssac().subscribe({
     next: (resp: any) => {
       this.hssacList = resp|| [];
-      console.log('HSSAC List loaded:', this.hssacList);
+    
     },
     error: (err) => {
       console.error('Error loading HSSAC data:', err);
@@ -1284,8 +1284,7 @@ addProduct() {
   */
 loadHeaderMandatoryParts() {
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  console.log('Current Company:', this.currentCompany);
-  console.log('CountryMasterSid:', this.currentCompany?.CountryMasterSid);
+
   const countrySid = this.currentCompany?.CountryMasterSid;
   return forkJoin({
     departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -1381,11 +1380,11 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
     return;
   }
   
-  console.log('Loading default BL clauses for department:', DepartmentMasterSid);
+ 
   
   this.operationService.getDefaultBLClausesByDepartment(DepartmentMasterSid).subscribe({
     next: (response: any) => {
-      console.log('BL Clauses API Response:', response);
+     
       
       // Check if response is valid and has data array
       if (response && response.status && Array.isArray(response.data)) {
@@ -1395,7 +1394,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
           displayText: clause.ClauseDescription
         }));
         
-        console.log(`Loaded ${this.blClauseOptions.length} default BL clauses`, this.blClauseOptions);
+      
         
         // If this is a new house job (not edit mode), auto-populate the BlClause field
         if (!this.isEditMode && this.blClauseOptions.length > 0) {
@@ -1408,9 +1407,9 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
             BlClause: allClausesText
           });
           
-          console.log('Auto-populated BlClause field with default clauses:', allClausesText);
+          
         } else if (this.blClauseOptions.length === 0) {
-          console.log('No default BL clauses found for this department');
+         
           // Clear the field if no clauses found
           this.otherForm.patchValue({
             BlClause: ''
@@ -1418,7 +1417,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
         }
       } else {
         this.blClauseOptions = [];
-        console.log('Invalid response format or no data:', response);
+       
         // Clear the field
         this.otherForm.patchValue({
           BlClause: ''
@@ -1483,7 +1482,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
           this.bookingData = resp.data;
           this.housejobData = resp.data;
           this.loadMasterJobARAPData();
-          console.log("House Job", this.housejobData)
+         
           this.minDate = undefined;
           const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
           this.minDODate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
@@ -1523,7 +1522,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         this.houseJobForm.patchValue({
           MasterJobNumber: masterJobData.MasterJobNumber
         });
-        console.log('Master Job Number loaded:', masterJobData.MasterJobNumber);
+      
       }
     },
     error: (error) => {
@@ -1532,9 +1531,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
   });
 }
   patchValues(response: any) {
-  console.log('Response from backend:', response);
-  console.log('AgentName from backend:', response.AgentName);
-  console.log('AgentList:', this.agentList);
+ 
   
   this.bookingHeader = response;
   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
@@ -1567,7 +1564,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     }
   }
   
-  console.log('Found delivery agent:', delivery);
+ 
   
   const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
   this.onDeptChange(selectedDepartment);
@@ -1587,12 +1584,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     eta = eta || masterVoyage.ETA;
     etd = etd || masterVoyage.ETD;
     
-    console.log('Using vessel/voyage data from master job:', {
-      vesselName,
-      voyageNo,
-      eta,
-      etd
-    });
+
   }
   
   this.houseJobForm.patchValue({
@@ -1656,7 +1648,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
   this.PODandFPODsame = response.POD === response.FPD;
    const cargoData = response.Cargo?.[0];
   if (cargoData) {
-    console.log('Patching cargo form with HouseJobCargoSid:', cargoData.HouseJobCargoSid);
+    
     this.cargoForm.patchValue({
       HouseJobCargoSid: cargoData.HouseJobCargoSid,  // This is the key fix
       CargoType: cargoData.CargoType || 'General',
@@ -1930,35 +1922,34 @@ private loadMasterJobDetails(masterJobSid: number): void {
 }
 
   handleConnectionChange(allConnections:any[]){
-    console.log(allConnections);
+  
     if(allConnections.length > 0){
       this.connectionResult = [...allConnections];
     }
   }
 
   handleRateChange(allRates:any[]){
-    console.log(allRates);
+    
     if(allRates.length > 0){
       this.rateResult = [...allRates];
     }
   }
 
   handleMilestoneChange(allmilestones:any[]){
-    console.log(allmilestones);
+   
     if(allmilestones.length !== 0){
       this.milestoneResult = [...allmilestones];
     }
   }
 
 onCurrencyChange(event: any) {
-  console.log('Currency dropdown change:', event);
-  console.log('Form control value:', this.otherForm.get('CargoCurrency')?.value);
+  
 }
 
 
   onSubmit() {
     if (this.isSubmitting) {
-    console.log('Already submitting, please wait...');
+   
     return;
   }
     if (!this.validateHBLNo()) {
@@ -2027,28 +2018,14 @@ if (this.bookingProducts.length > 0) {
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
   const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
-  console.log('=== FORM DEBUG INFO ===');
-  console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
-  console.log('DONo from form:', otherFormValue?.DONo);
-  console.log('DODate from form:', otherFormValue?.DODate);
-  console.log('SIConfirmationDate from form:', otherFormValue?.SIConfirmationDate);
-  console.log('DGConfirmationDate from form:', otherFormValue?.DGConfirmationDate);
-  console.log('SwitchBLShipper from form:', otherFormValue?.SwitchBLShipper);
-  console.log('SwitchLocation from form:', otherFormValue?.SwitchLocation);
-  console.log('Full otherForm value:', otherFormValue);
-  console.log('Vehicle Data:', vehicleData);
+ 
 
   // Fix CargoCurrency extraction
   let cargoCurrencyValue = null;
 const rawCargoCurrency = otherFormValue.CargoCurrency;
  const existingCargoId = this.housejobData?.Cargo?.[0]?.HouseJobCargoSid || null;
 
-console.log('CargoCurrency debug:', {
-  rawValue: rawCargoCurrency,
-  type: typeof rawCargoCurrency,
-  isEmptyString: rawCargoCurrency === '',
-  extractedValue: cargoCurrencyValue
-});
+
 
 if (rawCargoCurrency && rawCargoCurrency !== '') {
   if (typeof rawCargoCurrency === 'object' && rawCargoCurrency.currencyCode) {
@@ -2058,7 +2035,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
   }
 }
 
-console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
+
 
   const payload = {
      MasterJobSid: Number(houseJobFormValue.MasterJobSid) || null,
@@ -2226,7 +2203,7 @@ console.log('Final cargoCurrencyValue:', cargoCurrencyValue);
     ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
   };
 
-  console.log('Final payload being sent:', JSON.stringify(payload, null, 2));
+ 
  if (!this.isEditMode) {
     this.operationService.createHouseJob(payload).subscribe({
       next: (resp: any) => {
@@ -2290,8 +2267,7 @@ private getAgentNameById(agentId: number): string {
   return agent ? agent.CustomerName : '';
 }
  onDeptChange(department) {
-   console.log("DEBUG VALUE AFTER ROUTE CHANGE",this.houseJobForm.getRawValue())
-  console.log('onDeptChange called with:', department);
+  
   this.selectedDepartment = department;
   if (!department) {
     this.selectedDepartment = null;
@@ -2349,13 +2325,7 @@ private getAgentNameById(agentId: number): string {
   // Set the form control value
   this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid);
   
-  console.log('Department set:', {
-    sid: department.DepartmentMasterSid,
-    name: department.departmentName,
-    type: this.selectedDepartmentType,
-    fcllcl: this.selectedFCLLCL,
-    exportImport: department.ExportImport
-  });
+  
   this.loadDefaultBLClauses(department.DepartmentMasterSid);
   this.handleHBLNoField(department.ExportImport);
   // Rest of the method remains the same...
@@ -2409,12 +2379,12 @@ private handleHBLNoField(exportImport: string): void {
     hblNoControl.enable();
     hblNoControl.setValidators([Validators.required]); // This makes it required
     hblNoControl.updateValueAndValidity();
-    console.log('HBLNo field enabled and required for Import department');
+    
   } else {
     // For other department types: enable but not required
     hblNoControl.enable();
     hblNoControl.clearValidators();
-    console.log('HBLNo field enabled (optional) for other department types');
+   
   }
   
   hblNoControl.updateValueAndValidity();
@@ -2496,7 +2466,7 @@ validateHBLNo(): boolean {
 
 
   onCustomerChange(customer: any) {
-  console.log(customer);
+  
   const departmentSid = this.houseJobForm.get('DepartmentMasterSid')?.value;
   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === departmentSid);
   // Check if department is selected
@@ -2601,7 +2571,7 @@ validateHBLNo(): boolean {
     }
 
     const exportImportType = this.selectedDepartment.ExportImport;
-    console.log(exportImportType);
+   
     if (exportImportType === "Export") {
       // Handle Export logic
       const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
@@ -2762,7 +2732,7 @@ validateHBLNo(): boolean {
   }
 
   onVesselChange(vesselVoyage: any) {
-  console.log('Selected vessel voyage:', vesselVoyage);
+ 
   if (!vesselVoyage) {
     this.houseJobForm.patchValue({
       VoyageMasterSid: null,
@@ -2790,7 +2760,7 @@ validateHBLNo(): boolean {
     return;
   }
   
-  console.log('Selected voyage:', voyage);
+ 
   
   this.houseJobForm.patchValue({
     VoyageMasterSid: voyage.VoyageMasterHeaderSid,
@@ -2808,7 +2778,7 @@ validateHBLNo(): boolean {
   const POD = this.b['POD']?.value;
   
   if (!POL || !POD) {
-    console.log('Cannot get vessels: POL or POD is missing');
+  
     return;
   }
   
@@ -2819,7 +2789,7 @@ validateHBLNo(): boolean {
   const podPort = this.portList.find(p => p.PortCode === POD);
   
   if (!polPort || !podPort) {
-    console.log('Cannot get vessels: Port objects not found');
+  
     return;
   }
   
@@ -2829,7 +2799,7 @@ validateHBLNo(): boolean {
     segment: voyageType 
   };
 
-  console.log('Getting vessels with payload:', payload);
+ 
 
   this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
     (resp: any) => {
@@ -2839,7 +2809,7 @@ validateHBLNo(): boolean {
           ETD: this.datePipe.transform(vslVoy.ETD),
           ETA: this.datePipe.transform(vslVoy.ETA)
         }));
-        console.log('Vessel list loaded:', this.headerVesselList.length, 'vessels');
+      
         
         
       } else {
@@ -2961,7 +2931,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 
   onImcoChange(productIndex: number, item: any) {
-    console.log(item);
+    
     const productForm = this.bookingProducts.at(productIndex) as FormGroup;
     if (!item) {
       productForm.patchValue({
@@ -2988,7 +2958,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
   toggleHazProduct(productIndex: number) {
       const isHaz = this.bookingProducts.at(productIndex).get('IsHaz')?.value;
-      console.log(isHaz);
+     
       if (isHaz) {
         this.bookingProducts.at(productIndex).get('ImcoClass')?.enable();
         this.bookingProducts.at(productIndex).get('PkgGroup')?.enable();
@@ -3096,11 +3066,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
   handleCFSOrYard() {
     const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
 
-    console.log('handleCFSOrYard called:', {
-      selectedDepartment: this.selectedDepartment,
-      stuffingAt: stuffingAt,
-      selectedFCLLCL: this.selectedFCLLCL
-    });
+    
 
     if (!this.selectedDepartment) {
       this.YardCFSLabel = "CFS";
@@ -3114,7 +3080,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const isLCL = this.selectedFCLLCL === "LCL";
     const isAIR = this.selectedFCLLCL === "AIR";
 
-    console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
+
 
     // Determine Yard/CFS type based on business rules
     this.o['YardCFS']?.reset();
@@ -3135,11 +3101,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
     }
 
-    console.log('Final Yard/CFS settings:', {
-      label: this.YardCFSLabel,
-      type: this.currentYardCFSType
-    });
-
+    
 
   }
 
@@ -3415,32 +3377,63 @@ ${this.userData['userName']}`;
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.HouseJobSid) return;
+    if (!this.HouseJobSid) return;
+    this.operationService.geAuditLogsHouseJob('HouseJob', this.HouseJobSid.toString()).subscribe({
+      next: (data: any) => {
+        const ignoredFields = ['updatedOn', 'createdOn', 'createdBy', 'updatedBy'];
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key))
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
+  
+        this.auditLogs = data
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal)
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+          this.auditLogModalRef = this.modalService.open(modal, {
+            centered: true,
+            scrollable: true,
+            windowClass: 'audit-log-modal'
+          });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
+  // openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.HouseJobSid) return;
+  //   this.operationService.geAuditLogsHouseJob('HouseJob', this.HouseJobSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
+  
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
+  
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
 
-  this.operationService.getAuditLogsBooking('BookingHeader', this.HouseJobSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
 
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
@@ -3462,14 +3455,14 @@ ${this.userData['userName']}`;
 
 
   onFileProcessed(result: any) {
-    console.log('File processed:', result);
+    
 
     // Check if we have multi-sheet booking data
     if (result.type === 'excel' && result.isMultiSheetStructure && result.dataType === 'bookings') {
       this.parsedBookings = result.data[0];
       this.showParsedData = true;
 
-      console.log('Parsed multi-sheet booking data:', this.parsedBookings);
+     
       this.patchValues(this.parsedBookings);
     } else {
       this.appSettingService.showWarning('No booking structure found in file');
@@ -3543,10 +3536,10 @@ ${this.userData['userName']}`;
 
 
   getFormattedPort(code:string){
-    console.log(code);
+   
     if(!code) return '';
     const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
-    console.log(ourPort);
+   
     return `${ourPort} (${code})`
   }
 
@@ -3679,7 +3672,7 @@ ${this.userData['userName']}`;
       </div>
     `);
     formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
-    console.log(formData)
+   
     this.operationService.bookingPrint(formData).subscribe((resp: any) => {
       this.spinner.hide();
       if (resp?.data) {
@@ -3700,18 +3693,18 @@ ${this.userData['userName']}`;
   handleEdocChange(event: any) {
     this.edocData = event.dataItems || [];   
     this.currentEdocFormValue = event.formData; 
-    console.log("Edoc updated:", this.edocData);
+    
   }
 
    // Add handler for Email data changes
   handleEmailChange(event: any) {
     this.emailData = event.dataItems || [];
     this.currentEmailFormValue = event.formData || null;
-    console.log("Email data updated:", this.emailData);
+   
   }
 
    handleFollowUpChange(event: any) {
-    console.log('Follow Up Changed:', event);
+    
     this.followUpData = event.dataItems || [];
     this.currentFollowUpFormValue = event.formData || null;
   }
@@ -3841,7 +3834,7 @@ ${this.userData['userName']}`;
           })
         modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.chargeList = this.chargeList || [];
-        console.log("Parent",this.chargeList)
+      
         modalRef.componentInstance.profitSummary = this.profitSummary || [];
         modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
         modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
@@ -4062,15 +4055,12 @@ ${this.userData['userName']}`;
 }
   
   getUnitCode(ChargeUomSid: number) {
-    console.log("GETUNITCODE",{
-      currentUOMId : ChargeUomSid,
-      uomList : this.uomList
-    })
+   
     if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
       return '';
     }
     const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
-    console.log(uom);
+    
     return uom ? uom.UOMCode : '';
 }
 
@@ -4159,7 +4149,7 @@ get profit() {
     const data = [...rateFormValue];
 
     data.forEach(item => {
-      console.log(item);
+     
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
@@ -4205,7 +4195,7 @@ get profit() {
       p.totalCost = p.totalCost.toFixed(2);
     });
 
-    console.log(this.profitSummary);
+    
   }
 
   calculateCustomerWiseAmount() {
@@ -4254,8 +4244,7 @@ get profit() {
     });
 
     // --- LOGS & ASSIGNMENT ---
-    console.log("Cost Summary:", costHmap);
-    console.log("Revenue Summary:", revenueHmap);
+ 
 
     this.customerWiseSummary = {
       cost: Array.from(costHmap.values()),
@@ -4271,7 +4260,6 @@ getChargeName(ChargeMasterSid: number): string {
     c.ChargeMasterSid === ChargeMasterSid || c.ChargeMasterSID === ChargeMasterSid
   );
 
-  console.log(charge,"Charge Name")
   return charge ? (charge.chargeName || charge.chargeCode || charge.chargeCode ) : 'N/A';
 }
 
@@ -4370,16 +4358,16 @@ calculateTotals(): any {
 }
 
 handleBOEChange(event: any) {
-  console.log('BOE Data from child:', event);
+
   // You can process and save event data here
 }
 
 handleVehicleChange(event: any) {
-  console.log('BOE Data from child:', event);
+
   // You can process and save event data here
 }
 handleCustomsChange(event: any) {
-  console.log('BOE Data from child:', event);
+  
   // You can process and save event data here
 }
 
@@ -4419,11 +4407,11 @@ handleCustomsChange(event: any) {
   }
 
   getContainerName(ContainerTypeMasterSid:number){
-    console.log(ContainerTypeMasterSid);
+    
     if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
       return "";
     }
-    console.log("HERE",this.containerTypeList)
+   
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 
@@ -4448,7 +4436,7 @@ grossAmount(): number {
 }
 
 loadMasterJobDataForHouseJob(masterJobParams: any): void {
-  console.log('Prepopulating house job from master job:', masterJobParams);
+  
   
   // Store the master job ID
   this.masterJobId = masterJobParams.MasterJobSid;
@@ -4600,7 +4588,7 @@ printARAPReport() {
     window.print();
 }
 prepopulateFromMasterJob(masterJobData: any): void {
-  console.log('Prepopulating house job from master job:', masterJobData);
+  
   
   if (!masterJobData) return;
   
@@ -4616,7 +4604,7 @@ prepopulateFromMasterJob(masterJobData: any): void {
     return;
   }
   
-  console.log('Found department:', selectedDepartment);
+  
   
   // FIRST: Set the department - this will trigger onDeptChange with the department object
   this.onDeptChange(selectedDepartment);
@@ -4697,7 +4685,7 @@ private setPortFromCode(formControlName: string, portCode: string): void {
     return;
   }
   
-  console.log(`Setting ${formControlName} to port:`, port);
+  
   
   // Update the form control
   this.houseJobForm.patchValue({
@@ -4790,10 +4778,7 @@ volumeAmount(): number {
 }
 
   getPkgTypeName(PackageTypeMasterSid:number){
-    console.log("getPkgMame",{
-      PackageTypeMasterSid,
-      pkgList:this.packageTypeList
-    })
+    
     if(!PackageTypeMasterSid||this.packageTypeList.length===0){
       return "";
     }
