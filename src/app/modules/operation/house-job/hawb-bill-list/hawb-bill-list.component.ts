@@ -185,7 +185,7 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
       columns: [
         { key: 'MasterJobNumber', label: 'Master Job No', sortable: true, filterable: true, visible: true, template: 'link', cellClass: 'master-job-column' },
         { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true },
-        { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true },
+        { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true, template: 'link',cellClass: 'booking-no-column' },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
         { key: 'POL', label: 'POL', sortable: true, filterable: true, visible: true },
         { key: 'POD', label: 'POD', sortable: true, filterable: true, visible: true },
@@ -216,16 +216,23 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
   // =========================
 
   onTableActionClick(event: TableEventData): void {
-    if (event.column?.key === 'MasterJobNumber') {
-      this.router.navigate([
-        'operation/mawbill/entry',
-        event.row.MasterJobSid
-      ]);
-      return;
+    if(event.column?.template === "link"){
+      if (event.column.key === 'MasterJobNumber') {
+        this.router.navigate([
+          'operation/mawbill/entry',
+          event.row.MasterJobSid
+        ]);
+        return;
+      }
+      if (event.column.key === 'BookingNo') {
+        this.router.navigate([
+          'operation/booking/entry',
+          event.row.BookingHeaderSid
+        ]);
+        return;
+      }
     }
-
-    // Existing view action
-    if (event.action === 'view') {
+    else if (event.action === 'view') {
       this.router.navigate([
         'operation/house-job/entry',
         event.row.HouseJobSid
