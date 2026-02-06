@@ -222,7 +222,7 @@ export class VoucherPeriodEntryComponent {
   initForm() {
     this.voucherPeriodForm = this.fb.group({
       PeriodCode: ['', Validators.required],
-      PeriodName: ['', [Validators.required, Validators.maxLength(10)]],
+      PeriodName: ['', [Validators.required, Validators.maxLength(20)]],
       YearMasterSid: [null, Validators.required],
       StartDate: [this.todayDate, Validators.required],
       EndDate: [this.todayDate, Validators.required],

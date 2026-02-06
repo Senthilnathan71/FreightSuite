@@ -365,38 +365,63 @@ calculateEndDate(startDate: any): any {
       return;
     }
 
-    // Check if voucher periods already exist for this year
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
+    // Check if voucher periods already exist for this year
     this.masterService.getAllVoucherPeriods(CompanyMasterSid, BranchMasterSid, this.YearMasterSid).subscribe(
       (resp: any) => {
         const existingPeriods = resp || [];
 
-        // Navigate to voucher-period entry with year data and existing periods (if any)
-        this.router.navigate(['master/voucher-period/entry'], {
-          state: {
-            YearMasterSid: this.YearMasterSid,
-            YearCode: this.yearData.YearCode,
-            YearName: this.yearData.YearName,
-            StartDate: this.yearData.StartDate,
-            EndDate: this.yearData.EndDate,
-            existingPeriods: existingPeriods
+        if (existingPeriods.length > 0) {
+          // Periods already exist — inform user and navigate to view them
+          this.appSettingService.showInfo('Voucher periods already exist for this year');
+          this.router.navigate(['master/voucher-period/entry'], {
+            state: {
+              YearMasterSid: this.YearMasterSid,
+              YearCode: this.yearData.YearCode,
+              YearName: this.yearData.YearName,
+              StartDate: this.yearData.StartDate,
+              EndDate: this.yearData.EndDate,
+              existingPeriods: existingPeriods
+            }
+          });
+          return;
+        }
+
+        // No existing periods — auto-create 12 monthly periods
+        this.masterService.createPeriodsForYear({
+          YearMasterSid: this.YearMasterSid,
+          CompanyMasterSid,
+          BranchMasterSid,
+          CreatedBy: this.userData?.email || ''
+        }).subscribe(
+          (result: any) => {
+            this.appSettingService.showSuccess(result?.message || 'Voucher periods created successfully');
+            // Re-fetch the newly created periods and navigate
+            this.masterService.getAllVoucherPeriods(CompanyMasterSid, BranchMasterSid, this.YearMasterSid).subscribe(
+              (newPeriods: any) => {
+                this.router.navigate(['master/voucher-period/entry'], {
+                  state: {
+                    YearMasterSid: this.YearMasterSid,
+                    YearCode: this.yearData.YearCode,
+                    YearName: this.yearData.YearName,
+                    StartDate: this.yearData.StartDate,
+                    EndDate: this.yearData.EndDate,
+                    existingPeriods: newPeriods || []
+                  }
+                });
+              }
+            );
+          },
+          (error) => {
+            this.appSettingService.showError(error?.error?.message || 'Error creating voucher periods');
           }
-        });
+        );
       },
       (error) => {
         console.error('Error checking existing periods:', error);
-        // Navigate anyway with empty periods
-        this.router.navigate(['master/voucher-period/entry'], {
-          state: {
-            YearMasterSid: this.YearMasterSid,
-            YearName: this.yearData.YearName,
-            StartDate: this.yearData.StartDate,
-            EndDate: this.yearData.EndDate,
-            existingPeriods: []
-          }
-        });
+        this.appSettingService.showError('Error checking existing periods');
       }
     );
   }
