@@ -82,11 +82,10 @@ export class StandardChargeEntryComponent implements OnInit {
   minValidToDates: NgbDateStruct[] = [];
   minValidFromDates: NgbDateStruct[] = [];
   filteredChargeList: any[] = [];
-  statusOptions = [
+  statusItems = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
-
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
@@ -124,8 +123,6 @@ export class StandardChargeEntryComponent implements OnInit {
     private commonService: CommonService,
     private ngbModal: NgbModal,
   ) { }
-
-
 
 
   ngOnInit(): void {
@@ -179,8 +176,6 @@ export class StandardChargeEntryComponent implements OnInit {
         }));
         this.currencyConfigService.initializeConfigurations(this.currencyList);
         this.charge = Array.isArray(charge) ? charge : charge?.data || [];
-
-        // ✅ ADD HERE (Default show all charges)
         this.filteredChargeList = this.charge;
       })
     );
@@ -198,7 +193,7 @@ export class StandardChargeEntryComponent implements OnInit {
 
 
   createChargeRow(): FormGroup {
-    return this.fb.group({
+    const row = this.fb.group({
       StdTariffDetailSid: [null],
       CargoType: ['', Validators.required],
       ChargeMasterSid: ['', Validators.required],
@@ -210,8 +205,21 @@ export class StandardChargeEntryComponent implements OnInit {
       ValidFrom: ['', Validators.required],
       ValidTo: ['', Validators.required],
       ChargeName: [''],
-      Status: 'A'
+      Status: ['A']
     });
+
+    row.get('Status')?.valueChanges.subscribe(val => {
+
+      if (val === 'S') {
+
+        setTimeout(() => {
+          row.get('Status')?.disable();
+        });
+
+      }
+
+    });
+    return row
   }
 
   onValidFromChange(date: NgbDateStruct, index: number) {
@@ -233,7 +241,7 @@ export class StandardChargeEntryComponent implements OnInit {
     return this.standardChargeForm.get('StdTariffDetails') as FormArray;
   }
 
-  addRow() { this.StdTariffDetails.push(this.createChargeRow()); }
+  addRow() { this.StdTariffDetails.push(this.createChargeRow()); setTimeout(() => this.updateChargeStatusLock()); }
   removeRow(index: number) { if (this.StdTariffDetails.length > 1) this.StdTariffDetails.removeAt(index); }
 
 
@@ -287,6 +295,9 @@ export class StandardChargeEntryComponent implements OnInit {
             fg.get('ChargeMasterSid').disable();
           }
           this.StdTariffDetails.push(fg);
+          setTimeout(() => {
+            this.updateChargeStatusLock();
+          });
         });
         this.spinner.hide();
       },
@@ -295,20 +306,25 @@ export class StandardChargeEntryComponent implements OnInit {
     this.spinner.hide();
   }
 
-  onCharge(event: any, index: number) {
+  onCharge(index: number , chargeOrCargo ?: 'charge' | 'cargo') {
 
-    const selectedChargeSid = event?.ChargeMasterSid;
-
-    const previousRow = this.StdTariffDetails.controls
-      .slice(0, index)
-      .map(ctrl => ctrl.getRawValue())
-      .reverse()
-      .find(r => r.ChargeMasterSid === selectedChargeSid);
+    
+    const allDetails = this.StdTariffDetails.getRawValue()
+    const currentDetail = allDetails[index];
+    const selectedChargeSid = currentDetail?.ChargeMasterSid;
+    const previousRows = allDetails
+      .filter((r,i) => r.ChargeMasterSid === selectedChargeSid && r.Status !== 'S' && r.CargoType === currentDetail.CargoType && index !== i)
+      .sort((a,b) => a.ValidTo - b.ValidTo);
+      
+      const lastRowIndex = previousRows.length;
+      const lastRow = previousRows[lastRowIndex - 1];
+      
+      console.log(allDetails , previousRows , lastRow , currentDetail, "Hello");
 
     // ✅ Already Exists → Next Day
-    if (previousRow?.ValidTo) {
+    if (lastRow?.ValidTo) {
 
-      const prevTo = new Date(previousRow.ValidTo);
+      const prevTo = new Date(lastRow.ValidTo);
       prevTo.setDate(prevTo.getDate() + 1);
 
       this.minValidFromDates[index] = {
@@ -329,7 +345,39 @@ export class StandardChargeEntryComponent implements OnInit {
         day: today.getDate()
       };
     }
+
+    if(chargeOrCargo === 'charge'){
+      this.updateChargeStatusLock();
+    }
   }
+
+  updateChargeStatusLock() {
+
+    const rows = this.StdTariffDetails.controls;
+
+    rows.forEach((row, i) => {
+
+      const chargeSid = row.get('ChargeMasterSid')?.value;
+      if (!chargeSid) return;
+
+      // Find all same charge rows
+      const sameChargeRows = rows.filter(r =>
+        r.get('ChargeMasterSid')?.value === chargeSid
+      );
+
+      // Find last row index of that charge
+      const lastRow = sameChargeRows[sameChargeRows.length - 1];
+
+      // Disable all previous rows
+      if (row !== lastRow) {
+        row.get('Status')?.disable();
+      } else {
+        row.get('Status')?.enable();
+      }
+    });
+  }
+
+
 
   filterDepartment(dept: any) {
     const deptName = dept?.departmentName;
@@ -341,6 +389,7 @@ export class StandardChargeEntryComponent implements OnInit {
       Array.isArray(c.DepartmentMasterSid) &&
       c.DepartmentMasterSid.includes(deptName)
     );
+    console.log(this.filteredChargeList,"Filter Charge List")
   }
 
   onSubmit() {
@@ -572,42 +621,37 @@ export class StandardChargeEntryComponent implements OnInit {
       day: d.getDate()
     };
   }
-// Add this method to your component class
-deleteStdTariffDetail(index: number) {
-  const row = this.StdTariffDetails.at(index) as FormGroup;
-  const StdTariffDetailSid = row.get('StdTariffDetailSid')?.value;
-  const currentUser = this.appSettingService.userSettingSource.value['userEmail'];
-  
-  if (!StdTariffDetailSid) {
-    this.appSettingService.showWarning('Cannot delete unsaved detail row');
-    return;
-  }
+  // Add this method to your component class
+  deleteStdTariffDetail(index: number) {
+    const row = this.StdTariffDetails.at(index) as FormGroup;
+    const StdTariffDetailSid = row.get('StdTariffDetailSid')?.value;
+    const currentUser = this.appSettingService.userSettingSource.value['userEmail'];
 
- 
-    this.spinner.show();
-    
-    this.masterService.deleteStdTariffDetail(StdTariffDetailSid, currentUser).subscribe({
-      next: (res: any) => {
-        this.spinner.hide();
-        if (res.status) {
-          this.appSettingService.showSuccess('Charge detail deleted successfully');
-          // Remove the row from UI
-          this.StdTariffDetails.removeAt(index);
-          // Reload the main data to reflect changes
-          if (this.isEditMode) {
-            this.loadStandardChargeById(this.StdRateHeaderSid);
+    if (StdTariffDetailSid) {
+      this.spinner.show();
+
+      this.masterService.deleteStdTariffDetail(StdTariffDetailSid, currentUser).subscribe({
+        next: (res: any) => {
+          this.spinner.hide();
+          if (res.status) {
+            this.appSettingService.showSuccess('Charge detail deleted successfully');
+            // Remove the row from UI
+            this.StdTariffDetails.removeAt(index);
+            this.StdTariffDetails.updateValueAndValidity();
+          } else {
+            this.appSettingService.showError(res.message || 'Failed to delete charge detail');
           }
-        } else {
-          this.appSettingService.showError(res.message || 'Failed to delete charge detail');
+        },
+        error: (err) => {
+          this.spinner.hide();
+          this.appSettingService.showError(err?.message || 'Error deleting charge detail');
+          console.error('Delete error:', err);
         }
-      },
-      error: (err) => {
-        this.spinner.hide();
-        this.appSettingService.showError(err?.message || 'Error deleting charge detail');
-        console.error('Delete error:', err);
-      }
-    });
-  
-}
+      });
+    } else {
+      this.StdTariffDetails.removeAt(index);
+      this.StdTariffDetails.updateValueAndValidity();
+    }
+  }
 
 }

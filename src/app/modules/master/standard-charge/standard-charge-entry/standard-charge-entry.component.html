@@ -101,7 +101,7 @@
                         <aside class="col-md-2">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!standardChargeForm.get('Status')?.value">
-                                <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
+                                <ng-select [items]="statusItems" bindLabel="name" bindValue="id"
                                     formControlName="Status">
                                 </ng-select>
                                 <label class="input-label">Status</label>
@@ -135,7 +135,7 @@
                                 <th class="bg-transparent text-light">Sales Amt</th>
                                 <th class="bg-transparent text-light">Valid From</th>
                                 <th class="bg-transparent text-light">Valid To</th>
-                                <th class="bg-transparent text-light">Status</th>
+                                <th class="bg-transparent text-light" width="8%">Status</th>
                             </tr>
                         </thead>
 
@@ -149,7 +149,8 @@
                                 </td>
                                 <td style="padding:2px; vertical-align:middle; width:120px;">
                                     <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name"
-                                        formControlName="CargoType" appendTo="body" style="font-size:12px;">
+                                        formControlName="CargoType" appendTo="body" style="font-size:12px;"
+                                        (change)="onCharge(i,'cargo')">
                                     </ng-select>
                                 </td>
 
@@ -158,7 +159,7 @@
                                         [displayFields]="chargeLookupConfig.displayFields"
                                         [displayLabels]="chargeLookupConfig.displayLabels"
                                         [labelFields]="chargeLookupConfig.labelFields" bindValue="ChargeMasterSid"
-                                        (itemSelected)="onCharge($event,i)">
+                                        (itemSelected)="onCharge(i,'charge')">
                                     </dofi-searchable-dropdown>
                                 </td>
 
@@ -230,7 +231,8 @@
                                     </div>
                                 </td>
                                 <td>           
-                                        <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="Status">
+                                        <ng-select [items]="statusItems" bindLabel="name" bindValue="id" formControlName="Status" appendTo="body"
+                                            >
                                         </ng-select>
                                 </td>
                             </tr>
