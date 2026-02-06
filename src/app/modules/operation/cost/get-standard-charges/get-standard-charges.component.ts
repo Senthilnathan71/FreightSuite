@@ -16,6 +16,7 @@ import { catchError, of } from 'rxjs';
   styles: ``
 })
 export class GetStandardChargesComponent implements OnInit {
+  @Input() screenName : 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job';
   @Input() parentFormValue: any;
   @Input() currentCompany: any;
   @Input() currentBranch: any;
@@ -30,7 +31,7 @@ export class GetStandardChargesComponent implements OnInit {
   filteredStandardCharges: any[] = [];
   selectedCharges: Set<number> = new Set<number>(); // Store selected charge IDs
   loading: boolean = false;
-
+  digitsAfterDecimal = 3;
   constructor(
     public activeModal: NgbActiveModal,
     private operationService: OperationService,
@@ -49,6 +50,7 @@ export class GetStandardChargesComponent implements OnInit {
 
     const companySid = this.currentCompany?.CompanyMasterSid;
     const departmentSid = this.parentFormValue?.DepartmentMasterSid;
+    const currentBranch=  this.currentBranch?.BranchMasterSid;
 
     if (!companySid) {
       this.appSettingService.showWarning('Company information is required');
@@ -61,7 +63,15 @@ export class GetStandardChargesComponent implements OnInit {
       departmentSid
     });
 
-    this.operationService.getStdCharges(companySid, departmentSid).pipe(
+    const payload : any = {
+      CompanyMasterSid : companySid,
+      DepartmentMasterSid : departmentSid,
+      BranchMasterSid:currentBranch,
+      CargoType : this.parentFormValue?.CargoType,
+      OperationDate : this.parentFormValue?.EffectiveDate || null
+    }
+
+    this.operationService.getStdCharges(payload).pipe(
       catchError(err => {
         console.error('Error loading standard charges:', err);
         this.loading = false;
@@ -73,8 +83,8 @@ export class GetStandardChargesComponent implements OnInit {
 
       console.log('API Response:', resp);
 
-      if (resp && resp.data && resp.data.StdTariffDetails && resp.data.StdTariffDetails.length > 0) {
-        this.standardCharges = this.processStandardCharges(resp.data.StdTariffDetails);
+      if (resp && resp.data && resp.data && resp.data.length > 0) {
+        this.standardCharges = this.processStandardCharges(resp.data);
         this.filteredStandardCharges = [...this.standardCharges];
         
         console.log('Standard charges processed:', this.filteredStandardCharges.length);
@@ -84,8 +94,42 @@ export class GetStandardChargesComponent implements OnInit {
     });
   }
 
+  findFieldForQty(UnitQty: string) {
+    const trimmedUnitQty = String(UnitQty).trim();
+    switch (trimmedUnitQty) {
+      case 'Per GrossWeight':
+        return 'GrossWeight';
+      case 'Per CBM':
+        return 'Volume';
+      case '20ft':
+        return 'Qty';
+      case '40ft':
+        return 'Qty';
+      case 'ChargeableWeight':
+        return 'ChargeableWeight';
+      case 'Per BL':
+        return '1';
+      case 'Per Shipment':
+        return '1';
+      default:
+        return '1';
+    }
+  }
+
   processStandardCharges(data: any[]): any[] {
     return data.map((charge: any) => {
+      const charges = this.getChargeCode(charge.ChargeCode);
+      const qtySourceField = this.findFieldForQty(
+        charge.UOMMaster?.UOMCode || ''
+      );
+      
+      let value = 1;
+      if (typeof qtySourceField === 'string' && this.parentFormValue[qtySourceField]) {
+        value = this.parentFormValue[qtySourceField] || 1;
+      } else if (typeof qtySourceField === 'number') {
+        value = qtySourceField;
+      }
+      
       return {
         StdRateHeaderSid: charge.StdRateHeaderSid,
         StdTariffDetailSid: charge.StdTariffDetailSid,
@@ -104,11 +148,15 @@ export class GetStandardChargesComponent implements OnInit {
         ValidFrom: charge.ValidFrom,
         ValidTo: charge.ValidTo,
         Remarks: charge.Remarks,
-        CalculationType: charge.CalculationType
+        CalculationType: charge.CalculationType,
+        NoofUnit:value,
+        exchangeRateCost:charge.costExchangeRate,
+        exchangerateRevenue:charge.revenueExchangeRate,
       };
     });
   }
 
+ 
   // Selection Methods
   isChargeSelected(charge: any): boolean {
     return this.selectedCharges.has(charge.StdTariffDetailSid);

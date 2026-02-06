@@ -18,52 +18,80 @@
                 </div>
 
                 <!-- Standard Charges Table -->
-                <div *ngIf="!loading && filteredStandardCharges?.length" class="table-responsive w-100">
-                    <table class="table table-hover align-middle no-wrap table-borderless table-sm mb-1 text-center">
-                        <thead>
-                            <tr class="bg-info">
-                                <th class="bg-transparent text-light" width="2%">
-                                    <!-- Select All Checkbox -->
-                                    <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
-                                </th>
-                                <th class="bg-transparent text-light" width="10%">Cargo Type</th>
-                                <th class="bg-transparent text-light">Charge</th>
-                                <th class="bg-transparent text-light">Charge Decs</th>
-                                <th class="bg-transparent text-light">Uom</th>
-                                <th class="bg-transparent text-light" width="10%">Cost Cur</th>
-                                <th class="bg-transparent text-light">Cost Amt</th>
-                                <th class="bg-transparent text-light" width="10%">Sales Cur</th>
-                                <th class="bg-transparent text-light">Sales Amt</th>
-                                <th class="bg-transparent text-light">Valid From</th>
-                                <th class="bg-transparent text-light">Valid To</th>
-                               
+            <div *ngIf="!loading && filteredStandardCharges?.length" class="table-responsive w-100">
+                <table class="table table-hover align-middle no-wrap table-borderedless table-sm mb-1 text-center">
+            
+                    <!-- Header -->
+                    <thead>
+                        <tr class="bg-info">
+                            <th width="3%" class="bg-transparent text-light">
+                                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
+                            </th>
+            
+                            <th width="10%" class="bg-transparent text-light">Cargo Type</th>
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Charge Desc</th>
+                            <th class="bg-transparent text-light">UOM</th>
+                            <th class="bg-transparent text-light">No. of Unit</th>
+            
+                            <th class="bg-transparent text-light">Type</th>
+                            <!-- <th>Dr/Cr</th> -->
+                            <th class="bg-transparent text-light">Curr</th>
+                            <th class="bg-transparent text-light">Ex Rate</th>
+                            <th class="bg-transparent text-light">Rate</th>
+                            <th class="bg-transparent text-light">Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+            
+                            <!-- <th class="bg-transparent text-light">Valid From</th>
+                            <th class="bg-transparent text-light">Valid To</th> -->
+                        </tr>
+                    </thead>
+            
+                    <!-- Body -->
+                    <tbody>
+                        <ng-container *ngFor="let sc of filteredStandardCharges; let i = index">
+                            <tr>
+                                <td rowspan="2">
+                                    <input type="checkbox" [checked]="isChargeSelected(sc)" (change)="toggleChargeSelection(sc)">
+                                </td>
+            
+                                <!-- Common Fields -->
+                                <td rowspan="2">{{ sc.CargoType || '' }}</td>
+                                <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
+                                <td rowspan="2">{{ sc.ChargeDescription }}</td>
+                                <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
+                                <td rowspan="2">{{ sc.NoofUnit }}</td>
+            
+                                <!-- Cost Details -->
+                                <td class="text-info fw-bold">Cost</td>
+                                <!-- <td>{{ sc.CostDrCr === 'D' ? 'Debit' : 'Credit' }}</td> -->
+                                <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
+                                <td>{{ sc.exchangeRateCost | number:'1.2-3' }}</td>
+                                <td>{{ sc.CostAmount | number:'1.2-2' }}</td>
+                                <td>{{ (sc.CostAmount) * (sc.NoofUnit) | number:'1.2-2' }}</td>
+                                <td>{{ (sc.CostAmount) * (sc.NoofUnit) * (sc.exchangeRateCost) | number:'1.2-2' }}</td>
+            
+                                <!-- Dates -->
+                                <!-- <td rowspan="2">{{ sc.ValidFrom | date:'dd/MM/yyyy' }}</td>
+                                <td rowspan="2">{{ sc.ValidTo | date:'dd/MM/yyyy' }}</td> -->
                             </tr>
-                        </thead>
+            
+                            <!-- REVENUE ROW -->
+                            <tr>
+                                <td class="text-info fw-bold">Revenue</td>
+                                <!-- <td>{{ sc.RevenueDrCr === 'D' ? 'Debit' : 'Credit' }}</td> -->
+                                <td>{{ getCurrencyCode(sc.SaleCurrencyMasterSid) }}</td>
+                                <td>{{ sc.exchangerateRevenue | number:'1.2-3' }}</td>
+                                <td>{{ sc.SaleAmount | number:'1.2-2' }}</td>
+                                <td>{{ (sc.SaleAmount) * (sc.NoofUnit) | number:'1.2-2' }}</td>
+                                <td>{{ (sc.SaleAmount) * (sc.NoofUnit) * (sc.exchangerateRevenue)  | number:'1.2-2' }}</td>
+                            </tr>
+            
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
 
-                        <tbody>
-                            <ng-container *ngFor="let sc of filteredStandardCharges; let i = index">
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" 
-                                               [checked]="isChargeSelected(sc)" 
-                                               (change)="toggleChargeSelection(sc)">
-                                    </td>
-                                    <td>{{ sc.CargoType || 'General' }}</td>
-                                    <td>{{ getChargeCode(sc.ChargeMasterSid) }}</td>
-                                    <td>{{ sc.ChargeDescription }}</td>
-                                    <td>{{ getUnitCode(sc.ChargeUomSid) }}</td>
-                                    <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
-                                    <td>{{ sc.CostAmount | number:'1.2-2' }}</td>
-                                    <td>{{ getCurrencyCode(sc.SaleCurrencyMasterSid) }}</td>
-                                    <td>{{ sc.SaleAmount | number:'1.2-2' }}</td>
-                                    <td>{{ sc.ValidFrom | date:'dd/MM/yyyy' }}</td>
-                                    <td>{{ sc.ValidTo | date:'dd/MM/yyyy' }}</td>
-                                    
-                                </tr>
-                            </ng-container>
-                        </tbody>
-                    </table>
-                </div>
 
                 <!-- Empty State -->
                 <div *ngIf="!loading && !filteredStandardCharges?.length" class="text-center text-muted py-3">
@@ -73,7 +101,8 @@
 
             <div class="modal-footer py-1">
                 <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">Close</button>
-                <button type="button" class="btn btn-info btn-sm" (click)="applySelectedCharges()" [disabled]="!hasSelectedCharges()">
+                <button type="button" class="btn btn-info btn-sm" (click)="applySelectedCharges()"
+                    [disabled]="!hasSelectedCharges()">
                     Apply Selected
                 </button>
                 <button type="button" class="btn btn-info btn-sm" (click)="loadStandardCharges()" [disabled]="loading">

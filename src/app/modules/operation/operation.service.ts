@@ -1707,13 +1707,10 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     )
   }
 
-    getStdCharges(CompanyMasterSid: number, DepartmentMasterSid: number) {
+    getStdCharges(payload) {
     return this.http.post<{ data: any }>(
       `standard-charge/department-wise`,
-      {
-        CompanyMasterSid: CompanyMasterSid,
-        DepartmentMasterSid: DepartmentMasterSid
-      }
+      payload
     ).pipe(
       map((res) => {
         let response = res;
