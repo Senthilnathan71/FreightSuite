@@ -2725,6 +2725,21 @@ isSeaDepartment(): boolean {
   
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    if (this.currentCompany?.CompanyMasterSid === 13) {
+    const staticTerms = [
+      { sno: 1, TandC: 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.' },
+      { sno: 2, TandC: 'Please mention our invoice number(s) on your remittance instructions.' },
+    ];
+    const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+    modalRef.componentInstance.terms = staticTerms;
+    modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+    modalRef.componentInstance.DocumentSid = this.headerId;
+    return;
+  }
 
     // If already fetched simply open the modal
     if(this.TandCFetched){
@@ -2784,6 +2799,13 @@ isSeaDepartment(): boolean {
   }
 
   getTandC() : Observable<any> {
+    // if(this.currentCompany.CompanyMasterSid === 13){
+    //   return of([
+    //     { sno : 1 , TandC : 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.' },
+    //     { sno : 2 , TandC : 'Please mention our invoice number(s) on your remittance instructions.' },
+    //   ])
+    // }
+
     return this.masterService.getTandCByCondition({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
