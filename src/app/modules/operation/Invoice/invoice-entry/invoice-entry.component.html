@@ -265,6 +265,8 @@
                       formControlName="VoucherDate"
                       (click)="d1.toggle()"
                       (dateSelect)="onVoucherDateChange()"
+                      [minDate]="voucherMinDate"
+                      [maxDate]="voucherMaxDate"
                     />
                     <button
                       class="btn bi bi-calendar3"
@@ -274,9 +276,10 @@
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
-                  <label class="input-label">Invoice Date 
+                  <label class="input-label">Invoice Date
                     <span class="text-danger">*</span>
                   </label>
+                  <small *ngIf="periodClosed" class="text-danger d-block">{{ periodClosedMsg }}</small>
                 </div>
               </aside>
 

@@ -18,6 +18,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDate,
+  NgbDateStruct,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -50,7 +51,7 @@ import { CurrencyFormatService } from 'src/app/core/services/currency-format.ser
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
-import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNumber, VoucherPeriodInfo, getVoucherDateConstraints } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ToastrService } from 'ngx-toastr';
@@ -209,6 +210,13 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   filteredDetailItems: any[] = [];
   currentDate = new Date();
   isAutoPosting : boolean = false;
+
+  // Voucher period grace days
+  voucherPeriods: VoucherPeriodInfo[] = [];
+  voucherMinDate: NgbDateStruct | null = null;
+  voucherMaxDate: NgbDateStruct | null = null;
+  periodClosed: boolean = false;
+  periodClosedMsg: string | null = null;
   
   // Declaration not exist in Vendor Invoice
   TandCFetched : boolean = false;
@@ -343,6 +351,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadLookups();
+    this.loadVoucherPeriods();
     this.spinner.show();
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
@@ -578,7 +587,38 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     );
   }
 
+  loadVoucherPeriods(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const yearId = this.currentFinancialYear;
+    if (!companyId || !branchId || !yearId) return;
+
+    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
+      next: (periods: VoucherPeriodInfo[]) => {
+        this.voucherPeriods = periods || [];
+        this.applyVoucherDateConstraints();
+      },
+      error: (err: any) => {
+        console.error('Error loading voucher periods:', err);
+      }
+    });
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.invoiceForm?.get('VoucherDate')?.value;
+    if (!voucherDate || this.voucherPeriods.length === 0) return;
+
+    const dateObj = new Date(voucherDate);
+    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AR');
+
+    this.voucherMinDate = constraints.minDate;
+    this.voucherMaxDate = constraints.maxDate;
+    this.periodClosed = constraints.isClosed;
+    this.periodClosedMsg = constraints.errorMessage;
+  }
+
   onVoucherDateChange(){
+    this.applyVoucherDateConstraints();
     const voucherDate = this.invoiceForm.get('VoucherDate')?.value;
     if(!voucherDate) return;
 

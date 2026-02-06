@@ -11,7 +11,7 @@ import {
   ValidatorFn,
   ValidationErrors
 } from '@angular/forms';
-import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule, NgbDateAdapter, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -34,7 +34,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
-import { errorLogger, getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, toNumber, VoucherPeriodInfo, getVoucherDateConstraints } from 'src/app/common/helper';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -176,6 +176,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   currentDate = new Date();
   isAutoPosting : boolean = false;
+
+  // Voucher period grace days
+  voucherPeriods: VoucherPeriodInfo[] = [];
+  voucherMinDate: NgbDateStruct | null = null;
+  voucherMaxDate: NgbDateStruct | null = null;
+  periodClosed: boolean = false;
+  periodClosedMsg: string | null = null;
 
   // TDS Configuration
   tdsConfig: any = null;
@@ -322,6 +329,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadLookups();
+    this.loadVoucherPeriods();
     this.spinner.show();
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
@@ -586,7 +594,38 @@ export class VendorInvoiceEntryComponent implements OnInit {
     );
   }
 
+  loadVoucherPeriods(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const yearId = this.currentFinancialYear;
+    if (!companyId || !branchId || !yearId) return;
+
+    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
+      next: (periods: VoucherPeriodInfo[]) => {
+        this.voucherPeriods = periods || [];
+        this.applyVoucherDateConstraints();
+      },
+      error: (err: any) => {
+        console.error('Error loading voucher periods:', err);
+      }
+    });
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.vendorInvoiceForm?.get('VoucherDate')?.value;
+    if (!voucherDate || this.voucherPeriods.length === 0) return;
+
+    const dateObj = new Date(voucherDate);
+    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AP');
+
+    this.voucherMinDate = constraints.minDate;
+    this.voucherMaxDate = constraints.maxDate;
+    this.periodClosed = constraints.isClosed;
+    this.periodClosedMsg = constraints.errorMessage;
+  }
+
   onVoucherDateChange() {
+    this.applyVoucherDateConstraints();
     const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.value;
     if (!voucherDate) return;
 

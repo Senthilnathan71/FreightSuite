@@ -126,14 +126,17 @@
                   [class.filled]="!!creditNoteForm.get('VoucherDate')?.value">
                   <div class="input-group">
                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                      formControlName="VoucherDate" (click)="d1.toggle()" />
+                      formControlName="VoucherDate" (click)="d1.toggle()"
+                      [minDate]="voucherMinDate" [maxDate]="voucherMaxDate"
+                      (dateSelect)="onVoucherDateChange()" />
                     <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
                   <label class="input-label">Credit Note Date<span class="text-danger">*</span></label>
+                  <small *ngIf="periodClosed" class="text-danger d-block">{{ periodClosedMsg }}</small>
                 </div>
-              </aside>       
+              </aside>
 
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"

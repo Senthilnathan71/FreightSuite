@@ -278,11 +278,13 @@
                     formControlName="VoucherDate"
                     [footerTemplate]="footerTemplate1"
                     [class.is-invalid]="isFieldInvalid('VoucherDate')"
-                    [minDate]="minVoucherDate"
+                    [minDate]="effectiveMinDate"
+                    [maxDate]="voucherMaxDate"
                   />
                   <label class="input-label" for="VoucherDate">
                     Vendor Credit Date <span class="text-danger">*</span>
                   </label>
+                  <small *ngIf="periodClosed" class="text-danger d-block">{{ periodClosedMsg }}</small>
                 </div>
                 <button
                   class="btn bi bi-calendar3 mt-2"

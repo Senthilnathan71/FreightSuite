@@ -2,6 +2,98 @@ import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { Port } from "../modules/crm-mobile/Interfaces/port.interface";
 import { FormArray, FormGroup } from "@angular/forms";
 
+// ── Voucher Period Grace Days ────────────────────────────────────────
+export interface VoucherPeriodInfo {
+  VoucherPeriodSid: number;
+  StartDate: Date | string;
+  EndDate: Date | string;
+  APClosed: string;
+  ARClosed: string;
+  GLClosed: string;
+  APGraceDays: number;
+  ARGraceDays: number;
+  GLGraceDays: number;
+  PeriodName: string;
+  Status: string;
+}
+
+export type VoucherModule = 'AR' | 'AP' | 'GL';
+
+/**
+ * Find the voucher period a date belongs to (date within StartDate..EndDate).
+ */
+export function findPeriodForDate(
+  date: Date,
+  periods: VoucherPeriodInfo[]
+): VoucherPeriodInfo | null {
+  if (!date || !periods || periods.length === 0) return null;
+
+  const ts = date.getTime();
+  for (const p of periods) {
+    const start = new Date(p.StartDate);
+    const end = new Date(p.EndDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    if (ts >= start.getTime() && ts <= end.getTime()) {
+      return p;
+    }
+  }
+  return null;
+}
+
+/**
+ * Compute minDate/maxDate NgbDateStruct for the datepicker based on period + grace days.
+ * Returns { minDate, maxDate, isClosed, errorMessage }
+ */
+export function getVoucherDateConstraints(
+  voucherDate: Date,
+  periods: VoucherPeriodInfo[],
+  module: VoucherModule
+): {
+  minDate: NgbDateStruct | null;
+  maxDate: NgbDateStruct | null;
+  isClosed: boolean;
+  errorMessage: string | null;
+} {
+  const result: {
+    minDate: NgbDateStruct | null;
+    maxDate: NgbDateStruct | null;
+    isClosed: boolean;
+    errorMessage: string | null;
+  } = { minDate: null, maxDate: null, isClosed: false, errorMessage: null };
+
+  if (!voucherDate || !periods || periods.length === 0) return result;
+
+  const period = findPeriodForDate(voucherDate, periods);
+  if (!period) {
+    result.errorMessage = 'Selected date does not fall within any voucher period.';
+    return result;
+  }
+
+  // Check if the module is closed for this period
+  const closedKey = `${module}Closed` as keyof VoucherPeriodInfo;
+  if (period[closedKey] === 'Y') {
+    result.isClosed = true;
+    result.errorMessage = `${module} is closed for period "${period.PeriodName}".`;
+    return result;
+  }
+
+  // Compute grace days constraint
+  const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
+  const graceDays = Number(period[graceDaysKey]) || 0;
+
+  const periodStart = new Date(period.StartDate);
+  periodStart.setHours(0, 0, 0, 0);
+  result.minDate = toNgbDateStruct(periodStart);
+
+  const periodEnd = new Date(period.EndDate);
+  periodEnd.setHours(0, 0, 0, 0);
+  const maxDateValue = getMaxDate(periodEnd, graceDays);
+  result.maxDate = toNgbDateStruct(maxDateValue);
+
+  return result;
+}
+
 export enum LeadStatus {
   Qualify = 'Qualify',
   Discovery = 'Discovery',

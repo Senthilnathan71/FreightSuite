@@ -59,6 +59,8 @@ import {
   getDefaultTodayDate,
   toNgbDateStruct,
   toNumber,
+  VoucherPeriodInfo,
+  getVoucherDateConstraints,
 } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
@@ -232,6 +234,23 @@ export class VendorCreditNoteEntryComponent {
   subledgerListDetail: any[][] = [];
   minVoucherDate: NgbDateStruct = null;
 
+  // Voucher period grace days
+  voucherPeriods: VoucherPeriodInfo[] = [];
+  voucherPeriodMinDate: NgbDateStruct | null = null;
+  voucherMaxDate: NgbDateStruct | null = null;
+  periodClosed: boolean = false;
+  periodClosedMsg: string | null = null;
+
+  get effectiveMinDate(): NgbDateStruct | null {
+    if (!this.minVoucherDate && !this.voucherPeriodMinDate) return null;
+    if (!this.minVoucherDate) return this.voucherPeriodMinDate;
+    if (!this.voucherPeriodMinDate) return this.minVoucherDate;
+    // Return the later of the two min dates
+    const a = new Date(this.minVoucherDate.year, this.minVoucherDate.month - 1, this.minVoucherDate.day);
+    const b = new Date(this.voucherPeriodMinDate.year, this.voucherPeriodMinDate.month - 1, this.voucherPeriodMinDate.day);
+    return a >= b ? this.minVoucherDate : this.voucherPeriodMinDate;
+  }
+
   // Country/Tax mode
   bookingModeCountry: string = 'india';
   taxGroupMap: Map<string, any[]> = new Map();
@@ -383,6 +402,7 @@ export class VendorCreditNoteEntryComponent {
     });
 
     this.initForm();
+    this.loadVoucherPeriods();
     // this.checkVoucherPostingMechanism();
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -705,7 +725,38 @@ export class VendorCreditNoteEntryComponent {
     return of(void 0);
   }
 
+  loadVoucherPeriods(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const yearId = this.currentFinancialYear;
+    if (!companyId || !branchId || !yearId) return;
+
+    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
+      next: (periods: VoucherPeriodInfo[]) => {
+        this.voucherPeriods = periods || [];
+        this.applyVoucherDateConstraints();
+      },
+      error: (err: any) => {
+        console.error('Error loading voucher periods:', err);
+      }
+    });
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.vendorCreditNoteForm?.get('VoucherDate')?.value;
+    if (!voucherDate || this.voucherPeriods.length === 0) return;
+
+    const dateObj = new Date(voucherDate);
+    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AP');
+
+    this.voucherPeriodMinDate = constraints.minDate;
+    this.voucherMaxDate = constraints.maxDate;
+    this.periodClosed = constraints.isClosed;
+    this.periodClosedMsg = constraints.errorMessage;
+  }
+
   onVoucherDateChange() {
+    this.applyVoucherDateConstraints();
     const voucherDate = this.vendorCreditNoteForm
       .get('VoucherDate')
       ?.getRawValue();

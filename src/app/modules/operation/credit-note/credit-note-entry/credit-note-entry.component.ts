@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -27,7 +27,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
-import { toNumber } from 'src/app/common/helper';
+import { toNumber, VoucherPeriodInfo, getVoucherDateConstraints } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -97,6 +97,14 @@ export class CreditNoteEntryComponent {
   uomList: any[] = [];
   userData: any;
   currentDate = new Date()
+
+  // Voucher period grace days
+  voucherPeriods: VoucherPeriodInfo[] = [];
+  voucherMinDate: NgbDateStruct | null = null;
+  voucherMaxDate: NgbDateStruct | null = null;
+  periodClosed: boolean = false;
+  periodClosedMsg: string | null = null;
+
   masterJobList: any[] = [];
     houseJobListByMasterJob: { [key: number]: any[] } = {};
     customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -238,6 +246,7 @@ export class CreditNoteEntryComponent {
 
     this.initForm();
     this.loadLookups();
+    this.loadVoucherPeriods();
     this.creditNoteForm.get('GSTType')?.valueChanges.subscribe((value) => {
     console.log('GSTType changed to:', value);
     this.recalculateAllRows();
@@ -280,6 +289,40 @@ export class CreditNoteEntryComponent {
     });
   }
 
+
+  loadVoucherPeriods(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const yearId = this.currentFinancialYear;
+    if (!companyId || !branchId || !yearId) return;
+
+    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
+      next: (periods: VoucherPeriodInfo[]) => {
+        this.voucherPeriods = periods || [];
+        this.applyVoucherDateConstraints();
+      },
+      error: (err: any) => {
+        console.error('Error loading voucher periods:', err);
+      }
+    });
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.creditNoteForm?.get('VoucherDate')?.value;
+    if (!voucherDate || this.voucherPeriods.length === 0) return;
+
+    const dateObj = new Date(voucherDate);
+    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AR');
+
+    this.voucherMinDate = constraints.minDate;
+    this.voucherMaxDate = constraints.maxDate;
+    this.periodClosed = constraints.isClosed;
+    this.periodClosedMsg = constraints.errorMessage;
+  }
+
+  onVoucherDateChange(): void {
+    this.applyVoucherDateConstraints();
+  }
 
     loadCityName(): void {
     if (!this.currentBranchCityId) return;
