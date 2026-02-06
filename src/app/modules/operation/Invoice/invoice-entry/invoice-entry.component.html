@@ -265,8 +265,8 @@
                       formControlName="VoucherDate"
                       (click)="d1.toggle()"
                       (dateSelect)="onVoucherDateChange()"
-                      [minDate]="voucherMinDate"
-                      [maxDate]="voucherMaxDate"
+                      [minDate]="voucherConstraints.minDate"
+                      [maxDate]="voucherConstraints.maxDate"
                     />
                     <button
                       class="btn bi bi-calendar3"
@@ -279,7 +279,7 @@
                   <label class="input-label">Invoice Date
                     <span class="text-danger">*</span>
                   </label>
-                  <small *ngIf="periodClosed" class="text-danger d-block">{{ periodClosedMsg }}</small>
+                  <small *ngIf="voucherConstraints.isClosed" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                 </div>
               </aside>
 

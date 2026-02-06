@@ -59,9 +59,8 @@ import {
   getDefaultTodayDate,
   toNgbDateStruct,
   toNumber,
-  VoucherPeriodInfo,
-  getVoucherDateConstraints,
 } from 'src/app/common/helper';
+import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -234,21 +233,19 @@ export class VendorCreditNoteEntryComponent {
   subledgerListDetail: any[][] = [];
   minVoucherDate: NgbDateStruct = null;
 
-  // Voucher period grace days
-  voucherPeriods: VoucherPeriodInfo[] = [];
-  voucherPeriodMinDate: NgbDateStruct | null = null;
-  voucherMaxDate: NgbDateStruct | null = null;
-  periodClosed: boolean = false;
-  periodClosedMsg: string | null = null;
+  // Voucher period constraints
+  voucherConstraints: VoucherDateConstraints = {
+    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+  };
 
   get effectiveMinDate(): NgbDateStruct | null {
-    if (!this.minVoucherDate && !this.voucherPeriodMinDate) return null;
-    if (!this.minVoucherDate) return this.voucherPeriodMinDate;
-    if (!this.voucherPeriodMinDate) return this.minVoucherDate;
+    if (!this.minVoucherDate && !this.voucherConstraints.minDate) return null;
+    if (!this.minVoucherDate) return this.voucherConstraints.minDate;
+    if (!this.voucherConstraints.minDate) return this.minVoucherDate;
     // Return the later of the two min dates
     const a = new Date(this.minVoucherDate.year, this.minVoucherDate.month - 1, this.minVoucherDate.day);
-    const b = new Date(this.voucherPeriodMinDate.year, this.voucherPeriodMinDate.month - 1, this.voucherPeriodMinDate.day);
-    return a >= b ? this.minVoucherDate : this.voucherPeriodMinDate;
+    const b = new Date(this.voucherConstraints.minDate.year, this.voucherConstraints.minDate.month - 1, this.voucherConstraints.minDate.day);
+    return a >= b ? this.minVoucherDate : this.voucherConstraints.minDate;
   }
 
   // Country/Tax mode
@@ -342,6 +339,7 @@ export class VendorCreditNoteEntryComponent {
     private currencyFormatter: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
     private datePipe: CustomDatePipe,
+    private voucherPeriodService: VoucherPeriodValidationService,
   ) {}
 
   ngOnInit(): void {
@@ -726,33 +724,17 @@ export class VendorCreditNoteEntryComponent {
   }
 
   loadVoucherPeriods(): void {
-    const companyId = this.currentCompany?.CompanyMasterSid;
-    const branchId = this.currentBranch?.BranchMasterSid;
-    const yearId = this.currentFinancialYear;
-    if (!companyId || !branchId || !yearId) return;
-
-    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
-      next: (periods: VoucherPeriodInfo[]) => {
-        this.voucherPeriods = periods || [];
-        this.applyVoucherDateConstraints();
-      },
-      error: (err: any) => {
-        console.error('Error loading voucher periods:', err);
-      }
-    });
+    this.voucherPeriodService.loadPeriods(
+      this.currentCompany?.CompanyMasterSid,
+      this.currentBranch?.BranchMasterSid,
+      this.currentFinancialYear,
+      () => this.applyVoucherDateConstraints()
+    );
   }
 
   applyVoucherDateConstraints(): void {
     const voucherDate = this.vendorCreditNoteForm?.get('VoucherDate')?.value;
-    if (!voucherDate || this.voucherPeriods.length === 0) return;
-
-    const dateObj = new Date(voucherDate);
-    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AP');
-
-    this.voucherPeriodMinDate = constraints.minDate;
-    this.voucherMaxDate = constraints.maxDate;
-    this.periodClosed = constraints.isClosed;
-    this.periodClosedMsg = constraints.errorMessage;
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AP');
   }
 
   onVoucherDateChange() {

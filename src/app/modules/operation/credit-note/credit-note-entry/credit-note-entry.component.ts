@@ -27,7 +27,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
-import { toNumber, VoucherPeriodInfo, getVoucherDateConstraints } from 'src/app/common/helper';
+import { toNumber } from 'src/app/common/helper';
+import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -98,12 +99,10 @@ export class CreditNoteEntryComponent {
   userData: any;
   currentDate = new Date()
 
-  // Voucher period grace days
-  voucherPeriods: VoucherPeriodInfo[] = [];
-  voucherMinDate: NgbDateStruct | null = null;
-  voucherMaxDate: NgbDateStruct | null = null;
-  periodClosed: boolean = false;
-  periodClosedMsg: string | null = null;
+  // Voucher period constraints
+  voucherConstraints: VoucherDateConstraints = {
+    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+  };
 
   masterJobList: any[] = [];
     houseJobListByMasterJob: { [key: number]: any[] } = {};
@@ -197,7 +196,8 @@ export class CreditNoteEntryComponent {
         private masterService: MasterService,
         private numberToWords: NumberToWordsService,
         private currencyFormatter:CurrencyFormatService,
-        public logoService : LogoService
+        public logoService : LogoService,
+        private voucherPeriodService: VoucherPeriodValidationService
       ) {}
       ngOnInit(): void {
      const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -291,33 +291,17 @@ export class CreditNoteEntryComponent {
 
 
   loadVoucherPeriods(): void {
-    const companyId = this.currentCompany?.CompanyMasterSid;
-    const branchId = this.currentBranch?.BranchMasterSid;
-    const yearId = this.currentFinancialYear;
-    if (!companyId || !branchId || !yearId) return;
-
-    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
-      next: (periods: VoucherPeriodInfo[]) => {
-        this.voucherPeriods = periods || [];
-        this.applyVoucherDateConstraints();
-      },
-      error: (err: any) => {
-        console.error('Error loading voucher periods:', err);
-      }
-    });
+    this.voucherPeriodService.loadPeriods(
+      this.currentCompany?.CompanyMasterSid,
+      this.currentBranch?.BranchMasterSid,
+      this.currentFinancialYear,
+      () => this.applyVoucherDateConstraints()
+    );
   }
 
   applyVoucherDateConstraints(): void {
     const voucherDate = this.creditNoteForm?.get('VoucherDate')?.value;
-    if (!voucherDate || this.voucherPeriods.length === 0) return;
-
-    const dateObj = new Date(voucherDate);
-    const constraints = getVoucherDateConstraints(dateObj, this.voucherPeriods, 'AR');
-
-    this.voucherMinDate = constraints.minDate;
-    this.voucherMaxDate = constraints.maxDate;
-    this.periodClosed = constraints.isClosed;
-    this.periodClosedMsg = constraints.errorMessage;
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }
 
   onVoucherDateChange(): void {
