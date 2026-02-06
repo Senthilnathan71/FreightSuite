@@ -69,6 +69,8 @@ import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.com
 import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
 import { LoadingPlanMasterComponent } from '../reports/loading-plan-master/loading-plan-master.component';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
+import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-delivery-master-print/proof-of-delivery-master-print.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -356,6 +358,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   selectedTab1 = 'Product';
   countryOfCompany: string;
   uomList: any;
+  housejobData: any[];
 
   constructor(
     private router: Router,
@@ -3665,6 +3668,22 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
 
+      reportproofofDelivery() {
+      const modalRef = this.modalService.open(ProofOfDeliveryMasterPrintComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      modalRef.componentInstance.masterJobData = this.masterJobData;
+      modalRef.componentInstance.housejobData = this.housejobData || [];
+      modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+      // modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.TandCList = this.TandCList || [];
+      modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+      modalRef.componentInstance.portList = this.portList || [];
+      modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    }
+
   reportHBLBill() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
       // Check if containers exist and have ContainerNumber
@@ -3759,6 +3778,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
 
   }
+
+
 
 
   calculateChargeWiseProfit() {

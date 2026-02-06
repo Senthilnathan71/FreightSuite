@@ -11,13 +11,13 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
-  selector: 'app-proof-of-delivery',
+  selector: 'app-proof-of-delivery-master-print',
   standalone: true,
   imports: [CommonModule, CustomDatePipe,PrintFooterComponent,PrintHeaderComponent],
-  templateUrl: './proof-of-delivery.component.html',
+  templateUrl: './proof-of-delivery-master-print.component.html',
   styles: ``
 })
-export class ProofOfDeliveryComponent {
+export class ProofOfDeliveryMasterPrintComponent {
   userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -34,10 +34,10 @@ export class ProofOfDeliveryComponent {
   @Input()  selectedFCLLCL:any;
   @Input() containerTypeList: any;
   @Input() portList: any[] = []; // Add this input
-   @Input() selectedDepartmentType : any;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
+  
   
   constructor(
     private appSettingsService: AppSettingsService,
@@ -62,7 +62,6 @@ export class ProofOfDeliveryComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
-    
   }
 
    loadCityName(): void {
@@ -88,8 +87,8 @@ export class ProofOfDeliveryComponent {
     });
   }
 
-  getContainerName(ContainerTypeMasterSid: number) {
-    console.log(this.containerTypeList,ContainerTypeMasterSid,'Contanier Type mater sid')
+    getContainerName(ContainerTypeMasterSid: number) {
+    console.log(this.containerTypeList,ContainerTypeMasterSid,'Contanier Type master sid')
     if (!ContainerTypeMasterSid || this.containerTypeList.length === 0) {
       return "";
     }
@@ -136,26 +135,5 @@ export class ProofOfDeliveryComponent {
     }
   }, 50); 
 }
-
-
-
-   async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
-
-  setTimeout(async () => {
-    this.spinner.show();
-   try {
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Proof-of-Delivery${this.housejobData?.HBLNo || 'Report'}`,
-        () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
-      );
-    } finally {
-      this.spinner.hide();
-    }
-  }, 50);
-   }
 
 }

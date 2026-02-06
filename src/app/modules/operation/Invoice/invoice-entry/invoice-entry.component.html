@@ -2563,11 +2563,11 @@
   }">
           <thead>
             <tr>
-              <th style="width:180px;padding:2px;color:#000;border-color:#000; text-align: center; border: 0.5px solid #000;">
+              <th style="width:180px;padding:0px;color:#000;border-color:#000; text-align: center; border: 0.5px solid #000;">
                 <strong>Details</strong>
               </th>
               <th *ngFor="let bankDetail of bankDetails; let i = index"
-                style="padding:2px 6px;color:#000;border-color:#000; text-align: start;border: 0.5px solid #000;">
+                style="padding:0px 6px;color:#000;border-color:#000; text-align: start;border: 0.5px solid #000;">
                 <strong>Bank ({{ invoiceData?.CurrencyCode }})</strong>
               </th>
             </tr>
@@ -2575,56 +2575,95 @@
         
           <tbody>
             <tr>
-              <th style="padding:4px 6px;color:#000;border-color:#000;  border: 0.5px solid #000;"><strong>Beneficiary Name</strong></th>
+              <th style="padding:0px 6px;color:#000;border-color:#000;  border: 0.5px solid #000;"><strong>Beneficiary Name</strong></th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  white-space: normal;  word-break: break-word; border: 0.5px solid #000;">
                    {{ bankDetail.BeneficiaryName }}
               </td>
             </tr>
         
             <tr>
-              <th style="padding:4px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Account No.</strong></th>
+              <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Account No.</strong></th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  word-break: break-word;  white-space: normal; border: 0.5px solid #000;">
                 {{ bankDetail.BankAccountNo }}
               </td>
             </tr>
-        
+
+                    
             <tr>
-              <th style="padding:4px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Bank Name</strong></th>
-              <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;white-space: normal;   word-break: break-word; border: 0.5px solid #000;">
-                {{ bankDetail.BankName }}
-              </td>
-            </tr>
-        
-            <tr>
-              <th style="padding:4px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
+              <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
                 <strong>{{ isVATMode ? 'IBAN' : 'IFSC' }}</strong>
               </th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  word-break: break-word;white-space: normal; border: 0.5px solid #000; ">
                 {{ bankDetail.IFSCCode }}
               </td>
             </tr>
+
+              <tr>
+              <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
+                <strong>Swift Code</strong>
+              </th>
+              <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  word-break: break-word;white-space: normal; border: 0.5px solid #000; ">
+                {{ bankDetail.BankCode }}
+              </td>
+            </tr>
+
+            <tr>
+              <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Bank Name</strong></th>
+              <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;white-space: normal;   word-break: break-word; border: 0.5px solid #000;">
+                {{ bankDetail.BankName }}
+              </td>
+            </tr>
         
             <tr>
-              <th style="padding:4px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Branch</strong></th>
+              <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Branch</strong></th>
               <td *ngFor="let bankDetail of bankDetails" style="padding:2px;color:#000;border-color:#000;  white-space: normal;  word-break: break-word; border: 0.5px solid #000;">
                 {{ bankDetail.BankAddress }}
               </td>
             </tr>
+            
+
           </tbody>
         </table>
           </div>
         </div>
 
           <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px">
-            <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
-              <strong>Terms and Conditions</strong>
-            </h5>
-            <ul style="margin-top: 0; padding-left: 1.2rem">
-              @for(term of TandCList; track term){
-              <li>{{ term.TandC }}</li>
-              }
-            </ul>
-          </div>
+  <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
+    <strong>Terms and Conditions</strong>
+  </h5>
+  
+  @if (currentCompany?.CompanyMasterSid === 13) {
+    <!-- For CompanyMasterSid 55 - Show static terms -->
+    <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px;">
+      <li>If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days,  otherwise <br> the above amount will be considered as correct.</li>
+      <li>Please mention our invoice number(s) on your remittance instructions.</li>
+    </ul>
+  } @else {
+    <!-- For other companies - Use the existing TandCList -->
+    <ul style="margin-top: 0; padding-left: 1.2rem">
+      @for (term of TandCList; track term) {
+        <li>{{ term.TandC }}</li>
+      }
+    </ul>
+  }
+</div>
+
+           <!-- <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px;">
+  <h5 style="margin-bottom: 0.5rem; font-weight: bolder;">
+    <strong>Terms and Conditions</strong>
+  </h5>
+
+  <ul style="margin: 0; padding-left: 25px;">
+    <li>
+      If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days;
+      otherwise, the above amount will be considered as correct.
+    </li>
+    <li>
+      Please mention our invoice number(s) on your remittance instructions.
+    </li>
+  </ul>
+</div> -->
+
 
           <!-- Footer -->
           <div

@@ -5,12 +5,12 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
             <i class="fas fa-print me-1"></i> Print
-        </button> -->
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
-            <i class="fas fa-download me-1"></i> Download PDF
         </button>
+        <!-- <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button> -->
         <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
@@ -47,8 +47,8 @@
                             </div>
 
                             <div style="margin-top:5px;margin-left:40px;">
-                                {{housejobData?.CustomerName}}<br>
-                                {{housejobData?.CustomerAddress}}
+                                 {{masterJobData?.houseJob?.[0]?.CustomerName}}<br>
+                                 {{masterJobData?.houseJob?.[0]?.CustomerAddress}}
                             </div>
                         </div>
                     </div>
@@ -61,7 +61,7 @@
                             </div>
 
                             <div style="margin-top:5px;margin-left:40px;">
-                                {{housejobData?.Others?.[0]?.DeliveryPlace}}
+                                {{masterJobData?.houseJob?.[0]?.Others?.[0]?.DeliveryPlace}}
                             </div>
                         </div>
                     </div>
@@ -77,8 +77,8 @@
                             </div>
 
                             <div style="margin-top:5px;margin-left:40px;">
-                                {{housejobData?.ConsigneeName}}<br>
-                                {{housejobData?.ConsigneeAddress}}
+                                {{masterJobData?.houseJob?.[0]?.ConsigneeName}}<br>
+                                {{masterJobData?.houseJob?.[0]?.ConsigneeAddress}}
                             </div>
                         </div>
                     </div>
@@ -92,8 +92,8 @@
                             </div>
 
                             <div style="margin-top:5px;margin-left:40px;">
-                                {{housejobData?.ShipperName}}<br>
-                                {{housejobData?.ShipperAddress}}
+                                {{masterJobData?.houseJob?.[0]?.ShipperName}}<br>
+                                {{masterJobData?.houseJob?.[0]?.ShipperAddress}}
                             </div>
 
                         </div>
@@ -107,35 +107,35 @@
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>Job Ref.</strong>
                             </div>
-                            <div>: {{housejobData?.masterJob?.MasterJobNumber }}</div>
+                            <div>: {{masterJobData?.MasterJobNumber }}</div>
                         </div>
-
-                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                    @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>HBL No.</strong>
                             </div>
-                            <div>: {{ housejobData?.HBLNo }}</div>
+                            <div>: {{ masterJobData?.houseJob?.[0]?.HBLNo }}</div>
                         </div>
-                        }@else{
-                        <div style="display:flex; padding:3px;">
+                    }@else{
+                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>HAWB No.</strong>
                             </div>
                             <div>: {{ housejobData?.HBLNo }}</div>
                         </div>
-                        }
+                    }
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px; font-weight: bolder;"><strong>ETA</strong></div>
-                            <div>: {{ housejobData?.ETA | formatDate }}</div>
+                            <div>: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }}</div>
                         </div>
+
 @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
   <div style="display:flex; padding:3px;">
     <div style="width:140px;margin-left:10px;font-weight:bolder;">
       <strong>Vessel / Voyage</strong>
     </div>
     <div>
-      : {{ housejobData?.VesselName }}
-      <span *ngIf="housejobData?.VesselName && housejobData?.VoyageNo"> / </span>
-      {{ housejobData?.VoyageNo }}
+      : {{ masterJobData?.voyages?.[0]?.VesselName }}
+      <span *ngIf="masterJobData?.VesselName && masterJobData?.VoyageNo"> / </span>
+      {{ masterJobData?.voyages?.[0]?.VoyageNo }}
     </div>
   </div>
 }
@@ -145,12 +145,14 @@
       <strong>Flight Name / No.</strong>
     </div>
     <div>
-      : {{ housejobData?.VesselName }}
+      : {{ masterJobData?.voyages?.[0]?.VesselName }}
       <span *ngIf="housejobData?.VesselName && housejobData?.VoyageNo"> / </span>
-      {{ housejobData?.VoyageNo }}
+       {{ masterJobData?.voyages?.[0]?.VoyageNo }}
     </div>
   </div>
 }
+
+
 
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px; margin-left:10px; font-weight:bolder;">
@@ -160,7 +162,7 @@
                             <div style="width:10px;">:</div>
 
                             <div style="flex:1;">
-                                {{ getPortName(housejobData?.POD) }}
+                                {{ getPortName(masterJobData?.POD) }}
                             </div>
                         </div>
 
@@ -172,7 +174,7 @@
                             <div style="width:10px;">:</div>
 
                             <div style="flex:1;">
-                                {{ getPortName(housejobData?.POD) }}
+                                {{ getPortName(masterJobData?.POD) }}
                             </div>
                         </div>
 
@@ -183,36 +185,38 @@
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Shipment
                                     Ref.</strong></div>
-                            <div>: {{ housejobData?.Others?.[0]?.CustomerRefNo }}</div>
+                            <div>: {{ masterJobData?.houseJob?.[0]?.Others?.[0]?.CustomerRefNo }}</div>
                         </div>
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>BOE No.</strong>
                             </div>
-                            <div>: {{ housejobData?.houseJobBOE?.[0]?.BOENo }}</div>
+                            <div>: {{ housejobData?.houseJob?.[0]?.BOENo }}</div>
                         </div>
-                        @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+
+                    @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>MBL No.</strong>
                             </div>
                             <!-- <div>: {{ getPortName(housejobData?.POL) }}</div> -->
-                            <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
+                            <div>: {{ masterJobData?.MBLNo }}</div>
                         </div>
-                        }@else{
-                        <div style="display:flex; padding:3px;">
+                    }@else{
+                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>MAWB No.</strong>
                             </div>
                             <!-- <div>: {{ getPortName(housejobData?.POL) }}</div> -->
-                            <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
+                            <div>: {{masterJobData?.MBLNo }}</div>
                         </div>
-                        }
+                    }
+                    
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px;margin-left: 10px;font-weight: bolder; "><strong>ETD</strong></div>
-                            <div>: {{ housejobData?.ETD | formatDate }}</div>
+                            <div>: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }}</div>
                         </div>
                         <div style="display:flex; padding:3px;">
                             <div style="width:140px; margin-left: 10px;font-weight: bolder;"><strong>Carrier</strong>
                             </div>
-                            <div>: {{ housejobData?.CarrierName }}</div>
+                            <div>: {{ masterJobData?.voyages?.[0]?.CarrierName }}</div>
                         </div>
 
                         <div style="display:flex; padding:3px;">
@@ -223,7 +227,7 @@
                             <div style="width:10px;">:</div>
 
                             <div style="flex:1;">
-                                {{ getPortName(housejobData?.POL) }}
+                                {{ getPortName(masterJobData?.POL) }}
                             </div>
                         </div>
 
@@ -236,7 +240,7 @@
                             <div style="width:10px;">:</div>
 
                             <div style="flex:1;">
-                                {{ getPortName(housejobData?.FPD) }}
+                                {{ getPortName(masterJobData?.FPD) }}
                             </div>
                         </div>
 
@@ -254,39 +258,39 @@
 
                                 
                                 <th
-                                    style="border:1px solid black; padding:4px; text-align:center; border-left:none;font-weight: bolder;">
+                                    style="border:1px solid black; padding:4px; text-align:center; border-left:none;font-weight: bolder;width:15%;">
                                     <strong>Commodity</strong>
                                 </th>
-                             @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                                     
                                 <th
-                                    style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;width: 12%;">
                                     <strong>Container</strong>
                                 </th>
 
                                 <th
-                                    style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                    style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;width: 12%;">
                                     <strong>Type</strong>
                                 </th>
                             
-                              }
-                                <th style="border:1px solid black; padding:4px; text-align:center;">
+
+                                <th style="border:1px solid black; padding:4px; text-align:center;width: 10%;">
                                     <strong>Pkgs</strong>
                                 </th>
 
-                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;width: 10%;">
                                     <strong>Volume</strong>
                                 </th>
 
-                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;width: 10%;">
                                     <strong>Net Wt.</strong>
                                 </th>
 
-                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
+                                <th style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;width: 10%;">
                                     <strong>Gross Wt.</strong>
                                 </th>
 
                                 <th
-                                    style="border:1px solid black; padding:4px; text-align:center; border-right:none;font-weight: bolder;">
+                                    style="border:1px solid black; padding:4px; text-align:center; border-right:none;font-weight: bolder;width: 10%;">
                                     <strong>Volume wt.</strong>
                                 </th>
 
@@ -295,24 +299,23 @@
 
                         <tbody>
                             
-                            <tr *ngFor="let item of  housejobData?.Products">
+                            <tr *ngFor="let item of  masterJobData?.containers">
 
-                                <td style="border:1px solid black; padding:4px; text-align:right; border-left:none;">
-                                     {{ item?.ProductName }}
+                                <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">
+                                     {{ item?.CommodityDescription }}
                                 </td>
-                
-                             @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
+                           
                                 <td style="border:1px solid black; padding:4px; text-align:left;">
-                                    {{ item.ContainerNo }}
+                                    {{ item.ContainerNumber }}
                                 </td>
 
-                                <td style="border:1px solid black; padding:4px; text-align:center;">
-                                      {{ getContainerName(item.masterJobContainer?.ContainerType) }}
+                                <td style="border:1px solid black; padding:4px; text-align:left;">
+                                      {{ getContainerName(item?.ContainerType) }}
                                 </td>
-                                  }
+                            
 
                                 <td style="border:1px solid black; padding:4px; text-align:right;">
-                                    {{ item?.ExternlQty }}
+                                    {{ item?.NoOfPkg }}
                                 </td>
 
                                 <td style="border:1px solid black; padding:4px; text-align:right;">
@@ -331,15 +334,9 @@
                                     {{ item?.Volumetric | number:'1.3-3' }}
                                 </td>
 
-                              
                             </tr>
 
-                            <!-- TOTAL ROW -->
-
-                           
-
                         </tbody>
-
                     </table>
                 </div>
 
@@ -347,7 +344,7 @@
                 <!-- Remarks -->
                 <div style="display:flex; align-items:center; margin-top:10px; padding-left:18px;">
                     <div style=" width:140px;font-weight: bolder;font-size:16px;"><strong>Remarks</strong></div>
-                    <div>: {{ housejobData?.InternalNote }}</div>
+                    <div>: {{ masterJobData?.others?.[0]?.InternalNote }}</div>
                 </div>
 
                 <div style="text-align: center;margin-top: 10px;">
