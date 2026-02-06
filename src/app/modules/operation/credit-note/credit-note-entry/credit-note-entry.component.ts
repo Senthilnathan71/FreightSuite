@@ -1179,10 +1179,13 @@ onFinalSave() {
           this.spinner.hide();
           if (result.status) {
             this.appSettingService.showSuccess('Credted Note posted successfully!');
-            this.creditNoteData.PostStatus = 'P'; // Update local state
+             this.creditNoteForm.patchValue({
+        PostStatus: 'P' // Posted status
+      }); // Update local state
             
             // Navigate to list or stay on page but disable edits
-            this.router.navigate(['operation/credit-note/list']);
+            this.router.navigate(['operation/credit-note/entry', voucherHeaderSid]);
+            this.loadCreditNoteById(voucherHeaderSid);
           } else {
             this.appSettingService.showError(result.message || 'Failed to post Credit Note.');
           }
@@ -1581,6 +1584,7 @@ private getCustomerCountryCode(customer: any): string {
     PartyMasterSid: header.PartyMasterSid || null,
     COAMasterSid : header.COAMasterSid || null,
     PartyName: header.PartyName || '',
+    DepartmentMasterSid: header.DepartmentMasterSid || null,
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',
     IRNNumber: header.IRNNumber || '',
@@ -2794,6 +2798,7 @@ private normalizeParty(raw: any) {
       GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: partyMasterSid,
       PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),
+      DepartmentMasterSid: raw.DepartmentMasterSid || null,
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,

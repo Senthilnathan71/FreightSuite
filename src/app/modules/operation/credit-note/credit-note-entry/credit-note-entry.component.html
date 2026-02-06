@@ -14,8 +14,8 @@
         <div
           class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
-            [disabled]="creditNoteForm.invalid || details.length === 0" *ngIf="isEditMode">
-            <i class="fas fa-check-circle me-1"></i> Post
+            [disabled]="creditNoteForm.invalid || details.length === 0 || creditNoteForm.get('PostStatus')?.value === 'P'" *ngIf="isEditMode">
+            <i class="fas fa-check-circle me-1"></i> {{ creditNoteForm.get('PostStatus')?.value === 'P' ? 'Posted' : 'Post' }}
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
             *ngIf="isEditMode">

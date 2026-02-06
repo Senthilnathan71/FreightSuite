@@ -115,7 +115,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       this.initializeHeaderActions();
     })
     super.ngOnInit();
-    this.loadCreditNotes();
+    // this.loadCreditNotes();
   }
 
   loadInvoices() {
@@ -123,12 +123,12 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     this.operationService.getAllInvoice(CompanyMasterSid).subscribe({
       next: (resp: any) => {
         this.invoiceList = resp?.data || resp || [];
-        this.loadCreditNotes();
+        // this.loadCreditNotes();
       },
       error: (err) => {
         console.error('Error loading invoices', err);
         this.invoiceList = [];
-        this.loadCreditNotes();
+        // this.loadCreditNotes();
       }
     });
   }
@@ -157,7 +157,10 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         ...item,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
-        ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher)
+        PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
+        ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
+        MasterNumber: item.masterJob?.MasterJobNumber || '-',
+        HouseNumber: item.houseJob?.HBLNo || '-'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -286,6 +289,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         visible: true,
         dataType: 'string',
         width: '150px',
+        template: 'link'
       },
         {
         key: 'HouseNumber',
@@ -295,6 +299,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         visible: true,
         dataType: 'string',
         width: '150px',
+        template: 'link'
       },
       
        {
@@ -305,6 +310,16 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         visible: true,
         dataType: 'string',
         width: '150px',
+      },
+      {
+        key: 'PostStatus',
+        label: 'Post Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        dataType: 'string',
+        cellClass: 'status-column'
       },
       {
         key: 'Status',
@@ -374,6 +389,18 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     this.navigateToInvoice(event.row.ReversalVoucher);
     return;
   }
+    if (event.column?.template === "link") {
+      // Handle link template click (Master Job Number)
+      if (event.column.key === 'MasterNumber') {
+      this.navigateToMasterJob(event.row);
+      return;
+    }
+
+    if (event.column.key === 'HouseNumber') {
+      this.navigateToHouse(event.row);
+      return;
+    }
+  }
       if (event.action === 'view') {
         this.editbyrow(event.row);
       } else if (event.action === 'delete') {
@@ -385,6 +412,22 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
      this.router.navigate(['operation/credit-note/entry/', row.VoucherHeaderSid]);
   }
 
+   navigateToMasterJob(invoice: any): void {
+    const departmentType = String(invoice?.departmentMaster?.departmentType).toUpperCase();
+
+    if (invoice && departmentType) {
+      const masterJobSid = invoice.MasterJobSid;
+      if (departmentType === 'SEA') {
+        this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+      } else if (departmentType === 'AIR') {
+        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      } else {
+        console.warn('Unknown department type:', departmentType);
+      }
+    } else {
+      this.appSettingService.showWarning('Master Job not available');
+    }
+  }
   navigateToInvoice(voucherSid: number) {
   if (!voucherSid) return;
 
@@ -393,6 +436,16 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     voucherSid
   ]);
 }
+
+ navigateToHouse(row: any): void {
+  if (row?.HouseJobSid) {
+    this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
+  } else {
+    this.appSettingService.showWarning('House Job not available');
+  }
+}
+
+  
 
 
   onTableRowClick(row: any): void {
