@@ -1372,6 +1372,17 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+   checkDuplicateServiceJob(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+      'service-job/check-duplicate',
+      payload
+    ).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   searchOutstandingInvoices(payload: any) {
     return this.http.post<{ status: boolean; message: string; data: any[]; }>('accounts/receipt/search-outstanding', payload).pipe(
       map((resp) => resp)

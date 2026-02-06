@@ -45,6 +45,8 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { getFormattedPort } from 'src/app/common/helper';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+
 
 
 @Component({
@@ -114,6 +116,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   filterOption: any;
   decimalAfterPrecision = 3;
   public rateComponent = CostEntryComponent;
+  isSaving : boolean = false;
   
   selectTab(tab: string) {
     if (tab === "Rate") {
@@ -250,6 +253,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     private commonService: CommonService,
     public mps: MenuPermissionService,
     private ngbModal: NgbModal,
+    private commonModalService : ModalService,
   ) {
     this.today = this.calendar.getToday();
   }
@@ -510,7 +514,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
 
-  onSubmit() {
+   async onSubmit() {
     console.log('Submit triggered', this.serviceJobForm.value);
     if (this.isEditMode) {
       const currentFormState = JSON.stringify(this.getCurrentFormState());
@@ -634,6 +638,24 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     };
 
     console.log('Final Payload:', payload);
+
+    const duplicateCheckingPayload = {
+      CompanyMasterSid: payload.CompanyMasterSid,
+      BranchMasterSid: payload.BranchMasterSid,
+      DepartmentMasterSid: payload.DepartmentMasterSid,
+      HBLNo: payload.HBLNo,
+      MBLNo: payload.MBLNo,
+      // IsServiceJob:'Y',
+      // status: payload.status,
+    }
+    if (!this.isEditMode) {
+      const shouldProceed = await this.performDuplicateCheck(duplicateCheckingPayload);
+
+      if (!shouldProceed) {
+        this.isSaving = false;
+        return; // STOP submission
+      }
+    }
 
     if (this.isEditMode && this.HouseJobSid) {
       this.operationService.updateServiceJobById(this.HouseJobSid, payload).subscribe({
@@ -1224,6 +1246,28 @@ openEDoc() {
     };
   }
        
- 
+ private async performDuplicateCheck(payload: any): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.operationService.checkDuplicateServiceJob(payload)
+      );
+
+      if (response.data) {
+        return await this.commonModalService.confirm(
+          `Today there was a service job created for this house.\nDo you want to proceed?`,
+          'Duplicate Detected',
+          'Proceed Anyway'
+        );
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Duplicate check failed:', error);
+      this.appSettingService.showError(
+        'Duplicate check failed. Proceeding anyway.'
+      );
+      return true;
+    }
+  }
   
 }
