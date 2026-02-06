@@ -72,6 +72,7 @@ export class YearEntryComponent {
   TandCList: any[]=[];
   currentCompany: any;
   currentBranch: any;
+  isCreatingPeriods = false;
 
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
@@ -365,6 +366,9 @@ calculateEndDate(startDate: any): any {
       return;
     }
 
+    if (this.isCreatingPeriods) return;
+    this.isCreatingPeriods = true;
+
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
@@ -375,6 +379,7 @@ calculateEndDate(startDate: any): any {
 
         if (existingPeriods.length > 0) {
           // Periods already exist — inform user and navigate to view them
+          this.isCreatingPeriods = false;
           this.appSettingService.showInfo('Voucher periods already exist for this year');
           this.router.navigate(['master/voucher-period/entry'], {
             state: {
@@ -397,6 +402,7 @@ calculateEndDate(startDate: any): any {
           CreatedBy: this.userData?.email || ''
         }).subscribe(
           (result: any) => {
+            this.isCreatingPeriods = false;
             this.appSettingService.showSuccess(result?.message || 'Voucher periods created successfully');
             // Re-fetch the newly created periods and navigate
             this.masterService.getAllVoucherPeriods(CompanyMasterSid, BranchMasterSid, this.YearMasterSid).subscribe(
@@ -415,11 +421,13 @@ calculateEndDate(startDate: any): any {
             );
           },
           (error) => {
+            this.isCreatingPeriods = false;
             this.appSettingService.showError(error?.error?.message || 'Error creating voucher periods');
           }
         );
       },
       (error) => {
+        this.isCreatingPeriods = false;
         console.error('Error checking existing periods:', error);
         this.appSettingService.showError('Error checking existing periods');
       }
