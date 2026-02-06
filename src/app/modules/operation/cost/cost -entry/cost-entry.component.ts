@@ -3005,7 +3005,7 @@ getChargeTaxPercentage(charge: any): string {
   // Booking: "Booking No. XXXX, Dt. XXXX"
   const bookingNo = this.parentFormValue?.BookingNumber || 'N/A';
   const bookingDate = this.parentFormValue?.BookingDate || new Date().toLocaleDateString();
-  narration = `Booking No. ${bookingNo}, Dt. ${bookingDate}`;
+  narration = `${bookingNo} Dt.${bookingDate}`;
 } else if (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') {
   // Master Job only (no house job)
   const mblNo = this.parentFormValue?.MBLNo || 'N/A';
@@ -3016,7 +3016,7 @@ getChargeTaxPercentage(charge: any): string {
   const segment = this.parentFormValue?.Segment || '';
   const mblPrefix = segment === 'AIR' ? 'MAWB' : 'MBL';
   
-  narration = `Voucher from Master Job – ${mblPrefix} No. ${mblNo}, Master Job No. ${masterJobNo}, Dt. ${mblDate}`;
+  narration = `${mblPrefix}-${mblNo} Job No-${masterJobNo}, Dt.${mblDate}`;
 } else if (this.screenName === 'House Job'|| this.screenName === 'House Air Waybill') {
   // Master Job + House Job
   const hblNo = this.parentFormValue?.HBLNo || 'N/A';
@@ -3029,7 +3029,7 @@ getChargeTaxPercentage(charge: any): string {
   const hblPrefix = segment === 'AIR' ? 'HAWB' : 'HBL';
   const mblPrefix = segment === 'AIR' ? 'MAWB' : 'MBL';
   
-  narration = `Voucher from House Job – ${hblPrefix} No. ${hblNo}, ${mblPrefix} No. ${mblNo}, Master Job No. ${masterJobNo}, Dt. ${hblDate}`;
+  narration = `${hblPrefix}-${hblNo} Job No-${masterJobNo} Dt.${hblDate}`;
 } else {
   // Default narration
   narration = `Voucher generated from ${this.screenName} ${this.ParentSid}`.substring(0, 250);
