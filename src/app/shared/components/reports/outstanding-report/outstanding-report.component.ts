@@ -227,7 +227,7 @@ export class OutstandingReportComponent {
     ],
 
     summaryTable: {
-      title: 'Currency Wise Summary',
+      // title: 'Currency Wise Summary',
       headers: ['Currency', 'Total Outstanding', '0 - 30 Days', '31 - 60 Days', '61 - 90 Days', '91 - 120 Days', '121+ Days'],
       rows: currencySummary.map((cur: any) => ({
         cells: [
