@@ -127,7 +127,9 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 ...item,
                 formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
                 formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : '',
+                MasterNoSid: item.MasterNoSid ?? null, 
                 Dept: item.departmentMaster?.departmentName,
+                departmentType: item.departmentMaster?.departmentType,
                 vslvoy: item.VesselName && item.VoyageNo ? item.VesselName + ' / ' + item.VoyageNo : '',
                 milestone: item.Milestone?.MilestoneName,
                 salesman: item.salesman?.userName,
@@ -263,14 +265,24 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         });
       }
 
-    // New method to navigate to master job
-    navigateToMasterJob(masterJobSid: number): void {
-        if (masterJobSid) {
-            this.router.navigate(['/operation/master-job/entry', masterJobSid]);
-        } else {
-            this.appSettingService.showWarning('Master Job not available');
-        }
+    
+   navigateToMasterJob(item: any): void {
+    const departmentType = String(item?.departmentMaster?.departmentType).toUpperCase();
+
+    if (item && departmentType) {
+      const masterJobSid = item.MasterNoSid;
+      if (departmentType === 'SEA') {
+        this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+      } else if (departmentType === 'AIR') {
+        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      } else {
+        console.warn('Unknown department type:', departmentType);
+      }
+    } else {
+      this.appSettingService.showWarning('Master Job not available');
     }
+  }
+
 
     navigateToCreate() {
         this.router.navigate(['operation/booking/entry']);
@@ -420,7 +432,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
    onTableActionClick(event: TableEventData): void {
     if (event.column?.template === "link") {
         // Handle link template click (Master Job Number)
-        this.navigateToMasterJob(event.row.MasterNoSid)
+         this.navigateToMasterJob(event.row);
     } else if (event.action === 'view') {
         // Handle view action - navigate to booking entry page
         this.viewBooking(event.row);
