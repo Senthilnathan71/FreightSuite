@@ -1757,7 +1757,7 @@
                     <div class="d-flex align-items-center">
                       <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d22="ngbDatepicker"
                         [minDate]="minDate" (keydown.arrowDown)="d22.open()" (click)="d22.toggle()"
-                        formControlName="ShippingBillDate" />
+                        formControlName="ShippingBillDate" container="body" />
                       <button class="btn  bi bi-calendar3 p-0" (click)="d22.toggle()" type="button"> <i-feather name="calendar"
                           class="feather-sm"></i-feather></button>
                     </div>

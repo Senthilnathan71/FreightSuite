@@ -204,7 +204,8 @@ notifyManuallyChanged = false;
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
   ];
-  
+  isPatching: boolean = false;
+  chargeableWeightManualOverride: boolean = false;
 
   // Variable Declaration - Header Part
   HouseJobSid: number;
@@ -708,48 +709,82 @@ private setupMBLDateListener(): void {
       LandedMarksandNumber:[],
       ModeOfTransport : [null],
       StuffingAt: ['Dock']
-    })
+    });
+      // Setup subscriptions for cargo form calculations
+      if(!this.isEditMode){
+        this.setupCargoCalculationSubscriptions();
+      }
+  
+  this.cargoForm.valueChanges.subscribe(() => {
+    this.syncFormValueWithRateComponent();
+  });
+}
+
+// NEW METHOD: Setup cargo calculation subscriptions
+private setupCargoCalculationSubscriptions(): void {
     this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      if (!this.isPatching) {
       this.setOrResetWeightError(this.cargoForm);
       this.calculateChargeableWeight();
+      }
     });
     this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
+       if (!this.isPatching) {
       this.setOrResetWeightError(this.cargoForm);
+       }
     });
     this.cargoForm.get('Volume')?.valueChanges.subscribe(() => {
+       if (!this.isPatching) {
     this.calculateChargeableWeight();
+       }
   });
     this.cargoForm.get('Volumetric')?.valueChanges.subscribe(() => {
-    this.calculateChargeableWeight(); // Add this
+        if (!this.isPatching) {
+    this.calculateChargeableWeight();
+         } // Add this
   });
     this.cargoForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
   }
 
-  private calculateChargeableWeight(): void {
+ private calculateChargeableWeight(): void {
+  
+  // Skip if patching or manual override
+  if (this.isPatching || this.chargeableWeightManualOverride) {
+    console.log('⏭️ Skipping calculation - isPatching:', this.isPatching, 'manual override:', this.chargeableWeightManualOverride);
+    return;
+  }
+  
+  console.log('✅ Calculating chargeable weight');
   const volumetric = Number(this.c['Volumetric']?.value) || 0;
-  const volume  = Number(this.c['Volume']?.value) || 0;
+  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
   
   let chargeableWeight = 0;
   
-  // Chargeable Weight is the greater of Volumetric or Gross Weight
-  if (volumetric > volume ) {
-    chargeableWeight = volumetric;
+  if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
+    if (volumetric > grossWeight) {
+      chargeableWeight = volumetric;
+    } else {
+      chargeableWeight = grossWeight;
+    }
   } else {
-    chargeableWeight = volume;
+    const volume = Number(this.c['Volume']?.value) || 0;
+    if (volume > grossWeight) {
+      chargeableWeight = volume;
+    } else {
+      chargeableWeight = grossWeight;
+    }
   }
   
-  // Update the chargeable weight field
   if (chargeableWeight > 0) {
     this.c['ChargeableWeight']?.setValue(
       Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
       { emitEvent: false }
     );
-  } else {
-    this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
   }
 }
+
 toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
   const value = this.b[flagCtrl]?.value;
@@ -1102,7 +1137,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    *    Create FormArray elements
    */
 
-  createBookingProductGroup(data?: any): FormGroup {
+  createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
@@ -1139,6 +1174,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
      productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onFormArrayContainerChange(containerSid, productForm);
   });
+    this.setupProductCalculationSubscriptions(productForm);
+  
   const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
     if (isLCLorAIR) {
     // Always setup calculations for LCL/AIR
@@ -1154,28 +1191,53 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       }, 100);
     }
   }
+
     if (data?.CargoRecDate) {
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
         productForm.get(field)?.disable();
       })
     }
+     
     productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
       if(value){
         ['ExternlQty','GrossWeight','NetWeight','Volume'].forEach(field => {
           productForm.get(field)?.disable();
         })
       }
-    })
+    });
+  
 
     return productForm;
   }
+  private setupProductCalculationSubscriptions(productForm: FormGroup): void {
+  // Setup immediate CBM calculation
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      // Skip calculation only if component is in patching mode
+      if (this.isPatching) {
+        return;
+      }
+      this.calculateProductFormCBMAndVolumetric(productForm);
+    });
+  });
+  
+  // Setup volumetric calculation for LCL/AIR
+  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  if (isLCLorAIR) {
+    this.setupImmediateVolumetricCalculationForFormArray(productForm);
+  }
+}
 
    private setupProductFormImmediateCalculation(productForm: FormGroup) {
   const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
   
   dimensionFields.forEach(field => {
     productForm.get(field)?.valueChanges.subscribe(() => {
+       if (!this.isPatching) {
       this.calculateProductFormCBMAndVolumetric(productForm);
+       }
     });
   });
 }
@@ -1196,6 +1258,9 @@ onFormArrayContainerChange(containerSid: number | null, productForm: FormGroup):
   }
 }
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
+    if (this.isPatching) {
+    return;
+  }
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -1226,6 +1291,9 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
 
 private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup): void {
   const calculateVolumetric = () => {
+     if (this.isPatching) {
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
@@ -1532,264 +1600,261 @@ private loadMasterJobDetails(masterJobSid: number): void {
   });
 }
   patchValues(response: any) {
- 
+  this.isPatching = true;
   
-  this.bookingHeader = response;
-  const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-   this.selectedDepartment = selectedDepartment;
-  this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
-  this.filterTabs();
-  this.onDeptChange(selectedDepartment);
+  try {
+    this.bookingHeader = response;
+    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    this.selectedDepartment = selectedDepartment;
+    this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
+    this.filterTabs();
+    this.onDeptChange(selectedDepartment);
 
-  const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
-  
-  // FIX: Better agent matching
-  let delivery = null;
-  if (response.AgentName) {
-    // First try exact match
-    delivery = this.agentList.find(agent => agent.CustomerName === response.AgentName);
+    const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     
-    // If not found, try case-insensitive match
-    if (!delivery) {
-      delivery = this.agentList.find(agent => 
-        agent.CustomerName.toLowerCase() === response.AgentName.toLowerCase()
-      );
+    // FIX: Better agent matching
+    let delivery = null;
+    if (response.AgentName) {
+      delivery = this.agentList.find(agent => agent.CustomerName === response.AgentName);
+      
+      if (!delivery) {
+        delivery = this.agentList.find(agent => 
+          agent.CustomerName.toLowerCase() === response.AgentName.toLowerCase()
+        );
+      }
+      
+      if (!delivery) {
+        delivery = this.agentList.find(agent => 
+          agent.CustomerName.toLowerCase().includes(response.AgentName.toLowerCase()) ||
+          response.AgentName.toLowerCase().includes(agent.CustomerName.toLowerCase())
+        );
+      }
     }
     
-    // If still not found, try partial match
-    if (!delivery) {
-      delivery = this.agentList.find(agent => 
-        agent.CustomerName.toLowerCase().includes(response.AgentName.toLowerCase()) ||
-        response.AgentName.toLowerCase().includes(agent.CustomerName.toLowerCase())
-      );
+    const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
+    this.onDeptChange(selectedDepartment);
+    this.onCustomerChange(selectedCustomer);
+    this.handleDestAgentChange(delivery);
+    this.handleOriginAgentChange(origin);
+    
+    let vesselName = response.VesselName;
+    let voyageNo = response.VoyageNo;
+    let eta = response.ETA;
+    let etd = response.ETD;
+    
+    if ((!vesselName || !voyageNo) && response.masterJob?.voyages?.[0]) {
+      const masterVoyage = response.masterJob.voyages[0];
+      vesselName = vesselName || masterVoyage.VesselName;
+      voyageNo = voyageNo || masterVoyage.VoyageNo;
+      eta = eta || masterVoyage.ETA;
+      etd = etd || masterVoyage.ETD;
     }
-  }
-  
- 
-  
-  const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
-  this.onDeptChange(selectedDepartment);
-  this.onCustomerChange(selectedCustomer);
-  this.handleDestAgentChange(delivery);
-  this.handleOriginAgentChange(origin);
-  let vesselName = response.VesselName;
-  let voyageNo = response.VoyageNo;
-  let eta = response.ETA;
-  let etd = response.ETD;
-  
-  // If vessel/voyage data is empty in house job, check master job
-  if ((!vesselName || !voyageNo) && response.masterJob?.voyages?.[0]) {
-    const masterVoyage = response.masterJob.voyages[0];
-    vesselName = vesselName || masterVoyage.VesselName;
-    voyageNo = voyageNo || masterVoyage.VoyageNo;
-    eta = eta || masterVoyage.ETA;
-    etd = etd || masterVoyage.ETD;
     
+    this.houseJobForm.patchValue({
+      MasterJobSid: response.MasterJobSid,
+      BookingHeaderSid: response.BookingHeaderSid, 
+      MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
+      BookingNo: response.BookingNo,
+      BookingDateTime: response.BookingDateTime ? new Date(response.BookingDateTime) : null,
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
+      CustomerName: response.CustomerName,
+      CustomerAddress: response.CustomerAddress,
+      SalesmanSid: response.SalesmanSid,
+      ShipperName: response.ShipperName,
+      ShipperAddress: response.ShipperAddress,
+      ConsigneeName: response.ConsigneeName,
+      ConsigneeAddress: response.ConsigneeAddress,
+      Notify: response.Notify,
+      NotifyAddress: response.NotifyAddress,
+      DestinationAgent: response.DestinationAgent || null,
+      AgentName: response.AgentName || null, 
+      AgentAddress: response.AgentAddress,
+      CarrierSid: response.CarrierSid,
+      CarrierName: response.CarrierName,
+      QuotationHeaderSid: response.QuotationHeaderSid,
+      HBLNo: response.HBLNo,
+      MBLNo: response.MBLNo,
+      MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
+      status: response.status === "A" ? "Active" : "Suspended",
+      HouseStatus: response.HouseStatus,
+      HBLCount: response.HBLCount,
+      VesselName: vesselName,
+      VoyageMasterSid: response.VoyageMasterSid,
+      VoyageNo: voyageNo,
+      HBLDate: response.HBLDate ? new Date(response.HBLDate) : null,
+      ETA: eta ? new Date(eta) : null,
+      ETD: etd ? new Date(etd) : null,
+      POO: response.POO,
+      POL: response.POL,
+      POD: response.POD,
+      POLTerminal: response.POLTerminal,
+      PODTerminal: response.PODTerminal,
+      FPD: response.FPD,
+      MovementType: response.MovementType,
+      DoValid: response.DoValid ? new Date(response.DoValid) : '',
+      Coload: response.Coload === "Y" ? true : false,
+      ShipmentType: response.ShipmentType === "Y" ? true : false,
+      IncoTerms: response.IncoTerms,
+      InternalNote: response.InternalNote,
+      GeneralNote: response.GeneralNote,
+      NominatedBy: response.NominatedBy,
+      FreightTerms: response.FreightTerms,
+      JobType: response.JobType,
+      ShipmentNo: response.ShipmentNo
+    }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
 
-  }
-  
-  this.houseJobForm.patchValue({
-    MasterJobSid : response.MasterJobSid,
-    BookingHeaderSid: response.BookingHeaderSid, 
-    MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
-    BookingNo: response.BookingNo,
-    BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
-    DepartmentMasterSid: response.DepartmentMasterSid,
-    CustomerMasterSid: response.CustomerMasterSid,
-    CustomerBranchSid: response.CustomerBranchSid,
-    CustomerName: response.CustomerName,
-    CustomerAddress: response.CustomerAddress,
-    SalesmanSid: response.SalesmanSid,
-    ShipperName: response.ShipperName,
-    ShipperAddress: response.ShipperAddress,
-    ConsigneeName: response.ConsigneeName,
-    ConsigneeAddress: response.ConsigneeAddress,
-    Notify: response.Notify,
-    NotifyAddress: response.NotifyAddress,
-    DestinationAgent: response.DestinationAgent || null,
-    AgentName : response.AgentName || null, 
-    AgentAddress: response.AgentAddress,
-    CarrierSid : response.CarrierSid,
-    CarrierName: response.CarrierName,
-    QuotationHeaderSid: response.QuotationHeaderSid,
-    HBLNo: response.HBLNo,
-    MBLNo: response.MBLNo,
-    MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
-    status: response.status === "A" ? "Active" : "Suspended",
-    HouseStatus: response.HouseStatus,
-    HBLCount: response.HBLCount,
-   
-    VesselName: vesselName,
-    VoyageMasterSid: response.VoyageMasterSid,
-    VoyageNo: voyageNo,
-    HBLDate: response.HBLDate ? new Date(response.HBLDate) : null,
-     ETA: eta ? new Date(eta) : null,
-    ETD: etd ? new Date(etd) : null,
-    POO: response.POO,
-    POL: response.POL,
-    POD: response.POD,
-    POLTerminal: response.POLTerminal,
-    PODTerminal: response.PODTerminal,
-    FPD: response.FPD,
-    MovementType: response.MovementType,
-    DoValid: response.DoValid ? new Date(response.DoValid) : '',
-    Coload: response.Coload === "Y" ? true : false,
-    ShipmentType: response.ShipmentType === "Y" ? true : false,
-    IncoTerms: response.IncoTerms,
-    InternalNote: response.InternalNote,
-    GeneralNote: response.GeneralNote,
-    NominatedBy: response.NominatedBy,
-    FreightTerms : response.FreightTerms,
-    JobType: response.JobType,
-    ShipmentNo: response.ShipmentNo
-  })
-
-  console.warn("FormValue after patching",this.houseJobForm.value);
-
-  this.PODandFPODsame = response.POD === response.FPD;
-   const cargoData = response.Cargo?.[0];
-  if (cargoData) {
+    this.PODandFPODsame = response.POD === response.FPD;
+    const cargoData = response.Cargo?.[0];
     
-    this.cargoForm.patchValue({
-      HouseJobCargoSid: cargoData.HouseJobCargoSid,  // This is the key fix
-      CargoType: cargoData.CargoType || 'General',
-      ContainerType: cargoData.ContainerType,
-      NoofContainers: cargoData.NoofContainers || 0,
-      GrossWeight: cargoData.GrossWeight || 0,
-      NetWeight: cargoData.NetWeight || 0,
-      Volume: cargoData.Volume || 0,
-      Volumetric: cargoData.Volumetric || 0,
-      ChargeableWeight: cargoData.ChargeableWeight || 0,
-      NoOfPackage: cargoData.NoOfPackage || 0,
-      ShipmentTerms: cargoData.ShipmentTerms,
-      MovementType: cargoData.MovementType,
-      FreightTerms: cargoData.FreightTerms,
-      CommodityDescription: cargoData.CommodityDescription,
-      MarksAndNumber: cargoData.MarksAndNumber,
-      LandedMarksandNumber: cargoData.LandedMarksandNumber,
-      ModeOfTransport: cargoData.ModeOfTransport,
-      StuffingAt: cargoData.StuffingAt || 'Dock'
-    });
-    setTimeout(() => {
-  // Manually trigger the chargeable weight calculation
-  const grossWeight = this.cargoForm.get('GrossWeight')?.value;
-  const netWeight = this.cargoForm.get('NetWeight')?.value;
-  const volume = this.cargoForm.get('Volume')?.value;
-  const volumetric = this.cargoForm.get('Volumetric')?.value;
-  
-  if (grossWeight || netWeight || volume || volumetric) {
-    this.calculateChargeableWeight();
-  }
-}, 100);
-  }
-   this.evaluateDropdownOrFreeText();
+    if (cargoData) {
+      let volumetricValue = cargoData.Volumetric;
+      
+      // If Volumetric is not in cargoData, calculate it from products
+      if (!volumetricValue && response.Products && response.Products.length > 0) {
+        volumetricValue = response.Products.reduce((sum, product) => {
+          return sum + (Number(product.Volumetric) || 0);
+        }, 0);
+      }
+      this.cargoForm.patchValue({
+        HouseJobCargoSid: cargoData.HouseJobCargoSid,
+        CargoType: cargoData.CargoType || 'General',
+        ContainerType: cargoData.ContainerType,
+        NoofContainers: cargoData.NoofContainers || 0,
+        GrossWeight: cargoData.GrossWeight || 0,
+        NetWeight: cargoData.NetWeight || 0,
+        Volume: cargoData.Volume || 0,
+        Volumetric: volumetricValue || 0,
+        ChargeableWeight: cargoData.ChargeableWeight || 0,
+        NoOfPackage: cargoData.NoOfPackage || 0,
+        ShipmentTerms: cargoData.ShipmentTerms,
+        MovementType: cargoData.MovementType,
+        FreightTerms: cargoData.FreightTerms,
+        CommodityDescription: cargoData.CommodityDescription,
+        MarksAndNumber: cargoData.MarksAndNumber,
+        LandedMarksandNumber: cargoData.LandedMarksandNumber,
+        ModeOfTransport: cargoData.ModeOfTransport,
+        StuffingAt: cargoData.StuffingAt || 'Dock'
+      }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
+    }
+    
+    this.evaluateDropdownOrFreeText();
     this.handleCFSOrYard();
     const otherData = response.Others[0];
-    this.otherForm.patchValue({
-      HouseJobOthersSid: otherData?.HouseJobOthersSid,
-      CustomerRefNo: otherData?.CustomerRefNo,
-      YardCFS: otherData?.YardCFS,
-      ReleaseType : otherData?.ReleaseType || null,
-      DeclaredValueOfCarriage: otherData?.DeclaredValueOfCarriage || null,
-      DeclaredValueOfCustoms: otherData?.DeclaredValueOfCustoms || null,
-      HBLNo: otherData?.HBLNo || null,
-      Forwarder: otherData?.Forwarder || null,
-      ForwarderAddress: otherData?.ForwarderAddress,
-      NotifyParty: otherData?.NotifyParty || null,
-      NotifyPartyAddress: otherData?.NotifyPartyAddress,
-      Notify2 : otherData?.Notify2 || null,
-      NotifyAddress2 : otherData?.NotifyAddress2,
-      Coloader : otherData?.Coloader || null,
-      PickupPlace: otherData?.PickupPlace,
-      DeliveryPlace: otherData?.DeliveryPlace,
-      DeliveryDate:otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
-      CHAName: otherData?.CHAName,
-      PickupAddress: otherData?.PickupAddress,
-      BlClause:otherData?.BlClause,
-      DeliveryAddress: otherData?.DeliveryAddress,
-      CargoCurrency: otherData?.CargoCurrency,
-      CargoValue: otherData?.CargoValue,
-      ValueForInsurance: otherData?.ValueForInsurance,
-      InsuranceAmount: otherData?.InsuranceAmount,
-      ValuationCharge: otherData?.ValuationCharge,
-      HandlingInformation: otherData?.HandlingInformation,
-      SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
-      BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
-      Depo: otherData?.Depo,
-      ROValidity:otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
-      SwitchBLAgent : otherData?.SwitchBLAgent,
-      AgentAddress : otherData?.AgentAddress,
-      SwitchBLShipper : otherData?.SwitchBLShipper,
-      SwitchBLConsignee : otherData?.SwitchBLConsignee,
-      SwitchLocation  : otherData?.SwitchLocation,
-      CarrierBookingRef : otherData?.CarrierBookingRef,
-      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
-      DONo: otherData?.DONo || '',
-      DODate: otherData?.DODate || '',
-      SIConfirmationDate: otherData?.SIConfirmationDate ? new Date(otherData?.SIConfirmationDate) : null,
-      DGConfirmationDate: otherData?.DGConfirmationDate ? new Date(otherData?.DGConfirmationDate) : null,
-      InternalNote: otherData?.InternalNote || '',
-      GeneralNote: otherData?.GeneralNote || ''
-    })
-     this.evaluateDropdownOrFreeText();
+    
+    if (otherData) {
+      this.otherForm.patchValue({
+        HouseJobOthersSid: otherData?.HouseJobOthersSid,
+        CustomerRefNo: otherData?.CustomerRefNo,
+        YardCFS: otherData?.YardCFS,
+        ReleaseType: otherData?.ReleaseType || null,
+        DeclaredValueOfCarriage: otherData?.DeclaredValueOfCarriage || null,
+        DeclaredValueOfCustoms: otherData?.DeclaredValueOfCustoms || null,
+        HBLNo: otherData?.HBLNo || null,
+        Forwarder: otherData?.Forwarder || null,
+        ForwarderAddress: otherData?.ForwarderAddress,
+        NotifyParty: otherData?.NotifyParty || null,
+        NotifyPartyAddress: otherData?.NotifyPartyAddress,
+        Notify2: otherData?.Notify2 || null,
+        NotifyAddress2: otherData?.NotifyAddress2,
+        Coloader: otherData?.Coloader || null,
+        PickupPlace: otherData?.PickupPlace,
+        DeliveryPlace: otherData?.DeliveryPlace,
+        DeliveryDate: otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
+        CHAName: otherData?.CHAName,
+        PickupAddress: otherData?.PickupAddress,
+        BlClause: otherData?.BlClause,
+        DeliveryAddress: otherData?.DeliveryAddress,
+        CargoCurrency: otherData?.CargoCurrency,
+        CargoValue: otherData?.CargoValue,
+        ValueForInsurance: otherData?.ValueForInsurance,
+        InsuranceAmount: otherData?.InsuranceAmount,
+        ValuationCharge: otherData?.ValuationCharge,
+        HandlingInformation: otherData?.HandlingInformation,
+        SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
+        BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
+        Depo: otherData?.Depo,
+        ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
+        SwitchBLAgent: otherData?.SwitchBLAgent,
+        AgentAddress: otherData?.AgentAddress,
+        SwitchBLShipper: otherData?.SwitchBLShipper,
+        SwitchBLConsignee: otherData?.SwitchBLConsignee,
+        SwitchLocation: otherData?.SwitchLocation,
+        CarrierBookingRef: otherData?.CarrierBookingRef,
+        CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
+        DONo: otherData?.DONo || '',
+        DODate: otherData?.DODate || '',
+        SIConfirmationDate: otherData?.SIConfirmationDate ? new Date(otherData?.SIConfirmationDate) : null,
+        DGConfirmationDate: otherData?.DGConfirmationDate ? new Date(otherData?.DGConfirmationDate) : null,
+        InternalNote: otherData?.InternalNote || '',
+        GeneralNote: otherData?.GeneralNote || ''
+      }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
+    }
+    
+    this.evaluateDropdownOrFreeText();
 
     this.bookingProducts.clear();
     const productsFromResponse = response.Products || [];
     this.productDataLength = productsFromResponse.length;
+    
     if (this.productDataLength) {
-    for (const productData of productsFromResponse) {
-      const formWithData = this.createBookingProductGroup(productData);
-      const productExists = this.productList?.some(
-      p => p.ProductName?.trim().toLowerCase() ===
-           productData.ProductName?.trim().toLowerCase()
-    );
+      for (const productData of productsFromResponse) {
+        const formWithData = this.createBookingProductGroup(productData, true);
+        const productExists = this.productList?.some(
+          p => p.ProductName?.trim().toLowerCase() === productData.ProductName?.trim().toLowerCase()
+        );
 
-    // ✅ Set free-text flag correctly
-    formWithData
-      .get('isProductFreeText')
-      ?.setValue(!productExists);
-        
-      this.bookingProducts.push(formWithData);
-    }
-    this.updateProductPagination();
-    this.handleProductRelatedCalculation();
+        formWithData.get('isProductFreeText')?.setValue(!productExists);
+        this.bookingProducts.push(formWithData);
+      }
+      this.updateProductPagination();
     }
 
     this.bookingConnectionsArr = (response.Connections || []).map(connection => {
       return {
         ...connection,
-        TransactionSid : connection.HouseJobConnectionSid,
+        TransactionSid: connection.HouseJobConnectionSid,
       }
-    }); // for child component
+    });
     this.connectionResult = [...this.bookingConnectionsArr]
 
     this.bookingRateArr = (response.costRevenueCharges || []).map(br => ({
       ...br,
-      RateSid : br.CostRevenueChargesSid,
-      status : br.status  === "A" ? "Active" : "Suspended"
+      RateSid: br.CostRevenueChargesSid,
+      status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
-      setTimeout(() => {
-    const otherData = response.Others[0];
-    if (otherData?.BlClause) {
-      // If BlClause exists in the database, use it
-      this.otherForm.patchValue({
-        BlClause: otherData?.BlClause || null,
-      });
-    } else if (!this.isEditMode && this.blClauseOptions.length > 0) {
-      // For new records, auto-populate with default clauses
-      const allClausesText = this.blClauseOptions
-        .map(clause => clause.ClauseDescription)
-        .join('\n\n');
-      
-      this.otherForm.patchValue({
-        BlClause: allClausesText
-      });
-    }
-  }, 500);
+    
+    setTimeout(() => {
+      const otherData = response.Others[0];
+      if (otherData?.BlClause) {
+        this.otherForm.patchValue({
+          BlClause: otherData?.BlClause || null,
+        });
+      } else if (!this.isEditMode && this.blClauseOptions.length > 0) {
+        const allClausesText = this.blClauseOptions
+          .map(clause => clause.ClauseDescription)
+          .join('\n\n');
+        
+        this.otherForm.patchValue({
+          BlClause: allClausesText
+        });
+      }
+    }, 500);
+
+  } catch (error) {
+    console.error('Error during patch:', error);
+  } finally {
+    // CRITICAL FIX: Reset isPatching flag AFTER a longer delay to ensure all patching completes
+    setTimeout(() => {
+      this.isPatching = false;
+      console.log('✅ isPatching reset to false - calculations now enabled');
+    }, 1000); // Increased from 100ms to 1000ms
   }
+}
 
   onContainerTypeChange(containerType : any){
     if(!containerType){
@@ -3018,6 +3083,9 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 
   handleProductRelatedCalculation() {
+     if (this.isPatching) {
+    return;
+  }
     if (this.bookingProducts.length === 0) {
       this.c['NoOfPackage']?.enable(); this.c['NoOfPackage']?.setValue(0);
       this.c['GrossWeight']?.enable(); this.c['GrossWeight']?.setValue(0);

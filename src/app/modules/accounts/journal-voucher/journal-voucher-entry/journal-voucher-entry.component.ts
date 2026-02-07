@@ -46,6 +46,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
+
 })
 export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges, OnDestroy  {
 
@@ -484,7 +485,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
     };
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
-      voucherDate: [{ value: todayStruct, disabled: true }, Validators.required],
+      voucherDate: [{ value: todayStruct }, Validators.required],
       DocumentNumber:[{value:'',disabled:true}],
       DocumentDate:[null],
       narration: ['', [Validators.required, Validators.maxLength(200)]],
@@ -694,8 +695,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
       } else {
         this.editMode = false;
         this.initializeForm();
-        this.form.get('Status')?.disable(); // Disable for create mode
-        this.form.get('voucherDate')?.disable();
+        this.form.get('Status')?.disable();
         this.addDetailLine();
       }
     });
