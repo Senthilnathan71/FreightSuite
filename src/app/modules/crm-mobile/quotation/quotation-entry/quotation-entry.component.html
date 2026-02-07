@@ -319,7 +319,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="phone" placeholder="" class="custom-input-field sm"
-                  formControlName="ContactNumber">
+                  formControlName="ContactNumber" maxlength="15" [onlyNumbers]>
                 <label for="text-input" class="input-label">Phone <span class="text-danger"></span></label>
               </div>
             </aside>
@@ -1161,6 +1161,11 @@
         [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
+<button class="btn btn-info btn-sm me-1" type="button"
+  (click)="openStandardCharges(routeIndex, carrierIndex)" [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
+  Get Std Charges
+</button>
+
 
 <!-- Add Charge button -->
 <button class="btn btn-info btn-sm" type="button"

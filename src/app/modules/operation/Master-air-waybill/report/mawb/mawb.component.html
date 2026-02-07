@@ -18,7 +18,7 @@
 </div>
 
 <div class="modal-body">
-    <div id="printContent" class="p-1">
+    <div id="printContent">
         <div class="mawb-report">
             <div class="mawb-page">
 
@@ -52,7 +52,7 @@
                                     {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
                                 </div>
                             </div>
-                            <div class="party-account"style="border-bottom:1px solid black">
+                            <div class="party-account" style="border-bottom:1px solid black">
                                 <div class="account-label">Consignee's Acc No.</div>
                                 <div class="account-value"></div>
                             </div>
@@ -81,7 +81,8 @@
 
                         <!-- Airport Departure -->
                         <div class="mawb-airport-departure">
-                            <div class="departure-label">Airport departure (Addr. of first Carrier) and requested Routing</div>
+                            <div class="departure-label">Airport departure (Addr. of first Carrier) and requested
+                                Routing</div>
                             <div class="departure-value">{{ masterAirWayData?.POL }}</div>
                         </div>
 
@@ -98,20 +99,17 @@
                             </div>
                             <div class="company-branding">
                                 <!-- Print logo -->
-                                                  <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: auto;height:80px;" 
-              />
+                                <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
+                                    class="company-logo img-fluid" style="width: auto;height:80px;" />
                                 <div class="company-details">
                                     <h3>{{ currentCompany?.companyName || 'Company Name' }}</h3>
                                     <h4>{{ currentBranch?.branchName || 'Company Branch' }}</h4>
                                     <p>{{ currentBranch?.addressLine1 || '' }}</p>
                                     <p>
                                         {{ currentBranch?.addressLine2 || '' }},
-                                        {{  currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                                        - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}
+                                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                                        - {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
+                                        currentBranch?.phoneNumber || currentBranch?.Phone || '' }}
                                     </p>
                                 </div>
                             </div>
@@ -146,23 +144,23 @@
                             <div class="routing-label">To</div>
                             <div class="routing-value">{{ masterAirWayData?.POD }}</div>
                         </div>
-                        <div class="routing-cell"style="width: 170px;">
+                        <div class="routing-cell" style="width: 170px;">
                             <div class="routing-label">By first Carrier</div>
                             <div class="routing-value">{{ masterAirWayData?.voyages?.[0]?.CarrierName }}</div>
                         </div>
-                        <div class="routing-cell"style="width: 40px;">
+                        <div class="routing-cell" style="width: 40px;">
                             <div class="routing-label">To</div>
                             <div class="routing-value"></div>
                         </div>
-                        <div class="routing-cell"style="width: 45px;">
+                        <div class="routing-cell" style="width: 45px;">
                             <div class="routing-label">By</div>
                             <div class="routing-value"></div>
                         </div>
-                        <div class="routing-cell"style="width: 40px;">
+                        <div class="routing-cell" style="width: 40px;">
                             <div class="routing-label">To</div>
                             <div class="routing-value"></div>
                         </div>
-                        <div class="routing-cell"style="width: 45px;">
+                        <div class="routing-cell" style="width: 45px;">
                             <div class="routing-label">By</div>
                             <div class="routing-value"></div>
                         </div>
@@ -170,37 +168,41 @@
 
                     <!-- RIGHT: Currency / WT / Other / Declared Values -->
                     <div class="mawb-routing-right">
-                        <div class="currency-cell"style="width: 35px;">
+                        <div class="currency-cell" style="width: 35px;">
                             <div class="currency-label">Curr</div>
                             <div>{{ getCurrencyCodeById(currentCurrency) }}</div>
                         </div>
-                        <div class="currency-cell"style="width: 35px;">
-                            <div class="currency-label">CHGS Code</div>
+                        <div class="currency-cell" style="width: 35px;">
+                            <div class="currency-label">CHGS <br> Code</div>
                             <div></div>
                         </div>
-                        <div class="wt-cell"style="width:90px;">
+                        <div class="wt-cell" style="width:90px;">
                             <div class="wt-header">WT/VAL</div>
                             <div class="wt-content">
-                                <div class="wt-sub"style="width:40px;">
+                                <div class="wt-sub" style="width:40px;">
                                     <strong>PP/CC</strong>
-                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span></div>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'"
+                                            class="fw-bold">X</span></div>
                                 </div>
                                 <div class="wt-sub">
                                     <strong>COL</strong>
-                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span></div>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'"
+                                            class="fw-bold">X</span></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="other-cell"style="width:90px;">
+                        <div class="other-cell" style="width:90px;">
                             <div class="wt-header">Other</div>
                             <div class="wt-content">
-                                <div class="wt-sub"style="width:40px;">
+                                <div class="wt-sub" style="width:40px;">
                                     <strong>PP/CC</strong>
-                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="fw-bold">X</span></div>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'"
+                                            class="fw-bold">X</span></div>
                                 </div>
                                 <div class="wt-sub">
                                     <strong>COL</strong>
-                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="fw-bold">X</span></div>
+                                    <div><span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'"
+                                            class="fw-bold">X</span></div>
                                 </div>
                             </div>
                         </div>
@@ -215,50 +217,53 @@
                     </div>
                 </div>
 
-               <!-- FLIGHT / INSURANCE ROW -->
-<div style="width:100%; border:1px solid #000; border-top:none;">
+                <!-- FLIGHT / INSURANCE ROW -->
+                <div style="width:100%; border:1px solid #000; border-top:none;">
 
-  <div style="display:table; width:100%; table-layout:fixed;">
+                    <div style="display:table; width:100%; table-layout:fixed;">
 
-    <!-- Airport of Destination -->
-    <div style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
-      <div style="  margin-bottom:4px;">
-        <strong>Airport of Destination</strong>
-      </div>
-      <div>
-        {{ masterAirWayData?.FPD }}
-      </div>
-    </div>
+                        <!-- Airport of Destination -->
+                        <div
+                            style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
+                            <div style="  margin-bottom:4px;">
+                                <strong>Airport of Destination</strong>
+                            </div>
+                            <div>
+                                {{ masterAirWayData?.FPD }}
+                            </div>
+                        </div>
 
-    <!-- Flight / Date -->
-    <div style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
-      <div style=" margin-bottom:4px;">
-     <strong>Requested Flight/Date</strong>
-      </div>
-      <div>
-        {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
-      </div>
-    </div>
+                        <!-- Flight / Date -->
+                        <div
+                            style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
+                            <div style=" margin-bottom:4px;">
+                                <strong>Requested Flight/Date</strong>
+                            </div>
+                            <div>
+                                {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
+                            </div>
+                        </div>
 
-    <!-- Amount of Insurance -->
-    <div style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
-      <div style="font-weight:700; margin-bottom:4px;">
-        <strong>Amount of Insurance</strong>
-      </div>
-      <div>&nbsp;</div>
-    </div>
+                        <!-- Amount of Insurance -->
+                        <div
+                            style="display:table-cell; width:15%; border-right:1px solid #000; vertical-align:top; padding:6px 8px;text-align: center;">
+                            <div style="font-weight:700; margin-bottom:4px;">
+                                <strong>Amount of Insurance</strong>
+                            </div>
+                            <div>&nbsp;</div>
+                        </div>
 
-    <!-- Insurance -->
-    <div style="display:table-cell; width:25%; vertical-align:top; padding:6px 8px;">
-      <div style=" margin-bottom:4px;">
-        <strong>Insurance</strong>
-      </div>
-      <div>&nbsp;</div>
-    </div>
+                        <!-- Insurance -->
+                        <div style="display:table-cell; width:25%; vertical-align:top; padding:6px 8px;">
+                            <div style=" margin-bottom:4px;">
+                                <strong>Insurance</strong>
+                            </div>
+                            <div>&nbsp;</div>
+                        </div>
 
-  </div>
+                    </div>
 
-</div>
+                </div>
 
                 <!-- HANDLING INFORMATION -->
                 <div class="mawb-handling" style="display: flex;gap: 20px;">
@@ -266,87 +271,106 @@
                     <div class="handling-value"> {{masterAirWayData?.others?.[0]?.HandlingInformation}}</div>
                 </div>
 
-              <!-- DATA TABLE -->
-<div style="width:100%; border:1px solid #000;border-top: none;">
+                <!-- DATA TABLE -->
+                <div style="width:100%; border:1px solid #000;border-top: none;">
 
-  <!-- HEADER -->
-  <div style="display:table; width:100%; table-layout:fixed; border-bottom:1px solid #000;">
-    <div style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center;  padding:4px;">
-      <strong>No of Pieces<br>RCP</strong>
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center;  padding:4px;">
-   <strong>Gross Wt.</strong>
-    </div>
-    <div style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center;  padding:4px;">
-     <strong>Kg Lb</strong>
-    </div>
-    <div style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center;  padding:4px;">
-     <strong>Comm<br>Item No.</strong>
-    </div>
-    <div style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; padding:4px;">
-     <strong>Chargeable<br>Wt.</strong>
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
-     <strong>Rate/Charge</strong>
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center;  padding:4px;">
-    <strong>Total</strong>
-    </div>
-    <div style="display:table-cell; width:34%; text-align:center;  padding:4px;">
-      <strong>Nature and Quantity of Goods<br>(Inc. Dimensions or Volume)</strong>
-    </div>
-  </div>
+                    <!-- HEADER -->
+                    <div style="display:table; width:100%; table-layout:fixed; border-bottom:1px solid #000;">
+                        <div
+                            style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center;  padding:4px;">
+                            <strong>No of Pieces<br>RCP</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center;  padding:4px;">
+                            <strong>Gross Wt.</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center;  padding:4px;">
+                            <strong>Kg Lb</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center;  padding:4px;">
+                            <strong>Comm<br>Item No.</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            <strong>Chargeable<br>Wt.</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            <strong>Rate/Charge</strong>
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center;  padding:4px;">
+                            <strong>Total</strong>
+                        </div>
+                        <div style="display:table-cell; width:34%; text-align:center;  padding:4px;">
+                            <strong>Nature and Quantity of Goods<br>(Inc. Dimensions or Volume)</strong>
+                        </div>
+                    </div>
 
-  <!-- DATA ROW -->
-  <div style="display:table; width:100%; table-layout:fixed; border-bottom:1px solid #000; height:120px;">
-    <div style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ masterAirWayData?.NoOfPkg }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ masterAirWayData?.GrossWeight | number:'1.2-2' }}
-    </div>
-    <div style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ masterAirWayData?.WeightIn }}
-    </div>
-    <div style="display:table-cell; width:8%; border-right:1px solid #000;"></div>
-    <div style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ masterAirWayData?.ChargeableWeight | number:'1.2-2' }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ getFreightTotals().totalExchangeRate }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
-      {{ getFreightTotals().totalRevenueAmount }}
-    </div>
-     <div style="display:table-cell; vertical-align:top; padding:6px; overflow-wrap: break-word;">
-    {{ masterAirWayData?.CommodityDescription }}<br>
-    {{ masterAirWayData?.MarksandNumber }}
-  </div>
-  </div>
+                    <!-- DATA ROW -->
+                    <div
+                        style="display:table; width:100%; table-layout:fixed; border-bottom:1px solid #000; height:400px;">
+                        <div
+                            style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ masterAirWayData?.NoOfPkg }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ masterAirWayData?.GrossWeight | number:'1.2-2' }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ masterAirWayData?.WeightIn }}
+                        </div>
+                        <div style="display:table-cell; width:8%; border-right:1px solid #000;"></div>
+                        <div
+                            style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ masterAirWayData?.ChargeableWeight | number:'1.2-2' }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ getFreightTotals().totalExchangeRate }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; vertical-align:top; padding-top:6px;">
+                            {{ getFreightTotals().totalRevenueAmount }}
+                        </div>
+                        <div style="display:table-cell; vertical-align:top; padding:6px; overflow-wrap: break-word;">
+                            {{ masterAirWayData?.CommodityDescription }}<br>
+                            {{ masterAirWayData?.MarksandNumber }}
+                        </div>
+                    </div>
 
-  <!-- TOTALS ROW -->
-  <div style="display:table; width:100%; table-layout:fixed;">
-    <div style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center; padding:4px;">
-      {{ masterAirWayData?.NoOfPkg }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000;"></div>
-    <div style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center; padding:4px;">
-      {{ masterAirWayData?.GrossWeight }}
-    </div>
-    <div style="display:table-cell; width:8%; border-right:1px solid #000;"></div>
-    <div style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; padding:4px;">
-      {{ masterAirWayData?.ChargeableWeight }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
-      {{ getFreightTotals().totalExchangeRate }}
-    </div>
-    <div style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
-      {{ getFreightTotals().totalRevenueAmount }}
-    </div>
-    <div style="display:table-cell; width:34%;"></div>
-  </div>
+                    <!-- TOTALS ROW -->
+                    <div style="display:table; width:100%; table-layout:fixed;">
+                        <div
+                            style="display:table-cell; width:8%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            {{ masterAirWayData?.NoOfPkg }}
+                        </div>
+                        <div style="display:table-cell; width:10%; border-right:1px solid #000;"></div>
+                        <div
+                            style="display:table-cell; width:6%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            {{ masterAirWayData?.GrossWeight }}
+                        </div>
+                        <div style="display:table-cell; width:8%; border-right:1px solid #000;"></div>
+                        <div
+                            style="display:table-cell; width:14%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            {{ masterAirWayData?.ChargeableWeight }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            {{ getFreightTotals().totalExchangeRate }}
+                        </div>
+                        <div
+                            style="display:table-cell; width:10%; border-right:1px solid #000; text-align:center; padding:4px;">
+                            {{ getFreightTotals().totalRevenueAmount }}
+                        </div>
+                        <div style="display:table-cell; width:34%;"></div>
+                    </div>
 
-</div>
+                </div>
 
 
                 <!-- CHARGES ROW -->
@@ -427,11 +451,14 @@
                     <div class="charges-right shipper-certificate">
                         <div class="certificate-text" style="font-size: 8px;">
                             Shipper certifies that the particulars on the face hereof are correct and that insofar as
-                            any part of the consignment contains dangerous goods such part is properly described by name and
-                            is in proper condition for carriage by air according to the applicable Dangerous Goods Regulations.
+                            any part of the consignment contains dangerous goods such part is properly described by name
+                            and
+                            is in proper condition for carriage by air according to the applicable Dangerous Goods
+                            Regulations.
                         </div>
                         <div class="signature-block">
-                            <p class="agent-name">{{ getAgentName(masterAirWayData?.DestinationAgent) }} <strong>As Agent</strong></p>
+                            <p class="agent-name">{{ getAgentName(masterAirWayData?.DestinationAgent) }} <strong>As
+                                    Agent</strong></p>
                             <div class="signature-label">Signature of Shipper or his Agent</div>
                         </div>
                     </div>
@@ -467,9 +494,9 @@
                                 <div class="total-value"></div>
                             </div>
                         </div>
-                        
+
                     </div>
-                    
+
 
                     <!-- Right: Execution Info -->
                     <div class="totals-right execution-info">
@@ -483,14 +510,15 @@
                                 <div class="execution-label">at Place</div>
                             </div>
                             <div class="execution-cell">
-                                <div class="execution-value">{{ getAgentName(masterAirWayData?.DestinationAgent) }}</div>
+                                <div class="execution-value">{{ getAgentName(masterAirWayData?.DestinationAgent) }}
+                                </div>
                                 <div class="execution-label">signature of issuing Carrier or its Agent</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                  <div class="mawb-totals-row">
+                <div class="mawb-totals-row">
                     <!-- Left: Total Prepaid / Collect -->
                     <div class="totals-left">
                         <div class="total-row">
@@ -508,15 +536,15 @@
                         </div>
                     </div>
 
-                     <div class="totals-right1">
-                    
-                            <div class="total-cell">
-                                <div class="total-label" style="white-space: nowrap;">Total Prepaid</div>
-                                <div class="total-value">{{ getGrandTotal() }}</div>
-                            </div>
-                        
+                    <div class="totals-right1">
+
+                        <div class="total-cell">
+                            <div class="total-label" style="white-space: nowrap;">Total Prepaid</div>
+                            <div class="total-value">{{ getGrandTotal() }}</div>
+                        </div>
+
                     </div>
-                    
+
 
                 </div>
 
@@ -527,6 +555,230 @@
                     <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
                 </div>
 
+            </div>
+        </div>
+
+        <div class="mawb-report">
+            <div class="mawb-page">
+                <div style="text-align: center;">
+                    <h5>NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY</h5>
+                </div>
+                <div>
+                    <p class="mb-0">If the carriage involves an ultimate destination or stop in a country other than the country of
+                        departure, the
+                        Montreal Convention or the Warsaw Convention may be
+                        applicable to the liability of the Carrier in respect of loss of, damage or delay to cargo.
+                        Carrier's limitation
+                        of liability in accordance with those Conventions shall be as set
+                        forth in subparagraph 4 unless a higher value is declared.</p>
+                </div>
+                <div>
+                    <h5 style="text-align: center;">CONDITIONS OF CONTRACT</h5>
+                </div>
+                <div style="display: flex ; gap: 10px;">
+                    <div style="width: 50%;text-align: justify;">
+                    <div>
+                        <p>
+                            1. In this contract and the Notices appearing hereon:
+                            CARRIER includes the air carrier issuing this air waybill and all carriers that
+                            carry or undertake to carry the cargo or perform any other services related
+                            to such carriage
+                            SPECIAL DRAWING RIGHT (SDR) is a Special Drawing Right as defined
+                            by the International Monetary Fund.
+                            WARSAW CONVENTION means whichever of the following instruments is
+                            applicable to the contract of carriage:
+                            the Convention for the Unification of Certain Rules Relating to International
+                            Carriage by Air, signed at Warsaw, 12 October 1929;
+                            that Convention as amended at The Hague on 28 September 1955;
+                            that Convention as amended at The Hague 1955 and by Montreal Protocol
+                            No. 1, 2, or 4 (1975) as the case may be.
+                            MONTREAL CONVENTION means the Convention for the Unification of
+                            Certain Rules.
+                        </p>
+                        <p>
+                            2.1 Carriage is subject to the rules relating to liability established by the
+                            Warsaw Convention or the Montreal Convention unless such carriage is
+                            not "international carriage" as defined by the applicable Conventions.
+                        </p>
+                        <p>
+                            2.2 To the extent not in conflict with the foregoing, carriage and other related
+                            services performed by each Carrier are subject to:
+                        </p>
+                        <p>
+                            2.2.1 applicable laws and government regulations;
+                        </p>
+
+                        <p>
+                            .2.2 provisions contained in the air waybill, Carrier's conditions of
+                            carriage and related rules, regulations, and timetables (but not the
+                            times of departure and arrival stated therein) and applicable tariffs of
+                            such Carrier, which are made part hereof, and which may be
+                            inspected at any airports or other cargo sales offices from which it
+                            operates regular services. When carriage is to/from the USA, the
+                            shipper and the consignee are entitled, upon request, to receive a
+                            free copy of the Carrier's conditions of carriage. The Carrier's
+                            conditions of carriage include, but are not limited to:
+                        </p>
+                        <p>
+                            2.2.2.1 limits on the Carrier's liability for loss, damage or delay of goods,
+                            including fragile or perishable goods;
+
+                        </p>
+                        <p>
+                            .2.2.2 claims restrictions, including time periods within which shippers or
+                            consignees must file a claim or bring an action against the Carrier for
+                            its acts or omissions, or those of its agents;
+
+                        </p>
+                        <p>
+                            2.2.2.3 rights, if any, of the Carrier to change the terms of the contract
+                        </p>
+                        <p>
+                            2.2.2.4 rules about Carrier's right to refuse to carry
+                        </p>
+                        <p>
+                            2.2.2.5 rights of the Carrier and limitations concerning delay or failure to
+                            perform service, including schedule changes, substitution of
+                            alternate Carrier or aircraft and rerouting.
+                        </p>
+                        <p>
+                            3 The agreed stopping places (which may be altered by Carrier in case of
+                            necessity) are those places, except the place of departure and place of
+                            destination, set forth on the face hereof or shown in Carrier's timetables as
+                            scheduled stopping places for the route. Carriage to be performed
+                            hereunder by several successive Carriers is regarded as a single operation.
+
+                        </p>
+                        <p>
+                            4 For carriage to which the Montreal Convention does not apply, Carrier's
+                            liability limitation for cargo lost, damaged or delayed shall be 19 SDRs per
+                            kilogram unless a greater per kilogram monetary limit is provided in any
+                            applicable Convention or in Carrier's tariffs or general conditions of
+                            carriage.
+                        </p>
+                        <p>
+                            5 5.1 Except when the Carrier has extended credit to the consignee without
+                            the written consent of the shipper, the shipper guarantees payment of all
+                            charges for the carriage due in accordance with Carrier's tariff,
+                            conditions of carriage and related regulations, applicable laws (including
+                            national laws implementing the Warsaw Convention and the Montreal
+                            Convention), government regulations, orders and requirements
+                        </p>
+                        <p>
+                            5.2 When no part of the consignment is delivered, a claim with respect to
+                            such consignment will be considered even though transportation
+                            charges thereon are unpaid.
+                        </p>
+                        <p>
+                            6 6.1 For cargo accepted for carriage, the Warsaw Convention and the
+                            Montreal Convention permit shipper to increase the limitation of liability
+                            by declaring a higher value for carriage and paying a supplemental
+                            charge if required.
+                        </p>
+                    </div>
+                </div>
+                <div style="width: 50%;text-align: justify;">
+                    <p>
+                        .2 In carriage to which neither the Warsaw Convention nor the Montreal
+                        Convention applies Carrier shall, in accordance with the procedures set
+                        forth in its general conditions of carriage and applicable tariffs, permit
+                        shipper to increase the limitation of liability by declaring a higher value
+                        for carriage and paying a supplemental charge if so required
+                    </p>
+                    <p>
+                        7 7.1 In cases of loss of, damage or delay to part of the cargo, the weight to be
+                        taken into account in determining Carrier's limit of liability shall be only
+                        the weight of the package or packages concerned.
+                    </p>
+                    <p>
+                        7.2 Notwithstanding any other provisions, for foreign air transportation as
+                        defined by the U.S. Transportation Code:
+                    </p>
+                    <p>
+                        7.2.1 in the case of loss of, damage or delay to a shipment, the weight to be
+                        used in determining Carrier's limit of liability shall be the weight which
+                        is used to determine the charge for carriage of such shipment; and
+
+                    </p>
+                    <p>
+                        7.2.2 in the case of loss of, damage or delay to a part of a shipment, the
+                        shipment weight in 7.2.1 shall be prorated to the packages covered by
+                        the same air waybill whose values is affected by the loss, damage or
+                        delay. The weight applicable in the case of loss or damage to one or
+                        more articles in a package shall be the weight of the entire package.
+                    </p>
+                    <p>
+                        8 Any exclusion or limitation of liability applicable to Carrier shall apply to
+                        Carrier's agents, employees, and representatives and to any person whose
+                        aircraft or equipment is used by Carrier for carriage and such person's
+                        agents, employees and representatives
+                    </p>
+                    <p>
+                        9 Carrier undertakes to complete the carriage with reasonable dispatch.
+                        Where permitted by applicable laws, tariffs and government regulations,
+                        Carrier may use alternative carriers, aircraft or modes of transport without
+                        notice but with due regard to interests of the shipper. Carrier is authorised
+                        by the shipper to select the routing and all intermediate stopping places that
+                        it deems appropriate or to change or deviate from the routing shown on the
+                        face hereof
+                    </p>
+                    <p>
+                        10 Receipt by the person entitled to delivery of the cargo without complaint
+                        shall be prima facie evidence that the cargo has been delivered in good
+                        condition and in accordance with the contract of carriage
+                    </p>
+                    <p>
+                        10.1 In the case of loss of, damage or delay to cargo a written complaint must
+                        be made to Carrier by the person entitled to delivery. Such complaint
+                        must be made;
+                    </p>
+                    <p>
+                        10.1.1 in the case of damage to the cargo, immediately after discovery of the
+                        damage and at the latest within 14 days from the date of receipt of the
+                        cargo
+                    </p>
+                    <p>
+                        10.1.2 in the case of delay, within 21 days from the date on which the cargo
+                        was placed at the disposal of the person entitled to delivery
+                    </p>
+                    <p>
+                        10.1.3 in the case of non-delivery of the cargo, within 120 days from the date
+                        of issue of the air waybill, or if an air waybill has not been issued,
+                        within 120 days from the date of receipt of the cargo for transportation
+                        by the Carrier.
+                    </p>
+                    <p>
+                        10.2 Such complaint may be made to the Carrier whose air waybill was used,
+                        or to the first Carrier or to the last Carrier or to the Carrier, which
+                        performed the carriage during which the loss, damage or delay took
+                        place
+                    </p>
+                    <p>
+                        10.3 Unless a written complaint is made within the time limits specified in
+                        10.1 no action may be brought against Carrier.
+                    </p>
+                    <p>
+                        10.4 Any rights to damages against Carrier shall be extinguished unless an
+                        action is brought within two years from the date of arrival at the
+                        destination, or from the date on which the aircraft ought to have arrived,
+                        or from the date on which the carriage stopped.
+                    </p>
+                    <p>
+                        11 Shipper shall comply with all applicable laws and government regulations of
+                        any country to or from which the cargo may be carried, including those
+                        relating to the packing, carriage or delivery of the cargo, and furnish such
+                        information and attach such documents to the air waybill as may be
+                        necessary to comply with such laws and regulations.Carrier is not liable to
+                        shipper and shipper shall indemnify Carrier for loss or expense due to
+                        shipper's failure to comply with this provision.
+                    </p>
+                    <p>
+                        12 No agent, employee or representative of Carrier has authority to alter, modify
+                        or waive any provisions of this contract.
+                    </p>
+                </div>
+                </div>
+                
             </div>
         </div>
     </div>
