@@ -25,7 +25,7 @@
                     <thead>
                         <tr class="bg-info">
                             <th width="3%" class="bg-transparent text-light">
-                                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
+                                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)" class="cursor-pointer">
                             </th>
             
                             <th width="10%" class="bg-transparent text-light">Cargo Type</th>
@@ -52,14 +52,14 @@
                         <ng-container *ngFor="let sc of filteredStandardCharges; let i = index">
                             <tr>
                                 <td rowspan="2">
-                                    <input type="checkbox" [checked]="isChargeSelected(sc)" (change)="toggleChargeSelection(sc)">
+                                    <input type="checkbox" [checked]="isChargeSelected(sc)" (change)="toggleChargeSelection(sc)" class="cursor-pointer">
                                 </td>
             
                                 <!-- Common Fields -->
                                 <td rowspan="2">{{ sc.CargoType || '' }}</td>
-                                <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
+                                <td rowspan="2">{{ sc.ChargeCode }}</td>
                                 <td rowspan="2">{{ sc.ChargeDescription }}</td>
-                                <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
+                                <td rowspan="2">{{ sc.UOMCode }}</td>
                                 <td rowspan="2">{{ sc.NoofUnit }}</td>
             
                                 <!-- Cost Details -->

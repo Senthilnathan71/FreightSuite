@@ -143,7 +143,7 @@
                             @for(std of StdTariffDetails.controls ; track std ; let i = $index){
                             <tr [formGroupName]="i">
                                 <td>
-                                    <button class="btn btn-sm" (click)="deleteStdTariffDetail(i)">
+                                    <button class="btn btn-sm" (click)="deleteStdTariffDetail(i)" appPreventMultiClick>
                                         <i class="fas fa-trash text-danger fs-2"></i>
                                     </button>
                                 </td>
@@ -210,7 +210,7 @@
                                             style="height:28px; font-size:12px; padding:2px 6px;"
                                             [minDate]="minValidFromDates[i] || minValidFrom "
                                             [maxDate]="toNgbDateStruct(std.get('ValidTo').value)"
-                                            (dateSelect)="onValidFromChange($event, i)" [disabled]="isEditMode">
+                                            (dateSelect)="onValidFromChange($event, i)" >
                                         <button type="button" class="btn bi bi-calendar3 " (click)="d1.toggle()"
                                             style="height:28px; padding:2px 6px;">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -223,7 +223,7 @@
                                         <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
                                             #d2="ngbDatepicker" formControlName="ValidTo" (click)="d2.toggle()"
                                             style="height:28px; font-size:12px; padding:2px 6px;"
-                                            [minDate]="minValidToDates[i]" [disabled]="isEditMode">
+                                            [minDate]="minValidToDates[i]" >
                                         <button type="button" class="btn bi bi-calendar3 " (click)="d2.toggle()"
                                             style="height:28px; padding:2px 6px;">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>

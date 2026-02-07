@@ -89,7 +89,7 @@ export class StandardChargeEntryComponent implements OnInit {
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
-    { id: 3, name: 'Refer' },
+    { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
   ];
@@ -255,11 +255,15 @@ export class StandardChargeEntryComponent implements OnInit {
         this.standardChargeData = data;
         const header = data;
         const details = data.StdTariffDetails || [];
+        console.log(details,"Details")
         this.standardChargeForm.patchValue({
           DepartmentMasterSid: header.DepartmentMasterSid,
           Remarks: header.Remarks,
           Status: header.Status
         });
+
+        const selectedDept = this.departments.find(d => d.DepartmentMasterSid === header.DepartmentMasterSid);
+        this.filterDepartment(selectedDept);
 
         if (this.isEditMode) {
           this.standardChargeForm.get('DepartmentMasterSid')?.disable();
@@ -291,7 +295,7 @@ export class StandardChargeEntryComponent implements OnInit {
             fg.get('CostAmount')?.disable();
             fg.get('CostCurrency').disable();
             fg.get('UomSid').disable();
-            fg.get('CargoType').disable();
+            // fg.get('CargoType').disable();
             fg.get('ChargeMasterSid').disable();
           }
           this.StdTariffDetails.push(fg);
@@ -381,6 +385,7 @@ export class StandardChargeEntryComponent implements OnInit {
 
   filterDepartment(dept: any) {
     const deptName = dept?.departmentName;
+    console.log(deptName,"DEPT NAme")
     if (!deptName) {
       this.filteredChargeList = [...this.charge];
       return;

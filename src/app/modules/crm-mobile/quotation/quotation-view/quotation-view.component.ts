@@ -82,7 +82,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
-        disabled: this.quotationManager.totalRecords === 0
+        disabled: this.quotationManager.totalRecords !== 0
       },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' }
     ]

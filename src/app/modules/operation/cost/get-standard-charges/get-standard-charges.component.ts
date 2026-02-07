@@ -63,13 +63,32 @@ export class GetStandardChargesComponent implements OnInit {
       departmentSid
     });
 
-    const payload : any = {
-      CompanyMasterSid : companySid,
-      DepartmentMasterSid : departmentSid,
-      BranchMasterSid:currentBranch,
-      CargoType : this.parentFormValue?.CargoType,
-      OperationDate : this.parentFormValue?.EffectiveDate || null
-    }
+const payload: any = {
+  CompanyMasterSid: companySid,
+  DepartmentMasterSid: departmentSid,
+  BranchMasterSid: currentBranch,
+  CargoType: this.parentFormValue?.CargoType,
+
+  // ✅ Always send OperationDate
+  OperationDate: this.parentFormValue?.EffectiveDate
+    ? new Date(this.parentFormValue.EffectiveDate).toISOString()
+    : null
+};
+
+// ✅ If Quotation → add extra dates
+if (this.parentFormValue?.isQuotation === true) {
+
+  payload.isQuotation = true;
+
+  payload.EffectiveFrom = this.parentFormValue?.EffectiveFrom
+    ? new Date(this.parentFormValue.EffectiveFrom).toISOString()
+    : null;
+
+  payload.ExpiredTo = this.parentFormValue?.ExpiredTo
+    ? new Date(this.parentFormValue.ExpiredTo).toISOString()
+    : null;
+}
+
 
     this.operationService.getStdCharges(payload).pipe(
       catchError(err => {
@@ -136,6 +155,8 @@ export class GetStandardChargesComponent implements OnInit {
         CompanyMasterSid: charge.CompanyMasterSid,
         CargoType: charge.CargoType,
         ChargeMasterSid: charge.ChargeMasterSid,
+        ChargeCode: charge.ChargeMaster?.chargeCode,
+        UOMCode: charge.UOMMaster?.UOMCode,
         ChargeDescription: charge.ChargeName,
         ChargeUomSid: charge.UomSid,
         UomSid: charge.UomSid,

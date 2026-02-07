@@ -278,7 +278,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
-    { id: 3, name: 'Refer' },
+    { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
   ];

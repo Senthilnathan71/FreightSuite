@@ -55,6 +55,7 @@ import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -180,6 +181,7 @@ export class QuotationEntryComponent implements OnInit {
   containerTypeList: any[] = []
   TandCList: any[] = []
   tariffDetails : any[] = [];
+  standardChargeDetails:any[] = [];
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
   vendorSupplierList : any[] = [];
@@ -212,7 +214,7 @@ export class QuotationEntryComponent implements OnInit {
   leadList : any[] = [];
   auditLogModalRef!: NgbModalRef;
 
-   
+   standardChargeLoading:boolean = false;
 
   modeOfCargoType = [
     { id: 1, name: 'General' },
@@ -4821,4 +4823,114 @@ isQuotationSavedAfterApproval(routeIndex: number): boolean {
   
   return hasSavedApproval;
 }
+openStandardCharges(routeIndex: number, carrierIndex: number) {
+
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+
+  // ✅ Open Modal Component
+  const modalRef = this.ngbModal.open(GetStandardChargesComponent, {
+    size: 'xl',
+    centered: true,
+    backdrop: 'static'
+  });
+
+  // ✅ Pass Required Inputs
+    modalRef.componentInstance.parentFormValue = {
+
+    DepartmentMasterSid: routeForm.get('DepartmentMasterSid')?.value,
+    CargoType: routeForm.get('CargoType')?.value,
+
+    // Quotation Flag
+    isQuotation: true,
+
+
+    // Dates
+    EffectiveFrom: routeForm.get('effDate')?.value,
+    ExpiredTo: routeForm.get('expDate')?.value,
+  };
+  modalRef.componentInstance.currentCompany = this.currentCompany;
+  modalRef.componentInstance.currentBranch = this.currentBranch;
+
+  modalRef.componentInstance.chargeMaster = this.chargeMaster;
+  modalRef.componentInstance.chargeUnitMaster = this.chargeUnitMaster;
+  modalRef.componentInstance.currencyMaster = this.currencyMaster;
+
+  // ✅ Receive Selected Charges Back
+  modalRef.componentInstance.chargesSelected.subscribe((charges: any[]) => {
+    this.patchStandardCharges(routeIndex, carrierIndex, charges);
+  });
+}
+
+  patchStandardCharges(routeIndex: number, carrierIndex: number, charges: any[]) {
+
+    const carrierForm =
+      this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+
+    const quoteChargesArray =
+      carrierForm.get('quoteCharges') as FormArray;
+    console.log(quoteChargesArray, "Qoute Charges")
+
+    if (!quoteChargesArray) return;
+
+    // Existing Standard Charge IDs (Avoid Duplicate)
+    const existingIds =
+      quoteChargesArray.value.map((x: any) => x.StdTariffDetailSid);
+
+    charges.forEach((sc: any) => {
+
+      if (existingIds.includes(sc.StdTariffDetailSid)) return;
+
+      // ✅ Calculate Amounts
+      const qty = Number(sc.NoofUnit) || 1;
+
+      const revenueAmt = qty * (Number(sc.SaleAmount) || 0);
+      const costAmt = qty * (Number(sc.CostAmount) || 0);
+
+      // ✅ Push into FormArray (Same Structure as Tariff)
+      this.addQuoteCharge(routeIndex, carrierIndex, {
+
+        StdTariffDetailSid: sc.StdTariffDetailSid,
+
+        ChargeUomSid: sc.ChargeMasterSid,
+        RevenueChargeUomSid: sc.ChargeUomSid,
+        CostChargeUomSid: sc.ChargeUomSid,
+        ChargeDisplayName: sc.ChargeDescription,
+        Qty: qty,
+
+        // ---------------- Revenue ----------------
+        RevenueCurrencyMasterSid: sc.SaleCurrencyMasterSid,
+        RevenueRate: sc.SaleAmount,
+        RevenueExchangeRate: sc.exchangerateRevenue,
+        RevenueDrCr: "C",
+
+        RevenueAmount: revenueAmt,
+        RevenueLocalAmount: revenueAmt * (Number(sc.exchangerateRevenue) || 0),
+
+        // ---------------- Cost ----------------
+        CostCurrencyMasterSid: sc.CostCurrencyMasterSid,
+        CostRate: sc.CostAmount,
+        CostExchangeRate: sc.exchangeRateCost,
+        CostDrCr: "D",
+
+        CostAmount: costAmt,
+        CostLocalAmount: costAmt * (Number(sc.exchangeRateCost) || 0),
+
+        Remarks: sc.Remarks || '',
+        ChargeCode: sc.ChargeMaster?.chargeCode,
+        UOMCode: sc.UOMMaster?.UOMCode,
+
+        // RevenueCustomerMasterSid: null,
+        // RevenueCustomerBranchSid: null,
+        // CostAgentMasterSid: null,
+        // CostAgentBranchSid: null,
+
+      })
+
+    });
+
+    this.appSettingService.showSuccess("Standard Charges Applied Successfully ✅");
+  }
+
+
 }
