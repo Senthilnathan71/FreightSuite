@@ -160,7 +160,8 @@ export class StatementReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 15, 12, 10, 15, 10, 25, 15, 8, 8, 15, 15, 15, 15, 15]
+      columnWidths: [12, 12, 15, 12, 10, 15, 10, 25, 15, 8, 8, 15, 15, 15, 15, 15],
+      notes: ['This Statement of Accounts report includes only posted voucher transactions.']
     };
   }
 

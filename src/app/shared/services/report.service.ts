@@ -330,9 +330,9 @@ export class ReportService {
       scrollable: true,
       backdrop: 'static',
       keyboard: false,
-      // windowClass : 'report-modal-landscape',
-      // windowClass : 'report-modal-portrait',
-       windowClass: reportDetails.Orientation === 'L' ? 'report-modal-landscape' : 'report-modal-portrait'
+      windowClass: (config?.pdfOrientation === 'landscape' || reportDetails.Orientation === 'L')
+        ? 'report-modal-landscape'
+        : 'report-modal-portrait'
     });
 
     // Pass input data

@@ -16,6 +16,7 @@ import { ReportService, REPORT_DATA } from '../../services/report.service';
 import { ReportConfig } from '../../services/report-registry.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from '../../excel-report-service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 
 /**
  * Generic Report Modal Component
@@ -106,6 +107,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     private injector: Injector,
     private excelReportService: ExcelExportService,
     private appSettingService: AppSettingsService,
+    private pdfMakeService: PdfMakeService,
   ) {}
 
   ngOnInit(): void {
@@ -218,14 +220,33 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     try {
       this.spinner.show();
 
-      // Generate filename
       const filename = this.reportService.generateFilename(
         this.reportConfig.filenameTemplate,
         this.reportData
       );
 
-      // Download PDF
-      await this.reportService.downloadPDF(this.printElementId, filename,{ orientation : this.reportConfig?.pdfOrientation || 'portrait'});
+      // Use pdfmake if component provides structured data
+      if (this.componentRef?.instance?.getExcelData) {
+        const exportConfig = this.componentRef.instance.getExcelData();
+        if (exportConfig?.reportHeader && exportConfig?.rows) {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+
+          this.pdfMakeService.generateGenericReport(
+            { ...exportConfig, fileName: filename },
+            company, branch, userData, logo,
+            this.reportConfig?.pdfOrientation || 'portrait'
+          );
+          this.appSettingsService.showSuccess('PDF downloaded successfully!');
+          this.spinner.hide();
+          return;
+        }
+      }
+
+      // Fallback to html2canvas for components without getExcelData
+      await this.reportService.downloadPDF(this.printElementId, filename, { orientation: this.reportConfig?.pdfOrientation || 'portrait' });
 
       this.spinner.hide();
     } catch (error) {
@@ -242,16 +263,34 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     try {
       this.spinner.show();
 
-      // Generate PDF blob
-      const pdfBlob = await this.reportService.generatePDFBlob(this.printElementId);
-
-      // Generate filename
+      let pdfBlob: Blob;
       const filename = this.reportService.generateFilename(
         this.reportConfig.filenameTemplate,
         this.reportData
       );
 
-      // Build email data
+      // Use pdfmake if component provides structured data
+      if (this.componentRef?.instance?.getExcelData) {
+        const exportConfig = this.componentRef.instance.getExcelData();
+        if (exportConfig?.reportHeader && exportConfig?.rows) {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+
+          pdfBlob = await this.pdfMakeService.generateGenericReportBlob(
+            exportConfig, company, branch, userData, logo,
+            this.reportConfig?.pdfOrientation || 'portrait'
+          );
+        } else {
+          // Fallback to html2canvas
+          pdfBlob = await this.reportService.generatePDFBlob(this.printElementId);
+        }
+      } else {
+        // Fallback to html2canvas
+        pdfBlob = await this.reportService.generatePDFBlob(this.printElementId);
+      }
+
       const emailData = this.reportService.buildEmailData(
         this.reportConfig,
         this.reportData

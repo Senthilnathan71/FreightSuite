@@ -135,7 +135,7 @@ export class OutstandingReportComponent {
     { key: 'voucherDate', label: 'Voucher Date' },
     { key: 'voucherType', label: 'Voucher Type' },
     { key: 'hblNo', label: 'HBL / HAWB No' },
-    { key: 'desc', label: 'Desc' },
+    { key: 'desc', label: 'Narration' },
     { key: 'drCr', label: 'Dr/Cr' },
     { key: 'currency', label: 'Cur' },
     { key: 'amt', label: 'Amt' },
@@ -198,51 +198,6 @@ export class OutstandingReportComponent {
   });
 
   // =====================================================
-  // ✅ SPACE BETWEEN TABLES
-  // =====================================================
-
-  rows.push({ cells: [{ value: '' }] });
-
-  // =====================================================
-  // ✅ TABLE 2 HEADER (Currency Wise Summary)
-  // =====================================================
-
-  rows.push({
-    cells: [
-      { value: 'Currency' },
-      { value: 'Total Outstanding' },
-      { value: '0 - 30 Days' },
-      { value: '31 - 60 Days' },
-      { value: '61 - 90 Days' },
-      { value: '91 - 120 Days' },
-      { value: '121+ Days' }
-    ],
-    style: 'header'
-  });
-
-  // =====================================================
-  // ✅ TABLE 2 ROWS (Currency Wise Summary Like HTML)
-  // =====================================================
-
-  currencySummary.forEach((cur: any) => {
-
-    rows.push({
-      cells: [
-        { value: cur.currencyCode || '' },
-
-        { value: this.formatNumber(cur.totalOutstanding || 0) },
-
-        { value: this.formatNumber(cur.bucket_0_30 || 0) },
-        { value: this.formatNumber(cur.bucket_31_60 || 0) },
-        { value: this.formatNumber(cur.bucket_61_90 || 0) },
-        { value: this.formatNumber(cur.bucket_91_120 || 0) },
-        { value: this.formatNumber(cur.bucket_121_above || 0) }
-      ],
-      style: 'data'
-    });
-  });
-
-  // =====================================================
   // ✅ RETURN CONFIG
   // =====================================================
 
@@ -269,7 +224,25 @@ export class OutstandingReportComponent {
       8, 8, 15, 15,
       15, 15, 15,
       10
-    ]
+    ],
+
+    summaryTable: {
+      title: 'Currency Wise Summary',
+      headers: ['Currency', 'Total Outstanding', '0 - 30 Days', '31 - 60 Days', '61 - 90 Days', '91 - 120 Days', '121+ Days'],
+      rows: currencySummary.map((cur: any) => ({
+        cells: [
+          { value: cur.currencyCode || '' },
+          { value: this.formatNumber(cur.totalOutstanding || 0) },
+          { value: this.formatNumber(cur.bucket_0_30 || 0) },
+          { value: this.formatNumber(cur.bucket_31_60 || 0) },
+          { value: this.formatNumber(cur.bucket_61_90 || 0) },
+          { value: this.formatNumber(cur.bucket_91_120 || 0) },
+          { value: this.formatNumber(cur.bucket_121_above || 0) }
+        ],
+        style: 'data' as const
+      })),
+      columnWidths: [12, 18, 14, 14, 14, 14, 14]
+    }
   };
 }
 

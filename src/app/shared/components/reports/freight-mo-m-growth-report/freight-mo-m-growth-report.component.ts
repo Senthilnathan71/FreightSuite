@@ -162,7 +162,8 @@ export class FreightMoMGrowthReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [14, 16, 14, 14, 14, 10, 16, 16, 10, 16, 18, 18]
+      columnWidths: [14, 16, 14, 14, 14, 10, 16, 16, 10, 16, 18, 18],
+      notes: ['The system should derive the previous month\'s date range using the current From and To dates.']
     };
   }
 

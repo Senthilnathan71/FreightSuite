@@ -15,6 +15,7 @@ export { generateQuotationDocument, transformQuotationApiData } from './generato
 export { generateEnquiryDocument, transformEnquiryApiData } from './generators/enquiry-pdf.generator';
 export { generateBookingDocument, transformBookingApiData, transformCroApiData } from './generators/booking-pdf.generator';
 export { generateMasterJobDocument, transformMasterJobApiData } from './generators/master-job-pdf.generator';
+export { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 
 // Builders (for custom PDF creation)
 export * from './builders/pdf-header.builder';

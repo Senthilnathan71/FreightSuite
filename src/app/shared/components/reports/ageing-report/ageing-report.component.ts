@@ -144,14 +144,18 @@ export class AgeingReportComponent implements OnInit{
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Customer Ageing as on ${this.formatDate(this.fullData?.concludedUpto)}`,
         additionalInfo: [
-          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
-          { label: 'Ledger', value: this.fullData?.LedgerName || '' },
-          { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) }
+          { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) },
+          { label: 'Branch', value: this.fullData?.branchInvolvedText || '' },
+          { label: 'Ledger', value: this.fullData?.LedgerName || '' }
         ]
       },
       tableHeaders,
       rows,
-      columnWidths: [25, 15, 15, ...buckets.map(() => 12), 15, 15, 12, 12]
+      columnWidths: [25, 15, 15, ...buckets.map(() => 12), 15, 15, 12, 12],
+      notes: [
+        'Credit Days and Credit Limit are taken from Customer Credit Request. If multiple branches exist, then branch with the highest credit limit is considered.',
+        'Advance amounts are not included in the ageing buckets. they are recorded under On Account.'
+      ]
     };
   }
 

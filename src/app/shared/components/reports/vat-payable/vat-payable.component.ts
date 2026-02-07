@@ -141,7 +141,8 @@ export class VatPayableComponent {
 
       tableHeaders,
       rows,
-      columnWidths: [12, 22, 12, 16, 16, 30, 15, 15]
+      columnWidths: [12, 22, 12, 16, 16, 30, 15, 15],
+      notes: ['VAT Payable Report is generated based only on Invoice, Credit Note and Journal Voucher types.']
     };
   }
 

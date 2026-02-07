@@ -456,14 +456,14 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   }
 
   getMinDate(paramName: string): NgbDateStruct | null {
-    console.log('🔵 getMinDate called with:', paramName);
-    console.log('🔵 minDates:', this.minDates);
+    // console.log('🔵 getMinDate called with:', paramName);
+    // console.log('🔵 minDates:', this.minDates);
     return this.minDates.get(paramName) || null;
   }
 
   getMaxDate(paramName: string): NgbDateStruct | null {
-    console.log('🔵 getMaxDate called with:', paramName);
-    console.log('🔵 maxDates:', this.maxDates);
+    // console.log('🔵 getMaxDate called with:', paramName);
+    // console.log('🔵 maxDates:', this.maxDates);
     return this.maxDates.get(paramName) || null;
   }
 

@@ -322,7 +322,15 @@ export class Vat210Component {
       },
       tableHeaders,
       rows,
-      columnWidths: [40, 20, 20]
+      columnWidths: [40, 20, 20],
+      notes: [
+        'Total Vouchers: Includes all vouchers (posted), such as invoices, credit notes, vendor invoices, and vendor credit notes.',
+        'Included in Return: Includes vouchers whose headers contain VAT-related transactions.',
+        'Not Relevant for this Return: Includes vouchers that do not have any VAT transactions.',
+        'Information Required for Generating the Audit File Not Provided: Includes unposted vouchers.',
+        'Tax Payments (Included): Vouchers are taken only from payment vouchers.',
+        'Tax Payments (Not Included / Uncertain): Includes unposted payment vouchers.'
+      ]
     };
   }
 

@@ -27,6 +27,8 @@ import { generateQuotationDocument, transformQuotationApiData } from './generato
 import { generateEnquiryDocument, transformEnquiryApiData } from './generators/enquiry-pdf.generator';
 import { generateBookingDocument, transformBookingApiData, transformCroApiData } from './generators/booking-pdf.generator';
 import { generateMasterJobDocument, transformMasterJobApiData } from './generators/master-job-pdf.generator';
+import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
+import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -313,6 +315,74 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformMasterJobApiData(apiData, company, branch, userData, logo, lookups);
     return this.generateMasterJobBlob(pdfData, type);
+  }
+
+  // ==================== Generic Report ====================
+
+  /**
+   * Generate and download a generic report PDF from ComplexReportExportConfig
+   */
+  generateGenericReport(
+    exportConfig: ComplexReportExportConfig,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation?: 'portrait' | 'landscape'
+  ): void {
+    const data = this.buildGenericReportData(exportConfig, company, branch, userData, logo, orientation);
+    const docDefinition = generateGenericReportDocument(data);
+    this.download(docDefinition, exportConfig.fileName || 'Report');
+  }
+
+  /**
+   * Get generic report PDF as Blob (for email attachments)
+   */
+  async generateGenericReportBlob(
+    exportConfig: ComplexReportExportConfig,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation?: 'portrait' | 'landscape'
+  ): Promise<Blob> {
+    const data = this.buildGenericReportData(exportConfig, company, branch, userData, logo, orientation);
+    const docDefinition = generateGenericReportDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  /**
+   * Build GenericReportPdfData from raw inputs
+   */
+  private buildGenericReportData(
+    exportConfig: ComplexReportExportConfig,
+    company: any, branch: any, userData: any,
+    logo?: string, orientation?: 'portrait' | 'landscape'
+  ): GenericReportPdfData {
+    console.log(company, branch, logo)
+    return {
+      exportConfig,
+      company: {
+        companyName: company?.CompanyName || company?.companyName || '',
+        addressLine1: company?.Address || company?.addressLine1 || '',
+        phoneNumber: company?.Phone || company?.phoneNumber || '',
+        email: company?.Email || company?.email || ''
+      },
+      branch: {
+        branchName: branch?.BranchName || branch?.branchName || '',
+        addressLine1: branch?.Address || branch?.addressLine1 || '',
+        addressLine2: branch?.addressLine2 || '',
+        cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
+        postalCode: branch?.postalCode || '',
+        phoneNumber: branch?.phoneNumber || '',
+        cityMaster: branch?.cityMaster
+      },
+      userData: {
+        userName: userData?.UserName || userData?.userName || ''
+      },
+      logo,
+      orientation
+    };
   }
 
   // ==================== Utility Methods ====================

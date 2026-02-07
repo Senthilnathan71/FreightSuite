@@ -50,6 +50,13 @@ export interface ComplexReportExportConfig {
   tableHeaders: ExcelHeader[];
   rows: ExcelRow[];
   columnWidths?: number[];
+  summaryTable?: {
+    title?: string;
+    headers: string[];
+    rows: ExcelRow[];
+    columnWidths?: number[];
+  };
+  notes?: string[];
 }
 
 @Injectable({
@@ -191,6 +198,36 @@ export class ExcelExportService {
 
       aoa.push(excelRow);
       currentRowIndex++;
+    }
+
+    // Summary table (e.g., currency-wise summary in Outstanding Report)
+    if (config.summaryTable) {
+      // Empty separator row
+      aoa.push([]);
+      currentRowIndex++;
+
+      // Summary title (optional)
+      if (config.summaryTable.title) {
+        aoa.push([config.summaryTable.title]);
+        merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: totalCols - 1 } });
+        currentRowIndex++;
+      }
+
+      // Summary header row
+      const summaryHeaders = config.summaryTable.headers;
+      aoa.push(summaryHeaders);
+      currentRowIndex++;
+
+      // Summary data rows
+      for (const row of config.summaryTable.rows) {
+        const summaryExcelRow: any[] = [];
+        for (const cell of row.cells) {
+          summaryExcelRow.push(cell.value ?? '');
+        }
+        while (summaryExcelRow.length < summaryHeaders.length) summaryExcelRow.push('');
+        aoa.push(summaryExcelRow);
+        currentRowIndex++;
+      }
     }
 
     // Create worksheet
