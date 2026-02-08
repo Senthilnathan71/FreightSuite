@@ -22,7 +22,7 @@ export class ShipmentSummaryReportComponent {
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
-  orientation: 'portrait' | 'landscape' = 'portrait';
+  orientation: 'portrait' | 'landscape' = 'landscape';
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
@@ -30,6 +30,9 @@ export class ShipmentSummaryReportComponent {
     private reportRegistryService: ReportRegistryService
   ) {
     console.log('Outstanding Report Data:', this.data);
+    console.log('Report params:', this.data?.params);
+    console.log('FromMBLDt:', this.data?.params?.FromMBLDt);
+    console.log('ToMBLDt:', this.data?.params?.ToMBLDt);
   }
 
   ngOnInit(): void {
@@ -52,6 +55,13 @@ export class ShipmentSummaryReportComponent {
 
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
+  }
+
+  get departmentNamesList(): string {
+    const data = this.fullData?.data;
+    if (!data || !data.length) return '';
+    const unique = [...new Set(data.map((item: any) => item.department).filter(Boolean))];
+    return unique.join(', ');
   }
 
   getTotal(data: any[], field: string): number {
@@ -79,38 +89,38 @@ export class ShipmentSummaryReportComponent {
       { key: 'masterDate', label: 'Master Date' },
       { key: 'department', label: 'Dept' },
       { key: 'mblNo', label: 'MBL No' },
-      { key: 'vesselName', label: 'Vessel / Flight Name' },
-      { key: 'voyageNo', label: 'Voyage / Flight No' },
+      { key: 'vesselName', label: 'Vessel/Flight' },
+      { key: 'voyageNo', label: 'Voyage/Flight No' },
       { key: 'etd', label: 'ETD' },
       { key: 'eta', label: 'ETA' },
       { key: 'originPort', label: 'Origin Port' },
-      { key: 'originPortName', label: 'Origin Port Name' },
+      { key: 'originPortName', label: 'Origin Name' },
       { key: 'loadPort', label: 'Load Port' },
-      { key: 'loadPortName', label: 'Load Port Name' },
-      { key: 'dischargePort', label: 'Discharge Port' },
-      { key: 'dischargePortName', label: 'Discharge Port Name' },
-      { key: 'destinationPort', label: 'Destination Port' },
-      { key: 'destinationPortName', label: 'Destination Port Name' },
+      { key: 'loadPortName', label: 'Load Name' },
+      { key: 'dischargePort', label: 'Disch Port' },
+      { key: 'dischargePortName', label: 'Disch Name' },
+      { key: 'destinationPort', label: 'Dest Port' },
+      { key: 'destinationPortName', label: 'Dest Name' },
       { key: 'type', label: 'Type' },
-      { key: 'sendingAgent', label: 'Sending Agent' },
-      { key: 'receivingAgent', label: 'Receiving Agent' },
+      { key: 'sendingAgent', label: 'Send Agent' },
+      { key: 'receivingAgent', label: 'Recv Agent' },
       { key: 'carrier', label: 'Carrier' },
       { key: 'totalNoOfTEU', label: 'TEU' },
-      { key: 'transhipmentShipment', label: 'Transhipment Shipments' },
-      { key: 'localShipment', label: 'Local Shipments' },
-      { key: 'totalShipment', label: 'Total Shipments' },
+      { key: 'transhipmentShipment', label: 'T/S Ships' },
+      { key: 'localShipment', label: 'Local Ships' },
+      { key: 'totalShipment', label: 'Total Ships' },
       { key: 'weight', label: 'Weight' },
       { key: 'volume', label: 'Volume' },
       { key: 'chargeable', label: 'Chargeable' },
-      { key: 'noOfContainers', label: 'No of Container' },
+      { key: 'noOfContainers', label: 'Containers' },
       { key: 'numberOfTwentyFt', label: "20'" },
       { key: 'numberOfFourtyFt', label: "40'" },
       { key: 'numberofFurtyFive', label: "40' HC" },
       { key: 'shipper', label: 'Shipper' },
-      { key: 'containerNoList', label: 'Container No List' },
-      { key: 'consolStatus', label: 'Consol Status' },
-      { key: 'transhipmentVol', label: 'T/S Shipment Volume' },
-      { key: 'localShipmentVol', label: 'Local Shipment Volume' }
+      { key: 'containerNoList', label: 'Container Nos' },
+      { key: 'consolStatus', label: 'Status' },
+      { key: 'transhipmentVol', label: 'T/S Vol' },
+      { key: 'localShipmentVol', label: 'Local Vol' }
     ];
 
     const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
@@ -162,18 +172,18 @@ export class ShipmentSummaryReportComponent {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Customer Shipment Summary as on ${this.formatDate(this.params?.FromMBLDt)}`,
         additionalInfo: [
-          { label: 'Branch', value: this.params?.Branch || '' },
-          { label: 'Dept', value: this.params?.Dept || '' },
-          { label: 'From Date', value: this.formatDate(this.params?.FromMBLDt) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToMBLDt) }
+          { label: 'Branch', value: this.currentBranch?.branchName || '' },
+          { label: 'Dept', value: this.departmentNamesList || '' },
+          { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) }
         ]
       },
       tableHeaders,
       rows,
       columnWidths: [
-        15, 15, 10, 15, 20, 15, 15, 15, 15, 20, 15, 20, 15, 20, 15, 20, 10, 20, 20, 20,
-        10, 15, 15, 15, 15, 15, 15, 10, 10, 10, 10, 25, 25, 15, 15
-      ] // adjust as needed
+        18, 10, 8, 14, 14, 10, 10, 10, 6, 14, 6, 12, 6, 12, 6, 12, 6, 12, 12, 10,
+        5, 5, 5, 5, 6, 6, 6, 5, 4, 4, 4, 12, 14, 8, 6, 6
+      ]
     };
   }
 

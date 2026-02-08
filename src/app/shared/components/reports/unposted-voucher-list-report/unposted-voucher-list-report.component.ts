@@ -63,7 +63,7 @@ export class UnpostedVoucherListReportComponent {
 
 
 
-  getUnpostedVoucherExcelData(): ComplexReportExportConfig {
+  getExcelData(): ComplexReportExportConfig {
   const tableHeaders: ExcelHeader[] = [
     { key: 'Branch', label: 'Branch' },
     { key: 'VoucherNo', label: 'Voucher No' },

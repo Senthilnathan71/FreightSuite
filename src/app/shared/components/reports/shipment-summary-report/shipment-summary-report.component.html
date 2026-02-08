@@ -14,11 +14,11 @@
             <div>
 
                 <div class="d-flex align-items-center">
-                    <strong style="width: 100px;">To Date </strong>
+                    <strong style="width: 100px;">From Date </strong>
                     <p class="ms-1">: {{ params?.FromJobDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 100px;">From Date </strong>
+                    <strong style="width: 100px;">To Date </strong>
                     <p class="ms-1">: {{ params?.ToJobDt | formatDate }}</p>
                 </div>
             </div>
@@ -26,12 +26,12 @@
             <div>
               <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+                    <p class="ms-1">: {{ currentBranch?.branchName }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Dept </strong>
-                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                    <p class="ms-1">: {{ departmentNamesList }}</p>
                 </div>
             </div>
         </div>
@@ -39,43 +39,42 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                    
-                        <th class="bg-transparent text-light text-center">Master No</th>
-                        <th class="bg-transparent text-light">Master Date</th>
-                        <th class="bg-transparent text-light">Dept</th>
-                        <th class="bg-transparent text-light">MBL No</th>
-                        <th class="bg-transparent text-light">Vessel / Flight Name</th>
-                        <th class="bg-transparent text-light">Voyage / Flight No</th>
-                        <th class="bg-transparent text-light">ETD</th>
-                        <th class="bg-transparent text-light">ETA</th>
-                        <th class="bg-transparent text-light">Origin Port</th>
-                        <th class="bg-transparent text-light">Origin Port Name</th>
-                        <th class="bg-transparent text-light">Load Port</th>
-                        <th class="bg-transparent text-light">Load Port Name</th>
-                        <th class="bg-transparent text-light">Discharge Port</th>
-                        <th class="bg-transparent text-light">Discharge Port Name</th>
-                        <th class="bg-transparent text-light">Destination Port</th>
-                        <th class="bg-transparent text-light">Destination Port Name</th>
-                        <th class="bg-transparent text-light">Type</th>
-                        <th class="bg-transparent text-light">Sending Agent</th>
-                        <th class="bg-transparent text-light">Receiving Agent</th>
-                        <th class="bg-transparent text-light">Carrier</th>
-                        <th class="bg-transparent text-light">TEU</th>
-                        <th class="bg-transparent text-light">Transhipment Shipments</th>
-                        <th class="bg-transparent text-light">Local Shipments</th>
-                        <th class="bg-transparent text-light">Total Shipments</th>
-                        <th class="bg-transparent text-light">Weight</th>
-                        <th class="bg-transparent text-light">Volume</th>
-                        <th class="bg-transparent text-light">Chargeable</th>
-                        <th class="bg-transparent text-light">No of Container</th>
-                        <th class="bg-transparent text-light">20'</th>
-                        <th class="bg-transparent text-light">40'</th>
+                        <th class="bg-transparent text-light text-center" style="white-space: nowrap;">Master No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Master Date</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Dept</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">MBL No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Vessel/Flight</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Voyage/Flight No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">ETD</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">ETA</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Origin Port</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Origin Name</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Load Port</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Load Name</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Disch Port</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Disch Name</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Port</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Name</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Type</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Send Agent</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Recv Agent</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Carrier</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">TEU</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Ships</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Local Ships</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Total Ships</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Weight</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Volume</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Chargeable</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Containers</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">20'</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">40'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC</th>
-                        <th class="bg-transparent text-light">Shipper</th>
-                        <th class="bg-transparent text-light">Container No List</th>
-                        <th class="bg-transparent text-light">Consol Status</th>
-                        <th class="bg-transparent text-light">T/S Shipment Volume</th>
-                        <th class="bg-transparent text-light">Local Shipment Volume</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Shipper</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Container Nos</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Status</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Vol</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Local Vol</th>
                     </tr>
                 </thead>
                 <tbody>

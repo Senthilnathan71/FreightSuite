@@ -149,5 +149,124 @@ export class BalanceSheetReportComponent {
     return this.fullData?.bucketLabels || [];
   }
 
+  getExcelData(): ComplexReportExportConfig {
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'Group', label: 'Group' },
+      { key: 'SubGroup', label: 'SubGroup' },
+      { key: 'Ledger', label: 'Ledger' },
+      { key: 'Balance', label: 'Balance' }
+    ];
 
+    const rows: ExcelRow[] = [];
+
+    // --- Source of Funds ---
+    rows.push({ cells: [{ value: 'Source of Funds', colspan: 4 }], style: 'section' });
+
+    // Equity section
+    rows.push({ cells: [{ value: 'Equity', colspan: 4 }], style: 'section' });
+    const retainedEarning = (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
+    rows.push({
+      cells: [
+        { value: 'Reserve & Surplus' },
+        { value: 'Retained Earning' },
+        { value: 'Retained Earning 2024' },
+        { value: this.formatNumber(retainedEarning) }
+      ],
+      style: 'data'
+    });
+    rows.push({
+      cells: [
+        { value: 'Category Total', colspan: 3 },
+        { value: this.formatNumber(retainedEarning) }
+      ],
+      style: 'total'
+    });
+
+    // Non-Asset categories (other source of funds)
+    (this.processedFunds || []).forEach(cat => {
+      if (cat.category === 'Asset') return;
+
+      rows.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
+
+      (cat.items || []).forEach((item: any) => {
+        rows.push({
+          cells: [
+            { value: item.groupName || '' },
+            { value: item.subgroupName || '' },
+            { value: item.ledgerName || '' },
+            { value: this.formatNumber(item.LocalAmt) }
+          ],
+          style: 'data'
+        });
+      });
+
+      rows.push({
+        cells: [
+          { value: 'Category Total', colspan: 3 },
+          { value: this.formatNumber(cat.categoryTotal) }
+        ],
+        style: 'total'
+      });
+    });
+
+    // --- Application of Funds (Asset) ---
+    (this.processedFunds || []).forEach(cat => {
+      if (cat.category !== 'Asset') return;
+
+      rows.push({ cells: [{ value: 'Application of Funds', colspan: 4 }], style: 'section' });
+      rows.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
+
+      (cat.items || []).forEach((item: any) => {
+        rows.push({
+          cells: [
+            { value: item.groupName || '' },
+            { value: item.subgroupName || '' },
+            { value: item.ledgerName || '' },
+            { value: this.formatNumber(item.LocalAmt) }
+          ],
+          style: 'data'
+        });
+      });
+
+      rows.push({
+        cells: [
+          { value: 'Category Total', colspan: 3 },
+          { value: this.formatNumber(cat.categoryTotal) }
+        ],
+        style: 'total'
+      });
+    });
+
+    return {
+      fileName: 'Balance-Sheet-Report',
+      sheetName: 'BalanceSheet',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: 'Balance Sheet Report',
+        additionalInfo: [
+          { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          { label: 'Branch', value: this.fullData?.branchInvolved || 'All' }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [25, 25, 30, 18]
+    };
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
+  }
+
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
 }

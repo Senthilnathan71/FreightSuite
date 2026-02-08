@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-operation-report',
@@ -12,7 +15,11 @@ import { NgSelectModule } from '@ng-select/ng-select';
 })
 export class OperationReportComponent {
 
-  constructor(private modalService: NgbModal) {}
+  constructor(
+    private modalService: NgbModal,
+    private pdfMakeService: PdfMakeService,
+    private appSettingsService: AppSettingsService
+  ) {}
   ModeofModules = [
     { id: 1, name: "Settings" },
     { id: 2, name: "CRM" },
@@ -126,5 +133,52 @@ export class OperationReportComponent {
 
    openPreviewModal(content: any) {
     this.modalService.open(content, { centered: true, size: 'xl' });
+  }
+
+  downloadPDF(): void {
+    const report = this.selectedReport;
+    if (!report) return;
+
+    try {
+      const company = this.appSettingsService.getCurrentCompanyInfo();
+      const branch = this.appSettingsService.getCurrentBranchInfo();
+      const userData = this.appSettingsService.getDecryptedUserProfile();
+      const logo = this.pdfMakeService.getReportLogo();
+
+      const exportConfig: ComplexReportExportConfig = {
+        fileName: report.name.replace(/\s+/g, '_'),
+        reportHeader: {
+          companyName: company?.companyName || 'Company',
+          reportTitle: report.name,
+          additionalInfo: report.parameters.map(p => ({
+            label: p.name,
+            value: p.value
+          }))
+        },
+        tableHeaders: [
+          { key: 'vatPercent', label: 'VAT %' },
+          { key: 'vat', label: 'VAT' }
+        ],
+        rows: [
+          { cells: [{ value: 'RO' }, { value: 'OMR' }], style: 'data' },
+          { cells: [{ value: 'RO' }, { value: 'OMR' }], style: 'data' },
+          { cells: [{ value: 'RO' }, { value: 'OMR' }], style: 'data' }
+        ]
+      };
+
+      this.pdfMakeService.generateGenericReport(
+        exportConfig,
+        company,
+        branch,
+        userData,
+        logo,
+        'portrait'
+      );
+
+      this.appSettingsService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      this.appSettingsService.showError('Failed to download PDF');
+    }
   }
 }

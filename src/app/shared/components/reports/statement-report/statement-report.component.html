@@ -22,7 +22,7 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.BranchInvolved }}</p>
+                    <p class="ms-1">: {{ fullData?.BranchInvolved || currentBranch?.branchName }}</p>
                 </div>
 
 
@@ -62,7 +62,8 @@
                         <th class="bg-transparent text-light">Dept</th> -->
                         <th class="bg-transparent text-light">Naration</th>
                         <!-- <th class="bg-transparent text-light">Salesperson</th> -->
-                        <th class="bg-transparent text-light">Dr/Cr</th>
+                        <th class="bg-transparent text-light">Dr</th>
+                        <th class="bg-transparent text-light">Cr</th>
                         <th class="bg-transparent text-light">Cur</th>
                         <th class="bg-transparent text-light">Amt</th>
                         <th class="bg-transparent text-light">Local Amt</th>
@@ -83,7 +84,8 @@
                         <td>{{item?.deptname}}</td> -->
                         <td style="white-space: nowrap;">{{item?.naration}}</td>
                         <!-- <td>{{item?.salesmanSid}}</td> -->
-                        <td class="text-center">{{item?.drCr}}</td>
+                        <td class="text-center">{{item?.drCr === "D" ? "D" : " "}}</td>
+                        <td class="text-center">{{item?.drCr === "C" ? "C": " "}}</td>
                         <td>{{item?.currencyCode}}</td>
                         <td style="text-align: right;">{{item?.originalCurrencyAmount | number:'1.2-2'}}</td>
                         <td style="text-align: right;">{{item?.originalLocalAmount | number:'1.2-2'}}</td>

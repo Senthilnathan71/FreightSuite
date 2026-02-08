@@ -192,12 +192,25 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     // Clear any existing components
     this.reportContainer.clear();
 
+    // Merge payload as params into report data so report components can access request filters (e.g. FromMBLDt, ToMBLDt)
+    let dataToInject = this.reportData;
+    if (this.payload) {
+      if (dataToInject && typeof dataToInject === 'object' && !Array.isArray(dataToInject)) {
+        dataToInject = { ...dataToInject, params: this.payload };
+      } else {
+        // Wrap non-object/array responses so params are still accessible
+        dataToInject = { data: dataToInject, params: this.payload };
+      }
+    }
+    console.log('Report data injected:', dataToInject);
+    console.log('Payload (params):', this.payload);
+
     // Create injector with report data
     const componentInjector = Injector.create({
       providers: [
         {
           provide: REPORT_DATA,
-          useValue: this.reportData
+          useValue: dataToInject
         }
       ],
       parent: this.injector

@@ -49,7 +49,7 @@ export class LostCustomerReportComponent {
   }
 
 
-  getLostCustomerExcelData(): ComplexReportExportConfig {
+  getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'CustomerName', label: 'Customer Name' },
       { key: 'CustomerAddress', label: 'Address' },
