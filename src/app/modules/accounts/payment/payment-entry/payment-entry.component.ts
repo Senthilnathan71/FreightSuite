@@ -48,7 +48,7 @@ import {
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
-import { errorLogger, errorLoggerWithToastr, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -73,6 +73,7 @@ import {
 } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 
 /**
  * Payment Entry Component
