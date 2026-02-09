@@ -40,9 +40,10 @@
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light text-center" style="white-space: nowrap;">Master No</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Master Date</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Dept</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">MBL No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">HBL No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">HBL Date</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Dept</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Vessel/Flight</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Voyage/Flight No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">ETD</th>
@@ -56,8 +57,8 @@
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Port</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Name</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Type</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Send Agent</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Recv Agent</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Origin</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Delivery Name</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Carrier</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">TEU</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Ships</th>
@@ -66,12 +67,12 @@
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Weight</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Volume</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Chargeable</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Containers</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">No of Containers</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">20'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">40'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Shipper</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Container Nos</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Container No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Status</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Vol</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Local Vol</th>
@@ -81,9 +82,10 @@
                     <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
                  
                         <td class="text-center">{{ item.masterNo || '' }}</td>
-                        <td>{{ item.masterDate | date:'yyyy-MM-dd' }}</td>
-                        <td>{{ item.department || '' }}</td>
                         <td>{{ item.mblNo || '' }}</td>
+                        <td>{{ item.Hblno || '' }}</td>
+                        <td>{{ item.HblDate | date:'yyyy-MM-dd' }}</td>
+                        <td>{{ item.department || '' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.voyageNo || '' }}</td>
                         <td>{{ item.etd | date:'yyyy-MM-dd' || '' }}</td>

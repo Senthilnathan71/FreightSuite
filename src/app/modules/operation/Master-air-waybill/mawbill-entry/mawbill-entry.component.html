@@ -24,14 +24,16 @@
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel()"
+                        <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWB')"
                             >MAWB</button> 
+                             <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWBDraft')"
+                            >MAWB Draft</button> 
+                            <button class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()"
+                            >MAWB preprint</button> 
                             <button class="text-dark" ngbDropdownItem (click)="reportcargomanifest()"
                             >Cargo Manifest</button>                 
                             <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()"
                             >Pre Alert</button>  
-                            <button class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()"
-                            >MAWB preprint</button> 
                     </div>
                 </div>
             </div>

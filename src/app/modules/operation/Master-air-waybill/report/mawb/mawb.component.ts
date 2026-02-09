@@ -40,6 +40,7 @@ export class MAWBComponent implements OnChanges {
   @Input() containerTypeList: any;
   @Input() chargeList: any;
   @Input() packageTypeList: any[] = [];
+  @Input() selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB'; 
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];

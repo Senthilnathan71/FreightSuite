@@ -41,6 +41,7 @@
                         <th class="bg-transparent text-light">Prov.Revenue</th>
                         <th class="bg-transparent text-light">Prov.Cost</th>
                         <th class="bg-transparent text-light">Prov.GP</th>
+                        <th class="bg-transparent text-light">Prov.Profit</th>
                         <th class="bg-transparent text-light">Actual Revenue</th>
                         <th class="bg-transparent text-light">Actual Cost</th>
                         <th class="bg-transparent text-light">Actual GP</th>
@@ -63,6 +64,7 @@
                         <td class="text-end">{{item.totalRevenueWithHouse | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.totalCostWithHouse | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.GP | number:'1.2-2'}}</td>
+                        <td class="text-end">{{item.proveprofit | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualRevenue | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualCost | number:'1.2-2'}}</td>
                         <td class="text-end">{{item.actualGp | number:'1.2-2'}}</td>
@@ -70,7 +72,7 @@
                         <td class="text-end">{{item.noOfShipment || ''}}</td>
                         <td class="text-end">{{ item.twentyft || '' }}</td>
                         <td class="text-end">{{ item.fourty || '' }}</td>
-                        <td class="text-end">{{item.containerNo}}</td>
+                        <td>{{item.containerNo}}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.2-2'}}</td>
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
                          <td class="text-end">{{ item.space | number:'1.2-2' }}</td>

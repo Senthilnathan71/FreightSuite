@@ -207,6 +207,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   };
   currentMenuId: any;
   masterJobData:any;
+  selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB';
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -2312,7 +2313,8 @@ onYardChange(selectedYard: any): void {
       }
   // print
 
-   reportMAWBModel() {
+   reportMAWBModel(type: 'MAWB' | 'MAWBDraft') {
+    this.selectedReport = type;
         const modalRef=this.modalService.open(MAWBComponent,{
           size: 'xl',
           scrollable: true,
@@ -2323,7 +2325,8 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.packageTypeList=this.packageTypeList;
         modalRef.componentInstance.agentList=this.agentList;
         modalRef.componentInstance.currencyList=this.currencyList;
-         modalRef.componentInstance.chargeList=this.chargeList;
+        modalRef.componentInstance.chargeList=this.chargeList;
+        modalRef.componentInstance.selectedReport = type;
       }
 
       getFormattedPort(code:string){
