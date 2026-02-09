@@ -1824,6 +1824,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
       status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
+    this.syncFormValueWithRateComponent();
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
     
@@ -3202,9 +3203,12 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const NoofContainers = this.cargoForm.get('NoofContainers')?.value;
     const Volume = this.cargoForm.get('Volume')?.value;
     const ChargeableWeight = this.cargoForm.get('ChargeableWeight')?.value
-    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
-    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.getRawValue();
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.getRawValue();
     const BookingHeaderSid = this.b['BookingHeaderSid']?.value;
+    const salesmanSid = this.b['SalesmanSid']?.value || '';
+    const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
+
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -3232,7 +3236,8 @@ getVoyageTypeBasedOnDept(deptId: number) {
       Volume,
       NoofContainers,
       ChargeableWeight,
-      countryOfCompany: this.countryOfCompany
+      countryOfCompany: this.countryOfCompany,
+      SalesmanName : salesmanName
     }
   }
 

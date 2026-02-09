@@ -30,13 +30,14 @@ export interface BookingRateDetails {
     chargeName: string;
     HSNSAC?: string;
     chargeTaxMaster?: Array<{    
-      ChargeTaxMasterSid : number;
-      HSNCode : string;
-      HSSACMasterSid : number;
-      TaxGroup : string;
-      TaxGroupSid : number;
-      TaxRate : string;
-      description : string;
+      ChargeTaxMasterSid: number;
+      hssacMaster: {
+          HSSACMasterSid: number,
+          HSSACCode: string,
+          TaxRate: number,
+          TaxType: string,
+          TaxGroupSid: number
+      }
     }>;
   };
   customerMaster?: BillingPartyDetails;
@@ -112,18 +113,18 @@ export class TaxCalculationService {
   constructor() { }
 
   /**
-   * Main method to calculate tax based on company location and billing party
-   */
-  calculateTax(params: TaxCalculationParams): TaxCalculationResult {
-    const companyCountry = this.getCompanyCountry(params.companyMasterSid);
-    const taxType = this.determineTaxType(companyCountry);
+  //  * Main method to calculate tax based on company location and billing party
+  //  */
+  // calculateTax(params: TaxCalculationParams): TaxCalculationResult {
+  //   const companyCountry = this.getCompanyCountry(params.companyMasterSid);
+  //   const taxType = this.determineTaxType(companyCountry);
 
-    if (taxType === 'GST') {
-      return this.calculateGST(params);
-    } else {
-      return this.calculateVAT(params);
-    }
-  }
+  //   if (taxType === 'GST') {
+  //     return this.calculateGST(params);
+  //   } else {
+  //     return this.calculateVAT(params);
+  //   }
+  // }
 
   /**
    * Determine tax type based on company country
@@ -143,135 +144,135 @@ export class TaxCalculationService {
 
   /**
    * Calculate GST for Indian companies
-   */
-  calculateGST(params: TaxCalculationParams): GSTResult {
-    const { billingParty, charges } = params;
+  //  */
+  // calculateGST(params: TaxCalculationParams): GSTResult {
+  //   const { billingParty, charges } = params;
 
-    // Get company and billing party states
-    const companyState = this.getCompanyState(params.companyMasterSid, params.branchMasterSid);
-    const billingPartyState = billingParty.StateName?.toLowerCase().trim();
+  //   // Get company and billing party states
+  //   const companyState = this.getCompanyState(params.companyMasterSid, params.branchMasterSid);
+  //   const billingPartyState = billingParty.StateName?.toLowerCase().trim();
 
-    // Determine if it's inter-state transaction
-    const isInterState = companyState !== billingPartyState;
+  //   // Determine if it's inter-state transaction
+  //   const isInterState = companyState !== billingPartyState;
 
-    const lineItems: GSTLineItem[] = [];
-    let totalAmount = 0;
-    let totalCGSTAmount = 0;
-    let totalSGSTAmount = 0;
-    let totalIGSTAmount = 0;
+  //   const lineItems: GSTLineItem[] = [];
+  //   let totalAmount = 0;
+  //   let totalCGSTAmount = 0;
+  //   let totalSGSTAmount = 0;
+  //   let totalIGSTAmount = 0;
 
-    charges.forEach(charge => {
-      const amount = Number(charge.RevenueLocalAmount) || 0;
-      totalAmount += amount;
+  //   charges.forEach(charge => {
+  //     const amount = Number(charge.RevenueLocalAmount) || 0;
+  //     totalAmount += amount;
 
-      // Get tax rate from charge master or default
-      const taxRate = this.getChargeTaxRate(charge);
+  //     // Get tax rate from charge master or default
+  //     const taxRate = this.getChargeTaxRate(charge);
 
-      let cgstRate = 0;
-      let sgstRate = 0;
-      let igstRate = 0;
-      let cgstAmount = 0;
-      let sgstAmount = 0;
-      let igstAmount = 0;
+  //     let cgstRate = 0;
+  //     let sgstRate = 0;
+  //     let igstRate = 0;
+  //     let cgstAmount = 0;
+  //     let sgstAmount = 0;
+  //     let igstAmount = 0;
 
-      if (isInterState) {
-        // Inter-state: IGST
-        igstRate = taxRate;
-        igstAmount = (amount * igstRate) / 100;
-        totalIGSTAmount += igstAmount;
-      } else {
-        // Intra-state: CGST + SGST
-        cgstRate = taxRate / 2;
-        sgstRate = taxRate / 2;
-        cgstAmount = (amount * cgstRate) / 100;
-        sgstAmount = (amount * sgstRate) / 100;
-        totalCGSTAmount += cgstAmount;
-        totalSGSTAmount += sgstAmount;
-      }
+  //     if (isInterState) {
+  //       // Inter-state: IGST
+  //       igstRate = taxRate;
+  //       igstAmount = (amount * igstRate) / 100;
+  //       totalIGSTAmount += igstAmount;
+  //     } else {
+  //       // Intra-state: CGST + SGST
+  //       cgstRate = taxRate / 2;
+  //       sgstRate = taxRate / 2;
+  //       cgstAmount = (amount * cgstRate) / 100;
+  //       sgstAmount = (amount * sgstRate) / 100;
+  //       totalCGSTAmount += cgstAmount;
+  //       totalSGSTAmount += sgstAmount;
+  //     }
 
-      const totalTaxAmount = cgstAmount + sgstAmount + igstAmount;
+  //     const totalTaxAmount = cgstAmount + sgstAmount + igstAmount;
 
-      lineItems.push({
-        description: charge.ChargeDescription,
-        hsn: this.getChargeHSN(charge),
-        amount,
-        cgstRate,
-        sgstRate,
-        igstRate,
-        cgstAmount,
-        sgstAmount,
-        igstAmount,
-        totalTaxAmount
-      });
-    });
+  //     lineItems.push({
+  //       description: charge.ChargeDescription,
+  //       hsn: this.getChargeHSN(charge),
+  //       amount,
+  //       cgstRate,
+  //       sgstRate,
+  //       igstRate,
+  //       cgstAmount,
+  //       sgstAmount,
+  //       igstAmount,
+  //       totalTaxAmount
+  //     });
+  //   });
 
-    const totalTaxAmount = totalCGSTAmount + totalSGSTAmount + totalIGSTAmount;
-    const totalInvoiceAmount = totalAmount + totalTaxAmount;
+  //   const totalTaxAmount = totalCGSTAmount + totalSGSTAmount + totalIGSTAmount;
+  //   const totalInvoiceAmount = totalAmount + totalTaxAmount;
 
-    return {
-      type: 'GST',
-      isInterState,
-      isSameState: !isInterState,
-      lineItems,
-      subtotal: totalAmount,
-      totalAmount,
-      totalCGST: totalCGSTAmount,
-      totalCGSTAmount,
-      totalSGST: totalSGSTAmount,
-      totalSGSTAmount,
-      totalIGST: totalIGSTAmount,
-      totalIGSTAmount,
-      totalTaxAmount,
-      grandTotal: totalInvoiceAmount,
-      totalInvoiceAmount
-    };
-  }
+  //   return {
+  //     type: 'GST',
+  //     isInterState,
+  //     isSameState: !isInterState,
+  //     lineItems,
+  //     subtotal: totalAmount,
+  //     totalAmount,
+  //     totalCGST: totalCGSTAmount,
+  //     totalCGSTAmount,
+  //     totalSGST: totalSGSTAmount,
+  //     totalSGSTAmount,
+  //     totalIGST: totalIGSTAmount,
+  //     totalIGSTAmount,
+  //     totalTaxAmount,
+  //     grandTotal: totalInvoiceAmount,
+  //     totalInvoiceAmount
+  //   };
+  // }
 
   /**
    * Calculate VAT for UAE/Dubai companies
    */
-  calculateVAT(params: TaxCalculationParams): VATResult {
-    const { charges } = params;
+  // calculateVAT(params: TaxCalculationParams): VATResult {
+  //   const { charges } = params;
 
-    const lineItems: VATLineItem[] = [];
-    let totalAmount = 0;
-    let totalVATAmount = 0;
+  //   const lineItems: VATLineItem[] = [];
+  //   let totalAmount = 0;
+  //   let totalVATAmount = 0;
 
-    // Get VAT rate (standard 5% for UAE/Dubai)
-    const vatRate = this.getVATRate();
+  //   // Get VAT rate (standard 5% for UAE/Dubai)
+  //   const vatRate = this.getVATRate();
 
-    charges.forEach(charge => {
-      const amount = Number(charge.RevenueLocalAmount) || 0;
-      totalAmount += amount;
+  //   charges.forEach(charge => {
+  //     const amount = Number(charge.RevenueLocalAmount) || 0;
+  //     totalAmount += amount;
 
-      const vatAmount = (amount * vatRate) / 100;
-      totalVATAmount += vatAmount;
+  //     const vatAmount = (amount * vatRate) / 100;
+  //     totalVATAmount += vatAmount;
 
-      lineItems.push({
-        description: charge.ChargeDescription,
-        hsn: this.getChargeHSN(charge),
-        amount,
-        vatRate,
-        vatAmount,
-        totalTaxAmount: vatAmount
-      });
-    });
+  //     lineItems.push({
+  //       description: charge.ChargeDescription,
+  //       hsn: this.getChargeHSN(charge),
+  //       amount,
+  //       vatRate,
+  //       vatAmount,
+  //       totalTaxAmount: vatAmount
+  //     });
+  //   });
 
-    const totalInvoiceAmount = totalAmount + totalVATAmount;
+  //   const totalInvoiceAmount = totalAmount + totalVATAmount;
 
-    return {
-      type: 'VAT',
-      lineItems,
-      subtotal: totalAmount,
-      totalAmount,
-      totalVAT: totalVATAmount,
-      totalVATAmount,
-      totalTaxAmount: totalVATAmount,
-      grandTotal: totalInvoiceAmount,
-      totalInvoiceAmount,
-      vatRate
-    };
-  }
+  //   return {
+  //     type: 'VAT',
+  //     lineItems,
+  //     subtotal: totalAmount,
+  //     totalAmount,
+  //     totalVAT: totalVATAmount,
+  //     totalVATAmount,
+  //     totalTaxAmount: totalVATAmount,
+  //     grandTotal: totalInvoiceAmount,
+  //     totalInvoiceAmount,
+  //     vatRate
+  //   };
+  // }
 
   /**
    * Filter charges for pending invoices (no voucher created)
@@ -333,56 +334,56 @@ export class TaxCalculationService {
     }
   }
 
-  private getChargeTaxRate(charge: BookingRateDetails): number {
-    // Try to get tax rate from charge master tax mapping
-    if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
-      const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
-      if (taxMapping.TaxRate) {
-        return Number(taxMapping.TaxRate);
-      }
-    }
+  // private getChargeTaxRate(charge: BookingRateDetails): number {
+  //   // Try to get tax rate from charge master tax mapping
+  //   if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
+  //     const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
+  //     if (taxMapping.TaxRate) {
+  //       return Number(taxMapping.TaxRate);
+  //     }
+  //   }
 
-    // Default tax rates based on charge type
-    const chargeName = charge.ChargeDescription?.toLowerCase() || '';
+  //   // Default tax rates based on charge type
+  //   const chargeName = charge.ChargeDescription?.toLowerCase() || '';
 
-    if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
-      return 0; // Ocean freight is usually exempt or 0%
-    } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
-      return 18; // Service charges are usually 18%
-    } else if (chargeName.includes('insurance')) {
-      return 18; // Insurance services
-    } else {
-      return 18; // Default GST rate for services
-    }
-  }
+  //   if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
+  //     return 0; // Ocean freight is usually exempt or 0%
+  //   } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
+  //     return 18; // Service charges are usually 18%
+  //   } else if (chargeName.includes('insurance')) {
+  //     return 18; // Insurance services
+  //   } else {
+  //     return 18; // Default GST rate for services
+  //   }
+  // }
 
-  private getChargeHSN(charge: BookingRateDetails): string {
-    // Try to get HSN from charge master
-    if (charge.ChargeMaster?.HSNSAC) {
-      return charge.ChargeMaster.HSNSAC;
-    }
+  // private getChargeHSN(charge: BookingRateDetails): string {
+  //   // Try to get HSN from charge master
+  //   if (charge.ChargeMaster?.HSNSAC) {
+  //     return charge.ChargeMaster.HSNSAC;
+  //   }
 
-    // Try to get from tax mapping
-    if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
-      const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
-      if (taxMapping.HSNCode) {
-        return taxMapping.HSNCode;
-      }
-    }
+  //   // Try to get from tax mapping
+  //   if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
+  //     const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
+  //     if (taxMapping.HSNCode) {
+  //       return taxMapping.HSNCode;
+  //     }
+  //   }
 
-    // Default HSN codes based on charge type
-    const chargeName = charge.ChargeDescription?.toLowerCase() || '';
+  //   // Default HSN codes based on charge type
+  //   const chargeName = charge.ChargeDescription?.toLowerCase() || '';
 
-    if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
-      return '996511'; // Goods transport by sea
-    } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
-      return '996519'; // Other supporting transport services
-    } else if (chargeName.includes('insurance')) {
-      return '996411'; // Insurance services
-    } else {
-      return '996519'; // Default for freight forwarding services
-    }
-  }
+  //   if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
+  //     return '996511'; // Goods transport by sea
+  //   } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
+  //     return '996519'; // Other supporting transport services
+  //   } else if (chargeName.includes('insurance')) {
+  //     return '996411'; // Insurance services
+  //   } else {
+  //     return '996519'; // Default for freight forwarding services
+  //   }
+  // }
 
   private getVATRate(): number {
     // Standard VAT rate for UAE/Dubai

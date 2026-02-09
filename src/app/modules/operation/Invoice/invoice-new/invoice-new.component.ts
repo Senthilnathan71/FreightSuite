@@ -1138,7 +1138,7 @@ export class InvoiceNewComponent implements OnInit {
         charges: data.pendingCharges
       };
 
-      this.taxCalculationResult = this.taxCalculationService.calculateTax(taxParams);
+      // this.taxCalculationResult = this.taxCalculationService.calculateTax(taxParams);
 
       // Clear existing details and add new ones from booking rates
       this.details.clear();

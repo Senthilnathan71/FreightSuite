@@ -184,14 +184,14 @@ searchHouseJob(payload: any) {
 
   getBookingRatesWithDetails(BookingHeaderSid: number) {
     return this.http.get<{ data: any[] }>(`ff-booking/rates-with-details/${BookingHeaderSid}`).pipe(
-      map((resp) => {
+      map((resp : any) => {
         return resp;
       })
     );
   }
   getCostRevenueChargeWithDetails(payload: { TransactionSid: number, menuName: string }) {
     return this.http.post<{ data: any[] }>(`operation-common/cost-revenue/fetchWithDetails`, payload).pipe(
-      map((resp) => {
+      map((resp : any) => {
         return resp;
       })
     );

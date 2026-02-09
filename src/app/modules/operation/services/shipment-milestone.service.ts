@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
-import { getFirstValidationError, handleError, sortValidationErrors } from 'src/app/common/error-handler.helper';
+import { getFirstValidationError, handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 
 export interface ResponseData {
   status: boolean;

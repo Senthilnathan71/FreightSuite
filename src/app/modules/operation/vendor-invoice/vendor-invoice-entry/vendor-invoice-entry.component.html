@@ -194,8 +194,6 @@
                     [footerTemplate]="footerTemplate1"
                     [class.is-invalid]="isFieldInvalid('VoucherDate')"
                     (dateSelect)="onVoucherDateChange()"
-                    [minDate]="voucherConstraints.minDate"
-                    [maxDate]="voucherConstraints.maxDate"
                   />
                   <label class="input-label" for="VoucherDate">
                     Invoice Date <span class="text-danger">*</span>
