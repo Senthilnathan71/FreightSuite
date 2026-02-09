@@ -7,334 +7,502 @@
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
     </div>
 </div>
 
 <div class="modal-body">
     <div id="printContent" class="p-1">
-        <!-- A4 Page Container -->
-        <div class="mawb-preprint-page">
 
-            <!-- SHIPPER SECTION -->
-            <!-- Shipper Name -->
-            <span class="data-field shipper-name">
-                {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
-            </span>
-            
-            <!-- Shipper Address -->
-            <span class="data-field shipper-address">
-                {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
-            </span>
-            
-            <!-- Shipper Account No -->
-            <span class="data-field shipper-account">
-                {{ getShipperAccountNo() }}
-            </span>
+        <div class="mawb-report">
+            <div class="mawb-page">
 
-            <!-- CONSIGNEE SECTION -->
-            <!-- Consignee Name -->
-            <span class="data-field consignee-name">
-                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }}
-            </span>
-            
-            <!-- Consignee Address -->
-            <span class="data-field consignee-address">
-                {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
-            </span>
-            
-            <!-- Consignee Account No -->
-            <span class="data-field consignee-account">
-                {{ getConsigneeAccountNo() }}
-            </span>
+                <!-- Pre-printed form background image (uncomment when ready) -->
+                <!-- <div class="pre-printed-background">
+            <img src="path/to/your/pre-printed-form.jpg" alt="Pre-printed MAWB Form" 
+                 style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1;">
+        </div> -->
 
-            <!-- AGENT SECTION -->
-            <!-- Issuing Carrier's Agent Name -->
-            <span class="data-field agent-name">
-                {{ getAgentName(masterAirWayData?.DestinationAgent) }}
-            </span>
-            
-            <!-- Agent Address -->
-            <span class="data-field agent-address">
-                {{ getAgentName(masterAirWayData?.DestinationAgentAddress) }}
-            </span>
-            
-            <!-- Agent's IATA Code -->
-            <span class="data-field agent-iata">
-                {{ currentUserCode }}
-            </span>
-            
-            <!-- Agent Account No -->
-            <span class="data-field agent-account">
-                {{ getAgentAccountNo() }}
-            </span>
+                <!-- Data Overlays Container -->
+                <div class="data-overlays">
 
-            <!-- AIRPORT DEPARTURE -->
-            <span class="data-field airport-departure">
-                {{ masterAirWayData?.POL }}
-            </span>
+                    <!-- LEFT COLUMN DATA -->
 
-            <!-- RIGHT COLUMN DATA -->
-            <!-- MAWB Number -->
-            <span class="data-field mawb-number">
-                {{ masterAirWayData?.MBLNo }}
-            </span>
-            
-            <!-- Account Information -->
-            <span class="data-field account-info">
-                {{ masterAirWayData?.FreightPPCC }}
-            </span>
-            
-            <!-- Reference Number -->
-            <span class="data-field reference-number">
-                {{ getReferenceNumber() }}
-            </span>
-            
-            <!-- Optional Shipping Information -->
-            <span class="data-field optional-shipping-info">
-                {{ getOptionalShippingInfo() }}
-            </span>
+                    <!-- Shipper Information -->
+                    <div class="data-field shipper-name">
+                        {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
+                    </div>
+                    <div class="data-field shipper-address">
+                        {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
+                    </div>
+                    <div class="data-field shipper-account">
+                        <!-- Shipper Account Number -->
+                    </div>
 
-            <!-- ROUTING SECTION -->
-            <!-- First To (POD) -->
-            <span class="data-field routing-to-1">
-                {{ masterAirWayData?.POD }}
-            </span>
-            
-            <!-- By First Carrier -->
-            <span class="data-field routing-by-1">
-                {{ masterAirWayData?.voyages?.[0]?.CarrierName }}
-            </span>
-            
-            <!-- Second To -->
-            <span class="data-field routing-to-2">
-                {{ getSecondDestination() }}
-            </span>
-            
-            <!-- By Second Carrier -->
-            <span class="data-field routing-by-2">
-                {{ getSecondCarrier() }}
-            </span>
-            
-            <!-- Third To -->
-            <span class="data-field routing-to-3">
-                {{ getThirdDestination() }}
-            </span>
-            
-            <!-- By Third Carrier -->
-            <span class="data-field routing-by-3">
-                {{ getThirdCarrier() }}
-            </span>
+                    <!-- Consignee Information -->
+                    <div class="data-field consignee-name">
+                        {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }}
+                    </div>
+                    <div class="data-field consignee-address">
+                        {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
+                    </div>
+                    <div class="data-field consignee-account">
+                        <!-- Consignee Account Number -->
+                    </div>
 
-            <!-- CURRENCY AND CODES -->
-            <!-- Currency -->
-            <span class="data-field currency-code">
-                {{ getCurrencyCodeById(currentCurrency) }}
-            </span>
-            
-            <!-- CHGS Code -->
-            <span class="data-field chgs-code">
-                {{ getChgsCode() }}
-            </span>
+                    <!-- Agent Information -->
+                    <div class="data-field carrier-agent-name">
+                        {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+                    </div>
+                    <div class="data-field carrier-agent-city">
+                        {{ getAgentName(masterAirWayData?.DestinationAgentAddress) }}
+                    </div>
+                    <div class="data-field agent-iata-code">
+                        {{ currentUserCode }}
+                    </div>
+                    <div class="data-field agent-account">
+                        <!-- Agent Account Number -->
+                    </div>
 
-            <!-- WT/VAL CHECKBOXES -->
-            <!-- WT/VAL PP/CC Mark -->
-            <span class="data-checkbox wt-val-pp" *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'">
-                X
-            </span>
-            
-            <!-- WT/VAL COL Mark -->
-            <span class="data-checkbox wt-val-col" *ngIf="masterAirWayData?.FreightPPCC === 'Collect'">
-                X
-            </span>
+                    <!-- Airport Departure -->
+                    <div class="data-field airport-departure">
+                        {{ masterAirWayData?.POL }}
+                    </div>
 
-            <!-- OTHER CHECKBOXES -->
-            <!-- Other PP/CC Mark -->
-            <span class="data-checkbox other-pp" *ngIf="masterAirWayData?.OtherPPCC === 'Prepaid'">
-                X
-            </span>
-            
-            <!-- Other COL Mark -->
-            <span class="data-checkbox other-col" *ngIf="masterAirWayData?.OtherPPCC === 'Collect'">
-                X
-            </span>
+                    <!-- RIGHT COLUMN DATA -->
 
-            <!-- DECLARED VALUES -->
-            <!-- Declared Value of Carriage -->
-            <span class="data-field declared-carriage">
-                {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCarriage }}
-            </span>
-            
-            <!-- Declared Value of Customs -->
-            <span class="data-field declared-customs">
-                {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
-            </span>
+                    <!-- MAWB Number -->
+                    <div class="data-field mawb-number">
+                        {{ masterAirWayData?.MBLNo }}
+                    </div>
 
-            <!-- FLIGHT AND INSURANCE -->
-            <!-- Airport of Destination -->
-            <span class="data-field airport-destination">
-                {{ masterAirWayData?.FPD }}
-            </span>
-            
-            <!-- Requested Flight/Date -->
-            <span class="data-field flight-date">
-                {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
-            </span>
-            
-            <!-- Amount of Insurance -->
-            <span class="data-field insurance-amount">
-                {{ getInsuranceAmount() }}
-            </span>
-            
-            <!-- Insurance Info -->
-            <span class="data-field insurance-info">
-                {{ getInsuranceInfo() }}
-            </span>
 
-            <!-- HANDLING INFORMATION -->
-            <span class="data-field handling-info">
-                {{ masterAirWayData?.others?.[0]?.HandlingInformation }}
-            </span>
+                    <!-- Account Information -->
+                    <div class="data-field account-info">
+                        {{ masterAirWayData?.FreightPPCC }}
+                    </div>
 
-            <!-- GOODS DATA SECTION -->
-            <!-- No of Pieces RCP -->
-            <span class="data-field pieces-rcp">
-                {{ masterAirWayData?.NoOfPkg }}
-            </span>
-            
-            <!-- Gross Weight -->
-            <span class="data-field gross-weight">
-                {{ masterAirWayData?.GrossWeight | number:'1.2-2' }}
-            </span>
-            
-            <!-- Weight Unit (Kg/Lb) -->
-            <span class="data-field weight-unit">
-                {{ masterAirWayData?.WeightIn }}
-            </span>
-            
-            <!-- Chargeable Weight -->
-            <span class="data-field chargeable-weight">
-                {{ masterAirWayData?.ChargeableWeight | number:'1.2-2' }}
-            </span>
-            
-            <!-- Rate/Charge -->
-            <span class="data-field rate-charge">
-                {{ getFreightTotals().totalExchangeRate }}
-            </span>
-            
-            <!-- Total -->
-            <span class="data-field goods-total">
-                {{ getFreightTotals().totalRevenueAmount }}
-            </span>
-            
-            <!-- Nature and Quantity of Goods -->
-            <span class="data-field goods-description">
-                {{ masterAirWayData?.CommodityDescription }}
-            </span>
-            
-            <!-- Marks and Numbers -->
-            <span class="data-field marks-numbers">
-                {{ masterAirWayData?.MarksandNumber }}
-            </span>
+                    <!-- Reference Information -->
+                    <div class="data-field reference-number">
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.CustomerRefNo }}
+                    </div>
+                    <div class="data-field shipping-info">
+                        <!-- Optional Shipping Information -->
+                    </div>
 
-            <!-- TOTALS ROW -->
-            <!-- Total Pieces -->
-            <span class="data-field total-pieces">
-                {{ masterAirWayData?.NoOfPkg }}
-            </span>
-            
-            <!-- Total Gross Weight -->
-            <span class="data-field total-gross-weight">
-                {{ masterAirWayData?.GrossWeight }}
-            </span>
-            
-            <!-- Total Chargeable Weight -->
-            <span class="data-field total-chargeable-weight">
-                {{ masterAirWayData?.ChargeableWeight }}
-            </span>
-            
-            <!-- Total Rate/Charge -->
-            <span class="data-field total-rate-charge">
-                {{ getFreightTotals().totalExchangeRate }}
-            </span>
-            
-            <!-- Total Amount -->
-            <span class="data-field total-amount">
-                {{ getFreightTotals().totalRevenueAmount }}
-            </span>
+                    <!-- Routing Information -->
+                    <div class="data-field routing-to1">
+                        {{ masterAirWayData?.POD }}
+                    </div>
+                    <div class="data-field routing-carrier1">
+                        {{ masterAirWayData?.voyages?.[0]?.CarrierName }}
+                    </div>
+                    <div class="data-field routing-to2">
+                        <!-- Second To field -->
+                    </div>
+                    <div class="data-field routing-by2">
+                        <!-- Second By field -->
+                    </div>
+                    <div class="data-field routing-to3">
+                        <!-- Third To field -->
+                    </div>
+                    <div class="data-field routing-by3">
+                        <!-- Third By field -->
+                    </div>
 
-            <!-- CHARGES SECTION -->
-            <!-- Prepaid Weight Charge -->
-            <span class="data-field prepaid-weight">
-                {{ freightCharges[0]?.RevenueAmount }}
-            </span>
-            
-            <!-- Collect Weight Charge -->
-            <span class="data-field collect-weight">
-                {{ freightCharges[0]?.CostAmount }}
-            </span>
-            
-            <!-- Other Charges List -->
-            <span *ngFor="let charge of otherCharges; let i = index" 
-                  class="data-field other-charge" 
-                  [style.top]="getOtherChargePosition(i)">
-                {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}
-            </span>
-            
-            <!-- Total Other Charges Due Carrier -->
-            <span class="data-field total-other-charges">
-                {{ getTotalExchangeRate() }}
-            </span>
+                    <!-- Currency and Charges -->
+                    <div class="data-field currency">
+                        {{ getCurrencyCodeById(currentCurrency) }}
+                    </div>
+                    <div class="data-field charges-code">
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'">PP</span>
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'">CC</span>
+                    </div>
 
-            <!-- SHIPPER CERTIFICATE -->
-            <!-- Shipper Certificate Text -->
-            <div class="data-field shipper-certificate">
-                Shipper certifies that the particulars on the face hereof are correct and that insofar as
-                any part of the consignment contains dangerous goods such part is properly described by name and
-                is in proper condition for carriage by air according to the applicable Dangerous Goods Regulations.
+                    <!-- PP/CC Checkboxes -->
+                    <div class="data-field wt-pp">
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="checkmark">X</span>
+                    </div>
+                    <div class="data-field wt-col">
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="checkmark">X</span>
+                    </div>
+                    <div class="data-field other-pp">
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="checkmark">X</span>
+                    </div>
+                    <div class="data-field other-col">
+                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="checkmark">X</span>
+                    </div>
+
+                    <!-- Declared Values -->
+                    <div class="data-field declared-carriage">
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCarriage }}
+                    </div>
+                    <div class="data-field declared-customs">
+                       {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
+                    </div>
+
+                    <!-- Airport Destination -->
+                    <div class="data-field airport-destination">
+                        {{ masterAirWayData?.FPD }}
+                    </div>
+
+                    <!-- Flight Date -->
+                    <div class="data-field flight-date">
+                        {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
+                    </div>
+
+                    <!-- Insurance -->
+                    <div class="data-field insurance-amount">
+                        <!-- Amount of Insurance -->
+                    </div>
+                   
+
+                    <!-- Handling Information -->
+                    <div class="data-field handling-info">
+                        {{ masterAirWayData?.others?.[0]?.HandlingInformation }}
+                    </div>
+
+                    <!-- Package Details -->
+                    <div class="data-field no-of-pieces">
+                        {{ masterAirWayData?.aggregatedTotals?.NoOfPkg }}
+                    </div>
+                    <div class="data-field gross-weight">
+                        {{ masterAirWayData?.aggregatedTotals?.GrossWeight | number:'1.3-3' }}
+                    </div>
+                    <div class="data-field weight-unit">
+                        {{ masterAirWayData?.WeightIn }}
+                    </div>
+                    <div class="data-field comm-item">
+                        <!-- Commercial Item No. -->
+                    </div>
+                    <div class="data-field chargeable-weight">
+                        {{ masterAirWayData?.aggregatedTotals?.ChargeableWeight | number:'1.3-3' }}
+                    </div>
+                    <div class="data-field rate-charge">
+                       {{ getFreightTotals().totalExchangeRate }}
+                    </div>
+                    <div class="data-field total-charge">
+                        {{ getFreightTotals().totalRevenueAmount }}
+                    </div>
+                    <div class="data-field goods-description">
+                        {{ masterAirWayData?.CommodityDescription }}
+                        <br *ngIf="masterAirWayData?.CommodityDescription && masterAirWayData?.MarksandNumber">
+                        {{ masterAirWayData?.MarksandNumber }}
+                    </div>
+
+                    <!-- Totals Row -->
+                    <div class="data-field total-no-pieces">
+                        {{ masterAirWayData?.aggregatedTotals?.NoOfPkg }}
+                    </div>
+                    <div class="data-field total-gross-weight">
+                        {{ masterAirWayData?.aggregatedTotals?.GrossWeight | number:'1.3-3' }}
+                    </div>
+                    <div class="data-field total-chargeable-weight">
+                        {{ masterAirWayData?.aggregatedTotals?.ChargeableWeight | number:'1.3-3' }}
+                    </div>
+                    <div class="data-field total-rate">
+                        {{ getFreightTotals().totalExchangeRate }}
+                    </div>
+                    <div class="data-field total-amount">
+                        {{ getFreightTotals().totalRevenueAmount }}
+                    </div>
+
+                    <!-- Charges Section -->
+                    <div class="data-field prepaid-weight">
+                        {{ freightCharges[0]?.RevenueAmount | number:'1.2-2' }}
+                    </div>
+                    <div class="data-field collect-weight">
+                        {{ freightCharges[0]?.CostAmount | number:'1.2-2' }}
+                    </div>
+
+                    <!-- Other Charges -->
+                    <div class="data-field other-charges">
+                        <span *ngFor="let charge of otherCharges; let last = last">
+                            {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}
+                            {{ !last ? '&nbsp;&nbsp;' : '' }}
+                        </span>
+                    </div>
+
+                    <!-- Total Other Charges -->
+                    <div class="data-field total-other-carrier">
+                        {{ getTotalExchangeRate() }}
+                    </div>
+
+                    <!-- Shipper Certificate -->
+                    <div class="data-field agent-name-cert">
+                        {{ getAgentName(masterAirWayData?.DestinationAgent) }} 
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="data-field total-prepaid">
+                        {{ getGrandTotal() | number:'1.2-2' }}
+                    </div>
+                    <div class="data-field total-collect">
+                        <!-- Total Collect -->
+                    </div>
+
+                    <!-- Currency Conversion -->
+                    <div class="data-field currency-rate">
+                        <!-- Currency Conversion Rates -->
+                    </div>
+                    <div class="data-field dest-currency">
+                        <!-- CC Charges in Dest. Currency -->
+                    </div>
+
+                    <!-- For Carrier Use Only -->
+                    <div class="data-field carrier-destination">
+                        <!-- For Carrier Use only at Destination -->
+                    </div>
+                    <div class="data-field charges-destination">
+                        <!-- Charges at Destination -->
+                    </div>
+
+                    <!-- Total Collect Charges -->
+                    <div class="data-field total-collect-charges">
+                        <!-- Total collect charges -->
+                    </div>
+
+                    <!-- Execution Information -->
+                    <div class="data-field execution-date">
+                        {{ masterAirWayData?.MBLDate | formatDate }}
+                    </div>
+                    <div class="data-field execution-place">
+                        {{ currentCountryName }}
+                    </div>
+                    <div class="data-field execution-signature">
+                        {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+                    </div>
+                </div>
+
             </div>
-            
-            <!-- Agent Name -->
-            <span class="data-field certificate-agent">
-                {{ getAgentName(masterAirWayData?.DestinationAgent) }} <strong>As Agent</strong>
-            </span>
+        </div>
 
-            <!-- TOTALS SECTION -->
-            <!-- Total Prepaid -->
-            <span class="data-field total-prepaid">
-                {{ getGrandTotal() }}
-            </span>
-            
-            <!-- Total Collect -->
-            <span class="data-field total-collect">
-                {{ getTotalCollect() }}
-            </span>
-            
-            <!-- Currency Conversion Rates -->
-            <span class="data-field currency-conversion">
-                {{ getCurrencyConversion() }}
-            </span>
-            
-            <!-- CC Charges in Dest. Currency -->
-            <span class="data-field cc-charges">
-                {{ getCCCharges() }}
-            </span>
+        <div class="mawb-report"
+            style="color: #000;width: 280mm;min-height: 400mm; margin: '10px auto';padding: 0 5px;">
+            <div class="mawb-page">
+                <div style="text-align: center;margin: 10px 0px;">
+                    <h5>NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY</h5>
+                </div>
+                <div>
+                    <p class="mb-0">If the carriage involves an ultimate destination or stop in a country other than the
+                        country of
+                        departure, the
+                        Montreal Convention or the Warsaw Convention may be
+                        applicable to the liability of the Carrier in respect of loss of, damage or delay to cargo.
+                        Carrier's limitation
+                        of liability in accordance with those Conventions shall be as set
+                        forth in subparagraph 4 unless a higher value is declared.</p>
+                </div>
+                <div>
+                    <h5 style="text-align: center;margin: 10px 0px;">CONDITIONS OF CONTRACT</h5>
+                </div>
+                <div style="display: flex ; gap: 10px;">
+                    <div style="width: 50%;text-align: justify;">
+                        <div>
+                            <p>
+                                1. In this contract and the Notices appearing hereon:
+                                CARRIER includes the air carrier issuing this air waybill and all carriers that
+                                carry or undertake to carry the cargo or perform any other services related
+                                to such carriage
+                                SPECIAL DRAWING RIGHT (SDR) is a Special Drawing Right as defined
+                                by the International Monetary Fund.
+                                WARSAW CONVENTION means whichever of the following instruments is
+                                applicable to the contract of carriage:
+                                the Convention for the Unification of Certain Rules Relating to International
+                                Carriage by Air, signed at Warsaw, 12 October 1929;
+                                that Convention as amended at The Hague on 28 September 1955;
+                                that Convention as amended at The Hague 1955 and by Montreal Protocol
+                                No. 1, 2, or 4 (1975) as the case may be.
+                                MONTREAL CONVENTION means the Convention for the Unification of
+                                Certain Rules.
+                            </p>
+                            <p>
+                                2.1 Carriage is subject to the rules relating to liability established by the
+                                Warsaw Convention or the Montreal Convention unless such carriage is
+                                not "international carriage" as defined by the applicable Conventions.
+                            </p>
+                            <p>
+                                2.2 To the extent not in conflict with the foregoing, carriage and other related
+                                services performed by each Carrier are subject to:
+                            </p>
+                            <p>
+                                2.2.1 applicable laws and government regulations;
+                            </p>
 
-            <!-- EXECUTION INFO -->
-            <!-- Executed on Date -->
-            <span class="data-field executed-date">
-                {{ masterAirWayData?.MBLDate | formatDate }}
-            </span>
-            
-            <!-- At Place -->
-            <span class="data-field executed-place">
-                {{ currentCountryName }}
-            </span>
-            
-            <!-- Signature of Issuing Carrier -->
-            <span class="data-field signature-carrier">
-                {{ getAgentName(masterAirWayData?.DestinationAgent) }}
-            </span>
+                            <p>
+                                2.2.2 provisions contained in the air waybill, Carrier's conditions of
+                                carriage and related rules, regulations, and timetables (but not the
+                                times of departure and arrival stated therein) and applicable tariffs of
+                                such Carrier, which are made part hereof, and which may be
+                                inspected at any airports or other cargo sales offices from which it
+                                operates regular services. When carriage is to/from the USA, the
+                                shipper and the consignee are entitled, upon request, to receive a
+                                free copy of the Carrier's conditions of carriage. The Carrier's
+                                conditions of carriage include, but are not limited to:
+                            </p>
+                            <p>
+                                2.2.2.1 limits on the Carrier's liability for loss, damage or delay of goods,
+                                including fragile or perishable goods;
+
+                            </p>
+                            <p>
+                                2.2.2.2 claims restrictions, including time periods within which shippers or
+                                consignees must file a claim or bring an action against the Carrier for
+                                its acts or omissions, or those of its agents;
+
+                            </p>
+                            <p>
+                                2.2.2.3 rights, if any, of the Carrier to change the terms of the contract
+                            </p>
+                            <p>
+                                2.2.2.4 rules about Carrier's right to refuse to carry
+                            </p>
+                            <p>
+                                2.2.2.5 rights of the Carrier and limitations concerning delay or failure to
+                                perform service, including schedule changes, substitution of
+                                alternate Carrier or aircraft and rerouting.
+                            </p>
+                            <p>
+                                3 The agreed stopping places (which may be altered by Carrier in case of
+                                necessity) are those places, except the place of departure and place of
+                                destination, set forth on the face hereof or shown in Carrier's timetables as
+                                scheduled stopping places for the route. Carriage to be performed
+                                hereunder by several successive Carriers is regarded as a single operation.
+
+                            </p>
+                            <p>
+                                4 For carriage to which the Montreal Convention does not apply, Carrier's
+                                liability limitation for cargo lost, damaged or delayed shall be 19 SDRs per
+                                kilogram unless a greater per kilogram monetary limit is provided in any
+                                applicable Convention or in Carrier's tariffs or general conditions of
+                                carriage.
+                            </p>
+                            <p>
+                                5 5.1 Except when the Carrier has extended credit to the consignee without
+                                the written consent of the shipper, the shipper guarantees payment of all
+                                charges for the carriage due in accordance with Carrier's tariff,
+                                conditions of carriage and related regulations, applicable laws (including
+                                national laws implementing the Warsaw Convention and the Montreal
+                                Convention), government regulations, orders and requirements
+                            </p>
+                            <p>
+                                5.2 When no part of the consignment is delivered, a claim with respect to
+                                such consignment will be considered even though transportation
+                                charges thereon are unpaid.
+                            </p>
+                            <p>
+                                6 6.1 For cargo accepted for carriage, the Warsaw Convention and the
+                                Montreal Convention permit shipper to increase the limitation of liability
+                                by declaring a higher value for carriage and paying a supplemental
+                                charge if required.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="width: 50%;text-align: justify;">
+                        <p>
+                            .2 In carriage to which neither the Warsaw Convention nor the Montreal
+                            Convention applies Carrier shall, in accordance with the procedures set
+                            forth in its general conditions of carriage and applicable tariffs, permit
+                            shipper to increase the limitation of liability by declaring a higher value
+                            for carriage and paying a supplemental charge if so required
+                        </p>
+                        <p>
+                            7 7.1 In cases of loss of, damage or delay to part of the cargo, the weight to be
+                            taken into account in determining Carrier's limit of liability shall be only
+                            the weight of the package or packages concerned.
+                        </p>
+                        <p>
+                            7.2 Notwithstanding any other provisions, for foreign air transportation as
+                            defined by the U.S. Transportation Code:
+                        </p>
+                        <p>
+                            7.2.1 in the case of loss of, damage or delay to a shipment, the weight to be
+                            used in determining Carrier's limit of liability shall be the weight which
+                            is used to determine the charge for carriage of such shipment; and
+
+                        </p>
+                        <p>
+                            7.2.2 in the case of loss of, damage or delay to a part of a shipment, the
+                            shipment weight in 7.2.1 shall be prorated to the packages covered by
+                            the same air waybill whose values is affected by the loss, damage or
+                            delay. The weight applicable in the case of loss or damage to one or
+                            more articles in a package shall be the weight of the entire package.
+                        </p>
+                        <p>
+                            8 Any exclusion or limitation of liability applicable to Carrier shall apply to
+                            Carrier's agents, employees, and representatives and to any person whose
+                            aircraft or equipment is used by Carrier for carriage and such person's
+                            agents, employees and representatives
+                        </p>
+                        <p>
+                            9 Carrier undertakes to complete the carriage with reasonable dispatch.
+                            Where permitted by applicable laws, tariffs and government regulations,
+                            Carrier may use alternative carriers, aircraft or modes of transport without
+                            notice but with due regard to interests of the shipper. Carrier is authorised
+                            by the shipper to select the routing and all intermediate stopping places that
+                            it deems appropriate or to change or deviate from the routing shown on the
+                            face hereof
+                        </p>
+                        <p>
+                            10 Receipt by the person entitled to delivery of the cargo without complaint
+                            shall be prima facie evidence that the cargo has been delivered in good
+                            condition and in accordance with the contract of carriage
+                        </p>
+                        <p>
+                            10.1 In the case of loss of, damage or delay to cargo a written complaint must
+                            be made to Carrier by the person entitled to delivery. Such complaint
+                            must be made;
+                        </p>
+                        <p>
+                            10.1.1 in the case of damage to the cargo, immediately after discovery of the
+                            damage and at the latest within 14 days from the date of receipt of the
+                            cargo
+                        </p>
+                        <p>
+                            10.1.2 in the case of delay, within 21 days from the date on which the cargo
+                            was placed at the disposal of the person entitled to delivery
+                        </p>
+                        <p>
+                            10.1.3 in the case of non-delivery of the cargo, within 120 days from the date
+                            of issue of the air waybill, or if an air waybill has not been issued,
+                            within 120 days from the date of receipt of the cargo for transportation
+                            by the Carrier.
+                        </p>
+                        <p>
+                            10.2 Such complaint may be made to the Carrier whose air waybill was used,
+                            or to the first Carrier or to the last Carrier or to the Carrier, which
+                            performed the carriage during which the loss, damage or delay took
+                            place
+                        </p>
+                        <p>
+                            10.3 Unless a written complaint is made within the time limits specified in
+                            10.1 no action may be brought against Carrier.
+                        </p>
+                        <p>
+                            10.4 Any rights to damages against Carrier shall be extinguished unless an
+                            action is brought within two years from the date of arrival at the
+                            destination, or from the date on which the aircraft ought to have arrived,
+                            or from the date on which the carriage stopped.
+                        </p>
+                        <p>
+                            11 Shipper shall comply with all applicable laws and government regulations of
+                            any country to or from which the cargo may be carried, including those
+                            relating to the packing, carriage or delivery of the cargo, and furnish such
+                            information and attach such documents to the air waybill as may be
+                            necessary to comply with such laws and regulations.Carrier is not liable to
+                            shipper and shipper shall indemnify Carrier for loss or expense due to
+                            shipper's failure to comply with this provision.
+                        </p>
+                        <p>
+                            12 No agent, employee or representative of Carrier has authority to alter, modify
+                            or waive any provisions of this contract.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

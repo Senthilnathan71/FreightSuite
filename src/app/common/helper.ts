@@ -1,6 +1,7 @@
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { Port } from "../modules/crm-mobile/Interfaces/port.interface";
 import { AbstractControl, FormArray, FormGroup } from "@angular/forms";
+import { ToastrService } from 'ngx-toastr';
 
 // ── Voucher Period Grace Days ────────────────────────────────────────
 export interface VoucherPeriodInfo {
@@ -381,111 +382,4 @@ export function findInvalidControlsRecursive(form: FormGroup | FormArray): strin
   return invalidControls;
 }
 
-import { ToastrService } from 'ngx-toastr';
 
-export function errorLoggerWithToastr(
-  form: FormGroup | FormArray,
-  toastr?: ToastrService
-): void {
-
-  if (form.valid) {
-    return;
-  }
-
-  const messages = collectErrors(form);
-
-  toastr.warning(
-    messages.join('\n'),
-    'Please fill the following fields',
-    {
-      enableHtml: false,
-      timeOut: 5000,
-      closeButton: true,
-    }
-  );
-}
-function collectErrors(
-  control: FormGroup | FormArray,
-  parentKey: string = ''
-): string[] {
-
-  let errors: string[] = [];
-
-  Object.keys(control.controls).forEach(key => {
-    const currentControl = control.get(key);
-    const controlPath = parentKey ? `${parentKey}.${key}` : key;
-
-    if (currentControl instanceof FormGroup || currentControl instanceof FormArray) {
-      errors = errors.concat(
-        collectErrors(currentControl, controlPath)
-      );
-    }
-
-    if (currentControl?.errors) {
-      errors = errors.concat(
-        buildErrorMessages(currentControl, controlPath)
-      );
-    }
-  });
-
-  return errors;
-}
-
-function buildErrorMessages(
-  control: AbstractControl,
-  controlName: string
-): string[] {
-
-  const messages: string[] = [];
-  const friendlyName = prettifyControlName(controlName);
-
-  Object.keys(control.errors!).forEach(errorKey => {
-
-    switch (errorKey) {
-      case 'required':
-        messages.push(`${friendlyName} is required`);
-        break;
-
-      case 'minlength':
-        messages.push(
-          `${friendlyName} must be at least ${control.errors![errorKey].requiredLength} characters`
-        );
-        break;
-
-      case 'maxlength':
-        messages.push(
-          `${friendlyName} must not exceed ${control.errors![errorKey].requiredLength} characters`
-        );
-        break;
-
-      case 'min':
-        messages.push(
-          `${friendlyName} must be greater than ${control.errors![errorKey].min}`
-        );
-        break;
-
-      case 'max':
-        messages.push(
-          `${friendlyName} must be less than ${control.errors![errorKey].max}`
-        );
-        break;
-
-      case 'pattern':
-        messages.push(`${friendlyName} format is invalid`);
-        break;
-
-      default:
-        messages.push(`${friendlyName} is invalid`);
-    }
-  });
-
-  return messages;
-}
-
-function prettifyControlName(controlName: string): string {
-  return controlName
-    .replace(/\.\d+/g, '')          // remove array indexes
-    .replace(/([A-Z])/g, ' $1')     // split camelCase
-    .replace(/^./, str => str.toUpperCase())
-    .trim();
-}

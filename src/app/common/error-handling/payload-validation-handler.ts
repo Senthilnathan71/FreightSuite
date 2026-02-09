@@ -1,7 +1,7 @@
 // This is for sorting the messages provided by Class-Validators (multiple messages)
 
 import { throwError } from "rxjs";
-import { ResponseData } from "../modules/operation/services/shipment-milestone.service";
+import { ResponseData } from "../../modules/operation/services/shipment-milestone.service";
 
 /**
  * Priority order for validation error messages
