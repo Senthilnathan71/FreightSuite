@@ -30,6 +30,17 @@ import { CurrencyConfigurationService } from 'src/app/core/services/currency-con
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
+import {
+ 
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDate,
+ 
+} from '@ng-bootstrap/ng-bootstrap';
+import { getDefaultTodayDate } from 'src/app/common/helper';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -46,6 +57,11 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
+    providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe,
+  ],
 
 })
 export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges, OnDestroy  {
@@ -477,16 +493,12 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   initializeForm(): void {
-    const today = new Date();
-    const todayStruct = {
-      year: today.getFullYear(),
-      month: today.getMonth() + 1,
-      day: today.getDate(),
-    };
+   
+    const today = getDefaultTodayDate()
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
-      voucherDate: [{ value: todayStruct }, Validators.required],
-      DocumentNumber:[{value:'',disabled:true}],
+      voucherDate: [{ value: today }, Validators.required],
+      DocumentNumber:[null],
       DocumentDate:[null],
       narration: ['', [Validators.required, Validators.maxLength(200)]],
       remarks: ['', Validators.maxLength(200)],
@@ -739,10 +751,10 @@ private deepEqual(obj1: any, obj2: any): boolean {
         // Create form patch object
         const formPatchData: any = {
           voucherNumber: voucher.VoucherNumber,
-          voucherDate: voucherDateStruct,
+          voucherDate: voucher.VoucherDate,
           narration: voucher.Narration,
           DocumentNumber: voucher.DocumentNumber,
-          DocumentDate: documentDateStruct,
+          DocumentDate: voucher.DocumentDate, 
           remarks: voucher.Remarks,
           Status: voucher.Status,
           postStatus: voucher.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -1858,6 +1870,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Save Journal Voucher (similar to vendor invoice)
   private saveJournalVoucher(isFinal: boolean): void {
+    console.log("isFinal",isFinal)
     if (this.form.hasError('inconsistentExchangeRates')) {
       const errorMsg = getExchangeRateErrorMessage(
         this.form,
@@ -1889,6 +1902,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Continue with existing validation
   if (!this.isFormValid()) return;
     const payload = this.preparePayload();
+    console.log("payload",payload)
 
     this.isSaving = true;
     this.spinner.show();
@@ -1991,6 +2005,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // Existing saveDraft method (for draft saving)
   saveDraft(): void {
+    console.log("saveDraft")
   if (!this.isFormValid()) return;
   
   const raw = this.form.getRawValue();
@@ -2007,7 +2022,10 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   preparePayload(): any {
     const formValue = this.form.getRawValue();
     const voucherDate = formValue.voucherDate;
-    const voucherDateString = `${voucherDate.year}-${String(voucherDate.month).padStart(2, '0')}-${String(voucherDate.day).padStart(2, '0')}`;
+    // const DocumentDate = formValue.DocumentDate;
+    //  const voucherDateString = `${voucherDate.year}-${String(voucherDate.month).padStart(2, '0')}-${String(voucherDate.day).padStart(2, '0')}`;
+  // const DocumentDateString = `${DocumentDate.year}-${String(DocumentDate.month).padStart(2, '0')}-${String(DocumentDate.day).padStart(2, '0')}`;
+
     const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
 
     const VoucherDetail = formValue.details.map((detail: any) => ({
@@ -2034,14 +2052,14 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     }));
 
     return {
-      VoucherDate: voucherDateString,
+      VoucherDate: voucherDate,
       Narration: formValue.narration || null,
       Remarks: formValue.remarks || null,
       Status: formValue.Status,
       PostStatus: 'U', // Unposted for draft
       PartyName: 'System Journal Entry',
-      DocumentNumber: `JV-${new Date().getTime()}`,
-      DocumentDate: new Date(),
+      DocumentNumber: formValue.DocumentNumber,
+      DocumentDate: formValue.DocumentDate,
       Amount: this.debitTotal, // Using getter
       LocalAmount: this.debitTotal, // Using getter
       VoucherDetail,
