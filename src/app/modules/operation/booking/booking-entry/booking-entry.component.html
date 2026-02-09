@@ -80,6 +80,13 @@
         </button>
       
       </div>
+      <!-- In the header-actions section, add this button: -->
+<div class="action-group primary" *ngIf="isEditMode">
+  <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="copyBooking()" [disabled]="isSaving">
+    <i class="fas fa-copy me-1"></i>
+    <span>Copy</span>
+  </button>
+</div>
       <div class="action-group primary">
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"

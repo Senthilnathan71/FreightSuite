@@ -540,6 +540,8 @@ arapFilter = {
     const quotationData = historyState?.dataFromQuotation;
     this.dataFromQuotation = quotationData?.quotation ? quotationData : {};
 
+    const copiedBookingData = historyState?.copiedBookingData;
+    const isCopiedBooking = historyState?.isCopiedBooking;
 
     if (quotationData?.quotation) {
       history.replaceState({}, '', location.pathname);
@@ -553,7 +555,23 @@ arapFilter = {
     this.loadHeaderMandatoryParts().subscribe(() => {
       this.loadHeaderLookups().subscribe();
       
-      if (this.dataFromQuotation?.quotation) {
+      if (isCopiedBooking && copiedBookingData) {
+      console.log('Copying booking data:', copiedBookingData);
+      
+      // Clear navigation state to prevent re-patching on refresh
+      history.replaceState({}, '', location.pathname);
+      
+      // Patch the copied data after a short delay to ensure lookups are loaded
+      setTimeout(() => {
+        this.patchValues(copiedBookingData);
+        this.minDate = this.today;
+        this.appSettingService.showSuccess('Booking copied successfully. Please review and save.');
+        this.isDirty = true;
+        this.bookingForm.markAsDirty();
+        this.spinner.hide();
+      }, 1000);
+      
+    } else if (this.dataFromQuotation?.quotation) {
         this.patchBookingFromQuotation(this.dataFromQuotation);
         this.patchValues(this.dataFromQuotation);
         this.minDate = this.today;
@@ -5053,5 +5071,97 @@ isHBLNoValid(): boolean {
       this.b['status']?.setValue('Active');
     }
   }
+
+  /**
+ * Creates a copy of the current booking with specific fields cleared
+ */
+copyBooking(): void {
+  if (!this.bookingData) {
+    this.appSettingService.showWarning('No booking data to copy');
+    return;
+  }
+
+  // Show confirmation dialog
+  this.commonModalService.confirm(
+    'Are you sure you want to copy this booking?',
+    'Copy Booking',
+    'Copy'
+  ).then((confirmed) => {
+    if (confirmed) {
+      this.performBookingCopy();
+    }
+  });
+}
+
+/**
+ * Performs the actual booking copy operation
+ */
+private performBookingCopy(): void {
+  this.spinner.show();
+
+  const copiedData = this.prepareCopiedBookingData();
+
+  this.router.navigate(['operation/booking/entry'], {
+    state: {
+      copiedBookingData: copiedData,
+      isCopiedBooking: true
+    }
+  });
+}
+
+/**
+ * Patches the booking data with cleared fields
+ */
+private prepareCopiedBookingData(): any {
+  const copiedData = { ...this.bookingData };
+
+  const fieldsToClear = {
+    BookingNo: null,
+    BookingHeaderSid: null,
+    HBLNo: '',
+    HouseJobSid: null,
+    MBLNo: '',
+    MBLDate: null,
+    VesselName: null,
+    VoyageNo: null,
+    VoyageMasterSid: null,
+    ETA: null,
+    ETD: null,
+    CutOffDate: null,
+    BookingDateTime: new Date(),
+    DoValid: null,
+    QuotationHeaderSid: null,
+    QuoteRouteSid: null,
+    ShipmentNo: '',
+    BookingStatus: 'Booked'
+  };
+
+  if (copiedData.bookingCargo?.length) {
+    copiedData.bookingCargo = copiedData.bookingCargo.map(c => ({
+      ...c,
+      BookingCargoSid: null,
+      GrossWeight: 0,
+      NetWeight: 0,
+      Volume: 0,
+      Volumetric: 0,
+      ChargeableWeight: 0,
+      NoOfPackage: 0
+    }));
+  }
+
+  copiedData.bookingOthers = [];
+
+  copiedData.bookingCr = [];
+
+  copiedData.bookingProduct = [];
+
+  copiedData.bookingConnection = [];
+
+  copiedData.bookingRates = [];
+
+  Object.assign(copiedData, fieldsToClear);
+
+  return copiedData;
+}
 
 }
