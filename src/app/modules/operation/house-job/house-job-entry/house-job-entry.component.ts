@@ -646,7 +646,7 @@ private setupMBLDateListener(): void {
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [''],
-      HBLDate: [null],
+      HBLDate: [{value : null, disabled: true}],
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
@@ -1193,18 +1193,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   }
 
     if (data?.CargoRecDate) {
+     
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
         productForm.get(field)?.disable();
       })
     }
      
-    productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
-      if(value){
-        ['ExternlQty','GrossWeight','NetWeight','Volume'].forEach(field => {
-          productForm.get(field)?.disable();
-        })
-      }
-    });
+   if (isPatching && data?.CargoRecDate) {
+  ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
+    productForm.get(field)?.disable();
+  });
+}
   
 
     return productForm;

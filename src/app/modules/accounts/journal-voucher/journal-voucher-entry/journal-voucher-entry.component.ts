@@ -175,6 +175,11 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   ) { }
 
   ngOnInit(): void {
+    const currentFinancialYear =
+      this.appSettingService.getCurrentFinancialYear();
+      if (currentFinancialYear) {
+        this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
+      }
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();
     this.initializeForm();
@@ -1991,7 +1996,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         this.isPosted = true; // Update local state
 
         // Navigate to list after successful posting
-        this.router.navigate(['/accounts/journal-voucher/list']);
+       this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
       } else {
         this.appSettingService.showError(result.message || 'Failed to post journal voucher.');
       }
@@ -2059,6 +2064,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       PostStatus: 'U', // Unposted for draft
       PartyName: 'System Journal Entry',
       DocumentNumber: formValue.DocumentNumber,
+      YearMasterSid: this.currentFinancialYear,
       DocumentDate: formValue.DocumentDate,
       Amount: this.debitTotal, // Using getter
       LocalAmount: this.debitTotal, // Using getter
