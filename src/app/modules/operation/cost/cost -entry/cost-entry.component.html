@@ -923,7 +923,7 @@
     </button>
   </div>
 
-  <div class="modal-body py-1 compact-form">
+  <div class="modal-body py-1 compact-form" [formGroup]="voucherForm">
     <!-- Invoice Header Section -->
     <div class="card mb-1">
       
@@ -935,7 +935,7 @@
               <div class="col-md-3">
                 <div class="custom-form-group">
                     <label class="form-label mb-0 text-info">Billing Party</label>
-                   <p class="text-black" style="font-weight: 600;">{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</p>
+                   <p class="text-black" style="font-weight: 600;">{{ voucher['PartyName']?.value }}</p>
                 </div>
               
               </div>
@@ -945,8 +945,7 @@
                 <div class="custom-form-group">
                    <label class="form-label text-info mb-0">Address</label>
                 
-                  <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress ||
-                    '-' }}</p>
+                  <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ voucher['PartyAddress']?.value || '-' }}">{{ voucher['PartyAddress']?.value }}</p>
                 </div>
               </div>
               
@@ -954,15 +953,15 @@
                <div class="col-md-3">
                  <div class="custom-form-group">
                     <label class="form-label text-info mb-0">GST-VAT</label>
-                    <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ billingGST_VAT || '-' }}">
-      {{ billingGST_VAT || '-' }} 
+                    <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ voucher['GST_VAT']?.value || '-' }}">
+      {{ voucher['GST_VAT']?.value || '-' }} 
                  </div>
                </div>
                
                <!-- GST Type - Only show for Indian companies -->
                <div class="col-md-3" *ngIf="isIndianCompany()">
                  <label class="form-label fw-bold">GST Type</label>
-                 <ng-select [(ngModel)]="selectedGSTType" (change)="onGSTTypeChange()" [clearable]="false">
+                 <ng-select formControlName="GSTType" [clearable]="false">
                    <ng-option value="B2B">B2B </ng-option>
                    <ng-option value="B2C">B2C </ng-option>
                    <ng-option value="EXWP">EXWP</ng-option>
@@ -973,8 +972,7 @@
                <!-- Place of Supply - Show for all companies -->
                <div class="col-md-3 mt-2">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" [(ngModel)]="placeOfSupply" 
-                 [disabled]="true" placeholder="Auto-calculated">
+                  <input type="text" class="custom-input-field sm" formControlName="PlaceOfSupply" placeholder="Auto-calculated">
                  <label class="input-label fw-bold">Place of Supply</label>
                 </div>
                  
@@ -982,13 +980,13 @@
            
             <div class="col-md-3">
               <div class="custom-form-group-select-date">
-                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MBLNo || ''"  readonly>
+                <input type="text" class="custom-input-field sm" formControlName="MasterNumber">
                 <label class="input-label">MBL NO </label>
               </div>
               </div>
                <div class="col-md-3">
                 <div class="custom-form-group-select-date">
-                 <input type="text" class="custom-input-field sm" [value]="parentFormValue?.HBLNo || ''"  readonly>
+                 <input type="text" class="custom-input-field sm" formControlName="HouseNumber">
                  <label class="input-label fw-bold">HBL NO </label>
                  </div>
               </div>
@@ -1002,11 +1000,10 @@
               <div class="col-md-3">
                 <div class="custom-form-group-select-date">
                 <ng-select 
-                  [(ngModel)]="invoiceHeaderType" 
+                  formControlName="InvoiceType"
                   [items]="invoiceTypes" 
                   bindLabel="name"
                   bindValue="id"
-                  placeholder="Select Invoice type"  
                   [clearable]="false"
                 >
                 </ng-select>
@@ -1015,30 +1012,76 @@
               </div>
               <!-- Billing Currency -->
               <div class="col-md-3 mt-3">
-                 <div class="custom-form-group-select-date">
-                <ng-select [(ngModel)]="invoiceHeaderCurrency" [items]="currencyList" bindLabel="currencyCode"
-                placeholder="Select Currency" (change)="onHeaderCurrencyChange()" [clearable]="false">
-                <ng-template ng-label-tmp let-item="item">
-                  {{ item.currencyCode }} 
-                </ng-template>
-                <ng-template ng-option-tmp let-item="item">
-                  {{ item.currencyCode }} - {{ item.currencyName }}
-                </ng-template>
-              </ng-select>
-              <label class="input-label fw-bold">Billing Currency</label>
-              </div>
+                <div class="custom-form-group-select-date">
+                  <dofi-searchable-dropdown 
+                    [items]="currencyList" 
+                    formControlName="CurrencyCode" 
+                    [placeholder]="''" 
+                    [displayFields]="CurrencyLookupConfig.displayFields" 
+                    [displayLabels]="CurrencyLookupConfig.displayLabels" 
+                    [labelFields]="CurrencyLookupConfig.labelFields" 
+                    [bindValue]="'currencyCode'" 
+                    (itemSelected)="onHeaderCurrencyChange($event)"
+                  >
+                  </dofi-searchable-dropdown>
+                  <label class="input-label fw-bold">Billing Currency</label>
+                </div>
               </div>
 
               <!-- Exchange Rate -->
               <div class="col-md-3 mt-3">
                  <div class="custom-form-group-select-date">
-                   <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
-                   (ngModelChan
-                   ge)="onHeaderExchangeRateChange()" step="0.0001" min="0"
-                   placeholder="" [disabled]="disableHeaderExRate">
+                   <input 
+                    type="text" 
+                    class="custom-input-field sm" 
+                    formControlName="ExchangeRate"
+                    (change)="onHeaderExchangeRateChange()"
+                    placeholder="" 
+                    DecimalPrecision
+                    [DecimalPrecisionBefore]="4"
+                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(voucher['CurrencyMasterSid']?.getRawValue())"
+                   >
                    <label class="input-label fw-bold">Exchange Rate</label>
               </div>
               </div>
+
+              <!-- Ref No (DocumentNumber) -->
+               @if(voucher['VoucherType']?.value === 'INV'){
+              <aside class="col-md-3 mt-3">
+                <div class="custom-form-group-select-date">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="DocumentNumber"
+                    placeholder=""
+                  />
+                  <label class="input-label">Ref No <span class="text-danger" *ngIf="isFieldRequired('DocumentNumber')">*</span></label>
+                </div>
+              </aside>
+              } @else {
+                <aside class="col-md-3 mt-3">
+                  <div class="custom-form-group-select-date">
+                    <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" />
+                    <label class="input-label">Bill No <span class="text-danger" *ngIf="isFieldRequired('DocumentNumber')">*</span></label>
+                  </div>
+                </aside>
+                <!-- Bill Date -->
+                <aside class="col-md-3 mt-2">
+                  <div class="d-flex">
+                    <div class="custom-form-group custom-form-group-select-date w-100">
+                      <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="documentDate" ngbDatepicker #d="ngbDatepicker"
+                        (click)="d.toggle()" readonly formControlName="DocumentDate"
+                       />
+                      <label class="input-label" for="DocumentDate">
+                        Bill Date <span class="text-danger" *ngIf="isFieldRequired('DocumentDate')">*</span>
+                      </label>
+                    </div>
+                    <button class="btn bi bi-calendar3 mt-2" (click)="d.toggle()" type="button">
+                      <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                </aside>
+              }
           </div>
           </div>
       </div>
@@ -1063,8 +1106,9 @@
           <tr>
             <th width="2%" class="text-center">
               <input type="checkbox" class="form-check-input"
-                [checked]="selectedCharges.size === availableCharges.length"
-                (change)="selectedCharges.size === availableCharges.length ? deselectAllCharges() : selectAllCharges()">
+                [checked]="selectedDetailCount === details.length"
+                [indeterminate]="selectedDetailCount > 0 && selectedDetailCount < details.length"
+                (change)="selectedDetailCount === details.length ? deselectAllCharges() : selectAllCharges()">
             </th>
             <th class="bg-transparent text-light">Charge Code</th>
             <th class="bg-transparent text-light">Description</th>
@@ -1084,102 +1128,53 @@
             <th class="text-end bg-transparent text-light">Total</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let charge of availableCharges ; let i = index" [class.table-primary]="charge.isSelected">
+        <tbody formArrayName="voucherDetails">
+          <tr *ngFor="let detail of details.controls ; let i = index" [formGroupName]="i" [class.table-primary]="detail.get('isSelected')?.value">
             <td>
-              <input type="checkbox" class="form-check-input" [checked]="charge.isSelected"
-                (change)="toggleChargeSelection(charge)">
+              <input type="checkbox" class="form-check-input" formControlName="isSelected"
+                (change)="calculateTaxAmountForRow(i)">
             </td>
             <td>
-              {{ charge.ChargeMaster?.chargeCode || '-' }}
+              {{ detail.get('ChargeCode')?.value || '-' }}
             </td>
             <td>
-             {{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}
+             {{ detail.get('ChargeDescription')?.value || '-' }}
             </td>
-            <td class="min-width-200">
-              <!-- <div class="custom-form-group mt-1 custom-form-group-select">
-                <ng-select 
-                  appendTo="body"
-                  class="ng-select"
-                  [items]="charge.ChargeMaster?.chargeTaxMaster || []"
-                  bindLabel ="HSNCode"
-                  [(ngModel)] = "charge.selectedTaxMapping"
-                  [clearable] = false
-                  (change)="onTaxMappingChange(charge,$event)"
-                ></ng-select>
-              </div> -->
+            <td class="min-width-80">
               <div class="custom-form-group mt-0 custom-form-group-select">
-              
-                <ng-select class="ng-select ngSize" appendTo="body" [items]="charge.ChargeMaster?.chargeTaxMaster || []"
-                  [(ngModel)]="charge.selectedTaxMapping" [searchable]="true" [clearable]="false" bindLabel="HSNCode" placeholder=""
-                   [searchFn]="searchTaxFn" (change)="onTaxMappingChange(charge, $event)" (open)="setDropdownWidth()">
-              
-                  <ng-template ng-label-tmp let-item="item">
-                    {{ item?.HSNCode }}
-                  </ng-template>
-              
-                  <ng-template ng-header-tmp>
-                    <div class="dropdown-header row g-0 fw-semibold">
-                      <div class="col-5 text-truncate">HSN Code</div>
-                      <div class="col-5 text-truncate">Tax Group</div>
-                    </div>
-                  </ng-template>
-              
-                  <ng-template ng-option-tmp let-item="item">
-                    <div class="dropdown-row row g-0 align-items-center">
-                      <div class="col-6 text-truncate" [ngbTooltip]="item?.HSNCode" container="body">
-                        {{ item?.HSNCode }}
-                      </div>
-              
-                      <div class="col-6 text-truncate" [ngbTooltip]="item?.TaxGroup" container="body">
-                        {{ item?.TaxGroup }}
-                      </div>
-              
-                    </div>
-                  </ng-template>
-              
-                  <ng-template ng-loading-tmp>
-                    <div class="text-center py-2">
-                      Loading tax mappings...
-                    </div>
-                  </ng-template>
-              
-                </ng-select>
-              
+                <dofi-searchable-dropdown
+                  [items]="chargeHSSACMapping[i] || []"
+                  formControlName="HSSACMasterSid"
+                  [placeholder]="''"
+                  [displayFields]="HSSACLookupConfig.displayFields"
+                  [displayLabels]="HSSACLookupConfig.displayLabels"
+                  [labelFields]="HSSACLookupConfig.labelFields"
+                  [bindValue]="'HSSACMasterSid'"
+                  appendTo="body"
+                  [clearable]="false"
+                  (itemSelected)="calculateTaxAmountForRow(i)"
+                >
+                </dofi-searchable-dropdown>
               </div>
-
-              <!-- <dofi-searchable-dropdown 
-                [items]="charge.ChargeMaster?.chargeTaxMaster || []" [(ngModel)]="charge.selectedTaxMapping"
-                [bindLabel]="'HSNCode'"
-                [displayFields]="HSSACLookupConfig.displayFields"
-                [displayLabels]="HSSACLookupConfig.displayLabels" [labelFields]="HSSACLookupConfig.labelFields" [clearable]="false"
-                (itemSelected)="onTaxMappingChange(charge, $event)">
-              </dofi-searchable-dropdown> -->
-
-             <!-- {{ charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode ||
-                charge.ChargeMaster?.HSNSAC || '-' }} -->
             </td>
             <td class="text-center">
-              {{ charge.NoOfUnit || charge.NumberOfUnit || 1 }}
+              {{ detail.get('NumberOfUnit')?.value || '-' }}
             </td>
             <td class="text-center">
-              <span class="badge bg-info">{{ (selectedVoucherType === 'Invoice' ?
-                charge.RevenueCurrencyMaster?.currencyCode : charge.CostCurrencyMaster?.currencyCode) || 'USD' }}</span>
+              <span class="badge bg-info">{{ detail.get('CurrencyCode')?.value || '-' }}</span>
             </td>
               <td class="text-end">
-              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueExchangeRate : charge.CostExchangeRate) || 1 |
-              number:'1.4-4' }}
+              {{ detail.get('ExchangeRate')?.value || '-' }}
             </td>
             <td class="text-end">
-              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueRate : charge.CostRate) || 0 | number:'1.2-2' }}
+              {{ detail.get('Rate')?.value || '-' }}
             </td>
             <td class="text-end">
-              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueAmount : charge.CostAmount) || 0 | number:'1.2-2' }}
+              {{ detail.get('Amount')?.value || '-' }}
             </td>
           
             <td class="text-end">
-             {{ (selectedVoucherType === 'Invoice' ? charge.RevenueLocalAmount : charge.CostLocalAmount) || 0 |
-                number:'1.2-2' }}
+             {{ detail.get('LocalAmount')?.value || '-' }}
             </td>
             <!-- Tax Percentage column with dynamic display based on country -->
             <td class="text-end" [ngClass]="{
@@ -1188,16 +1183,16 @@
               'us-tax-label': isUSCompany(),
               'other-tax-label': !isIndianCompany() && !isUAECompany() && !isUSCompany()
             }">
-              {{ getChargeTaxPercentage(charge) }}
+              {{ detail.get('TaxLabel')?.value || '-' }}
             </td>
             <td class="text-end">
-             {{ getChargeTaxAmount(charge) | number:'1.2-2' }}
+             {{ detail.get('TotalTaxAmount')?.value || '-' }}
             </td>
             <td class="text-end">
-              {{ getChargeTaxTotal(charge) | number:'1.2-2' }}
+              {{ detail.get('TotalAmount')?.value }}
             </td>
           </tr>
-          <tr *ngIf="!availableCharges?.length">
+          <tr *ngIf="!details?.length">
             <td colspan="12" class="text-center text-muted">No charges available</td>
           </tr>
         </tbody>
@@ -1205,7 +1200,7 @@
     </div>
 
     <!-- Tax Summary -->
-    <div class="card mt-1 border-info border-top-0 mb-1 " *ngIf="chargeSelectionTaxResult && selectedCharges.size > 0">
+    <div class="card mt-1 border-info border-top-0 mb-1 " *ngIf="selectedDetailCount > 0">
       <div class="card-header bg-info text-white">
         <h6 class="mb-0">
           <i class="fas fa-calculator me-2"></i>
@@ -1220,36 +1215,36 @@
               <tbody>
                 <tr>
                   <td><strong>Selected Charges:</strong></td>
-                  <td class="text-end">{{ selectedCharges.size }} / {{ availableCharges.length }}</td>
+                  <td class="text-end">{{ selectedDetailCount }} / {{ details.length }}</td>
                 </tr>
                 
                 <!-- Tax Type Display based on country -->
-                <tr *ngIf="isIndianCompany() && chargeSelectionTaxResult.type === 'GST'">
+                <tr *ngIf="isIndianCompany()">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
-                    <span class="badge bg-info">{{ chargeSelectionTaxResult.isSameState ? 'CGST + SGST (Same State)' :
+                    <span class="badge bg-info">{{ determineTaxApplicable() === 'CGST+SGST' ? 'CGST + SGST (Same State)' :
                       'IGST (Inter-State)' }}</span>
                   </td>
                 </tr>
                 
-                <tr *ngIf="(isUAECompany()) && chargeSelectionTaxResult.type === 'VAT'">
+                <tr *ngIf="(isUAECompany()) && voucher['TaxType']?.value === 'VAT'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
-                    <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%)</span>
+                    <span class="badge bg-warning">VAT ({{ toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0 ? 5 : 0 }}%)</span>
                   </td>
                 </tr>
 
-                <tr *ngIf="(isUSCompany()) && chargeSelectionTaxResult.type === 'VAT'">
+                <tr *ngIf="(isUSCompany()) && voucher['TaxType']?.value === 'VAT'">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
-                    <span class="badge bg-warning">TAX ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%)</span>
+                    <span class="badge bg-warning">TAX ({{ toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0 ? 5 : 0 }}%)</span>
                   </td>
                 </tr>
                 
                 <tr *ngIf="!isIndianCompany() && !isUAECompany() && !isUSCompany()">
                   <td><strong>Tax Type:</strong></td>
                   <td class="text-end">
-                    <span class="badge bg-secondary">{{ chargeSelectionTaxResult.type || 'Standard Tax' }}</span>
+                    <span class="badge bg-secondary">{{ determineTaxApplicable() || 'Standard Tax' }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -1259,54 +1254,56 @@
             <div class="border rounded p-1 bg-light">
               <div class="d-flex justify-content-between mb-1">
                 <span>Subtotal:</span>
-                <strong>{{ chargeSelectionTaxResult.subtotal | number:'1.2-2' }}</strong>
+                <strong>{{ overallSummary?.totalLocalAmount }}</strong>
               </div>
 
               <!-- GST Details (only for Indian companies) -->
-              <div *ngIf="isIndianCompany() && chargeSelectionTaxResult.type === 'GST'">
-                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalCGST > 0">
+              <div *ngIf="isIndianCompany() && voucher['TaxType']?.value === 'GST'">
+                @if(determineTaxApplicable() === 'CGST+SGST'){
+                <div class="d-flex justify-content-between mb-1" *ngIf="toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0">
                   <small>CGST:</small>
-                  <small>{{ chargeSelectionTaxResult.totalCGST | number:'1.2-2' }}</small>
+                  <small>{{ overallSummary?.totalTaxAmountOnFirstColumn }}</small>
                 </div>
-                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalSGST > 0">
+                <div class="d-flex justify-content-between mb-1" *ngIf="toNumber(overallSummary?.totalTaxAmountOnSecondColumn) > 0">
                   <small>SGST:</small>
-                  <small>{{ chargeSelectionTaxResult.totalSGST | number:'1.2-2' }}</small>
+                  <small>{{ overallSummary?.totalTaxAmountOnSecondColumn }}</small>
                 </div>
-                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalIGST > 0">
+                } @else {
+                <div class="d-flex justify-content-between mb-1" *ngIf="toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0">
                   <small>IGST:</small>
-                  <small>{{ chargeSelectionTaxResult.totalIGST | number:'1.2-2' }}</small>
+                  <small>{{ overallSummary?.totalTaxAmountOnFirstColumn }}</small>
                 </div>
+                }
               </div>
               
               <!-- TAX Details (For US company) -->
-              <div *ngIf="(isUSCompany() && chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
+              <div *ngIf="isUSCompany() && voucher['TaxType']?.value === 'VAT' && toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0">
                 <div class="d-flex justify-content-between mb-1">
-                  <small>TAX ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%):</small>
-                  <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
+                  <small>TAX ({{ toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0 ? 5 : 0 }}%):</small>
+                  <small>{{ overallSummary?.totalTaxAmountOnFirstColumn }}</small>
                 </div>
               </div>
               <!-- VAT Details (for UAE and other VAT countries) -->
-              <div *ngIf="(isUAECompany() && chargeSelectionTaxResult.type === 'VAT') && chargeSelectionTaxResult.totalVAT > 0">
+              <div *ngIf="isUAECompany() && voucher['TaxType']?.value === 'VAT' && toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0">
                 <div class="d-flex justify-content-between mb-1">
-                  <small>VAT ({{ chargeSelectionTaxResult.totalVAT > 0 ? 5 : 0 }}%):</small>
-                  <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
+                  <small>VAT ({{ toNumber(overallSummary?.totalTaxAmountOnFirstColumn) > 0 ? 5 : 0 }}%):</small>
+                  <small>{{ overallSummary?.totalTaxAmountOnFirstColumn }}</small>
                 </div>
               </div>
 
               <hr class="my-1">
               <div class="d-flex justify-content-between mb-1">
                 <strong>Grand Total (Local):</strong>
-                <strong class="text-primary">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+                <strong class="text-primary">{{ overallSummary?.totalLocalAmountWithTax }}</strong>
               </div>
 
               <!-- Invoice Currency Total -->
-              <div *ngIf="invoiceHeaderCurrency" class="border-top pt-1">
+              <div *ngIf="voucher['CurrencyCode']?.value" class="border-top pt-1">
                 <div class="d-flex justify-content-between">
-                  <strong>Total ({{ invoiceHeaderCurrency.currencyCode }}):</strong>
-                  <strong class="text-success fs-5">{{ convertToHeaderCurrency(chargeSelectionTaxResult.grandTotal) |
-                    number:'1.2-2' }}</strong>
+                  <strong>Total ({{ voucher['CurrencyCode']?.value }}):</strong>
+                  <strong class="text-success fs-5">{{ overallSummary?.totalPartyAmount }}</strong>
                 </div>
-                <small class="text-muted">&#64; {{ invoiceHeaderExchangeRate | number:'1.4-4' }}</small>
+                <small class="text-muted">&#64; {{ getFormattedAndPaddedExchangeRate(voucher['ExchangeRate']?.value, voucher['CurrencyMasterSid']?.value) }}</small>
               </div>
             </div>
           </div>
@@ -1314,7 +1311,7 @@
       </div>
     </div>
 
-    <div class="alert alert-warning mt-1" *ngIf="selectedCharges.size === 0">
+    <div class="alert alert-warning mt-1" *ngIf="selectedDetailCount === 0">
       <i class="fas fa-exclamation-triangle me-2"></i>
       <strong>No charges selected.</strong> Please select at least one charge to proceed.
     </div>
@@ -1324,10 +1321,10 @@
     <button type="button" class="btn btn-secondary btn-sm" (click)="cancelChargeSelection()">
       Cancel
     </button>
-    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedCharges.size === 0"
+    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedDetailCount === 0"
       (click)="proceedWithSelectedCharges()">
      
-      Generate Voucher ({{ selectedCharges.size }} charges)
+      Generate Voucher ({{ selectedDetailCount }} charges)
     </button>
   </div>
 </ng-template>

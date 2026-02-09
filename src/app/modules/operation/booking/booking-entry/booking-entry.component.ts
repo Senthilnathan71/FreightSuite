@@ -3103,12 +3103,14 @@ getVesselVoyBasedOnPorts() {
     const Volumetric = this.c['Volumetric']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
 
-    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
-    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.getRawValue();
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.getRawValue();
     const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
     const status=this.b['status']?.value;
     const HBLNo = this.b['HBLNo']?.getRawValue()||'';
     const HouseJobSid = this.b['HouseJobSid']?.getRawValue()||'';
+    const salesmanSid = this.b['SalesmanSid']?.value || '';
+    const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -3135,7 +3137,8 @@ getVesselVoyBasedOnPorts() {
       Volumetric,
       NoofContainers,
       ChargeableWeight,
-      countryOfCompany : this.countryOfCompany
+      countryOfCompany : this.countryOfCompany,
+      SalesmanName : salesmanName
     }
   }
 

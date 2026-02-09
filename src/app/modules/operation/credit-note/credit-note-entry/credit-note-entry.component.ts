@@ -1598,6 +1598,7 @@ private getCustomerCountryCode(customer: any): string {
     Narration: header.Narration || '',
     CreditNoteReason: header.CreditNoteReason || '',
     Remarks: header.Remarks || '',
+    PostStatus: header.PostStatus || 'U',
     IRNStatus: header.IRNStatus || '',
     MBLNo: header.MBLNo || '',
     status: header.status || 'A'

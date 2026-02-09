@@ -31,6 +31,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   @Input() bindValue!: string;
   @Input() isLoading: boolean = false;
   @Input() control: FormControl | null = null;
+  @Input() clearable: boolean = true;
   @ViewChild('ngSelect', { static: false, read: ElementRef }) ngSelectRef!: ElementRef;
   @ViewChild(NgSelectComponent) ngSelect!: NgSelectComponent;
 

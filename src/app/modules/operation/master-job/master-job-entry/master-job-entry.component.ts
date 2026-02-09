@@ -420,6 +420,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         this.masterJobSid = idParam ? +idParam : null;
         if (this.masterJobSid) {
           this.isEditMode = true;
+            this.masterJobForm.get('POL')?.disable();
+                this.masterJobForm.get('POD')?.disable();
           this.loadMasterJobData(this.masterJobSid);
         }
       });
@@ -1259,6 +1261,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
             WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
           });
           this.masterJobForm.get('MasterJobDate')?.disable();
+
           this.loadCustomsData();
         }
 
@@ -1696,6 +1699,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   onRouteChange(): void {
+    if (this.isEditMode) {
+        // Don't change route logic in edit mode
+        return;
+    }
     const polSid = this.masterJobForm.get('POL')?.value;
     const podSid = this.masterJobForm.get('POD')?.value;
     const segment = this.selectedFCLLCL;
@@ -1745,6 +1752,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
   // Handle POD change
   handlePODChange(selectedPort: any) {
+      if (this.isEditMode) {
+        // Don't allow changes in edit mode
+        return;
+    }
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.clearVesselAndVoyageData();
