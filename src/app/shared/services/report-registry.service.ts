@@ -347,6 +347,37 @@ export class ReportRegistryService {
       console.warn('Outstanding Report component not yet created:', error);
     }
 
+       // Outstanding Local Report
+    try {
+      const { OutstandingLocalComponent } = await import(
+        '../components/reports/outstanding-local/outstanding-local.component'
+      );
+
+      this.registerReport({
+        id: 'outstanding-local',
+        title: 'Outstanding Local',
+        component: OutstandingLocalComponent,
+        filenameTemplate: 'Outstanding_Local_Report_{LedgerName}_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Outstanding Local Report - Ledger: {LedgerName}',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Outstanding Local Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Outstanding Local Report component not yet created:', error);
+    }
+
     // Statement Report
      try {
       const { StatementReportComponent } = await import(

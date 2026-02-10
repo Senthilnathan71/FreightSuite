@@ -86,9 +86,10 @@ export class ShipmentSummaryReportComponent {
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'masterNo', label: 'Master No' },
-      { key: 'masterDate', label: 'Master Date' },
-      { key: 'department', label: 'Dept' },
       { key: 'mblNo', label: 'MBL No' },
+      { key: 'Hblno', label: 'HBL No' },
+      { key: 'HblDate', label: 'HBL Date' },
+      { key: 'department', label: 'Dept' },
       { key: 'vesselName', label: 'Vessel/Flight' },
       { key: 'voyageNo', label: 'Voyage/Flight No' },
       { key: 'etd', label: 'ETD' },
@@ -102,8 +103,8 @@ export class ShipmentSummaryReportComponent {
       { key: 'destinationPort', label: 'Dest Port' },
       { key: 'destinationPortName', label: 'Dest Name' },
       { key: 'type', label: 'Type' },
-      { key: 'sendingAgent', label: 'Send Agent' },
-      { key: 'receivingAgent', label: 'Recv Agent' },
+      { key: 'sendingAgent', label: 'Origin Agent' },
+      { key: 'receivingAgent', label: 'Delivery Name' },
       { key: 'carrier', label: 'Carrier' },
       { key: 'totalNoOfTEU', label: 'TEU' },
       { key: 'transhipmentShipment', label: 'T/S Ships' },
@@ -112,13 +113,13 @@ export class ShipmentSummaryReportComponent {
       { key: 'weight', label: 'Weight' },
       { key: 'volume', label: 'Volume' },
       { key: 'chargeable', label: 'Chargeable' },
-      { key: 'noOfContainers', label: 'Containers' },
+      { key: 'nofcontainer', label: 'Containers' },
       { key: 'numberOfTwentyFt', label: "20'" },
       { key: 'numberOfFourtyFt', label: "40'" },
       { key: 'numberofFurtyFive', label: "40' HC" },
       { key: 'shipper', label: 'Shipper' },
       { key: 'containerNoList', label: 'Container Nos' },
-      { key: 'consolStatus', label: 'Status' },
+      { key: 'houseStatus', label: 'House Status' },
       { key: 'transhipmentVol', label: 'T/S Vol' },
       { key: 'localShipmentVol', label: 'Local Vol' }
     ];
@@ -126,9 +127,10 @@ export class ShipmentSummaryReportComponent {
     const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
       const cells: ExcelCell[] = [
         { value: item.masterNo || '' },
-        { value: item.masterDate ? this.formatDate(item.masterDate) : '' },
-        { value: item.department || '' },
         { value: item.mblNo || '' },
+        { value: item.Hblno || '' },
+        { value: item.HblDate ? this.formatDate(item.HblDate) : '' },
+        { value: item.department || '' },
         { value: item.vesselName || '' },
         { value: item.voyageNo || '' },
         { value: item.etd ? this.formatDate(item.etd) : '' },
@@ -152,13 +154,13 @@ export class ShipmentSummaryReportComponent {
         { value: item.weight || 0 },
         { value: item.volume || 0 },
         { value: item.chargeable || 0 },
-        { value: item.noOfContainers || 0 },
+        { value: item.nofcontainer || 0 },
         { value: item.numberOfTwentyFt || 0 },
         { value: item.numberOfFourtyFt || 0 },
         { value: item.numberofFurtyFive || 0 },
         { value: item.shipper || '' },
         { value: item.containerNoList || '' },
-        { value: item.consolStatus || '' },
+        { value: item.houseStatus || '' },
         { value: item.transhipmentVol || 0 },
         { value: item.localShipmentVol || 0 }
       ];
@@ -166,11 +168,11 @@ export class ShipmentSummaryReportComponent {
     });
 
     return {
-      fileName: 'Customer-Shipment-Summary',
-      sheetName: 'CustomerShipmentSummary',
+      fileName: 'House-Summary',
+      sheetName: 'HouseSummary',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Customer Shipment Summary as on ${this.formatDate(this.params?.FromMBLDt)}`,
+        reportTitle: `House Summary as on ${this.formatDate(this.params?.FromMBLDt)}`,
         additionalInfo: [
           { label: 'Branch', value: this.currentBranch?.branchName || '' },
           { label: 'Dept', value: this.departmentNamesList || '' },

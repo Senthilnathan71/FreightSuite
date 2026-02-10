@@ -89,9 +89,9 @@ export class LedgerReportComponent {
 
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
+      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
       { key: 'voucherType', label: 'Voucher Type' },
-      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'master', label: 'Master' },
       { key: 'house', label: 'House' },
       { key: 'hblNo', label: 'HBL No' },
@@ -113,9 +113,9 @@ export class LedgerReportComponent {
 
     transactions.forEach((item: any, index: number) => {
       const cells: ExcelCell[] = [
+        { value: item?.voucherNumber || '' },
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.voucherType || '' },
-        { value: item?.voucherNumber || '' },
         { value: item?.MasterJobNumber || '' },
         { value: '' },
         { value: item?.HouseJobNumber || '' },

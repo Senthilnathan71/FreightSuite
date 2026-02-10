@@ -57,7 +57,7 @@
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Port</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Dest Name</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Type</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Origin</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Origin Agent</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Delivery Name</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Carrier</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">TEU</th>
@@ -109,7 +109,7 @@
                         <td class="text-end">{{ item.weight | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.volume | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
-                        <td>{{ item.noOfContainers || '' }}</td>
+                        <td>{{ item.nofcontainer || '' }}</td>
                         <td>{{ item.numberOfTwentyFt || '' }}</td>
                         <td>{{ item.numberOfFourtyFt || '' }}</td>
                         <td>{{ item.numberofFurtyFive || '' }}</td>

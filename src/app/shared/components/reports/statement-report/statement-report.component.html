@@ -53,9 +53,9 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info" >
+                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light">Voucher Date</th>
                         <th class="bg-transparent text-light text-center">Voucher Type</th>
-                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th>
                         <th class="bg-transparent text-light">HBL No</th>
@@ -75,9 +75,9 @@
 
                 <tbody>
                     <tr *ngFor="let item of fullData?.transactions; let i = index">
+                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
                         <td>{{item?.voucherType}}</td>
-                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td>
                         <td>{{item?.HouseJobNumber}}</td>

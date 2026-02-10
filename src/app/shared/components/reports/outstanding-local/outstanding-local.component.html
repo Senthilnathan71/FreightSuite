@@ -3,7 +3,7 @@
 
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Outstanding Report as on {{ params?.ToDate | formatDate }}
+        Outstanding Local Report as on {{ params?.ToDate | formatDate }}
     </h4>
     <!-- Header Fields -->
     <div style="margin-top: 1rem;">
@@ -45,68 +45,90 @@
                         <th class="bg-transparent text-light text-center">Type</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th> -->
-                        <th class="bg-transparent text-light text-center">HBL/HAWB No</th>
+                        <!-- <th class="bg-transparent text-light text-center">HBL/HAWB No</th> -->
                         <!-- <th class="bg-transparent text-light">Dept</th>  -->
                         <th class="bg-transparent text-light text-center" width="30%">Narration</th>
                         <!-- <th class="bg-transparent text-light">Salesperson</th> -->
-                        <th class="bg-transparent text-light text-center">Dr/Cr</th>
-                        <th class="bg-transparent text-light text-center">Cur</th>
+                        <th class="bg-transparent text-light text-center" style="width: 50px;">Dr/Cr</th>
+                        <!-- <th class="bg-transparent text-light text-center">Cur</th> -->
                         <th class="bg-transparent text-light text-center">Amt</th>
-                        <th class="bg-transparent text-light text-center">Local Amt</th>
+                        <!-- <th class="bg-transparent text-light text-center">Local Amt</th> -->
                         <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
-                        <th class="bg-transparent text-light text-center">O/S Local Amt</th>
+                        <!-- <th class="bg-transparent text-light text-center">O/S Local Amt</th> -->
                         <th class="bg-transparent text-light text-center">Cumulative</th>
                         <th class="bg-transparent text-light text-center">Ageing</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <tr *ngFor="let item of fullData?.transactions;let i = index">
-                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
-                        <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
-                        <td>{{item?.voucherType}}</td>
-                        <!-- <td>{{item?.MasterJobNumber}}</td>
-                        <td></td> -->
-                        <td>{{item?.HouseJobNumber}}</td>
-                        <!-- <td>{{item?.deptname}}</td>  -->
-                        <td>{{item?.naration}}</td>
-                        <!-- <td>{{item?.salesmanSid}}</td> -->
-                        <td class="text-center">{{item?.drCr}}</td>
-                        <td>{{item?.currencyCode}}</td>
-                        <td style="text-align: right;">{{item?.originalCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.originalLocalAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.outstandingCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.localAmt | number:'1.2-2'}}</td>
+
+                    <ng-container *ngFor="let group of currencyGroups">
+                        <tr class="fw-bold bg-secondary text-white">
+                            <td colspan="10">
+                                {{ group.currencyCode }}
+                            </td>
+                        </tr>
+                        <tr *ngFor="let item of group.transactions">
+                            <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
+                            <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
+                            <td>{{item?.voucherType}}</td>
+                            <td>{{item?.naration}}</td>
+                            <td class="text-center">{{item?.drCr}}</td>
+                            <td style="text-align: right;">
+                                {{item?.originalCurrencyAmount | number:'1.2-2'}}
+                            </td>
+                            <td style="text-align: right;">
+                                {{item?.outstandingCurrencyAmount | number:'1.2-2'}}
+                            </td>
+                            <td style="text-align: right;">
+                                {{ item?.cumulativeOutstanding | number:'1.2-2'}}
+                            </td>
+
+                            <td style="text-align: center;">
+                                {{item?.ageingDays}}
+                            </td>
+                        </tr>
+                        <tr class="fw-bold bg-light">
+
+                            <td colspan="5" class="text-start">
+                                <span>{{ getAmountInWordsForGroup(group.transactions, group.currencyCode) }}</span>
+                            </td>
+                            <td class="text-end">
+                                Total ({{ group.currencyCode }}) :
+                            </td>
+
+                            <td style="text-align: right;">
+                                {{ getSubtotal(group.transactions,'outstandingCurrencyAmount') | number:'1.2-2' }}
+                            </td>
+
+                            <!-- <td style="text-align: right;">
+                                {{ getSubtotal(group.transactions,'outstandingCurrencyAmount') | number:'1.2-2' }}
+                            </td> -->
+
+
+                        </tr>
+
+                    </ng-container>
+
+
+                    <!-- <tr class="fw-bold bg-info text-white">
+                        <td colspan="5" class="text-end">GRAND TOTAL :</td>
+
                         <td style="text-align: right;">
-                            {{ item?.cumulativeOutstanding | number:'1.2-2'}}
+                            {{ getTotal(fullData?.transactions, 'originalCurrencyAmount') | number:'1.2-2'}}
                         </td>
-                        <td style="text-align: center;">
-                            {{item?.ageingDays}}
+
+                        <td style="text-align: right;">
+                            {{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'}}
                         </td>
-                    </tr>
-                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="7" class="text-end">TOTAL :</td>
-                        <!-- Total Amount (originalLocalAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') |
-                            number:'1.2-2'}}</td>
 
-                        <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') |
-                            number:'1.2-2'}}</td>
+                        <td style="text-align: right;">
+                            {{ fullData?.transactions?.[fullData.transactions.length - 1]?.cumulativeOutstanding
+                            | number:'1.2-2' }}
+                        </td>
 
-                        <!-- Total O/S Currency -->
-                        <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount')
-                            | number:'1.2-2'}}</td> -->
-                            <td></td>
-
-                        <!-- Total O/S Local -->
-                        <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length - 1]?.localAmt
-                            | number:'1.2-2' }}</td>
-
-                        <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;"> {{ fullData?.transactions?.[fullData.transactions.length - 1]?.cumulativeOutstanding
-                            | number:'1.2-2' }}</td>
-                    </tr>
+                        <td></td>
+                    </tr> -->
 
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
                         <td colspan="15" class="text-center fw-bold py-1">
@@ -116,18 +138,23 @@
                 </tbody>
             </table>
         </div>
+        <!-- <div class="d-flex align-items-center gap-2">
+            <strong>Amount In Words :</strong>
+            <p style="font-size: 14px;">{{getAmountInWords()}}</p>
+        </div> -->
 
         <div class="table-responsive mt-2">
             <table class="table tablebordered table-sm" style="font-size:12px;">
                 <thead>
-                    <tr class="bg-info text-white text-center">
-                        <th class="bg-transparent text-light">Currency</th>
-                        <th class="bg-transparent text-light">Total Outstanding</th>
-                        <th class="bg-transparent text-light">0 - 30 Days</th>
-                        <th class="bg-transparent text-light">31 - 60 Days</th>
-                        <th class="bg-transparent text-light">61 - 90 Days</th>
-                        <th class="bg-transparent text-light">91 - 120 Days</th>
-                        <th class="bg-transparent text-light">121+ Days</th>
+                    <tr class="bg-info text-white">
+                        <th class="bg-transparent text-light text-center">Currency</th>
+                        <th class="bg-transparent text-light text-center">Total Outstanding [{{currentCurrencyCode}}]
+                        </th>
+                        <th class="bg-transparent text-light text-center">0 - 30 Days</th>
+                        <th class="bg-transparent text-light text-center">31 - 60 Days</th>
+                        <th class="bg-transparent text-light text-center">61 - 90 Days</th>
+                        <th class="bg-transparent text-light text-center">91 - 120 Days</th>
+                        <th class="bg-transparent text-light text-center">121+ Days</th>
                     </tr>
                 </thead>
                 <tbody>

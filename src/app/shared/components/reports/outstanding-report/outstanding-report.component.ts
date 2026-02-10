@@ -166,7 +166,7 @@ export class OutstandingReportComponent {
         { value: this.formatNumber(item?.originalLocalAmount || 0) },
 
         { value: this.formatNumber(item?.outstandingCurrencyAmount || 0) },
-        { value: this.formatNumber(item?.outstandingLocalAmount || 0) },
+        { value: this.formatNumber(item?.localAmt || 0) },
 
         { value: this.formatNumber(this.getCumulative(transactions, index)) },
 
@@ -187,7 +187,7 @@ export class OutstandingReportComponent {
       { value: this.formatNumber(this.getTotal(transactions, 'originalCurrencyAmount')) },
       { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
 
-      { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
+      // { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
       { value: this.formatNumber(this.getTotal(transactions, 'outstandingLocalAmount')) },
 
       { value: this.formatNumber(this.getCumulative(transactions, transactions.length - 1)) },
