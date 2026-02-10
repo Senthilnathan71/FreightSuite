@@ -3922,3 +3922,7 @@ textarea:disabled {
     margin: 1.75rem auto;
   }
 }
+
+.inline-ng-select .ng-value {
+  color: var(--ng-select-text) !important;
+}

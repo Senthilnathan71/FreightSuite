@@ -934,8 +934,9 @@
               <!-- Billing Party -->
               <div class="col-md-3">
                 <div class="custom-form-group">
-                    <label class="form-label mb-0 text-info">Billing Party</label>
-                   <p class="text-black" style="font-weight: 600;">{{ voucher['PartyName']?.value }}</p>
+                    <input type="text" formControlName="PartyName" class="custom-input-field sm text-danger">
+                    <label class="input-label">Billing Party</label>
+                   <!-- <p class="text-black" style="font-weight: 600;">{{ voucher['PartyName']?.value }}</p> -->
                 </div>
               
               </div>
@@ -943,18 +944,18 @@
               <!-- Address -->
               <div class="col-md-3">
                 <div class="custom-form-group">
-                   <label class="form-label text-info mb-0">Address</label>
+                    <input type="text" formControlName="PartyAddress" class="custom-input-field sm">
+                   <label class="input-label">Address</label>
                 
-                  <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ voucher['PartyAddress']?.value || '-' }}">{{ voucher['PartyAddress']?.value }}</p>
+                  <!-- <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ voucher['PartyAddress']?.value || '-' }}">{{ voucher['PartyAddress']?.value }}</p> -->
                 </div>
               </div>
               
               <!-- GST-VAT -->
                <div class="col-md-3">
                  <div class="custom-form-group">
-                    <label class="form-label text-info mb-0">GST-VAT</label>
-                    <p class="mb-0 text-black" style="font-weight: 600;" ngbTooltip="{{ voucher['GST_VAT']?.value || '-' }}">
-      {{ voucher['GST_VAT']?.value || '-' }} 
+                    <input type="text" formControlName="GST_VAT" class="custom-input-field sm">
+                    <label class="input-label">GST-VAT</label>
                  </div>
                </div>
                
@@ -970,35 +971,51 @@
                </div>
 
                <!-- Place of Supply - Show for all companies -->
-               <div class="col-md-3 mt-2">
+               <div class="col-md-3">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="PlaceOfSupply" placeholder="Auto-calculated">
+                  <input type="text" class="custom-input-field sm" formControlName="PlaceOfSupply">
                  <label class="input-label fw-bold">Place of Supply</label>
                 </div>
                  
                </div>
+
+            <aside class="col-md-3">
+              <div class="d-flex">
+                <div class="custom-form-group custom-form-group-select-date w-100"
+                  [class.filled]="!!voucherForm.get('VoucherDate')?.value">
+                  <input class="form-control mb-0 text-danger" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #dv="ngbDatepicker"
+                    formControlName="VoucherDate" (click)="dv.toggle()" />
+                  <label class="input-label">Invoice Date
+                    <span class="text-danger">*</span>
+                  </label>
+                </div>
+                <button class="btn bi bi-calendar3 mt-2" (click)="dv.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+            </aside>
            
             <div class="col-md-3">
-              <div class="custom-form-group-select-date">
+              <div class="custom-form-group">
                 <input type="text" class="custom-input-field sm" formControlName="MasterNumber">
                 <label class="input-label">MBL NO </label>
               </div>
               </div>
                <div class="col-md-3">
-                <div class="custom-form-group-select-date">
+                <div class="custom-form-group">
                  <input type="text" class="custom-input-field sm" formControlName="HouseNumber">
                  <label class="input-label fw-bold">HBL NO </label>
                  </div>
               </div>
                <div class="col-md-3">
-                <div class="custom-form-group-select-date">
+                <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MasterJobNumber || ''"  readonly>
                   <label class="input-label fw-bold">Job No </label>
                 </div>
               </div>
               <!-- Invoice Type -->
               <div class="col-md-3">
-                <div class="custom-form-group-select-date">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherForm.get('InvoiceType')?.value">
                 <ng-select 
                   formControlName="InvoiceType"
                   [items]="invoiceTypes" 
@@ -1011,9 +1028,10 @@
                 </div>
               </div>
               <!-- Billing Currency -->
-              <div class="col-md-3 mt-3">
-                <div class="custom-form-group-select-date">
+              <div class="col-md-3">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherForm.get('CurrencyCode')?.value">
                   <dofi-searchable-dropdown 
+                    style="--ng-select-text:red;"
                     [items]="currencyList" 
                     formControlName="CurrencyCode" 
                     [placeholder]="''" 
@@ -1024,13 +1042,13 @@
                     (itemSelected)="onHeaderCurrencyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label fw-bold">Billing Currency</label>
+                  <label class="input-label">Billing Currency</label>
                 </div>
               </div>
 
               <!-- Exchange Rate -->
-              <div class="col-md-3 mt-3">
-                 <div class="custom-form-group-select-date">
+              <div class="col-md-3">
+                 <div class="custom-form-group">
                    <input 
                     type="text" 
                     class="custom-input-field sm" 
@@ -1041,14 +1059,14 @@
                     [DecimalPrecisionBefore]="4"
                     [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(voucher['CurrencyMasterSid']?.getRawValue())"
                    >
-                   <label class="input-label fw-bold">Exchange Rate</label>
+                   <label class="input-label">Exchange Rate</label>
               </div>
               </div>
 
               <!-- Ref No (DocumentNumber) -->
                @if(voucher['VoucherType']?.value === 'INV'){
-              <aside class="col-md-3 mt-3">
-                <div class="custom-form-group-select-date">
+              <aside class="col-md-3">
+                <div class="custom-form-group">
                   <input
                     type="text"
                     class="custom-input-field sm"
@@ -1059,14 +1077,14 @@
                 </div>
               </aside>
               } @else {
-                <aside class="col-md-3 mt-3">
-                  <div class="custom-form-group-select-date">
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
                     <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" />
                     <label class="input-label">Bill No <span class="text-danger" *ngIf="isFieldRequired('DocumentNumber')">*</span></label>
                   </div>
                 </aside>
                 <!-- Bill Date -->
-                <aside class="col-md-3 mt-2">
+                <aside class="col-md-3">
                   <div class="d-flex">
                     <div class="custom-form-group custom-form-group-select-date w-100">
                       <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="documentDate" ngbDatepicker #d="ngbDatepicker"

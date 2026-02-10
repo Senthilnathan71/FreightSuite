@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+import { Component, ViewChild, TemplateRef, Input, OnInit, OnDestroy, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NgbDatepickerModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
@@ -6,7 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -30,6 +30,7 @@ import { GetStandardChargesComponent } from '../get-standard-charges/get-standar
 import { consistentExchangeRatesValidator } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 
 @Component({
   selector: 'app-cost-entry',
@@ -43,7 +44,6 @@ import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-
     FeatherModule,
     OnlyNumbersDirective,
     DecimalPrecisionDirective,
-    OnlyNumbersDirective,
     TextWithNumbersDirective,
     NumberFormatPipe,
     SearchableDropdown,
@@ -51,7 +51,6 @@ import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-
     NgxSpinnerModule,
     FormsModule,
     NgbTooltipModule,
-    DecimalPrecisionDirective,
     NgbDatepickerModule
   ],
   templateUrl: './cost-entry.component.html',
@@ -60,8 +59,9 @@ import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-
     CustomDatePipe
   ]
 })
-export class CostEntryComponent implements OnInit {
+export class CostEntryComponent implements OnInit, OnDestroy {
 
+  private destroy$ = new Subject<void>();
   selectedTab = 'Sales and cost';
   chargeList: any[] = [];
   filteredChargeList : any[] = [];
@@ -368,7 +368,9 @@ export class CostEntryComponent implements OnInit {
     private companySettings: CompanySettingsManagerService,
     private masterService: MasterService,
     private router : Router,
-    private toaster: ToastrService
+    private toaster: ToastrService,
+    private commonModalService : ModalService,
+    private datePipe : CustomDatePipe
   ) { this.initRateForm();}
 
   ngOnInit(): void {
@@ -393,7 +395,7 @@ export class CostEntryComponent implements OnInit {
   
 
   // Extract BookingHeaderSid from route parameter
-  this.route.params.subscribe(params => {
+  this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
     if (params['id']) {
       this.routeParentSid = Number(params['id']);
       console.log('ParentSid from route:', this.routeParentSid);
@@ -407,7 +409,7 @@ export class CostEntryComponent implements OnInit {
   
   this.loadRateLookups();
 
-  this.rateFormArray.valueChanges.subscribe(() => {
+  this.rateFormArray.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
     this.validateExchangeRates();
     this.dataEmitter.emit(this.rateFormArray.getRawValue());
     this.calculateProfit();
@@ -422,6 +424,11 @@ export class CostEntryComponent implements OnInit {
     if(!this.dataItems){
       this.addRateRow()
     }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
     /**
@@ -1423,7 +1430,7 @@ createRateFormGroup(data?: any): FormGroup {
     }
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSod : this.currentBranch?.BranchMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid || null,
       PORSid: this.parentFormValue?.PORSid || null,
       POLSid: this.parentFormValue?.POLSid || null,
@@ -1498,7 +1505,7 @@ createRateFormGroup(data?: any): FormGroup {
                 RevenueExchangeRate : Number(td.revenueExchangeRate).toFixed(this.digitsAfterDecimal),
                 RevenueRate : Number(td.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
                 RevenueAmount : (Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
-                RevenueLocalAmount : (Number(td.costExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                RevenueLocalAmount : (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
                 RevenueDrCr : 'C',
                 RevenuePrepaidCollect: "Prepaid",
               }
@@ -1841,12 +1848,12 @@ createRateFormGroup(data?: any): FormGroup {
       Narration : [narration],
       PartyMasterSid : [null,[Validators.required]],
       COAMasterSid : [null,[Validators.required]],
-      PartyName : ['',[Validators.required]],
-      PartyAddress : ['',[Validators.required]],
+      PartyName : [{value : '', disabled : true },[Validators.required]],
+      PartyAddress : [{value : '', disabled : true },[Validators.required]],
       CustomerBranchSid : [null,[Validators.required]],
       PlaceOfSupply : [{ value : '' , disabled : true },[Validators.required]],
       State : [''],
-      GST_VAT : [''],
+      GST_VAT : [{ value : '', disabled : true }],
       InvoiceType : ['REG'],
       TaxNumber : [''],
       GSTType : ['B2B'],
@@ -2049,8 +2056,8 @@ createRateFormGroup(data?: any): FormGroup {
       .subscribe({
         next: (resp) => {
           if (resp.status && resp.data) {
-            this.voucher['DocumentNumber']?.setValidators([Validators.required]); this.voucher['DocumentNumber']?.updateValueAndValidity();
             if(!isInvoice){
+              this.voucher['DocumentNumber']?.setValidators([Validators.required]); this.voucher['DocumentNumber']?.updateValueAndValidity();
               this.voucher['DocumentDate']?.setValidators([Validators.required]); this.voucher['DocumentDate']?.updateValueAndValidity();
             }
           } else {
@@ -2271,7 +2278,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     } catch (error) {
       console.error('Error in showChargeSelectionModal:', error);
-      this.appSettingService.showError(error.message);
+      this.appSettingService.showError(error instanceof Error ? error.message : 'Error loading charge selection');
     } finally {
       this.spinner.hide();
     }
@@ -2314,6 +2321,10 @@ createRateFormGroup(data?: any): FormGroup {
       const placeOfSupply = this.determinePlaceOfSupply();
       const GST_VAT = this.isIndianCompany() ? customer?.GSTNo || '' : customer?.PanType || '';
       const GSTType = this.determineTaxType();
+      const customerCurrency = customerFromLookup?.currencyMaster;
+      const currentCompanyCurrencyId = this.currentCompany?.CurrencyMasterSid;
+      const currentCompanyCurrencyCode = this.currentCompanyCurrency?.code;
+
 
       // initializing variabled for further usage
       this.billingPartyDetails = customer || {};
@@ -2348,10 +2359,22 @@ createRateFormGroup(data?: any): FormGroup {
         PartyAddress: customerBranch?.Address || '',
         CustomerBranchSid: customerBranchSid,
         PlaceOfSupply: placeOfSupply || '',
+        CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? currentCompanyCurrencyId,
+        CurrencyCode : customerCurrency?.currencyCode ?? currentCompanyCurrencyCode,
         State: placeOfSupply || '',
         GST_VAT: GST_VAT || '',
         TaxType: GSTType,
       })
+
+      if(customerCurrency){
+        this.onHeaderCurrencyChange(customerCurrency);
+      } else {
+        const currency = {
+          CurrencyMasterSid: currentCompanyCurrencyId,
+          currencyCode: currentCompanyCurrencyCode
+        }
+        this.onHeaderCurrencyChange(currency);
+      }
 
     } catch (error) {
       throw error;
@@ -2804,6 +2827,36 @@ createRateFormGroup(data?: any): FormGroup {
     if (this.selectedDetailCount === 0) {
       this.appSettingService.showWarning('Please select at least one charge');
       return;
+    }
+
+    //NOTE - Check if operation date is available
+    let operationDate = this.parentFormValue?.EffectiveDate ? new Date(this.parentFormValue?.EffectiveDate) : null;
+    if(!operationDate){
+      console.error("Operation date is not available");
+      return;
+    }
+
+    const voucherDate = this.voucher['VoucherDate']?.value ? new Date(this.voucher['VoucherDate']?.value) : null;
+    if(!voucherDate) {
+      console.error("Voucher date is not available");
+      return;
+    }
+
+    if(voucherDate < operationDate){
+      const formattedVoucherDate = this.datePipe.transform(voucherDate);
+      const formattedOperationDate = this.datePipe.transform(operationDate);
+      const userDecision = await this.commonModalService.confirm(
+        `Your <strong>Invoice Date</strong> is ${formattedVoucherDate}
+   which is before the <strong>Operation Date</strong> ${formattedOperationDate}.<br><br>
+   Do you want to proceed?`,
+        'Operation Date Warning',
+        'Proceed'
+      );
+
+      
+      if(!userDecision){
+        return;
+      }
     }
 
     this.spinner.show();
@@ -3543,7 +3596,7 @@ isFromQuotation(index: number): boolean {
       BookingHeaderSid: [this.voucherForm.get('BookingHeaderSid')?.value, isBookingFieldsRequired ? [Validators.required] : []],
 
       // Optional but commonly validated fields
-      DocumentNumber: [this.voucherForm.get('DocumentNumber')?.value , [Validators.required]],
+      DocumentNumber: [this.voucherForm.get('DocumentNumber')?.value , this.selectedVoucherType === 'Vendor Invoice' ? [Validators.required] : []],
       DocumentDate: [this.voucherForm.get('DocumentDate')?.value , this.selectedVoucherType === 'Vendor Invoice' ? [Validators.required] : []],
       State: [this.voucherForm.get('State')?.value],
       GST_VAT: [this.voucherForm.get('GST_VAT')?.value],

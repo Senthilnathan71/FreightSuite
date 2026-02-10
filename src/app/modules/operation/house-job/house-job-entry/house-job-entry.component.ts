@@ -4897,6 +4897,16 @@ getProductFormGroup(index: number): FormGroup {
   return this.bookingProducts.at(index) as FormGroup;
 }
 
+  onStatusChange() {
+    const status = this.b['status']?.getRawValue();
+    if (this.housejobData?.bookingHeader?.status === 'D' && (status === 'Active' || !status)) {
+      this.appSettingService.showWarning(
+        `This house cannot be set to Active.\n\nAs it's linked Booking : ${this.housejobData?.bookingHeader?.BookingNo} is already deleted.`
+      );
+      this.b['status']?.setValue('Suspended');
+    }
+  }
+
   
 }
 

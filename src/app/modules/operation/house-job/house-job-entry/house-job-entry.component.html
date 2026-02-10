@@ -271,7 +271,7 @@
       <div class="custom-form-group custom-form-group-select" 
         [class.filled]="!!houseJobForm.get('status')?.value">
         @if(isEditMode){
-        <ng-select name="status" class="ng-select" formControlName="status" id="status-input" appendTo="body">
+        <ng-select name="status" class="ng-select" formControlName="status" id="status-input" appendTo="body" (change)="onStatusChange()">
           <ng-option value="Active">Active</ng-option>
           <ng-option value="Suspended">Suspended</ng-option>
         </ng-select>

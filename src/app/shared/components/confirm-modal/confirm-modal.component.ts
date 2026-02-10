@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export type ConfirmAction = 'confirm' | 'cancel';
 
@@ -22,7 +23,7 @@ export type ConfirmAction = 'confirm' | 'cancel';
     </div>
 
     <div class="modal-body">
-      <p class="modal-message">{{ message }}</p>
+      <p class="modal-message" [innerHTML]="safeMessage"></p>
     </div>
 
     <div class="modal-footer">
@@ -92,10 +93,16 @@ export type ConfirmAction = 'confirm' | 'cancel';
 export class ConfirmDialogComponent {
 
   @Input() title = 'Confirmation';
-  @Input() message = '';
+  // @Input() message = '';
   @Input() confirmLabel = 'Proceed';
 
-  constructor(public activeModal: NgbActiveModal) {}
+  safeMessage!: SafeHtml;
+
+  @Input() set message(value: string) {
+    this.safeMessage = this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+
+  constructor(public activeModal: NgbActiveModal,private sanitizer: DomSanitizer) {}
 
   onConfirm(): void {
     this.activeModal.close('confirm' as ConfirmAction);
