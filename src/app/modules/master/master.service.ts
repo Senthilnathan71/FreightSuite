@@ -117,7 +117,15 @@ export class MasterService {
       map((resp) => resp.data)
     );
   }
-
+  
+  getCustomerByItsType(payload: any) {
+    return this.http.post<{ data: any[] }>('customer/customer_type/filter', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
   getAllCustomers(CompanyMasterSid:number) {
     return this.http.post('customer',{CompanyMasterSid }).pipe(
       map((resp: any) => {

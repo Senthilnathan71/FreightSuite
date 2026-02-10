@@ -148,7 +148,8 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         BillDate: this.datePipe.transform(item?.BillDate),
         CurrencyCode: item.currencyMaster.currencyCode,
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
-        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+        Status: item.Status === 'A' ? 'Active' : 'Suspended',
+        AmountFormatted: this.formatAmount(item.Amount)
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -159,7 +160,18 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
       this.totalLengthOfCollection = 0;
     }
   }
-
+private formatAmount(amount: number | string): string {
+  if (!amount) return '0.00';
+  const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // If negative, show without decimals
+  if (numValue < 0) {
+    return Math.round(numValue).toString();
+  }
+  
+  // If positive, show with 2 decimals
+  return numValue.toFixed(2);
+}
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
     this.appSettingService.showError('Error searching Vendor Invoices.');
@@ -276,7 +288,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         width: '100px',
       },
       {
-        key: 'Amount',
+        key: 'AmountFormatted',
         label: 'Amount',
         sortable: true,
         filterable: true,

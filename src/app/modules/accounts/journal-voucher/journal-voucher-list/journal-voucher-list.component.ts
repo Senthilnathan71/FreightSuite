@@ -145,6 +145,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended',
         VoucherDateFormatted: this.datePipe.transform(item.VoucherDate),
         PostDateFormatted: this.datePipe.transform(item.PostDate),
+        LocalAmountFormatted: this.formatAmount(item.LocalAmount) 
       }));
      this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -155,6 +156,20 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       this.totalLengthOfCollection = 0;
     }
   }
+
+ 
+private formatAmount(amount: number | string): string {
+  if (!amount) return '0.00';
+  const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // If negative, show without decimals
+  if (numValue < 0) {
+    return Math.round(numValue).toString();
+  }
+  
+  // If positive, show with 2 decimals
+  return numValue.toFixed(2);
+}
 
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
@@ -257,7 +272,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         width: '120px',
       },
       {
-        key: 'LocalAmount',
+        key: 'LocalAmountFormatted',
         label: 'Amount',
         sortable: true,
         filterable: true,
@@ -429,7 +444,7 @@ editJournalVoucher(item: any): void {
       VoucherDate: item.VoucherDateFormatted,
       PostStatus: item.PostStatusLabel,
       PostDate: item.PostDateFormatted,
-      Amount: item.LocalAmount,
+      Amount: item.LocalAmountFormatted,
       Narration: item.Narration || '',
       Status: item.StatusLabel,
     }));

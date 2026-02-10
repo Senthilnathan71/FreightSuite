@@ -662,7 +662,7 @@ private setupMBLDateListener(): void {
       VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: null, disabled: true }],
       ETD: [{ value: null, disabled: true }],
-      POO: [{ value: null, disabled: true }],
+      POO: [""],
       POL: [{ value: null, disabled: true }, [Validators.required]],
       POD: [{ value: null, disabled: true }, [Validators.required]],
       POLTerminal: [''],

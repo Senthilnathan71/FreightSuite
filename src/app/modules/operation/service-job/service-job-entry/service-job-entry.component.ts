@@ -334,8 +334,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MBLDate: [null],
       status: ['Active'],
 
-      POL: [null, [Validators.required]],
-      POD: [null, [Validators.required]]
+      POL: [""],
+      POD: [""]
     })
     this.serviceJobForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
@@ -550,8 +550,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: serviceFormValue.DepartmentMasterSid,
-      POL: serviceFormValue.POL,
-      POD: serviceFormValue.POD,
+      POL: serviceFormValue.POL || "",
+      POD: serviceFormValue.POD || "",
       HBLNo: serviceFormValue.HBLNo,
       MBLNo: serviceFormValue.MBLNo,
       MBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,

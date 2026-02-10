@@ -184,6 +184,20 @@
             </aside>
 
             <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!customerForm.get('CurrencyMasterSid')?.value">
+              <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid" placeholder=""
+                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                      [labelFields]="CurrencyLookupConfig.labelFields"  bindLabel="currencyCode"
+                        bindValue="CurrencyMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
+                <label for="text-input" class="input-label">Currency <span class="text-danger"></span></label>
+
+            </div>
+            </aside>
+
+            <aside class="col-md-4">
               <div class="custom-form-group" style="position: relative;">
                 <input type="text" id="CustomerName" formControlName="CustomerName" placeholder=""
                   class="custom-input-field sm" [onlyText]="100" (input)="onCustomerNameInput($event)"
