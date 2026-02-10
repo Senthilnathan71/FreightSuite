@@ -214,7 +214,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
-    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+    isClosed: false, errorMessage: null
   };
   
   // Declaration not exist in Vendor Invoice
@@ -2093,6 +2093,13 @@ isSeaDepartment(): boolean {
     resolve?: (value:boolean) => void,
     isPostingTrue?: boolean
   ) {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (resolve) resolve(false);
+      return;
+    }
+
     const raw = this.invoiceForm.getRawValue();
 
     const autoPostingButNoPosted = (this.isAutoPosting && !this.isPosted);

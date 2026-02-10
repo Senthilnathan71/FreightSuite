@@ -26,6 +26,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -153,6 +154,11 @@ export class ReverseVoucherEntryComponent {
     ];
   
     isSaving: boolean = false;
+
+    // Voucher period constraints
+    voucherConstraints: VoucherDateConstraints = {
+      isClosed: false, errorMessage: null
+    };
   
     gstType = [
       { id: 'B2B', name: 'B2B - Business to Business' },
@@ -220,6 +226,7 @@ export class ReverseVoucherEntryComponent {
       private companySettings: CompanySettingsManagerService,
       public mps: MenuPermissionService,
       private commonService: CommonService,
+      private voucherPeriodService: VoucherPeriodValidationService,
     ) {}
   
     ngOnInit(): void {
@@ -264,6 +271,7 @@ export class ReverseVoucherEntryComponent {
   
       this.initForm();
       this.loadLookups();
+      this.loadVoucherPeriods();
   
       try {
         const decryptedProfileRaw = localStorage.getItem('user-profile');
@@ -1716,6 +1724,24 @@ export class ReverseVoucherEntryComponent {
     return this.allPendingCosts.filter(cost => cost.selected);
   }
   
+    loadVoucherPeriods(): void {
+      this.voucherPeriodService.loadPeriods(
+        this.currentCompany?.CompanyMasterSid,
+        this.currentBranch?.BranchMasterSid,
+        this.currentFinancialYear,
+        () => this.applyVoucherDateConstraints()
+      );
+    }
+
+    applyVoucherDateConstraints(): void {
+      const voucherDate = this.reverseVoucherForm?.get('VoucherDate')?.value;
+      this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
+    }
+
+    onVoucherDateChange(): void {
+      this.applyVoucherDateConstraints();
+    }
+
     // Load lookups
     loadLookups() {
       this.spinner.show();
@@ -2037,6 +2063,12 @@ export class ReverseVoucherEntryComponent {
   
     // Save
     onSave() {
+      // Block save if voucher period grace days exceeded or module closed
+      if (this.voucherConstraints.isClosed) {
+        this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+        return;
+      }
+
       if (this.reverseVoucherForm.invalid) {
         this.appSettingService.showWarning('Please fill all required fields');
         this.markFormGroupTouched(this.reverseVoucherForm);
@@ -2284,6 +2316,12 @@ export class ReverseVoucherEntryComponent {
     }
   
     onSubmit() {
+      // Block save if voucher period grace days exceeded or module closed
+      if (this.voucherConstraints.isClosed) {
+        this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+        return;
+      }
+
       if (this.reverseVoucherForm.invalid) {
         this.markFormGroupTouched(this.reverseVoucherForm);
         this.appSettingService.showError('Please fill all required fields');

@@ -49,6 +49,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
 import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -225,6 +226,11 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   currentCurrencyCode: string = '';
   private destroy$ = new Subject<void>();
 
+  // Voucher period constraints
+  voucherConstraints: VoucherDateConstraints = {
+    isClosed: false, errorMessage: null
+  };
+
   private isLoading = false;
   isDirty = false;
   private initialDetailCount = 0;
@@ -250,7 +256,8 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
     private spinner: NgxSpinnerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    private voucherPeriodService: VoucherPeriodValidationService
   ) {}
 
   ngOnInit(): void {
@@ -274,6 +281,7 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
     this.loadPaymentModes();
     this.loadAllLookups();
     this.loadDetailLookups();
+    this.loadVoucherPeriods();
 
     // Check if editing existing payment
     const paymentId = this.route.snapshot.params['id'];
@@ -332,6 +340,24 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
           this.markAsDirty();
         }
       });
+  }
+
+  loadVoucherPeriods(): void {
+    this.voucherPeriodService.loadPeriods(
+      this.currentCompany?.CompanyMasterSid,
+      this.currentBranch?.BranchMasterSid,
+      this.currentYearId,
+      () => this.applyVoucherDateConstraints()
+    );
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.paymentForm?.get('VoucherDate')?.value;
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
+  }
+
+  onVoucherDateChange(): void {
+    this.applyVoucherDateConstraints();
   }
 
   initSearchOutstandingForm() {
@@ -669,6 +695,13 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (resolve) resolve(false);
+      return;
+    }
+
     this.isSaving = true;
     const formValue = this.paymentForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();

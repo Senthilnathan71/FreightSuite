@@ -235,18 +235,8 @@ export class VendorCreditNoteEntryComponent {
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
-    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+    isClosed: false, errorMessage: null
   };
-
-  get effectiveMinDate(): NgbDateStruct | null {
-    if (!this.minVoucherDate && !this.voucherConstraints.minDate) return null;
-    if (!this.minVoucherDate) return this.voucherConstraints.minDate;
-    if (!this.voucherConstraints.minDate) return this.minVoucherDate;
-    // Return the later of the two min dates
-    const a = new Date(this.minVoucherDate.year, this.minVoucherDate.month - 1, this.minVoucherDate.day);
-    const b = new Date(this.voucherConstraints.minDate.year, this.voucherConstraints.minDate.month - 1, this.voucherConstraints.minDate.day);
-    return a >= b ? this.minVoucherDate : this.voucherConstraints.minDate;
-  }
 
   // Country/Tax mode
   bookingModeCountry: string = 'india';
@@ -1855,6 +1845,13 @@ export class VendorCreditNoteEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (resolve) resolve(false);
+      return;
+    }
+
     const raw = this.vendorCreditNoteForm.getRawValue();
 
     const autoPostingButNoPosted = this.isAutoPosting && !this.isPosted;

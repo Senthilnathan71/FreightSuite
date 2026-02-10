@@ -23,6 +23,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { toNumber } from 'src/app/common/helper';
+import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { JournalVoucherPrintComponent } from '../print/journal-voucher-print/journal-voucher-print.component';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -151,6 +152,11 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   // creditTotal = 0;
   // difference = 0;
 
+  // Voucher period constraints
+  voucherConstraints: VoucherDateConstraints = {
+    isClosed: false, errorMessage: null
+  };
+
   private showWarningFlags: boolean[] = [];
   manuallyEditedNarrationRows: Set<number> = new Set<number>();
 
@@ -171,7 +177,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     private companySettings: CompanySettingsManagerService,
     private spinner: NgxSpinnerService,
     private currencyFormatter: CurrencyFormatService,
-    private currencyConfigService: CurrencyConfigurationService
+    private currencyConfigService: CurrencyConfigurationService,
+    private voucherPeriodService: VoucherPeriodValidationService
   ) { }
 
   ngOnInit(): void {
@@ -185,6 +192,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     this.initializeForm();
     this.setTodayDate();
     this.loadMasterData();
+    this.loadVoucherPeriods();
     this.checkEditMode();
     this.subledgerTypes = [];
     if (!this.editMode) {
@@ -226,6 +234,13 @@ private subscribeToFormChanges() {
 
 // Add this method to handle save with callback
 private saveDraftWithCallback(resolve?: (value: boolean) => void) {
+  // Block save if voucher period grace days exceeded or module closed
+  if (this.voucherConstraints.isClosed) {
+    this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+    if (resolve) resolve(false);
+    return;
+  }
+
   if (!this.isFormValid()) {
     if (resolve) resolve(false);
     return;
@@ -571,6 +586,24 @@ private deepEqual(obj1: any, obj2: any): boolean {
       day: today.getDate(),
     };
     this.form.patchValue({ voucherDate: this.todayDateInNgbStruct });
+  }
+
+  loadVoucherPeriods(): void {
+    this.voucherPeriodService.loadPeriods(
+      this.currentCompany?.CompanyMasterSid,
+      this.currentBranch?.BranchMasterSid,
+      this.currentFinancialYear,
+      () => this.applyVoucherDateConstraints()
+    );
+  }
+
+  applyVoucherDateConstraints(): void {
+    const voucherDate = this.form?.get('voucherDate')?.value;
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
+  }
+
+  onVoucherDateChange(): void {
+    this.applyVoucherDateConstraints();
   }
 
   loadMasterData(): void {
@@ -1868,6 +1901,12 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
+
     if (!this.isFormValid()) return;
 
     this.saveJournalVoucher(true); // true indicates final save with posting
@@ -2011,6 +2050,12 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Existing saveDraft method (for draft saving)
   saveDraft(): void {
     console.log("saveDraft")
+  // Block save if voucher period grace days exceeded or module closed
+  if (this.voucherConstraints.isClosed) {
+    this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+    return;
+  }
+
   if (!this.isFormValid()) return;
   
   const raw = this.form.getRawValue();

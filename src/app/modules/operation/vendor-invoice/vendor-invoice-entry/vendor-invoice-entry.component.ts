@@ -180,7 +180,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
-    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+    isClosed: false, errorMessage: null
   };
 
   // TDS Configuration
@@ -1593,6 +1593,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
     resolve?: (value:boolean) => void,
     isPostingTrue ?: boolean
   ) {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (resolve) resolve(false);
+      return;
+    }
+
     const raw = this.vendorInvoiceForm.getRawValue();
 
     const autoPostingButNoPosted = (this.isAutoPosting && !this.isPosted);

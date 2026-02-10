@@ -351,6 +351,7 @@
                       [maxDate]="todayDateInNgbStruct"
                       (click)="d1.toggle()"
                       (keydown.arrowDown)="d1.open()"
+                      (dateSelect)="onVoucherDateChange()"
                       readonly
                     />
                     <button
@@ -364,6 +365,7 @@
                   <label class="input-label" style="font-size: 14px"
                     >Payment Date</label
                   >
+                  <small *ngIf="voucherConstraints.isClosed" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                 </div>
               </aside>
 

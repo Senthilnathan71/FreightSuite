@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
-import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from '../modules/master/master.service';
 import { VoucherPeriodInfo, VoucherModule, getVoucherDateConstraints } from './helper';
 
 export interface VoucherDateConstraints {
-  minDate: NgbDateStruct | null;
-  maxDate: NgbDateStruct | null;
   isClosed: boolean;
   errorMessage: string | null;
 }
@@ -36,7 +33,7 @@ export class VoucherPeriodValidationService {
 
   applyConstraints(voucherDate: any, module: VoucherModule): VoucherDateConstraints {
     const result: VoucherDateConstraints = {
-      minDate: null, maxDate: null, isClosed: false, errorMessage: null
+      isClosed: false, errorMessage: null
     };
     if (!voucherDate || this.periods.length === 0) return result;
     const dateObj = new Date(voucherDate);

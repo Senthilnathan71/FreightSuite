@@ -43,25 +43,29 @@ export function findPeriodForDate(
 }
 
 /**
- * Compute minDate/maxDate NgbDateStruct for the datepicker based on period + grace days.
- * Returns { minDate, maxDate, isClosed, errorMessage }
+ * Check whether grace days have been exceeded for the selected voucher date.
+ *
+ * Logic:
+ *  1. Find the period the voucher date falls into.
+ *  2. If the module is closed for that period → blocked.
+ *  3. Calculate graceDeadline = period.EndDate + graceDays.
+ *     If today > graceDeadline → blocked with "Grace days exceeded" message.
+ *  4. Otherwise → allowed.
+ *
+ * The datepicker should NOT have minDate/maxDate restrictions.
  */
 export function getVoucherDateConstraints(
   voucherDate: Date,
   periods: VoucherPeriodInfo[],
   module: VoucherModule
 ): {
-  minDate: NgbDateStruct | null;
-  maxDate: NgbDateStruct | null;
   isClosed: boolean;
   errorMessage: string | null;
 } {
   const result: {
-    minDate: NgbDateStruct | null;
-    maxDate: NgbDateStruct | null;
     isClosed: boolean;
     errorMessage: string | null;
-  } = { minDate: null, maxDate: null, isClosed: false, errorMessage: null };
+  } = { isClosed: false, errorMessage: null };
 
   if (!voucherDate || !periods || periods.length === 0) return result;
 
@@ -79,18 +83,25 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // Compute grace days constraint
+  // Grace days check: compare today vs period end + grace days
   const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
   const graceDays = Number(period[graceDaysKey]) || 0;
 
-  const periodStart = new Date(period.StartDate);
-  periodStart.setHours(0, 0, 0, 0);
-  result.minDate = toNgbDateStruct(periodStart);
-
   const periodEnd = new Date(period.EndDate);
   periodEnd.setHours(0, 0, 0, 0);
-  const maxDateValue = getMaxDate(periodEnd, graceDays);
-  result.maxDate = toNgbDateStruct(maxDateValue);
+
+  const graceDeadline = new Date(periodEnd.getTime());
+  graceDeadline.setDate(graceDeadline.getDate() + graceDays);
+  graceDeadline.setHours(23, 59, 59, 999);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (today > graceDeadline) {
+    result.isClosed = true;
+    result.errorMessage = `Grace days exceeded. You cannot create voucher for the month ${period.PeriodName}.`;
+    return result;
+  }
 
   return result;
 }

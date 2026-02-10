@@ -101,7 +101,7 @@ export class CreditNoteEntryComponent {
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
-    minDate: null, maxDate: null, isClosed: false, errorMessage: null
+    isClosed: false, errorMessage: null
   };
 
   masterJobList: any[] = [];
@@ -2714,6 +2714,12 @@ private normalizeParty(raw: any) {
 }
 
   async onSave() {
+    // Block save if voucher period grace days exceeded or module closed
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
+
     if (this.creditNoteForm.invalid) {
       this.creditNoteForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill required creditNote fields.');
