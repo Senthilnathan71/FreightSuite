@@ -1635,8 +1635,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
     if (isExport) {
       // Export department - disable both fields
-      mblNoControl?.disable();
-      mblDateControl?.disable();
+      mblNoControl?.enable();
+      mblDateControl?.enable();
       mblNoControl?.clearValidators();
       mblDateControl?.clearValidators();
 

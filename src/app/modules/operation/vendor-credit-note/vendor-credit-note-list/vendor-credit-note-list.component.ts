@@ -137,7 +137,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
          
         },
         {
-          key: 'LocalAmount',
+          key: 'LocalAmountFormatted',
           label: 'Amt',
           sortable: true,
           filterable: true,
@@ -289,6 +289,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           CurrencyCode: item.currencyMaster.currencyCode,
           Status: item.Status === 'A' ? 'Active' : 'Suspended',
           ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
+          LocalAmountFormatted: this.formatAmount(item.LocalAmount)
           
         }));
         this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -300,6 +301,19 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         this.totalLengthOfCollection = 0;
       }
     }
+
+    private formatAmount(amount: number | string): string {
+  if (!amount) return '0.00';
+  const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // If negative, show without decimals
+  if (numValue < 0) {
+    return Math.round(numValue).toString();
+  }
+  
+  // If positive, show with 2 decimals
+  return numValue.toFixed(2);
+}
 
     getInvoiceNumber(reversalVoucherId: number): string {
     if (!reversalVoucherId) return '-';

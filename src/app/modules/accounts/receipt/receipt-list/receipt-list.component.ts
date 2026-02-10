@@ -152,7 +152,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     if(response && response.status){
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
-        ListAmount : item.VoucherDetail[0]?.LocalAmount || 0,
+        ListAmount : this.formatAmount(item.VoucherDetail[0]?.LocalAmount || 0),
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -167,7 +167,18 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
       this.totalLengthOfCollection = 0;
     }
   }
-
+private formatAmount(amount: number | string): string {
+  if (!amount) return '0.00';
+  const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // If negative, show without decimals
+  if (numValue < 0) {
+    return Math.round(numValue).toString();
+  }
+  
+  // If positive, show with 2 decimals
+  return numValue.toFixed(2);
+}
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
     this.appSettingService.showError('Error searching receipts.');

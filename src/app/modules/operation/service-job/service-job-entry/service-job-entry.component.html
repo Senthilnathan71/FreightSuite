@@ -169,12 +169,12 @@
                   [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode"
                   (itemSelected)="handlePOLChange($event)">
                 </dofi-searchable-dropdown>
-                <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                <label for="text-input" class="input-label">POL <span class="text-danger"></span></label>
                 @if(serviceJobForm.get('POL')?.touched && serviceJobForm.get('POL')?.invalid){
                 <div class="error-message">
-                  @if(serviceJobForm.get('POL')?.hasError('required')){
+                  <!-- @if(serviceJobForm.get('POL')?.hasError('required')){
                   <span>Required</span>
-                  }
+                  } -->
                 </div>
                 }
               </div>
@@ -188,12 +188,12 @@
                   [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode"
                   (itemSelected)="handlePODChange($event)">
                 </dofi-searchable-dropdown>
-                <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
                 @if(serviceJobForm.get('POD')?.touched && serviceJobForm.get('POD')?.invalid){
                 <div class="error-message">
-                  @if(serviceJobForm.get('POD')?.hasError('required')){
+                  <!-- @if(serviceJobForm.get('POD')?.hasError('required')){
                   <span>Required</span>
-                  }
+                  } -->
                 </div>
                 }
               </div>

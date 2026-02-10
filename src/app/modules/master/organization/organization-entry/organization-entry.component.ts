@@ -67,6 +67,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import * as XLSX from 'xlsx';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -91,7 +92,8 @@ import * as XLSX from 'xlsx';
     MultiSelectComponent,
     NgbDropdownModule,
     NgbAccordionModule,
-    SearchableDropdown
+    SearchableDropdown,
+    SearchableDropdownModal
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
@@ -127,6 +129,11 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
           this.countryList = countryData;
           this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
           this.cityList = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
+          if(this.customerForm){
+            setTimeout(() => {
+              this.autoSelectCurrency();
+            });
+          }
         })
   }
   private destroy$ = new Subject<void>();
@@ -163,6 +170,11 @@ isLoadingCities = false;
     { name: 'Email', icon: 'fas fa-envelope' },
     { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
   ];
+  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode'],
+  };
 
   // Branch accordion properties
   expandedBranches: Set<number> = new Set();
@@ -300,7 +312,23 @@ onCountryChange(): void {
   if (isIndia) {
     this.getStatesByCountryId();
   }
+    this.autoSelectCurrency();
 }
+
+private autoSelectCurrency(): void {
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  
+  if (!countryId || !this.countryList || !this.currencyList) return;
+  
+  // Find the selected country
+  const selectedCountry = this.countryList.find((c: any) => c.CountryMasterSid == countryId);
+  
+  if (selectedCountry && selectedCountry.CurrencyMasterSid) {
+    // Set the CurrencyMasterSid to match the country's currency
+    this.customerForm.get('CurrencyMasterSid')?.setValue(selectedCountry.CurrencyMasterSid);
+  }
+}
+
 
 
   // Sales team properties
@@ -413,6 +441,7 @@ onCountryChange(): void {
   cityList: any;
   cityNewList:any
   countryList: any;
+  currencyList: any;
   status: any;
   currentCountyID: any;
   CustomerBrEmailSid: any;
@@ -1301,6 +1330,7 @@ clearCustomerSearch(): void {
           // Update tax field states when country changes
           this.updateTaxIdFieldState();
           this.updateTaxIdFieldValidation();
+          this.autoSelectCurrency();
           this.cdRef.markForCheck();
         } else {
           console.error('Error fetching States with Country Id');
@@ -1541,6 +1571,7 @@ clearCustomerSearch(): void {
       CustomerAddress1: ['', [Validators.required]],
       CustomerAddress2: [''],
       CountryMasterSid: ['', [Validators.required]],
+      CurrencyMasterSid: [null],
       CompanyType: [''],
       PanAvailable: [false],
       PanType: [''],
@@ -1904,12 +1935,12 @@ getTaxIdLabel(): string {
     if (this.isIndianCountry()) {
       companyTypeControl?.enable();
     } else {
-      companyTypeControl?.disable();
+      companyTypeControl?.enable();
       companyTypeControl?.setValue('');
     }
   } else {
     // Disable all fields when checkbox is unchecked
-    companyTypeControl?.disable();
+    companyTypeControl?.enable();
     panTypeControl?.disable();
     panNameControl?.disable();
     
@@ -2022,6 +2053,7 @@ loadCustomerData(customerId: number) {
       this.customerForm.patchValue({
         ...customerData,
         CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
+        CurrencyMasterSid: customerData.CurrencyMasterSid,
         status: formattedStatus,
         paymentType: customerData.CashCredit,
         KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
@@ -2163,16 +2195,18 @@ loadCustomerData(customerId: number) {
       departments: this.masterService.getAllDepartments(companyMastersID),
       salesman: this.masterService.getAllSalesmans(companyMastersID),
       docs: this.masterService.getAllDoc(companyMastersID),
-      cs: this.masterService.getAllCS(companyMastersID)
+      cs: this.masterService.getAllCS(companyMastersID),
+      currency: this.masterService.getAllCurrencies()
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe(
-      ({ departments, salesman, docs, cs }) => {
+      ({ departments, salesman, docs, cs, currency}) => {
         this.spDepartmentList = departments || [];
         this.departmentList = departments || []; // Also populate departmentList for email tab
         this.salesPersonList = salesman || [];
         this.allCS = cs?.data || [];
         this.allDocs = docs?.data || [];
+        this.currencyList = currency || [];
 
         // Populate departmentListForSelect once to avoid getter re-computation
         this.departmentListForSelect = this.spDepartmentList.map(dept => ({
@@ -2711,6 +2745,7 @@ private getFirstInvalidField(): string {
         'CustomerName': 'Customer Name',
         'CustomerAddress1': 'Address1',
         'CountryMasterSid': 'Country',
+        'CurrencyMasterSid': 'Currency',
         'CustomerAddress2': 'Address2'
       };
       
@@ -2826,6 +2861,7 @@ private getFirstInvalidField(): string {
         CustomerAddress1: formValue.CustomerAddress1,
         CustomerAddress2: formValue.CustomerAddress2,
         CountryMasterSid: Number(formValue.CountryMasterSid),
+        CurrencyMasterSid: formValue.CurrencyMasterSid,
         CustomerType: formValue.CustomerType,
         PanName: formValue.PanName,
         PanType: formValue.PanType,
@@ -2947,6 +2983,7 @@ private getFirstInvalidField(): string {
       CustomerAddress1: formValue.CustomerAddress1,
       CustomerAddress2: formValue.CustomerAddress2,
       CountryMasterSid: formValue.CountryMasterSid,
+      CurrencyMasterSid: formValue.CurrencyMasterSid,
       CustomerType: formValue.CustomerType,
       PanName: formValue.PanName,
       PanType: formValue.PanType,
@@ -3341,6 +3378,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
       CustomerAddress1: '',
       CustomerAddress2: '',
       CountryMasterSid: '',
+      CurrencyMasterSid: '',
       CompanyType: { value: '', disabled: true },
       PanAvailable: false,
       PanType: { value: '', disabled: true },
