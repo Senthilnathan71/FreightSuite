@@ -3051,14 +3051,20 @@
             <strong class="small text-secondary">General Fields</strong>
           </div>
 
-          <!-- Fields List -->
+          <!-- Fields grouped by Tab -->
           <div class="ms-2">
-            <div *ngFor="let recordType of getRecordTypeKeys(hblNo)">
-              <div *ngFor="let error of groupedByHBL[hblNo][recordType]"
-                   class="d-flex align-items-center py-1 border-bottom border-light">
-                <i class="fas fa-times-circle text-danger me-2 small"></i>
-                <span class="small">{{ error.fieldName }}</span>
-                <span class="badge bg-light text-muted ms-auto small" style="font-size: 10px;">{{ recordType }}</span>
+            <div *ngFor="let tabName of getRecordTypeKeys(hblNo)">
+              <div class="d-flex align-items-center mb-1 mt-2">
+                <i class="fas fa-folder-open text-info me-2 small"></i>
+                <strong class="small text-info">{{ tabName }} Tab</strong>
+              </div>
+              <div class="ms-3">
+                <div *ngFor="let error of groupedByHBL[hblNo][tabName]"
+                     class="d-flex align-items-center py-1 border-bottom border-light">
+                  <i class="fas fa-times-circle text-danger me-2 small"></i>
+                  <span class="small">{{ error.fieldName }}</span>
+                  <span class="badge bg-light text-muted ms-auto small" style="font-size: 10px;">{{ error.fieldRef }}</span>
+                </div>
               </div>
             </div>
           </div>

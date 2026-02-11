@@ -4172,41 +4172,56 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
    * Handle EDI Manifest validation errors from backend
    */
   private handleEDIValidationError(error: any) {
+    // When responseType is 'text', Angular returns the error body as a raw string
+    let errorBody = error.error;
+    if (typeof errorBody === 'string') {
+      try {
+        errorBody = JSON.parse(errorBody);
+      } catch (e) {
+        // Not valid JSON, keep as-is
+      }
+    }
+
     // Check if this is a validation error with field list
-    if (error.error?.errors && Array.isArray(error.error.errors)) {
-      this.validationErrors = error.error.errors;
+    if (errorBody?.errors && Array.isArray(errorBody.errors)) {
+      this.validationErrors = errorBody.errors;
       this.groupEDIErrorsByHBL();
       this.showValidationModal = true;
     } else {
       // Generic error
-      this.toastr.error(error.error?.message || 'Failed to generate EDI Manifest');
+      this.toastr.error(errorBody?.message || 'Failed to generate EDI Manifest');
     }
   }
 
   /**
-   * Group validation errors by HBL number first, then by record type for user-friendly display
+   * Get tab name fallback for errors without tabName (frontend-generated)
+   */
+  private getTabNameForField(error: any): string {
+    const map: { [fieldRef: string]: string } = {
+      '1.1': 'Customs', '1.2': 'Customs', '1.10': 'Customs',
+      '2.29': 'Customs', '2.46': 'Customs',
+      '3.1': 'Customs', '3.5': 'Customs',
+    };
+    return map[error.fieldRef] || 'Customs';
+  }
+
+  /**
+   * Group validation errors by HBL number first, then by tab name for user-friendly display
    */
   private groupEDIErrorsByHBL() {
     this.groupedByHBL = {};
-    const recordTypeLabels: { [key: string]: string } = {
-      'VOY': 'Voyage Details',
-      'BOL': 'Bill of Lading',
-      'CON': 'Consignment Details',
-      'CTR': 'Container Details'
-    };
 
     for (const error of this.validationErrors) {
-      // Use 'Common' for errors without HBL (like VOY record)
       const hblKey = error.hblNo || 'Common Fields';
-      const recordLabel = recordTypeLabels[error.recordType] || error.recordType;
+      const tabLabel = error.tabName || this.getTabNameForField(error);
 
       if (!this.groupedByHBL[hblKey]) {
         this.groupedByHBL[hblKey] = {};
       }
-      if (!this.groupedByHBL[hblKey][recordLabel]) {
-        this.groupedByHBL[hblKey][recordLabel] = [];
+      if (!this.groupedByHBL[hblKey][tabLabel]) {
+        this.groupedByHBL[hblKey][tabLabel] = [];
       }
-      this.groupedByHBL[hblKey][recordLabel].push(error);
+      this.groupedByHBL[hblKey][tabLabel].push(error);
     }
   }
 
@@ -4224,14 +4239,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   /**
-   * Get record type keys for a specific HBL
+   * Get tab name keys for a specific HBL, sorted in logical tab order
    */
   getRecordTypeKeys(hblNo: string): string[] {
     if (!this.groupedByHBL[hblNo]) return [];
-    // Sort by record type order: VOY, BOL, CON, CTR
-    const order = ['Voyage Details', 'Bill of Lading', 'Consignment Details', 'Container Details'];
+    const order = ['Master', 'Shipment', 'Cargo', 'Others', 'Customs', 'Container'];
     return Object.keys(this.groupedByHBL[hblNo]).sort((a, b) => {
-      return order.indexOf(a) - order.indexOf(b);
+      const ia = order.indexOf(a);
+      const ib = order.indexOf(b);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
     });
   }
 
