@@ -2653,7 +2653,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Terms & Conditions Method
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
 
     this.masterService.getTandCByCondition(payload).subscribe(
@@ -2682,7 +2682,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Authority Method
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
 
     const modalRef = this.modalService.open(AuthorityLogComponent, {

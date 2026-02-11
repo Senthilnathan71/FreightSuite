@@ -527,7 +527,7 @@ private preparePermissionsPayload() {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.settingsService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -563,7 +563,7 @@ private preparePermissionsPayload() {
 
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

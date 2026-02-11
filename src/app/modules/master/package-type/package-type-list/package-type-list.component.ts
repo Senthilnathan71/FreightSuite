@@ -194,7 +194,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.userData = this.appSettingService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
@@ -749,7 +749,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -783,7 +783,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

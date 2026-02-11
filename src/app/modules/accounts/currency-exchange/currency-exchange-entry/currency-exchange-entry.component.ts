@@ -74,7 +74,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   ngOnInit(): void {
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-  this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+  this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
   this.mps.init().subscribe();
     this.initForm();
     this.loadCompaniesAndBranches();
@@ -318,7 +318,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
   }
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
