@@ -49,7 +49,7 @@
             </div>
             <div style="display:flex; margin-bottom:4px;">
                 <div style="width:150px; font-weight:bolder;"><strong>Paid To</strong></div>
-                <div>: {{paymentDataPrint?.PartyName}}</div>
+                <div>: {{paymentDataPrint?.BankPartyName}}</div>
             </div>
         </div>
 
@@ -78,18 +78,18 @@
     <table style="width:100%; border-collapse:collapse; margin:10px 0;  font-size:17px;">
         <tr>
             <th style="border:1px solid black; width:50%; font-weight: bolder;  text-align:center;border-left: none;"><strong>Description</strong></th>
-            <th style="border:1px solid black; width:15%; font-weight: bolder;  text-align:center;"><strong>MBL/HBL Ref</strong></th>
-            <th style="border:1px solid black; width:3%;  font-weight: bolder; text-align:center;"><strong>Curr.</strong></th>
-            <th style="border:1px solid black; width:5%;  font-weight: bolder; text-align:center;"><strong>Ex.Rate</strong></th>
+            <!-- <th style="border:1px solid black; width:15%; font-weight: bolder;  text-align:center;"><strong>MBL/HBL Ref</strong></th> -->
+            <th style="border:1px solid black; width: 3%;  font-weight: bolder; text-align:center;"><strong>Curr.</strong></th>
+            <th style="border:1px solid black; width:8%;  font-weight: bolder; text-align:center;"><strong>Ex.Rate</strong></th>
             <th style="border:1px solid black; width:8%;  font-weight: bolder; text-align:center;border-right: none;"><strong>Amount</strong></th>
         </tr>
         <tr>
             <td style="border:1px solid black;text-align:start;border-left: none;">{{paymentDataPrint?.VoucherDetail?.[0]?.Narration}}</td>
-            <td style="border:1px solid black; text-align:start;">
+            <!-- <td style="border:1px solid black; text-align:start;">
                 {{paymentDataPrint?.MasterNumber}}
                 <span *ngIf="paymentDataPrint?.MasterNumber && paymentDataPrint?.HouseNumber">/</span>
                 {{paymentDataPrint?.HouseNumber}}
-            </td>
+            </td> -->
             <td style="border:1px solid black; text-align:start;">{{paymentDataPrint?.CurrencyCode}}</td>
             <td style="border:1px solid black; text-align:right;">{{paymentDataPrint?.ExchangeRate | number:'1.3-3'}}</td>
             <td style="border:1px solid black; text-align:right;border-right: none;">{{paymentDataPrint?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}</td>
