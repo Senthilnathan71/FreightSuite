@@ -93,7 +93,7 @@ export const PDF_STYLES = {
   tableHeader: {
     fontSize: PDF_FONTS.sizes.normal,
     bold: true,
-    fillColor: PDF_COLORS.headerBg,
+    // fillColor: PDF_COLORS.headerBg,
     color: PDF_COLORS.primary
   },
   tableCell: {

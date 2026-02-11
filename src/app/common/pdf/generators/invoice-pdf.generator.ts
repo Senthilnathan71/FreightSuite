@@ -28,7 +28,7 @@
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
       pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-      pageMargins: data.config?.pageMargins || [20, 150, 20, 20], // Reduced from 200 to 150
+      pageMargins: data.config?.pageMargins || [20, 180, 20, 20], // Reduced from 200 to 150
 
       background: function (currentPage, pageSize) {
         
@@ -60,7 +60,7 @@
       },
 
       content: [
-        // { text: '', margin: [0, 130, 0, 0] },   // Spacer to push content below header
+        // { text: '', margin: [0, 10, 0, 0] },   // Spacer to push content below header
         buildShipmentDetails(data),
         buildChargesTable(data),
         buildTotalsSection(data),
@@ -79,6 +79,7 @@
       styles: getPdfStyles(),
       defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
     };
+    
   }
 
 
@@ -94,8 +95,8 @@
     const PAGE_RIGHT = 565;
 
     const logoColumn = logo
-      ? { image: logo, width: 100, height: 60, alignment: 'left' as const }
-      : { text: '', width: 100 };
+      ? { image: logo, width: 200, height: 60, alignment: 'left' as const }
+      : { text: '', width: 200 };
 
     const companyInfoStack: any[] = [];
 
@@ -155,7 +156,7 @@
         body: [[logoColumn, { stack: companyInfoStack }, { text: '' }]]
       },
       layout: 'noBorders',
-      margin: [0, 0, 0, 6]
+      margin: [0, 5, 0, 6]
     };
 
     const bottomLine = {
@@ -197,7 +198,7 @@
 function buildInvoiceInfo(data: InvoicePdfData): any {
     const invoice = data.invoice;
     const printData = (data as any).invoicePrintData;
-    const PAGE_LEFT = 10;
+    const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
     
     // Left side - Billed To
@@ -209,10 +210,11 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       text: 'Billed To',
       style: 'labelBold',
       margin: [0, 0, 0, 3]
+     
     },
     {
       text: billedTo,
-      margin: [0, 0, 0, 3]
+      margin: [0, 0, 0, 3],
     }
   ];
     
@@ -439,13 +441,13 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       rightStack.push({
         table: {
           headerRows: 1,
-          widths: [30, '*', 50, 40],
+          widths: [30, '*', 50, 45],
           body: [
             [
               { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
-              { text: 'Commodity Desc', style: 'tableHeader' },
-              { text: 'Gross Wt.', style: 'tableHeader', alignment: 'right' },
-              { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'right' }
+              { text: 'Commodity Desc', style: 'tableHeader',alignment: 'center' },
+              { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
+              { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
             ],
             [
               { text: String(cargoData.packages), alignment: 'center' },
@@ -516,12 +518,12 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     /* ---------------- HEADER ---------------- */
     const headerRow: any[] = [
       { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center' },
-      { text: 'Particulars', style: 'tableHeaderSmall' },
+      { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
-      { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'right' },
-      { text: 'Rate', style: 'tableHeaderSmall', alignment: 'right' },
-      { text: 'ROE', style: 'tableHeaderSmall', alignment: 'right' },
-      { text: 'Taxable Amt', style: 'tableHeaderSmall', alignment: 'right' }
+      { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
+      { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
+      { text: 'ROE', style: 'tableHeaderSmall', alignment: 'center' },
+      { text: 'Taxable Amt', style: 'tableHeaderSmall', alignment: 'center' }
     ];
 
     if (taxConfig.showCGST) {
@@ -639,7 +641,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       18,    // S.No
       '*',   // Particulars
       22,    // Curr
-      36,    // Qty
+      40,    // Qty
       36,    // Rate
       36,    // ROE
       46     // Taxable
@@ -665,7 +667,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         body: [headerRow, ...dataRows, totalRow]
       },
       layout: PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 10, 0, 10],
+      margin: [0, 0, 0, 10],
       style: { noWrap: false }
     };
   }
@@ -779,7 +781,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
 
   // Create header row
   const headers = [
-    { text: 'Details', style: 'tableHeader', alignment: 'left' }
+    { text: 'Details', style: 'tableHeader', alignment: 'center' }
   ];
 
   // Add bank columns dynamically
@@ -788,13 +790,13 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       headers.push({ 
         text: `Bank (${currencyCode})`, 
         style: 'tableHeader', 
-        alignment: 'left' 
+        alignment: 'center' 
       });
     } else {
       headers.push({ 
         text: `Bank ${i + 1}`, 
         style: 'tableHeader', 
-        alignment: 'left' 
+        alignment: 'center' 
       });
     }
   }
