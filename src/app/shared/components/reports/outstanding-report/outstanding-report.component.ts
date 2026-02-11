@@ -73,6 +73,51 @@ export class OutstandingReportComponent {
     }, 0);
   }
 
+  getSignedTotal(transactions: any[]): number {
+    if (!transactions || !transactions.length) return 0;
+
+    const ledgerType = this.fullData?.ledgerType?.trim(); // "Sy Dr"
+
+    let total = 0;
+
+    transactions.forEach((item) => {
+      const drCr = item?.drCr;
+      const amount = +item?.outstandingLocalAmount || 0;
+
+      if (ledgerType === "Sy Dr") {
+        total += drCr === "D" ? amount : -amount;
+      }
+
+      if (ledgerType === "Sy Cr") {
+        total += drCr === "C" ? amount : -amount;
+      }
+    });
+
+    return total;
+  }
+
+  getLocalTotal(transactions: any[]): number {
+    if (!transactions || !transactions.length) return 0;
+    const ledgerType = this.fullData?.ledgerType?.trim();
+    let total = 0;
+    transactions.forEach((item) => {
+      const drCr = item?.drCr;
+      const amount = +item?.originalLocalAmount || 0;
+
+      if (ledgerType === "Sy Dr") {
+        total += drCr === "D" ? amount : -amount;
+      }
+
+      if (ledgerType === "Sy Cr") {
+        total += drCr === "C" ? amount : -amount;
+      }
+    });
+
+    return total;
+  }
+
+
+
   loadSalesPerson(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     this.leadService.getAllSalesman(CompanyMasterSid).subscribe(
@@ -115,152 +160,142 @@ export class OutstandingReportComponent {
     return total;
   }
 
-  /**
-   * Provide Excel data for export via report modal
-   * Called by GenericReportModalComponent.downloadExcel()
-   */
- getExcelData(): ComplexReportExportConfig {
 
-  const rows: ExcelRow[] = [];
+  getExcelData(): ComplexReportExportConfig {
 
-  const transactions = this.fullData?.transactions || [];
-  const currencySummary = this.fullData?.currencyWiseSummary || [];
+    const rows: ExcelRow[] = [];
 
-  // =====================================================
-  // ✅ TABLE 1 HEADERS (Transaction Table)
-  // =====================================================
+    const transactions = this.fullData?.transactions || [];
+    const currencySummary = this.fullData?.currencyWiseSummary || [];
 
-  const tableHeaders: ExcelHeader[] = [
-    { key: 'voucherNo', label: 'Voucher No' },
-    { key: 'voucherDate', label: 'Voucher Date' },
-    { key: 'voucherType', label: 'Voucher Type' },
-    { key: 'hblNo', label: 'HBL / HAWB No' },
-    { key: 'desc', label: 'Narration' },
-    { key: 'drCr', label: 'Dr/Cr' },
-    { key: 'currency', label: 'Cur' },
-    { key: 'amt', label: 'Amt' },
-    { key: 'localAmt', label: 'Local Amt' },
-    { key: 'osCurrAmt', label: 'O/S Currency Amt' },
-    { key: 'osLocalAmt', label: 'O/S Local Amt' },
-    { key: 'cumulative', label: 'Cumulative' },
-    { key: 'ageingDays', label: 'Ageing' }
-  ];
 
-  // =====================================================
-  // ✅ TABLE 1 ROWS (Transaction Data)
-  // =====================================================
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'voucherNo', label: 'Voucher No' },
+      { key: 'voucherDate', label: 'Voucher Date' },
+      { key: 'voucherType', label: 'Type' },
+      { key: 'desc', label: 'Narration' },
+      { key: 'drCr', label: 'Dr/Cr' },
+      { key: 'currency', label: 'Cur' },
+      { key: 'amt', label: 'Amt' },
+      { key: 'localAmt', label: 'Local Amt' },
+      { key: 'osCurrAmt', label: 'O/S Currency Amt' },
+      { key: 'osLocalAmt', label: 'O/S Local Amt' },
+      { key: 'cumulative', label: 'Cumulative' },
+      { key: 'ageingDays', label: 'Ageing' }
+    ];
 
-  transactions.forEach((item: any, index: number) => {
+    const columnWidths = [
+      10, // Voucher No
+      10, // Voucher Date
+      6,  // Type
+      18, // Narration
+      6,  // Dr/Cr
+      6,  // Cur
+      10, // Amt
+      10, // Local Amt
+      12, // O/S Currency
+      12, // O/S Local
+      12, // Cumulative
+      8   // Ageing
+    ];
+
+
+    transactions.forEach((item: any) => {
+      rows.push({
+        cells: [
+          { value: item?.voucherNumber || '' },
+          { value: this.formatDate(item?.voucherDate) },
+          { value: item?.voucherType || '' },
+          { value: item?.naration || '' },
+          { value: item?.drCr || '' },
+          { value: item?.currencyCode || '' },
+          { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
+          { value: this.formatNumber(item?.signedOriginalLocal || 0) },
+          { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
+          { value: this.formatNumber(item?.signedOutstandingLocal || 0) },
+          { value: this.formatNumber(item?.cumulativeOutstanding || 0) },
+          { value: item?.ageingDays || 0 }
+        ],
+        style: 'data'
+      });
+    });
+
 
     rows.push({
       cells: [
-        { value: item?.voucherNumber || '' },
-        { value: this.formatDate(item?.voucherDate) },
-        { value: item?.voucherType || '' },
-        { value: item?.HouseJobNumber || '' },
-        { value: item?.naration || '' },
-        { value: item?.drCr || '' },
-        { value: item?.currencyCode || '' },
+        { value: 'TOTAL :', colspan: 7 },
 
-        { value: this.formatNumber(item?.originalCurrencyAmount || 0) },
-        { value: this.formatNumber(item?.originalLocalAmount || 0) },
+        { value: this.formatNumber(this.getLocalTotal(transactions)) },
+        { value: '' },
+        { value: this.formatNumber(this.getSignedTotal(transactions)) },
 
-        { value: this.formatNumber(item?.outstandingCurrencyAmount || 0) },
-        { value: this.formatNumber(item?.localAmt || 0) },
+        {
+          value: this.formatNumber(
+            transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0
+          )
+        },
 
-        { value: this.formatNumber(this.getCumulative(transactions, index)) },
-
-        { value: item?.ageingDays || 0 }
+        { value: '' }
       ],
-      style: 'data'
+      style: 'total'
     });
-  });
 
-  // =====================================================
-  // ✅ TABLE 1 TOTAL ROW
-  // =====================================================
+    return {
+      fileName: 'Outstanding-Report',
+      sheetName: 'OutstandingReport',
 
-  rows.push({
-    cells: [
-      { value: 'TOTAL :', colspan: 7 },
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `Outstanding Report as on ${this.formatDate(this.params?.ToDate)}`,
+        additionalInfo: [
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
+          { label: 'Subledger', value: this.fullData?.subledgerName || '' },
+          { label: 'Ledger', value: this.fullData?.ledgerName || '' }
+        ]
+      },
 
-      { value: this.formatNumber(this.getTotal(transactions, 'originalCurrencyAmount')) },
-      { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
+      tableHeaders,
+      columnWidths,
+      rows,
 
-      // { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
-      { value: this.formatNumber(this.getTotal(transactions, 'outstandingLocalAmount')) },
-
-      { value: this.formatNumber(this.getCumulative(transactions, transactions.length - 1)) },
-
-      { value: '' }
-    ],
-    style: 'total'
-  });
-
-  // =====================================================
-  // ✅ RETURN CONFIG
-  // =====================================================
-
-  return {
-    fileName: 'Outstanding-Report',
-    sheetName: 'OutstandingReport',
-
-    reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: `Outstanding Report as on ${this.formatDate(this.params?.ToDate)}`,
-      additionalInfo: [
-        { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-        { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
-        { label: 'Subledger', value: this.fullData?.subledgerName || '' },
-        { label: 'Ledger', value: this.fullData?.ledgerName || '' }
-      ]
-    },
-
-    tableHeaders,
-    rows,
-
-    columnWidths: [
-      15, 12, 12, 15, 25,
-      8, 8, 15, 15,
-      15, 15, 15,
-      10
-    ],
-
-    summaryTable: {
-      // title: 'Currency Wise Summary',
-      headers: ['Currency', 'Total Outstanding', '0 - 30 Days', '31 - 60 Days', '61 - 90 Days', '91 - 120 Days', '121+ Days'],
-      rows: currencySummary.map((cur: any) => ({
-        cells: [
-          { value: cur.currencyCode || '' },
-          { value: this.formatNumber(cur.totalOutstanding || 0) },
-          { value: this.formatNumber(cur.bucket_0_30 || 0) },
-          { value: this.formatNumber(cur.bucket_31_60 || 0) },
-          { value: this.formatNumber(cur.bucket_61_90 || 0) },
-          { value: this.formatNumber(cur.bucket_91_120 || 0) },
-          { value: this.formatNumber(cur.bucket_121_above || 0) }
+      summaryTable: {
+        headers: [
+          'Currency',
+          'Total Outstanding',
+          '0 - 30 Days',
+          '31 - 60 Days',
+          '61 - 90 Days',
+          '91 - 120 Days',
+          '121+ Days'
         ],
-        style: 'data' as const
-      })),
-      columnWidths: [12, 18, 14, 14, 14, 14, 14]
-    }
-  };
-}
 
+        rows: currencySummary.map((cur: any) => ({
+          cells: [
+            { value: cur.currencyCode || '' },
+            { value: this.formatNumber(cur.totalOutstanding || 0) },
+            { value: this.formatNumber(cur.bucket_0_30 || 0) },
+            { value: this.formatNumber(cur.bucket_31_60 || 0) },
+            { value: this.formatNumber(cur.bucket_61_90 || 0) },
+            { value: this.formatNumber(cur.bucket_91_120 || 0) },
+            { value: this.formatNumber(cur.bucket_121_above || 0) }
+          ],
+          style: 'data'
+        })),
 
-
-
-  /**
-   * Format number for Excel display
-   */
-  private formatNumber(value: any): number | string {
-    if (value === null || value === undefined) return '';
-    const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+        columnWidths: [12, 18, 14, 14, 14, 14, 14]
+      }
+    };
   }
 
-  /**
-   * Format date for display
-   */
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
+
   private formatDate(date: any): string {
     if (!date) return '';
     try {
