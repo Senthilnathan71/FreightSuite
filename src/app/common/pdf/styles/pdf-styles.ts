@@ -2,6 +2,8 @@
  * Centralized styles for PDF generation using pdfmake
  */
 
+import { borderBottomLeftRadius } from "html2canvas/dist/types/css/property-descriptors/border-radius";
+
 export const PDF_COLORS = {
   primary: '#333333',
   secondary: '#666666',
@@ -13,7 +15,7 @@ export const PDF_COLORS = {
 };
 
 export const PDF_FONTS = {
-  default: 'Roboto',
+  default: '',
   sizes: {
     tiny: 7,
     small: 8,
@@ -91,7 +93,7 @@ export const PDF_STYLES = {
   tableHeader: {
     fontSize: PDF_FONTS.sizes.normal,
     bold: true,
-    fillColor: PDF_COLORS.headerBg,
+    // fillColor: PDF_COLORS.headerBg,
     color: PDF_COLORS.primary
   },
   tableCell: {
@@ -109,6 +111,31 @@ export const PDF_STYLES = {
     fillColor: PDF_COLORS.light,
     color: PDF_COLORS.primary
   },
+
+  // Table Styles
+  tableHeaderSmall: {
+    fontSize: PDF_FONTS.sizes.small,
+    bold: true,
+    // fillColor: PDF_COLORS.headerBg,
+    // color: PDF_COLORS.primary,
+  },
+
+  tableCellSmall: {
+    fontSize: PDF_FONTS.sizes.small,
+    // color: PDF_COLORS.primary
+  },
+  tableCellBoldSmall: {
+    fontSize: PDF_FONTS.sizes.small,
+    bold: true,
+    // color: PDF_COLORS.primary
+  },
+  tableFooterSmall: {
+    fontSize: PDF_FONTS.sizes.small,
+    bold: true,
+    fillColor: PDF_COLORS.light,
+    color: PDF_COLORS.primary
+  },
+
 
   // Route Header Styles
   routeHeader: {
@@ -220,10 +247,10 @@ export const PDF_TABLE_LAYOUTS = {
 export const PDF_DEFAULT_CONFIG = {
   pageSize: 'A4' as const,
   pageOrientation: 'portrait' as const,
-  pageMargins: [40, 40, 40, 60] as [number, number, number, number],
+  pageMargins: [10, 10, 10, 20] as [number, number, number, number],
   defaultStyle: {
-    fontSize: PDF_FONTS.sizes.medium,
-    lineHeight: 1.2,
+    fontSize: PDF_FONTS.sizes.small,
+    lineHeight: 0.8,
     color: PDF_COLORS.primary
   }
 };

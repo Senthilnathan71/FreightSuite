@@ -391,7 +391,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
-    const storedMenuId = localStorage.getItem('currentMenuId');
+    const storedMenuId = sessionStorage.getItem('currentMenuId');
     this.mps.init().subscribe();
 
 
@@ -576,7 +576,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+      MenuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
     };
 
     const allShipments = (this.attachedBookings.getRawValue() || [])
@@ -2227,7 +2227,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       updatedBy : this.appSettingsService.userSettingSource.value['userEmail'],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Job") || Number(localStorage.getItem('currentMenuId')),
+      MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Job") || Number(sessionStorage.getItem('currentMenuId')),
     };
 
     // Add shipment list if needed
@@ -4671,7 +4671,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     `;
   }
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
       if (resp.status) {

@@ -630,7 +630,7 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.settingsService.getTandCByCondition(payload).subscribe(
       (resp: any) => {

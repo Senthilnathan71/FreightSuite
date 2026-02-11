@@ -56,8 +56,11 @@ export class LogoService {
     this.companyLogoSource.next(storedCompany || this.defaultLogoUrl);
     this.reportLogoSource.next(storedReport || this.defaultLogoUrl);
 
-    if (!storedCompany || !storedReport) {
-      this.refreshBothLogos();
+    if (!storedCompany) {
+      this.refreshCompanyLogo();
+    }
+    if (!storedReport) {
+      this.refreshReportLogo();
     }
   }
 
@@ -97,6 +100,7 @@ export class LogoService {
     subject: BehaviorSubject<string>
   ): void {
     if (!logoId) {
+      try { localStorage.setItem(storageKey, 'none'); } catch {}
       subject.next(this.defaultLogoUrl);
       return;
     }
@@ -108,7 +112,7 @@ export class LogoService {
   }
 
   private fetchAndCacheLogo(logoId: string, storageKey: string): Observable<string | null> {
-    return this.http.get(`user/logo/${logoId}`, { responseType: 'blob' }).pipe(
+    return this.http.get(`user/logo/${logoId}?_t=${Date.now()}`, { responseType: 'blob' }).pipe(
       switchMap((blob: Blob) =>
         from(
           new Promise<string | null>((resolve) => {
@@ -142,6 +146,7 @@ export class LogoService {
   private getStoredCompanyLogo(): string | null {
     try {
       const item = localStorage.getItem(this.companyLogoKey);
+      if (item === 'none') return this.defaultLogoUrl;
       return item && item.startsWith('data:') ? item : null;
     } catch {
       return null;
@@ -151,6 +156,7 @@ export class LogoService {
   private getStoredReportLogo(): string | null {
     try {
       const item = localStorage.getItem(this.reportLogoKey);
+      if (item === 'none') return this.defaultLogoUrl;
       return item && item.startsWith('data:') ? item : null;
     } catch {
       return null;
@@ -165,7 +171,7 @@ export class LogoService {
     try { localStorage.removeItem(this.reportLogoKey); } catch {}
   }
 
-  private clearAllStoredLogos(): void {
+  clearAllStoredLogos(): void {
     this.clearStoredCompanyLogo();
     this.clearStoredReportLogo();
   }

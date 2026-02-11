@@ -505,7 +505,7 @@ arapFilter = {
     }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
+    this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.mps.init().subscribe();
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
     this.currentCompany = (
@@ -1905,7 +1905,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const croFormValue = this.croForm.getRawValue();
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const currentMenuId = this.sidebarService.syncMenuIdBeforeSubmit("Booking") ||  Number(localStorage.getItem('currentMenuId'));
+    const currentMenuId = this.sidebarService.syncMenuIdBeforeSubmit("Booking") ||  Number(sessionStorage.getItem('currentMenuId'));
       let CarrierSid = null;
   if (bookingFormValue.CarrierName) {
     const selectedCarrier = this.carrierList.find(carrier => 
@@ -3226,7 +3226,7 @@ getVesselVoyBasedOnPorts() {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -4101,7 +4101,7 @@ deepEqual(obj1: any, obj2: any): boolean {
   this.spinner.show();
   
   const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   
   const selectedVoyage = this.headerVesselList.find(v => 
     v.VesselName === this.b['VesselName']?.value && 

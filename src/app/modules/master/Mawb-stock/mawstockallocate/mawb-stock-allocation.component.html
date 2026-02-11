@@ -1,0 +1,146 @@
+<div class="modal-header bg-info text-white p-2">
+  <h5 class="modal-title mb-0">
+    {{ mode === 'allocate' ? 'Allocate MAWB Stock' : 'Deallocate MAWB Stock' }}
+  </h5>
+  <button type="button" class="btn-close btn-close-white"
+    (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+
+  <!-- =============================== -->
+  <!-- Header Selection Section -->
+  <!-- =============================== -->
+
+  <div class="row compact-form">
+
+    <!-- Airline Dropdown -->
+    <aside class="col-md-6">
+      <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!selectedAirline">
+        <ng-select
+          [items]="airlineList"
+          bindLabel="CustomerName"
+          bindValue="CustomerMasterSid"
+          [(ngModel)]="selectedAirline"
+          placeholder=""
+          (change)="loadStock()">
+        </ng-select>
+
+        <label class="input-label">
+          Airline <span class="text-danger">*</span>
+        </label>
+      </div>
+    </aside>
+
+    <!-- Customer Dropdown -->
+    <aside class="col-md-6">
+      <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!selectedCustomer">
+        <ng-select
+          [items]="customerList"
+          bindLabel="CustomerName"
+          bindValue="CustomerMasterSid"
+          [(ngModel)]="selectedCustomer"
+          placeholder=""
+          (change)="loadStock()">
+        </ng-select>
+
+        <label class="input-label">
+          Customer <span class="text-danger">*</span>
+        </label>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- =============================== -->
+  <!-- Stock Table -->
+  <!-- =============================== -->
+
+  <div class="card mt-2">
+    <div class="card-body p-2">
+
+      <div class="table-responsive">
+
+        <table class="table table-hover align-middle table-bordered table-sm mb-0">
+
+          <thead class="bg-info text-white">
+            <tr>
+              <th width="50px">Select</th>
+              <th>AWB No</th>
+              <th>Stock Status</th>
+              <th>Available Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let stock of stockList">
+
+              <!-- Checkbox -->
+              <td class="text-center ">
+                <input type="checkbox"
+                  (change)="toggleSelection(stock.MawbStockSid)">
+              </td>
+
+              <!-- AWB -->
+              <td>
+                {{ stock.MasterBillNumber }}
+              </td>
+
+              <!-- Stock Status -->
+              <td>
+
+                <!-- Allocate Mode → Readonly -->
+                <span *ngIf="mode === 'allocate'">
+                  {{ stock.StockStatus }}
+                </span>
+
+                <!-- Deallocate Mode → Dropdown -->
+                <ng-select *ngIf="mode === 'deallocate'"
+                  [items]="stockStatusList"
+                  [(ngModel)]="stock.StockStatus"
+                  [clearable]="false"
+                  [searchable]="false">
+                </ng-select>
+
+              </td>
+
+              <!-- Available -->
+              <td>
+                {{ stock.AvailableStatus }}
+              </td>
+
+            </tr>
+
+            <!-- Empty -->
+            <tr *ngIf="stockList.length === 0">
+              <td colspan="4" class="text-center text-muted">
+                No records found
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer p-2">
+  <button class="btn btn-light-secondary btn-sm"
+    (click)="cancel()">
+    Cancel
+  </button>
+
+  <button class="btn btn-info btn-sm"
+    (click)="confirm()"
+    [disabled]="selectedStockIds.length === 0">
+    Confirm
+  </button>
+</div>

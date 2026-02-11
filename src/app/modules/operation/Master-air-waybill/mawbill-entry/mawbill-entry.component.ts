@@ -308,7 +308,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
-     const storedMenuId = localStorage.getItem('currentMenuId');
+     const storedMenuId = sessionStorage.getItem('currentMenuId');
      this.mps.init().subscribe();
   // console.log('📋 localStorage currentMenuId:', storedMenuId);
   
@@ -1425,7 +1425,7 @@ if (polSid && !podSid) {
         createdBy: this.appSettingsService.userSettingSource.value['userEmail'],
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Air Waybill") || Number(localStorage.getItem('currentMenuId')),
+        MenuMasterSid: this.sidebarService.syncMenuIdBeforeSubmit("Master Air Waybill") || Number(sessionStorage.getItem('currentMenuId')),
         screenName : 'Master Air Waybill'
     };
 
@@ -1997,7 +1997,7 @@ handleEdocChange(event: any) {
   }
 
   openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
       const payload = { MenuMasterSid: this.currentMenuId };
       this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
         if (resp.status) {

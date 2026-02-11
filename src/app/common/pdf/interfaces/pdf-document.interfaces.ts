@@ -233,13 +233,40 @@ export interface InvoicePdfData extends PdfDocumentBase {
     dueDate?: Date | string;
     customerName?: string;
     customerAddress?: string;
+    customerGstVat?: string;
     jobNo?: string;
     hblNo?: string;
     mblNo?: string;
+    bookingNo?: string;
     vesselVoyage?: string;
     pol?: string;
     pod?: string;
+    fpd?: string;
+    placeOfSupply?: string;
+    exchangeRate?: number;
+    currencyCode?: string;
+    postStatus?: 'P' | 'U';
     remarks?: string;
+    salesPerson?: string;
+    shipperName?: string;
+    consigneeName?: string;
+    freightTerms?: string;
+    pkgWtVol?: string;
+    etd?: string;
+    eta?: string;
+    containerType?: string;
+    containerNumber?: string;
+    customerRefNo?: string;
+    irnNumber?: string;
+    // Additional fields for matching original PDF
+    shipperRefNo?: string;
+    loadingPort?: string;
+    finalDestination?: string;
+    invoiceDueDate?: Date | string;
+    vesselName?: string;
+    voyageNo?: string;
+    flightName?: string;
+    flightNo?: string;
   };
   charges: InvoiceChargeData[];
   totals: {
@@ -248,17 +275,63 @@ export interface InvoicePdfData extends PdfDocumentBase {
     grandTotal: number;
     currency: string;
   };
-  bankDetails?: {
-    bankName?: string;
-    accountNo?: string;
-    ifscCode?: string;
-    swiftCode?: string;
+  bankDetails?: InvoiceBankDetail[];
+  terms?: PdfTermItem[];
+  amountInWords?: string;
+  localCurrency?: string;
+  taxDisplayConfig?: {
+    showCGST: boolean;
+    showSGST: boolean;
+    showIGST: boolean;
+    showVAT: boolean;
+  };
+  invoiceTitle?: string;
+  companyGstCode?: string;
+  companyPan?: string;
+  // Additional fields for matching original PDF
+  companyVatNo?: string;
+  isSeaMode?: boolean;
+  isVATMode?: boolean;
+  authorisedSignatory?: boolean;
+  cargoDetails?: {
+    packages?: number | string;
+    commodityDesc?: string;
+    grossWeight?: number | string;
+    chargeableWeight?: number | string;
+    cbm?: number | string;
   };
 }
 
+
+
+export interface InvoiceBankDetail {
+  bankName?: string;
+  accountNo?: string;
+  ifscCode?: string;
+  swiftCode?: string;
+  branchName?: string;
+  // Additional fields for matching original PDF
+  iban?: string;
+  bankAddress?: string;
+  beneficiaryName?: string;
+}
 export interface InvoiceChargeData extends PdfChargeItem {
-  taxPercent?: number;
-  taxAmount?: number;
+  sno?: number;
+  hsnSacCode?: string;
+  drCr?: 'D' | 'C';
+  taxableAmount?: number;
+  cgstPercent?: number;
+  cgstAmount?: number;
+  sgstPercent?: number;
+  sgstAmount?: number;
+  igstPercent?: number;
+  igstAmount?: number;
+  vatPercent?: number;
+  vatAmount?: number;
+  partyAmount?: number;
+  // Additional fields for matching original PDF
+  currencyCode?: string;
+  roe?: number;
 }
 
 // =====================

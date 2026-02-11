@@ -75,13 +75,13 @@
                             <td>{{item?.naration}}</td>
                             <td class="text-center">{{item?.drCr}}</td>
                             <td style="text-align: right;">
-                                {{item?.originalCurrencyAmount | number:'1.2-2'}}
+                                {{item?.signedOriginalCurrency | number:'1.2-2'}}
                             </td>
                             <td style="text-align: right;">
-                                {{item?.outstandingCurrencyAmount | number:'1.2-2'}}
+                                {{item?.signedOutstandingCurrency | number:'1.2-2'}}
                             </td>
                             <td style="text-align: right;">
-                                {{ item?.cumulativeOutstanding | number:'1.2-2'}}
+                                {{ item?.currencyWiseCumulative | number:'1.2-2'}}
                             </td>
 
                             <td style="text-align: center;">
@@ -90,15 +90,18 @@
                         </tr>
                         <tr class="fw-bold bg-light">
 
-                            <td colspan="5" class="text-start">
+                            <td colspan="4" class="text-start">
                                 <span>{{ getAmountInWordsForGroup(group.transactions, group.currencyCode) }}</span>
                             </td>
                             <td class="text-end">
-                                Total ({{ group.currencyCode }}) :
+                                Total 
                             </td>
 
+                             <td style="text-align: right;">
+                                {{ getSubtotal(group.transactions,'signedOriginalCurrency') | number:'1.2-2' }}
+                            </td>
                             <td style="text-align: right;">
-                                {{ getSubtotal(group.transactions,'outstandingCurrencyAmount') | number:'1.2-2' }}
+                                {{ getSubtotal(group.transactions,'signedOutstandingCurrency') | number:'1.2-2' }}
                             </td>
 
                             <!-- <td style="text-align: right;">
@@ -143,7 +146,7 @@
             <p style="font-size: 14px;">{{getAmountInWords()}}</p>
         </div> -->
 
-        <div class="table-responsive mt-2">
+        <div class="table-responsive mt-2 mx-auto" style="width: 80%;">
             <table class="table tablebordered table-sm" style="font-size:12px;">
                 <thead>
                     <tr class="bg-info text-white">
