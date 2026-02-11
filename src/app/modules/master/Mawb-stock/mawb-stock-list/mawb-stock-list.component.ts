@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -22,6 +22,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MawbStockAllocationComponent } from '../mawstockallocate/mawb-stock-allocation.component';
 @Component({
   selector: 'app-mawb-stock-list',
   standalone: true,
@@ -91,6 +92,14 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
           filterable: true,
           visible: true,
           dataType: 'string',
+        },
+        {
+          key: 'AvailableStatus',
+          label: 'Available Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string',
         }
       ],
       actions: [
@@ -115,7 +124,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
       showColumnToggle: true,
       showFilters: true,
       showPagination: true,
-      trackByKey: 'HawbStockSid',
+      trackByKey: 'MawbStockSid',
       emptyMessage: 'No mawb found',
       dragAndDrop: true
     }
@@ -149,6 +158,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
+    private modalService: NgbModal,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
@@ -213,7 +223,8 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         ...item,
         BLNumber: item.MasterBillNumber,
         status: item.status === 'A' ? 'Active' : 'Suspended',
-        ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
+        ReceivedDate: this.datePipe.transform(item?.ReceivedDate),
+        AvailableStatus: item.AvailableStatus || 'Available'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -251,6 +262,17 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   initializeHeaderActions(): void {
     this.headerActions = [
       {
+        label: 'Allocate',
+        icon: '',
+        action: 'allocate'
+      },
+      {
+        label: 'Deallocate',
+        icon: '',
+        action: 'deallocate'
+      },
+
+      {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
@@ -272,6 +294,13 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
 
   onActionTriggered(action: string): void {
     switch (action) {
+      case 'allocate':
+        this.openAllocation('allocate');
+        break;
+
+      case 'deallocate':
+        this.openAllocation('deallocate');
+        break;
       case 'create':
         this. navigateToCreateGeneration();
         break;
@@ -442,6 +471,25 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
   }
+openAllocation(mode: 'allocate' | 'deallocate') {
+
+  const modalRef = this.modalService.open(
+    MawbStockAllocationComponent,
+    {
+      size: 'xl',
+      centered: true,
+      backdrop: 'static'
+    }
+  );
+
+  modalRef.componentInstance.mode = mode;
+
+  modalRef.result.then((result) => {
+    if (result) {
+      this.search();
+    }
+  }).catch(() => {});
+}
 
 }
 

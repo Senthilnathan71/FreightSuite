@@ -297,7 +297,7 @@ export class ShipmentInstructionComponent {
 
     const HouseJobSid = this.bookingResponse.data.HouseJobSid
     console.log(HouseJobSid, 'BookingHeaderSid')
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const bookingFormValue = this.bookingResponse.data
     const cargoFormValue = this.bookingResponse.data.Cargo[0]
     const otherFormValue = this.bookingResponse.data.Others[0]

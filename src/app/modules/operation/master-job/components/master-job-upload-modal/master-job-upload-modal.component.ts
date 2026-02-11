@@ -500,7 +500,7 @@ export class MasterJobUploadModalComponent implements OnInit {
       this.appSettingsService.showError('User information missing');
       return;
     }
-   const menuMasterSid = Number(localStorage.getItem('currentMenuId'));
+   const menuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
    
     // Prepare payload
     const payload = {

@@ -238,7 +238,7 @@ export class ReverseVoucherEntryComponent {
       try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
@@ -2472,7 +2472,7 @@ showInfo() {
       modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
     }
     openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
       const payload = { MenuMasterSid: this.currentMenuId };
       this.masterService.getTandCByCondition(payload).subscribe(
         (resp: any) => {

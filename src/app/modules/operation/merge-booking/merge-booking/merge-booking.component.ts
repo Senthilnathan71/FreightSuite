@@ -76,7 +76,7 @@ export class MergeBookingComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.mps.init().subscribe();
     this.loadAllLookups();
     this.initFromBooking();
@@ -366,7 +366,7 @@ export class MergeBookingComponent implements OnInit {
   }
 
   openTandC() {
-        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
         const payload = { MenuMasterSid: this.currentMenuId };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {
