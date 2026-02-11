@@ -18,6 +18,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { catchError, of } from 'rxjs';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -27,6 +29,7 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
       ReactiveFormsModule,
       NgbDatepickerModule,
       DatePipe,
+      TextWithNumbersDirective,
       NgbDropdownModule],
   templateUrl: './mawb-stock.component.html',
   styles: ``,
@@ -44,6 +47,8 @@ export class MawbStockComponent implements OnInit{
     todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
     
     // Updated company and branch handling
+    agentList: any[] = [];  // For "Other" type
+    airlineList: any[] = [];
     companyList: any[] = [];
     branchesByCompany: {[key: number]: any[]} = {};
     selectedCompanyId: number | null = null;
@@ -51,7 +56,7 @@ export class MawbStockComponent implements OnInit{
     generatedAWBList: string[] = [];
     customerList: any[] = [];
     statusList = ["Active", "Suspended"];
-    stockStatusList = ["Free", "Blocked", "Return", "Void", "Hold"];
+    stockStatusList = ["Free", "Utilised", "Return", "Void", "Hold"];
     currentMenuId: number;
     TandCList: any[]=[];
     mawstockData: any;
@@ -89,7 +94,13 @@ export class MawbStockComponent implements OnInit{
     });
       this.initForm();
       this.loadUserData();
-      this.loadCustomers();
+    this.loadCustomersByType();
+    
+    // Listen to AirwayBillType changes
+    this.mawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
+      this.updateFormValidation(value);
+      this.updateAgentDropdown(value);
+    });
       this.mps.init().subscribe();
       
       this.route.paramMap.subscribe(params => {
@@ -100,8 +111,64 @@ export class MawbStockComponent implements OnInit{
           this.loadMawbData(this.MawbStockSid);
         }
       });
+       this.mawbForm.get('Agent').valueChanges.subscribe(customerId => {
+      if (this.mawbForm.get('AirwayBillType').value === 'Airline') {
+        this.updateMasterBillNumberFromAirline(customerId);
+      }
+    });
     }
-  
+  loadCustomersByType(): void {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    
+    if (!CompanyMasterSid) return;
+    
+    // Load agents
+    this.masterService.getCustomerByItsType({ CompanyMasterSid, types: ['agent'] })
+      .pipe(catchError(err => of([])))
+      .subscribe((resp: any) => {
+        this.agentList = resp.data;
+        // If form is in "Other" mode initially, update the dropdown
+        if (this.mawbForm.get('AirwayBillType').value === 'Other') {
+          this.customerList = this.agentList;
+        }
+      });
+    
+    // Load airlines
+    this.masterService.getCustomerByItsType({ CompanyMasterSid, types: ['airLine'] })
+      .pipe(catchError(err => of([])))
+      .subscribe((resp: any) => {
+        this.airlineList = resp.data;
+        // If form is in "Airline" mode initially, update the dropdown
+        if (this.mawbForm.get('AirwayBillType').value === 'Airline') {
+          this.customerList = this.airlineList;
+        }
+      });
+  }
+  updateMasterBillNumberFromAirline(customerId: number): void {
+    if (!customerId) return;
+    
+    // Find the selected airline
+    const selectedAirline = this.airlineList.find(airline => 
+      airline.CustomerMasterSid === customerId
+    );
+    
+    // If found and has AirlineNumber, set it to MasterBillNumber
+    if (selectedAirline?.AirlineNumber) {
+      this.mawbForm.get('MasterBillNumber').setValue(selectedAirline.AirlineNumber);
+    }
+  }
+  updateAgentDropdown(awbType: string): void {
+    if (awbType === 'Airline') {
+      this.customerList = this.airlineList;
+      // Clear Agent and MasterBillNumber when switching to Airline
+      this.mawbForm.get('Agent').setValue(null);
+      this.mawbForm.get('MasterBillNumber').setValue('');
+    } else if (awbType === 'Other') {
+      this.customerList = this.agentList;
+      // Clear MasterBillNumber when switching to Other
+      this.mawbForm.get('MasterBillNumber').setValue('');
+    }
+  }
      
 
   hasAnyDropdownPermission(): boolean {
@@ -125,65 +192,84 @@ export class MawbStockComponent implements OnInit{
 }
 
    
-    loadCustomers(): void {
-       const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-      this.masterService.getAllCustomers(CompanyMasterSid).subscribe(
-        (resp: any) => {
-          this.customerList = resp;
-        },
-        (error) => {
-          console.error('Error loading customers:', error);
-        }
-      );
-    }
+    // loadCustomers(): void {
+    //    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    //   this.masterService.getAllCustomers(CompanyMasterSid).subscribe(
+    //     (resp: any) => {
+    //       this.customerList = resp;
+    //     },
+    //     (error) => {
+    //       console.error('Error loading customers:', error);
+    //     }
+    //   );
+    // }
   
     initForm(): void {
       const today = getDefaultTodayDate();
       this.mawbForm = this.fb.group({
         AirwayBillType: ['Airline', Validators.required],
-        MasterBillNumber: ['', Validators.required],
-        Agent: [null],
-        MAWBSerial: ['', Validators.required],
+        MasterBillNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{3}$/)]],
+        Agent: [null, Validators.required],
+        MAWBSerial: ['', [Validators.required, Validators.pattern(/^[0-9]{7}$/)]],
         NumberofMAWB: ['', Validators.required],
         ReceivedDate: [today, Validators.required],
         StockStatus: ['Free', Validators.required],
+        AvailableStatus: ['Available'],
         status: ['Active'],
         
       });
-      this.btnDisable = true;
-       this.mawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
-      this.updateFormValidation(value);
-    });
-      this.mawbForm.statusChanges.subscribe(status => {
-      this.btnDisable = status !== 'VALID';
-    });
+       if (this.mawbForm.get('AirwayBillType').value === 'Airline') {
+    this.customerList = this.airlineList;
+  }
+  
+  this.btnDisable = true;
+  
+  this.mawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
+    this.updateFormValidation(value);
+    this.updateAgentDropdown(value);
+  });
+  
+  this.mawbForm.statusChanges.subscribe(status => {
+    this.btnDisable = status !== 'VALID';
+  });
     }
     updateFormValidation(awbType: string): void {
-    const agentControl = this.mawbForm.get('Agent');
-    if (awbType === 'Other') {
-      agentControl.setValidators([Validators.required]);
-    } else {
-      agentControl.clearValidators();
-    }
-    agentControl.updateValueAndValidity();
+  const agentControl = this.mawbForm.get('Agent');
+  // Both "Airline" and "Other" require Agent field, just with different dropdown options
+  if (awbType === 'Airline' || awbType === 'Other') {
+    agentControl.setValidators([Validators.required]);
+  } else {
+    agentControl.clearValidators();
   }
-  generateAWB(): void {
-    if (this.mawbForm.invalid) {
-      this.mawbForm.markAllAsTouched();
-      this.appSettingsService.showWarning('Please fill all required fields correctly.');
-      return;
-    }
-  
-    const baseAWB = this.mawbForm.get('MasterBillNumber').value;
-    const serial = this.mawbForm.get('MAWBSerial').value;
-    const count = this.mawbForm.get('NumberofMAWB').value;
-  
-    this.generatedAWBList = [];
-    for (let i = 1; i <= count; i++) {
-      // Customize this pattern based on your AWB numbering requirements
-      this.generatedAWBList.push(`${baseAWB}-${serial}-${i.toString().padStart(3, '0')}`);
-    }
+  agentControl.updateValueAndValidity();
+}
+ generateAWB(): void {
+  if (this.mawbForm.invalid) {
+    this.mawbForm.markAllAsTouched();
+    this.appSettingsService.showWarning('Please fill all required fields correctly.');
+    return;
   }
+
+  const prefix = this.mawbForm.get('MasterBillNumber')?.value; // 3 digit airline prefix
+  let serial = Number(this.mawbForm.get('MAWBSerial')?.value); // starting 7 digit serial
+  const count = Number(this.mawbForm.get('NumberofMAWB')?.value);
+
+  this.generatedAWBList = [];
+
+  for (let i = 0; i < count; i++) {
+
+    const currentSerial = (serial + i).toString().padStart(7, '0');
+
+    // ✅ IATA check digit calculation
+    const checkDigit = Number(currentSerial) % 7;
+
+    // Final AWB format
+    const fullAWB = `${prefix}${currentSerial}${checkDigit}`;
+
+    this.generatedAWBList.push(fullAWB);
+  }
+}
+
     
     
     loadUserData(): void {
@@ -225,16 +311,26 @@ export class MawbStockComponent implements OnInit{
         serial = mawbData.MAWBSerial;
         numberPart = mawbData.NumberofMAWB;
       }
+        const airwayBillType = mawbData.AirwayBillType || 'Airline';
+      
+      // Update dropdown based on AirwayBillType
+      if (airwayBillType === 'Airline') {
+        this.customerList = this.airlineList;
+      } else if (airwayBillType === 'Other') {
+        this.customerList = this.agentList;
+      }
+
 
       this.mawbForm.patchValue({
         AirwayBillType: mawbData.AirwayBillType,
-        MasterBillNumber: mawbData.MasterBillNumber, // Keep the full formatted value
+        MasterBillNumber: baseAWB,  // Keep the full formatted value
         Agent: mawbData.Agent,
         MAWBSerial: serial, // Extracted serial
         NumberofMAWB: numberPart, // Extracted number
         ReceivedDate: receivedDate,
         StockStatus: mawbData.StockStatus,
         status: mawbData.status === 'A' ? 'Active' : 'Suspended',
+        AvailableStatus: mawbData.AvailableStatus || 'Available',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
       });
@@ -330,6 +426,7 @@ export class MawbStockComponent implements OnInit{
         this.mawbForm.reset({
           AirwayBillType: 'Airline',
           StockStatus: 'Free',
+          AvailableStatus: 'Available',
           status: 'Active',
           ReceivedDate: this.todayDate,
          

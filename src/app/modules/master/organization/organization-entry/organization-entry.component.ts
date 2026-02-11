@@ -1592,7 +1592,7 @@ clearCustomerSearch(): void {
       cusSalesteam: this.fb.array([]),
       customerEmails: this.fb.array([]), 
       customerLogins: this.fb.array([]), 
-      AirlineNumber: [''],
+      AirlineNumber: ['',[Validators.pattern(/^[0-9]{3}$/)]],
       AirlineCode: ['']
     });
  this.setupPanValidation();
@@ -3654,11 +3654,11 @@ updateAirlineFieldValidation(): void {
   
   if (isAirlineSelected) {
     // Make fields mandatory when Air Line is selected
-    airlineNumberControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+    airlineNumberControl?.setValidators([Validators.required, Validators.maxLength(3), Validators.pattern(/^[0-9]{1,3}$/)]);
     airlineCodeControl?.setValidators([Validators.required, Validators.maxLength(10)]);
   } else {
     // Remove required validation when Air Line is not selected
-    airlineNumberControl?.setValidators([Validators.maxLength(20)]);
+    airlineNumberControl?.setValidators([Validators.maxLength(3), Validators.pattern(/^[0-9]{1,3}$/)]);
     airlineCodeControl?.setValidators([Validators.maxLength(10)]);
     
     // Clear the values when Air Line is deselected

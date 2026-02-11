@@ -435,18 +435,26 @@
   <aside class="col-md-4">
     <div class="custom-form-group">
       <input type="text" id="AirlineNumber" formControlName="AirlineNumber" placeholder=""
-             class="custom-input-field sm" [textWithNumbers]="20" />
+             class="custom-input-field sm" [textWithNumbers]="3" />
       <label for="AirlineNumber" class="input-label">Airline Number <span class="text-danger">*</span></label>
-      @if (customerForm.get('AirlineNumber')?.touched && customerForm.get('AirlineNumber')?.invalid) {
-      <div class="error-message">
-        @if (customerForm.get('AirlineNumber')?.hasError('required')) { 
-        <span>Airline Number is required</span> 
-        }
-        @else if (customerForm.get('AirlineNumber')?.hasError('maxlength')) { 
-        <span>Max 20 chars</span> 
-        }
-      </div>
-      }
+     @if (customerForm.get('AirlineNumber')?.touched && customerForm.get('AirlineNumber')?.invalid) {
+  <div class="error-message">
+
+    @if (customerForm.get('AirlineNumber')?.hasError('required')) {
+      <span>Airline Number is required</span>
+    }
+
+    @else if (customerForm.get('AirlineNumber')?.hasError('maxlength')) {
+      <span>Max 3 digits allowed</span>
+    }
+
+    @else if (customerForm.get('AirlineNumber')?.hasError('pattern')) {
+      <span>Only digits (1-3) allowed</span>
+    }
+
+  </div>
+}
+
     </div>
   </aside>
 
