@@ -134,7 +134,7 @@ export class DocumentAuthorizationComponent {
 
     goToApprovalLink(MenuMasterSid,link){
         console.log(link);
-        localStorage.setItem('currentMenuId',MenuMasterSid);
+        sessionStorage.setItem('currentMenuId',MenuMasterSid);
         this.router.navigate([`${link}`])
     }
 

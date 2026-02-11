@@ -94,7 +94,7 @@ statusOptions = [
         this.mps.init().subscribe();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.uomForm = new FormGroup({
       UOMName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
       UOMCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
@@ -287,7 +287,7 @@ statusOptions = [
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
 		const payload = { MenuMasterSid: this.currentMenuId };
 		this.masterService.getTandCByCondition(payload).subscribe(
 			(resp: any) => {
@@ -321,7 +321,7 @@ statusOptions = [
 }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
    const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 

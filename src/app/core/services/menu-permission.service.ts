@@ -265,7 +265,7 @@ export class MenuPermissionService {
   }
 
   getMenuId(): number | null {
-    const id = localStorage.getItem('currentMenuId');
+    const id = sessionStorage.getItem('currentMenuId');
     return id ? Number(id) : null;
   }
 

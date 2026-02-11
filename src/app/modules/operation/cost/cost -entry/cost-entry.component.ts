@@ -391,7 +391,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   this.currentBranch = this.appSettingService.getCurrentBranchInfo();
   
   this.isBooking = this.screenName === "Booking";
-  this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   
 
   // Extract BookingHeaderSid from route parameter

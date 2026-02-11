@@ -107,7 +107,7 @@ MenuMasterSid: any;
     this.initForm();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.route.paramMap.subscribe(params => {
       this.ContainerActivityMasterSid = +params.get('id');
       if (this.ContainerActivityMasterSid) {
@@ -592,7 +592,7 @@ MenuMasterSid: any;
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -626,7 +626,7 @@ MenuMasterSid: any;
   }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

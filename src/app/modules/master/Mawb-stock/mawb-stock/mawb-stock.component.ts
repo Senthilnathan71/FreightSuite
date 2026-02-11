@@ -80,7 +80,7 @@ export class MawbStockComponent implements OnInit{
       
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
          this.appSettingService.getUser().subscribe(user => {
       if(user) {
         this.userData = user;
@@ -340,7 +340,7 @@ export class MawbStockComponent implements OnInit{
     
   
     openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
       const payload = { MenuMasterSid: this.currentMenuId };
       this.masterService.getTandCByCondition(payload).subscribe(
         (resp: any) => {
@@ -374,7 +374,7 @@ export class MawbStockComponent implements OnInit{
     }
   
     openAuthority() {
-      const MenuMasterSid = localStorage.getItem('currentMenuId');
+      const MenuMasterSid = sessionStorage.getItem('currentMenuId');
       if (!MenuMasterSid) return;
      const modalRef = this.modalService.open(AuthorityLogComponent, { 
       size: 'lg', 

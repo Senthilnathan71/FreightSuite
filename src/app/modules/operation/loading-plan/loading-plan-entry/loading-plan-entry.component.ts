@@ -1018,7 +1018,7 @@ formatContainerNumber(): void {
   this.spinnerService.show();
   const formValue = this.loadingPlanForm.getRawValue();
   const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   
   const isHaz = this.selectedBookings
     .map(booking => booking.CargoType)

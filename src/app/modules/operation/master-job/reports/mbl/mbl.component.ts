@@ -188,7 +188,7 @@ export class MblComponent {
 
 
 openTandC(){
-    this.currentMenuId=Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId=Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
       if(resp.status) {

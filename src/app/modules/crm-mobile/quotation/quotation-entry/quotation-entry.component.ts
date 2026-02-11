@@ -348,8 +348,8 @@ dataFromEnqPage:any;
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
@@ -603,7 +603,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
   
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !currentMenuId) {
       return;
     }
@@ -2747,7 +2747,7 @@ canGetTariff(routeIndex: number): boolean {
   }
 
  openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     if (!this.currentMenuId) {
         this.appSettingService.showError('Error: Menu ID not found.');
         return;
@@ -2859,7 +2859,7 @@ ${this.userData.userName}`;
   }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.ngbModal.open(AuthorityLogComponent, {
       size: 'lg',
