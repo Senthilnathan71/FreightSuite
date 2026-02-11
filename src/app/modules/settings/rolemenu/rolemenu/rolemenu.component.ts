@@ -887,7 +887,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	}
 
 	openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
 		const payload = { MenuMasterSid: this.currentMenuId };
 		this.settingService.getTandCByCondition(payload).subscribe(
 			(resp: any) => {

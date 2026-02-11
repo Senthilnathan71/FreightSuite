@@ -2847,7 +2847,7 @@ export class VendorCreditNoteEntryComponent {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -2878,7 +2878,7 @@ export class VendorCreditNoteEntryComponent {
 
   // Authority Method
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

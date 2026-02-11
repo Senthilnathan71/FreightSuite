@@ -2080,7 +2080,7 @@ if (this.bookingProducts.length > 0) {
   const otherFormValue = this.otherForm.getRawValue();
   const detailFormValue = this.detailForm.getRawValue();
   const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
   const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
@@ -3298,7 +3298,7 @@ resetForm() {
     }
 
   openTandC() {
-        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
         const payload = { MenuMasterSid: this.currentMenuId };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {

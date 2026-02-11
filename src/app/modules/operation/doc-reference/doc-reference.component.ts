@@ -126,7 +126,7 @@ export class DocReferenceComponent implements OnInit {
     );
 
 
-    const menuIdRaw = localStorage.getItem('currentMenuId');
+    const menuIdRaw = sessionStorage.getItem('currentMenuId');
     this.MenuMasterSid = menuIdRaw ? Number(menuIdRaw) : 0;
 
 

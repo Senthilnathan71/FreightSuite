@@ -410,7 +410,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     console.log(this.currentBranchCityId, "CITY")
     this.loadCityName();
-    this.MenuMasterSid = localStorage.getItem('currentMenuId');
+    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
       // Check for voice enquiry data first
@@ -532,7 +532,7 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   checkAuthorisedPerson(UserMasterSid) {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !this.currentMenuId) {
       return;
     }
@@ -2142,7 +2142,7 @@ private parseFloatSafe(value: any): number {
 
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.leadService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -2176,7 +2176,7 @@ private parseFloatSafe(value: any): number {
   // }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.ngbModal.open(AuthorityLogComponent, {
       size: 'lg',

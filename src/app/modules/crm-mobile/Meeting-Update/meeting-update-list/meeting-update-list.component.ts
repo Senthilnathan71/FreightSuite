@@ -156,7 +156,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.isMobile = this.appService.getDevice();
      const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
@@ -842,7 +842,7 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.leadService.getTandCByCondition(payload).subscribe(
       (resp: any) => {

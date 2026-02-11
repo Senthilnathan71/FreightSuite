@@ -366,6 +366,20 @@ export class AccountsService {
     );
   }
 
+  deleteVoucher(payload : {
+    CompanyMasterSid : number,
+    BranchMasterSid : number,
+    VoucherHeaderSid : number,
+    UserEmail : string
+  }) {
+    return this.http.post<{ data: any }>('voucher/delete-voucher', payload).pipe(
+      map((resp : any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   softDeleteVoucherDetail(voucherDetailSid: number) {
     return this.http.delete<{ data: any }>(`voucher/delete-detail/${voucherDetailSid}`).pipe(
       map((resp) => {

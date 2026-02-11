@@ -140,7 +140,7 @@ export class CreditRequestEntryComponent {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid = localStorage.getItem('currentMenuId');
+    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
     this.mps.init().subscribe();
     this.route.params.subscribe(params => {
       if (params['CustomerMasterSid']) {
@@ -604,7 +604,7 @@ getDepartmentName(deptId: number, rowIndex: number): string {
         modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
       }
       openTandC() {
-        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
         const payload = { MenuMasterSid: this.currentMenuId };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {

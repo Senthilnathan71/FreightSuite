@@ -556,7 +556,7 @@ private autoSelectCurrency(): void {
     // ✅ Get current company & branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.loadNetworks();
 this.mps.init().subscribe();
     // ✅ Get logged-in user profile
@@ -3490,7 +3490,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
 
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -3516,7 +3516,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

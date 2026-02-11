@@ -163,7 +163,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       ParentSid: [ParentSid],
       CompanyMasterSid: [data?.CompanyMasterSid || this.currentCompany?.CompanyMasterSid],
       BranchMasterSid: [data?.BranchMasterSid || this.currentBranch?.BranchMasterSid],
-      MenuMasterSid: [Number(localStorage.getItem('currentMenuId'))],
+      MenuMasterSid: [Number(sessionStorage.getItem('currentMenuId'))],
       
       DeclarationNo: [data?.DeclarationNo || ''],
       BOENo: [data?.BOENo || '', [Validators.required]],

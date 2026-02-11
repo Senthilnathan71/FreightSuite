@@ -349,16 +349,15 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   this.companyName = updatedBranchCompany.companyMaster.companyName;
   this.userData = updatedUserData;
 
-  // this.appSettingsService.showSuccess('Switched to new branch and company');
-  this.logoService.refreshBothLogos();
-
-  // ✅ Step 5: Reload the page
+  // ✅ Step 5: Refresh logos or reload the page
     if (
-        oldCompany?.CompanyMasterSid === updatedBranchCompany?.companyMaster?.CompanyMasterSid && 
+        oldCompany?.CompanyMasterSid === updatedBranchCompany?.companyMaster?.CompanyMasterSid &&
         oldBranch?.BranchMasterSid === updatedBranchCompany?.branchMaster?.BranchMasterSid
     ) {
       console.info("Switched to same branch and company.");
+      this.logoService.refreshBothLogos();
     } else {
+      this.logoService.clearAllStoredLogos();
       this.appSettingsService.showSuccess('Switched to new branch and company');
       setTimeout(() => {
         window.location.href = '/dashboard';
@@ -674,7 +673,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     }
 
     localStorage.setItem('recentlyVisited', JSON.stringify(recentlyVisited));
-    localStorage.setItem('currentMenuId',newlyVisited.MenuMasterSid);
+    sessionStorage.setItem('currentMenuId',newlyVisited.MenuMasterSid);
   }
  
 
@@ -796,7 +795,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   // ------------- RECENT ACTIVITY RELATED FUNCTIONS ------------------ \\
 
     handleRecentClick(item){
-    localStorage.setItem('currentMenuId',item.MenuMasterSid);
+    sessionStorage.setItem('currentMenuId',item.MenuMasterSid);
     this.router.navigate([`${item.path}`])
   }
 

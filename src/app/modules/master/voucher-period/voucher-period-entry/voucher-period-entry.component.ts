@@ -97,7 +97,7 @@ export class VoucherPeriodEntryComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-    this.MenuMasterSid = localStorage.getItem('currentMenuId');
+    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (userProfile) {
       this.userData = userProfile;
     }
@@ -422,7 +422,7 @@ export class VoucherPeriodEntryComponent {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -456,7 +456,7 @@ export class VoucherPeriodEntryComponent {
   }
 
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',

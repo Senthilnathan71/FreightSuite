@@ -2072,6 +2072,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   preparePayload(): any {
     const formValue = this.form.getRawValue();
     const voucherDate = formValue.voucherDate;
+    const userEmail = this.userData?.userEmail;
     // const DocumentDate = formValue.DocumentDate;
     //  const voucherDateString = `${voucherDate.year}-${String(voucherDate.month).padStart(2, '0')}-${String(voucherDate.day).padStart(2, '0')}`;
   // const DocumentDateString = `${DocumentDate.year}-${String(DocumentDate.month).padStart(2, '0')}-${String(DocumentDate.day).padStart(2, '0')}`;
@@ -2101,6 +2102,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       ProfitCenterMasterSid: detail.profitCenterMasterSid || null,
     }));
 
+    const now = getDefaultTodayDate();
+
     return {
       VoucherDate: voucherDate,
       Narration: formValue.narration || null,
@@ -2114,6 +2117,13 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       Amount: this.debitTotal, // Using getter
       LocalAmount: this.debitTotal, // Using getter
       VoucherDetail,
+      ...(!this.editMode ? {
+        CreatedBy: userEmail,
+        CreatedOn: now
+      } : {
+        UpdatedBy: userEmail,
+        UpdatedOn: now
+      }),
       // Add company context for new vouchers
       ...(!this.voucherHeaderSid && {
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2144,7 +2154,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     modalRef.componentInstance.idValue = this.voucherHeaderSid;
   }
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
