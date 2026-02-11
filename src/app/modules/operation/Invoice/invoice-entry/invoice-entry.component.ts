@@ -64,6 +64,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { LogoService } from 'src/app/core/services/logo.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 interface NgbDateStructLike {
@@ -289,6 +290,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatter: CurrencyFormatService,
     private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private toastr: ToastrService,
     public logoService: LogoService,
     private numberToWords: NumberToWordsService,
@@ -3364,62 +3366,121 @@ isSeaDepartment(): boolean {
   // pdf
 
   async downloadPDF() {
+    this.spinner.show();
+    try {
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const HouseJob = this.invoiceData?.VoucherNumber || '';
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `Invoice_${HouseJob}`,
-          () =>
-            this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) =>
-            this.appSettingService.showError(
-              'Error generating PDF. Please try again.'
-            )
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.invoicePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.invoicePrintData?.ShipperName,
+          consignee: this.invoicePrintData?.ConsigneeName,
+          vesselName: this.invoicePrintData?.Vessel,
+          voyageNo: this.invoicePrintData?.VoyageNo,
+          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
+          loadingPort: this.invoicePrintData?.POL,
+          finalDestination: this.invoicePrintData?.FPD,
+          etd: this.invoicePrintData?.ETD,
+          eta: this.invoicePrintData?.ETA,
+          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.invoicePrintData?.pkg,
+          commodityDesc: this.invoicePrintData?.desc,
+          grossWeight: this.invoicePrintData?.grosswt,
+          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
+          cbm: this.invoicePrintData?.cbm
+        },
+        invoicePrintData: this.invoicePrintData
+      };
+
+      this.pdfMakeService.generateInvoiceFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
   }
 
+
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.invoicePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.invoicePrintData?.ShipperName,
+          consignee: this.invoicePrintData?.ConsigneeName,
+          vesselName: this.invoicePrintData?.Vessel,
+          voyageNo: this.invoicePrintData?.VoyageNo,
+          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
+          loadingPort: this.invoicePrintData?.POL,
+          finalDestination: this.invoicePrintData?.FPD,
+          etd: this.invoicePrintData?.ETD,
+          eta: this.invoicePrintData?.ETA,
+          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.invoicePrintData?.pkg,
+          commodityDesc: this.invoicePrintData?.desc,
+          grossWeight: this.invoicePrintData?.grosswt,
+          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
+          cbm: this.invoicePrintData?.cbm
+        }
+      };
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      return blob;
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
