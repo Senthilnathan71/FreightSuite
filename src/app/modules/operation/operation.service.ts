@@ -1064,6 +1064,18 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  getInvoiceByNumber(payload: {
+    VoucherNumber: string,
+    CompanyMasterSid: number,
+    BranchMasterSid: number
+  }) {
+    return this.http.post<{ status: boolean; data: any }>(`credit-note/fetch/invoice`, payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
 
   getVendorCreditNoteById(VoucherHeaderSid: number) {
     return this.http.get<{ status: boolean; data: any }>(`vendor-credit-note/fetch/${VoucherHeaderSid}`).pipe(
