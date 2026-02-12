@@ -66,6 +66,7 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 
 interface NgbDateStructLike {
   day: number;
@@ -106,7 +107,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   currUserEmail: string | null = null;
   currentCompany: any;
   currentBranch: any;
-  currentcountryCode:any;
   currentCompanyCountry: {
     CountryMasterSid: number;
     countryName: string;
@@ -309,7 +309,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // Getting Data from appSettingService
       this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
       this.currentBranch = this.appSettingService.getCurrentBranchInfo();
-      this.currentcountryCode = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
@@ -397,7 +396,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       CurrencyCode: [companyCurrencyCode || '', Validators.required],
       ExchangeRate: [
         { value: 1, disabled: true },
-        [Validators.required, Validators.min(0)],
+        [Validators.required, greaterThanZero()],
       ],
       GST_VAT: [''],
       PlaceOfSupply: [''],
@@ -405,6 +404,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       GSTType: [''],
       InvoiceType: ['REG'],
       VoucherType: [null],
+      TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT'],
       Narration: [''],
       Remarks: [''],
       IRNStatus: [''],
@@ -945,6 +945,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         GST_VAT: data.GST_VAT || '',
         InvoiceType: data.InvoiceType || null,
         GSTType: data.GSTType || null,
+        TaxType : data.TaxType || null,
         Narration: data.Narration || '',
         Remarks: data.Remarks || '',
         MBLNo: data.MBLNo || '',
@@ -1075,19 +1076,42 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         const taxPercentages = this.getTaxPercentageForDisplay(detail);
         const taxAmounts = this.getTaxAmountForDisplay(detail);
 
-        const totalTaxAmount =
-          this.getTaxAmountForDisplay(detail).cgstAmt +
+        console.log({
+          cgstAmt : this.getTaxAmountForDisplay(detail).cgstAmt,
+          sgstAmt : this.getTaxAmountForDisplay(detail).sgstAmt,
+          igstAmt : this.getTaxAmountForDisplay(detail).igstAmt,
+          vatAmt : this.getTaxAmountForDisplay(detail).vatAmt,
+        })
+
+        const totalTaxAmount = this.getFormattedAmount(
+          (this.getTaxAmountForDisplay(detail).cgstAmt +
           this.getTaxAmountForDisplay(detail).sgstAmt +
           this.getTaxAmountForDisplay(detail).igstAmt +
-          this.getTaxAmountForDisplay(detail).vatAmt;
+          this.getTaxAmountForDisplay(detail).vatAmt),
+          this.currentCompany.CurrencyMasterSid
+        )
+        
+          console.warn(`TOTAL TAX ${index} AMOUNT ${totalTaxAmount}`);
+          
+          const actualLocalAmount = toNumber(detail.LocalAmount) + toNumber(totalTaxAmount);
+          console.warn(`ACTUAL LOCAL ${index} AMOUNT ${actualLocalAmount}`);
 
-        const actualLocalAmount = toNumber(detail.LocalAmount) + toNumber(totalTaxAmount);
 
-        const correctedTaxAmount = 
+          
+          const correctedTaxAmount = 
           this.invoiceData?.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid 
-          ? totalTaxAmount : (totalTaxAmount / toNumber(this.invoiceData?.ExchangeRate));
-        const actualPartyAmount = toNumber(correctedTaxAmount) + toNumber(detail.PartyAmount);
- 
+          ? toNumber(totalTaxAmount) : (toNumber(totalTaxAmount) / toNumber(this.invoiceData?.ExchangeRate));
+          const actualPartyAmount = toNumber(correctedTaxAmount) + toNumber(detail.PartyAmount);
+          
+          console.warn("CHECK",{
+            total_tax : totalTaxAmount,
+            local_amount : detail.LocalAmount,
+            actual_local_amount : actualLocalAmount,
+            invoice_currency : this.invoiceData?.CurrencyMasterSid,
+            current_company_currency : this.currentCompany.CurrencyMasterSid,
+            exchange_rate : toNumber(this.invoiceData?.ExchangeRate),
+            actual_party_amt : actualPartyAmount
+          })
         return {
           Sno: index + 1,
           ChargeDescription: detail.ChargeDescription,
@@ -2227,6 +2251,7 @@ isSeaDepartment(): boolean {
       COAMasterSid: raw.COAMasterSid ?? 1,
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
+      TaxType : raw.TaxType || "VAT",
       CurrencyMasterSid: raw.CurrencyMasterSid ?? null,
       PostStatus: raw.PostStatus || 'U',
       CurrencyCode: raw.CurrencyCode || undefined,
@@ -2331,7 +2356,7 @@ isSeaDepartment(): boolean {
       const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
       const customerState = this.customerBranchList.find(
         c => c.CustomerBranchSid === customerBranchFromForm
-      )
+      )?.StateMasterSid;
       let interOrIntra = 'Inter';
       // india
       if(this.currentCompanyCountryCode === 'in'){
@@ -3652,30 +3677,37 @@ isSeaDepartment(): boolean {
     igstAmt: number;
     vatAmt: number;
   } {
-    const gstType = this.invoiceForm.get('GSTType')?.value;
-
-    if (gstType === 'CGST+SGST') {
-      return {
-        cgstAmt: detail.TaxAmount1 || 0,
-        sgstAmt: detail.TaxAmount2 || 0,
-        igstAmt: 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'IGST') {
-      return {
-        cgstAmt: 0,
-        sgstAmt: 0,
-        igstAmt: detail.TaxAmount1 || 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'B2C') {
-      return {
-        cgstAmt: detail.TaxAmount1 || 0,
-        sgstAmt: 0,
-        igstAmt: 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'VAT') {
+    const taxType = this.invoiceForm.get('TaxType')?.value;
+    const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid)
+    const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
+    const customerState = this.customerBranchList.find(
+      c => c.CustomerBranchSid === customerBranchFromForm
+    )?.StateMasterSid;
+    console.log("DEBUG getTaxAmountForDisplay",{
+      taxType,
+      currentCompanyCountry : this.currentCompanyCountryCode,
+      currentCompanyState,
+      customerBranchFromForm,
+      customerState
+    })
+    if(this.currentCompanyCountryCode === 'in'){
+      if(currentCompanyState === customerState){
+        return {
+          cgstAmt: detail.TaxAmount1 || 0,
+          sgstAmt: detail.TaxAmount2 || 0,
+          igstAmt: 0,
+          vatAmt: 0,
+        }
+      } else {
+        return {
+          cgstAmt: detail.TaxAmount1 || 0,
+          sgstAmt: 0,
+          igstAmt: 0,
+          vatAmt: 0,
+        }
+      }
+    }
+    if (taxType === 'VAT') {
       return {
         cgstAmt: 0,
         sgstAmt: 0,
@@ -3685,10 +3717,10 @@ isSeaDepartment(): boolean {
     }
 
     return {
-      cgstAmt: detail.TaxAmount1 || 0,
-      sgstAmt: detail.TaxAmount2 || 0,
-      igstAmt: detail.TaxAmountIGST || 0,
-      vatAmt: detail.TaxAmount1 || 0,
+      cgstAmt: toNumber(detail.TaxAmount1) || 0,
+      sgstAmt: toNumber(detail.TaxAmount2) || 0,
+      igstAmt: toNumber(detail.TaxAmountIGST) || 0,
+      vatAmt: toNumber(detail.TaxAmount1) || 0
     };
   }
   
