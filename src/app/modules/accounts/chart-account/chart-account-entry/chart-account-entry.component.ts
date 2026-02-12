@@ -407,7 +407,6 @@ export class ChartAccountEntryComponent implements OnInit {
 
                   //  this.route.navigate(['/accounts/chart-accounts/entry']);
                     
-                    this.resetFormForNewEntry();
                 } else {
                     this.appSettingService.showError(resp.message);
                 }
@@ -430,7 +429,7 @@ export class ChartAccountEntryComponent implements OnInit {
                     const id = resp.data?.COAMasterSid;
                     if (id) {
                         this.route.navigate(['/accounts/chart-accounts/entry', id]);
-                        this.loadChartAccount();
+                        // this.loadChartAccount();
                         
                     }else {
                         this.route.navigate(['/accounts/chart-accounts/entry']);
