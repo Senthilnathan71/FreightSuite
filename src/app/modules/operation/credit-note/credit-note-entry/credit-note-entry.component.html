@@ -494,7 +494,7 @@
                     [DecimalPrecisionBefore]="3"
                     [DecimalPrecisionAfter]="
                       getExchangeRateDecimalPlaces(
-                        creditNoteForm.get('CurrencyMasterSid')?.value
+                        creditNoteForm.get('CurrencyMasterSid')?.getRawValue()
                       )
                     "
                     [class.is-invalid]="isFieldInvalid('ExchangeRate')"

@@ -513,7 +513,7 @@
                   [DecimalPrecisionBefore]="3"
                   [DecimalPrecisionAfter]="
                     getExchangeRateDecimalPlaces(
-                      vendorCreditNoteForm.get('CurrencyMasterSid')?.value
+                      vendorCreditNoteForm.get('CurrencyMasterSid')?.getRawValue()
                     )
                   "
                   [class.is-invalid]="isFieldInvalid('ExchangeRate')"

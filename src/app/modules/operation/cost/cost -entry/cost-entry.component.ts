@@ -2619,6 +2619,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   applyTaxMastersForARow(rowIndex:number , taxMasters : any[]) {
     console.log('applyTaxMastersForARow', rowIndex , taxMasters);
+    const localCurrency = this.currentCompany?.CurrencyMasterSid;
     const detail = this.details.at(rowIndex) as FormGroup;
     const rawValue = detail.getRawValue();
 
@@ -2632,6 +2633,7 @@ createRateFormGroup(data?: any): FormGroup {
         TaxLabel : '',
         TotalAmount : this.getFormattedAndPaddedAmount(rawValue.LocalAmount,localCurrency),
       })
+      this.handleDisplayFields();
     }
 
     if(!detail || !taxMasters || !taxMasters.length){
@@ -2682,7 +2684,6 @@ createRateFormGroup(data?: any): FormGroup {
       console.warn('Invalid Tax tried to applied', taxNeedToApply);
     }
 
-    const localCurrency = this.currentCompany?.CurrencyMasterSid;
     const totalTaxAmount = this.getFormattedAndPaddedAmount(taxAmount1 + taxAmount2, localCurrency);
     const totalAmount = toNumber(rawValue.LocalAmount) + taxAmount1 + taxAmount2;
 
