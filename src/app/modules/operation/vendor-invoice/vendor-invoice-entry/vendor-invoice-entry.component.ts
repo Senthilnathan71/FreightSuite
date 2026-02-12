@@ -1769,6 +1769,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         LocalCurrencyMasterSid: currentCurrency,
         LocalCurrencyCode: this.currentCompanyCurrency.code,
         PostedBy: this.userData?.userEmail,
+        current_date : getDefaultTodayDate(),
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,
@@ -2024,6 +2025,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherDate : formValue.VoucherDate ? new Date(formValue.VoucherDate) : null,
+      current_date : getDefaultTodayDate(),
       GST_VAT: formValue.GST_VAT,
       PartyMasterSid: formValue.PartyMasterSid ?? null,
       DepartmentMasterSid: formValue.DepartmentMasterSid || null,
