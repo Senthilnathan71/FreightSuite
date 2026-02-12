@@ -28,7 +28,7 @@
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
       pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-      pageMargins: data.config?.pageMargins || [20, 180, 20, 20], // Reduced from 200 to 150
+      pageMargins: data.config?.pageMargins || [20, 180, 20, 60], // Reduced from 200 to 150
 
       background: function (currentPage, pageSize) {
         
@@ -200,6 +200,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     const printData = (data as any).invoicePrintData;
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
+    const RIGHT_LABEL_WIDTH = 105;  
+    const COLON_WIDTH = 6;         
     
     // Left side - Billed To
     const billedTo = printData?.BilledTo || invoice?.customerName || '';
@@ -232,8 +234,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     // Invoice No
   rightStack.push({
     columns: [
-      { text: 'Invoice No', width: 88, style: 'labelBold' },
-      { text: ':', width: 10 },
+      { text: 'Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH  },
       { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
     ],
     margin: [0, 0, 0, 5]
@@ -242,8 +244,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // Invoice Date
   rightStack.push({
     columns: [
-      { text: 'Invoice Date', width: 88, style: 'labelBold' },
-      { text: ':', width: 10 },
+      { text: 'Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH  },
       { 
         text: printData?.InvoiceDate ? formatDate(printData.InvoiceDate) : formatDate(invoice?.invoiceDate), 
         width: '*' 
@@ -255,8 +257,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // VAT No.
   rightStack.push({
     columns: [
-      { text: 'VAT No.', width: 88, style: 'labelBold' },
-      { text: ':', width: 10 },
+      { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH  },
       { text: printData?.GST_VAT || invoice.customerGstVat || '', width: '*' }
     ],
     margin: [0, 0, 0, 5]
@@ -266,8 +268,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   if (printData?.IRNNumber || invoice?.irnNumber) {
     rightStack.push({
       columns: [
-        { text: 'IRN Number', width: 88, style: 'labelBold' },
-        { text: ':', width: 10 },
+        { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH  },
         { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
       ],
       margin: [0, 0, 0, 5]
@@ -287,7 +289,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         stack: rightStack
       }
     ],
-    columnGap: 20,
+    columnGap: 0,
     margin: [0, 0, 0, 0]
   };
    const bottomLine = {
@@ -373,12 +375,12 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     const rightItems: { label: string; value: string }[] = [];
 
     rightItems.push({
-      label: isSeaMode ? 'HBL No.' : 'HAWB No.',
+      label: isSeaMode ? 'HBL' : 'HAWB',
       value: printData?.HBLNo || invoice?.hblNo || ''
     });
 
     rightItems.push({
-      label: isSeaMode ? 'MBL No.' : 'MAWB No.',
+      label: isSeaMode ? 'MBL' : 'MAWB',
       value: printData?.MBLNo || invoice?.mblNo || ''
     });
 
@@ -409,6 +411,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         : invoice?.currencyCode || '');
     rightItems.push({ label: 'Currency / Ex-Rate', value: currExRate });
 
+    
     // Build stacks
     const leftStack = leftItems.map(item => ({
       columns: [
@@ -419,10 +422,15 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       margin: [0, 4, 0, 4]
     }));
 
+  
+      const RIGHT_LABEL_WIDTH = 95;  
+      const COLON_WIDTH = 6;         
+
+
     const rightStack: any[] = rightItems.map(item => ({
       columns: [
-        { text: item.label, width: 110, style: 'labelBold' },
-        { text: ':', width: 10 },
+        { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH  },
         { text: item.value, width: '*' }
       ],
       margin: [0, 4, 0, 4]
@@ -441,7 +449,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       rightStack.push({
         table: {
           headerRows: 1,
-          widths: [30, '*', 50, 45],
+          widths: [30, 70, 50, 45],
           body: [
             [
               { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
@@ -634,7 +642,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     }
 
     totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
-    totalRow.push({ text: formatNumberWithCommas(grandTotal, 2), style: 'tableCellBoldSmall', alignment: 'right' });
+    totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
 
     /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
     const widths: (number | string)[] = [

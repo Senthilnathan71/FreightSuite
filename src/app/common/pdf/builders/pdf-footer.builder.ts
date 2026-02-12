@@ -21,7 +21,7 @@ const DEFAULT_FOOTER_OPTIONS: FooterOptions = {
   showPageNumbers: false,
   showDisclaimer: true,
   disclaimerText: 'This document is computer-generated and does not require a signature.',
-  pageMargins: [40, 20, 40, 0]
+  pageMargins: [30, 10, 30, 15]
 };
 
 /**
@@ -52,7 +52,8 @@ export function buildFooter(
       text: opts.disclaimerText,
       fontSize: 8,
       alignment: 'center',
-      width: opts.showPageNumbers ? '30%' : '40%'
+      // width: opts.showPageNumbers ? '30%' : '40%'
+      width:'*'
     });
   }
 
@@ -91,7 +92,7 @@ export function createFooterFunction(
   options: FooterOptions = {}
 ): (currentPage: number, pageCount: number) => any {
   return (currentPage: number, pageCount: number) => {
-    return buildFooter(userData, currentPage, pageCount, { ...options, showPageNumbers: true });
+    return buildFooter(userData, currentPage, pageCount, options);
   };
 }
 
