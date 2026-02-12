@@ -1,9 +1,9 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-  <app-print-header></app-print-header>
+    <app-print-header></app-print-header>
 
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-         Statement of Accounts
+        Statement of Accounts
     </h4>
 
 
@@ -13,88 +13,104 @@
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">From Date </strong>
+                    <strong style="width: 100px;">From Date </strong>
                     <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">To Date </strong>
+                    <strong style="width: 100px;">To Date </strong>
                     <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">Branch </strong>
+                    <strong style="width: 100px;">Branch </strong>
                     <p class="ms-1">: {{ fullData?.BranchInvolved || currentBranch?.branchName }}</p>
                 </div>
-
-
             </div>
 
             <div>
-
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">Subledger </strong>
-                    <p class="ms-1">: {{ fullData?.subledgerName }}</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 100px;">Ledger </strong>
+                    <strong style="width: 100px;">Ledger </strong>
                     <p class="ms-1"> : {{ fullData?.ledgerName }}</p>
                 </div>
 
-
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Subledger </strong>
+                    <p class="ms-1">: {{ fullData?.subledgerName }}</p>
+                </div>
             </div>
-
-
-
         </div>
-
-
 
         <!-- Table -->
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info" >
+                    <tr class="bg-info text-center">
                         <th class="bg-transparent text-light text-center">Voucher No</th>
-                        <th class="bg-transparent text-light">Voucher Date</th>
-                        <th class="bg-transparent text-light text-center">Voucher Type</th>
+                        <th class="bg-transparent text-light text-center">Voucher Date</th>
+                        <th class="bg-transparent text-light text-center">Type</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th>
                         <th class="bg-transparent text-light">HBL No</th>
                         <th class="bg-transparent text-light">Dept</th> -->
-                        <th class="bg-transparent text-light">Naration</th>
+                        <th class="bg-transparent text-light text-center">Narration</th>
                         <!-- <th class="bg-transparent text-light">Salesperson</th> -->
-                        <th class="bg-transparent text-light">Dr</th>
-                        <th class="bg-transparent text-light">Cr</th>
-                        <th class="bg-transparent text-light">Cur</th>
-                        <th class="bg-transparent text-light">Amt</th>
-                        <th class="bg-transparent text-light">Local Amt</th>
-                        <th class="bg-transparent text-light">O/S Currency Amt</th>
-                        <th class="bg-transparent text-light">O/S Local Amt</th>
-                        <th class="bg-transparent text-light">Cumultive</th>
+                        <th class="bg-transparent text-light text-center">Dr/Cr</th>
+                        <!-- <th class="bg-transparent text-light">Cr</th> -->
+                        <th class="bg-transparent text-light text-center">Cur</th>
+                        <th class="bg-transparent text-light text-center">Amt</th>
+                        <th class="bg-transparent text-light text-center">Local Amt</th>
+                        <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
+                        <th class="bg-transparent text-light text-center">O/S Local Amt</th>
+                        <th class="bg-transparent text-light text-center">Cumultive</th>
                     </tr>
                 </thead>
 
                 <tbody>
+                    <tr *ngIf="fullData?.openingBalance && fullData?.openingBalance !== 0">
+                        <td class="text-center fw-bold">
+                            Opening Balance
+                        </td>
+                        <td>
+                            {{ params?.FromDate | formatDate }}
+                        </td>
+
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td class="text-end">
+                            {{fullData?.openingBalance | number:"1.2-2"}}
+                        </td>
+
+                    </tr>
                     <tr *ngFor="let item of fullData?.transactions; let i = index">
                         <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
-                        <td>{{item?.voucherType}}</td>
+                        <td class="text-center">{{item?.voucherType}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td>
                         <td>{{item?.HouseJobNumber}}</td>
                         <td>{{item?.deptname}}</td> -->
                         <td>{{item?.naration}}</td>
                         <!-- <td>{{item?.salesmanSid}}</td> -->
-                        <td class="text-center">{{item?.drCr === "D" ? "D" : " "}}</td>
-                        <td class="text-center">{{item?.drCr === "C" ? "C": " "}}</td>
+                        <td class="text-center">{{item?.drCr}}</td>
+                        <!-- <td class="text-center">{{item?.drCr === "C" ? "C": " "}}</td> -->
                         <td>{{item?.currencyCode}}</td>
-                        <td style="text-align: right;">{{item?.originalCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.originalLocalAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.outstandingCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.outstandingLocalAmount | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{item?.signedOriginalCurrency | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{item?.signedLocalAmt | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{item?.signedOutstandingCurrency | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{item?.signedoutstandingLocalAmount | number:'1.2-2'}}</td>
 
                         <!-- CUMULATIVE -->
                         <td style="text-align: right;">
-                            {{ getCumulative(fullData?.transactions, i) | number:'1.2-2'}}
+                            {{item.cumulativeOutstanding | number:'1.2-2'}}
                         </td>
                     </tr>
 
@@ -102,27 +118,31 @@
                         <td colspan="7" class="text-end">TOTAL :</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') | number:'1.2-2' }}
-                        </td>
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') | number:'1.2-2' }}
+                        <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') | number:'1.2-2' }}
+                        </td> -->
+                        <td style="text-align: right;"> {{ getLocalTotal(fullData?.transactions) | number:'1.2-2' }}
                         </td>
 
 
                         <!-- Total O/S Currency -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'
-                            }}</td>
+                        <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'
+                            }}</td> -->
+                        <td></td>
 
                         <!-- Total O/S Local -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingLocalAmount') | number:'1.2-2'}}
+                        <td style="text-align: right;">
+                            {{ getSignedTotal(fullData?.transactions) | number:'1.2-2' }}
                         </td>
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;">{{ getCumulative(fullData?.transactions, fullData?.transactions?.length - 1) | number:'1.2-2' }}
+                        <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length -
+                            1]?.cumulativeOutstanding
+                            | number:'1.2-2' }}
 
                         </td>
                     </tr>
 
-                      <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
+                    <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
                         <td colspan="15" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
@@ -146,7 +166,7 @@
     <div class="pt-2">
         Note :
         <ul>
-            <li>This  Statement of Accounts report includes only posted voucher transactions.</li>
+            <li>This Statement of Accounts report includes only posted voucher transactions.</li>
         </ul>
     </div>
 </div>

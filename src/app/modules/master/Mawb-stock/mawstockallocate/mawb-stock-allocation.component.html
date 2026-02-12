@@ -9,13 +9,37 @@
 <div class="modal-body">
 
   <!-- =============================== -->
+  <!-- Mode Switch Buttons -->
+  <!-- =============================== -->
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <div class="btn-group" role="group">
+        <button type="button" 
+                class="btn" 
+                [class.btn-info]="mode === 'allocate'"
+                [class.btn-outline-info]="mode !== 'allocate'"
+                (click)="switchMode('allocate')">
+          Allocate
+        </button>
+        <button type="button" 
+                class="btn" 
+                [class.btn-info]="mode === 'deallocate'"
+                [class.btn-outline-info]="mode !== 'deallocate'"
+                (click)="switchMode('deallocate')">
+          Deallocate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================== -->
   <!-- Header Selection Section -->
   <!-- =============================== -->
 
   <div class="row compact-form">
 
-    <!-- Airline Dropdown -->
-    <aside class="col-md-6">
+    <!-- Airline Dropdown - Show only in Allocate mode -->
+    <aside class="col-md-6" *ngIf="mode === 'allocate'">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!selectedAirline">
         <ng-select
@@ -26,15 +50,14 @@
           placeholder=""
           (change)="loadStock()">
         </ng-select>
-
         <label class="input-label">
-          Airline <span class="text-danger">*</span>
+          Agent (Airline) <span class="text-danger">*</span>
         </label>
       </div>
     </aside>
 
-    <!-- Customer Dropdown -->
-    <aside class="col-md-6">
+    <!-- Customer Dropdown - Different behavior based on mode -->
+    <aside class="col-md-6" [class.col-md-12]="mode === 'deallocate'">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!selectedCustomer">
         <ng-select
@@ -43,11 +66,12 @@
           bindValue="CustomerMasterSid"
           [(ngModel)]="selectedCustomer"
           placeholder=""
-          (change)="loadStock()">
+          (change)="mode === 'deallocate' ? loadStock() : null">
         </ng-select>
-
         <label class="input-label">
-          Customer <span class="text-danger">*</span>
+          Customer 
+          <span class="text-danger" *ngIf="mode === 'allocate'">*</span>
+          <span class="text-muted" *ngIf="mode === 'deallocate'">(Optional)</span>
         </label>
       </div>
     </aside>
@@ -71,16 +95,19 @@
               <th>AWB No</th>
               <th>Stock Status</th>
               <th>Available Status</th>
+              <th *ngIf="mode === 'deallocate'">Status Changed</th>
             </tr>
           </thead>
 
           <tbody>
 
-            <tr *ngFor="let stock of stockList">
+            <tr *ngFor="let stock of stockList"
+                [class.table-warning]="mode === 'deallocate' && hasStatusChanged(stock.MawbStockSid, stock.StockStatus)">
 
               <!-- Checkbox -->
-              <td class="text-center ">
+              <td class="text-center">
                 <input type="checkbox"
+                  [checked]="selectedStockIds.includes(stock.MawbStockSid)"
                   (change)="toggleSelection(stock.MawbStockSid)">
               </td>
 
@@ -102,21 +129,38 @@
                   [items]="stockStatusList"
                   [(ngModel)]="stock.StockStatus"
                   [clearable]="false"
-                  [searchable]="false">
+                  [searchable]="false"
+                  [ngClass]="{'status-changed': hasStatusChanged(stock.MawbStockSid, stock.StockStatus)}" appendTo="body">
                 </ng-select>
 
               </td>
 
               <!-- Available -->
               <td>
-                {{ stock.AvailableStatus }}
+                <span [class.text-success]="stock.AvailableStatus === 'Available'"
+                      [class.text-primary]="stock.AvailableStatus === 'Allocated'"
+                      [class.text-danger]="stock.AvailableStatus === 'Void'">
+                  {{ stock.AvailableStatus }}
+                </span>
+              </td>
+
+              <!-- Status Changed Indicator (Deallocate mode only) -->
+              <td *ngIf="mode === 'deallocate'" class="text-center">
+                <span *ngIf="hasStatusChanged(stock.MawbStockSid, stock.StockStatus)" 
+                      class="badge bg-warning text-dark">
+                  Changed
+                </span>
+                <span *ngIf="!hasStatusChanged(stock.MawbStockSid, stock.StockStatus)" 
+                      class="text-muted">
+                  -
+                </span>
               </td>
 
             </tr>
 
             <!-- Empty -->
             <tr *ngIf="stockList.length === 0">
-              <td colspan="4" class="text-center text-muted">
+              <td [colSpan]="mode === 'deallocate' ? 5 : 4" class="text-center text-muted">
                 No records found
               </td>
             </tr>
@@ -130,6 +174,14 @@
     </div>
   </div>
 
+  <!-- Warning message for Void status -->
+  <div class="mt-2" *ngIf="mode === 'deallocate'">
+    <div class="alert alert-info py-1 px-2 mb-0 small">
+      <i class="fas fa-info-circle"></i> 
+      Note: Changing status to 'Void' will set customer to null automatically.
+    </div>
+  </div>
+
 </div>
 
 <div class="modal-footer p-2">
@@ -140,7 +192,7 @@
 
   <button class="btn btn-info btn-sm"
     (click)="confirm()"
-    [disabled]="selectedStockIds.length === 0">
+    [disabled]="selectedStockIds.length === 0 || (mode === 'allocate' && !selectedCustomer)">
     Confirm
   </button>
 </div>

@@ -2241,6 +2241,7 @@ isSeaDepartment(): boolean {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherDate: raw.VoucherDate ? new Date(raw.VoucherDate) : null,
+      current_date : getDefaultTodayDate(),
       GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: raw.PartyMasterSid ?? null,
       DepartmentMasterSid: raw.DepartmentMasterSid || null,
@@ -2390,6 +2391,7 @@ isSeaDepartment(): boolean {
         LocalCurrencyMasterSid: currentCurrency,
         LocalCurrencyCode: this.currentCompanyCurrency.code,
         PostedBy: this.userData?.userEmail,
+        current_date : getDefaultTodayDate(),
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,

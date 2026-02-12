@@ -1745,6 +1745,8 @@ export class ReverseVoucherEntryComponent {
     // Load lookups
     loadLookups() {
       this.spinner.show();
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
         const companyRaw = localStorage.getItem('selected-company');
         const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
         const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
@@ -1756,7 +1758,7 @@ export class ReverseVoucherEntryComponent {
         firstValueFrom(this.operationService.getAllHssac()),
         firstValueFrom(this.operationService.getAllUom()),
         firstValueFrom(this.operationService.getAllState()),
-        firstValueFrom(this.operationService.getAllVoucher()),
+        firstValueFrom(this.operationService.getAllVoucher(CompanyMasterSid,BranchMasterSid)),
         firstValueFrom(this.accountService.getAllCostCenters()),
         firstValueFrom(this.accountService.getAllProfitCenters()),
       ]).then(([vendors,currencies, charges, hssac, uom, states, voucher, costCenters, profitCenters]) => {
