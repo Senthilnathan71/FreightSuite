@@ -127,7 +127,9 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
     
     
       loadVouchers() {
-      this.operationService.getAllVoucher().subscribe({
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+      this.operationService.getAllVoucher(CompanyMasterSid,BranchMasterSid).subscribe({
         next: (resp: any) => {
           this.voucherList = resp?.data || resp || [];
           // Now load credit notes after invoices are loaded

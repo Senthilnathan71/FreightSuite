@@ -123,6 +123,20 @@
   </div>
 </aside>
 }
+<aside class="col-md-4" *ngIf="isEditMode">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!mawbForm.get('Customer')?.value">
+    <ng-select 
+      formControlName="Customer"
+      [items]="clientList"
+      bindLabel="CustomerName"
+      bindValue="CustomerMasterSid"
+      placeholder="">
+    </ng-select>
+    <label class="input-label">
+      Customer <span class="text-danger fw-bold"></span>
+    </label>
+  </div>
+</aside>
 
 <aside class="col-md-4" *ngIf="isEditMode">
   <div class="custom-form-group">

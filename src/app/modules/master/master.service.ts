@@ -4105,6 +4105,13 @@ createReportMaster(payload: any) {
       })
     )
   }
+  deallocateMawbStockWithStatus(payload: any) {
+  return this.http.post('mawb-stock/deallocate-with-status', payload).pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
 
   getFreeMawbStock(payload: any) {
     return this.http.post<any>('mawb-stock/free-stock', payload).pipe(
