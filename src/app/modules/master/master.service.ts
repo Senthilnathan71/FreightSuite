@@ -4088,48 +4088,45 @@ createReportMaster(payload: any) {
     )
   }
 
-  allocateMawbStock(payload: { stockIds: number[], customerId: number }) {
-    return this.http.post<{ data: any[] }>('mawb-stock/allocate', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-
-  deallocateMawbStock(payload: { stockIds: number[] }) {
-    return this.http.post<{ data: any[] }>('mawb-stock/deallocate', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-  deallocateMawbStockWithStatus(payload: any) {
-  return this.http.post('mawb-stock/deallocate-with-status', payload).pipe(
-    map((resp: any) => {
-      return resp;
+  allocateMawbStock(payload: { stockIds: number[], customerId: number, companyId: number, branchId: number }) {
+  return this.http.post<{ data: any[] }>('mawb-stock/allocate', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
     })
-  );
+  )
 }
 
-  getFreeMawbStock(payload: any) {
-    return this.http.post<any>('mawb-stock/free-stock', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-  
-  getAllocatedMawbStock(payload: any) {
-    return this.http.post<any>('mawb-stock/allocated-stock', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+deallocateMawbStock(payload: { 
+  companyId: number, 
+  branchId: number, 
+  customerId: number, 
+  stocks: Array<{ MawbStockSid: number, StockStatus: string }> 
+}) {
+  return this.http.post<{ data: any[] }>('mawb-stock/deallocate', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  )
+}
+getFreeMawbStock(payload: any) {
+  return this.http.post<any>('mawb-stock/free-stock', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  )
+}
+
+getAllocatedMawbStock(payload: any) {
+  return this.http.post<any>('mawb-stock/allocated-stock', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  )
+}
     getAuditLogsMawbStock(tableName: string, recordId?: string) {
     let url = `mawb-stock//audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;

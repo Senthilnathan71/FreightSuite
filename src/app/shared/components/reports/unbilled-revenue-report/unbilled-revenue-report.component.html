@@ -9,12 +9,12 @@
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
+                    <strong style="width: 100px;"> From Date </strong>
+                    <p class="ms-1">: {{ params?.FromDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
+                    <strong style="width: 100px;"> To Date </strong>
+                    <p class="ms-1">: {{ params?.ToDt | formatDate }}</p>
                 </div>
                 <div>
 
@@ -23,12 +23,12 @@
 
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Branch </strong>
+                    <strong style="width: 100px;">Branch </strong>
                     <p class="ms-1">: {{ fullData?.branchInvoled }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Dept </strong>
+                    <strong style="width: 100px;">Dept </strong>
                     <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
             </div>
@@ -45,82 +45,207 @@
             <label class="form-check-label" for="summaryRadio">Summary</label>
         </div>
 
-        <div *ngIf="viewMode === 'detail'" class="table-responsive">
+          <div *ngIf="viewMode === 'detail'" class="table-responsive">
             <h5>Detail</h5>
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light">Branch</th>
+                        <th class="bg-transparent text-light text-center">Screen</th>
+                        <th class="bg-transparent text-light text-center">Branch</th>
                         <th class="bg-transparent text-light text-center">Dept</th>
-                        <th class="bg-transparent text-light">HBL No.</th>
-                        <th class="bg-transparent text-light">Job Status</th>
-                        <th class="bg-transparent text-light">Booking No</th>
-                        <th class="bg-transparent text-light">Charge Name</th>
-                        <th class="bg-transparent text-light">PP/CC</th>
-                        <th class="bg-transparent text-light">Dr/Cr</th>
-                        <th class="bg-transparent text-light">Amount</th>
-                        <th class="bg-transparent text-light">Local Amount</th>
-                        <th class="bg-transparent text-light">Billing Party</th>
+                        <th class="bg-transparent text-light text-center">MBL No.</th>
+                        <th class="bg-transparent text-light text-center">HBL No.</th>
+                        <th class="bg-transparent text-light text-center">Job Status</th>
+                        <th class="bg-transparent text-light text-center">Booking No</th>
+                        <th class="bg-transparent text-light text-center">Charge Name</th>
+                        <th class="bg-transparent text-light text-center">PP/CC</th>
+                        <th class="bg-transparent text-light text-center">Dr/Cr</th>
+                        <th class="bg-transparent text-light text-center">Amount</th>
+                        <th class="bg-transparent text-light text-center">Local Amount</th>
+                        <th class="bg-transparent text-light text-center">Party</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data" style="white-space: nowrap;">
-                        <td>{{item.branchName}}</td>
-                        <td>{{ item.houseDept }}</td>
-                        <td>{{ item.HBLNo }}</td>
-                        <td>{{ item.houseStatus }}</td>
-                        <td>{{ item.bookingNo }}</td>
-                        <td>{{ item.costRevenueDetails?.[0]?.chargeName }}</td>
-                        <td>{{ item.PPCC }}</td>
-                        <td class="text-center">{{ item.costRevenueDetails?.[0]?.RevenueDrCr }}</td>
-                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.RevenueAmount | number:'1.2-2' }}</td>
-                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.RevenueLocalAmount | number:'1.2-2' }}
-                        </td>
-                        <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
-                    </tr>
-                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+
+                    <ng-container *ngFor="let item of fullData?.data">
+                        <ng-container *ngIf="item.costRevenueDetails">
+                            <tr *ngFor="let cr of item.costRevenueDetails" style="white-space: nowrap;">
+                                <td class="text-center ">House</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{ item.houseDept }}</td>
+                                <td>{{item.MBLNo}}</td>
+                                <td>{{ item.HBLNo }}</td>
+                                <td>{{ item.houseStatus }}</td>
+                                <td>{{ item.bookingNo }}</td>
+                                <td>{{ cr.chargeName }}</td>
+                                <td>{{ item.PPCC }}</td>
+                                <td class="text-center">{{ cr.RevenueDrCr }}</td>
+                                <td class="text-end">{{ cr.RevenueAmount || 0 | number:'1.2-2' }}</td>
+                                <td class="text-end">{{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}</td>
+                                <td>{{ cr.partyName }}</td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="item.masterCrDetails">
+                            <tr *ngFor="let cr of item.masterCrDetails"
+                                style="white-space: nowrap; background:#f8f9fa;">
+                                <td class="text-center ">Master</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{ item.masterDept }}</td>
+                                <td>{{item.MBLNo}}</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{item.bookingNo}}</td>
+                                <td>{{ cr.chargeName }}</td>
+                                <td></td>
+                                <td class="text-center">{{ cr.RevenueDrCr }}</td>
+                                <td class="text-end">{{ cr.RevenueAmount || 0 | number:'1.2-2' }}</td>
+                                <td class="text-end">{{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}</td>
+                                <td>{{ cr.partyName }}</td>
+
+                            </tr>
+
+                        </ng-container>
+
+                        <ng-container *ngIf="!item.costRevenueDetails && !item.masterCrDetails">
+
+                            <tr style="white-space: nowrap; background:#e9ecef;">
+                                <td class="text-center ">Booking</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{item.dept}}</td>
+                                <td></td>
+                                <td>{{item.HBLno}}</td>
+                                <td></td>
+                                <td>{{item.bookingNo}}</td>
+                                <td>{{ item.chargeName }}</td>
+                                <td>{{item.FreightTerm}}</td>
+                                <td class="text-center">{{ item.ReveuneDrCr  }}</td>
+                                <td class="text-end">{{ item.RevenueAmount || 0 | number:'1.2-2' }}</td>
+                                <td class="text-end">{{ item.RevenueLocalAmount || 0 | number:'1.2-2' }}</td>
+                                <td>{{ item.partyName }}</td>
+                            </tr>
+
+                        </ng-container>
+
+                    </ng-container>
+
+                    <tr *ngIf="!fullData?.data || fullData.data.length === 0">
                         <td colspan="11" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
 
         <div *ngIf="viewMode === 'summary'" class="table-responsive">
             <h5>Summary</h5>
+
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light">Branch</th>
+                        <th class="bg-transparent text-light text-center">Screen</th>
+                        <th class="bg-transparent text-light text-center">Branch</th>
                         <th class="bg-transparent text-light text-center">Dept</th>
-                        <th class="bg-transparent text-light">HBL No.</th>
-                        <th class="bg-transparent text-light">Job Status</th>
-                        <th class="bg-transparent text-light">Booking No</th>
-                        <th class="bg-transparent text-light">Amount</th>
-                        <th class="bg-transparent text-light">Local Amount</th>
-                        <th class="bg-transparent text-light">Billing Party</th>
+                        <th class="bg-transparent text-light text-center">MBL No.</th>
+                        <th class="bg-transparent text-light text-center">HBL No.</th>
+                        <th class="bg-transparent text-light text-center">Job Status</th>
+                        <th class="bg-transparent text-light text-center">Booking No</th>
+                        <th class="bg-transparent text-light text-center">Amount</th>
+                        <th class="bg-transparent text-light text-center">Local Amount</th>
+                        <th class="bg-transparent text-light text-center">Party</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data" style="white-space: nowrap;">
-                        <td>{{item.branchName}}</td>
-                        <td>{{ item.houseDept }}</td>
-                        <td>{{ item.HBLNo }}</td>
-                        <td>{{ item.houseStatus }}</td>
-                        <td>{{ item.bookingNo }}</td>
-                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.RevenueAmount | number:'1.2-2' }}</td>
-                        <td class="text-end">{{ item.costRevenueDetails?.[0]?.RevenueLocalAmount | number:'1.2-2' }}
-                        </td>
-                        <td>{{ item.costRevenueDetails?.[0]?.partyName }}</td>
-                    </tr>
-                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
-                        <td colspan="8" class="text-center fw-bold py-1">
+
+                    <ng-container *ngFor="let item of fullData?.data">
+
+                        <ng-container *ngIf="item.costRevenueDetails">
+                            <tr *ngFor="let cr of item.costRevenueDetails" style="white-space: nowrap;">
+                                <td class="text-center">House</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{ item.houseDept }}</td>
+                                <td>{{item.MBLNo}}</td>
+                                <td>{{ item.HBLNo }}</td>
+                                <td>{{ item.houseStatus }}</td>
+                                <td>{{ item.bookingNo }}</td>
+
+                                <td class="text-end">
+                                    {{ cr.RevenueAmount || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td class="text-end">
+                                    {{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td>{{ cr.partyName }}</td>
+                            </tr>
+                        </ng-container>
+
+                        <ng-container *ngIf="item.masterCrDetails">
+                            <tr *ngFor="let cr of item.masterCrDetails"
+                                style="white-space: nowrap; background:#f8f9fa;">
+                                <td class="text-center">Master</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{ item.masterDept }}</td>
+                                <td>{{item.MBLNo}}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                                <td class="text-end">
+                                    {{ cr.RevenueAmount || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td class="text-end">
+                                    {{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td>{{ cr.partyName }}</td>
+                            </tr>
+                        </ng-container>
+
+                        <ng-container *ngIf="!item.costRevenueDetails && !item.masterCrDetails">
+                            <tr style="white-space: nowrap; background:#e9ecef;">
+                                <td class="text-center">Booking</td>
+                                <td>{{ item.branchName }}</td>
+                                <td>{{ item.dept }}</td>
+                                <td></td>
+                                <td>{{ item.HBLno }}</td>
+                                <td></td>
+                                <td>{{ item.bookingNo }}</td>
+
+                                <td class="text-end">
+                                    {{ item.RevenueAmount || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td class="text-end">
+                                    {{ item.RevenueLocalAmount || 0 | number:'1.2-2' }}
+                                </td>
+
+                                <td>{{ item.partyName }}</td>
+                            </tr>
+                        </ng-container>
+
+                    </ng-container>
+
+
+                    <!-- ================= NO RECORD ================= -->
+                    <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                        <td colspan="9" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>
+
                 </tbody>
             </table>
+        </div>
+        <div class="pt-2">
+            Note :
+            <ul>
+                <li>This report includes all unbilled costs from Booking, Master Job, and House Job.</li>
+            </ul>
         </div>
     </div>
 </div>

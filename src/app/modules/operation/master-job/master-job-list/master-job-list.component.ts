@@ -59,7 +59,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   headerActions: HeaderAction[] = [];
   tableConfig: TableConfig;
   modalDropdownItems: DropdownMenuItem[] = [];
-
+  MenuMasterSid: number;
   
 
   tableLoading = false;
@@ -98,6 +98,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         
       }
     });
+    this.MenuMasterSid = this.mps.getMenuId();
     // this.searchMasterJob();
     this.initializeTableConfig();
     this.initializeHeaderActions();
@@ -124,6 +125,7 @@ this.initializeTableConfig();
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
+      MenuMasterSid : this.MenuMasterSid,
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
@@ -162,12 +164,17 @@ this.initializeTableConfig();
 
   initializeHeaderActions(): void {
     this.headerActions = [
+      // {
+      //   label: 'Job Close',
+      //   icon: 'fas fa-lock',
+      //   action: 'job-close',
+      // },
       {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
          disabled: !this.mps.can('insert')
-        
+
       },
       {
         label: 'XL Upload',
@@ -233,6 +240,9 @@ this.initializeTableConfig();
 
   onActionTriggered(action: string): void {
     switch (action) {
+      // case 'job-close':
+      //   this.router.navigate(['operation/job-close/list']);
+      //   break;
       case 'create':
         this.navigateToMasterJob()
         break;

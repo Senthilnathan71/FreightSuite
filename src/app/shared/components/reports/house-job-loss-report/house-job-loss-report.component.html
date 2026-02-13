@@ -34,28 +34,28 @@
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Job No</th>
+                    <tr class="bg-info"> 
+                        <th class="bg-transparent text-light text-center">Job No</th>
                         <th class="bg-transparent text-light text-center">Job Date</th>
-                        <th class="bg-transparent text-light">Dept</th>
-                        <th class="bg-transparent text-light">MBL No</th>
-                        <th class="bg-transparent text-light">HBL No</th>
-                        <th class="bg-transparent text-light">House Status</th>
-                        <th class="bg-transparent text-light">Job Type</th>
-                        <th class="bg-transparent text-light">Customer</th>
-                        <th class="bg-transparent text-light">Vsl/Voy</th>
-                        <th class="bg-transparent text-light">Origin Agent</th>
-                        <th class="bg-transparent text-light">Destination Agent</th>
-                        <th class="bg-transparent text-light">Revenue</th>
-                        <th class="bg-transparent text-light">Cost</th>
-                        <th class="bg-transparent text-light">GP</th>
-                        <th class="bg-transparent text-light">GP%</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
+                        <th class="bg-transparent text-light text-center">MBL No</th>
+                        <th class="bg-transparent text-light text-center">HBL No</th>
+                        <th class="bg-transparent text-light text-center">House Status</th>
+                        <th class="bg-transparent text-light text-center">Job Type</th>
+                        <th class="bg-transparent text-light text-center">Customer</th>
+                        <th class="bg-transparent text-light text-center">Vsl/Voy</th>
+                        <th class="bg-transparent text-light text-center">Origin Agent</th>
+                        <th class="bg-transparent text-light text-center">Destination Agent</th>
+                        <th class="bg-transparent text-light text-center">Revenue</th>
+                        <th class="bg-transparent text-light text-center">Cost</th>
+                        <th class="bg-transparent text-light text-center">GP</th>
+                        <th class="bg-transparent text-light text-center">GP%</th>
                     </tr>
                 </thead>
                 <tbody>
                 <tbody>
                     <ng-container *ngFor="let item of fullData?.data">
-                        <tr style="white-space: nowrap;">
+                        <tr style="white-space: nowrap;" >
                             <td>{{ item.HouseNo }}</td>
                             <td>{{ item.jobDate | formatDate }}</td>
                             <td>{{ item.houseDept }}</td>
@@ -85,6 +85,13 @@
                     </ng-container>
                 </tbody>
             </table>
+        </div>
+
+         <div class="pt-2">
+            Note :
+            <ul>
+                <li>This report includes only loss records where GP is less than 0.</li>
+            </ul>
         </div>
     </div>
 </div>
