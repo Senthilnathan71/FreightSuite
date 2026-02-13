@@ -59,7 +59,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   headerActions: HeaderAction[] = [];
   tableConfig: TableConfig;
   modalDropdownItems: DropdownMenuItem[] = [];
-
+  MenuMasterSid: number;
   
 
   tableLoading = false;
@@ -98,6 +98,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         
       }
     });
+    this.MenuMasterSid = this.mps.getMenuId();
     // this.searchMasterJob();
     this.initializeTableConfig();
     this.initializeHeaderActions();
@@ -124,6 +125,7 @@ this.initializeTableConfig();
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
+      MenuMasterSid : this.MenuMasterSid,
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
