@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
@@ -11,52 +12,71 @@ import { NgSelectModule } from '@ng-select/ng-select';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     NgSelectModule
   ],
   templateUrl: './mawb-stock-allocation.component.html'
 })
 export class MawbStockAllocationComponent implements OnInit {
 
+  @Input() mode: 'allocate' | 'deallocate' = 'allocate';
+  
+  allocationForm!: FormGroup;
+  
   airlineList: any[] = [];
   customerList: any[] = [];
-  stockList: any[] = [];
-  selectedStockIds: number[] = [];
-
-  selectedAirline!: number;
-  selectedCustomer!: number;
-  stockStatusList = ["Free", "Utilised", "Return", "Void", "Hold"];
-
-  mode: 'allocate' | 'deallocate' = 'allocate';
+  clientlist: any[] = [];
+  stockStatusList = ["Free", "Utilised","Void", "Return", "Hold"]; // Removed "Void" as per your requirement
 
   currentCompany: any;
   currentBranch: any;
-
   loading = false;
-  
-  // Track original stock status for deallocation changes
-  originalStockStatus: Map<number, string> = new Map();
 
   constructor(
     public activeModal: NgbActiveModal,
     private masterService: MasterService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private fb: FormBuilder
   ) { }
 
   ngOnInit(): void {
-
     this.currentCompany =
       this.appSettingService.decrypt(localStorage.getItem('selected-company'));
 
     this.currentBranch =
       this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
+    this.initForm();
     this.loadAirlines();
-    this.loadAllCustomers(); // Changed from loadCustomers to loadAllCustomers
+    this.loadAllCustomers();
   }
 
   // ===============================
-  // Load Airline List (Agents)
+  // Initialize Reactive Form
+  // ===============================
+  initForm() {
+    this.allocationForm = this.fb.group({
+      airlineId: [null, this.mode === 'allocate' ? Validators.required : null],
+      customerId: [null, Validators.required],
+      stocks: this.fb.array([])
+    });
+
+    // If in deallocate mode, remove airline validator
+    if (this.mode === 'deallocate') {
+      this.allocationForm.get('airlineId')?.clearValidators();
+      this.allocationForm.get('airlineId')?.updateValueAndValidity();
+    }
+  }
+
+  // ===============================
+  // Get stocks FormArray
+  // ===============================
+  get stocksArray(): FormArray {
+    return this.allocationForm.get('stocks') as FormArray;
+  }
+
+  // ===============================
+  // Load Airline List
   // ===============================
   loadAirlines() {
     this.masterService.getCustomerByItsType({
@@ -68,13 +88,13 @@ export class MawbStockAllocationComponent implements OnInit {
   }
 
   // ===============================
-  // Load ALL Customers (no type filter)
+  // Load Customer List
   // ===============================
   loadAllCustomers() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-     this. masterService.getCustomerByItsType({ CompanyMasterSid, types: ['customer'] })
+    this.masterService.getCustomerByItsType({ CompanyMasterSid, types: ['customer'] })
       .subscribe((resp: any) => {
-        this.customerList = resp.data || [];
+        this.clientlist = resp.data || [];
       });
   }
 
@@ -82,17 +102,17 @@ export class MawbStockAllocationComponent implements OnInit {
   // Load Stock Based On Mode
   // ===============================
   loadStock() {
-
-    this.selectedStockIds = [];
-    this.stockList = [];
-    this.originalStockStatus.clear();
+    // Clear existing stocks
+    while (this.stocksArray.length) {
+      this.stocksArray.removeAt(0);
+    }
 
     if (this.mode === 'allocate') {
-
-      if (!this.selectedAirline) return;
+      const airlineId = this.allocationForm.get('airlineId')?.value;
+      if (!airlineId) return;
 
       const payload = {
-        airlineId: this.selectedAirline,
+        airlineId: airlineId,
         companyId: this.currentCompany.CompanyMasterSid,
         branchId: this.currentBranch.BranchMasterSid
       };
@@ -101,20 +121,18 @@ export class MawbStockAllocationComponent implements OnInit {
 
       this.masterService.getFreeMawbStock(payload)
         .subscribe((resp: any) => {
-
           this.loading = false;
-
           if (resp.status) {
-            this.stockList = resp.data;
+            this.populateStockArray(resp.data);
           }
         });
 
     } else {
-
-      if (!this.selectedCustomer) return;
+      const customerId = this.allocationForm.get('customerId')?.value;
+      if (!customerId) return;
 
       const payload = {
-        customerId: this.selectedCustomer,
+        customerId: customerId,
         companyId: this.currentCompany.CompanyMasterSid,
         branchId: this.currentBranch.BranchMasterSid
       };
@@ -123,118 +141,98 @@ export class MawbStockAllocationComponent implements OnInit {
 
       this.masterService.getAllocatedMawbStock(payload)
         .subscribe((resp: any) => {
-
           this.loading = false;
-
           if (resp.status) {
-            this.stockList = resp.data;
-            // Store original stock status for each item
-            this.stockList.forEach((stock: any) => {
-              this.originalStockStatus.set(stock.MawbStockSid, stock.StockStatus);
-            });
+            this.populateStockArray(resp.data);
           }
         });
     }
   }
 
   // ===============================
-  // Checkbox Toggle
+  // Populate Stock FormArray
   // ===============================
-  toggleSelection(id: number) {
-
-    if (this.selectedStockIds.includes(id)) {
-      this.selectedStockIds =
-        this.selectedStockIds.filter(x => x !== id);
-    } else {
-      this.selectedStockIds.push(id);
-    }
+  populateStockArray(stocks: any[]) {
+    stocks.forEach(stock => {
+      this.stocksArray.push(
+        this.fb.group({
+          MawbStockSid: [stock.MawbStockSid],
+          MasterBillNumber: [stock.MasterBillNumber],
+          StockStatus: [{
+            value: stock.StockStatus,
+            disabled: this.mode === 'allocate' // Disable in allocate mode
+          }],
+          AvailableStatus: [stock.AvailableStatus],
+          selected: [false],
+          Customer: [stock.Customer]
+        })
+      );
+    });
   }
 
   // ===============================
-  // Check if status has been changed
+  // Toggle Selection
   // ===============================
-  hasStatusChanged(stockId: number, currentStatus: string): boolean {
-    const originalStatus = this.originalStockStatus.get(stockId);
-    return originalStatus !== currentStatus;
+  toggleSelection(index: number) {
+    const control = this.stocksArray.at(index).get('selected');
+    control?.setValue(!control?.value);
+  }
+
+  // ===============================
+  // Get Selected Stocks
+  // ===============================
+  getSelectedStocks(): any[] {
+    return this.stocksArray.controls
+      .filter(control => control.get('selected')?.value)
+      .map(control => ({
+        MawbStockSid: control.get('MawbStockSid')?.value,
+        StockStatus: control.get('StockStatus')?.value
+      }));
+  }
+
+  // ===============================
+  // Check if any stock selected
+  // ===============================
+  hasSelectedStocks(): boolean {
+    return this.stocksArray.controls.some(control => control.get('selected')?.value);
   }
 
   // ===============================
   // Confirm Allocation / Deallocation
   // ===============================
   confirm() {
+    const selectedStocks = this.getSelectedStocks();
+    if (!selectedStocks.length) return;
 
-    if (!this.selectedStockIds.length) return;
+    const customerId = this.allocationForm.get('customerId')?.value;
+
+    // Prepare payload as per requirement
+    const payload: any = {
+      companyId: this.currentCompany.CompanyMasterSid,
+      branchId: this.currentBranch.BranchMasterSid,
+      customerId: customerId
+    };
 
     if (this.mode === 'allocate') {
+      // For allocation, just send stock IDs
+      payload.stockIds = selectedStocks.map(s => s.MawbStockSid);
       
-      // Allocation: Customer is required
-      if (!this.selectedCustomer) {
-        alert('Please select a customer');
-        return;
-      }
-
-      const payload = {
-        stockIds: this.selectedStockIds,
-        customerId: this.selectedCustomer,
-        companyId: this.currentCompany.CompanyMasterSid,
-        branchId: this.currentBranch.BranchMasterSid
-      };
-
       this.loading = true;
-
       this.masterService.allocateMawbStock(payload)
         .subscribe(() => {
           this.loading = false;
           this.activeModal.close(true);
         });
-
     } else {
-
-      // Deallocation: Get only selected stocks that have status changes
-      const stocksWithStatusChanges = this.stockList
-        .filter(stock => 
-          this.selectedStockIds.includes(stock.MawbStockSid) && 
-          this.hasStatusChanged(stock.MawbStockSid, stock.StockStatus)
-        )
-        .map(stock => ({
-          id: stock.MawbStockSid,
-          status: stock.StockStatus
-        }));
-
-      // If no status changes, just deallocate normally
-      if (stocksWithStatusChanges.length === 0) {
-        const payload = {
-          stockIds: this.selectedStockIds,
-          customerId: this.selectedCustomer,
-          companyId: this.currentCompany.CompanyMasterSid,
-          branchId: this.currentBranch.BranchMasterSid
-        };
-
-        this.loading = true;
-
-        this.masterService.deallocateMawbStock(payload)
-          .subscribe(() => {
-            this.loading = false;
-            this.activeModal.close(true);
-          });
-      } else {
-        // Send deallocation with status changes
-        const payload = {
-          stockIds: this.selectedStockIds,
-          customerId: this.selectedCustomer,
-          companyId: this.currentCompany.CompanyMasterSid,
-          branchId: this.currentBranch.BranchMasterSid,
-          statusChanges: stocksWithStatusChanges
-        };
-
-        this.loading = true;
-
-        this.masterService.deallocateMawbStockWithStatus(payload)
-          .subscribe(() => {
-            this.loading = false;
-            this.activeModal.close(true);
-          });
-      }
+      // For deallocation, send stocks array with StockStatus
+      payload.stocks = selectedStocks;
+      
+      this.loading = true;
+      this.masterService.deallocateMawbStock(payload)
+        .subscribe(() => {
+          this.loading = false;
+          this.activeModal.close(true);
+        });
     }
   }
 
@@ -246,22 +244,9 @@ export class MawbStockAllocationComponent implements OnInit {
   }
 
   // ===============================
-  // Check if stock is Void
+  // TrackBy for performance
   // ===============================
-  isVoidStatus(status: string): boolean {
-    return status === 'Void';
+  trackByIndex(index: number): number {
+    return index;
   }
-
-  // ===============================
-  // Switch Mode
-  // ===============================
-  switchMode(mode: 'allocate' | 'deallocate') {
-    this.mode = mode;
-    this.selectedAirline = null!;
-    this.selectedCustomer = null!;
-    this.stockList = [];
-    this.selectedStockIds = [];
-    this.originalStockStatus.clear();
-  }
-
 }
