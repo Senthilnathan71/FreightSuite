@@ -248,18 +248,14 @@ export class OutstandingLocalComponent {
     return total;
   }
 
-  /**
-   * Provide Excel data for export via report modal
-   * Called by GenericReportModalComponent.downloadExcel()
-   */
+ 
   getExcelData(): ComplexReportExportConfig {
+
     const rows: ExcelRow[] = [];
     const currencyGroups = this.currencyGroups || [];
     const currencySummary = this.fullData?.currencyWiseSummary || [];
 
-    // =====================================================
-    // TABLE HEADERS
-    // =====================================================
+
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
@@ -267,24 +263,24 @@ export class OutstandingLocalComponent {
       { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'amt', label: 'Amt' },
-      { key: 'osCurrAmt', label: 'O/S Currency Amt' },
+      { key: 'osAmt', label: 'O/S Currency Amt' },
       { key: 'cumulative', label: 'Cumulative' },
-      { key: 'ageingDays', label: 'Ageing' }
+      { key: 'ageing', label: 'Ageing' }
     ];
 
-    const columnWidths = [12, 8, 4, 20, 2, 10, 10, 10, 4];
+    const columnWidths = [10, 8, 5, 18, 4, 4, 12, 10, 6];
 
-    // =====================================================
-    // ROWS PER CURRENCY GROUP
-    // =====================================================
     currencyGroups.forEach(group => {
-      // Currency header row
+
+
       rows.push({
-        cells: [{ value: group.currencyCode, colspan: 9 }],
+        cells: [
+          { value: group.currencyCode, colspan: 9 }
+        ],
         style: 'header'
       });
 
-      // Transaction rows
+
       group.transactions.forEach(item => {
         rows.push({
           cells: [
@@ -293,48 +289,67 @@ export class OutstandingLocalComponent {
             { value: item?.voucherType || '' },
             { value: item?.naration || '' },
             { value: item?.drCr || '' },
-            { value: this.formatNumber(item?.originalCurrencyAmount || 0) },
-            { value: this.formatNumber(item?.outstandingCurrencyAmount || 0) },
-            { value: this.formatNumber(item?.cumulativeOutstanding || 0) },
+
+            { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
+            { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
+
+            { value: this.formatNumber(item?.currencyWiseCumulative || 0) },
+
             { value: item?.ageingDays || 0 }
           ],
           style: 'data'
         });
       });
 
-      // Subtotal + Amount in Words row
-      const subtotal = this.getSubtotal(group.transactions, 'outstandingCurrencyAmount');
       rows.push({
         cells: [
-          { value: this.getAmountInWordsForGroup(group.transactions, group.currencyCode), colspan: 5 },
-          { value: `Total (${group.currencyCode}) :`, colspan: 1 },
-          { value: this.formatNumber(subtotal) },
-          { value: '', colspan: 2 }
+          {
+            value: this.getAmountInWordsForGroup(
+              group.transactions,
+              group.currencyCode
+            ),
+            colspan: 4
+          },
+          { value: 'Total', colspan: 1 },
+           {
+            value: this.formatNumber(
+              this.getSubtotal(group.transactions, 'signedOriginalCurrency')
+            )
+          },
+          {
+            value: this.formatNumber(
+              this.getSubtotal(group.transactions, 'signedOutstandingCurrency')
+            )
+          },
+
+          { value: '', colspan: 3 }
         ],
         style: 'total'
       });
+
+
+      rows.push({
+        cells: [{ value: '', colspan: 9 }],
+        style: 'section'
+      });
     });
 
-    // =====================================================
-    // SUMMARY TABLE (Currency-wise)
-    // =====================================================
     const summaryHeaders = [
       'Currency',
-      `Total Outstanding [${this.currentCurrencyCode}]`,
+      'Total Outstanding',
       '0 - 30 Days',
       '31 - 60 Days',
       '61 - 90 Days',
       '91 - 120 Days',
       '121+ Days'
     ];
+
     const summaryColumnWidths = [12, 18, 14, 14, 14, 14, 14];
 
-    // =====================================================
-    // RETURN EXCEL CONFIG
-    // =====================================================
     return {
       fileName: 'Outstanding-Report',
       sheetName: 'OutstandingReport',
+
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Outstanding Report as on ${this.formatDate(this.params?.ToDate)}`,
@@ -345,11 +360,15 @@ export class OutstandingLocalComponent {
           { label: 'Ledger', value: this.fullData?.ledgerName || '' }
         ]
       },
+
       tableHeaders,
-      rows,
       columnWidths,
+      rows,
+
+      // ✅ Currency Summary Table (Bottom)
       summaryTable: {
         headers: summaryHeaders,
+
         rows: currencySummary.map(cur => ({
           cells: [
             { value: cur.currencyCode || '' },
@@ -360,8 +379,9 @@ export class OutstandingLocalComponent {
             { value: this.formatNumber(cur.bucket_91_120 || 0) },
             { value: this.formatNumber(cur.bucket_121_above || 0) }
           ],
-          style: 'data' as const
+          style: 'data'
         })),
+
         columnWidths: summaryColumnWidths
       }
     };
@@ -369,22 +389,13 @@ export class OutstandingLocalComponent {
 
 
 
-
-
-
-
-  /**
-   * Format number for Excel display
-   */
-  private formatNumber(value: any): number | string {
+  private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';
+
     const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+    return isNaN(num) ? '' : num.toFixed(2);
   }
 
-  /**
-   * Format date for display
-   */
   private formatDate(date: any): string {
     if (!date) return '';
     try {

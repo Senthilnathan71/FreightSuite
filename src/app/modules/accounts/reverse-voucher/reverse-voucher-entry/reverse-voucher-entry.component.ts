@@ -238,7 +238,7 @@ export class ReverseVoucherEntryComponent {
       try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+      this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
@@ -1745,6 +1745,8 @@ export class ReverseVoucherEntryComponent {
     // Load lookups
     loadLookups() {
       this.spinner.show();
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
         const companyRaw = localStorage.getItem('selected-company');
         const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
         const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
@@ -1756,7 +1758,7 @@ export class ReverseVoucherEntryComponent {
         firstValueFrom(this.operationService.getAllHssac()),
         firstValueFrom(this.operationService.getAllUom()),
         firstValueFrom(this.operationService.getAllState()),
-        firstValueFrom(this.operationService.getAllVoucher()),
+        firstValueFrom(this.operationService.getAllVoucher(CompanyMasterSid,BranchMasterSid)),
         firstValueFrom(this.accountService.getAllCostCenters()),
         firstValueFrom(this.accountService.getAllProfitCenters()),
       ]).then(([vendors,currencies, charges, hssac, uom, states, voucher, costCenters, profitCenters]) => {
@@ -1768,7 +1770,10 @@ export class ReverseVoucherEntryComponent {
         this.chargeList = charges.data || [];
         this.hssacList = hssac || [];
         this.uomList = uom.data || [];
-        this.voucherList = voucher || [];
+        this.voucherList = (voucher || []).map((v: any) => ({
+        ...v,
+        DocumentTypeCode: v?.voucherTypeMaster?.DocumentTypeCode || ''
+        }));
          this.stateList = states?.data || states || [];
         this.loadDepartments(company?.CompanyMasterSid).catch(e => {
         console.error('Error loading departments', e);
@@ -1885,8 +1890,8 @@ export class ReverseVoucherEntryComponent {
       //   this.details.disable();
       // }
     } else {
-      this.reverseVoucherForm.enable();
-      this.details.enable();
+      this.reverseVoucherForm.enable({ emitEvent: false });
+      this.details.enable({ emitEvent: false });
       
       // Keep readonly fields as is
       this.reverseVoucherForm.get('VoucherNumber')?.disable();
@@ -2063,6 +2068,8 @@ export class ReverseVoucherEntryComponent {
   
     // Save
     onSave() {
+      // Re-validate voucher date constraints at save time (edit mode may have stale state)
+      this.applyVoucherDateConstraints();
       // Block save if voucher period grace days exceeded or module closed
       if (this.voucherConstraints.isClosed) {
         this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2316,6 +2323,8 @@ export class ReverseVoucherEntryComponent {
     }
   
     onSubmit() {
+      // Re-validate voucher date constraints at save time (edit mode may have stale state)
+      this.applyVoucherDateConstraints();
       // Block save if voucher period grace days exceeded or module closed
       if (this.voucherConstraints.isClosed) {
         this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2472,7 +2481,7 @@ showInfo() {
       modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
     }
     openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
       const payload = { MenuMasterSid: this.currentMenuId };
       this.masterService.getTandCByCondition(payload).subscribe(
         (resp: any) => {

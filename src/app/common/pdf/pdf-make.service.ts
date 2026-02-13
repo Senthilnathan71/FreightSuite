@@ -19,7 +19,8 @@ import {
   MasterJobPdfData,
   BookingDocumentType,
   MasterJobDocumentType,
-  QuotationDocumentType
+  QuotationDocumentType,
+  InvoicePdfData
 } from './interfaces/pdf-document.interfaces';
 
 // Import generators
@@ -29,6 +30,7 @@ import { generateBookingDocument, transformBookingApiData, transformCroApiData }
 import { generateMasterJobDocument, transformMasterJobApiData } from './generators/master-job-pdf.generator';
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
+import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -384,6 +386,99 @@ export class PdfMakeService {
       orientation
     };
   }
+
+   /**
+   * Generate and download Invoice PDF
+   */
+  generateInvoice(data: InvoicePdfData): void {
+    const docDefinition = generateInvoiceDocument(data);
+    const filename = `Invoice_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
+   * Get Invoice PDF as Blob
+   */
+  async generateInvoiceBlob(data: InvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateInvoiceDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Invoice PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Open Invoice PDF in new window for preview
+   */
+  openInvoice(data: InvoicePdfData): void {
+    const docDefinition = generateInvoiceDocument(data);
+    this.open(docDefinition);
+  }
+
+  /**
+   * Generate Invoice from raw API data
+   */
+  generateInvoiceFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): void {
+    const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
+    this.generateInvoice(pdfData);
+  }
+
+  /**
+   * Get Invoice Blob from raw API data
+   */
+  async generateInvoiceBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
+    return this.generateInvoiceBlob(pdfData);
+  }
+
 
   // ==================== Utility Methods ====================
 

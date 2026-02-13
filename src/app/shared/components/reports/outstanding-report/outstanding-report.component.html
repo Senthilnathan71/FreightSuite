@@ -45,9 +45,9 @@
                         <th class="bg-transparent text-light text-center">Type</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th> -->
-                        <th class="bg-transparent text-light text-center">HBL/HAWB No</th>
+                        <!-- <th class="bg-transparent text-light text-center">HBL/HAWB No</th> -->
                         <!-- <th class="bg-transparent text-light">Dept</th>  -->
-                        <th class="bg-transparent text-light text-center" width="30%">Narration</th>
+                        <th class="bg-transparent text-light text-center" width="25%">Narration</th>
                         <!-- <th class="bg-transparent text-light">Salesperson</th> -->
                         <th class="bg-transparent text-light text-center">Dr/Cr</th>
                         <th class="bg-transparent text-light text-center">Cur</th>
@@ -67,17 +67,22 @@
                         <td>{{item?.voucherType}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td> -->
-                        <td>{{item?.HouseJobNumber}}</td>
+                        <!-- <td>{{item?.HouseJobNumber}}</td> -->
                         <!-- <td>{{item?.deptname}}</td>  -->
                         <td>{{item?.naration}}</td>
                         <!-- <td>{{item?.salesmanSid}}</td> -->
                         <td class="text-center">{{item?.drCr}}</td>
                         <td>{{item?.currencyCode}}</td>
-                        <td style="text-align: right;">{{item?.originalCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.originalLocalAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.outstandingCurrencyAmount | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.localAmt | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">
+                        <td style="text-align: right;white-space: nowrap;">
+                            {{item?.signedOriginalCurrency | number:'1.2-2'}}
+                        </td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            {{item?.signedOriginalLocal | number:'1.2-2'}}</td>
+                        <td style="text-align: right;white-space: nowrap;">{{item?.signedOutstandingCurrency |
+                            number:'1.2-2'}}</td>
+                        <td style="text-align: right;white-space: nowrap;">{{item?.signedOutstandingLocal |
+                            number:'1.2-2'}}</td>
+                        <td style="text-align: right;white-space: nowrap;">
                             {{ item?.cumulativeOutstanding | number:'1.2-2'}}
                         </td>
                         <td style="text-align: center;">
@@ -87,24 +92,27 @@
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
                         <td colspan="7" class="text-end">TOTAL :</td>
                         <!-- Total Amount (originalLocalAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') |
-                            number:'1.2-2'}}</td>
+                        <td style="text-align: right;" class="fw-bold">
+                            {{ getLocalTotal(fullData?.transactions) | number:'1.2-2' }}
+                        </td>
 
                         <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') |
-                            number:'1.2-2'}}</td>
+                        <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalCurrencyAmount') |
+                            number:'1.2-2'}}</td> -->
 
                         <!-- Total O/S Currency -->
                         <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount')
                             | number:'1.2-2'}}</td> -->
-                            <td></td>
 
+                        <td></td>
                         <!-- Total O/S Local -->
-                        <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length - 1]?.localAmt
-                            | number:'1.2-2' }}</td>
+                        <td style="text-align: right;" class="fw-bold">
+                            {{ getSignedTotal(fullData?.transactions) | number:'1.2-2' }}
+                        </td>
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;"> {{ fullData?.transactions?.[fullData.transactions.length - 1]?.cumulativeOutstanding
+                        <td style="text-align: right;"> {{ fullData?.transactions?.[fullData.transactions.length -
+                            1]?.cumulativeOutstanding
                             | number:'1.2-2' }}</td>
                     </tr>
 
@@ -117,12 +125,12 @@
             </table>
         </div>
 
-        <div class="table-responsive mt-2">
+        <div class="table-responsive mt-2 mx-auto" style="width: 80%;">
             <table class="table tablebordered table-sm" style="font-size:12px;">
                 <thead>
                     <tr class="bg-info text-white text-center">
                         <th class="bg-transparent text-light">Currency</th>
-                        <th class="bg-transparent text-light">Total Outstanding</th>
+                        <th class="bg-transparent text-light">Total Outstanding [{{currentCurrencyCode}}]</th>
                         <th class="bg-transparent text-light">0 - 30 Days</th>
                         <th class="bg-transparent text-light">31 - 60 Days</th>
                         <th class="bg-transparent text-light">61 - 90 Days</th>

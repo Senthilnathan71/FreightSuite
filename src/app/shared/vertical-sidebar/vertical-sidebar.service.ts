@@ -14,7 +14,7 @@ export class VerticalSidebarService {
     public screenWidth: any;
     public collapseSidebar: boolean = false;
     public fullScreen: boolean = false;
-    
+
   private currentMenuId : number;
    private MENUITEMS: RouteInfo[] = [];
    private leafMenus : RouteInfo[] = []; // only menus with no children
@@ -77,5 +77,50 @@ export class VerticalSidebarService {
     return null;
   }
 
+  /**
+   * Finds the menu id for a given URL path using longest prefix match.
+   * Returns the menu id if found, null otherwise.
+   *
+   * Example: URL "/operation/vendor-invoice/entry/123"
+   *          matches menu path "operation/vendor-invoice" → returns 176
+   */
+  getMenuIdByPath(url: string): number | null {
+    const leafMenus = this.getLeafMenus(this.MENUITEMS);
+    if (!leafMenus.length) return null;
+
+    const cleanUrl = url.split('?')[0].split('#')[0].replace(/^\//, '');
+
+    let bestMatch: RouteInfo | null = null;
+    let bestMatchLength = 0;
+
+    for (const menu of leafMenus) {
+      if (!menu.path) continue;
+      const menuPath = menu.path.replace(/^\//, '');
+      if (!menuPath) continue;
+
+      // Direct prefix match (e.g. URL "operation/invoice/entry/5" matches menu "operation/invoice/entry")
+      if (cleanUrl === menuPath || cleanUrl.startsWith(menuPath + '/')) {
+        if (menuPath.length > bestMatchLength) {
+          bestMatch = menu;
+          bestMatchLength = menuPath.length;
+        }
+      }
+
+      // Base path match: strip /list from menu path so entry URLs also match
+      // e.g. menu "operation/master-job/list" → base "operation/master-job"
+      //      URL  "operation/master-job/entry/1088" starts with "operation/master-job/" → match
+      if (menuPath.endsWith('/list')) {
+        const basePath = menuPath.slice(0, -5); // remove "/list"
+        if (basePath && (cleanUrl === basePath || cleanUrl.startsWith(basePath + '/'))) {
+          if (basePath.length > bestMatchLength) {
+            bestMatch = menu;
+            bestMatchLength = basePath.length;
+          }
+        }
+      }
+    }
+
+    return bestMatch ? (bestMatch as any).id ?? null : null;
+  }
 
 }

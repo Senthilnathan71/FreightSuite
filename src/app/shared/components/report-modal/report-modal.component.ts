@@ -174,6 +174,9 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       console.error('Error loading report:', error);
       this.error = error.message || 'Failed to load report';
+      if(error.status == 400){
+        this.error = error.error.message || "Invalid Request";
+      }
       this.loading = false;
       this.spinner.hide();
       this.appSettingsService.showError(this.error);

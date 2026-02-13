@@ -743,17 +743,26 @@
   font-size: 14px;
   color: #6c757d;
 }
-.table-scroll-wrapper {
-  width: 100%;
-  overflow-x: auto !important;
+
+.table-responsive {
+  overflow-x: hidden;
   overflow-y: hidden;
+
+  &.horizontal-scroll-enabled {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+
+    table {
+      min-width: 1400px !important;
+      width: auto !important;
+      white-space: nowrap !important;
+    }
+  }
 }
 
-::ng-deep app-reusable-table .table-responsive {
-  overflow-x: auto !important;
-}
-
-::ng-deep app-reusable-table table {
-  min-width: 1400px !important;  
-  white-space: nowrap;
+.horizontal-scroll-enabled {
+  td, th {
+    white-space: nowrap;
+  }
 }

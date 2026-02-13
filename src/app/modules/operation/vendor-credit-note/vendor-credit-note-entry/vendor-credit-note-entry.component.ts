@@ -450,7 +450,7 @@ export class VendorCreditNoteEntryComponent {
       CreditNoteReason: [null, Validators.required],
       ReversalVoucher: [{ value: '', disabled: true }],
       ReversalVoucherNumber: [""],
-
+      Salesman : [''],
       State: [{ value: '', disabled: true }],
       HouseNumber: [{ value: '', disabled: true }],
       MasterNumber: [{ value: '', disabled: true }],
@@ -711,6 +711,227 @@ export class VendorCreditNoteEntryComponent {
 
     // ---------- NOTHING TO FETCH ----------
     return of(void 0);
+  }
+
+  
+  getVendorInvoiceData() {
+    const invoiceNumber = this.vendorCreditNoteForm.get('ReversalVoucherNumber')?.value;
+    const searchValue = String(invoiceNumber).trim();
+    if (!invoiceNumber) {
+      this.appSettingService.showWarning(
+        'Please enter an vendor invoice number first.',
+      );
+      return;
+    }
+
+    
+    const payload = {
+      VoucherNumber : searchValue,
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
+    
+    this.spinner.show();
+    this.operationService.getVendorInvoiceByNumber(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status && resp.data) {
+          const data = resp.data;
+          if(!data.hasOutstandingAmount){
+            this.appSettingService.showWarning('No outstanding amount found for this invoice.');
+            this.spinner.hide();
+            return;
+          }
+          this.vendorCreditNoteForm.patchValue({
+            ReversalVoucher: data.VoucherHeaderSid,
+          });
+
+          const autoNarration = this.autoGenerateNarration(resp.data);
+          this.vendorCreditNoteForm.get('Narration')?.setValue(autoNarration);
+          this.minVoucherDate = toNgbDateStruct(resp.data?.VoucherDate) || null;
+          this.isNonJob = data.CashOrBank === 'Y';
+
+          // 🔑 WAIT for dropdowns to load
+          this.handleDropdownBasedOnJob().subscribe({
+            next: () => {
+              this.patchVendorInvoiceData(data);
+            },
+            error: () => {
+              this.spinner.hide();
+            }
+          });
+          this.appSettingService.showSuccess(
+            'Vendor Invoice data loaded successfully.',
+          );
+        } else {
+          this.spinner.hide();
+          this.appSettingService.showError(resp.message);
+        }
+      },
+      error: (err) => {
+        this.spinner.hide();
+        console.error('Error fetching vendor invoice:', err);
+        this.appSettingService.showError('Failed to load vendor invoice data.');
+      },
+    });
+  }
+
+  private patchVendorInvoiceData(data: any) {
+    const header = data;
+    const vendorCreditNote =
+      header.VoucherHeaderSid || header.voucherHeaderSid || null;
+    this.originalInvoiceRates = new Map();
+    const autoNarration = this.autoGenerateNarration(
+      this.vendorCreditNoteForm.get('ReversalVoucher')?.value,
+    );
+
+
+    this.getVendorBranchByVendor(header.CustomerMasterSid);
+
+    this.vendorCreditNoteForm.patchValue({
+      ReversalVoucher: vendorCreditNote,
+      Narration: autoNarration || header.Narration || '',
+      PartyMasterSid: header.PartyMasterSid || null,
+      PartyName: header.PartyName || '',
+      PartyAddress: header.PartyAddress || '',
+      CustomerBranchSid: header.CustomerBranchSid || null,
+      COAMasterSid: header.COAMasterSid || null,
+      GST_VAT: header.GST_VAT || '',
+      GSTType: header.GSTType || '',
+      PlaceOfSupply: header.PlaceOfSupply || '',
+      InvoiceType: header.InvoiceType || '',
+      IRNNumber: header.IRNNumber || '',
+      IRNStatus: header.IRNStatus || '',
+      State: header.State || '',
+      DepartmentMasterSid: header.DepartmentMasterSid || null,
+      HouseNumber: header.HouseNumber || '',
+      MasterNumber: header.MasterNumber || '',
+      HouseJobSid: header.HouseJobSid || null,
+      BookingHeaderSid: header.BookingHeaderSid || null,
+      CurrencyMasterSid: header.CurrencyMasterSid || null,
+      Salesman : header.Salesman || "",
+      CurrencyCode:
+        header.currencyMaster?.currencyCode || header.CurrencyCode || null,
+      ExchangeRate: header.ExchangeRate || header.ExRate || 1,
+      BillAmount: header.Amount || 0,
+      BillDate: header.DocumentDate,
+      BillNo: header.DocumentNumber || '',
+      MBLNo: header.MasterNumber || '',
+      HBLNo: header.HouseNumber || '',
+      Remarks: header.Remarks || '',
+    },{emitEvent : false});
+
+    // if (
+    //   header.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
+    //   this.isPosted
+    // ) {
+    //   this.vendorCreditNoteForm.get('ExchangeRate')?.disable();
+    // } else {
+    //   this.vendorCreditNoteForm.get('ExchangeRate')?.enable();
+    // }
+
+    this.details.clear();
+    let index = 0;
+    (data.VoucherDetail || []).forEach((detail: any) => {
+      const originalDrCr = detail.DrCr || detail.drCr || 'D';
+      const swappedDrCr = originalDrCr === 'C' ? 'D' : 'C';
+
+      const originalRateComparison : rateComparison = {
+        Rate : toNumber(this.getFormattedAmount(detail.Rate || 0, detail.CurrencyMasterSid)),
+        Amount : toNumber(this.getFormattedAmount(detail.Amount || 0, detail.CurrencyMasterSid)),
+        TaxableAmount : toNumber(this.getFormattedAmount(detail.TaxableAmount || 0, this.currentCompany.CurrencyMasterSid)),
+        TaxAmount1 : toNumber(this.getFormattedAmount(detail.TaxAmount1 || 0, this.currentCompany.CurrencyMasterSid)),
+        TaxAmount2 : toNumber(this.getFormattedAmount(detail.TaxAmount2 || 0, this.currentCompany.CurrencyMasterSid)),
+        LocalAmount : toNumber(this.getFormattedAmount(detail.LocalAmount || 0, this.currentCompany.CurrencyMasterSid)),
+        PartyAmount : toNumber(this.getFormattedAmount(detail.PartyAmount || 0, data.CurrencyMasterSid)),
+      }
+
+      this.originalRateList.set(detail.VoucherDetailSid ,originalRateComparison);
+
+      this.details.push(
+        this.createDetailGroup({
+          SourceDetailSid: detail.VoucherDetailSid,
+          ChargeMasterSid: detail.ChargeMasterSid,
+          ChargeDescription: detail.ChargeDescription,
+          HSSACMasterSid: detail.HSSACMasterSid,
+          LedgerMasterSid: detail.LedgerMasterSid,
+          COAMasterSid: detail.COAMasterSid,
+          ChargeUOMSid: detail.ChargeUOMSid,
+          DepartmentMasterSid: detail.DepartmentMasterSid,
+          NumberOfUnit: detail.NumberOfUnit,
+          DrCr: swappedDrCr,
+          CurrencyMasterSid : detail.CurrencyMasterSid,
+          CurrencyCode: detail.CurrencyCode,
+          Rate: detail.Rate != null ? Number(detail.Rate) : 0,
+          ExchangeRate: detail.ExchangeRate,
+          Amount: toNumber(detail.Amount),
+          TaxableAmount: toNumber(detail.TaxableAmount),
+          TaxPercentage1: toNumber(detail.TaxPercentage1),
+          TaxAmount1: toNumber(detail.TaxAmount1),
+          TaxPercentage2: toNumber(detail.TaxPercentage2),
+          TaxAmount2: toNumber(detail.TaxAmount2),
+          MasterNumber:
+            header.MasterNumber || detail.masterJob?.MasterJobNumber,
+          HouseNumber: header.HouseNumber || detail.houseJob?.HouseNo,
+          YearMasterSid: detail.YearMasterSid,
+          LocalAmount: toNumber(detail.LocalAmount),
+          PartyAmount: toNumber(detail.PartyAmount),
+          MasterJobSid: detail.MasterJobSid,
+          BookingRatesSid : detail.BookingRatesSid,
+          CostRevenueChargesSid : detail.CostRevenueChargesSid ?? null,
+          HouseJobSid: detail.HouseJobSid,
+        }),
+      );
+      this.fetchHSN(this.details.length - 1, false);
+      if (detail.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid) {
+        this.details
+          .at(this.details.length - 1)
+          .get('ExchangeRate')
+          ?.disable();
+      }
+      if (detail.MasterJobSid) {
+        this.onDetailMasterJobSelected(
+          {
+            MasterJobSid: detail.MasterJobSid,
+            DepartmentMasterSid: detail.DepartmentMasterSid || null,
+          },
+          index,
+        );
+      }
+      if (this.isNonJob && detail.COAMasterSid) {
+        const selectedCOA = this.coaList.find(
+          (coa) => coa.COAMasterSid === detail.COAMasterSid,
+        );
+        if (selectedCOA && selectedCOA.SubledgerName === 'Y') {
+          this.onCOAChange(selectedCOA, index, false);
+        } else {
+          this.details.at(index).get('LedgerMasterSid')?.disable();
+        }
+      }
+      index++;
+    });
+
+    const voucherOthersSource =
+      data.VoucherOthers ||
+      data.voucherOthers ||
+      (Array.isArray(data.voucherOthers) ? data.voucherOthers[0] : undefined);
+
+    if (voucherOthersSource) {
+      const vg = this.vendorCreditNoteForm.get('voucherOthers') as FormGroup;
+      vg.patchValue({
+        ContainerNumber: voucherOthersSource.ContainerNumber || '',
+        VoucherNote: voucherOthersSource.VoucherNote || '',
+        Footer: voucherOthersSource.Footer || '',
+        ReverseCreditNote: voucherOthersSource.ReverseCreditNote || '',
+        DueDate: voucherOthersSource.DueDate
+          ? new Date(voucherOthersSource.DueDate)
+          : null,
+        IRNNumber: voucherOthersSource.IRNNumber || '',
+      });
+    }
+    if(data.hasOutstandingAmount){
+      this.invoiceOutstandingAmount = data.totalOSAmount;
+    }
+    this.spinner.hide();
   }
 
   loadVoucherPeriods(): void {
@@ -1037,6 +1258,7 @@ export class VendorCreditNoteEntryComponent {
         MBLNo: data.MasterNumber,
         Status: data.Status,
         JobOrNonJob: data.CashOrBank === 'Y' ? true : false,
+        Salesman : data.Salesman || "",
 
         PostedOn: data.PostDate ? new Date(data?.PostDate) : null,
         BillNo: data.DocumentNumber,
@@ -1083,6 +1305,7 @@ export class VendorCreditNoteEntryComponent {
           Remarks: det.Remarks,
           PartyAmount: det.PartyAmount,
           IsAutoGenerated: det.IsAutoGenerated,
+          BookingRatesSid : det.BookingRatesSid,
           CostRevenueChargesSid: det.CostRevenueChargeSid,
           SourceDetailSid : det.SourceDetailSid,
         }),
@@ -1246,6 +1469,7 @@ export class VendorCreditNoteEntryComponent {
       SourceDetailSid : [data?.SourceDetailSid || null],
 
       // Vendor Credit Note Specific
+      BookingRatesSid : [data?.BookingRatesSid || null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
     });
     // this.disableControlsIfVoucherExists(group);
@@ -1825,8 +2049,8 @@ export class VendorCreditNoteEntryComponent {
               this.details.at(index).patchValue({
                 HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
               });
+              this.recalcRow(index);
             }
-            this.recalcRow(index);
           } else {
             this.appSettingService.showError(
               `Error fetching HSSAC details for ${chargeName}`,
@@ -1845,6 +2069,8 @@ export class VendorCreditNoteEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2055,6 +2281,7 @@ export class VendorCreditNoteEntryComponent {
         LocalCurrencyMasterSid: currentCurrency,
         LocalCurrencyCode: this.currentCompanyCurrency.code,
         PostedBy: this.userData?.userEmail,
+        current_date : getDefaultTodayDate(),
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,
@@ -2178,7 +2405,8 @@ export class VendorCreditNoteEntryComponent {
           MasterJobSid: detail.MasterJobSid ?? null,
           HouseJobSid: detail.HouseJobSid ?? null,
           YearMasterSid: YearMasterSid,
-          Narration: derivedNarration,
+          Narration: formValue.Narration,
+          BookingRatesSid : detail.BookingRatesSid,
           CostRevenueChargesSid: detail.CostRevenueChargesSid || null,
           SourceDetailSid : detail.SourceDetailSid || null,
         };
@@ -2261,6 +2489,7 @@ export class VendorCreditNoteEntryComponent {
       ExchangeRate: formValue.ExchangeRate
         ? toNumber(formValue.ExchangeRate)
         : 0,
+      BookingHeaderSid : formValue.BookingHeaderSid ?? null,
       MasterJobSid: formValue.MasterJobSid,
       HouseJobSid: formValue.HouseJobSid,
       Narration: formValue.Narration,
@@ -2275,6 +2504,7 @@ export class VendorCreditNoteEntryComponent {
       HBLNo: formValue.HBLNo,
       CreditNoteReason : formValue.CreditNoteReason,
       ReversalVoucher : formValue.ReversalVoucher,
+      Salesman : formValue.Salesman,
 
       VoucherDetail:
         voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
@@ -2847,7 +3077,7 @@ export class VendorCreditNoteEntryComponent {
   }
 
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -2878,7 +3108,7 @@ export class VendorCreditNoteEntryComponent {
 
   // Authority Method
   openAuthority() {
-    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
@@ -3132,222 +3362,6 @@ export class VendorCreditNoteEntryComponent {
     return baseColumns;
   }
 
-  getVendorInvoiceData() {
-    const invoiceNumber = this.vendorCreditNoteForm.get('ReversalVoucherNumber')?.value;
-    if (!invoiceNumber) {
-      this.appSettingService.showWarning(
-        'Please select an vendor invoice first.',
-      );
-      return;
-    }
-
-    
-    const payload = {
-      VoucherNumber : invoiceNumber,
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid
-    }
-    
-    this.spinner.show();
-    this.operationService.getVendorInvoiceByNumber(payload).subscribe({
-      next: (resp: any) => {
-        if (resp?.status && resp.data) {
-          const data = resp.data;
-          if(!data.hasOutstandingAmount){
-            this.appSettingService.showWarning('No outstanding amount found for this invoice.');
-            this.spinner.hide();
-            return;
-          }
-          this.vendorCreditNoteForm.patchValue({
-            ReversalVoucher: data.VoucherHeaderSid,
-          });
-
-          const autoNarration = this.autoGenerateNarration(resp.data);
-          this.vendorCreditNoteForm.get('Narration')?.setValue(autoNarration);
-          this.minVoucherDate = toNgbDateStruct(resp.data?.VoucherDate) || null;
-          this.isNonJob = data.CashOrBank === 'Y';
-
-          // 🔑 WAIT for dropdowns to load
-          this.handleDropdownBasedOnJob().subscribe({
-            next: () => {
-              this.patchVendorInvoiceData(data);
-            },
-            error: () => {
-              this.spinner.hide();
-            }
-          });
-          this.appSettingService.showSuccess(
-            'Vendor Invoice data loaded successfully.',
-          );
-        } else {
-          this.spinner.hide();
-          this.appSettingService.showError(resp.message);
-        }
-      },
-      error: (err) => {
-        this.spinner.hide();
-        console.error('Error fetching vendor invoice:', err);
-        this.appSettingService.showError('Failed to load vendor invoice data.');
-      },
-    });
-  }
-
-  private patchVendorInvoiceData(data: any) {
-    const header = data;
-    const vendorCreditNote =
-      header.VoucherHeaderSid || header.voucherHeaderSid || null;
-    this.originalInvoiceRates = new Map();
-    const autoNarration = this.autoGenerateNarration(
-      this.vendorCreditNoteForm.get('ReversalVoucher')?.value,
-    );
-
-
-    this.getVendorBranchByVendor(header.CustomerMasterSid);
-
-    this.vendorCreditNoteForm.patchValue({
-      ReversalVoucher: vendorCreditNote,
-      Narration: autoNarration || header.Narration || '',
-      PartyMasterSid: header.PartyMasterSid || null,
-      PartyName: header.PartyName || '',
-      PartyAddress: header.PartyAddress || '',
-      CustomerBranchSid: header.CustomerBranchSid || null,
-      COAMasterSid: header.COAMasterSid || null,
-      GST_VAT: header.GST_VAT || '',
-      GSTType: header.GSTType || '',
-      PlaceOfSupply: header.PlaceOfSupply || '',
-      InvoiceType: header.InvoiceType || '',
-      IRNNumber: header.IRNNumber || '',
-      IRNStatus: header.IRNStatus || '',
-      State: header.State || '',
-      DepartmentMasterSid: header.DepartmentMasterSid || null,
-      HouseNumber: header.HouseNumber || '',
-      MasterNumber: header.MasterNumber || '',
-      HouseJobSid: header.HouseJobSid || null,
-      BookingHeaderSid: header.BookingHeaderSid || null,
-      CurrencyMasterSid: header.CurrencyMasterSid || null,
-      CurrencyCode:
-        header.currencyMaster?.currencyCode || header.CurrencyCode || null,
-      ExchangeRate: header.ExchangeRate || header.ExRate || 1,
-      BillAmount: header.Amount || 0,
-      BillDate: header.DocumentDate,
-      BillNo: header.DocumentNumber || '',
-      MBLNo: header.MasterNumber || '',
-      HBLNo: header.HouseNumber || '',
-      Remarks: header.Remarks || '',
-    });
-
-    // if (
-    //   header.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
-    //   this.isPosted
-    // ) {
-    //   this.vendorCreditNoteForm.get('ExchangeRate')?.disable();
-    // } else {
-    //   this.vendorCreditNoteForm.get('ExchangeRate')?.enable();
-    // }
-
-    this.details.clear();
-    let index = 0;
-    (data.VoucherDetail || []).forEach((detail: any) => {
-      const originalDrCr = detail.DrCr || detail.drCr || 'D';
-      const swappedDrCr = originalDrCr === 'C' ? 'D' : 'C';
-
-      const originalRateComparison : rateComparison = {
-        Rate : toNumber(this.getFormattedAmount(detail.Rate || 0, detail.CurrencyMasterSid)),
-        Amount : toNumber(this.getFormattedAmount(detail.Amount || 0, detail.CurrencyMasterSid)),
-        TaxableAmount : toNumber(this.getFormattedAmount(detail.TaxableAmount || 0, this.currentCompany.CurrencyMasterSid)),
-        TaxAmount1 : toNumber(this.getFormattedAmount(detail.TaxAmount1 || 0, this.currentCompany.CurrencyMasterSid)),
-        TaxAmount2 : toNumber(this.getFormattedAmount(detail.TaxAmount2 || 0, this.currentCompany.CurrencyMasterSid)),
-        LocalAmount : toNumber(this.getFormattedAmount(detail.LocalAmount || 0, this.currentCompany.CurrencyMasterSid)),
-        PartyAmount : toNumber(this.getFormattedAmount(detail.PartyAmount || 0, data.CurrencyMasterSid)),
-      }
-
-      this.originalRateList.set(detail.VoucherDetailSid ,originalRateComparison);
-
-      this.details.push(
-        this.createDetailGroup({
-          SourceDetailSid: detail.VoucherDetailSid,
-          ChargeMasterSid: detail.ChargeMasterSid,
-          ChargeDescription: detail.ChargeDescription,
-          HSSACMasterSid: detail.HSSACMasterSid,
-          LedgerMasterSid: detail.LedgerMasterSid,
-          COAMasterSid: detail.COAMasterSid,
-          ChargeUOMSid: detail.ChargeUOMSid,
-          DepartmentMasterSid: detail.DepartmentMasterSid,
-          NumberOfUnit: detail.NumberOfUnit,
-          DrCr: swappedDrCr,
-          CurrencyMasterSid : detail.CurrencyMasterSid,
-          CurrencyCode: detail.CurrencyCode,
-          Rate: detail.Rate != null ? Number(detail.Rate) : 0,
-          ExchangeRate: detail.ExchangeRate,
-          Amount: toNumber(detail.Amount),
-          TaxableAmount: toNumber(detail.TaxableAmount),
-          TaxPercentage1: toNumber(detail.TaxPercentage1),
-          TaxAmount1: toNumber(detail.TaxAmount1),
-          TaxPercentage2: toNumber(detail.TaxPercentage2),
-          TaxAmount2: toNumber(detail.TaxAmount2),
-          MasterNumber:
-            header.MasterNumber || detail.masterJob?.MasterJobNumber,
-          HouseNumber: header.HouseNumber || detail.houseJob?.HouseNo,
-          YearMasterSid: detail.YearMasterSid,
-          LocalAmount: toNumber(detail.LocalAmount),
-          PartyAmount: toNumber(detail.PartyAmount),
-          MasterJobSid: detail.MasterJobSid,
-          CostRevenueChargesSid : detail.CostRevenueChargesSid ?? null,
-          HouseJobSid: detail.HouseJobSid,
-        }),
-      );
-      this.fetchHSN(this.details.length - 1, false);
-      if (detail.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid) {
-        this.details
-          .at(this.details.length - 1)
-          .get('ExchangeRate')
-          ?.disable();
-      }
-      if (detail.MasterJobSid) {
-        this.onDetailMasterJobSelected(
-          {
-            MasterJobSid: detail.MasterJobSid,
-            DepartmentMasterSid: detail.DepartmentMasterSid || null,
-          },
-          index,
-        );
-      }
-      if (this.isNonJob && detail.COAMasterSid) {
-        const selectedCOA = this.coaList.find(
-          (coa) => coa.COAMasterSid === detail.COAMasterSid,
-        );
-        if (selectedCOA && selectedCOA.SubledgerName === 'Y') {
-          this.onCOAChange(selectedCOA, index, false);
-        } else {
-          this.details.at(index).get('LedgerMasterSid')?.disable();
-        }
-      }
-      index++;
-    });
-
-    const voucherOthersSource =
-      data.VoucherOthers ||
-      data.voucherOthers ||
-      (Array.isArray(data.voucherOthers) ? data.voucherOthers[0] : undefined);
-
-    if (voucherOthersSource) {
-      const vg = this.vendorCreditNoteForm.get('voucherOthers') as FormGroup;
-      vg.patchValue({
-        ContainerNumber: voucherOthersSource.ContainerNumber || '',
-        VoucherNote: voucherOthersSource.VoucherNote || '',
-        Footer: voucherOthersSource.Footer || '',
-        ReverseCreditNote: voucherOthersSource.ReverseCreditNote || '',
-        DueDate: voucherOthersSource.DueDate
-          ? new Date(voucherOthersSource.DueDate)
-          : null,
-        IRNNumber: voucherOthersSource.IRNNumber || '',
-      });
-    }
-    if(data.hasOutstandingAmount){
-      this.invoiceOutstandingAmount = data.totalOSAmount;
-    }
-    this.spinner.hide();
-  }
 
   private searchOutstandingForVendorInvoice(
     invoiceNumber: string,

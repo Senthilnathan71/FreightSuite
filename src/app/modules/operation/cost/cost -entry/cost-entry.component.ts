@@ -391,7 +391,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   this.currentBranch = this.appSettingService.getCurrentBranchInfo();
   
   this.isBooking = this.screenName === "Booking";
-  this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   
 
   // Extract BookingHeaderSid from route parameter
@@ -2363,6 +2363,7 @@ createRateFormGroup(data?: any): FormGroup {
         CurrencyCode : customerCurrency?.currencyCode ?? currentCompanyCurrencyCode,
         State: placeOfSupply || '',
         GST_VAT: GST_VAT || '',
+        GSTType : GSTType,
         TaxType: GSTType,
       })
 
@@ -2619,6 +2620,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   applyTaxMastersForARow(rowIndex:number , taxMasters : any[]) {
     console.log('applyTaxMastersForARow', rowIndex , taxMasters);
+    const localCurrency = this.currentCompany?.CurrencyMasterSid;
     const detail = this.details.at(rowIndex) as FormGroup;
     const rawValue = detail.getRawValue();
 
@@ -2632,6 +2634,7 @@ createRateFormGroup(data?: any): FormGroup {
         TaxLabel : '',
         TotalAmount : this.getFormattedAndPaddedAmount(rawValue.LocalAmount,localCurrency),
       })
+      this.handleDisplayFields();
     }
 
     if(!detail || !taxMasters || !taxMasters.length){
@@ -2682,7 +2685,6 @@ createRateFormGroup(data?: any): FormGroup {
       console.warn('Invalid Tax tried to applied', taxNeedToApply);
     }
 
-    const localCurrency = this.currentCompany?.CurrencyMasterSid;
     const totalTaxAmount = this.getFormattedAndPaddedAmount(taxAmount1 + taxAmount2, localCurrency);
     const totalAmount = toNumber(rawValue.LocalAmount) + taxAmount1 + taxAmount2;
 

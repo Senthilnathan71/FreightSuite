@@ -1,63 +1,14 @@
-// payment-list.component.scss
-// Styling for payment list component
-
-.page-title {
-  font-weight: 600;
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
 }
 
-.brand-icon {
-  font-size: 1.5rem;
-  color: #17a2b8;
+::ng-deep app-reusable-table .table-responsive {
+  overflow-x: auto !important;
 }
 
-.table {
-  font-size: 0.875rem;
-
-  thead {
-    background-color: #f8f9fa;
-
-    th {
-      font-weight: 600;
-      color: #495057;
-      border-bottom: 2px solid #dee2e6;
-    }
-  }
-
-  tbody {
-    tr {
-      &:hover {
-        background-color: #f8f9fa;
-      }
-    }
-
-    td {
-      vertical-align: middle;
-    }
-  }
+::ng-deep app-reusable-table table {
+  min-width: 1400px !important;  
+  white-space: nowrap;
 }
-
-.badge {
-  font-size: 0.75rem;
-  padding: 0.35em 0.65em;
-}
-
-// Button styling
-.btn {
-  font-size: 0.875rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-  }
-}
-
-.dofi-min-w-80 {
-  min-width: 80px;
-}
-
-.dofi-max-w-80 {
-  max-width: 80px;
-}
-
-

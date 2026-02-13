@@ -98,6 +98,46 @@
   </div>
 </aside>
 
+  @if(mawbForm.get('AirwayBillType').value === 'Airline' || mawbForm.get('AirwayBillType').value === 'Other') {
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!mawbForm.get('Agent')?.value">
+    <ng-select 
+      formControlName="Agent"
+      [items]="customerList"
+      bindLabel="CustomerName"
+      bindValue="CustomerMasterSid"
+      placeholder="">
+    </ng-select>
+    <label class="input-label">
+      @if(mawbForm.get('AirwayBillType').value === 'Airline') {
+        Airline <span class="text-danger fw-bold">*</span>
+      } @else {
+        Agent <span class="text-danger fw-bold">*</span>
+      }
+    </label>
+    <div class="error-message">
+      @if(mawbForm.get('Agent')?.touched && mawbForm.get('Agent')?.invalid){
+      <span>Required</span>
+      }
+    </div>
+  </div>
+</aside>
+}
+<aside class="col-md-4" *ngIf="isEditMode">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!mawbForm.get('Customer')?.value">
+    <ng-select 
+      formControlName="Customer"
+      [items]="clientList"
+      bindLabel="CustomerName"
+      bindValue="CustomerMasterSid"
+      placeholder="">
+    </ng-select>
+    <label class="input-label">
+      Customer <span class="text-danger fw-bold"></span>
+    </label>
+  </div>
+</aside>
+
 <aside class="col-md-4" *ngIf="isEditMode">
   <div class="custom-form-group">
     <input type="text" class="custom-input-field sm" [value]="BLNumber" readonly>
@@ -108,7 +148,7 @@
                         <aside class="col-md-4" *ngIf="!isEditMode">
                             <div class="custom-form-group">
                                 <input type="text" id="MasterBillNumber" formControlName="MasterBillNumber" 
-                                    placeholder="" class="custom-input-field sm">
+                                    placeholder="" class="custom-input-field sm" maxlength="3">
                                 <label for="MasterBillNumber" class="input-label">Airline No. <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
@@ -116,36 +156,21 @@
                                     mawbForm.get('MasterBillNumber')?.invalid){
                                     <span>Required</span>
                                     }
+                                    @else if(mawbForm.get('MasterBillNumber')?.hasError('pattern')){
+                                    <span>Only digits (1-3) allowed</span>
+                                    }
                                 </div>
                             </div>
                         </aside>
 
                        
 
-                        @if(mawbForm.get('AirwayBillType').value === 'Other') {
-<aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select" [class.filled]="!!mawbForm.get('Agent')?.value">
-    <ng-select 
-      formControlName="Agent"
-      [items]="customerList"
-      bindLabel="CustomerName"
-      bindValue="CustomerMasterSid"
-      placeholder="">
-    </ng-select>
-    <label class="input-label">Agent <span class="text-danger fw-bold">*</span></label>
-    <div class="error-message">
-      @if(mawbForm.get('Agent')?.touched && mawbForm.get('Agent')?.invalid){
-      <span>Required</span>
-      }
-    </div>
-  </div>
-</aside>
-}
+                     
 
                         <aside class="col-md-4" *ngIf="!isEditMode">
                             <div class="custom-form-group">
                                 <input type="text" id="MAWBSerial" formControlName="MAWBSerial" 
-                                    placeholder="" class="custom-input-field sm">
+                                    placeholder="" class="custom-input-field sm"maxlength="7">
                                 <label for="MAWBSerial" class="input-label">Serial No <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
@@ -153,14 +178,17 @@
                                     mawbForm.get('MAWBSerial')?.invalid){
                                     <span>Required</span>
                                     }
+                                    @else if(mawbForm.get('MAWBSerial')?.hasError('pattern')){
+                                    <span>Only digits (1-7) allowed</span>
+                                    }
                                 </div>
                             </div>
                         </aside>
 
                         <aside class="col-md-4" *ngIf="!isEditMode">
                             <div class="custom-form-group">
-                                <input type="number" id="NumberofMAWB" formControlName="NumberofMAWB" 
-                                    placeholder="" class="custom-input-field sm">
+                                <input type="text" id="NumberofMAWB" formControlName="NumberofMAWB" 
+                                    placeholder="" class="custom-input-field sm" >
                                 <label for="NumberofMAWB" class="input-label">No of AWB <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
@@ -238,12 +266,19 @@
                                 @if(isEditMode){
                                 <ng-select class="" formControlName="status">
                                     <ng-option value="Active">Active</ng-option>
-                                    <ng-option value="Suspended">Suspended</ng-option>
+                                    <ng-option value="Suspended">Suspended</ng-option> 
                                 </ng-select>
                                 } @else {
                                 <input type="text" class="custom-input-field sm" formControlName="status" readonly>
                                 }
                                 <label class="input-label">Status</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form">
+                                <input type="text" formControlName="AvailableStatus" class="custom-input-field sm"
+                                    placeholder="" [textWithNumbers]="20" readonly>
+                                <label class="input-label">Available Status</label>
                             </div>
                         </aside>
                         <div class="d-flex justify-content-end" *ngIf="!isEditMode">

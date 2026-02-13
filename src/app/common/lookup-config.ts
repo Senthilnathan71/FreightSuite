@@ -85,9 +85,9 @@ export const DROPDOWN_CONFIGS = {
     labelFields: ['LedgerName']
   },
   INVOICE: {
-    displayFields: ['VoucherNumber', 'PartyName'],
-    displayLabels: ['Invoice No', 'Customer'],    
-    labelFields: ['VoucherNumber']
+    displayFields: ['DocumentTypeCode','VoucherNumber', 'PartyName'],
+    displayLabels: ['Type','Invoice No', 'Customer'],    
+    labelFields: ['DocumentTypeCode','VoucherNumber']
   },
   MASTER_JOB : {
     displayFields: ['MasterJobNumber', 'MBLNo'],

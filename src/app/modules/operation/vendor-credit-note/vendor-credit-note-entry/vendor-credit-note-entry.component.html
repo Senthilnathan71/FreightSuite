@@ -513,7 +513,7 @@
                   [DecimalPrecisionBefore]="3"
                   [DecimalPrecisionAfter]="
                     getExchangeRateDecimalPlaces(
-                      vendorCreditNoteForm.get('CurrencyMasterSid')?.value
+                      vendorCreditNoteForm.get('CurrencyMasterSid')?.getRawValue()
                     )
                   "
                   [class.is-invalid]="isFieldInvalid('ExchangeRate')"
@@ -711,7 +711,7 @@
                     <tr class="align-middle bg-info">
                       <th
                         rowspan="2"
-                        *ngIf="!isEditMode"
+                        *ngIf="!isPosted"
                         class="text-center bg-transparent text-light"
                         style="min-width: 30px; border-top-left-radius: 10px"
                       ></th>
@@ -1041,13 +1041,13 @@
                     >
                       <tr [formGroupName]="i">
                         <!-- Delete Button -->
-                        <td *ngIf="!isEditMode">
+                        <td *ngIf="!isPosted">
                           <button
                             type="button"
                             class="btn border-0 btn-sm pt-1"
                             (click)="removeDetailRow(i)"
                           >
-                            <i class="fas fa-trash text-danger"></i>
+                            <i class="fas fa-trash text-danger fs-2"></i>
                           </button>
                         </td>
                         <td class="text-center pt-1">

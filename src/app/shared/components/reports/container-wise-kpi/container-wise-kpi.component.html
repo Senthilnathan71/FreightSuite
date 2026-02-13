@@ -52,8 +52,8 @@
                         <th class="bg-transparent text-light">Weight</th>
                         <th class="bg-transparent text-light">Booking Date</th>
                         <!-- <th class="bg-transparent text-light">ETA POL Date</th> -->
-                        <th class="bg-transparent text-light">ETD POL Date</th>
-                        <th class="bg-transparent text-light">ATD POL Date</th>
+                        <th class="bg-transparent text-light">ETD</th>
+                        <th class="bg-transparent text-light">ATD</th>
                         <th class="bg-transparent text-light">ETA Destination</th>
                         <th class="bg-transparent text-light">ATA Destination</th>
                         <th class="bg-transparent text-light">Freight Term</th>
@@ -67,19 +67,19 @@
                 <tbody>
                     <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
                         <td>{{ item.bookingNo || '' }}</td>
-                        <td>{{ item.freightRevenue || '' }}</td>
+                        <td>{{ item.freightRevenue | number:'1.2-2' }}</td>
                         <td> {{ params?.FromHblDt| date:'MMMM' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.MBL || '' }}</td>
                         <td>{{ item.HBL || '' }}</td>
                         <td>{{ item.shipmentType || '' }}</td>
                         <td>{{ item.consigneeName || '' }}</td>
-                         <td>{{ item.consigneeName || '' }}</td>
-                        <td>{{ item.countryName || '' }}</td>
+                         <td>{{item?.countryName}}</td>
+                        <td>{{item?.portofDischarge}}</td>
                         <td>{{ item.fnalDestination || '' }}</td>
-                        <td class="text-center">{{ item.dgDelaration || '' }}</td>
+                        <td class="text-center">{{ item.dgDelaration === 'true' ? 'Y' : 'N' || '' }}</td>
                        <td>{{ item.containerNo || '' }}</td>
-                       <td>{{ item.containerNo ? item.containerInfo?.[0]?.containerSize : '' }}</td>
+                       <td>{{ item.containerInfo || ''}}</td>
                         <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.weight | number:'1.3-3' }}</td>
                         <td>{{ item.bookingDate | formatDate }}</td>
@@ -106,4 +106,4 @@
             </table>
         </div>
     </div>
-</div>
+</div> 

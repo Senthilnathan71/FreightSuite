@@ -64,7 +64,9 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { LogoService } from 'src/app/core/services/logo.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 
 interface NgbDateStructLike {
   day: number;
@@ -105,7 +107,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   currUserEmail: string | null = null;
   currentCompany: any;
   currentBranch: any;
-  currentcountryCode:any;
   currentCompanyCountry: {
     CountryMasterSid: number;
     countryName: string;
@@ -169,6 +170,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC_TAX;
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   masterJobLookupConfig = DROPDOWN_CONFIGS.MASTER_JOB;
+  @ViewChild('uninvoicedChargesModal') uninvoicedChargesModalRef: any;
+  uninvoicedChargesList: any[] = [];
+  selectedUninvoicedCharges: Set<number> = new Set();
+  jobMenuMasterSid: number | null = null;
+  transactionSid: number | null = null;
   
   // UI state
   selectedTab = 'Invoice';
@@ -289,6 +295,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatter: CurrencyFormatService,
     private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private toastr: ToastrService,
     public logoService: LogoService,
     private numberToWords: NumberToWordsService,
@@ -307,7 +314,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       // Getting Data from appSettingService
       this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
       this.currentBranch = this.appSettingService.getCurrentBranchInfo();
-      this.currentcountryCode = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
       this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
@@ -395,7 +401,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       CurrencyCode: [companyCurrencyCode || '', Validators.required],
       ExchangeRate: [
         { value: 1, disabled: true },
-        [Validators.required, Validators.min(0)],
+        [Validators.required, greaterThanZero()],
       ],
       GST_VAT: [''],
       PlaceOfSupply: [''],
@@ -403,6 +409,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       GSTType: [''],
       InvoiceType: ['REG'],
       VoucherType: [null],
+      TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT'],
       Narration: [''],
       Remarks: [''],
       IRNStatus: [''],
@@ -656,6 +663,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       typeof selected === 'object' && selected !== null
         ? selected.CustomerMasterSid ?? selected
         : selected;
+    
+    const localCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    const localCurrencyCode = this.currentCompanyCurrency.code;
 
     if (!selected || !customerMasterSid) {
       this.customerBranchList = [];
@@ -667,6 +677,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.invoiceForm.get('GST_VAT')?.setValue('');
       this.invoiceForm.get('PartyName')?.setValue(null);
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
+      this.invoiceForm.get('CurrencyMasterSid')?.setValue(localCurrencyId);
+      this.invoiceForm.get('CurrencyCode')?.setValue(localCurrencyCode);
+      this.onHeaderCurrencyChange({
+        CurrencyMasterSid: localCurrencyId,
+        currencyCode: localCurrencyCode
+      })
 
       // Set default InvoiceType based on country
       if (this.currentCompanyCountryCode === 'in') {
@@ -681,6 +697,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     const customer = this.customerList.find(
       (c) => c.CustomerMasterSid === customerMasterSid
     );
+    const customerCurrency = customer.currencyMaster || {};
     const countryCode = this.getCustomerCountryCode(customer);
 
     // Check if customer has GST in any branch to determine B2B vs B2C
@@ -704,7 +721,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             : 'REG',
         GST_VAT:
           (countryCode === 'in' ? customer.GSTNo : customer.PanType) || '',
+        CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? localCurrencyId,
+        CurrencyCode : customerCurrency?.currencyCode ?? localCurrencyCode,
       });
+      this.onHeaderCurrencyChange(customerCurrency);
     }
 
     // Reset branch selection when customer changes
@@ -943,6 +963,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         GST_VAT: data.GST_VAT || '',
         InvoiceType: data.InvoiceType || null,
         GSTType: data.GSTType || null,
+        TaxType : data.TaxType || null,
         Narration: data.Narration || '',
         Remarks: data.Remarks || '',
         MBLNo: data.MBLNo || '',
@@ -1073,19 +1094,42 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         const taxPercentages = this.getTaxPercentageForDisplay(detail);
         const taxAmounts = this.getTaxAmountForDisplay(detail);
 
-        const totalTaxAmount =
-          this.getTaxAmountForDisplay(detail).cgstAmt +
+        console.log({
+          cgstAmt : this.getTaxAmountForDisplay(detail).cgstAmt,
+          sgstAmt : this.getTaxAmountForDisplay(detail).sgstAmt,
+          igstAmt : this.getTaxAmountForDisplay(detail).igstAmt,
+          vatAmt : this.getTaxAmountForDisplay(detail).vatAmt,
+        })
+
+        const totalTaxAmount = this.getFormattedAmount(
+          (this.getTaxAmountForDisplay(detail).cgstAmt +
           this.getTaxAmountForDisplay(detail).sgstAmt +
           this.getTaxAmountForDisplay(detail).igstAmt +
-          this.getTaxAmountForDisplay(detail).vatAmt;
+          this.getTaxAmountForDisplay(detail).vatAmt),
+          this.currentCompany.CurrencyMasterSid
+        )
+        
+          console.warn(`TOTAL TAX ${index} AMOUNT ${totalTaxAmount}`);
+          
+          const actualLocalAmount = toNumber(detail.LocalAmount) + toNumber(totalTaxAmount);
+          console.warn(`ACTUAL LOCAL ${index} AMOUNT ${actualLocalAmount}`);
 
-        const actualLocalAmount = toNumber(detail.LocalAmount) + toNumber(totalTaxAmount);
 
-        const correctedTaxAmount = 
+          
+          const correctedTaxAmount = 
           this.invoiceData?.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid 
-          ? totalTaxAmount : (totalTaxAmount / toNumber(this.invoiceData?.ExchangeRate));
-        const actualPartyAmount = toNumber(correctedTaxAmount) + toNumber(detail.PartyAmount);
- 
+          ? toNumber(totalTaxAmount) : (toNumber(totalTaxAmount) / toNumber(this.invoiceData?.ExchangeRate));
+          const actualPartyAmount = toNumber(correctedTaxAmount) + toNumber(detail.PartyAmount);
+          
+          console.warn("CHECK",{
+            total_tax : totalTaxAmount,
+            local_amount : detail.LocalAmount,
+            actual_local_amount : actualLocalAmount,
+            invoice_currency : this.invoiceData?.CurrencyMasterSid,
+            current_company_currency : this.currentCompany.CurrencyMasterSid,
+            exchange_rate : toNumber(this.invoiceData?.ExchangeRate),
+            actual_party_amt : actualPartyAmount
+          })
         return {
           Sno: index + 1,
           ChargeDescription: detail.ChargeDescription,
@@ -1410,6 +1454,7 @@ isSeaDepartment(): boolean {
       LedgerMasterSid: [data?.LedgerMasterSid || null],
       COAMasterSid: [data?.COAMasterSid || null],
       IsAutoGenerated: [data?.IsAutoGenerated === 'Y' || false],
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null]
     });
     this.disableControlsIfVoucherExists(group);
     return group;
@@ -2093,6 +2138,8 @@ isSeaDepartment(): boolean {
     resolve?: (value:boolean) => void,
     isPostingTrue?: boolean
   ) {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2196,6 +2243,7 @@ isSeaDepartment(): boolean {
           MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : null,
           HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
           YearMasterSid: YearMasterSid,
+          CostRevenueChargesSid: d.CostRevenueChargesSid ? Number(d.CostRevenueChargesSid) : null
         };
         return detail;
       }
@@ -2215,6 +2263,7 @@ isSeaDepartment(): boolean {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherDate: raw.VoucherDate ? new Date(raw.VoucherDate) : null,
+      current_date : getDefaultTodayDate(),
       GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: raw.PartyMasterSid ?? null,
       DepartmentMasterSid: raw.DepartmentMasterSid || null,
@@ -2225,6 +2274,7 @@ isSeaDepartment(): boolean {
       COAMasterSid: raw.COAMasterSid ?? 1,
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
+      TaxType : raw.TaxType || "VAT",
       CurrencyMasterSid: raw.CurrencyMasterSid ?? null,
       PostStatus: raw.PostStatus || 'U',
       CurrencyCode: raw.CurrencyCode || undefined,
@@ -2329,7 +2379,7 @@ isSeaDepartment(): boolean {
       const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
       const customerState = this.customerBranchList.find(
         c => c.CustomerBranchSid === customerBranchFromForm
-      )
+      )?.StateMasterSid;
       let interOrIntra = 'Inter';
       // india
       if(this.currentCompanyCountryCode === 'in'){
@@ -2363,6 +2413,7 @@ isSeaDepartment(): boolean {
         LocalCurrencyMasterSid: currentCurrency,
         LocalCurrencyCode: this.currentCompanyCurrency.code,
         PostedBy: this.userData?.userEmail,
+        current_date : getDefaultTodayDate(),
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
           countryCode: this.currentCompanyCountryCode,
@@ -3364,62 +3415,121 @@ isSeaDepartment(): boolean {
   // pdf
 
   async downloadPDF() {
+    this.spinner.show();
+    try {
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const HouseJob = this.invoiceData?.VoucherNumber || '';
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `Invoice_${HouseJob}`,
-          () =>
-            this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) =>
-            this.appSettingService.showError(
-              'Error generating PDF. Please try again.'
-            )
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.invoicePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.invoicePrintData?.ShipperName,
+          consignee: this.invoicePrintData?.ConsigneeName,
+          vesselName: this.invoicePrintData?.Vessel,
+          voyageNo: this.invoicePrintData?.VoyageNo,
+          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
+          loadingPort: this.invoicePrintData?.POL,
+          finalDestination: this.invoicePrintData?.FPD,
+          etd: this.invoicePrintData?.ETD,
+          eta: this.invoicePrintData?.ETA,
+          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.invoicePrintData?.pkg,
+          commodityDesc: this.invoicePrintData?.desc,
+          grossWeight: this.invoicePrintData?.grosswt,
+          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
+          cbm: this.invoicePrintData?.cbm
+        },
+        invoicePrintData: this.invoicePrintData
+      };
+
+      this.pdfMakeService.generateInvoiceFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
   }
 
+
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.invoicePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.invoicePrintData?.ShipperName,
+          consignee: this.invoicePrintData?.ConsigneeName,
+          vesselName: this.invoicePrintData?.Vessel,
+          voyageNo: this.invoicePrintData?.VoyageNo,
+          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
+          loadingPort: this.invoicePrintData?.POL,
+          finalDestination: this.invoicePrintData?.FPD,
+          etd: this.invoicePrintData?.ETD,
+          eta: this.invoicePrintData?.ETA,
+          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.invoicePrintData?.pkg,
+          commodityDesc: this.invoicePrintData?.desc,
+          grossWeight: this.invoicePrintData?.grosswt,
+          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
+          cbm: this.invoicePrintData?.cbm
+        }
+      };
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      return blob;
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
@@ -3591,30 +3701,37 @@ isSeaDepartment(): boolean {
     igstAmt: number;
     vatAmt: number;
   } {
-    const gstType = this.invoiceForm.get('GSTType')?.value;
-
-    if (gstType === 'CGST+SGST') {
-      return {
-        cgstAmt: detail.TaxAmount1 || 0,
-        sgstAmt: detail.TaxAmount2 || 0,
-        igstAmt: 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'IGST') {
-      return {
-        cgstAmt: 0,
-        sgstAmt: 0,
-        igstAmt: detail.TaxAmount1 || 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'B2C') {
-      return {
-        cgstAmt: detail.TaxAmount1 || 0,
-        sgstAmt: 0,
-        igstAmt: 0,
-        vatAmt: 0,
-      };
-    } else if (gstType === 'VAT') {
+    const taxType = this.invoiceForm.get('TaxType')?.value;
+    const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid)
+    const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
+    const customerState = this.customerBranchList.find(
+      c => c.CustomerBranchSid === customerBranchFromForm
+    )?.StateMasterSid;
+    console.log("DEBUG getTaxAmountForDisplay",{
+      taxType,
+      currentCompanyCountry : this.currentCompanyCountryCode,
+      currentCompanyState,
+      customerBranchFromForm,
+      customerState
+    })
+    if(this.currentCompanyCountryCode === 'in'){
+      if(currentCompanyState === customerState){
+        return {
+          cgstAmt: detail.TaxAmount1 || 0,
+          sgstAmt: detail.TaxAmount2 || 0,
+          igstAmt: 0,
+          vatAmt: 0,
+        }
+      } else {
+        return {
+          cgstAmt: detail.TaxAmount1 || 0,
+          sgstAmt: 0,
+          igstAmt: 0,
+          vatAmt: 0,
+        }
+      }
+    }
+    if (taxType === 'VAT') {
       return {
         cgstAmt: 0,
         sgstAmt: 0,
@@ -3624,10 +3741,10 @@ isSeaDepartment(): boolean {
     }
 
     return {
-      cgstAmt: detail.TaxAmount1 || 0,
-      sgstAmt: detail.TaxAmount2 || 0,
-      igstAmt: detail.TaxAmountIGST || 0,
-      vatAmt: detail.TaxAmount1 || 0,
+      cgstAmt: toNumber(detail.TaxAmount1) || 0,
+      sgstAmt: toNumber(detail.TaxAmount2) || 0,
+      igstAmt: toNumber(detail.TaxAmountIGST) || 0,
+      vatAmt: toNumber(detail.TaxAmount1) || 0
     };
   }
   
@@ -3730,5 +3847,238 @@ isSeaDepartment(): boolean {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+
+openUninvoicedChargesModal() {
+
+  // HOUSE JOB INVOICE
+  if (this.invoiceData?.HouseJobSid && this.invoiceData?.houseJob) {
+
+    this.transactionSid = this.invoiceData.HouseJobSid;
+    this.jobMenuMasterSid = this.invoiceData.houseJob.MenuMasterSid;
+
+  }
+
+  // MASTER JOB INVOICE
+  else if (!this.invoiceData?.HouseJobSid && this.invoiceData?.MasterJobSid && this.invoiceData?.masterJob) {
+
+    this.transactionSid = this.invoiceData.MasterJobSid;
+    this.jobMenuMasterSid = this.invoiceData.masterJob.MenuMasterSid;
+
+  }
+
+  // BOOKING INVOICE (future safe)
+  else if (this.invoiceData?.BookingHeaderSid && this.invoiceData?.BookingHeader) {
+
+    this.transactionSid = this.invoiceData.BookingHeaderSid;
+    this.jobMenuMasterSid = this.invoiceData.BookingHeader.MenuMasterSid;
+
+  }
+
+  else {
+    this.appSettingService.showWarning('Cannot determine job type for uninvoiced charges');
+    return;
+  }
+  // Get customer branch details
+  const customerBranchSid = this.invoiceData?.CustomerBranchSid;
+let customerMasterSid: number | null = null;
+
+// 1️⃣ Directly from API response (most reliable)
+if (this.invoiceData?.customerBranch?.CustomerMasterSid) {
+  customerMasterSid = this.invoiceData.customerBranch.CustomerMasterSid;
+}
+
+// 2️⃣ Fallback only if API did not expand relation
+else if (this.invoiceData?.CustomerBranchSid && this.customerBranchList?.length) {
+  const branch = this.customerBranchList.find(
+    b => b.CustomerBranchSid === this.invoiceData.CustomerBranchSid
+  );
+  customerMasterSid = branch?.CustomerMasterSid ?? null;
+}
+
+// Safety
+if (!customerMasterSid) {
+  this.appSettingService.showWarning('Customer not mapped to branch');
+  return;
+}
+
+  const payload = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    transactionSid: this.transactionSid,
+    MenuMasterSid: this.jobMenuMasterSid,
+    RevenueCustomerBranchSid: customerBranchSid,
+    RevenueCustomerMasterSid: customerMasterSid
+  };
+
+  this.spinner.show();
+  this.operationService.getUninvoicedRevenueCharges(payload).subscribe({
+    next: (resp: any) => {
+      this.spinner.hide();
+      if (resp?.status && resp.data) {
+        this.uninvoicedChargesList = resp.data || [];
+        this.selectedUninvoicedCharges.clear();
+        this.modalService.open(this.uninvoicedChargesModalRef, {
+          size: 'xl',
+          backdrop: 'static',
+          keyboard: false,
+          scrollable: true
+        });
+      } else {
+        this.appSettingService.showWarning(resp.message || 'No uninvoiced charges found');
+      }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Error fetching uninvoiced charges:', err);
+      this.appSettingService.showError('Failed to fetch uninvoiced charges');
+    }
+  });
+}
+
+toggleChargeSelection(chargeSid: number) {
+  if (this.selectedUninvoicedCharges.has(chargeSid)) {
+    this.selectedUninvoicedCharges.delete(chargeSid);
+  } else {
+    this.selectedUninvoicedCharges.add(chargeSid);
+  }
+}
+
+isChargeSelected(chargeSid: number): boolean {
+  return this.selectedUninvoicedCharges.has(chargeSid);
+}
+selectAllUninvoicedCharges() {
+  this.uninvoicedChargesList.forEach(charge => {
+    this.selectedUninvoicedCharges.add(charge.CostRevenueChargesSid);
+  });
+}
+deselectAllUninvoicedCharges() {
+  this.selectedUninvoicedCharges.clear();
+}
+
+addSelectedUninvoicedCharges() {
+  if (this.selectedUninvoicedCharges.size === 0) {
+    this.appSettingService.showWarning('Please select at least one charge');
+    return;
+  }
+
+  const selectedCharges = this.uninvoicedChargesList.filter(
+    charge => this.selectedUninvoicedCharges.has(charge.CostRevenueChargesSid)
+  );
+
+  selectedCharges.forEach(charge => {
+    this.patchUninvoicedChargeToDetails(charge);
+  });
+
+  this.modalService.dismissAll();
+  this.recalculateAllRows();
+  // this.appSettingService.showSuccess(`${selectedCharges.length} charge(s) added successfully`);
+}
+
+patchUninvoicedChargeToDetails(charge: any) {
+ const selectedCharge = this.chargeList?.find(
+    (c: any) => c.ChargeMasterSid === charge.ChargeMasterSid
+  );
+
+  if (!selectedCharge) {
+    this.appSettingService.showError('Charge mapping is missing. Please configure charge master first.');
+    return;
+  }
+  // Create detail group with charge data - using correct field names from API
+  const detailGroup = this.createDetailGroup({
+    ChargeMasterSid: charge.ChargeMasterSid,
+    ChargeDescription: charge.ChargeDescription || charge.chargeMaster?.chargeName,
+    HSSACMasterSid: charge.chargeMaster?.chargeTaxMaster?.[0]?.HSSACMasterSid || null, // Note: HSSACMasterSid not in response
+    ChargeUOMSid: charge.RevenueChargeUomSid || charge.ChargeUomSid || charge.chargeMaster?.UOM,
+    NumberOfUnit: charge.RevenueNumberOfUnit || 1,
+    DrCr: charge.RevenueDrCr || 'C',
+    CurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+    CurrencyCode: charge.revenueCurrencyMaster?.currencyCode,
+    ExchangeRate: charge.RevenueExchangeRate || 1,
+    Rate: charge.RevenueRate || 0,
+    Amount: charge.RevenueAmount || 0,
+    TaxableAmount: charge.RevenueLocalAmount || 0, // Taxable amount is LocalAmount before tax
+    TaxPercentage1: charge.chargeMaster?.chargeTaxMaster?.[0]?.TaxRate || 0,
+    TaxAmount1: 0, // Will be calculated by recalcRow
+    TaxPercentage2: 0,
+    TaxAmount2: 0,
+    LocalAmount: charge.RevenueLocalAmount || 0,
+    PartyAmount: charge.RevenueLocalAmount || 0, 
+    MasterJobSid: this.invoiceData?.MasterJobSid || null,
+    HouseJobSid: this.invoiceData?.HouseJobSid || null,
+    DepartmentMasterSid: this.invoiceData?.DepartmentMasterSid || charge.DepartmentMasterSid,
+    LedgerMasterSid: null,
+    COAMasterSid: null,
+    IsAutoGenerated: false,
+    CostRevenue: 'Revenue',
+    CostRevenueChargesSid: charge.CostRevenueChargesSid
+  });
+
+   // Add to form array first
+  this.details.push(detailGroup);
+  const index = this.details.length - 1;
+
+  // Fetch ledger details using the same logic as cost-entry.component.ts
+  this.operationService.getLedgerDetails({
+    DepartmentMasterSid: this.invoiceData?.DepartmentMasterSid || charge.DepartmentMasterSid,
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    SubledgerMappingSid: charge.ChargeMasterSid,
+    LedgerType: 'Charge',
+    DrCr: 'Cr' // Revenue side is Credit
+  }).subscribe({
+    next: (ledgerResp: any) => {
+      if (ledgerResp?.status) {
+        const ledgerDetail = ledgerResp.data;
+        
+        // Patch the ledger and COA values
+        this.details.at(index).patchValue({
+          LedgerMasterSid: ledgerDetail.SubledgerMasterSid,
+          COAMasterSid: ledgerDetail.COAMasterSid
+        });
+        
+        // Now continue with other operations
+        this.details.at(index).updateValueAndValidity();
+        
+        // Disable exchange rate if same as company currency
+        const detailCurrencyId = detailGroup.get('CurrencyMasterSid')?.value;
+        if (detailCurrencyId === this.currentCompany?.CurrencyMasterSid) {
+          detailGroup.get('ExchangeRate')?.disable();
+        }
+        
+        this.fetchHSN(index, true);
+        
+        if (this.invoiceData.MasterJobSid) {
+          this.onDetailMasterJobSelected(
+            { MasterJobSid: this.invoiceData.MasterJobSid },
+            index
+          );
+        }
+        
+        // Trigger tax calculation
+        this.recalcRow(index);
+      } else {
+        this.appSettingService.showError(ledgerResp.message || 'Failed to fetch ledger details');
+      }
+    },
+    error: (error) => {
+      console.error('Error fetching ledger details:', error);
+      this.appSettingService.showError('Failed to fetch ledger details');
+    }
+  });
+}
+
+// Add helper to check if charge has voucher
+hasVoucherGenerated(charge: any): boolean {
+  return !!charge.RevenueVoucherHeaderSid;
+}
+selectOrDeselectAll(event: any) {
+  if (event.target.checked) {
+    this.selectAllUninvoicedCharges();
+  } else {
+    this.deselectAllUninvoicedCharges();
+  }
+}
+
+
 
 }
