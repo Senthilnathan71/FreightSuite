@@ -472,6 +472,15 @@ getHouseJobARAPData(HouseJobSid: number) {
       })
     );
   }
+  // Job Close Operations
+  searchJobClose(payload: any) {
+    return this.http.post<{ data: any[] }>('job-close/search-list', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   // Master Job Operations
   searchMasterJobs(payload: any) {
     return this.http.post<{ data: any[] }>('master-job/search-list', payload).pipe(
