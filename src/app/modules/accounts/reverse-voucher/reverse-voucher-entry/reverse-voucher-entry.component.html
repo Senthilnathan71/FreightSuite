@@ -215,7 +215,7 @@
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
-                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
+                      <!-- <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th> -->
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount
@@ -274,10 +274,10 @@
                             [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'">
                           </dofi-searchable-dropdown>
                         </td>
-                        <td>
+                        <!-- <td>
                           <input type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
                             readonly>
-                        </td>
+                        </td> -->
                         <td>
                           <input type="number" step="0.0001" class="custom-input-field sm"
                             formControlName="ExchangeRate">

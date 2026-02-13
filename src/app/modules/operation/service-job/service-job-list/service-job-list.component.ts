@@ -57,6 +57,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     this.tableConfig = {
         columns: [
              { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true, dataType: 'string' },
+             { key:'MBLDate', label: 'MBL Date', sortable: true, filterable: true, visible: true, dataType: 'string' },
             { key: 'ShipmentNo', label: 'Ref. No', sortable: true, filterable: true, visible: true, dataType: 'string' },
             { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true, dataType: 'string' },
             { key: 'departmentName', label: 'Dept', sortable: true, filterable: true, visible: true, dataType: 'string' },
@@ -159,6 +160,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
             this.allItems = response.data?.items.map((item: any) => ({
                 ...item,
                 departmentName : item.departmentMaster?.departmentName,
+                MBLDate: this.datePipe.transform(item?.MBLDate),
                 Status: item.status === 'A' ? 'Active' : 'Inactive',
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;

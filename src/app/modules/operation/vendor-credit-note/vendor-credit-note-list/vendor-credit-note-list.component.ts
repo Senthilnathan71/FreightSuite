@@ -137,7 +137,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
          
         },
         {
-          key: 'LocalAmountFormatted',
+          key: 'AmountFormatted',
           label: 'Amt',
           sortable: true,
           filterable: true,
@@ -289,7 +289,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           CurrencyCode: item.currencyMaster.currencyCode,
           Status: item.Status === 'A' ? 'Active' : 'Suspended',
           ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
-          LocalAmountFormatted: this.formatAmount(item.LocalAmount)
+          AmountFormatted: this.formatAmount(item.Amount)
           
         }));
         this.totalLengthOfCollection = response.data.totalCount || 0;
