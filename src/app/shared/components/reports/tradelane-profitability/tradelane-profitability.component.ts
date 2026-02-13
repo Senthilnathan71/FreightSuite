@@ -54,9 +54,8 @@ export class TradelaneProfitabilityComponent {
   }
 
   getExcelData(): ComplexReportExportConfig {
-
     const tableHeaders: ExcelHeader[] = [
-      { key: 'bookingNo', label: 'Booking Number' },
+      { key: 'refNo', label: 'Ref No' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'cost', label: 'Cost' },
       { key: 'profit', label: 'Profit' },
@@ -67,63 +66,144 @@ export class TradelaneProfitabilityComponent {
 
     const rows: ExcelRow[] = [];
 
-    (this.groupData || []).forEach(route => {
-
+    (this.fullData?.groupedRoutes || []).forEach(route => {
       // ---- Route title row ----
       rows.push({
         cells: [
-          { value: `Route : ${route.route}` },
+          { value: `Route: ${route.route}` },
           { value: '' }, { value: '' }, { value: '' },
           { value: '' }, { value: '' }, { value: '' }
         ],
         style: 'section'
       });
 
-      // ---- Booking rows ----
-      route.rows.forEach(item => {
+      // ---- Booking Section ----
+      if (route.bookingRows?.length > 0) {
+        rows.push({
+          cells: [{ value: 'Booking' }, ...Array(6).fill({ value: '' })],
+          style: 'section'
+        });
+
+        route.bookingRows.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.bookingNo || '' },
+              { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
+              { value: this.formatNumber(item.costLocalAmt ?? 0) },
+              { value: this.formatNumber(item.profit ?? 0) },
+              { value: this.formatNumber(item.grossWt ?? 0) },
+              { value: this.formatNumber(item.netWt ?? 0) },
+              { value: this.formatNumber(item.vol ?? 0) }
+            ],
+            style: 'data'
+          });
+        });
+
         rows.push({
           cells: [
-            { value: item.bookingNo },
-            { value: item.revenueLocalAmt },
-            { value: item.costLocalAmt },
-            { value: item.profit },
-            { value: item.grossWt },
-            { value: item.netWt },
-            { value: item.vol }
+            { value: 'Total' },
+            { value: this.formatNumber(route.bookingTotals?.revenue ?? 0) },
+            { value: this.formatNumber(route.bookingTotals?.cost ?? 0) },
+            { value: this.formatNumber(route.bookingTotals?.profit ?? 0) },
+            { value: this.formatNumber(route.bookingTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(route.bookingTotals?.netWt ?? 0) },
+            { value: this.formatNumber(route.bookingTotals?.vol ?? 0) }
           ],
+          style: 'total'
+        });
+
+        rows.push({
+          cells: Array(7).fill({ value: '' }),
           style: 'data'
         });
-      });
+      }
 
-      // ---- Total row ----
-      rows.push({
-        cells: [
-          { value: 'Total' },
-          { value: route.totals.revenue },
-          { value: route.totals.cost },
-          { value: route.totals.profit },
-          { value: route.totals.grossWt },
-          { value: route.totals.netWt },
-          { value: route.totals.vol }
-        ],
-        style: 'total'
-      });
+      // ---- Master Job Section ----
+      if (route.masterRows?.length > 0) {
+        rows.push({
+          cells: [{ value: 'Master Job' }, ...Array(6).fill({ value: '' })],
+          style: 'section'
+        });
 
-      // ---- Empty line between routes ----
-      rows.push({
-        cells: [
-          { value: '' }, { value: '' }, { value: '' },
-          { value: '' }, { value: '' }, { value: '' }, { value: '' }
-        ],
-        style: 'data'
-      });
+        route.masterRows.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.MBLNo || '' },
+              { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
+              { value: this.formatNumber(item.costLocalAmt ?? 0) },
+              { value: this.formatNumber(item.profit ?? 0) },
+              { value: this.formatNumber(item.grossWt ?? 0) },
+              { value: this.formatNumber(item.netWt ?? 0) },
+              { value: this.formatNumber(item.vol ?? 0) }
+            ],
+            style: 'data'
+          });
+        });
 
+        rows.push({
+          cells: [
+            { value: 'Total' },
+            { value: this.formatNumber(route.masterTotals?.revenue ?? 0) },
+            { value: this.formatNumber(route.masterTotals?.cost ?? 0) },
+            { value: this.formatNumber(route.masterTotals?.profit ?? 0) },
+            { value: this.formatNumber(route.masterTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(route.masterTotals?.netWt ?? 0) },
+            { value: this.formatNumber(route.masterTotals?.vol ?? 0) }
+          ],
+          style: 'total'
+        });
+
+        rows.push({
+          cells: Array(7).fill({ value: '' }),
+          style: 'data'
+        });
+      }
+
+      // ---- House Job Section ----
+      if (route.houseRows?.length > 0) {
+        rows.push({
+          cells: [{ value: 'House Job' }, ...Array(6).fill({ value: '' })],
+          style: 'section'
+        });
+
+        route.houseRows.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.HBLNo || '' },
+              { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
+              { value: this.formatNumber(item.costLocalAmt ?? 0) },
+              { value: this.formatNumber(item.profit ?? 0) },
+              { value: this.formatNumber(item.grossWt ?? 0) },
+              { value: this.formatNumber(item.netWt ?? 0) },
+              { value: this.formatNumber(item.vol ?? 0) }
+            ],
+            style: 'data'
+          });
+        });
+
+        rows.push({
+          cells: [
+            { value: 'Total' },
+            { value: this.formatNumber(route.houseTotals?.revenue ?? 0) },
+            { value: this.formatNumber(route.houseTotals?.cost ?? 0) },
+            { value: this.formatNumber(route.houseTotals?.profit ?? 0) },
+            { value: this.formatNumber(route.houseTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(route.houseTotals?.netWt ?? 0) },
+            { value: this.formatNumber(route.houseTotals?.vol ?? 0) }
+          ],
+          style: 'total'
+        });
+
+        rows.push({
+          cells: Array(7).fill({ value: '' }),
+          style: 'data'
+        });
+      }
     });
 
     return {
       fileName: 'Tradelane-Profitability-Report',
       sheetName: 'Tradelane Profitability',
-
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company Name',
         reportTitle: 'Tradelane Profitability',
@@ -135,13 +215,19 @@ export class TradelaneProfitabilityComponent {
           { label: 'POD', value: this.fullData?.filters?.POD || '' }
         ]
       },
-
       tableHeaders,
       rows,
-
-      columnWidths: [20, 15, 15, 15, 15, 15, 15]
+      columnWidths: [15, 12, 12, 12, 12, 12, 12]
     };
   }
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
+
 
   private formatDate(date: any): string {
     if (!date) return '';

@@ -7,6 +7,7 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 @Component({
   selector: 'app-outstanding-report',
@@ -21,12 +22,16 @@ export class OutstandingReportComponent {
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
+  companyCurrency: any;
+  currentCurrencyCode: string = '';
+  currentCurrency: number;
   orientation: 'portrait' | 'landscape' = 'portrait';
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
-    private reportRegistryService: ReportRegistryService
+    private reportRegistryService: ReportRegistryService,
+    private companySettings: CompanySettingsManagerService,
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -38,7 +43,9 @@ export class OutstandingReportComponent {
     console.log('Current Branch:', this.currentBranch);
     this.loadSalesPerson();
     this.orientation = this.reportRegistryService.getReportConfig('outstanding-report').pdfOrientation;
-
+    this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid)
   }
 
 

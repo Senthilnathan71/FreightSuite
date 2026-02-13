@@ -65,51 +65,70 @@ export class HouseJobLossReportComponent {
       { key: 'DestinationAgent', label: 'Destination Agent' },
       { key: 'Revenue', label: 'Revenue' },
       { key: 'Cost', label: 'Cost' },
-      { key: 'Profit', label: 'GP' },
+      { key: 'GP', label: 'GP' },
       { key: 'GPPercent', label: 'GP %' }
     ];
 
-    const rows: ExcelRow[] = (this.fullData?.data || []).flatMap(item =>
-      (item.costRevenueDetails || []).map(cr => ({
-        cells: [
-          { value: item.HouseNo || '' },
-          { value: this.formatDate(item.jobDate) },
-          { value: item.houseDept || '' },
-          { value: item.MBLNo || '' },
-          { value: item.HBLNo || '' },
-          { value: item.houseStatus || '' },
-          { value: item.jobType || '' },
-          { value: item.customerName || '' },
-          { value: `${item.vesselName || ''} / ${item.voyNo || ''}` },
-          { value: item.originAgent || '' },
-          { value: item.destinationAgent || '' },
-          { value: cr.RevenueLocalAmount ?? 0 },
-          { value: cr.CostLocalAmount ?? 0 },
-          { value: cr.Profit ?? 0 },
-          { value: cr.GP ?? 0 }
-        ],
-        style: 'data'
-      }))
-    );
+   
+    const rows: ExcelRow[] = (this.fullData?.data || []).map(item => ({
+      cells: [
+        { value: item.HouseNo || '' },
+        { value: this.formatDate(item.jobDate) },
+        { value: item.houseDept || '' },
+        { value: item.MBLNo || '' },
+        { value: item.HBLNo || '' },
+        { value: item.houseStatus || '' },
+        { value: item.jobType || '' },
+        { value: item.customerName || '' },
 
+        {
+          value: `${item.vesselName || ''}${item.vesselName && item.voyNo ? ' / ' : ''
+            }${item.voyNo || ''}`
+        },
+
+        { value: item.originAgent || '' },
+        { value: item.destinationAgent || '' },
+
+        
+        { value: this.formatNumber(item.costRevenueDetails?.RevenueLocalAmount || 0) },
+        { value: this.formatNumber(item.costRevenueDetails?.CostLocalAmount || 0) },
+        { value: this.formatNumber(item.costRevenueDetails?.Profit || 0) },
+        { value: this.formatNumber(item.costRevenueDetails?.GP || 0) + '%' }
+      ],
+      style: 'data'
+    }));
+
+   
     return {
       fileName: 'House-Job-Loss-Report',
       sheetName: 'HouseJobLoss',
+
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `House Job Loss Report as on ${this.formatDate(this.params?.FromHBLDt)}`,
+        reportTitle: `House Job Loss Report as on ${this.formatDate(
+          this.params?.FromHblDt
+        )}`,
+
         additionalInfo: [
-          { label: 'HBL From Date', value: this.formatDate(this.params?.FromHBLDt) },
-          { label: 'HBL To Date', value: this.formatDate(this.params?.ToHBLDt) },
-          { label: 'Branch', value: this.params?.Branch || '' },
-          { label: 'Dept', value: this.params?.Dept || '' },
-          { label: 'Customer', value: this.params?.Customer || '' }
+          { label: 'HBL From Date', value: this.formatDate(this.params?.FromHblDt) },
+          { label: 'HBL To Date', value: this.formatDate(this.params?.ToHblDt) },
+          { label: 'Branch', value: this.fullData?.branchInvoled || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' },
+          { label: 'Customer', value: this.fullData?.Customer || '' }
         ]
       },
+
       tableHeaders,
       rows,
       columnWidths: [15, 15, 15, 15, 15, 18, 12, 25, 18, 20, 20, 15, 15, 15, 12]
     };
+  }
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
   }
 
   private formatDate(date: any): string {
