@@ -71,6 +71,7 @@ export function getVoucherDateConstraints(
 
   const period = findPeriodForDate(voucherDate, periods);
   if (!period) {
+    result.isClosed = true;
     result.errorMessage = 'Selected date does not fall within any voucher period.';
     return result;
   }
@@ -79,7 +80,7 @@ export function getVoucherDateConstraints(
   const closedKey = `${module}Closed` as keyof VoucherPeriodInfo;
   if (period[closedKey] === 'Y') {
     result.isClosed = true;
-    result.errorMessage = `${module} is closed for period "${period.PeriodName}".`;
+    result.errorMessage = `${period.PeriodName} month closed. Please contact your finance team.`;
     return result;
   }
 
@@ -99,7 +100,7 @@ export function getVoucherDateConstraints(
 
   if (today > graceDeadline) {
     result.isClosed = true;
-    result.errorMessage = `Grace days exceeded. You cannot create voucher for the month ${period.PeriodName}.`;
+    result.errorMessage = `Grace days of ${period.PeriodName} voucher booking exceeded`;
     return result;
   }
 

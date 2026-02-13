@@ -692,6 +692,8 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -768,6 +770,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       this.appSettingService.showError(
         'Please make sure the sum of debit amounts and credit amounts are equal.'
       );
+      console.log("COMPARISON LOG", this.totalDebits, this.totalCredits);
       if (resolve) resolve(false);
       this.isSaving = false;
       return;
@@ -2470,6 +2473,22 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     return this.currencyFormatService.formatAmount(input, false);
   }
 
+  public getFormattedAndPaddedAmount(
+    amount: number | string,
+    CurrencyMasterSid: number,
+  ) {
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid,
+    );
+    const input = {
+      value: toNumber(amount),
+      currencyCode: currency?.currencyCode,
+    };
+    const formattedAmount = this.currencyFormatService.formatAmount(input, false);
+    const digitForPadding = this.getAmountDecimalPlaces(CurrencyMasterSid);
+    return Number(formattedAmount).toFixed(digitForPadding);
+  }
+
   /**
    * Format an exchange rate as a string
    * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
@@ -2501,8 +2520,8 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         totalDebits += Number(vd.PartyAmount) || 0;
       }
     });
-    this.totalCredits = totalCredits || 0;
-    this.totalDebits = totalDebits || 0;
+    this.totalCredits = toNumber(this.getFormattedAndPaddedAmount(totalCredits,this.receiptForm.get('CurrencyMasterSid')?.getRawValue()));
+    this.totalDebits = toNumber(this.getFormattedAndPaddedAmount(totalDebits,this.receiptForm.get('CurrencyMasterSid')?.getRawValue()));
   }
 
   showInfo() {

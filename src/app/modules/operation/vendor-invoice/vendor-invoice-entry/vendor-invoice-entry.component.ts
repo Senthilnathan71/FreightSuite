@@ -663,6 +663,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const vendorMasterSid = (typeof selected === 'object' && selected !== null)
       ? (selected.CustomerMasterSid ?? selected)
       : selected;
+    const localCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    const localCurrencyCode = this.currentCompanyCurrency.code;
+    
 
     if (!selected || !vendorMasterSid) {
       this.vendorBranchList = [];
@@ -673,6 +676,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.vendorInvoiceForm.get('GST_VAT')?.setValue('');
       this.vendorInvoiceForm.get('PartyName')?.setValue(null);
       this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
+      this.vendorInvoiceForm.get('CurrencyMasterSid')?.setValue(localCurrencyId);
+      this.vendorInvoiceForm.get('CurrencyCode')?.setValue(localCurrencyCode);
+      this.onHeaderCurrencyChange({
+        CurrencyMasterSid: localCurrencyId,
+        currencyCode: localCurrencyCode
+      })
 
       // Set default Invoice Type based on country
       if (this.currentCompanyCountryCode === 'in') {
@@ -687,6 +696,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const vendor = this.vendorList.find(
       (v) => v.CustomerMasterSid === vendorMasterSid
     );
+    const customerCurrency = vendor.currencyMaster || {};
     const countryCode = this.getCustomerCountryCode(vendor);
 
     // Check if customer has GST in any branch to determine B2B vs B2C
@@ -706,7 +716,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
           countryCode === 'in' ? 
           (hasGSTInBranches || vendor.GSTNo ? 'B2B' : 'B2C') : 'REG',
         GST_VAT : (countryCode === 'in' ? vendor.GSTNo : vendor.PanType) || "",
+        CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? localCurrencyId,
+        CurrencyCode : customerCurrency?.currencyCode ?? localCurrencyCode,
       })
+      this.onHeaderCurrencyChange(customerCurrency);
       // Load TDS configuration
       // this.loadVendorTDS(vendorMasterSid);
     }
@@ -1593,6 +1606,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     resolve?: (value:boolean) => void,
     isPostingTrue ?: boolean
   ) {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2342,7 +2357,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.vendorInvoiceForm.patchValue({
         CurrencyMasterSid : fromCurrencyId,
         CurrencyCode: fromCurrencyCode,
-        ExchangeRate: this.getFormattedExchangeRate(1, fromCurrencyId),
+        ExchangeRate: this.getFormattedAndPaddedExchangeRate(1, fromCurrencyId),
       });
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();
       return;
@@ -2356,7 +2371,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.vendorInvoiceForm.patchValue({
               CurrencyMasterSid : fromCurrencyId,
               CurrencyCode: fromCurrencyCode,
-              ExchangeRate: toNumber(this.getFormattedExchangeRate(exchangeRate, fromCurrencyId))
+              ExchangeRate: this.getFormattedAndPaddedExchangeRate(exchangeRate, fromCurrencyId)
             });
             const key = this.buildExchangeRateMapKey(fromCurrencyCode, toCurrencyCode, voucherDate);
             this.exchangeRateMap.set(key, resp.data);
@@ -2365,7 +2380,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.vendorInvoiceForm.patchValue({
               CurrencyMasterSid : fromCurrencyId,
               CurrencyCode: fromCurrencyCode,
-              ExchangeRate: toNumber(this.getFormattedExchangeRate(0, fromCurrencyId))
+              ExchangeRate: this.getFormattedAndPaddedExchangeRate(0, fromCurrencyId)
             });
           }
           this.vendorInvoiceForm.get('ExchangeRate')?.enable();
@@ -2376,7 +2391,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           this.vendorInvoiceForm.patchValue({
             CurrencyMasterSid: fromCurrencyId,
             CurrencyCode: fromCurrencyCode,
-            ExchangeRate: this.getFormattedExchangeRate(0, fromCurrencyId),
+            ExchangeRate: this.getFormattedAndPaddedExchangeRate(0, fromCurrencyId),
           });
           this.vendorInvoiceForm.get('ExchangeRate')?.enable();
         }

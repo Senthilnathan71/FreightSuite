@@ -298,11 +298,32 @@ private formatAmount(amount: number | string): string {
       },
       {
         key: 'MBLNo',
-        label: 'MBL No',
+        label: 'MBL No.',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string',
+        template : 'link',
+        width: '120px',
+      },
+      {
+        key: 'HBLNo',
+        label: 'HBL No.',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        template : 'link',
+        width: '120px',
+      },
+      {
+        key: 'BookingNo',
+        label: 'Booking No.',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        template : 'link',
         width: '120px',
       },
        {
@@ -410,17 +431,70 @@ private formatAmount(amount: number | string): string {
     this.search();
   }
 
-  onTableAction(event: any) {
+  onTableActionClick(event: any) {
     const { action, row } = event;
-    switch (action) {
-      case 'view':
-        this.editVendorInvoice(row);
-        break;
-      case 'delete':
-        this.deleteVendorInvoice(row);
-        break;
-      default:
-        console.log('Unknown table action:', action);
+    if (event.column?.template === "link") {
+      // Handle link template click (Master Job Number)
+      if (event.column.key === 'MBLNo') {
+      this.navigateToMasterJob(event.row);
+      return;
+    }
+
+    if (event.column.key === 'HBLNo') {
+      this.navigateToHouse(event.row);
+      return;
+    }
+    if (event.column.key === 'BookingNo') {
+      this.navigateToBooking(event.row);
+      return;
+    }
+    } else if (event.action === 'view') {
+      this.editVendorInvoice(row);
+    } else if (event.action === 'delete') {
+      this.deleteVendorInvoice(row);
+    }
+    // const { action, row } = event;
+    // switch (action) {
+    //   case 'view':
+    //     this.editVendorInvoice(row);
+    //     break;
+    //   case 'delete':
+    //     this.deleteVendorInvoice(row);
+    //     break;
+    //   default:
+    //     console.log('Unknown table action:', action);
+    // }
+  }
+
+  navigateToMasterJob(invoice: any): void {
+    const departmentType = String(invoice?.departmentMaster?.departmentType).toUpperCase();
+
+    if (invoice && departmentType) {
+      const masterJobSid = invoice.MasterJobSid;
+      if (departmentType === 'SEA') {
+        this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+      } else if (departmentType === 'AIR') {
+        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      } else {
+        console.warn('Unknown department type:', departmentType);
+      }
+    } else {
+      this.appSettingService.showWarning('Master Job not available');
+    }
+  }
+  navigateToHouse(row: any): void {
+    if (row?.HouseJobSid) {
+      this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
+    } else {
+      this.appSettingService.showWarning('House Job not available');
+    }
+  }
+
+  navigateToBooking(row: any): void {
+    if (row?.BookingHeaderSid) {
+      this.router.navigate(['/operation/booking/entry', row.BookingHeaderSid]);
+    } else {
+      this.appSettingService.showWarning('Booking not available');
     }
   }
 
