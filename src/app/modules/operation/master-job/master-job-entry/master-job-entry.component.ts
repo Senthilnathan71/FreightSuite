@@ -2135,6 +2135,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
     const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
+
+    // Validate customs required fields before saving
+    if (customsData.length > 0 && this.customsComponent && !this.customsComponent.validateForSave()) {
+      this.selectedTab = 'Customs';
+      this.isLoading = false;
+      return;
+    }
+
     let CarrierSid = null;
     if (formValue.CarrierName) {
       const selectedCarrier = this.carrierList.find(carrier =>

@@ -156,7 +156,12 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
 hssacList: any[] = [];
 selectedCustomer: any;
 notifyManuallyChanged = false;
-  //Variable Declaration - Common 
+
+// Customs pre-save validation modal
+showCustomsValidationModal = false;
+customsValidationErrors: { recordType: string; fieldRef: string; fieldName: string; tabName?: string }[] = [];
+
+  //Variable Declaration - Common
   detailForm !: FormGroup;
   userData : any;
   isPrintLoading : boolean;
@@ -2084,7 +2089,23 @@ if (this.bookingProducts.length > 0) {
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
   const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
- 
+
+  // Validate customs required fields before saving
+  if (customsData.length > 0 && this.customsComponent) {
+    const customsErrors = this.customsComponent.getValidationErrorsForSave();
+    if (customsErrors.length > 0) {
+      this.customsValidationErrors = customsErrors;
+      this.showCustomsValidationModal = true;
+      this.isSubmitting = false;
+      // Re-enable save button
+      const saveButton2 = document.querySelector('button[class*="btn-save"]') as HTMLButtonElement;
+      if (saveButton2) {
+        saveButton2.disabled = false;
+        saveButton2.innerHTML = '<i class="fas fa-save me-1"></i><span>Save</span>';
+      }
+      return;
+    }
+  }
 
   // Fix CargoCurrency extraction
   let cargoCurrencyValue = null;
@@ -4907,7 +4928,15 @@ getProductFormGroup(index: number): FormGroup {
     }
   }
 
-  
+  closeCustomsValidationModal() {
+    this.showCustomsValidationModal = false;
+    this.customsValidationErrors = [];
+  }
+
+  goToCustomsTab() {
+    this.closeCustomsValidationModal();
+    this.selectedTab = 'Customs';
+  }
 }
 
 
