@@ -86,18 +86,57 @@ export class LedgerReportComponent {
     return total;
   }
 
+      getLocalTotal(transactions: any[]): number {
+    if (!transactions || !transactions.length) return 0;
+    const ledgerType = this.fullData?.ledgerType?.trim();
+    let total = 0;
+    transactions.forEach((item) => {
+      const drCr = item?.drCr;
+      const amount = +item?.originalLocalAmount || 0;
+
+      if (ledgerType === "Sy Dr") {
+        total += drCr === "D" ? amount : -amount;
+      }
+
+      if (ledgerType === "Sy Cr") {
+        total += drCr === "C" ? amount : -amount;
+      }
+    });
+
+    return total;
+  }
+
+
+    getSignedTotal(transactions: any[]): number {
+    if (!transactions || !transactions.length) return 0;
+
+    const ledgerType = this.fullData?.ledgerType?.trim(); 
+
+    let total = 0;
+
+    transactions.forEach((item) => {
+      const drCr = item?.drCr;
+      const amount = +item?.outstandingLocalAmount || 0;
+
+      if (ledgerType === "Sy Dr") {
+        total += drCr === "D" ? amount : -amount;
+      }
+
+      if (ledgerType === "Sy Cr") {
+        total += drCr === "C" ? amount : -amount;
+      }
+    });
+
+    return total;
+  }
+  
 
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
-      { key: 'voucherType', label: 'Voucher Type' },
-      { key: 'master', label: 'Master' },
-      { key: 'house', label: 'House' },
-      { key: 'hblNo', label: 'HBL No' },
-      { key: 'dept', label: 'Dept' },
-      { key: 'desc', label: 'Desc' },
-      { key: 'salesperson', label: 'Salesperson' },
+      { key: 'voucherType', label: 'Type' },
+      { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'currency', label: 'Cur' },
       { key: 'amt', label: 'Amt' },
@@ -109,38 +148,57 @@ export class LedgerReportComponent {
 
     const rows: ExcelRow[] = [];
     const transactions = this.fullData?.transactions || [];
+    const openingBalance = this.fullData?.openingBalance || 0;
 
+    if (openingBalance !== 0) {
+
+      const openingCells: ExcelCell[] = [
+        { value: 'Opening Balance' },
+        { value: this.formatDate(this.params?.FromDate) },
+        { value: '' },
+        { value: '' },
+        { value: '' },
+        { value: '' },
+        { value: this.formatNumber(openingBalance) },
+        { value: '' },
+        { value: '' },
+        { value: '' },
+        { value: '' }
+      ];
+
+      rows.push({ cells: openingCells, style: 'data' });
+    }
 
     transactions.forEach((item: any, index: number) => {
       const cells: ExcelCell[] = [
         { value: item?.voucherNumber || '' },
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.voucherType || '' },
-        { value: item?.MasterJobNumber || '' },
-        { value: '' },
-        { value: item?.HouseJobNumber || '' },
-        { value: item?.deptname || '' },
         { value: item?.naration || '' },
-        { value: item?.salesmanSid || '' },
         { value: item?.drCr || '' },
         { value: item?.currencyCode || '' },
-        { value: this.formatNumber(item?.originalCurrencyAmount) },
-        { value: this.formatNumber(item?.originalLocalAmount) },
-        { value: this.formatNumber(item?.outstandingCurrencyAmount) },
-        { value: this.formatNumber(item?.outstandingLocalAmount) },
-        { value: this.formatNumber(this.getCumulative(transactions, index)) }
+        { value: this.formatNumber(item?.signedOriginalCurrency) },
+        { value: this.formatNumber(item?.signedLocalAmt) },
+        { value: this.formatNumber(item?.signedOutstandingCurrency) },
+        { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
+        { value: this.formatNumber(item?.cumulativeOutstanding) }
       ];
       rows.push({ cells, style: 'data' });
     });
 
 
     const totalCells: ExcelCell[] = [
-      { value: 'TOTAL', colspan: 11 },
-      { value: this.formatNumber(this.getTotal(transactions, 'originalCurrencyAmount')) },
-      { value: this.formatNumber(this.getTotal(transactions, 'originalLocalAmount')) },
-      { value: this.formatNumber(this.getTotal(transactions, 'outstandingCurrencyAmount')) },
-      { value: this.formatNumber(this.getTotal(transactions, 'outstandingLocalAmount')) },
-      { value: this.formatNumber(this.getCumulative(transactions, transactions.length - 1)) }
+      { value: 'TOTAL', colspan: 7 },
+      { value: this.formatNumber(this.getLocalTotal(transactions)) },
+      { value: '' },
+      { value: this.formatNumber(this.getSignedTotal(transactions)) },
+      {
+        value: this.formatNumber(
+          transactions.length > 0
+            ? transactions[transactions.length - 1]?.cumulativeOutstanding
+            : 0
+        )
+      }
     ];
     rows.push({ cells: totalCells, style: 'total' });
 
@@ -153,24 +211,27 @@ export class LedgerReportComponent {
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-          { label: 'Branch', value: this.fullData?.branchesInvolved || '' },
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Ledger', value: this.fullData?.ledgerName || '' },
           { label: 'Subledger', value: this.fullData?.subledgerName || '' },
-          { label: 'Ledger', value: this.fullData?.ledgerName || '' }
+          { label: 'Voucher Type', value: this.fullData?.voucherTypeName || '' }
         ]
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 15, 12, 10, 15, 10, 25, 15, 8, 8, 15, 15, 15, 15, 15],
+      columnWidths: [12, 12, 15, 25, 8, 8, 15, 15, 15, 15, 15],
       notes: ['This ledger report includes only posted voucher transactions.']
     };
   }
 
 
-  private formatNumber(value: any): number | string {
+  private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';
+
     const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+    return isNaN(num) ? '' : num.toFixed(2);
   }
+
 
 
   private formatDate(date: any): string {

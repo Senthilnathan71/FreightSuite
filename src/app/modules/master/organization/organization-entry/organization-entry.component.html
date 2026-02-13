@@ -520,7 +520,7 @@
     [class.filled]="customerForm.get('CompanyType')?.value"
     [class.is-invalid]="customerForm.get('CompanyType')?.invalid && customerForm.get('CompanyType')?.touched">
     <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
-      placeholder="Select Company Type" [searchable]="false" [clearable]="false" 
+      placeholder="" [searchable]="false" [clearable]="false" 
       (change)="onCompanyTypeChange()">
     </ng-select>
     <label class="input-label">Company Type</label>

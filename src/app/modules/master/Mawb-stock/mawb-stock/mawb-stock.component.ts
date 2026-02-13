@@ -55,6 +55,7 @@ export class MawbStockComponent implements OnInit{
     branchList: any[] = [];
     generatedAWBList: string[] = [];
     customerList: any[] = [];
+    clientList: any[] = [];
     statusList = ["Active", "Suspended"];
     stockStatusList = ["Free", "Utilised", "Return", "Void", "Hold"];
     currentMenuId: number;
@@ -80,8 +81,10 @@ export class MawbStockComponent implements OnInit{
       private commonService: CommonService,
       private ngbModal: NgbModal,
       public mps: MenuPermissionService,
+      
     ){}
   ngOnInit(): void {
+    
       
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -143,6 +146,13 @@ export class MawbStockComponent implements OnInit{
           this.customerList = this.airlineList;
         }
       });
+
+      this. masterService.getCustomerByItsType({ CompanyMasterSid, types: ['customer'] })
+        .pipe(catchError(err => of([])))
+        .subscribe((resp: any) => {
+          this.clientList = resp.data;
+
+        });
   }
   updateMasterBillNumberFromAirline(customerId: number): void {
     if (!customerId) return;
@@ -215,6 +225,7 @@ export class MawbStockComponent implements OnInit{
         ReceivedDate: [today, Validators.required],
         StockStatus: ['Free', Validators.required],
         AvailableStatus: ['Available'],
+        Customer:[null],
         status: ['Active'],
         
       });
@@ -329,6 +340,7 @@ export class MawbStockComponent implements OnInit{
         NumberofMAWB: numberPart, // Extracted number
         ReceivedDate: receivedDate,
         StockStatus: mawbData.StockStatus,
+        Customer: mawbData.Customer,
         status: mawbData.status === 'A' ? 'Active' : 'Suspended',
         AvailableStatus: mawbData.AvailableStatus || 'Available',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,

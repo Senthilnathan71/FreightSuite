@@ -27,13 +27,15 @@ export class MawbStockAllocationComponent implements OnInit {
   selectedCustomer!: number;
   stockStatusList = ["Free", "Utilised", "Return", "Void", "Hold"];
 
-
   mode: 'allocate' | 'deallocate' = 'allocate';
 
   currentCompany: any;
   currentBranch: any;
 
   loading = false;
+  
+  // Track original stock status for deallocation changes
+  originalStockStatus: Map<number, string> = new Map();
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -50,11 +52,11 @@ export class MawbStockAllocationComponent implements OnInit {
       this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
     this.loadAirlines();
-    this.loadCustomers();
+    this.loadAllCustomers(); // Changed from loadCustomers to loadAllCustomers
   }
 
   // ===============================
-  // Load Airline List
+  // Load Airline List (Agents)
   // ===============================
   loadAirlines() {
     this.masterService.getCustomerByItsType({
@@ -66,15 +68,14 @@ export class MawbStockAllocationComponent implements OnInit {
   }
 
   // ===============================
-  // Load Customer List
+  // Load ALL Customers (no type filter)
   // ===============================
-  loadCustomers() {
-    this.masterService.getCustomerByItsType({
-      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      types: ['agent']
-    }).subscribe((resp: any) => {
-      this.customerList = resp?.data || [];
-    });
+  loadAllCustomers() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+     this. masterService.getCustomerByItsType({ CompanyMasterSid, types: ['customer'] })
+      .subscribe((resp: any) => {
+        this.customerList = resp.data || [];
+      });
   }
 
   // ===============================
@@ -84,6 +85,7 @@ export class MawbStockAllocationComponent implements OnInit {
 
     this.selectedStockIds = [];
     this.stockList = [];
+    this.originalStockStatus.clear();
 
     if (this.mode === 'allocate') {
 
@@ -126,6 +128,10 @@ export class MawbStockAllocationComponent implements OnInit {
 
           if (resp.status) {
             this.stockList = resp.data;
+            // Store original stock status for each item
+            this.stockList.forEach((stock: any) => {
+              this.originalStockStatus.set(stock.MawbStockSid, stock.StockStatus);
+            });
           }
         });
     }
@@ -145,25 +151,36 @@ export class MawbStockAllocationComponent implements OnInit {
   }
 
   // ===============================
+  // Check if status has been changed
+  // ===============================
+  hasStatusChanged(stockId: number, currentStatus: string): boolean {
+    const originalStatus = this.originalStockStatus.get(stockId);
+    return originalStatus !== currentStatus;
+  }
+
+  // ===============================
   // Confirm Allocation / Deallocation
   // ===============================
   confirm() {
 
     if (!this.selectedStockIds.length) return;
 
-    const payload = {
-      stockIds: this.selectedStockIds,
-      customerId:
-        this.mode === 'allocate'
-          ? this.selectedCustomer
-          : this.selectedCustomer,
-      companyId: this.currentCompany.CompanyMasterSid,
-      branchId: this.currentBranch.BranchMasterSid
-    };
-
-    this.loading = true;
-
     if (this.mode === 'allocate') {
+      
+      // Allocation: Customer is required
+      if (!this.selectedCustomer) {
+        alert('Please select a customer');
+        return;
+      }
+
+      const payload = {
+        stockIds: this.selectedStockIds,
+        customerId: this.selectedCustomer,
+        companyId: this.currentCompany.CompanyMasterSid,
+        branchId: this.currentBranch.BranchMasterSid
+      };
+
+      this.loading = true;
 
       this.masterService.allocateMawbStock(payload)
         .subscribe(() => {
@@ -173,11 +190,51 @@ export class MawbStockAllocationComponent implements OnInit {
 
     } else {
 
-      this.masterService.deallocateMawbStock(payload)
-        .subscribe(() => {
-          this.loading = false;
-          this.activeModal.close(true);
-        });
+      // Deallocation: Get only selected stocks that have status changes
+      const stocksWithStatusChanges = this.stockList
+        .filter(stock => 
+          this.selectedStockIds.includes(stock.MawbStockSid) && 
+          this.hasStatusChanged(stock.MawbStockSid, stock.StockStatus)
+        )
+        .map(stock => ({
+          id: stock.MawbStockSid,
+          status: stock.StockStatus
+        }));
+
+      // If no status changes, just deallocate normally
+      if (stocksWithStatusChanges.length === 0) {
+        const payload = {
+          stockIds: this.selectedStockIds,
+          customerId: this.selectedCustomer,
+          companyId: this.currentCompany.CompanyMasterSid,
+          branchId: this.currentBranch.BranchMasterSid
+        };
+
+        this.loading = true;
+
+        this.masterService.deallocateMawbStock(payload)
+          .subscribe(() => {
+            this.loading = false;
+            this.activeModal.close(true);
+          });
+      } else {
+        // Send deallocation with status changes
+        const payload = {
+          stockIds: this.selectedStockIds,
+          customerId: this.selectedCustomer,
+          companyId: this.currentCompany.CompanyMasterSid,
+          branchId: this.currentBranch.BranchMasterSid,
+          statusChanges: stocksWithStatusChanges
+        };
+
+        this.loading = true;
+
+        this.masterService.deallocateMawbStockWithStatus(payload)
+          .subscribe(() => {
+            this.loading = false;
+            this.activeModal.close(true);
+          });
+      }
     }
   }
 
@@ -186,6 +243,25 @@ export class MawbStockAllocationComponent implements OnInit {
   // ===============================
   cancel() {
     this.activeModal.dismiss();
+  }
+
+  // ===============================
+  // Check if stock is Void
+  // ===============================
+  isVoidStatus(status: string): boolean {
+    return status === 'Void';
+  }
+
+  // ===============================
+  // Switch Mode
+  // ===============================
+  switchMode(mode: 'allocate' | 'deallocate') {
+    this.mode = mode;
+    this.selectedAirline = null!;
+    this.selectedCustomer = null!;
+    this.stockList = [];
+    this.selectedStockIds = [];
+    this.originalStockStatus.clear();
   }
 
 }

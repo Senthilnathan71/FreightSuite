@@ -1922,7 +1922,6 @@ getTaxIdLabel(): string {
   const panAvailableControl = this.customerForm.get('PanAvailable');
   const panTypeControl = this.customerForm.get('PanType');
   const panNameControl = this.customerForm.get('PanName');
-  const companyTypeControl = this.customerForm.get('CompanyType');
 
   const panAvailable = panAvailableControl?.value;
 
@@ -1931,27 +1930,18 @@ getTaxIdLabel(): string {
     panTypeControl?.enable();
     panNameControl?.enable();
     
-    // Company Type only for India
-    if (this.isIndianCountry()) {
-      companyTypeControl?.enable();
-    } else {
-      companyTypeControl?.enable();
-      companyTypeControl?.setValue('');
-    }
-  } else {
+    
+  }else {
     // Disable all fields when checkbox is unchecked
-    companyTypeControl?.enable();
     panTypeControl?.disable();
     panNameControl?.disable();
     
     // Clear values
-    companyTypeControl?.setValue('');
     panTypeControl?.setValue('');
     panNameControl?.setValue('');
   }
 
   // Update validation states
-  companyTypeControl?.updateValueAndValidity();
   panTypeControl?.updateValueAndValidity();
   panNameControl?.updateValueAndValidity();
 }
@@ -3547,7 +3537,6 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   }
 private setupPanValidation(): void {
   const panAvailableControl = this.customerForm.get('PanAvailable');
-  const companyTypeControl = this.customerForm.get('CompanyType');
   const panTypeControl = this.customerForm.get('PanType');
   const panNameControl = this.customerForm.get('PanName');
 
@@ -3561,23 +3550,19 @@ private setupPanValidation(): void {
         this.updatePanTypeValidation();
       } else {
         // Remove validators when unchecked
-        companyTypeControl?.clearValidators();
         panTypeControl?.clearValidators();
         panNameControl?.clearValidators();
         
         // Clear values
-        companyTypeControl?.setValue('');
         panTypeControl?.setValue('');
         panNameControl?.setValue('');
         
         // Disable fields
-        companyTypeControl?.disable();
         panTypeControl?.disable();
         panNameControl?.disable();
       }
       
       // Update validation states
-      companyTypeControl?.updateValueAndValidity();
       panTypeControl?.updateValueAndValidity();
       panNameControl?.updateValueAndValidity();
     });
@@ -3594,35 +3579,29 @@ private setupPanValidation(): void {
 }
 
 private updatePanTypeValidation(): void {
-  const companyTypeControl = this.customerForm.get('CompanyType');
   const panTypeControl = this.customerForm.get('PanType');
   const panNameControl = this.customerForm.get('PanName');
 
   // Clear existing validators
-  companyTypeControl?.clearValidators();
   panTypeControl?.clearValidators();
   panNameControl?.clearValidators();
 
   // Set appropriate validators based on country
   if (this.isIndianCountry()) {
     // For India - PAN validation with Company Type
-    companyTypeControl?.setValidators([Validators.required]);
     panTypeControl?.setValidators([Validators.required, this.panValidator]);
     panNameControl?.setValidators([]);
   } else if (this.isUaeCountry()) {
     // For UAE - VAT validation without Company Type
-    companyTypeControl?.setValidators([]); // Company Type not required for VAT
     panTypeControl?.setValidators([Validators.required, this.vatValidator]);
     panNameControl?.setValidators([]);
   } else {
     // For other countries - Basic Tax ID validation
-    companyTypeControl?.setValidators([]); // Company Type not required
     panTypeControl?.setValidators([Validators.required]);
     panNameControl?.setValidators([]);
   }
 
   // Update validation states
-  companyTypeControl?.updateValueAndValidity();
   panTypeControl?.updateValueAndValidity();
   panNameControl?.updateValueAndValidity();
 }
