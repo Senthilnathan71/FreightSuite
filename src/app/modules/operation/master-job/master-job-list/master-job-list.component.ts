@@ -162,12 +162,17 @@ this.initializeTableConfig();
 
   initializeHeaderActions(): void {
     this.headerActions = [
+      // {
+      //   label: 'Job Close',
+      //   icon: 'fas fa-lock',
+      //   action: 'job-close',
+      // },
       {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
          disabled: !this.mps.can('insert')
-        
+
       },
       {
         label: 'XL Upload',
@@ -233,6 +238,9 @@ this.initializeTableConfig();
 
   onActionTriggered(action: string): void {
     switch (action) {
+      // case 'job-close':
+      //   this.router.navigate(['operation/job-close/list']);
+      //   break;
       case 'create':
         this.navigateToMasterJob()
         break;

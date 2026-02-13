@@ -48,7 +48,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
 
   protected config: ListComponentConfig = {
     storageKey: 'accounts-close-list-state',
-    defaultPageSize: 10,
+    defaultPageSize: 20,
     defaultSortColumn: 'PeriodName',
     defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100],
@@ -99,8 +99,8 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
   protected getSearchParams(): SearchParams {
     return {
       search: this.filterValue.trim(),
-      page: Number(this.page),
-      pageSize: Number(this.pageSize),
+      page: Number(1),
+      pageSize: Number(12),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,

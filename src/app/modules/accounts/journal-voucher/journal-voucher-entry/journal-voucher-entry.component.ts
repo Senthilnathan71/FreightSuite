@@ -234,6 +234,8 @@ private subscribeToFormChanges() {
 
 // Add this method to handle save with callback
 private saveDraftWithCallback(resolve?: (value: boolean) => void) {
+  // Re-validate voucher date constraints at save time (edit mode may have stale state)
+  this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed
   if (this.voucherConstraints.isClosed) {
     this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -1901,6 +1903,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2050,6 +2054,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Existing saveDraft method (for draft saving)
   saveDraft(): void {
     console.log("saveDraft")
+  // Re-validate voucher date constraints at save time (edit mode may have stale state)
+  this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed
   if (this.voucherConstraints.isClosed) {
     this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

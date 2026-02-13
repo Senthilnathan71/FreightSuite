@@ -52,7 +52,7 @@ export class AccountsCloseDetailModalComponent implements OnInit {
       GLClosed: [this.voucherPeriod?.GLClosed || 'N'],
       ARClosed: [this.voucherPeriod?.ARClosed || 'N'],
       APClosed: [this.voucherPeriod?.APClosed || 'N'],
-      PeriodClosed: [this.voucherPeriod?.PeriodClosed || 'N'],
+      // PeriodClosed: [this.voucherPeriod?.PeriodClosed || 'N'],
       GLGraceDays: [this.voucherPeriod?.GLGraceDays || 0],
       ARGraceDays: [this.voucherPeriod?.ARGraceDays || 0],
       APGraceDays: [this.voucherPeriod?.APGraceDays || 0],

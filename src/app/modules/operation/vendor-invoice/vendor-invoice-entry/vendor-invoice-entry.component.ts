@@ -1593,6 +1593,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     resolve?: (value:boolean) => void,
     isPostingTrue ?: boolean
   ) {
+    // Re-validate voucher date constraints at save time (edit mode may have stale state)
+    this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
