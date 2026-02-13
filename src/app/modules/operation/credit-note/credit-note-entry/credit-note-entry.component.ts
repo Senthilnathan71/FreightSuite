@@ -2342,8 +2342,8 @@ export class CreditNoteEntryComponent {
               this.details.at(index).patchValue({
                 HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
               });
+              this.recalcRow(index);
             }
-            this.recalcRow(index);
           } else {
             this.appSettingService.showError(
               `Error fetching HSSAC details for ${chargeName}`,

@@ -2363,6 +2363,7 @@ createRateFormGroup(data?: any): FormGroup {
         CurrencyCode : customerCurrency?.currencyCode ?? currentCompanyCurrencyCode,
         State: placeOfSupply || '',
         GST_VAT: GST_VAT || '',
+        GSTType : GSTType,
         TaxType: GSTType,
       })
 

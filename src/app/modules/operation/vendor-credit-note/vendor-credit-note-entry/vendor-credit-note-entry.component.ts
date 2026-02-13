@@ -818,7 +818,7 @@ export class VendorCreditNoteEntryComponent {
       MBLNo: header.MasterNumber || '',
       HBLNo: header.HouseNumber || '',
       Remarks: header.Remarks || '',
-    });
+    },{emitEvent : false});
 
     // if (
     //   header.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
