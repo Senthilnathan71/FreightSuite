@@ -1770,7 +1770,10 @@ export class ReverseVoucherEntryComponent {
         this.chargeList = charges.data || [];
         this.hssacList = hssac || [];
         this.uomList = uom.data || [];
-        this.voucherList = voucher || [];
+        this.voucherList = (voucher || []).map((v: any) => ({
+        ...v,
+        DocumentTypeCode: v?.voucherTypeMaster?.DocumentTypeCode || ''
+        }));
          this.stateList = states?.data || states || [];
         this.loadDepartments(company?.CompanyMasterSid).catch(e => {
         console.error('Error loading departments', e);
@@ -1887,8 +1890,8 @@ export class ReverseVoucherEntryComponent {
       //   this.details.disable();
       // }
     } else {
-      this.reverseVoucherForm.enable();
-      this.details.enable();
+      this.reverseVoucherForm.enable({ emitEvent: false });
+      this.details.enable({ emitEvent: false });
       
       // Keep readonly fields as is
       this.reverseVoucherForm.get('VoucherNumber')?.disable();
