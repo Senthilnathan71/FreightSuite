@@ -248,6 +248,67 @@ export class CustomsComponent implements OnInit, OnChanges {
     return [];
   }
 
+  /**
+   * Validate customs required fields before parent save operation.
+   * Returns true if valid (or no customs data entered), false if validation errors exist.
+   * Shows validation modal with missing fields when invalid.
+   */
+  validateForSave(): boolean {
+    const errors = this.getValidationErrorsForSave();
+    if (errors.length > 0) {
+      this.validationErrors = errors;
+      this.groupErrorsByHBL();
+      this.showValidationModal = true;
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Returns customs validation errors without showing any modal.
+   * Parent components can use this to display errors in their own UI.
+   */
+  getValidationErrorsForSave(): MandatoryFieldError[] {
+    const formValue = this.customsForm.value;
+
+    // Only validate if user has started entering customs data
+    const hasData = formValue.LineCode ||
+                    formValue.VoyageAgentCode ||
+                    formValue.RotationNumber ||
+                    formValue.ManifestSequence;
+
+    if (!hasData) return []; // No customs data to validate
+
+    const errors: MandatoryFieldError[] = [];
+
+    if (!formValue.LineCode) {
+      errors.push({ recordType: 'VOY', fieldRef: '1.1', fieldName: 'Line Code', tabName: 'Customs' });
+    }
+    if (!formValue.VoyageAgentCode) {
+      errors.push({ recordType: 'VOY', fieldRef: '1.2', fieldName: 'Voyage Agent Code', tabName: 'Customs' });
+    }
+    if (!formValue.RotationNumber) {
+      errors.push({ recordType: 'VOY', fieldRef: '1.7', fieldName: 'Rotation Number', tabName: 'Customs' });
+    }
+    if (!formValue.ManifestSequence) {
+      errors.push({ recordType: 'VOY', fieldRef: '1.10', fieldName: 'Manifest Sequence', tabName: 'Customs' });
+    }
+    if (!formValue.PackageTypeCode) {
+      errors.push({ recordType: 'BOL', fieldRef: '2.46', fieldName: 'Package Type Code', tabName: 'Customs' });
+    }
+    if (!formValue.ImporterCode || formValue.ImporterCode === 'null') {
+      errors.push({ recordType: 'BOL', fieldRef: '2.29', fieldName: 'Importer Code', tabName: 'Customs' });
+    }
+    if (!formValue.SerialNumber) {
+      errors.push({ recordType: 'CON', fieldRef: '3.1', fieldName: 'Serial Number', tabName: 'Customs' });
+    }
+    if (!formValue.UNHSCode) {
+      errors.push({ recordType: 'CON', fieldRef: '3.5', fieldName: 'HS Code (Commodity Code)', tabName: 'Customs' });
+    }
+
+    return errors;
+  }
+
   private loadPackageTypes() {
     this.operationService.getUOMsByType('E').subscribe({
       next: (resp) => {
@@ -407,7 +468,9 @@ export class CustomsComponent implements OnInit, OnChanges {
    */
   getRecordTypeKeys(hblNo: string): string[] {
     if (!this.groupedByHBL[hblNo]) return [];
-    const order = ['Master', 'Shipment', 'Cargo', 'Others', 'Customs', 'Container'];
+    const order = this.screenName === 'HouseJob'
+      ? ['Shipment', 'Cargo', 'Others', 'Customs']
+      : ['Master', 'Shipment', 'Cargo', 'Others', 'Customs', 'Container'];
     return Object.keys(this.groupedByHBL[hblNo]).sort((a, b) => {
       const ia = order.indexOf(a);
       const ib = order.indexOf(b);

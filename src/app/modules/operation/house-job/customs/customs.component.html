@@ -266,63 +266,116 @@
   </form>
 </div>
 
-<!-- Validation Error Modal -->
-<div class="modal fade" [class.show]="showValidationModal" [style.display]="showValidationModal ? 'block' : 'none'"
-     tabindex="-1" role="dialog" aria-labelledby="validationModalLabel" aria-modal="true" style="height:500px;">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1200px;">
-    <div class="modal-content border-0 shadow" style="height:500px;">
-      <div class="modal-header bg-warning py-2">
-        <h6 class="modal-title mb-0" id="validationModalLabel">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          Mandatory Fields Missing
-        </h6>
-        <button type="button" class="btn-close btn-sm" (click)="closeValidationModal()" aria-label="Close"></button>
+<!-- EDI Validation Error Modal -->
+<div class="modal fade" [class.show]="showValidationModal"
+     [style.display]="showValidationModal ? 'block' : 'none'"
+     tabindex="-1" role="dialog" aria-labelledby="validationModalLabel" aria-modal="true"  style="height:600px;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 520px;">
+    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden" style="height:600px;">
+      <!-- Header -->
+      <div class="modal-header py-2 px-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center me-2"
+               style="width: 28px; height: 28px;">
+            <i class="fas fa-exclamation-triangle text-white" style="font-size: 13px;"></i>
+          </div>
+          <h6 class="modal-title mb-0 text-white fw-semibold" id="validationModalLabel">
+            Mandatory Fields Missing
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white btn-sm"
+                (click)="closeValidationModal()" aria-label="Close"></button>
       </div>
-      <div class="modal-body p-3">
-        <p class="text-muted small mb-3">
-          Please fill in the following required fields to generate the EDI Manifest:
-        </p>
 
-        <!-- Group by HBL Number -->
-        <div *ngFor="let hblNo of getHBLKeys(); let lastHbl = last" [class.mb-3]="!lastHbl">
-          <!-- HBL Header -->
-          <div class="d-flex align-items-center mb-2" *ngIf="hblNo !== 'Common Fields'">
-            <i class="fas fa-file-invoice text-primary me-2"></i>
-            <strong class="small text-primary">{{ hblNo }}</strong>
-          </div>
-          <div class="d-flex align-items-center mb-2" *ngIf="hblNo === 'Common Fields'">
-            <i class="fas fa-cog text-secondary me-2"></i>
-            <strong class="small text-secondary">General Fields</strong>
-          </div>
+      <!-- Body -->
+      <div class="modal-body p-0" style="height: 500px; overflow-y: auto;">
+        <div class="px-3 py-2 bg-light border-bottom">
+          <p class="text-muted small mb-0">
+            <i class="fas fa-info-circle me-1"></i>
+            Please fill in the following required fields to generate the EDI Manifest.
+          </p>
+        </div>
 
-          <!-- Fields grouped by Tab -->
-          <div class="ms-2">
-            <div *ngFor="let tabName of getRecordTypeKeys(hblNo)">
-              <div class="d-flex align-items-center mb-1 mt-2">
-                <i class="fas fa-folder-open text-info me-2 small"></i>
-                <strong class="small text-info">{{ tabName }} Tab</strong>
-              </div>
-              <div class="ms-3">
-                <div *ngFor="let error of groupedByHBL[hblNo][tabName]"
-                     class="d-flex align-items-center py-1 border-bottom border-light">
-                  <i class="fas fa-times-circle text-danger me-2 small"></i>
-                  <span class="small">{{ error.fieldName }}</span>
-                  <span class="badge bg-light text-muted ms-auto small" style="font-size: 10px;">{{ error.fieldRef }}</span>
+        <!-- House Job: flat list grouped by tab -->
+        <ng-container *ngIf="screenName === 'HouseJob'">
+          <div class="px-3 py-2">
+            <div *ngFor="let hblNo of getHBLKeys()">
+              <div *ngFor="let tabName of getRecordTypeKeys(hblNo)">
+                <!-- Tab header -->
+                <div class="d-flex align-items-center mt-2 mb-1">
+                  <i class="fas fa-folder-open me-2 small" style="color: #0891b2;"></i>
+                  <strong class="small" style="color: #0891b2;">{{ tabName }} Tab</strong>
+                </div>
+                <!-- Error items -->
+                <div *ngFor="let error of groupedByHBL[hblNo][tabName]; let last = last"
+                     class="d-flex align-items-center py-2 ms-1" [class.border-bottom]="!last" [class.border-light]="!last">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                       style="width: 22px; height: 22px; background-color: #fef2f2;">
+                    <i class="fas fa-times text-danger" style="font-size: 10px;"></i>
+                  </div>
+                  <span class="small fw-medium flex-grow-1">{{ error.fieldName }}</span>
+                  <span class="badge rounded-pill bg-light text-muted border ms-2" style="font-size: 10px;">
+                    {{ error.fieldRef }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </ng-container>
 
-        <div *ngIf="validationErrors.length === 0" class="text-center text-muted py-3">
-          <i class="fas fa-check-circle text-success"></i> No validation errors found.
+        <!-- Master Job: grouped by HBL then tab -->
+        <ng-container *ngIf="screenName === 'MasterJob'">
+          <div class="px-3 py-2">
+            <div *ngFor="let hblNo of getHBLKeys(); let lastHbl = last" [class.mb-3]="!lastHbl">
+              <!-- HBL Header -->
+              <div class="d-flex align-items-center mb-1 py-1 px-2 rounded-2" style="background-color: #eff6ff;"
+                   *ngIf="hblNo !== 'Common Fields'">
+                <i class="fas fa-file-invoice me-2 small" style="color: #2563eb;"></i>
+                <strong class="small" style="color: #2563eb;">{{ hblNo }}</strong>
+              </div>
+              <div class="d-flex align-items-center mb-1 py-1 px-2 rounded-2" style="background-color: #f5f5f5;"
+                   *ngIf="hblNo === 'Common Fields'">
+                <i class="fas fa-cog me-2 small text-secondary"></i>
+                <strong class="small text-secondary">General Fields</strong>
+              </div>
+
+              <!-- Fields grouped by Tab -->
+              <div class="ms-2">
+                <div *ngFor="let tabName of getRecordTypeKeys(hblNo)">
+                  <div class="d-flex align-items-center mt-2 mb-1">
+                    <i class="fas fa-folder-open me-2 small" style="color: #0891b2;"></i>
+                    <strong class="small" style="color: #0891b2;">{{ tabName }} Tab</strong>
+                  </div>
+                  <div *ngFor="let error of groupedByHBL[hblNo][tabName]; let last = last"
+                       class="d-flex align-items-center py-2 ms-1" [class.border-bottom]="!last" [class.border-light]="!last">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                         style="width: 22px; height: 22px; background-color: #fef2f2;">
+                      <i class="fas fa-times text-danger" style="font-size: 10px;"></i>
+                    </div>
+                    <span class="small fw-medium flex-grow-1">{{ error.fieldName }}</span>
+                    <span class="badge rounded-pill bg-light text-muted border ms-2" style="font-size: 10px;">
+                      {{ error.fieldRef }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <div *ngIf="validationErrors.length === 0" class="text-center text-muted py-4">
+          <i class="fas fa-check-circle text-success fs-4"></i>
+          <p class="small mt-1 mb-0">No validation errors found.</p>
         </div>
       </div>
-      <div class="modal-footer py-2 bg-light">
+
+      <!-- Footer -->
+      <div class="modal-footer py-2 px-3 bg-light border-top">
         <small class="text-muted me-auto">
-          {{ validationErrors.length }} field(s) required
+          <i class="fas fa-list-ul me-1"></i>{{ validationErrors.length }} field(s) required
         </small>
-        <button type="button" class="btn btn-sm btn-secondary" (click)="closeValidationModal()">
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                (click)="closeValidationModal()">
           Close
         </button>
       </div>

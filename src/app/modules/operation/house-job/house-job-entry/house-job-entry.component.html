@@ -5789,3 +5789,74 @@
     </div>
   </div>
 </div> -->
+
+<!-- Customs Pre-Save Validation Modal -->
+<div class="modal fade" [class.show]="showCustomsValidationModal"
+     [style.display]="showCustomsValidationModal ? 'block' : 'none'"
+     tabindex="-1" role="dialog" aria-labelledby="customsSaveValidationLabel" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 480px;">
+    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+      <!-- Header -->
+      <div class="modal-header py-2 px-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center me-2"
+               style="width: 28px; height: 28px;">
+            <i class="fas fa-exclamation-triangle text-white" style="font-size: 13px;"></i>
+          </div>
+          <h6 class="modal-title mb-0 text-white fw-semibold" id="customsSaveValidationLabel">
+            Customs Fields Required
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white btn-sm"
+                (click)="closeCustomsValidationModal()" aria-label="Close"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-0" style="max-height: 400px; overflow-y: auto;">
+        <div class="px-3 py-2 bg-light border-bottom">
+          <p class="text-muted small mb-0">
+            <i class="fas fa-info-circle me-1"></i>
+            The following customs fields are required before saving. Please complete them in the
+            <strong>Customs</strong> tab.
+          </p>
+        </div>
+
+        <div class="px-3 py-2">
+          <div *ngFor="let error of customsValidationErrors; let i = index; let last = last"
+               class="d-flex align-items-center py-2" [class.border-bottom]="!last" [class.border-light]="!last">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                 style="width: 22px; height: 22px; background-color: #fef2f2;">
+              <i class="fas fa-times text-danger" style="font-size: 10px;"></i>
+            </div>
+            <span class="small fw-medium flex-grow-1">{{ error.fieldName }}</span>
+            <span class="badge rounded-pill bg-light text-muted border" style="font-size: 10px;">
+              {{ error.fieldRef }}
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="customsValidationErrors.length === 0" class="text-center text-muted py-4">
+          <i class="fas fa-check-circle text-success fs-4"></i>
+          <p class="small mt-1 mb-0">No validation errors found.</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer py-2 px-3 bg-light border-top">
+        <small class="text-muted me-auto">
+          <i class="fas fa-list-ul me-1"></i>{{ customsValidationErrors.length }} field(s) required
+        </small>
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                (click)="closeCustomsValidationModal()">
+          Close
+        </button>
+        <button type="button" class="btn btn-sm btn-warning rounded-pill px-3"
+                (click)="goToCustomsTab()">
+          <i class="fas fa-arrow-right me-1"></i>Go to Customs
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showCustomsValidationModal"
+     *ngIf="showCustomsValidationModal"></div>
