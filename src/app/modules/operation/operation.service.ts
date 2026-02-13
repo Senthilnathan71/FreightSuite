@@ -943,6 +943,14 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  getUninvoicedRevenueCharges(payload: any) {
+    return this.http.post<{ status: boolean; data: any[] }>('invoice/uninvoiced-charges', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   sendInvoiceEmail(payload: any) {
     return this.http.post<{ status: boolean; message: string; data: any }>('invoice/send-email', payload).pipe(
       map((resp) => {
