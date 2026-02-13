@@ -79,7 +79,7 @@
   </div>
 
   <!-- Table -->
-  <div class="table-responsive" *ngIf="!loading && config.columns && config.columns.length > 0">
+  <div class="table-responsive" [ngClass]="{ 'horizontal-scroll-enabled': allowScroll }" *ngIf="!loading && config.columns && config.columns.length > 0">
     <table class="table table-hover align-middle mb-0 enterprise-table">
 
       <!-- Table Header -->

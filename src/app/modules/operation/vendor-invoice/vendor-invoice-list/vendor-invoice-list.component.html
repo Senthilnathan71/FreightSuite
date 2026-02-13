@@ -31,12 +31,13 @@
                 [loading]="tableLoading"
                 [totalRecords]="totalLengthOfCollection"
                 [paginationConfig]="paginationConfig"
-                (actionClick)="onTableAction($event)"
-                (rowClick)="viewVendorInvoice($event)"
+                [allowScroll]="true"
+                (actionClick)="onTableActionClick($event)"
                 (sortChange)="onTableSortChange($event)"
                 (filterChange)="onTableFilterChange($event)"
                 (pageChange)="onPageChange($event)"
-                (pageSizeChange)="onPageSizeChange($event)">
+                (pageSizeChange)="onPageSizeChange($event)"
+                >
             </app-reusable-table>
        
         </div>

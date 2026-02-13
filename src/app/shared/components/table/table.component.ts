@@ -53,6 +53,7 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
   @Input() totalRecords = 0;
   @Input() paginationConfig: PaginationConfig | null = null;
   @Input() selectedRows: any[] = [];
+  @Input() allowScroll: boolean = false;
 
   @Output() actionClick = new EventEmitter<TableEventData>();
   @Output() rowClick = new EventEmitter<any>();
