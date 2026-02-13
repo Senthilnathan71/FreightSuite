@@ -663,6 +663,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       typeof selected === 'object' && selected !== null
         ? selected.CustomerMasterSid ?? selected
         : selected;
+    
+    const localCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    const localCurrencyCode = this.currentCompanyCurrency.code;
 
     if (!selected || !customerMasterSid) {
       this.customerBranchList = [];
@@ -674,6 +677,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.invoiceForm.get('GST_VAT')?.setValue('');
       this.invoiceForm.get('PartyName')?.setValue(null);
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
+      this.invoiceForm.get('CurrencyMasterSid')?.setValue(localCurrencyId);
+      this.invoiceForm.get('CurrencyCode')?.setValue(localCurrencyCode);
+      this.onHeaderCurrencyChange({
+        CurrencyMasterSid: localCurrencyId,
+        currencyCode: localCurrencyCode
+      })
 
       // Set default InvoiceType based on country
       if (this.currentCompanyCountryCode === 'in') {
@@ -688,6 +697,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     const customer = this.customerList.find(
       (c) => c.CustomerMasterSid === customerMasterSid
     );
+    const customerCurrency = customer.currencyMaster || {};
     const countryCode = this.getCustomerCountryCode(customer);
 
     // Check if customer has GST in any branch to determine B2B vs B2C
@@ -711,7 +721,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             : 'REG',
         GST_VAT:
           (countryCode === 'in' ? customer.GSTNo : customer.PanType) || '',
+        CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? localCurrencyId,
+        CurrencyCode : customerCurrency?.currencyCode ?? localCurrencyCode,
       });
+      this.onHeaderCurrencyChange(customerCurrency);
     }
 
     // Reset branch selection when customer changes

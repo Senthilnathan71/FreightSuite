@@ -60,6 +60,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   tableConfig: TableConfig;
+  MenuMasterSid : number;
 
   tableLoading = false;
 
@@ -96,6 +97,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         this.userData = user;
       }
     });
+    this.MenuMasterSid = this.mps.getMenuId();
     // this.searchMasterJob();
     this.initializeTableConfig();
     this.initializeHeaderActions();
@@ -122,6 +124,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
       pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid : this.MenuMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
       departmentType: 'Air'

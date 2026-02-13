@@ -743,3 +743,26 @@
   font-size: 14px;
   color: #6c757d;
 }
+
+.table-responsive {
+  overflow-x: hidden;
+  overflow-y: hidden;
+
+  &.horizontal-scroll-enabled {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+
+    table {
+      min-width: 1400px !important;
+      width: auto !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+.horizontal-scroll-enabled {
+  td, th {
+    white-space: nowrap;
+  }
+}
