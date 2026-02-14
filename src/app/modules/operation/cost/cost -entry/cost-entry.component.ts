@@ -379,7 +379,9 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   const fy = this.appSettingService.getCurrentFinancialYear();
   if (fy) {
     this.fyMinDate = toNgbDateStruct(fy.StartDate);
-    this.fyMaxDate = toNgbDateStruct(fy.EndDate);
+    const fyEnd = new Date(fy.EndDate);
+    const todayForMax = getDefaultTodayDate();
+    this.fyMaxDate = toNgbDateStruct(fyEnd > todayForMax ? todayForMax : fyEnd);
   }
 
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

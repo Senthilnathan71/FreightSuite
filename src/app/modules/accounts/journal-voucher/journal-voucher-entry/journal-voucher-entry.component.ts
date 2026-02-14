@@ -189,7 +189,9 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       if (currentFinancialYear) {
         this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
         this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
-        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+        const fyEnd = new Date(currentFinancialYear.EndDate);
+        const today = getDefaultTodayDate();
+        this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
       }
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();

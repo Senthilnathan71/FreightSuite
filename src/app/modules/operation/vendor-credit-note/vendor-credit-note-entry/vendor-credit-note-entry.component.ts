@@ -358,7 +358,9 @@ export class VendorCreditNoteEntryComponent {
 
       if (currentFinancialYear) {
         this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
-        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+        const fyEnd = new Date(currentFinancialYear.EndDate);
+        const today = getDefaultTodayDate();
+        this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
       }
 
       this.currentMenuId = this.mps.getMenuId();
