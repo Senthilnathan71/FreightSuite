@@ -125,7 +125,7 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && !receiptForm.get('CashOrBank')?.value"
+            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'B'"
             (click)="reportBank()"
             [disabled]="!receiptPrintData || !isPosted"
           >
@@ -135,7 +135,7 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value"
+            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'C'"
             (click)="reportCash()"
             [disabled]="!receiptPrintData || !isPosted"
           >
@@ -310,8 +310,8 @@
     <div class="row">
       <div
         [ngClass]="{
-          'col-md-12': receiptForm.get('CashOrBank')?.value,
-          'col-md-8 pe-md-0': !receiptForm.get('CashOrBank')?.value
+          'col-md-12': receiptForm.get('CashOrBank')?.value === 'C',
+          'col-md-8 pe-md-0': receiptForm.get('CashOrBank')?.value === 'B'
         }"
       >
         <div class="card h-100 mb-0">
@@ -349,7 +349,8 @@
                       ngbDatepicker
                       #d1="ngbDatepicker"
                       formControlName="VoucherDate"
-                      [maxDate]="todayDateInNgbStruct"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       (click)="d1.toggle()"
                       (keydown.arrowDown)="d1.open()"
                       (dateSelect)="onVoucherDateChange()"
@@ -390,29 +391,11 @@
                 </div>
               </aside>
 
-              <!-- Remarks -->
-
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="text-input"
-                    placeholder=""
-                    class="custom-input-field sm"
-                    formControlName="Remarks"
-                  />
-                  <label
-                    for="text-input"
-                    class="input-label"
-                    style="font-size: 14px"
-                    >Remarks
-                  </label>
-                </div>
-              </aside>
+              
 
               <!-- Mode of Payment -->
 
-              <aside class="col-md-3 d-flex align-items-center">
+              <!-- <aside class="col-md-3 d-flex align-items-center">
                 <div class="form-check form-check-inline p-0 mt-0">
                   <div class="form-check d-flex align-items-center">
                     <input
@@ -437,12 +420,35 @@
                     </label>
                   </div>
                 </div>
+              </aside> -->
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['CashOrBank']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="modeOfPayment"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="CashOrBank"
+                    [clearable]="false"
+                    (change)="toggleCashOrBank($event)"
+                  >
+                  </ng-select>
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
+                    >Payment Mode <span class="text-danger">*</span></label
+                  >
+                </div>
               </aside>
 
               <!-- Cash -->
               <aside
                 class="col-md-3"
-                *ngIf="receiptForm.get('CashOrBank')?.value"
+                *ngIf="receiptForm.get('CashOrBank')?.value === 'C'"
               >
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -471,7 +477,7 @@
               <!-- Bank -->
               <aside
                 class="col-md-3"
-                *ngIf="!receiptForm.get('CashOrBank')?.value"
+                *ngIf="receiptForm.get('CashOrBank')?.value === 'B'"
               >
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -493,6 +499,34 @@
                     class="input-label"
                     style="font-size: 14px"
                     >Bank <span class="text-danger">*</span></label
+                  >
+                </div>
+              </aside>
+
+              <!-- Party -->
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value"
+                >
+                  <dofi-searchable-dropdown
+                    [items]="partyList"
+                    formControlName="CustomerBranchSid"
+                    placeholder=""
+                    [displayFields]="CustomerLookupConfig.displayFields"
+                    [displayLabels]="CustomerLookupConfig.displayLabels"
+                    [labelFields]="CustomerLookupConfig.labelFields"
+                    bindLabel="CustomerName"
+                    bindValue="CustomerBranchSid"
+                    (itemSelected)="onPartyChange($event)"
+                  >
+                  </dofi-searchable-dropdown>
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
+                    >Party <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
@@ -551,33 +585,7 @@
                 </div>
               </aside>
 
-              <!-- Party -->
-
-              <aside class="col-md-3">
-                <div
-                  class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value"
-                >
-                  <dofi-searchable-dropdown
-                    [items]="partyList"
-                    formControlName="CustomerBranchSid"
-                    placeholder=""
-                    [displayFields]="CustomerLookupConfig.displayFields"
-                    [displayLabels]="CustomerLookupConfig.displayLabels"
-                    [labelFields]="CustomerLookupConfig.labelFields"
-                    bindLabel="CustomerName"
-                    bindValue="CustomerBranchSid"
-                    (itemSelected)="onPartyChange($event)"
-                  >
-                  </dofi-searchable-dropdown>
-                  <label
-                    for="text-input"
-                    class="input-label"
-                    style="font-size: 14px"
-                    >Party <span class="text-danger">*</span></label
-                  >
-                </div>
-              </aside>
+              
 
               <!-- Received From -->
 
@@ -644,6 +652,27 @@
                   >
                 </div>
               </aside>
+
+              <!-- Remarks -->
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="text-input"
+                    placeholder=""
+                    class="custom-input-field sm"
+                    formControlName="Remarks"
+                  />
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
+                    >Remarks
+                  </label>
+                </div>
+              </aside>
+
             </div>
           </div>
         </div>
@@ -652,7 +681,7 @@
       <!-- SECOND CARD (Visible only when Bank is selected) -->
       <div
         class="col-md-4 ps-md-1 mt-1 mt-md-0"
-        *ngIf="!receiptForm.get('CashOrBank')?.value"
+        *ngIf="receiptForm.get('CashOrBank')?.value === 'B'"
       >
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
@@ -875,9 +904,6 @@
                 Profit Center
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
-                Dept
-              </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
@@ -885,6 +911,9 @@
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 House
+              </th>
+              <th class="bg-transparent text-light" style="font-size: 14px">
+                Dept
               </th>
             </tr>
           </thead>
@@ -905,18 +934,24 @@
                     <i class="fas fa-plus text-info"></i>
                   </button>
                   }
-                  <button
-                    type="button"
-                    class="btn waves-effect waves-light text-light py-0 px-1"
-                    (click)="removeDetail(i, d.get('VoucherDetailSid')?.value)"
-                    [disabled]="isPosted"
+                  <span
+                    [ngbTooltip]="getDeleteTooltip(i)"
+                    placement="right"
+                    class="d-inline-block"
                   >
-                    <i class="fas fa-trash text-danger" name="trash-2"></i>
-                  </button>
+                    <button
+                      type="button"
+                      class="btn waves-effect waves-light text-light py-0 px-1"
+                      (click)="removeDetail(i, d.get('VoucherDetailSid')?.value)"
+                      [disabled]="isPosted || isDeleteBlocked(i)"
+                    >
+                      <i class="fas fa-trash" [class.text-danger]="!isDeleteBlocked(i)" [class.text-muted]="isDeleteBlocked(i)" name="trash-2"></i>
+                    </button>
+                  </span>
                 </td>
                 <td class="dofi-min-w-150">
                   <ng-select
-                    [items]="coaList"
+                    [items]="filteredCoaList[i]"
                     bindLabel="LedgerName"
                     bindValue="COAMasterSid"
                     formControlName="COAMasterSid"
@@ -954,6 +989,7 @@
                     [displayLabels]="CurrencyLookupConfig.displayLabels"
                     [labelFields]="CurrencyLookupConfig.labelFields"
                     [bindValue]="'CurrencyMasterSid'"
+                    [readonly]="isAutoPartyRow(i) || isAutoBankRow(i)"
                     (itemSelected)="onCurrencyChangeForEachRow($event, i)"
                   >
                   </dofi-searchable-dropdown>
@@ -967,7 +1003,7 @@
                     [DecimalPrecisionBefore]="4"
                     [DecimalPrecisionAfter]="
                       getExchangeRateDecimalPlaces(
-                        d.get('CurrencyMasterSid')?.value
+                        d.get('CurrencyMasterSid')?.getRawValue()
                       )
                     "
                     (input)="calculateLocalAmount(i, true)"
@@ -1046,17 +1082,6 @@
                 <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
-                    [items]="deptList"
-                    bindLabel="departmentName"
-                    bindValue="DepartmentMasterSid"
-                    formControlName="DepartmentMasterSid"
-                    (change)="filterDetailsWithDept($event, i)"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
                     [items]="filteredChargeList[i]"
                     bindLabel="chargeCode"
                     bindValue="ChargeMasterSid"
@@ -1083,6 +1108,17 @@
                     bindLabel="HBLNo"
                     bindValue="HouseJobSid"
                     formControlName="HouseJobSid"
+                    appendTo="body"
+                  ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="deptList"
+                    bindLabel="departmentName"
+                    bindValue="DepartmentMasterSid"
+                    formControlName="DepartmentMasterSid"
+                    (change)="filterDetailsWithDept($event, i)"
                     appendTo="body"
                   ></ng-select>
                 </td>
