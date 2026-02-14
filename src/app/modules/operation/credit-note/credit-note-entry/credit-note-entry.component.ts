@@ -78,6 +78,7 @@ import {
   ValidationMessageConfig,
 } from 'src/app/common/error-handling/form-error-handler';
 import { ToastrService } from 'ngx-toastr';
+import { PdfMakeService } from 'src/app/common/pdf';
 
 interface NgbDateStructLike {
   day: number;
@@ -169,7 +170,8 @@ export class CreditNoteEntryComponent {
   // showPdfLogo: boolean = true;
 
   @ViewChild('printModal') printModalRef: any;
-
+  @ViewChild('emailModal') emailModalRef: any;
+  
   customerList: any[] = [];
   customerBranchList: any[] = [];
   currencyList: any[] = [];
@@ -196,7 +198,7 @@ export class CreditNoteEntryComponent {
   MenuMasterSid: any;
 
   selectedTab = 'Credit Note';
-  invoicePrintData: any;
+  creditNotePrintData: any;
   selectTab(tab: string): void {
     this.selectedTab = tab;
   }
@@ -317,6 +319,7 @@ export class CreditNoteEntryComponent {
     private voucherPeriodService: VoucherPeriodValidationService,
     private datePipe: CustomDatePipe,
     private toastr: ToastrService,
+    private pdfMakeService: PdfMakeService,
   ) {}
   ngOnInit(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -1495,7 +1498,7 @@ export class CreditNoteEntryComponent {
       });
 
     const totalPartyAmount = voucherDetails.reduce((sum, detail) => {
-      if (detail.DrCr === 'C') {
+      if (detail.DrCr === 'D') {
         return sum + toNumber(detail.PartyAmount);
       }
       return sum - toNumber(detail.PartyAmount);
@@ -1530,35 +1533,19 @@ export class CreditNoteEntryComponent {
     }
     const tandc = this.TandCList || [];
 
-    this.invoicePrintData = {
-      invoiceTitle: 'CREDIT NOTE INVOICE',
-      GSTCode:
-        this.currentBranch?.taxRegistrationNo ||
-        this.currentCompany?.GST_VAT ||
-        '',
-      BilledTo:
-        this.creditNoteData?.PartyName ||
-        this.creditNoteData?.subledgerMaster?.SubledgerName ||
-        '',
-      BillingAddress:
-        this.creditNoteData?.PartyAddress ||
-        this.creditNoteData?.subledgerMaster?.Address ||
-        '',
+
+    this.creditNotePrintData = {
+      invoiceTitle: 'CREDIT NOTE',
+      GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT ||'',
+      BilledTo: this.creditNoteData?.PartyName || this.creditNoteData?.subledgerMaster?.SubledgerName ||'',
+      BillingAddress: this.creditNoteData?.PartyAddress || this.creditNoteData?.subledgerMaster?.Address ||'',
       PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
-      InvoiceNo: this.creditNoteData?.VoucherNumber || '',
-      InvoiceDate: this.creditNoteData?.VoucherDate || '',
+      CreditNo: this.creditNoteData?.VoucherNumber || '',
+      CreditDate: this.creditNoteData?.VoucherDate || '',
       GST_VAT: this.creditNoteData?.GST_VAT || '',
       IRNNumber: this.creditNoteData?.IRNNumber || '',
-      ShipperName: isHouseJobInvoice
-        ? this.creditNoteData?.houseJob?.ShipperName
-        : isBookingInvoice
-          ? this.creditNoteData?.BookingHeader?.ShipperName
-          : '',
-      ConsigneeName: isHouseJobInvoice
-        ? this.creditNoteData?.houseJob?.ConsigneeName
-        : isBookingInvoice
-          ? this.creditNoteData?.BookingHeader?.ConsigneeName
-          : '',
+      ShipperName: isHouseJobInvoice? this.creditNoteData?.houseJob?.ShipperName: isBookingInvoice? this.creditNoteData?.BookingHeader?.ShipperName: '',
+      ConsigneeName: isHouseJobInvoice? this.creditNoteData?.houseJob?.ConsigneeName: isBookingInvoice? this.creditNoteData?.BookingHeader?.ConsigneeName: '',
       Vessel: this.getShipmentFieldValue('VesselName') || '',
       VoyageNo: this.getShipmentFieldValue('VoyageNo') || '',
       POL: this.getShipmentFieldValue('POL') || '',
@@ -1570,14 +1557,10 @@ export class CreditNoteEntryComponent {
       MBLNo: this.creditNoteData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.creditNoteData?.masterJob?.MasterJobNumber || '',
       MasterJobDate: this.creditNoteData?.masterJob?.MasterJobDate || '',
-      CustomerRefNo:
-        this.creditNoteData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
-      ContainerType:
-        this.creditNoteData?.masterJob?.containers?.[0]?.ContainerType || '',
-      ContainerNumber:
-        this.creditNoteData?.masterJob?.containers?.[0]?.ContainerNumber || '',
-      DepartmentMasterSid:
-        this.creditNoteData?.masterJob?.DepartmentMasterSid || '',
+      CustomerRefNo: this.creditNoteData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
+      ContainerType: this.creditNoteData?.masterJob?.containers?.[0]?.ContainerType || '',
+      ContainerNumber: this.creditNoteData?.masterJob?.containers?.[0]?.ContainerNumber || '',
+      DepartmentMasterSid: this.creditNoteData?.masterJob?.DepartmentMasterSid || '',
       FreightTerms: isHouseJobInvoice
         ? this.creditNoteData?.houseJob?.FreightTerms
         : isBookingInvoice
@@ -2272,8 +2255,19 @@ export class CreditNoteEntryComponent {
       const amount = Number(this.details.at(i).get('PartyAmount')?.value || 0);
       total += amount;
     }
-    return toNumber(total.toFixed(2));
+     return this.round(total);
   }
+    getLocalCurrencyTotal(): number {
+    const currencyTotal = Number(this.getTotalCurrencyAmount()) || 0;
+    let taxTotal = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
+      const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
+      taxTotal += taxAmt1 + taxAmt2;
+    }
+    return currencyTotal + taxTotal;
+  }
+
 
   // Calculate total tax amount (CGST + SGST + IGST)
   getTotalTaxAmount() {
@@ -3793,7 +3787,7 @@ export class CreditNoteEntryComponent {
 
   calculateTotalColspan(): number {
     const config = this.getTaxDisplayConfig();
-    let baseColumns = 13; // Adjust based on your column count
+    let baseColumns = 7; // S.No, Particulars, Curr, No of Unit, Rate, ROE, Taxable Value
 
     // Add tax columns based on what's visible
     if (config.showCGST) baseColumns += 2; // CGST % + CGST Amt
@@ -5300,7 +5294,7 @@ export class CreditNoteEntryComponent {
   // Print Modal Methods
   async openPrintModal() {
     if (!this.headerId) {
-      this.appSettingService.showWarning('Please save the invoice first.');
+      this.appSettingService.showWarning('Please save the credit note first.');
       return;
     }
 
@@ -5308,7 +5302,7 @@ export class CreditNoteEntryComponent {
 
     try {
       await this.preparePrintData();
-      console.log('PRINT DATA', this.invoicePrintData);
+      console.log('PRINT DATA', this.creditNotePrintData);
       this.modalService.open(this.printModalRef, {
         size: 'xl',
         scrollable: true,
@@ -5343,98 +5337,219 @@ export class CreditNoteEntryComponent {
   //     this.modalService.open(this.printModalRef, { size: 'xl', scrollable: true });
   //   }
 
-  async downloadPDF() {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      this.appSettingService.showError('Print content not found.');
-      return;
-    }
+  // async downloadPDF() {
+  //   const printContent = document.getElementById('printContent');
+  //   if (!printContent) {
+  //     this.appSettingService.showError('Print content not found.');
+  //     return;
+  //   }
 
+  //   try {
+  //     this.spinner.show();
+
+  //     // Generate PDF using html2canvas and jsPDF
+  //     const canvas = await html2canvas(printContent, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       logging: false,
+  //       backgroundColor: '#ffffff',
+  //     });
+
+  //     const imgWidth = 210; // A4 width in mm
+  //     const pageHeight = 297; // A4 height in mm
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     let heightLeft = imgHeight;
+  //     let position = 0;
+
+  //     const pdf = new jsPDF('p', 'mm', 'a4');
+  //     const imgData = canvas.toDataURL('image/png');
+
+  //     // Add first page
+  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     // Add additional pages if content exceeds one page
+  //     while (heightLeft > 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     // Generate filename with invoice number
+  //     const voucherNumber =
+  //       this.creditNoteForm.get('VoucherNumber')?.value || 'CreditNote';
+  //     const filename = `CreditNote_${voucherNumber}.pdf`;
+
+  //     // Download the PDF
+  //     pdf.save(filename);
+
+  //     this.spinner.hide();
+  //     this.appSettingService.showSuccess('PDF downloaded successfully!');
+  //   } catch (error) {
+  //     this.spinner.hide();
+  //     console.error('Error generating PDF:', error);
+  //     this.appSettingService.showError(
+  //       'Error generating PDF. Please try again.',
+  //     );
+  //   }
+  // }
+
+   async downloadPDF() {
+    this.spinner.show();
     try {
-      this.spinner.show();
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-      // Generate PDF using html2canvas and jsPDF
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.creditNotePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.creditNotePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.creditNotePrintData?.ShipperName,
+          consignee: this.creditNotePrintData?.ConsigneeName,
+          vesselName: this.creditNotePrintData?.Vessel,
+          voyageNo: this.creditNotePrintData?.VoyageNo,
+          shipperRefNo: this.creditNotePrintData?.CustomerRefNo,
+          loadingPort: this.creditNotePrintData?.POL,
+          finalDestination: this.creditNotePrintData?.FPD,
+          etd: this.creditNotePrintData?.ETD,
+          eta: this.creditNotePrintData?.ETA,
+          invoiceDueDate: this.creditNotePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.creditNotePrintData?.pkg,
+          commodityDesc: this.creditNotePrintData?.desc,
+          grossWeight: this.creditNotePrintData?.grosswt,
+          chargeableWeight: this.creditNotePrintData?.ChargeableWeight,
+          cbm: this.creditNotePrintData?.cbm
+        },
+        creditNotePrintData: this.creditNotePrintData
+      };
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add additional pages if content exceeds one page
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      // Generate filename with invoice number
-      const voucherNumber =
-        this.creditNoteForm.get('VoucherNumber')?.value || 'CreditNote';
-      const filename = `CreditNote_${voucherNumber}.pdf`;
-
-      // Download the PDF
-      pdf.save(filename);
-
-      this.spinner.hide();
+      this.pdfMakeService.generateCreditNoteFromApi(
+        this.creditNoteData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
-      this.spinner.hide();
       console.error('Error generating PDF:', error);
-      this.appSettingService.showError(
-        'Error generating PDF. Please try again.',
-      );
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
     }
   }
 
+  // async generatePDFBlob(): Promise<Blob | null> {
+  //   const printContent = document.getElementById('printContent');
+  //   if (!printContent) {
+  //     return null;
+  //   }
+
+  //   try {
+  //     const canvas = await html2canvas(printContent, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       logging: false,
+  //       backgroundColor: '#ffffff',
+  //     });
+
+  //     const imgWidth = 210;
+  //     const pageHeight = 297;
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     let heightLeft = imgHeight;
+  //     let position = 0;
+
+  //     const pdf = new jsPDF('p', 'mm', 'a4');
+  //     const imgData = canvas.toDataURL('image/png');
+
+  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     while (heightLeft > 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     return pdf.output('blob');
+  //   } catch (error) {
+  //     console.error('Error generating PDF blob:', error);
+  //     return null;
+  //   }
+  // }
+
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
+      await this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const lookups = {
+        hssacMaster: this.hssacList?.flat() || [],
+        currencyMaster: this.currencyList || []
+      };
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
+      const options = {
+        taxDisplayConfig: this.getTaxDisplayConfig(),
+        bankDetails: this.bankDetails || [],
+        terms: this.TandCList || [],
+        amountInWords: this.creditNotePrintData?.AmountInWords || '',
+        localCurrency: this.currentCompanyCurrency?.code || '',
+        invoiceTitle: this.creditNotePrintData?.invoiceTitle || '',
+        // Additional options for matching original PDF
+        isSeaMode: this.isSeaDepartment(),
+        isVATMode: this.isVATMode,
+        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        shipmentDetails: {
+          shipper: this.creditNotePrintData?.ShipperName,
+          consignee: this.creditNotePrintData?.ConsigneeName,
+          vesselName: this.creditNotePrintData?.Vessel,
+          voyageNo: this.creditNotePrintData?.VoyageNo,
+          shipperRefNo: this.creditNotePrintData?.CustomerRefNo,
+          loadingPort: this.creditNotePrintData?.POL,
+          finalDestination: this.creditNotePrintData?.FPD,
+          etd: this.creditNotePrintData?.ETD,
+          eta: this.creditNotePrintData?.ETA,
+          invoiceDueDate: this.creditNotePrintData?.InvoiceDueDate
+        },
+        cargoDetails: {
+          packages: this.creditNotePrintData?.pkg,
+          commodityDesc: this.creditNotePrintData?.desc,
+          grossWeight: this.creditNotePrintData?.grosswt,
+          chargeableWeight: this.creditNotePrintData?.ChargeableWeight,
+          cbm: this.creditNotePrintData?.cbm
+        }
+      };
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
+        this.creditNoteData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      return blob;
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
@@ -5998,6 +6113,14 @@ export class CreditNoteEntryComponent {
   //     }
   //   }, 50); // small timeout so Angular updates DOM
   // }
+
+  
+
+  openEmailModal() {
+    this.initializeEmailForm();
+    this.modalService.open(this.emailModalRef, { size: 'lg' });
+  }
+
   getCreditNoteConfig: ValidationMessageConfig = {
     labels: {
       VoucherDate: 'Voucher Date',

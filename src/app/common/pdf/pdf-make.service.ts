@@ -20,7 +20,8 @@ import {
   BookingDocumentType,
   MasterJobDocumentType,
   QuotationDocumentType,
-  InvoicePdfData
+  InvoicePdfData,
+  CreditNotePdfData
 } from './interfaces/pdf-document.interfaces';
 
 // Import generators
@@ -31,6 +32,7 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -477,6 +479,98 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateInvoiceBlob(pdfData);
+  }
+
+
+  // ==================== Credit Note ====================
+
+  generateCreditNote(data: CreditNotePdfData): void {
+    const docDefinition = generateCreditNoteDocument(data);
+    const filename = `Credit_Note_${data.credit?.invoiceNo}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+    /**
+   * Get Invoice PDF as Blob
+   */
+  async generateCreditNoteBlob(data: CreditNotePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateCreditNoteDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Credit Note PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+   /**
+   * Open Invoice PDF in new window for preview
+   */
+  openCreditNote(data: CreditNotePdfData): void {
+    const docDefinition = generateCreditNoteDocument(data);
+    this.open(docDefinition);
+  }
+
+  /**
+   * Generate creditnote from raw API data
+   */
+  generateCreditNoteFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): void {
+    const pdfData = transformCreditNoteApiData(apiData, company, branch, userData, logo, lookups, options);
+    this.generateCreditNote(pdfData);
+  }
+
+    /**
+   * Get Invoice Blob from raw API data
+   */
+  async generateCreditNoteBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformCreditNoteApiData(apiData, company, branch, userData, logo, lookups, options);
+    return this.generateCreditNoteBlob(pdfData);
   }
 
 
