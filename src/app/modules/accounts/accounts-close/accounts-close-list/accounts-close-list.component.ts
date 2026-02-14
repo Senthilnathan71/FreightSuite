@@ -164,7 +164,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
 
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
-    this.appSettingService.showError('Error fetching Voucher Periods.');
+    this.appSettingService.showError('Error fetching accounts close.');
     // console.error('Error fetching Voucher Periods', error);
     super.handleSearchError(error);
   }

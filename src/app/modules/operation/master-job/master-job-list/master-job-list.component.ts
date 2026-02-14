@@ -164,11 +164,11 @@ this.initializeTableConfig();
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      // {
-      //   label: 'Job Close',
-      //   icon: 'fas fa-lock',
-      //   action: 'job-close',
-      // },
+      {
+        label: 'Job Close',
+        icon: 'fas fa-lock',
+        action: 'job-close',
+      },
       {
         label: 'Create',
         icon: 'fas fa-plus',
@@ -240,9 +240,9 @@ this.initializeTableConfig();
 
   onActionTriggered(action: string): void {
     switch (action) {
-      // case 'job-close':
-      //   this.router.navigate(['operation/job-close/list']);
-      //   break;
+      case 'job-close':
+        this.router.navigate(['operation/job-close/list']);
+        break;
       case 'create':
         this.navigateToMasterJob()
         break;

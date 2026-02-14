@@ -38,6 +38,7 @@ export class JobCloseListComponent extends BaseListComponent implements OnInit {
   headerActions: HeaderAction[] = [];
   tableConfig: TableConfig;
   tableLoading = false;
+  MenuMasterSid:any;
 
   protected config: ListComponentConfig = {
     storageKey: 'job-close-list-state',
@@ -65,6 +66,8 @@ export class JobCloseListComponent extends BaseListComponent implements OnInit {
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    const storedMenuId = sessionStorage.getItem('currentMenuId');
+
     this.initializeTableConfig();
     this.initializeHeaderActions();
     this.mps.init().subscribe(() => {
