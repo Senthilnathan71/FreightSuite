@@ -40,11 +40,10 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
   tableConfig: TableConfig;
   tableLoading = false;
   headerActions: HeaderAction[] = [];
-
+  yearId: number
   currentCompany: any;
   currentBranch: any;
   userData: any;
-  currentFinancialYear: number
 
   protected config: ListComponentConfig = {
     storageKey: 'accounts-close-list-state',
@@ -84,11 +83,9 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+    const financialYear = this.appSettingService.getCurrentFinancialYear();
+    this.yearId = financialYear?.YearMasterSid || Number(localStorage.getItem('current-year-id'));
     super.ngOnInit();
-    const currentFinancialYear = this.appSettingService.getCurrentFinancialYear()
-    if (currentFinancialYear) {
-      this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
-    }
   }
 
   protected searchItems(): Observable<any> {
@@ -99,36 +96,15 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
   protected getSearchParams(): SearchParams {
     return {
       search: this.filterValue.trim(),
-      page: Number(1),
-      pageSize: Number(12),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
+      yearMasterSid : this.yearId
     };
   }
-
-  // protected processSearchResults(response: any): void {
-  //   this.spinner.hide();
-  //   if (response.status) {
-  //     this.allItems = response.data.items.map(item => ({
-  //       ...item,
-  //       YearName: item?.YearMaster?.YearName || '-',
-  //       StartDate: this.datePipe.transform(item?.StartDate),
-  //       EndDate: this.datePipe.transform(item?.EndDate),
-  //       Remarks: item?.Remarks || '-',
-  //       status: item.Status === 'A' ? 'Active' : 'Suspended'
-  //     }));
-  //     this.totalLengthOfCollection = response.data.totalCount || 0;
-  //     this.applySorting();
-  //     this.updateHeaderActionState();
-  //   } else {
-  //     this.appSettingService.showError('Error fetching Voucher Periods.');
-  //     this.allItems = [];
-  //     this.totalLengthOfCollection = 0;
-  //   }
-  // }
-
 
   protected processSearchResults(response: any): void {
     this.spinner.hide();
@@ -140,14 +116,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
       return;
     }
 
-    // 🔹 Filter by current financial year
-    const filteredItems = this.currentFinancialYear
-      ? response.data.items.filter(
-        item => item.YearMasterSid === this.currentFinancialYear
-      )
-      : response.data.items;
-
-    this.allItems = filteredItems.map(item => ({
+    this.allItems = response.data.items.map(item => ({
       ...item,
       YearName: item?.YearMaster?.YearName || '-',
       StartDate: this.datePipe.transform(item?.StartDate),
@@ -156,7 +125,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
       status: item.Status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection = filteredItems.length;
+    this.totalLengthOfCollection = response.data.totalCount || 0;
     this.applySorting();
     this.updateHeaderActionState();
   }
