@@ -331,6 +331,8 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
     localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
     localStorage.setItem('current-year-id', this.selectedYearId.toString());
+    const fy = this.financialYears.find(fy => fy.YearMasterSid === this.selectedYearId);
+    this.appSettingsService.setCurrentFinancialYear(fy);
 
     // Load company configuration and store in localStorage
     this.companySettingsManager.setCurrentCompany(companyToStore.CompanyMasterSid);

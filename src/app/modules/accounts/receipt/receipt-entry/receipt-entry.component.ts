@@ -21,8 +21,10 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbDateStruct,
   NgbDropdownModule,
   NgbModal,
+  NgbTooltipModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -34,7 +36,6 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import {
   catchError,
-  combineLatest,
   debounceTime,
   distinctUntilChanged,
   firstValueFrom,
@@ -74,6 +75,7 @@ import {
 } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 
 /**
  * Receipt Entry Component
@@ -102,6 +104,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     OnlyNumbersDirective,
     NgxSpinnerModule,
     RouterModule,
+    NgbTooltipModule,
   ],
   templateUrl: './receipt-entry.component.html',
   styleUrl: './receipt-entry.component.scss',
@@ -112,6 +115,8 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
   ],
 })
 export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
@@ -150,6 +155,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   onlyCustomerList: any[] = [];
   currencyList: any[] = [];
   coaList: any[] = [];
+  filteredCoaList: any[][] = [];
   ledgerList: any[][] = [];
   bankTypedLedgers: any[] = [];
   cashTypeLedgers: any[] = [];
@@ -176,6 +182,64 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     VoucherMatchingHeaderSid: number;
     VoucherMatchingNo: string;
   };
+
+  receiptValidationConfig: ValidationMessageConfig = {
+  labels: {
+    // Header
+    VoucherDate: 'Voucher Date',
+    CashOrBank: 'Cash / Bank',
+    BankCOA: 'Bank / Cash Account',
+    CurrencyMasterSid: 'Currency',
+    ExchangeRate: 'Exchange Rate',
+
+    // Party
+    PartyMasterSid: 'Party',
+    COAMasterSid: 'Party Ledger',
+    GST_VAT: 'GST/VAT',
+    BankPartyName: 'Bank Party Name',
+    Narration: 'Narration',
+    InstrumentMode: 'Payment Mode',
+    InstrumentNumber: 'Instrument Number',
+    InstrumentDate: 'Instrument Date',
+    ClearanceDate: 'Clearance Date',
+
+    // Detail Items (FormArray)
+    'detailItems.COAMasterSid': 'Detail Account',
+    'detailItems.LedgerMasterSid': 'Ledger',
+    'detailItems.DrCr': 'Dr / Cr',
+    'detailItems.CurrencyMasterSid': 'Detail Currency',
+    'detailItems.CurrencyCode': 'Currency Code',
+    'detailItems.ExchangeRate': 'Detail Exchange Rate',
+    'detailItems.Amount': 'Amount',
+    'detailItems.LocalAmount': 'Local Amount',
+    'detailItems.NumberOfUnit': 'No. of Units',
+    'detailItems.Rate': 'Rate',
+    'detailItems.Narration': 'Detail Narration'
+  },
+
+  messages: {
+    required: (label: string) => `${label} is mandatory`,
+
+    minlength: (label: string, error: any) =>
+      `${label} must be at least ${error.requiredLength} characters`,
+
+    maxlength: (label: string, error: any) =>
+      `${label} cannot exceed ${error.requiredLength} characters`,
+
+    min: (label: string, error: any) =>
+      `${label} must be greater than or equal to ${error.min}`,
+
+    max: (label: string, error: any) =>
+      `${label} must be less than or equal to ${error.max}`,
+
+    pattern: (label: string) =>
+      `${label} format is invalid`,
+
+    default: (label: string) =>
+      `${label} is invalid`,
+  },
+};
+
 
   // Outstanding invoices
 
@@ -206,6 +270,11 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     // { label: 'HAWB', value: 'HAWB' },
     // { label: 'MAWB', value: 'MAWB' }
   ];
+
+  modeOfPayment = [
+    { label: 'Cash', value: 'C' },
+    { label: 'Bank', value: 'B' }
+  ]
 
   modalSearchType = [
     { id: 1, name: 'House No' },
@@ -267,6 +336,15 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       this.appSettingService.getCurrentCompanyCountry()?.countryCode
     ).toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      this.fyMinDate = toNgbDateStruct(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      const today = getDefaultTodayDate();
+      this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+    }
+
     this.currentMenuId = this.mps.getMenuId();
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
@@ -388,12 +466,14 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   private initializeForm(): void {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultVoucherDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
 
     this.receiptForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }], // Receipt Number
-      VoucherDate: [today], // Receipt Date
+      VoucherDate: [defaultVoucherDate], // Receipt Date
       MultiBranch: [{ value: false, disabled: true }],
-      CashOrBank: [false],
+      CashOrBank: ['B'],      // B - Bank / C - Cash
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
       CurrencyMasterSid: [companyCurrency || null],
       CurrencyCode: ['INR'],
@@ -608,6 +688,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         charges,
       }) => {
         this.coaList = coaWithLedgerCategoryAsLedger.data;
+        this.rebuildFilteredCoaListForAllRows();
         this.costCenterList = costCenters.data;
         this.profitCenterList = profitCenters.data;
         this.deptList = depts;
@@ -654,11 +735,15 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         payload.InvoiceNumber = form.FilterText;
     }
 
+    this.spinner.show();
+
     this.receiptService.searchOutstandingInvoices(payload).subscribe((res) => {
       if (res && Array.isArray(res) && res.length > 0) {
+        this.spinner.hide();
         this.patchHeaderValue(res);
         this.patchOutstandingFormArray(res);
       } else {
+        this.spinner.hide();
         const searchType = this.searchOutstandingForm.get('SearchType')?.value;
         this.appSettingService.showError(
           `No outstanding found for this ${searchType}.`
@@ -692,6 +777,21 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = new Date(this.receiptForm.getRawValue().VoucherDate);
+      const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (voucherDate < fyStart || voucherDate > fyEnd) {
+        this.appSettingService.showWarning(
+          `Voucher date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -803,7 +903,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     }
 
     if (this.receiptForm.invalid) {
-      errorLogger(this.receiptForm);
+      errorLoggerWithToastr(this.receiptForm,this.toastr);
       this.appSettingService.showWarning('Please fill all required fields');
       this.receiptForm.markAllAsTouched();
       if (resolve) resolve(false);
@@ -836,7 +936,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      CashOrBank: formValue.CashOrBank ? 'C' : 'B',
+      CashOrBank: formValue.CashOrBank,
       MultiBranch: formValue.MultiBranch ? 'Y' : 'N',
       VoucherDate: formValue.VoucherDate,
       YearMasterSid: this.currentYearId,
@@ -876,6 +976,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         const isBankRecord = d.COAMasterSid === formValue.BankCOA;
         return {
           ...d,
+          Narration : d.Narration || formValue.Narration,
         };
       }),
       voucherMatching: voucherMatching,
@@ -1080,7 +1181,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     this.receiptForm.patchValue(
       {
         VoucherNumber: headerInfo.VoucherNumber,
-        CashOrBank: headerInfo.CashOrBank === 'C',
+        CashOrBank: headerInfo.CashOrBank,
         MultiBranch: headerInfo.MultiBranch === 'Y',
         VoucherDate: headerInfo.VoucherDate,
         BankCOA: headerInfo.BankCOA,
@@ -1173,6 +1274,18 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     });
     this.isPosted = response.PostStatus === 'P';
 
+    // Update filtered COA list based on loaded data
+    this.rebuildFilteredCoaListForAllRows();
+
+    // Lock auto-inserted party/bank rows in edit mode
+    for (let i = 0; i < this.detailItems.length; i++) {
+      if (this.isAutoPartyRow(i) || this.isAutoBankRow(i)) {
+        ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
+          this.detailItems.at(i).get(field)?.disable();
+        });
+      }
+    }
+
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
     const voucherMatchingRecords = response.voucherMatchings || [];
     this.patchOutstandingFormArray(voucherMatchingRecords);
@@ -1244,7 +1357,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         data?.CurrencyCode || this.currentCurrencyCode,
         Validators.required,
       ],
-      ExchangeRate: [data?.ExchangeRate || 0, Validators.required],
+      ExchangeRate: [this.getFormattedAndPaddedExchangeRate(data?.ExchangeRate || 0, data?.CurrencyMasterSid || null), Validators.required],
 
       NumberOfUnit: [data?.NumberOfUnit || 1.0],
       Rate: [data?.Rate || 1],
@@ -1322,6 +1435,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     }
 
     const lastAddedRow = this.detailItems.length - 1;
+    this.filteredCoaList[lastAddedRow] = this.getFilteredCoaListForRow(lastAddedRow);
     this.checkAndUpdateForPartyDetail(lastAddedRow, syncExRate);
     const currencySid = newRow.get('CurrencyMasterSid')?.value;
     if (syncExRate) {
@@ -1337,35 +1451,34 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
   checkAndUpdateForPartyDetail(detailIndex: number, patch: boolean = true) {
     const detail = this.detailItems.at(detailIndex) as FormGroup;
-    const headerCtrl = this.receiptForm.get('PartyMasterSid') as FormControl;
-    const detailPartyCtrl = detail.get('LedgerMasterSid') as FormControl;
+    const headerPartyValue = this.receiptForm.get('PartyMasterSid')?.getRawValue();
+    const detailLedgerValue = detail.get('LedgerMasterSid')?.getRawValue();
 
-    if (headerCtrl && detailPartyCtrl) {
-      if (headerCtrl.getRawValue() === detailPartyCtrl.getRawValue()) {
-        if (patch) {
-          detail
-            .get('CurrencyMasterSid')
-            ?.setValue(this.r['CurrencyMasterSid']?.getRawValue());
-          detail
-            .get('CurrencyCode')
-            ?.setValue(this.r['CurrencyCode']?.getRawValue());
-          detail
-            .get('ExchangeRate')
-            ?.setValue(this.r['ExchangeRate']?.getRawValue());
-          this.calculateLocalAmount(detailIndex);
-        }
-        detail.get('CurrencyMasterSid')?.disable();
-        detail.get('CurrencyCode')?.disable();
-        detail.get('ExchangeRate')?.disable();
-      } else {
+    // Only sync currency when both values are non-null and match (actual party row)
+    if (headerPartyValue && detailLedgerValue && headerPartyValue === detailLedgerValue) {
+      if (patch) {
+        detail
+          .get('CurrencyMasterSid')
+          ?.setValue(this.r['CurrencyMasterSid']?.getRawValue());
+        detail
+          .get('CurrencyCode')
+          ?.setValue(this.r['CurrencyCode']?.getRawValue());
+        detail
+          .get('ExchangeRate')
+          ?.setValue(this.r['ExchangeRate']?.getRawValue());
+        this.calculateLocalAmount(detailIndex);
+      }
+      detail.get('CurrencyMasterSid')?.disable();
+      detail.get('CurrencyCode')?.disable();
+      detail.get('ExchangeRate')?.disable();
+    } else {
+      // For auto party/bank rows, keep currency fields disabled
+      const isLockedRow = this.isAutoPartyRow(detailIndex) || this.isAutoBankRow(detailIndex);
+      if (!isLockedRow) {
         detail.get('CurrencyMasterSid')?.enable();
         detail.get('CurrencyCode')?.enable();
         detail.get('ExchangeRate')?.enable();
       }
-    } else {
-      detail.get('CurrencyMasterSid')?.enable();
-      detail.get('CurrencyCode')?.enable();
-      detail.get('ExchangeRate')?.enable();
     }
   }
 
@@ -1376,6 +1489,8 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         next: (res) => {
           // On success, remove row from form array
           (this.detailItems as FormArray).removeAt(detailIndex);
+          this.filteredCoaList.splice(detailIndex, 1);
+          this.rebuildFilteredCoaListForAllRows();
           this.markAsDirty();
         },
         error: (err) => {
@@ -1386,55 +1501,70 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     // Case 2 : New row (no VoucherDetailSid) → directly remove it
     else {
       (this.detailItems as FormArray).removeAt(detailIndex);
+      this.filteredCoaList.splice(detailIndex, 1);
+      this.rebuildFilteredCoaListForAllRows();
       this.markAsDirty();
     }
   }
 
   private subscribeToPartyAndBankChanges(): void {
-    combineLatest([
-      this.receiptForm.get('CustomerBranchSid').valueChanges,
-      this.receiptForm.get('BankCOA').valueChanges,
-    ])
+    // Listen to party changes independently
+    this.receiptForm.get('CustomerBranchSid').valueChanges
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([partySid, bankCoaSid]) => {
-        // Check if both are selected and if the details grid is empty
-        if (partySid && bankCoaSid && !this.isLoading) {
-          this.populateInitialDetailRows(partySid, bankCoaSid);
+      .subscribe((partySid) => {
+        if (this.isLoading) return;
+        if (partySid) {
+          this.insertPartyRow(partySid);
+        } else {
+          this.removeAutoPartyRow();
+        }
+      });
+
+    // Listen to bank/cash changes independently
+    this.receiptForm.get('BankCOA').valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((bankCoaSid) => {
+        if (this.isLoading) return;
+        if (bankCoaSid) {
+          this.insertBankCashRow(bankCoaSid);
+        } else {
+          this.removeAutoBankRow();
         }
       });
   }
 
-  private populateInitialDetailRows(
-    partySid: number,
-    bankCoaSid: number
-  ): void {
-    this.detailItems.clear();
-
-    // 1. Find the selected bank/cash ledger
-    const isCashMode = this.receiptForm.get('CashOrBank')?.value;
-    const bankLedgerSource = isCashMode
-      ? this.cashTypeLedgers
-      : this.bankTypedLedgers;
-    const bankLedger = bankLedgerSource.find(
-      (ledger) => ledger.COAMasterSid === bankCoaSid
-    );
-    const headerCurrencyId = this.r['CurrencyMasterSid']?.value;
-    const headerCurrencyCode = this.r['CurrencyCode']?.value;
-    // 2. Find the selected party ledger
+  /**
+   * Insert a party row when party is selected.
+   * After insertion, filter COA list to exclude Sy Cr and Sy Dr type ledgers.
+   */
+  private insertPartyRow(partySid: number): void {
     const partyLedger = this.partyList.find(
       (p) => p.CustomerBranchSid === partySid
     );
-
-  
-
-    if (!bankLedger || !partyLedger) {
-      console.error(
-        'Could not find the selected bank or party ledger details.'
-      );
+    if (!partyLedger) {
+      console.error('Could not find the selected party ledger details.');
       return;
     }
-    const outstandingCurrencyAmount = this.getTotalOSCurrAmt();
-    // 3. Create the Party Row (Credit)
+
+    // Remove any existing party row (first Credit row or row matching the new party's ledger)
+    const details = this.detailItems.getRawValue();
+    const existingPartyIndex = details.findIndex(
+      (d) =>
+        d.LedgerMasterSid === partyLedger.SubledgerMasterSid ||
+        (d.DrCr === 'C' && d.COAMasterSid === partyLedger.COAMappedId)
+    );
+    // Also check for any old party row (first Credit row at index 0)
+    const oldPartyIndex = existingPartyIndex !== -1
+      ? existingPartyIndex
+      : details.findIndex((d, idx) => idx === 0 && d.DrCr === 'C');
+    if (oldPartyIndex !== -1) {
+      this.detailItems.removeAt(oldPartyIndex);
+    }
+
+    const headerCurrencyId = this.r['CurrencyMasterSid']?.value;
+    const headerCurrencyCode = this.r['CurrencyCode']?.value;
+    const currentMatchingPartyAmt = this.getTotalMatchPartyAmt();
+
     const partyData = {
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
@@ -1442,42 +1572,187 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       DrCr: 'C',
       CurrencyMasterSid: headerCurrencyId,
       CurrencyCode: headerCurrencyCode,
-      ExchangeRate: this.r['ExchangeRate']?.value,
-      Amount: outstandingCurrencyAmount,
+      ExchangeRate: this.getFormattedAndPaddedExchangeRate(this.r['ExchangeRate']?.value, headerCurrencyId),
+      Amount: this.getFormattedAndPaddedAmount(currentMatchingPartyAmt, headerCurrencyId),
     };
-    this.addDetailRow(partyData, false);
+
+    // Insert party row at the beginning
+    const newRow = this.constructDetailItems(partyData);
+    this.detailItems.insert(0, newRow);
+
     if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
-      this.detailItems
-        .at(this.detailItems.length - 1)
-        .get('ExchangeRate')
-        ?.disable();
+      this.detailItems.at(0).get('ExchangeRate')?.disable();
     }
+
+    ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
+      this.detailItems.at(0).get(field)?.disable();
+    });
+
     this.fetchLedgerForCOA(partyLedger, 0);
     this.calculateLocalAmount(0, true);
+    this.checkAndUpdateForAllPartyDetail();
+    this.updateDetailNarration();
 
-    // 4. Create the Bank Row (Debit)
+    // Filter COA list: exclude Sy Cr and Sy Dr type ledgers
+    this.rebuildFilteredCoaListForAllRows();
+  }
+
+  /**
+   * Insert a bank/cash row when bank/cash is selected.
+   * After insertion, filter COA list to exclude the selected bank/cash.
+   */
+  private insertBankCashRow(bankCoaSid: number): void {
+    const isCashMode = this.receiptForm.get('CashOrBank')?.value === 'C';
+    const bankLedgerSource = isCashMode
+      ? this.cashTypeLedgers
+      : this.bankTypedLedgers;
+    const bankLedger = bankLedgerSource.find(
+      (ledger) => ledger.COAMasterSid === bankCoaSid
+    );
+    if (!bankLedger) {
+      console.error('Could not find the selected bank/cash ledger details.');
+      return;
+    }
+
+    // Remove any existing bank/cash row (matching bank COA or the Debit row after party)
+    const bankDetails = this.detailItems.getRawValue();
+    const allBankCashCoaSids = [
+      ...this.bankTypedLedgers.map((l) => l.COAMasterSid),
+      ...this.cashTypeLedgers.map((l) => l.COAMasterSid),
+    ];
+    const existingBankIndex = bankDetails.findIndex(
+      (d) => d.COAMasterSid === bankCoaSid || (d.DrCr === 'D' && allBankCashCoaSids.includes(d.COAMasterSid))
+    );
+    if (existingBankIndex !== -1) {
+      this.detailItems.removeAt(existingBankIndex);
+    }
+
+    // Use the bank's own LedgerCurrency if available, otherwise fall back to header currency
+    const headerCurrencyId = this.r['CurrencyMasterSid']?.value;
+    const bankCurrencyId = bankLedger.LedgerCurrency || this.r['CurrencyMasterSid']?.value;
+    const bankCurrency = this.currencyList.find(c => c.CurrencyMasterSid === bankCurrencyId);
+    const bankCurrencyCode = bankCurrency?.currencyCode || this.r['CurrencyCode']?.value;
+
+    const currentMatchingPartyAmt = headerCurrencyId === bankCurrencyId ? this.getTotalMatchPartyAmt() : 0;
+
     const bankData = {
-      Sno: 2,
+      Sno: this.detailItems.length + 1,
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
       DrCr: 'D',
-      CurrencyMasterSid: headerCurrencyId,
-      CurrencyCode: headerCurrencyCode,
-      ExchangeRate: this.r['ExchangeRate']?.value,
-      Amount: outstandingCurrencyAmount,
+      CurrencyMasterSid: bankCurrencyId,
+      CurrencyCode: bankCurrencyCode,
+      ExchangeRate: this.getFormattedAndPaddedExchangeRate(1, bankCurrencyId),
+      Amount: this.getFormattedAndPaddedAmount(currentMatchingPartyAmt, bankCurrencyId),
     };
-    this.addDetailRow(bankData, false);
-    if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
-      this.detailItems
-        .at(this.detailItems.length - 1)
-        .get('ExchangeRate')
-        ?.disable();
-    }
-    this.fetchLedgerForCOA(bankLedger, 1);
-    this.calculateLocalAmount(1, true);
 
+    // Insert bank/cash row after the party row (or at start if no party row)
+    const insertIndex = this.detailItems.length > 0 ? 1 : 0;
+    const newRow = this.constructDetailItems(bankData);
+    this.detailItems.insert(insertIndex, newRow);
+
+    ['COAMasterSid','LedgerMasterSid','DrCr','CurrencyMasterSid','CurrencyCode'].forEach(field => {
+      this.detailItems.at(insertIndex).get(field)?.disable({emitEvent : false});
+    });
+
+    // Fetch the correct exchange rate for the bank's currency
+    this.handleDetailExchangeRate(bankCurrencyId, insertIndex);
+    this.fetchLedgerForCOA(bankLedger, insertIndex);
     this.checkAndUpdateForAllPartyDetail();
     this.updateDetailNarration();
+
+    // Filter COA list: exclude the selected bank/cash
+    this.rebuildFilteredCoaListForAllRows();
+  }
+
+  /**
+   * Remove the auto-inserted party row when the party field is cleared.
+   */
+  private removeAutoPartyRow(): void {
+    // Party row is always at index 0
+    if (this.detailItems.length > 0) {
+      const row = this.detailItems.at(0);
+      const rowDrCr = row?.get('DrCr')?.getRawValue();
+      if (rowDrCr === 'C') {
+        this.detailItems.removeAt(0);
+        this.filteredCoaList.splice(0, 1);
+        this.rebuildFilteredCoaListForAllRows();
+      }
+    }
+  }
+
+  /**
+   * Remove the auto-inserted bank/cash row when the bank/cash field is cleared.
+   */
+  private removeAutoBankRow(): void {
+    // Bank row is always at index 1 (if party exists) or index 0
+    const details = this.detailItems.getRawValue();
+    const allBankCashCoaSids = [
+      ...this.bankTypedLedgers.map((l) => l.COAMasterSid),
+      ...this.cashTypeLedgers.map((l) => l.COAMasterSid),
+    ];
+    const bankIndex = details.findIndex(
+      (d) => d.DrCr === 'D' && allBankCashCoaSids.includes(d.COAMasterSid)
+    );
+    if (bankIndex !== -1) {
+      this.detailItems.removeAt(bankIndex);
+      this.filteredCoaList.splice(bankIndex, 1);
+      this.rebuildFilteredCoaListForAllRows();
+    }
+  }
+
+  /**
+   * Build the filtered COA list for a specific detail row.
+   * - Party row: keeps its own party COA, filters out the selected bank/cash COA
+   * - Bank/cash row: keeps its own bank/cash COA, filters out Sy Cr and Sy Dr
+   * - Other rows: filters out both Sy Cr/Sy Dr and the selected bank/cash COA
+   */
+  private getFilteredCoaListForRow(rowIndex: number): any[] {
+    const partySid = this.r['PartyMasterSid']?.getRawValue();
+    const bankCoaSid = this.r['BankCOA']?.getRawValue();
+    const row = this.detailItems.at(rowIndex);
+    const rowCoaSid = row?.get('COAMasterSid')?.getRawValue();
+    const rowLedgerSid = row?.get('LedgerMasterSid')?.getRawValue();
+
+    const isPartyRow = partySid && rowLedgerSid === partySid;
+    const isBankRow = bankCoaSid && rowCoaSid === bankCoaSid;
+
+    let filtered = [...this.coaList];
+
+    if (isPartyRow) {
+      // Party row: exclude the selected bank/cash COA only
+      if (bankCoaSid) {
+        filtered = filtered.filter((coa) => coa.COAMasterSid !== bankCoaSid);
+      }
+    } else if (isBankRow) {
+      // Bank/cash row: exclude Sy Cr and Sy Dr only
+      if (partySid) {
+        filtered = filtered.filter(
+          (coa) => coa.LedgerType?.trim() !== 'Sy Cr' && coa.LedgerType?.trim() !== 'Sy Dr'
+        );
+      }
+    } else {
+      // Other rows: exclude both Sy Cr/Sy Dr and the selected bank/cash COA
+      if (partySid) {
+        filtered = filtered.filter(
+          (coa) => coa.LedgerType?.trim() !== 'Sy Cr' && coa.LedgerType?.trim() !== 'Sy Dr'
+        );
+      }
+      if (bankCoaSid) {
+        filtered = filtered.filter((coa) => coa.COAMasterSid !== bankCoaSid);
+      }
+    }
+
+    return filtered;
+  }
+
+  /**
+   * Rebuild filteredCoaList for all detail rows.
+   */
+  private rebuildFilteredCoaListForAllRows(): void {
+    for (let i = 0; i < this.detailItems.length; i++) {
+      this.filteredCoaList[i] = this.getFilteredCoaListForRow(i);
+    }
   }
 
   handleCOAChange(coa: any, detailIndex: number, isPatching: boolean = false) {
@@ -1488,6 +1763,45 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       return;
     }
     this.fetchLedgerForCOA(coa, detailIndex, isPatching);
+
+    // Resolve full COA object to get JobNoRequire (during patching, coa may be minimal)
+    const fullCoa = this.coaList.find(c => c.COAMasterSid === coa.COAMasterSid) || coa;
+    this.applyJobRequireValidation(fullCoa, detailIndex);
+
+    // Default currency from COA's LedgerCurrency (allow user to change)
+    if (!isPatching && coa.LedgerCurrency) {
+      const row = this.detailItems.at(detailIndex) as FormGroup;
+      // Only set if not a party row (party row syncs with header)
+      if (!this.isAutoPartyRow(detailIndex)) {
+        row.patchValue({ CurrencyMasterSid: coa.LedgerCurrency });
+        this.handleDetailExchangeRate(coa.LedgerCurrency, detailIndex);
+      }
+    }
+  }
+
+  /**
+   * Apply MasterJob and Department validation based on COA's JobNoRequire flag.
+   * HouseJob is optional — if a user picks one, MasterJob must already be set.
+   */
+  applyJobRequireValidation(coa: any, detailIndex: number) {
+    const row = this.detailItems.at(detailIndex) as FormGroup;
+    const masterJobCtrl = row.get('MasterJobSid');
+    const houseJobCtrl = row.get('HouseJobSid');
+    const deptCtrl = row.get('DepartmentMasterSid');
+
+    if (coa?.JobNoRequire === 'Y') {
+      masterJobCtrl?.setValidators([Validators.required]);
+      deptCtrl?.setValidators([Validators.required]);
+      houseJobCtrl?.clearValidators();
+    } else {
+      masterJobCtrl?.clearValidators();
+      houseJobCtrl?.clearValidators();
+      deptCtrl?.clearValidators();
+    }
+
+    masterJobCtrl?.updateValueAndValidity();
+    houseJobCtrl?.updateValueAndValidity();
+    deptCtrl?.updateValueAndValidity();
   }
 
   /**
@@ -1505,10 +1819,10 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     );
     const partyCtrl = this.detailItems.at(partyDetailIndex) as FormGroup;
     const bankCtrl = this.detailItems.at(bankDetailIndex) as FormGroup;
-    if (partyDetailIndex === -1) partyCtrl?.setValue(null);
-    if (bankDetailIndex === -1) bankCtrl?.setValue(null);
+    // if (partyDetailIndex === -1) partyCtrl?.setValue(null);
+    // if (bankDetailIndex === -1) bankCtrl?.setValue(null);
 
-    const cashOrBank = this.r['CashOrBank']?.value ? 'Cash' : 'Bank';
+    const cashOrBank = this.r['CashOrBank']?.value === 'C' ? 'Cash' : 'Bank';
     const instrumentMode = this.r['InstrumentMode']?.value;
     const instrumentNumber = this.r['InstrumentNumber']?.value;
     const bankPartyName = this.r['BankPartyName']?.value;
@@ -1536,8 +1850,13 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get(
       'LedgerMasterSid'
     );
+    const isLockedRow = this.isAutoPartyRow(detailIndex) || this.isAutoBankRow(detailIndex);
+
     if (coa.SubledgerName === 'Y') {
-      ledgerCtrl.enable();
+      // Only enable the ledger dropdown if this is NOT an auto-inserted row
+      if (!isLockedRow) {
+        ledgerCtrl.enable();
+      }
       ledgerCtrl.setValidators([Validators.required]);
       this.accountService
         .getLedgerByCOAMasterSid({
@@ -1558,6 +1877,10 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
               } else {
                 ledgerCtrl.setValue(null);
               }
+            }
+            // Re-disable after async data load for auto-inserted rows
+            if (isLockedRow) {
+              ledgerCtrl.disable();
             }
           } else {
             this.appSettingService.showError('Error fetching ledger for COA');
@@ -1589,10 +1912,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         (c) => c.CurrencyMasterSid === currencySid
       )?.currencyCode;
       row.get('ExchangeRate')?.setValue(
-        this.currencyFormatService.formatExchangeRate({
-          value: Number(resp),
-          currencyCode,
-        })
+        this.getFormattedAndPaddedExchangeRate(Number(resp),
+          currencySid,
+        )
       );
       this.calculateLocalAmount(detailIndex, true);
     });
@@ -2004,6 +2326,46 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     );
   }
 
+  /**
+   * Check if a detail row is the auto-inserted party row.
+   */
+  isAutoPartyRow(index: number): boolean {
+    const row = this.detailItems.at(index);
+    if (!row) return false;
+    const partySid = this.r['PartyMasterSid']?.getRawValue();
+    return partySid && row.get('LedgerMasterSid')?.getRawValue() === partySid;
+  }
+
+  /**
+   * Check if a detail row is the auto-inserted bank/cash row.
+   */
+  isAutoBankRow(index: number): boolean {
+    const row = this.detailItems.at(index);
+    if (!row) return false;
+    const bankCoaSid = this.r['BankCOA']?.getRawValue();
+    return bankCoaSid && row.get('COAMasterSid')?.getRawValue() === bankCoaSid;
+  }
+
+  /**
+   * Check if a detail row deletion is blocked (auto-inserted party/bank row).
+   */
+  isDeleteBlocked(index: number): boolean {
+    return this.isAutoPartyRow(index) || this.isAutoBankRow(index);
+  }
+
+  /**
+   * Get tooltip text for the delete button.
+   */
+  getDeleteTooltip(index: number): string {
+    if (this.isAutoPartyRow(index)) {
+      return 'Clear the Party field to remove this row';
+    }
+    if (this.isAutoBankRow(index)) {
+      return 'Clear the Bank/Cash field to remove this row';
+    }
+    return '';
+  }
+
   get r(): { [key: string]: AbstractControl } {
     return this.receiptForm.controls || {};
   }
@@ -2108,14 +2470,17 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
+      exCtrl?.setValue(this.getFormattedAndPaddedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
       this.calculateLocalAmount(index,true);
       return;
     }
 
     // DIFFERENT CURRENCY
-    exCtrl?.enable({ emitEvent: false });
+    const isLockedRow = this.isAutoPartyRow(index) || this.isAutoBankRow(index);
+    if (!isLockedRow) {
+      exCtrl?.enable({ emitEvent: false });
+    }
     this.patchCurrencyExchangeRateForDetail(currencySid, index);
   }
 
@@ -2146,8 +2511,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom:
-        this.receiptForm.get('VoucherDate')?.getRawValue ?? new Date(),
+      EffectiveFrom: this.receiptForm.get('VoucherDate')?.getRawValue()
+        ? new Date(this.receiptForm.get('VoucherDate').getRawValue())
+        : new Date(),
       segment: 'revenue',
     };
     this.accountService.getExchangeRate(payload).subscribe((resp: any) => {
@@ -2224,28 +2590,20 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     }
   }
 
-  toggleCashOrBank(event: any) {
-    const element = event.target as HTMLInputElement;
-    const ctrl = this.receiptForm.get('CashOrBank');
-    if (event instanceof KeyboardEvent && event.key === 'Enter') {
-      element.checked = !element.checked;
-    }
-
-    ctrl?.setValue(element.checked);
-    this.r['BankCOA']?.setValue(null);
-
+  toggleCashOrBank(selectedMode: any) {
     const mode = this.receiptForm.get('InstrumentMode');
     const number = this.receiptForm.get('InstrumentNumber');
     const date = this.receiptForm.get('InstrumentDate');
 
     this.receiptForm.patchValue({
+      BankCOA : null,
       InstrumentMode: null,
       InstrumentNumber: '',
       InstrumentDate: null,
       ClearanceDate: null,
     });
 
-    if (element.checked) {
+    if (selectedMode === 'C') {
       mode?.clearValidators();
       number?.clearValidators();
       date?.clearValidators();
@@ -2258,6 +2616,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     mode?.updateValueAndValidity();
     number?.updateValueAndValidity();
     date?.updateValueAndValidity();
+
+    // Update filtered COA list since bank/cash selection was cleared
+    this.rebuildFilteredCoaListForAllRows();
   }
 
   getExchangeRate(currency: number | string): Observable<number> {
@@ -2293,8 +2654,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode,
       toCurrencyCode,
-      EffectiveFrom:
-        this.receiptForm.get('VoucherDate')?.getRawValue ?? new Date(),
+      EffectiveFrom: this.receiptForm.get('VoucherDate')?.getRawValue()
+        ? new Date(this.receiptForm.get('VoucherDate').getRawValue())
+        : new Date(),
       segment: 'revenue',
     };
 
@@ -2445,7 +2807,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       );
       return config?.exchangeDecimal;
     }
-    return 2;
+    return 4;
   }
   /**
    * Get the number of decimal places allowed for exchange rates
@@ -2456,7 +2818,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
       return config?.exchangeDecimal;
     }
-    return 2;
+    return 4;
   }
   /**
    * Format an amount with currency symbol and comma separators
@@ -2508,6 +2870,31 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       value: rate,
       currencyCode: currency?.currencyCode,
     });
+  }
+
+
+  /**
+   * Format an exchange rate as a string
+   * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
+   */
+  /**
+   * Format an exchange rate as a string
+   * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
+   */
+  public getFormattedAndPaddedExchangeRate(
+    rate: number,
+    CurrencyMasterSid: number,
+  ): string {
+    const currency = this.currencyList.find(
+      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid,
+    );
+    const formattedExchangeRate = this.currencyFormatService.formatExchangeRate({
+      value: rate,
+      currencyCode: currency?.currencyCode,
+    });
+    return formattedExchangeRate.toFixed(
+      this.getExchangeRateDecimalPlaces(CurrencyMasterSid),
+    );
   }
 
   validateAmount() {
@@ -2671,6 +3058,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         matchLocalAmt: null,
         matchPartyAmt: null,
       });
+      this.updateDetailAmountsFromMatching();
       this.markAsDirty();
       return;
     }
@@ -2685,16 +3073,38 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
 
     row.patchValue({
       matchCurr: currencySid,
-      matchExRate: exRate,
-      matchCurrAmt: osCurrAmt,
-      matchLocalAmt: osLocalAmt,
+      matchExRate: this.getFormattedAndPaddedExchangeRate(exRate, currencySid),
+      matchCurrAmt: this.getFormattedAndPaddedAmount(osCurrAmt, currencySid),
+      matchLocalAmt: this.getFormattedAndPaddedAmount(osLocalAmt, currencySid),
     });
     this.calculatePartyAmount(index);
     row.get('isTicked')?.setValue(checked);
+    this.updateDetailAmountsFromMatching();
     this.markAsDirty();
 
     // this.calculateLocalAmountForMatchRow(index);
   }
+
+  /**
+   * Update party row (index 0) and bank row (index 1) amounts
+   * based on total matched currency/local amounts.
+   */
+  updateDetailAmountsFromMatching() {
+    const totalMatchCurrAmt = Number(this.getTotalMatchPartyAmt());
+    const partyRow = this.detailItems.at(0) as FormGroup;
+    if (partyRow) {
+      partyRow.patchValue({ Amount: totalMatchCurrAmt });
+      this.calculateLocalAmount(0, true);
+    }
+    const headerCurrency = this.r['CurrencyMasterSid']?.getRawValue();
+    const bankRow = this.detailItems.at(1) as FormGroup;
+    const bankCurrency = bankRow.get('CurrencyMasterSid')?.value;
+    if (bankRow) {
+      bankRow.patchValue({ Amount: headerCurrency === bankCurrency ?  totalMatchCurrAmt : 0 });
+      this.calculateLocalAmount(1, true);
+    }
+  }
+
   validateMatchLimits(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
 

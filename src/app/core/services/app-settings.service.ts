@@ -160,6 +160,10 @@ export class AppSettingsService {
         }
     }
 
+    setCurrentFinancialYear(year: FinancialYear) {
+        localStorage.setItem('current-financial-year', this.encrypt(year));
+    }
+
     getCurrentFinancialYear(): FinancialYear | null {
         const encryptedYear = localStorage.getItem('current-financial-year');
         if (!encryptedYear) return null;
