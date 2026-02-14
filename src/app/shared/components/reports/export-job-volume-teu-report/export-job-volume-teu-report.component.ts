@@ -51,8 +51,6 @@ export class ExportJobVolumeTeuReportComponent {
 
 
   getExcelData(): ComplexReportExportConfig {
-
-  /* ---------------- TABLE HEADERS ---------------- */
   const tableHeaders: ExcelHeader[] = [
     { key: 'dept', label: 'Department' },
     { key: 'jobNo', label: 'Job No' },
@@ -69,7 +67,6 @@ export class ExportJobVolumeTeuReportComponent {
     { key: 'chargebaleWt', label: 'Chargeable Wt' }
   ];
 
-  /* ---------------- ROW DATA ---------------- */
   const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
     const cells: ExcelCell[] = [
       { value: item.dept || '' },
@@ -83,25 +80,24 @@ export class ExportJobVolumeTeuReportComponent {
       { value: item.portOfdischarge || '' },
       { value: item.portOfDestination || '' },
       { value: item.TEUCount ?? 0 },
-      { value: item.weight ?? 0 },
-      { value: item.chargebaleWt ?? 0 }
+      { value: this.formatNumber(item.weight ?? 0) },
+      { value: this.formatNumber(item.chargebaleWt ?? 0) }
     ];
 
     return { cells, style: 'data' };
   });
 
-  /* ---------------- FINAL CONFIG ---------------- */
   return {
     fileName: 'Export-Job-Volume-TEU-Report',
     sheetName: 'ExportJobVolumeTEU',
     reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company Name',
+      companyName: this.currentCompany?.companyName || '',
       reportTitle: `Export Job Volume and TEU Report`,
       additionalInfo: [
         { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
         { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-        { label: 'Branch', value: this.fullData?.branchNames || '' },
-        { label: 'Dept', value: this.fullData?.departmentNames || '' }
+        { label: 'Branch', value: this.fullData?.branchesInvolved || '' },
+        { label: 'Dept', value: this.fullData?.departmentInvoled || '' }
       ]
     },
     tableHeaders,
@@ -132,5 +128,12 @@ export class ExportJobVolumeTeuReportComponent {
     } catch {
       return String(date);
     }
+  }
+
+   private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
   }
 }

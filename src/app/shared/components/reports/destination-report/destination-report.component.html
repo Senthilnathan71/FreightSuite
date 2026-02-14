@@ -9,43 +9,43 @@
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">HBL From Date </strong>
+                    <strong style="width: 120px;">HBL From Date </strong>
                     <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">HBL To Date </strong>
+                    <strong style="width: 120px;">HBL To Date </strong>
                     <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Branch </strong>
+                    <strong style="width: 120px;">Branch </strong>
                     <p class="ms-1">: {{ fullData?.branchesInvoled }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">POL </strong>
+                    <strong style="width: 120px;">POL </strong>
                     <p class="ms-1">: {{ fullData?.POL }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">POD </strong>
+                    <strong style="width: 120px;">POD </strong>
                     <p class="ms-1">: {{ fullData?.POD }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Dept </strong>
+                    <strong style="width: 120px;">Dept </strong>
                     <p class="ms-1">: {{ fullData?.departmentNames }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Customer </strong>
+                    <strong style="width: 120px;">Customer </strong>
                     <p class="ms-1">: {{ fullData?.Customer }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Salesperson </strong>
+                    <strong style="width: 120px;">Salesperson </strong>
                     <p class="ms-1">: {{ fullData?.SalePerson }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Transhipment </strong>
+                    <strong style="width: 120px;">Transhipment </strong>
                     <p class="ms-1">: {{ params?.Transhipment === true ? 'Yes' : 'No'}}</p>
                 </div>
 
@@ -187,14 +187,14 @@
                         <td>{{item.houseStatus}}</td>
                         <td>{{item.serviceLevelName}}</td>
                         <!-- shipment port details -->
-                        <td>{{item.POLCode}}</td>
-                        <td>{{item.POLName}}</td>
-                        <td>{{item.POLCountryCode}}</td>
-                        <td>{{item.POLCountryName}}</td>
-                        <td>{{item.PODCode}}</td>
-                        <td>{{item.PODName}}</td>
-                        <td>{{item.PODCountryName}}</td>
-                        <td>{{item.PODCountryCode}}</td>
+                        <td>{{item.POOCode}}</td>
+                        <td>{{item.POOName}}</td>
+                        <td>{{item.POOCountryCode}}</td>
+                        <td>{{item.POOCountryName}}</td>
+                        <td>{{item.FPDCode}}</td>
+                        <td>{{item.FPDName}}</td>
+                        <td>{{item.FDCCounryName}}</td>
+                        <td>{{item.FDCCountryCode}}</td>
                         <td>{{item.blType}}</td>
                         <td></td>
                         <td>{{item.ETD | formatDate}}</td>
@@ -223,7 +223,7 @@
                         <td>{{item.paymentTerms}}</td>
                         <!-- <td></td> -->
                         <td>{{item.internalNote}}</td>
-                        <td>{{item.noOfContainers}}</td>
+                        <td>{{item.nofcontainer}}</td>
                         <!-- Feet Contanier -->
                         <td>{{item.numberOfTwentyFt}}</td>
                         <td>{{item.numberOfFourtyFt}}</td>

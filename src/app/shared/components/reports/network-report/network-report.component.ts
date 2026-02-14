@@ -48,7 +48,6 @@ export class NetworkReportComponent {
   }
 
   getExcelData(): ComplexReportExportConfig {
-
   const tableHeaders: ExcelHeader[] = [
     { key: 'customerName', label: 'Customer' },
     { key: 'network', label: 'Network' },
@@ -81,16 +80,16 @@ export class NetworkReportComponent {
       { value: item.masterJobNo || '' },
       { value: item.HblNo || '' },
       { value: item.MBLNo || '' },
-      { value: item.totalRevenue ?? 0 },
-      { value: item.totalCost ?? 0 },
-      { value: item.profit ?? 0 },
+      { value: this.formatNumber(item.totalRevenue ?? 0) },
+      { value: this.formatNumber(item.totalCost ?? 0) },
+      { value: this.formatNumber(item.profit ?? 0) },
       { value: item.nominationBy || '' },
       { value: item.originAgent || '' },
       { value: item.originNetwork || '' },
       { value: item.destinationAgent || '' },
       { value: item.destinationNetwork || '' },
-      { value: item.grossWt ?? 0 },
-      { value: item.netWt ?? 0 },
+      { value: this.formatNumber(item.grossWt ?? 0) },
+      { value: this.formatNumber(item.netWt ?? 0) },
       { value: item.totalNoOfTEU ?? 0 }
     ],
     style: 'data'
@@ -99,21 +98,17 @@ export class NetworkReportComponent {
   return {
     fileName: 'Network-Report',
     sheetName: 'NetworkReport',
-
     reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company',
+      companyName: this.currentCompany?.companyName || '',
       reportTitle: 'Network Report',
       additionalInfo: [
-        { label: 'Branch', value: this.currentBranch?.branchName || '' },
         { label: 'From Date', value: this.formatDate(this.fullData?.FromDate) },
         { label: 'To Date', value: this.formatDate(this.fullData?.ToDate) },
-        { label: 'Network', value: this.params?.Network || '' }
+        { label: 'Network', value: this.params.Network ? this.params?.Network : 'All Network' }
       ]
     },
-
     tableHeaders,
     rows,
-
     columnWidths: [
       25, 15, 18, 15, 18, 18, 15, 15,
       15, 15, 15, 15, 20, 20, 22, 22,
@@ -122,6 +117,12 @@ export class NetworkReportComponent {
   };
 }
 
+ private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
  private formatDate(date: any): string {
     if (!date) return '';
     try {

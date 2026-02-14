@@ -196,12 +196,12 @@ export class FreightMoMGrowthReportComponent {
       cells: [
         { value: monthLabel },
         { value: dept.totalShipment },
-        { value: dept.totalRevenue },
-        { value: dept.totalCost },
-        { value: dept.grossProfit },
+        { value: this.formatNumber(dept.totalRevenue) },
+        { value: this.formatNumber(dept.totalCost) },
+        { value: this.formatNumber(dept.grossProfit) },
         { value: gpPercent.toFixed(2) + ' %' },
-        { value: dept.totalGrossWt },
-        { value: dept.totalVolume },
+        { value: this.formatNumber(dept.totalGrossWt) },
+        { value: this.formatNumber(dept.totalVolume) },
         { value: dept.totalNoOfTEU },
         { value: dept.jobCount },
         { value: avgRevenue.toFixed(2) },
@@ -217,12 +217,12 @@ export class FreightMoMGrowthReportComponent {
       cells: [
         { value: 'Total' },
         { value: total.totalShipment },
-        { value: total.totalRevenue },
-        { value: total.totalCost },
-        { value: total.grossProfit },
+        { value: this.formatNumber(total.totalRevenue) },
+        { value: this.formatNumber(total.totalCost) },
+        { value: this.formatNumber(total.grossProfit) },
         { value: '' },
-        { value: total.totalGrossWt },
-        { value: total.totalVolume },
+        { value: this.formatNumber(total.totalGrossWt) },
+        { value: this.formatNumber(total.totalVolume) },
         { value: total.totalNoOfTEU },
         { value: total.jobCount },
         { value: '' },
@@ -232,4 +232,10 @@ export class FreightMoMGrowthReportComponent {
     };
   }
 
+   private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
 }
