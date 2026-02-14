@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -25,7 +25,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { CommonService } from 'src/app/common/common.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
-import { getDefaultTodayDate } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
@@ -188,6 +188,8 @@ export class ReverseVoucherEntryComponent {
     // TDS Configuration
     // tdsConfig: any = null;
     currentUserState: string;
+    fyMinDate: NgbDateStruct | null = null;
+    fyMaxDate: NgbDateStruct | null = null;
     currentFinancialYear : number;
     currentCountry : number;
     currentCurrency: number;
@@ -241,6 +243,13 @@ export class ReverseVoucherEntryComponent {
       this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
       this.mps.init().subscribe();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+
+      const fy = this.appSettingService.getCurrentFinancialYear();
+      if (fy) {
+        this.fyMinDate = toNgbDateStruct(fy.StartDate);
+        this.fyMaxDate = toNgbDateStruct(fy.EndDate);
+      }
+
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
       this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
       this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
@@ -321,11 +330,13 @@ export class ReverseVoucherEntryComponent {
   
     initForm() {
       const today = getDefaultTodayDate();
+      const fyDefault = this.appSettingService.getCurrentFinancialYear();
+      const defaultVoucherDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
       this.reverseVoucherForm = this.fb.group({
         // Header
         VoucherNumber: [{ value: '', disabled: true }],
         ReversalVoucher:[null],
-        VoucherDate: [today, Validators.required],
+        VoucherDate: [defaultVoucherDate, Validators.required],
         PartyMasterSid: [{ value: null, disabled: true }], // Vendor
         PartyName:  [{ value: '', disabled: true }],
         PartyAddress: [{ value: '', disabled: true }],
@@ -2324,6 +2335,20 @@ export class ReverseVoucherEntryComponent {
     }
   
     onSubmit() {
+      // Validate voucher date is within financial year
+      const fy = this.appSettingService.getCurrentFinancialYear();
+      if (fy) {
+        const voucherDate = new Date(this.reverseVoucherForm.getRawValue().VoucherDate);
+        const fyStart = new Date(fy.StartDate);
+        const fyEnd = new Date(fy.EndDate);
+        if (voucherDate < fyStart || voucherDate > fyEnd) {
+          this.appSettingService.showWarning(
+            `Voucher date must be within the financial year (${fy.YearName})`
+          );
+          return;
+        }
+      }
+
       // Re-validate voucher date constraints at save time (edit mode may have stale state)
       this.applyVoucherDateConstraints();
       // Block save if voucher period grace days exceeded or module closed

@@ -5,6 +5,14 @@ import { StorageMap } from "@ngx-pwa/local-storage";
 import { ActiveToast, ToastrService } from "ngx-toastr";
 import * as CryptoJS from 'crypto-js';
 
+export interface FinancialYear {
+    YearMasterSid: number;
+    YearName: string;
+    CurrentYear: string;
+    StartDate: string;
+    EndDate: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -152,7 +160,7 @@ export class AppSettingsService {
         }
     }
 
-    getCurrentFinancialYear() {
+    getCurrentFinancialYear(): FinancialYear | null {
         const encryptedYear = localStorage.getItem('current-financial-year');
         if (!encryptedYear) return null;
 

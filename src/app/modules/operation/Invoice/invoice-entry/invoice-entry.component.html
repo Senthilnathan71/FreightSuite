@@ -264,6 +264,8 @@
                       #d1="ngbDatepicker"
                       formControlName="VoucherDate"
                       (click)="d1.toggle()"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       (dateSelect)="onVoucherDateChange()"
                     />
                     <button

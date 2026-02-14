@@ -328,6 +328,8 @@
                       (click)="d1.toggle()"
                       readonly
                       formControlName="VoucherDate"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       [footerTemplate]="footerTemplate1"
                       [class.is-invalid]="isFieldInvalid('VoucherDate')"
                     />
@@ -382,7 +384,7 @@
                     bindLabel="CustomerName"
                     bindValue="CustomerName"
                     (itemSelected)="onCustomerChange($event)"
-                    readonly
+                    
                   >
                   </dofi-searchable-dropdown>
                   <label class="input-label">Customer</label>

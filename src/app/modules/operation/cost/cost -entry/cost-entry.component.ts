@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, OnDestroy, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { NgbDatepickerModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
@@ -23,7 +23,7 @@ import { BookingRateDetails, TaxCalculationService } from '../../services/tax-ca
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ToastrService } from 'ngx-toastr';
-import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 import { GetStandardChargesComponent } from '../get-standard-charges/get-standard-charges.component';
@@ -62,6 +62,8 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 export class CostEntryComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   selectedTab = 'Sales and cost';
   chargeList: any[] = [];
   filteredChargeList : any[] = [];
@@ -374,6 +376,12 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   ) { this.initRateForm();}
 
   ngOnInit(): void {
+  const fy = this.appSettingService.getCurrentFinancialYear();
+  if (fy) {
+    this.fyMinDate = toNgbDateStruct(fy.StartDate);
+    this.fyMaxDate = toNgbDateStruct(fy.EndDate);
+  }
+
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   this.currentCompanyCountry = this.appSettingService.getCurrentCompanyCountry();
@@ -1825,7 +1833,9 @@ createRateFormGroup(data?: any): FormGroup {
   initVoucherForm() {
     const currentCompanyCurrencyId = this.currentCompany?.CurrencyMasterSid;
     const currentCompanyCurrencyCode = this.currentCompanyCurrency?.code;
-    const todayDate = getDefaultTodayDate();
+    const today = getDefaultTodayDate();
+    const fyForDefault = this.appSettingService.getCurrentFinancialYear();
+    const todayDate = fyForDefault && (today < new Date(fyForDefault.StartDate) || today > new Date(fyForDefault.EndDate)) ? fyForDefault.EndDate : today;
     const narration = this.autoGenerateNarration();
 
     // Validation related checking
@@ -1862,7 +1872,7 @@ createRateFormGroup(data?: any): FormGroup {
       HouseNumber : [{ value : '' , disabled : true }],
       MasterNumber : [{ value : '' , disabled : true }],
       HouseJobSid : [null , isHouseFieldsRequired ? [Validators.required] : []],
-      MasterJobSid : [null , isMasterFieldsRequired || isHouseFieldsRequired ? [Validators.required] : []],
+      MasterJobSid : [null , isMasterFieldsRequired ? [Validators.required] : []],
       CurrencyMasterSid : [ currentCompanyCurrencyId || null ,[Validators.required]],
       CurrencyCode : [ currentCompanyCurrencyCode || null ,[Validators.required]],
       ExchangeRate : [{ value : 1 , disabled : true },[Validators.required , greaterThanZero()]],
@@ -1936,8 +1946,6 @@ createRateFormGroup(data?: any): FormGroup {
       this.isCurrentScreen('House Air Waybill');
 
     const isMasterFieldsRequired =
-      this.isCurrentScreen('House Job') || 
-      this.isCurrentScreen('House Air Waybill') ||
       this.isCurrentScreen('Master Job') ||
       this.isCurrentScreen('Master Air Waybill');
     
@@ -2831,6 +2839,22 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = this.voucher['VoucherDate']?.value ? new Date(this.voucher['VoucherDate']?.value) : null;
+      if (voucherDate) {
+        const fyStart = new Date(fy.StartDate);
+        const fyEnd = new Date(fy.EndDate);
+        if (voucherDate < fyStart || voucherDate > fyEnd) {
+          this.appSettingService.showWarning(
+            `Voucher date must be within the financial year (${fy.YearName})`
+          );
+          return;
+        }
+      }
+    }
+
     //NOTE - Check if operation date is available
     let operationDate = this.parentFormValue?.EffectiveDate ? new Date(this.parentFormValue?.EffectiveDate) : null;
     if(!operationDate){
@@ -3031,7 +3055,7 @@ createRateFormGroup(data?: any): FormGroup {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherDate: getDefaultTodayDate(),
+      VoucherDate: rawValue.VoucherDate,
       VoucherType: rawValue.VoucherType,
       PartyMasterSid: rawValue.PartyMasterSid,
       COAMasterSid: rawValue.COAMasterSid,
@@ -3046,7 +3070,7 @@ createRateFormGroup(data?: any): FormGroup {
       TaxType: rawValue.TaxType,
       CurrencyMasterSid: rawValue.CurrencyMasterSid,
       CurrencyCode: rawValue.CurrencyCode,
-      ExchangeRate: rawValue.ExchangeRate,
+      ExchangeRate: toNumber(rawValue.ExchangeRate),
       DocumentNumber: rawValue.DocumentNumber,
       DocumentDate: rawValue.DocumentDate,
       DepartmentMasterSid: rawValue.DepartmentMasterSid,

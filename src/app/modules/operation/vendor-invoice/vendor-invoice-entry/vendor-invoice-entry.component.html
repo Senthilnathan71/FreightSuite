@@ -191,6 +191,8 @@
                     #d1="ngbDatepicker"
                     formControlName="VoucherDate"
                     (click)="d1.toggle()"
+                    [minDate]="fyMinDate"
+                    [maxDate]="fyMaxDate"
                     [footerTemplate]="footerTemplate1"
                     [class.is-invalid]="isFieldInvalid('VoucherDate')"
                     (dateSelect)="onVoucherDateChange()"
