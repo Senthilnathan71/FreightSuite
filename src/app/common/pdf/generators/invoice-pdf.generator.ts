@@ -1,4 +1,6 @@
-  /**
+ 
+ 
+ /**
    * Invoice PDF Generator - COMPLETE CORRECTED VERSION
    * Generates Invoice PDFs matching HTML template exactly
    * Uses invoicePrintData for all display content
@@ -184,7 +186,7 @@
 
     return {
       text: title,
-      style: 'invoiceTitle',
+      style: 'Credit Note Invoice',
       alignment: 'center',
       bold: true,
       fontSize: 12,

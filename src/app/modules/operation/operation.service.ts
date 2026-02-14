@@ -474,7 +474,7 @@ getHouseJobARAPData(HouseJobSid: number) {
   }
   // Job Close Operations
   searchJobClose(payload: any) {
-    return this.http.post<{ data: any[] }>('job-close/search-list', payload).pipe(
+    return this.http.post<{ data: any[] }>('master-job/job-close/search-list', payload).pipe(
       map((resp) => {
         return resp;
       })

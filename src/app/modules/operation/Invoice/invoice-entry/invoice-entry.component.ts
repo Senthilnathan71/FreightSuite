@@ -51,7 +51,7 @@ import { CurrencyFormatService } from 'src/app/core/services/currency-format.ser
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
-import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -133,6 +133,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   currentBranchCityName: string | null;
   salesmanFetched : boolean = false;
   salesmanName : string | null = null;
+
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
 
   invoiceForm!: FormGroup;
   dueDate : any;
@@ -321,6 +324,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       const currentFinancialYear =
       this.appSettingService.getCurrentFinancialYear();
 
+      if (currentFinancialYear) {
+        this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
+        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+      }
+
       // Getting Menu Id from MenuPermissionService
       this.currentMenuId = this.mps.getMenuId();
       this.mps.init().subscribe();
@@ -383,10 +391,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentCompanyCurrency?.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency.code;
     const today = getDefaultTodayDate();
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const defaultVoucherDate = fy && (today < new Date(fy.StartDate) || today > new Date(fy.EndDate)) ? fy.EndDate : today;
 
     this.invoiceForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],
-      VoucherDate: [today, Validators.required],
+      VoucherDate: [defaultVoucherDate, Validators.required],
       CustomerMasterSid: [null],
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],
@@ -2138,6 +2148,21 @@ isSeaDepartment(): boolean {
     resolve?: (value:boolean) => void,
     isPostingTrue?: boolean
   ) {
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = new Date(this.invoiceForm.getRawValue().VoucherDate);
+      const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (voucherDate < fyStart || voucherDate > fyEnd) {
+        this.appSettingService.showWarning(
+          `Voucher date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed

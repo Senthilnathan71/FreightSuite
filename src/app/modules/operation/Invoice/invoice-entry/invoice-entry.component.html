@@ -264,6 +264,8 @@
                       #d1="ngbDatepicker"
                       formControlName="VoucherDate"
                       (click)="d1.toggle()"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       (dateSelect)="onVoucherDateChange()"
                     />
                     <button
@@ -1754,7 +1756,7 @@
                     <strong>Invoice No.</strong>
                   </div>
                   <div>
-                    : {{ invoicePrintData?.InvoiceNo }}
+                    : {{ invoicePrintData?.InvoiceNo }} @if(currentCompany.CompanyMasterSid === 13) { <span> (CREATED)</span> }
                   </div>
                 </div>
                 <div style="display: flex">
@@ -2690,33 +2692,33 @@
           </div>
 
           <!-- Footer -->
-          <footer
-            style="
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              text-align: center;
-              font-size: 10pt;
-              padding: 10px;
-              box-sizing: border-box;
-              position:relative;
-            "
-          >
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                font-size: 14px;
-              "
-            >
-              <div>Printed By : {{ userData.userName }}</div>
-              <span
-                >This document is computer-generated and does not require a
-                signature.</span
-              >
-              <div>Printed On : {{ currentDate | formatDate }}</div>
-            </div>
-          </footer>
+       <!-- Page wrapper -->
+<div style="
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+">
+  <!-- Your main content goes here -->
+  <main style="flex: 1;">
+    <!-- invoice content -->
+  </main>
+
+  <!-- Footer pushed to bottom -->
+  <footer style="
+    width: 100%;
+    font-size: 10pt;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-top: auto;
+  ">
+    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+      <div>Printed By : {{ userData.userName }}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div>Printed On : {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
+</div>
+          
         </div>
       </div>
     </div>

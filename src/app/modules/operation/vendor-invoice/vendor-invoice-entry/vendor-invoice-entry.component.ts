@@ -34,7 +34,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
-import { errorLogger, getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -100,10 +100,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
     cityCode : string;
   }
   currentUserState: string;
-  currentFinancialYear: number;
+  currentFinancialYear: any;
   currentCountry: number;
   currentBranchCityId: number;
   currentBranchCityName: string | null;
+
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
 
   vendorInvoiceForm!: FormGroup;
   temporaryForm !: FormGroup;
@@ -301,17 +304,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.currentBranchCity = this.appSettingService.getCurrentBranchCity();
       const currentFinancialYear = this.appSettingService.getCurrentFinancialYear();
       this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
-      
-      
+
+      if (currentFinancialYear) {
+        this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
+        this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
+        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+      }
+
       this.currentMenuId = this.mps.getMenuId();
       this.mps.init().subscribe();
 
       // Assigning value to global variables
       this.currentCompanyCountryId = Number(this.currentCompany?.CountryMasterSid) || this.currentCompanyCountry.CountryMasterSid;
       this.currentCompanyCountryCode = String(this.currentCompanyCountry.countryCode).trim().toLowerCase();
-      if (currentFinancialYear) {
-        this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
-      }
       if(this.currentBranchState){
         this.currentBranchStateName = this.currentBranchState.stateName || this.currentBranch?.stateMaster?.stateName;
       }
@@ -352,11 +357,21 @@ export class VendorInvoiceEntryComponent implements OnInit {
   initForm() {
     const companyCurrencyId = this.currentCompany.CurrencyMasterSid || this.currentCompanyCurrency.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency.code;
+
+    const currentFinancialYear = this.appSettingService.getCurrentFinancialYear();
     const today = getDefaultTodayDate();
+    let defaultDate: Date | string = today;
+    if (currentFinancialYear) {
+      const fyStart = new Date(currentFinancialYear.StartDate);
+      const fyEnd = new Date(currentFinancialYear.EndDate);
+      if (today < fyStart || today > fyEnd) {
+        defaultDate = currentFinancialYear.EndDate;
+      }
+    }
 
     this.vendorInvoiceForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],
-      VoucherDate: [today, Validators.required],
+      VoucherDate: [defaultDate, Validators.required],
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],
       PartyAddress: [{ value: '', disabled: true },Validators.required],
@@ -1606,6 +1621,21 @@ export class VendorInvoiceEntryComponent implements OnInit {
     resolve?: (value:boolean) => void,
     isPostingTrue ?: boolean
   ) {
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = new Date(this.vendorInvoiceForm.getRawValue().VoucherDate);
+      const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (voucherDate < fyStart || voucherDate > fyEnd) {
+        this.appSettingService.showWarning(
+          `Voucher date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed

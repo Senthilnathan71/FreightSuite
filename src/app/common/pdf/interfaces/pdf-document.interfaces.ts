@@ -302,8 +302,6 @@ export interface InvoicePdfData extends PdfDocumentBase {
   };
 }
 
-
-
 export interface InvoiceBankDetail {
   bankName?: string;
   accountNo?: string;
@@ -333,6 +331,123 @@ export interface InvoiceChargeData extends PdfChargeItem {
   currencyCode?: string;
   roe?: number;
 }
+
+
+
+// =====================
+// CREDIT NOTE PDF DATA
+// =====================
+
+export interface CreditNotePdfData extends PdfDocumentBase {
+   credit: {
+    invoiceNo?: string;
+    invoiceDate?: Date | string;
+    dueDate?: Date | string;
+    customerName?: string;
+    customerAddress?: string;
+    customerGstVat?: string;
+    jobNo?: string;
+    hblNo?: string;
+    mblNo?: string;
+    bookingNo?: string;
+    vesselVoyage?: string;
+    pol?: string;
+    pod?: string;
+    fpd?: string;
+    placeOfSupply?: string;
+    exchangeRate?: number;
+    currencyCode?: string;
+    postStatus?: 'P' | 'U';
+    remarks?: string;
+    salesPerson?: string;
+    shipperName?: string;
+    consigneeName?: string;
+    freightTerms?: string;
+    pkgWtVol?: string;
+    etd?: string;
+    eta?: string;
+    containerType?: string;
+    containerNumber?: string;
+    customerRefNo?: string;
+    irnNumber?: string;
+    // Additional fields for matching original PDF
+    shipperRefNo?: string;
+    loadingPort?: string;
+    finalDestination?: string;
+    invoiceDueDate?: Date | string;
+    vesselName?: string;
+    voyageNo?: string;
+    flightName?: string;
+    flightNo?: string;
+  }; 
+  
+  charges: CreditChargeData[];
+   totals: {
+    subTotal: number;
+    taxAmount: number;
+    grandTotal: number;
+    currency: string;
+  };
+
+  bankDetails?: CreditBankDetail[];
+    terms?: PdfTermItem[];
+    amountInWords?: string;
+    localCurrency?: string;
+  taxDisplayConfig?: {
+    showCGST: boolean;
+    showSGST: boolean;
+    showIGST: boolean;
+    showVAT: boolean;
+  };
+   creditnoteTitle?: string;
+  companyGstCode?: string;
+  companyPan?: string;
+  // Additional fields for matching original PDF
+  companyVatNo?: string;
+  isSeaMode?: boolean;
+  isVATMode?: boolean;
+  authorisedSignatory?: boolean;
+
+  cargoDetails?: {
+    packages?: number | string;
+    commodityDesc?: string;
+    grossWeight?: number | string;
+    chargeableWeight?: number | string;
+    cbm?: number | string;
+  };
+}
+
+export interface CreditBankDetail {
+  bankName?: string;
+  accountNo?: string;
+  ifscCode?: string;
+  swiftCode?: string;
+  branchName?: string;
+  // Additional fields for matching original PDF
+  iban?: string;
+  bankAddress?: string;
+  beneficiaryName?: string;
+}
+
+export interface CreditChargeData extends PdfChargeItem {
+  sno?: number;
+  hsnSacCode?: string;
+  drCr?: 'D' | 'C';
+  taxableAmount?: number;
+  cgstPercent?: number;
+  cgstAmount?: number;
+  sgstPercent?: number;
+  sgstAmount?: number;
+  igstPercent?: number;
+  igstAmount?: number;
+  vatPercent?: number;
+  vatAmount?: number;
+  partyAmount?: number;
+  // Additional fields for matching original PDF
+  currencyCode?: string;
+  roe?: number;
+}
+
 
 // =====================
 // DOCUMENT TYPE ENUMS

@@ -92,7 +92,7 @@
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d2="ngbDatepicker" (click)="d2.toggle()" (dateSelect)="onVoucherDateChange()" formControlName="voucherDate" />
+                                    #d2="ngbDatepicker" (click)="d2.toggle()" [minDate]="fyMinDate" [maxDate]="fyMaxDate" (dateSelect)="onVoucherDateChange()" formControlName="voucherDate" />
                                 <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>

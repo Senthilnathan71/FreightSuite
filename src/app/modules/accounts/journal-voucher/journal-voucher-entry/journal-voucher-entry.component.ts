@@ -22,7 +22,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { CommonService } from 'src/app/common/common.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
-import { toNumber } from 'src/app/common/helper';
+import { toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { JournalVoucherPrintComponent } from '../print/journal-voucher-print/journal-voucher-print.component';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
@@ -107,6 +107,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   currentCompany: any;
   filteredChargeList: any[][] = [];
   currentBranch: any;
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   currentFinancialYear: number;
   currentCountry: number;
   currentCurrency: number;
@@ -186,6 +188,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       this.appSettingService.getCurrentFinancialYear();
       if (currentFinancialYear) {
         this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
+        this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
+        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
       }
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();
@@ -234,6 +238,21 @@ private subscribeToFormChanges() {
 
 // Add this method to handle save with callback
 private saveDraftWithCallback(resolve?: (value: boolean) => void) {
+  // Validate voucher date is within financial year
+  const fy = this.appSettingService.getCurrentFinancialYear();
+  if (fy) {
+    const voucherDate = new Date(this.form.getRawValue().voucherDate);
+    const fyStart = new Date(fy.StartDate);
+    const fyEnd = new Date(fy.EndDate);
+    if (voucherDate < fyStart || voucherDate > fyEnd) {
+      this.appSettingService.showWarning(
+        `Voucher date must be within the financial year (${fy.YearName})`
+      );
+      if (resolve) resolve(false);
+      return;
+    }
+  }
+
   // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed
@@ -587,7 +606,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
       month: today.getMonth() + 1,
       day: today.getDate(),
     };
-    this.form.patchValue({ voucherDate: this.todayDateInNgbStruct });
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy && (today < new Date(fy.StartDate) || today > new Date(fy.EndDate))) {
+      const fyEnd = toNgbDateStruct(fy.EndDate);
+      this.form.patchValue({ voucherDate: fyEnd });
+    } else {
+      this.form.patchValue({ voucherDate: this.todayDateInNgbStruct });
+    }
   }
 
   loadVoucherPeriods(): void {

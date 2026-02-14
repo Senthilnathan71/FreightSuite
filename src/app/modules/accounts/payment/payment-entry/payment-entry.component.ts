@@ -21,6 +21,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbDateStruct,
   NgbDropdownModule,
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
@@ -113,6 +114,8 @@ import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-
   ],
 })
 export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
@@ -268,6 +271,13 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
       this.appSettingService.getCurrentCompanyCountry()?.countryCode
     ).toLowerCase();
     this.currentYearId = Number(localStorage.getItem('current-year-id'));
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      this.fyMinDate = toNgbDateStruct(fy.StartDate);
+      this.fyMaxDate = toNgbDateStruct(fy.EndDate);
+    }
+
     this.currentMenuId = this.mps.getMenuId();
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
@@ -390,10 +400,12 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   private initializeForm(): void {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultVoucherDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
 
     this.paymentForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }], // Payment Number
-      VoucherDate: [today], // Payment Date
+      VoucherDate: [defaultVoucherDate], // Payment Date
       MultiBranch: [{ value: false, disabled: true }],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
@@ -695,6 +707,21 @@ export class PaymentEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = new Date(this.paymentForm.getRawValue().VoucherDate);
+      const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (voucherDate < fyStart || voucherDate > fyEnd) {
+        this.appSettingService.showWarning(
+          `Voucher date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed

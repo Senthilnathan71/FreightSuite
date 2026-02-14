@@ -348,7 +348,8 @@
                       ngbDatepicker
                       #d1="ngbDatepicker"
                       formControlName="VoucherDate"
-                      [maxDate]="todayDateInNgbStruct"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       (click)="d1.toggle()"
                       (keydown.arrowDown)="d1.open()"
                       (dateSelect)="onVoucherDateChange()"

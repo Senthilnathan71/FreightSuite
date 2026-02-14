@@ -984,7 +984,7 @@
                 <div class="custom-form-group custom-form-group-select-date w-100"
                   [class.filled]="!!voucherForm.get('VoucherDate')?.value">
                   <input class="form-control mb-0 text-danger" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #dv="ngbDatepicker"
-                    formControlName="VoucherDate" (click)="dv.toggle()" />
+                    formControlName="VoucherDate" (click)="dv.toggle()" [minDate]="fyMinDate" [maxDate]="fyMaxDate" />
                   <label class="input-label">Invoice Date
                     <span class="text-danger">*</span>
                   </label>

@@ -143,6 +143,9 @@ export class VendorCreditNoteEntryComponent {
   currentBranchCityId: number;
   currentBranchCityName: string | null;
 
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
+
   vendorCreditNoteForm!: FormGroup;
   headerId: number | null = null;
   vendorCreditNoteData: any;
@@ -353,6 +356,11 @@ export class VendorCreditNoteEntryComponent {
         localStorage.getItem('current-year-id'),
       );
 
+      if (currentFinancialYear) {
+        this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
+        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+      }
+
       this.currentMenuId = this.mps.getMenuId();
       this.mps.init().subscribe();
 
@@ -415,10 +423,12 @@ export class VendorCreditNoteEntryComponent {
       this.currentCompanyCurrency.currencyMasterSid;
     const companyCurrencyCode = this.currentCompanyCurrency.code;
     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultVoucherDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
 
     this.vendorCreditNoteForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],
-      VoucherDate: [today, Validators.required],
+      VoucherDate: [defaultVoucherDate, Validators.required],
       PartyMasterSid: [{ value: null, disabled: true }],
       PartyName: [{ value: '', disabled: true }],
       PartyAddress: [{ value: '', disabled: true }],
@@ -2069,6 +2079,21 @@ export class VendorCreditNoteEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    // Validate voucher date is within financial year
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const voucherDate = new Date(this.vendorCreditNoteForm.getRawValue().VoucherDate);
+      const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (voucherDate < fyStart || voucherDate > fyEnd) {
+        this.appSettingService.showWarning(
+          `Voucher date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed

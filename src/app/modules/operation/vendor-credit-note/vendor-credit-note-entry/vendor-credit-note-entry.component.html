@@ -276,6 +276,8 @@
                     (click)="d1.toggle()"
                     readonly
                     formControlName="VoucherDate"
+                    [minDate]="fyMinDate"
+                    [maxDate]="fyMaxDate"
                     [footerTemplate]="footerTemplate1"
                     [class.is-invalid]="isFieldInvalid('VoucherDate')"
                   />
