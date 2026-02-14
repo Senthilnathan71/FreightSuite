@@ -215,7 +215,8 @@
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="MasterJobDate" ngbDatepicker
+                                                    formControlName="MasterJobDate" [minDate]="fyMinDate"
+                                                   [maxDate]="fyMaxDate" ngbDatepicker
                                                     #masterJobDatePicker="ngbDatepicker"
                                                     (click)="masterJobDatePicker.toggle()" container="body" />
                                                 <button class="btn bi bi-calendar3 px-0"
@@ -924,13 +925,13 @@
                                         </button>
                                         <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                         <button class="action-icon delete" (click)="detachBooking(shipmentIndex,shipment)"
-                                            ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
+                                            ngbTooltip="Detach from Master Job"> <i class="fas fa-unlink text-warning"></i></button>
                                         <span *ngIf="shipment.HouseJobSid && hasContainerMappingForShipment(shipment)" class="action-icon delete"
-                                            ngbTooltip="Container mapped">
+                                            ngbTooltip="Container Assigned">
                                             <i class="fas fa-check-circle text-success" style="font-size: 12px;"></i>
                                         </span>
                                         <span *ngIf="shipment.HouseJobSid && !hasContainerMappingForShipment(shipment)" class="action-icon delete"
-                                            ngbTooltip="No container mapping">
+                                            ngbTooltip="Container Not Assigned">
                                             <i class="fas fa-exclamation-circle text-warning" style="font-size: 12px;"></i>
                                         </span>
             

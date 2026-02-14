@@ -60,7 +60,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
-import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate,toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -119,7 +119,8 @@ import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-deliver
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
-
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   private destroy$ = new Subject<void>();
   private vesselSearchSubject = new Subject<{ POL: string | number, POD: string | number, MovementType: string }>();
   private isLoadingVessels = false;
@@ -386,7 +387,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   ngOnInit(): void {
-
+    
+        const fy = this.appSettingService.getCurrentFinancialYear();
+        if (fy) {
+          this.fyMinDate = toNgbDateStruct(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          const today = getDefaultTodayDate();
+          this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+        }
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
@@ -802,11 +810,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
   initForm() {
     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultMasterJobDate=  fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     this.masterJobForm = this.fb.group({
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value: '', disabled: true }],
-      MasterJobDate: [today],
+      MasterJobDate: [defaultMasterJobDate],
       FreightPPCC: ['Prepaid', Validators.required],
 
       DestinationAgent: [null],
@@ -2080,6 +2090,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   onSubmit(): void {
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if(fy){
+      const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+      if(MasterJobDate < fyStartDate || MasterJobDate > fyEndDate){
+        this.toastr.error('The date of the master job must be between the financial year start date and end date');
+        this.masterJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
+        return;
+      }
+    }
     const polSid = this.masterJobForm.get('POL')?.value;
   const podSid = this.masterJobForm.get('POD')?.value;
   

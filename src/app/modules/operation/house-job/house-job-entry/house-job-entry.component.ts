@@ -56,7 +56,7 @@ import { HAWBComponent } from '../report/hawb/hawb.component';
 import { MilestoneSummaryComponent } from '../report/milestone-summary/milestone-summary.component';
 import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
-import { getDefaultTodayDate, getMaxDate, getMinDate, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, getMaxDate,toNgbDateStruct, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
@@ -156,6 +156,8 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
 hssacList: any[] = [];
 selectedCustomer: any;
 notifyManuallyChanged = false;
+fyMinDate: NgbDateStruct | null = null;
+fyMaxDate: NgbDateStruct | null = null;
 
 // Customs pre-save validation modal
 showCustomsValidationModal = false;
@@ -525,6 +527,13 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     |--------------------------------------------------
     */
   ngOnInit(): void {
+     const fy = this.appSettingService.getCurrentFinancialYear();
+        if (fy) {
+          this.fyMinDate = toNgbDateStruct(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          const today = getDefaultTodayDate();
+          this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+        }
   this.userData = this.appSettingService.getDecryptedUserProfile();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.countryOfCompany = this.currentCompany?.CountryName;
@@ -627,9 +636,12 @@ private setupMBLDateListener(): void {
   // Header Form Initialization
   initBookingForm() {
     const today = getDefaultTodayDate();
+   const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultBookingDate = fyDefault && ( today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
+    const defaultHBLDate = fyDefault && ( today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     this.houseJobForm = this.fb.group({
       MasterJobSid : [null],
-      BookingNo: [{ value: '', disabled: true }],
+      BookingNo: [{ value: defaultBookingDate, disabled: true }],
       BookingDateTime: [today],
       BookingHeaderSid: [null],
       DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
@@ -651,7 +663,7 @@ private setupMBLDateListener(): void {
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [''],
-      HBLDate: [{value : null, disabled: true}],
+      HBLDate: [{value : defaultHBLDate, disabled: true}],
       MBLNo: [{ value: '', disabled: true }],
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
@@ -757,7 +769,6 @@ private setupCargoCalculationSubscriptions(): void {
   
   // Skip if patching or manual override
   if (this.isPatching || this.chargeableWeightManualOverride) {
-    console.log('⏭️ Skipping calculation - isPatching:', this.isPatching, 'manual override:', this.chargeableWeightManualOverride);
     return;
   }
   
@@ -1199,13 +1210,13 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
     if (data?.CargoRecDate) {
      
-      ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
+      ['ExternlQty', 'NetWeight', 'Volume'].forEach(field => {
         productForm.get(field)?.disable();
       })
     }
      
    if (isPatching && data?.CargoRecDate) {
-  ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
+  ['ExternlQty',  'NetWeight', 'Volume'].forEach(field => {
     productForm.get(field)?.disable();
   });
 }
@@ -2026,6 +2037,18 @@ onCurrencyChange(event: any) {
     if (!this.validateHBLNo()) {
     return;
   }
+  const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const HBLDate = new Date(this.houseJobForm.getRawValue().HBLDate);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+      if (HBLDate < fyStartDate || HBLDate > fyEndDate) {
+         this.appSettingService.showWarning('HBL date must be within the financial year');
+        this.houseJobForm.get('HBLDate')?.setErrors({ invalidDate: true });
+        return;
+      }
+    }
+
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();

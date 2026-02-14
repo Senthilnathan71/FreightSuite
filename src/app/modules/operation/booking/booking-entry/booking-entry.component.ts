@@ -58,12 +58,13 @@ import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.se
 import { NgxBarcode6Module } from 'ngx-barcode6';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
-import { getDefaultTodayDate } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { ToastrService } from 'ngx-toastr';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { HostListener } from '@angular/core';
+import { th } from 'date-fns/locale';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -142,7 +143,10 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
   @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
   @ViewChild('milestoneComponent') milestoneComponent!: MilestoneComponent;
-
+  chargeableWeightManualOverride: boolean = false;
+  isPatching: boolean = false;
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   parsedBookings: BookingData[] = [];
   showParsedData = false;
   uploadResult: any = null;
@@ -503,6 +507,13 @@ arapFilter = {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     if (this.userData) {
     }
+    const fy = this.appSettingService.getCurrentFinancialYear();
+        if (fy) {
+          this.fyMinDate = toNgbDateStruct(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          const today = getDefaultTodayDate();
+          this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+        }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
@@ -616,6 +627,8 @@ arapFilter = {
 
       this.spinner.hide();
     });
+
+    
   }
 
   private updateGenerateJobButtonVisibility(): void {
@@ -750,9 +763,11 @@ subscribeToFormChanges() {
   // Header Form Initialization
   initBookingForm() {
     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultBookingDate = fyDefault && ( today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     this.bookingForm = this.fb.group({
       BookingNo: [{ value: '', disabled: true }],
-      BookingDateTime: [today, [Validators.required]],
+      BookingDateTime: [defaultBookingDate, [Validators.required]],
       DepartmentMasterSid: [null, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
@@ -842,25 +857,39 @@ subscribeToFormChanges() {
       FreightTerms: [null],
       ModeOfTransport: [null],
       StuffingAt: ['Dock']
-    })
-    this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+    });
+    this.setupCargoCalculationSubscriptions();
+}
+    private setupCargoCalculationSubscriptions(): void {
+  this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+    if (!this.isPatching && !this.chargeableWeightManualOverride) {
       this.setOrResetWeightError(this.cargoForm);
       this.calculateChargeableWeight();
-    });
-    this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
+    }
+  });
+  
+  this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
+    if (!this.isPatching) {
       this.setOrResetWeightError(this.cargoForm);
-    });
-    this.cargoForm.get('Volume')?.valueChanges.subscribe(() => {
-    this.calculateChargeableWeight();
+    }
   });
-    this.cargoForm.get('Volumetric')?.valueChanges.subscribe(() => {
-    this.calculateChargeableWeight(); // Add this
+  
+  this.cargoForm.get('Volume')?.valueChanges.subscribe(() => {
+    if (!this.isPatching && !this.chargeableWeightManualOverride) {
+      this.calculateChargeableWeight();
+    }
   });
-    this.cargoForm.valueChanges.subscribe(() => {
-      this.syncFormValueWithRateComponent();
-    })
-  }
-
+  
+  this.cargoForm.get('Volumetric')?.valueChanges.subscribe(() => {
+    if (!this.isPatching && !this.chargeableWeightManualOverride) {
+      this.calculateChargeableWeight();
+    }
+  });
+  
+  this.cargoForm.valueChanges.subscribe(() => {
+    this.syncFormValueWithRateComponent();
+  });
+}
   // Product Form Initialization
   initProductForm() {
     const isIndianCompany = this.countryOfCompany === 'india';
@@ -892,34 +921,53 @@ subscribeToFormChanges() {
   }
 
   private calculateChargeableWeight(): void {
+    if (this.isPatching || this.chargeableWeightManualOverride) {
+    return;
+  }
+  if (this.chargeableWeightManualOverride) {
+    return;
+  }
   const volumetric = Number(this.c['Volumetric']?.value) || 0;
   const volume  = Number(this.c['Volume']?.value) || 0;
+  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
   
   let chargeableWeight = 0;
   
   // Chargeable Weight is the greater of Volumetric or Gross Weight
-  if (volumetric > volume ) {
-    chargeableWeight = volumetric;
+  if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
+    if (volumetric > grossWeight) {
+      chargeableWeight = volumetric;
+    } else {
+      chargeableWeight = grossWeight;
+    }
   } else {
-    chargeableWeight = volume;
+    const volume = Number(this.c['Volume']?.value) || 0;
+    if (volume > grossWeight) {
+      chargeableWeight = volume;
+    } else {
+      chargeableWeight = grossWeight;
+    }
   }
   
-  // Update the chargeable weight field
   if (chargeableWeight > 0) {
     this.c['ChargeableWeight']?.setValue(
       Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
       { emitEvent: false }
     );
-  } else {
+  }else {
     this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
   }
 }
+
 
 private setupImmediateCBMCalculation() {
   const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
   
   dimensionFields.forEach(field => {
     this.productForm.get(field)?.valueChanges.subscribe(() => {
+      if (this.isPatching) {
+        return;
+      }
       // Calculate immediately on every change
       this.calculateCBM();
     });
@@ -958,6 +1006,9 @@ private parseFloatSafe(value: any): number {
 
 private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   const calculateVolumetric = () => {
+     if (this.isPatching) {
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
@@ -1081,7 +1132,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    *    Create FormArray elements
    */
 
-  createBookingProductGroup(data?: any): FormGroup {
+  createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
@@ -1105,14 +1156,14 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
-
+ this.setupProductCalculationSubscriptions(productForm);
       // Check if department is LCL or AIR
   const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
   
   if (isLCLorAIR) {
     // Always setup calculations for LCL/AIR
     this.setupProductFormImmediateCalculation(productForm);
-    this.setupImmediateVolumetricCalculationForFormArray(productForm);
+    // this.setupImmediateVolumetricCalculationForFormArray(productForm);
     
     // If we have data with volume, trigger calculation AFTER form is stable
     // This allows the patched value to be set first, then calculations take over
@@ -1124,13 +1175,13 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     }
   }
     if (data?.CargoRecDate) {
-      ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
+      ['ExternlQty', 'NetWeight', 'Volume'].forEach(field => {
         productForm.get(field)?.disable();
       })
     }
     productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
       if(value){
-        ['ExternlQty','GrossWeight','NetWeight','Volume'].forEach(field => {
+        ['ExternlQty','NetWeight','Volume'].forEach(field => {
           productForm.get(field)?.disable();
         })
       }
@@ -1138,18 +1189,37 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
     return productForm;
   }
+  private setupProductCalculationSubscriptions(productForm: FormGroup): void {
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      // Skip calculation during patching
+      if (this.isPatching) {
+        return;
+      }
+      this.calculateProductFormCBMAndVolumetric(productForm);
+    });
+  });
+}
+
 
   private setupProductFormImmediateCalculation(productForm: FormGroup) {
   const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
   
   dimensionFields.forEach(field => {
     productForm.get(field)?.valueChanges.subscribe(() => {
+      if (this.isPatching) {
       this.calculateProductFormCBMAndVolumetric(productForm);
+      }
     });
   });
 }
 
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
+  if(this.isPatching){
+    return;
+  }
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -1386,7 +1456,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   
   patchValues(response: any) {
+    this.isPatching = true;
     console.log(response);
+    try{
     this.bookingHeader = response;
     const barcodeData = `${response.BookingNo}`;
     if(response.BookingNo){
@@ -1456,7 +1528,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: response.FreightTerms,
       BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
-    })
+    },{emitEvent: false});
      if (this.isEditMode) {
         this.loadBookingARAPData();
     }
@@ -1491,20 +1563,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport: cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
-    });
-    setTimeout(() => {
-  // Manually trigger the chargeable weight calculation
-  const grossWeight = this.cargoForm.get('GrossWeight')?.value;
-  const netWeight = this.cargoForm.get('NetWeight')?.value;
-  const volume = this.cargoForm.get('Volume')?.value;
-  const volumetric = this.cargoForm.get('Volumetric')?.value;
-  
-  if (grossWeight || netWeight || volume || volumetric) {
-    this.calculateChargeableWeight();
-  }
-}, 100);
-    console.log("Patched Cargo", this.cargoForm.value);
+    },{emitEvent: false});
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
+    
     if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();
@@ -1548,7 +1609,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       SwitchLocation: otherData?.SwitchLocation,
       CarrierBookingRef: otherData?.CarrierBookingRef,
       CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
-    })
+    },{ emitEvent: false });
     const croData = response.bookingCro?.[0];
   if (croData) {
     this.croForm.patchValue({
@@ -1560,7 +1621,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       EmptyYard: croData.EmptyYard,
       NoteToYard: croData.NoteToYard,
       NoteToShipper: croData.NoteToShipper
-    });
+    }, { emitEvent: false });
   }
 
     this.bookingProducts.clear();
@@ -1568,7 +1629,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.productDataLength = productsFromResponse.length;
     if (this.productDataLength) {
       for (const productData of productsFromResponse) {
-        const formWithData = this.createBookingProductGroup(productData);
+        const formWithData = this.createBookingProductGroup(productData, true);
         const productExists = this.productList?.some(
       p => p.ProductName?.trim().toLowerCase() ===
            productData.ProductName?.trim().toLowerCase()
@@ -1581,7 +1642,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         this.bookingProducts.push(formWithData);
       }
       this.updateProductPagination();
-      this.handleProductRelatedCalculation();
+     setTimeout(() => {
+        this.handleProductRelatedCalculation();
+      }, 100);
     }
 
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
@@ -1612,12 +1675,22 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.syncFormValueWithRateComponent();
     this.applyTranshipmentRestrictions();
     this.isSaving = false;
+    
+  } catch (error) {
+    console.error('Error during patchValues:', error);
+  } finally {
+    // CRITICAL: Reset isPatching after a delay to ensure all patching completes
     setTimeout(() => {
-    this.initialFormValue = this.getCurrentFormState();
-    this.isDirty = false;
-    this.subscribeToFormChanges();
-  }, 500);
+      this.isPatching = false;
+      console.log('✅ isPatching reset to false - calculations now enabled');
+      
+      // Force one final calculation to ensure totals are correct
+      this.handleProductRelatedCalculation();
+      this.calculateChargeableWeight();
+    }, 1000);
   }
+}
+
 
   // patchBookingFromQuotation(data:any){
   //   console.log(data);
@@ -1823,6 +1896,20 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   async onSubmit(resolve?: (value: boolean) => void) {
     this.isSaving = true;
+    const fy =this.appSettingService.getCurrentFinancialYear();
+    if(fy) {
+      const BookingDateTime = new Date (this.bookingForm.getRawValue().BookingDateTime);
+       const fyStart = new Date(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      if (BookingDateTime < fyStart || BookingDateTime > fyEnd) {
+        this.appSettingService.showWarning(
+          `Booking Date must be within the financial year (${fy.YearName})`
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+
+    }
     console.log('Submit triggered', this.bookingForm.value);
     if (this.isEditMode) {
       const currentFormState = this.getCurrentFormState();
@@ -2994,48 +3081,62 @@ getVesselVoyBasedOnPorts() {
   }
 
   handleProductRelatedCalculation() {
-    if (this.bookingProducts.length === 0) {
-      this.c['NoOfPackage']?.enable(); this.c['NoOfPackage']?.setValue(0);
-      this.c['GrossWeight']?.enable(); this.c['GrossWeight']?.setValue(0);
-      this.c['NetWeight']?.enable(); this.c['NetWeight']?.setValue(0);
-      this.c['Volume']?.enable(); this.c['Volume']?.setValue(0);
-      this.c['Volumetric']?.enable(); this.c['Volumetric']?.setValue(0);
-      this.c['ChargeableWeight']?.enable(); this.c['ChargeableWeight']?.setValue(0);
-      return;
-    }
-
-    let totalNoOfPkg: any = 0;
-    let totalGrossWeight: any = 0;
-    let totalNetWeight: any = 0;
-    let totalVolume: any = 0;
-    let totalVolumetric: any = 0;
-
-    let productValue = this.bookingProducts.getRawValue() || [];
-    productValue.forEach(product => {
-      totalNoOfPkg += (Number(product.ExternlQty) || 0);
-      totalGrossWeight += Number(product.GrossWeight) || 0;
-      totalNetWeight += Number(product.NetWeight) || 0;
-      totalVolume += Number(product.Volume) || 0;
-      totalVolumetric += Number(product.Volumetric) || 0;
-    });
-
-    this.c['NoOfPackage']?.setValue(Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)));
-    this.c['NoOfPackage']?.disable();
-
-    this.c['GrossWeight']?.setValue(Number(totalGrossWeight.toFixed(this.decimalAfterPrecision)));
-    this.c['GrossWeight']?.markAsTouched();
-    this.c['GrossWeight']?.disable();
-
-    this.c['NetWeight']?.setValue(Number(totalNetWeight.toFixed(this.decimalAfterPrecision)));
-    this.c['NetWeight']?.disable();
-
-    this.c['Volume']?.setValue(Number(totalVolume.toFixed(this.decimalAfterPrecision)));
-    this.c['Volume']?.disable();
-
-    this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
-    this.c['Volumetric']?.disable();
-    this.calculateChargeableWeight();
+  if (this.isPatching) {
+    return; // Skip ALL changes during patching
   }
+  
+  if (this.bookingProducts.length === 0) {
+    // Only enable fields if NOT in patching mode
+    if (!this.isPatching) {
+      this.c['NoOfPackage']?.enable(); 
+      this.c['NoOfPackage']?.setValue(0);
+      this.c['GrossWeight']?.enable(); 
+      this.c['GrossWeight']?.setValue(0);
+      this.c['NetWeight']?.enable(); 
+      this.c['NetWeight']?.setValue(0);
+      this.c['Volume']?.enable(); 
+      this.c['Volume']?.setValue(0);
+      this.c['Volumetric']?.enable(); 
+      this.c['Volumetric']?.setValue(0);
+      this.c['ChargeableWeight']?.enable(); 
+      this.c['ChargeableWeight']?.setValue(0);
+    }
+    return;
+  }
+
+  let totalNoOfPkg = 0;
+  let totalGrossWeight = 0;
+  let totalNetWeight = 0;
+  let totalVolume = 0;
+  let totalVolumetric = 0;
+
+  let productValue = this.bookingProducts.getRawValue() || [];
+  productValue.forEach(product => {
+    totalNoOfPkg += (Number(product.ExternlQty) || 0);
+    totalGrossWeight += Number(product.GrossWeight) || 0;
+    totalNetWeight += Number(product.NetWeight) || 0;
+    totalVolume += Number(product.Volume) || 0;
+    totalVolumetric += Number(product.Volumetric) || 0;
+  });
+
+  // Set values but DON'T disable/enable during patching
+  this.c['NoOfPackage']?.setValue(Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)));
+  this.c['GrossWeight']?.setValue(Number(totalGrossWeight.toFixed(this.decimalAfterPrecision)));
+  this.c['NetWeight']?.setValue(Number(totalNetWeight.toFixed(this.decimalAfterPrecision)));
+  this.c['Volume']?.setValue(Number(totalVolume.toFixed(this.decimalAfterPrecision)));
+  this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+  
+  // Only disable fields if NOT in patching mode
+  if (!this.isPatching) {
+    this.c['NoOfPackage']?.disable();
+    this.c['GrossWeight']?.disable();
+    this.c['NetWeight']?.disable();
+    this.c['Volume']?.disable();
+    this.c['Volumetric']?.disable();
+  }
+  
+  this.calculateChargeableWeight();
+}
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
 

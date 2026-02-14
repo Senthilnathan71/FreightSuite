@@ -56,7 +56,7 @@ import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
-import { getDefaultTodayDate } from 'src/app/common/helper';
+import { getDefaultTodayDate,toNgbDateStruct } from 'src/app/common/helper';
 import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.component';
 @Component({
   selector: 'app-mawbill-entry',
@@ -116,7 +116,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   public followUpComponent = FollowUpComponent;
   public edocComponent = EdocComponent;
   public emailComponent = EmailEntryComponent;
-  
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   masterJobForm: FormGroup;
   isEditMode = false;
   masterJobSid: number | null = null;
@@ -303,6 +304,13 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const fy = this.appSettingsService.getCurrentFinancialYear();
+        if (fy) {
+          this.fyMinDate = toNgbDateStruct(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          const today = getDefaultTodayDate();
+          this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+        }
     //  console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
@@ -511,12 +519,14 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   }
   initForm() {
     const today = getDefaultTodayDate();
+       const fyDefault = this.appSettingsService.getCurrentFinancialYear();
+    const defaultMasterJobDate=  fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     this.masterJobForm = this.fb.group({
       
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value :'' , disabled : true}],
-      MasterJobDate: [today],
+      MasterJobDate: [defaultMasterJobDate],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
@@ -1282,6 +1292,17 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
 
   onSubmit(): void {
+     const fy = this.appSettingsService.getCurrentFinancialYear();
+    if(fy){
+      const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+      if(MasterJobDate < fyStartDate || MasterJobDate > fyEndDate){
+        this.toastr.error('The date of the master job must be between the financial year start date and end date');
+        this.masterJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
+        return;
+      }
+    }
      this.formSubmitted = true;
      // First check form validity
     this.masterJobForm.markAllAsTouched();
