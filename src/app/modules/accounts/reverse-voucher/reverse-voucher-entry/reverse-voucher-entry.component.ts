@@ -518,6 +518,7 @@ export class ReverseVoucherEntryComponent {
       const taxAmountIGST = detail.TaxAmountIGST ?(Number(detail.TaxAmountIGST)) : 0;
       const localAmount = detail.LocalAmount ? (Number(detail.LocalAmount)) : 0;
       const partyAmount = detail.PartyAmount ? (Number(detail.PartyAmount)) : 0;
+      
   
       const taxPercentage1 = detail.TaxPercentage1 !== undefined ? Number(detail.TaxPercentage1) : 
                           detail.taxPercentage1 !== undefined ? Number(detail.taxPercentage1) : 0;
@@ -555,7 +556,7 @@ export class ReverseVoucherEntryComponent {
         NumberOfUnit: detail.NumberOfUnit,
         DrCr: swappedDrCr,
         CurrencyCode: detail.CurrencyCode,
-        Rate: detail.Rate != null ? Number(detail.Rate) : 0,
+        Rate:amount,
         ExchangeRate: detail.ExchangeRate,
         Amount: amount,
         TaxableAmount: taxableAmount,
