@@ -247,7 +247,9 @@ export class ReverseVoucherEntryComponent {
       const fy = this.appSettingService.getCurrentFinancialYear();
       if (fy) {
         this.fyMinDate = toNgbDateStruct(fy.StartDate);
-        this.fyMaxDate = toNgbDateStruct(fy.EndDate);
+        const fyEnd = new Date(fy.EndDate);
+        const today = getDefaultTodayDate();
+        this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
       }
 
       this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;

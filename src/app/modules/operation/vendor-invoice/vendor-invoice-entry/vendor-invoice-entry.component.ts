@@ -308,7 +308,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
       if (currentFinancialYear) {
         this.currentFinancialYear = Number(currentFinancialYear.YearMasterSid);
         this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
-        this.fyMaxDate = toNgbDateStruct(currentFinancialYear.EndDate);
+        const fyEnd = new Date(currentFinancialYear.EndDate);
+        const today = getDefaultTodayDate();
+        this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
       }
 
       this.currentMenuId = this.mps.getMenuId();
