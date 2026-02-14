@@ -333,6 +333,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MBLNo: [null],
       MBLDate: [null],
       status: ['Active'],
+      HouseJobSid : [null],
+      MasterJobSid : [null],
 
       POL: [""],
       POD: [""]
@@ -448,6 +450,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
     this.serviceJobForm.patchValue({
+      HouseJobSid : this.HouseJobSid,
+      MasterJobSid : response.MasterJobSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
       CustomerMasterSid: response.CustomerMasterSid,
       CustomerBranchSid: response.CustomerBranchSid,
@@ -801,7 +805,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
     const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
     const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
-    const HouseJobSid = this.HouseJobSid || this.houseData?.HouseJobSid || this.b['HouseJobSid']?.value;
+    const HouseJobSid = this.HouseJobSid || this.serviceJobData?.HouseJobSid || this.b['HouseJobSid']?.value;
+    const MasterJobSid = this.serviceJobData?.MasterJobSid || this.b['MasterJobSid']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -823,7 +828,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       Volume,
       NoofContainers,
       ChargeableWeight,
-      countryOfCompany : this.countryOfCompany
+      countryOfCompany : this.countryOfCompany,
+      MasterJobSid
     }
   }
 
