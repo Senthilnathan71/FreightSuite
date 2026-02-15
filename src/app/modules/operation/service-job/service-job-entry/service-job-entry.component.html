@@ -94,27 +94,6 @@
               </div>
             </aside>
             <aside class="col-md-3">
-              <div class="custom-form-group">
-                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                  formControlName="HBLNo">
-                <label for="text-input" [ngClass]="{
-              'input-label': true,
-              'bg-transparent': !b['HBLNo']?.getRawValue()
-             }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
-              </div>
-            </aside>
-            <aside class="col-md-3">
-              <div class="custom-form-group">
-                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                  formControlName="MBLNo">
-                <label for="text-input" [ngClass]="{
-                          'input-label': true,
-                          'bg-transparent': !b['MBLNo']?.getRawValue()
-                        }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
-                    class="text-danger"></span></label>
-              </div>
-            </aside>
-            <aside class="col-md-3">
               <div class=" custom-form-group custom-form-group-select-date">
                 <div class="input-group">
                   <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate" ngbDatepicker
@@ -123,12 +102,33 @@
                   <button class="btn  bi bi-calendar3 px-0" (click)="d2.toggle()" type="button">
                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                 </div>
-                <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' :
-                  'MBL Date' }} <span class="text-danger"></span>
+                <label for="shipmentDateExpected" class="input-label">Job Date <span class="text-danger"></span>
                 </label>
 
               </div>
             </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="MasterJobNumber">
+                <label for="text-input" [ngClass]="{
+              'input-label': true,
+              'bg-transparent': !b['MasterJobNumber']?.getRawValue()
+             }">Master Job No.<span class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="HBLNo">
+                <label for="text-input" [ngClass]="{
+                          'input-label': true,
+                          'bg-transparent': !b['HBLNo']?.getRawValue()
+                        }">House Job No.<span
+                    class="text-danger"></span></label>
+              </div>
+            </aside>
+            
             
             
 
