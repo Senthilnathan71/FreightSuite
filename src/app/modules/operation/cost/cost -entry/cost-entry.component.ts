@@ -3220,7 +3220,7 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private autoGenerateNarration(): string {
-    if (this.currentCompany?.CompanyMasterSid === 55) {
+    if (this.currentCompany?.CompanyMasterSid === 12) {
       if (this.screenName === 'Booking') {
         const BookingNo = this.parentFormValue?.BookingNumber || '';
         return `Booking No : ${BookingNo}`;
