@@ -3047,7 +3047,7 @@ isSeaDepartment(): boolean {
       );
       return config?.exchangeDecimal;
     }
-    return 2;
+    return 4;
   }
 
   public getFormattedAndPaddedAmount(amount: number | string, CurrencyMasterSid: number) {

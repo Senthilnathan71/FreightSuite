@@ -147,19 +147,21 @@ function buildErrorMessages(
 }
 
 function extractRowIndex(path: string): { cleanPath: string; row?: number } {
-  const match = path.match(/\.(\d+)\./);
+  const match = path.match(/(\w+)\.(\d+)\.(.+)/);
 
   if (!match) {
     return { cleanPath: path };
   }
 
-  const row = Number(match[1]) + 1; // 1-based index
+  const row = Number(match[2]) + 1;
+  const fieldName = match[3];
 
   return {
-    cleanPath: path.replace(`.${match[1]}.`, '.'),
+    cleanPath: fieldName,
     row,
   };
 }
+
 
 
 
