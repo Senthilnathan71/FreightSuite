@@ -641,8 +641,8 @@ private setupMBLDateListener(): void {
     const defaultHBLDate = fyDefault && ( today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     this.houseJobForm = this.fb.group({
       MasterJobSid : [null],
-      BookingNo: [{ value: defaultBookingDate, disabled: true }],
-      BookingDateTime: [today],
+      BookingNo: [{ value:'', disabled: true }],
+      BookingDateTime: [defaultBookingDate],
       BookingHeaderSid: [null],
       DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
