@@ -481,6 +481,22 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
+  getJobCloseDetail(MasterJobSid: number) {
+    return this.http.get<any>(`master-job/job-close/detail/${MasterJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  saveJobCloseStatus(payload: any) {
+    return this.http.patch<any>('master-job/job-close/save', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   // Master Job Operations
   searchMasterJobs(payload: any) {
     return this.http.post<{ data: any[] }>('master-job/search-list', payload).pipe(

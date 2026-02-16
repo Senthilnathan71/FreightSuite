@@ -38,6 +38,7 @@ import { DocReferenceListComponent } from './doc-reference/doc-reference-list/do
 import { HouseJobListComponent } from './house-job/house-job-list/house-job-list.component';
 import { HawbBillListComponent } from './house-job/hawb-bill-list/hawb-bill-list.component';
 import { JobCloseListComponent } from './job-close/job-close-list/job-close-list.component';
+import { JobCloseComponent } from './job-close/job-close.component';
 
 
 export const OperationRoutes: Routes = [
@@ -99,6 +100,14 @@ export const OperationRoutes: Routes = [
       {
         path: 'job-close/list',
         component: JobCloseListComponent,
+        data: {
+          title: 'Job Close',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Job Close' }],
+        },
+      },
+      {
+        path: 'job-close/:id',
+        component: JobCloseComponent,
         data: {
           title: 'Job Close',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Job Close' }],

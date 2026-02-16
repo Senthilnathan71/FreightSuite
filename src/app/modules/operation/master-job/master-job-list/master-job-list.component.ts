@@ -165,11 +165,6 @@ this.initializeTableConfig();
   initializeHeaderActions(): void {
     this.headerActions = [
       {
-        label: 'Job Close',
-        icon: 'fas fa-lock',
-        action: 'job-close',
-      },
-      {
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
@@ -240,9 +235,6 @@ this.initializeTableConfig();
 
   onActionTriggered(action: string): void {
     switch (action) {
-      case 'job-close':
-        this.router.navigate(['operation/job-close/list']);
-        break;
       case 'create':
         this.navigateToMasterJob()
         break;
@@ -317,7 +309,7 @@ this.initializeTableConfig();
 }
 
 
-    navigateToEdit(masterJobSid: number) {
+  navigateToEdit(masterJobSid: number) {
     this.router.navigate(['operation/master-job/entry', masterJobSid]);
   }
 
@@ -424,6 +416,14 @@ this.initializeTableConfig();
         dataType: 'string'
       },
       {
+        key: 'JobStatus',
+        label: 'Job Close',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
         key: 'Status',
         label: 'Status',
         sortable: true,
@@ -443,7 +443,13 @@ this.initializeTableConfig();
         tooltip: 'View',
         state: !this.mps.can('view')
        
-      }
+      },
+      {
+        label: 'Job Close',
+        icon: 'fas fa-lock',
+        action: 'job_close',
+        tooltip: 'job-close',
+      },
     ],
     selectable: false,
     multiSelect: false,
@@ -460,7 +466,10 @@ this.initializeTableConfig();
   // Table event handlers
  onTableActionClick(event: TableEventData): void {
   if (event.action === 'view') {
-    this.viewMasterJob(event.row.MasterJobSid); // ✅ only the ID
+    this.viewMasterJob(event.row.MasterJobSid);
+  }
+  if (event.action === 'job_close') {
+    this.router.navigate(['operation/job-close', event.row.MasterJobSid]);
   }
 }
 

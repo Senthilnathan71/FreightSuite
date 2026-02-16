@@ -1,0 +1,210 @@
+<div class="job-close-container">
+  <ngx-spinner name="jobCloseSpinner" [fullScreen]="false" type="ball-clip-rotate" size="medium"></ngx-spinner>
+
+  <h5 class="mb-3">Job Close - {{ masterJob.MasterJobNumber }}</h5>
+
+  <!-- Master Section - single table layout matching XL -->
+  <div class="card mb-3">
+    <div class="card-body p-0">
+      <table class="table table-sm table-bordered mb-0">
+        <!-- Row 1: Master Job No | Date | POL | POD header area -->
+        <tr>
+          <td class="fw-semibold bg-light" style="width:12%">Master Job No</td>
+          <td style="width:13%">{{ masterJob.MasterJobNumber || '-' }}</td>
+          <td class="fw-semibold bg-light" style="width:8%">Date</td>
+          <td style="width:13%">{{ formatDate(masterJob.MasterJobDate) }}</td>
+          <td class="fw-semibold bg-light" style="width:8%">POL</td>
+          <td style="width:13%">{{ masterJob.POL || '-' }}</td>
+          <td class="fw-semibold bg-light" style="width:8%">POD</td>
+          <td style="width:25%">{{ masterJob.POD || '-' }}</td>
+        </tr>
+        <!-- Row 2: Container header -->
+        <tr>
+          <td colspan="5" rowspan="1" class="border-0"></td>
+          <td class="fw-semibold bg-light text-center">Cont No.</td>
+          <td class="fw-semibold bg-light text-center">Cont Type</td>
+          <td class="fw-semibold bg-light text-center">CBM</td>
+        </tr>
+        <!-- Row 3: MBL No + Container data rows -->
+        <tr *ngIf="containers.length > 0; else noContainers">
+          <td class="fw-semibold bg-light">MBL No.</td>
+          <td colspan="4">{{ masterJob.MBLNo || '-' }}</td>
+          <td class="text-center">{{ containers[0]?.ContainerNumber || '-' }}</td>
+          <td class="text-center">{{ containers[0]?.ContainerTypeName || '-' }}</td>
+          <td class="text-end">{{ containers[0]?.Volume | number:'1.3-3' }}</td>
+        </tr>
+        <ng-template #noContainers>
+          <tr>
+            <td class="fw-semibold bg-light">MBL No.</td>
+            <td colspan="4">{{ masterJob.MBLNo || '-' }}</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-end">-</td>
+          </tr>
+        </ng-template>
+        <!-- Additional container rows -->
+        <tr *ngFor="let c of containers | slice:1">
+          <td colspan="5" class="border-0"></td>
+          <td class="text-center">{{ c.ContainerNumber }}</td>
+          <td class="text-center">{{ c.ContainerTypeName }}</td>
+          <td class="text-end">{{ c.Volume | number:'1.3-3' }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- HBL Section -->
+  <div class="card mb-3">
+    <div class="card-body p-0">
+      <table class="table table-sm table-bordered mb-0">
+        <thead>
+          <tr class="bg-light">
+            <th>HBL No</th>
+            <th class="text-end">Gross Wt</th>
+            <th class="text-end">Volumetric</th>
+            <th class="text-end">CBM</th>
+            <th class="text-end">Prov. Cost</th>
+            <th class="text-end">Prov. Rev</th>
+            <th class="text-end">Actual Cost</th>
+            <th class="text-end">Actual Rev</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of hblData">
+            <td>{{ h.HBLNo || '-' }}</td>
+            <td class="text-end">{{ h.GrossWt | number:'1.3-3' }}</td>
+            <td class="text-end">{{ h.Volumetric | number:'1.3-3' }}</td>
+            <td class="text-end">{{ h.CBM | number:'1.3-3' }}</td>
+            <td class="text-end">{{ h.ProvCost | number:'1.2-2' }}</td>
+            <td class="text-end">{{ h.ProvRevenue | number:'1.2-2' }}</td>
+            <td class="text-end">{{ h.ActualCost | number:'1.2-2' }}</td>
+            <td class="text-end">{{ h.ActualRevenue | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="hblData.length === 0">
+            <td colspan="8" class="text-center text-muted">No HBL records found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Closure Status -->
+  <div class="card mb-3">
+    <div class="card-header py-2 bg-info text-white">
+      <h6 class="mb-0">Closure Status</h6>
+    </div>
+    <div class="card-body py-2">
+      <div class="row">
+        <!-- Documentation Closer -->
+        <div class="col-md-3">
+          <div class="closer-section">
+            <h6 class="closer-title">Documentation Closer</h6>
+            <div class="milestone-list">
+              <div *ngFor="let m of milestoneChecks.documentation" class="milestone-item">
+                <i class="fas" [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                <span class="ms-1 small">{{ m.label }}</span>
+              </div>
+            </div>
+            <div class="mt-2 border-top pt-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="docClose"
+                       [(ngModel)]="docClose"
+                       [disabled]="!allDocMilestonesPassed"
+                       (change)="onDocCloseChange()">
+                <label class="form-check-label small fw-semibold" for="docClose">Close Documentation</label>
+              </div>
+              <div class="mt-1 small text-muted">
+                <div>Date: {{ formatDate(closureStatus.DocClosedDate) }}</div>
+                <div>By: {{ closureStatus.DocClosedBy || '-' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operation Closer -->
+        <div class="col-md-3">
+          <div class="closer-section">
+            <h6 class="closer-title">Operation Closer</h6>
+            <div class="milestone-list">
+              <div *ngFor="let m of milestoneChecks.operation" class="milestone-item">
+                <i class="fas" [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                <span class="ms-1 small">{{ m.label }}</span>
+              </div>
+            </div>
+            <div class="mt-2 border-top pt-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="opsClose"
+                       [(ngModel)]="opsClose"
+                       [disabled]="!allOpsMilestonesPassed"
+                       (change)="onOpsCloseChange()">
+                <label class="form-check-label small fw-semibold" for="opsClose">Close Operation</label>
+              </div>
+              <div class="mt-1 small text-muted">
+                <div>Date: {{ formatDate(closureStatus.OpsClosedDate) }}</div>
+                <div>By: {{ closureStatus.OpsClosedBy || '-' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accounts Closer -->
+        <div class="col-md-3">
+          <div class="closer-section">
+            <h6 class="closer-title">Accounts Closer</h6>
+            <div class="milestone-list">
+              <div *ngFor="let m of milestoneChecks.accounts" class="milestone-item">
+                <i class="fas" [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                <span class="ms-1 small">{{ m.label }}</span>
+              </div>
+            </div>
+            <div class="mt-2 border-top pt-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="accClose"
+                       [(ngModel)]="accClose"
+                       [disabled]="!allAccMilestonesPassed"
+                       (change)="onAccCloseChange()">
+                <label class="form-check-label small fw-semibold" for="accClose">Close Accounts</label>
+              </div>
+              <div class="mt-1 small text-muted">
+                <div>Date: {{ formatDate(closureStatus.AccClosedDate) }}</div>
+                <div>By: {{ closureStatus.AccClosedBy || '-' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Closer -->
+        <div class="col-md-3">
+          <div class="closer-section">
+            <h6 class="closer-title">Job Closer</h6>
+            <div class="milestone-list">
+              <div *ngFor="let m of milestoneChecks.jobClose" class="milestone-item">
+                <i class="fas" [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                <span class="ms-1 small">{{ m.label }}</span>
+              </div>
+            </div>
+            <div class="mt-2 border-top pt-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="jobClose"
+                       [(ngModel)]="jobCloseCheck"
+                       [disabled]="!allJobMilestonesPassed"
+                       (change)="onJobCloseChange()">
+                <label class="form-check-label small fw-semibold" for="jobClose">Close Job</label>
+              </div>
+              <div class="mt-1 small text-muted">
+                <div>Date: {{ formatDate(closureStatus.JobClosedDate) }}</div>
+                <div>By: {{ closureStatus.JobClosedBy || '-' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="d-flex justify-content-end gap-2">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="save()" [disabled]="loading">Save</button>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+.closer-section {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  height: 100%;
+}
+
+.closer-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.milestone-list {
+  min-height: 80px;
+}
+
+.milestone-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 4px;
+
+  i {
+    margin-top: 2px;
+    font-size: 0.8rem;
+  }
+
+  span {
+    line-height: 1.3;
+  }
+}
+
+.card-header {
+  background-color: #f8f9fa;
+}
+
+.table-sm th,
+.table-sm td {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep .spinner-wrapper {
+  min-height: 200px;
+}
