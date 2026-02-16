@@ -3220,6 +3220,24 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private autoGenerateNarration(): string {
+    if (this.currentCompany?.CompanyMasterSid === 55) {
+      if (this.screenName === 'Booking') {
+        const BookingNo = this.parentFormValue?.BookingNumber || '';
+        return `Booking No : ${BookingNo}`;
+      }
+      else if (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') {
+        const MBLNo = this.parentFormValue?.MBLNo || '';
+        return `MBLNo : ${MBLNo}`;
+      }
+      else if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
+        const MBLNo = this.parentFormValue?.MBLNo || '';
+        if(MBLNo){
+          return `MBLNo : ${MBLNo}`;
+        } else {
+          return `HBLNo : ${this.parentFormValue?.HBLNo}`;
+        }
+      }
+    }
     let narration = '';
     if (this.screenName === 'Booking') {
       // Booking: "Booking No. XXXX, Dt. XXXX"
@@ -3620,12 +3638,12 @@ isFromQuotation(index: number): boolean {
 
       // Conditional header fields (matching your initVoucherForm logic)
       HouseJobSid: [this.voucherForm.get('HouseJobSid')?.value, isHouseFieldsRequired ? [Validators.required] : []],
-      MasterJobSid: [this.voucherForm.get('MasterJobSid')?.value, (isMasterFieldsRequired || isHouseFieldsRequired) ? [Validators.required] : []],
+      MasterJobSid: [this.voucherForm.get('MasterJobSid')?.value, (isMasterFieldsRequired) ? [Validators.required] : []],
       BookingHeaderSid: [this.voucherForm.get('BookingHeaderSid')?.value, isBookingFieldsRequired ? [Validators.required] : []],
 
       // Optional but commonly validated fields
-      DocumentNumber: [this.voucherForm.get('DocumentNumber')?.value , this.selectedVoucherType === 'Vendor Invoice' ? [Validators.required] : []],
-      DocumentDate: [this.voucherForm.get('DocumentDate')?.value , this.selectedVoucherType === 'Vendor Invoice' ? [Validators.required] : []],
+      DocumentNumber: [this.voucherForm.get('DocumentNumber')?.value , this.selectedVoucherType === 'Vendor Invoice' && this.isFieldRequired('DocumentNumber') ? [Validators.required] : []],
+      DocumentDate: [this.voucherForm.get('DocumentDate')?.value , this.selectedVoucherType === 'Vendor Invoice' && this.isFieldRequired('DocumentDate') ? [Validators.required] : []],
       State: [this.voucherForm.get('State')?.value],
       GST_VAT: [this.voucherForm.get('GST_VAT')?.value],
 

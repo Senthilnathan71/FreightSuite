@@ -3047,7 +3047,7 @@ isSeaDepartment(): boolean {
       );
       return config?.exchangeDecimal;
     }
-    return 2;
+    return 4;
   }
 
   public getFormattedAndPaddedAmount(amount: number | string, CurrencyMasterSid: number) {
@@ -3949,7 +3949,8 @@ if (!customerMasterSid) {
           size: 'xl',
           backdrop: 'static',
           keyboard: false,
-          scrollable: true
+          scrollable: true,
+          centered:true
         });
       } else {
         this.appSettingService.showWarning(resp.message || 'No uninvoiced charges found');
