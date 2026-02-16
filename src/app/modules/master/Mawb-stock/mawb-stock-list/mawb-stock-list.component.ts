@@ -224,7 +224,8 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         BLNumber: item.MasterBillNumber,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ReceivedDate: this.datePipe.transform(item?.ReceivedDate),
-        AvailableStatus: item.AvailableStatus || 'Available'
+        AvailableStatus: item.AvailableStatus || 'Available',
+         canDelete: item.StockStatus !== 'Utilised'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -343,6 +344,10 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     if (event.action === 'view') {
       this.viewMawb(event.row);
     } else if (event.action === "delete") {
+       if (!event.row.canDelete) {
+        this.appSettingService.showError('Utilised MAWB cannot be deleted');
+        return;
+      }
       this.deleteBy(event.row)
     }
   }

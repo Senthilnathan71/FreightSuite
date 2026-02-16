@@ -3101,12 +3101,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.operationService.detachBooking(HouseJobSid,userEmail).subscribe
         ({
           next: (resp: any) => {
-            if (resp.status) {
-              this.appSettingsService.showSuccess('Booking detached successfully');
-              this.attachedBookings.removeAt(realIndex);
-              this.totalLengthOfAttachedBookings = this.attachedBookings.length;
-              this.updateAttachedBookingsPagination();
-            } else {
+           if (resp.status) {
+          // Remove the booking from the form array immediately
+          this.attachedBookings.removeAt(realIndex);
+          this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+          this.updateAttachedBookingsPagination();
+          
+          // Reload master job data once to refresh all related data
+          this.loadMasterJobData(this.masterJobSid);
+          
+          this.appSettingsService.showSuccess('Booking detached successfully');
+        } else {
               this.appSettingsService.showError('Failed to detach booking');
             }
           },
