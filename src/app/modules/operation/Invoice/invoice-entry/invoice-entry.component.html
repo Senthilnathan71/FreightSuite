@@ -2842,51 +2842,51 @@
 </div>
 <!-- Uninvoiced Charges Modal -->
 <ng-template #uninvoicedChargesModal let-modal>
-  <div class="modal-header">
+  <div class="modal-header modalHeaderpart">
     <h5 class="modal-title">
       <i class="fas fa-file-invoice me-2"></i>
       Unbilled Charges
     </h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
       <div>
-        <span class="badge bg-info">
+        <span class="badge bg-info p-2">
           {{ selectedUninvoicedCharges.size }} charge(s) selected
         </span>
       </div>
-      <div>
-        <button class="btn btn-sm btn-outline-primary me-2" (click)="selectAllUninvoicedCharges()">
+      <!-- <div>
+        <button class="btn btn-sm btn btn-info me-2" (click)="selectAllUninvoicedCharges()">
           <i class="fas fa-check-double me-1"></i>Select All
         </button>
-        <button class="btn btn-sm btn-outline-secondary" (click)="deselectAllUninvoicedCharges()">
+        <button class="btn btn-sm btn-secondary me-2" (click)="deselectAllUninvoicedCharges()">
           <i class="fas fa-times me-1"></i>Clear All
         </button>
-      </div>
+      </div> -->
     </div>
 
-    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-      <table class="table table-bordered table-hover">
-        <thead class="table-light sticky-top">
-          <tr>
-            <th width="50" class="text-center">
+    <div class="table-responsive" >
+      <table class="table table-borderedless table-hover">
+        <thead class="table-light sticky-top text-center">
+          <tr class="bg-info">
+            <th width="20" class="text-light bg-transparent">
               <input 
                 type="checkbox" 
                 class="form-check-input"
                 [checked]="selectedUninvoicedCharges.size === uninvoicedChargesList.length"
                 (change)="selectOrDeselectAll($event)">
             </th>
-            <th>Charge</th>
-            <th>Description</th>
-            <th>Currency</th>
-            <th class="text-end">No of Units</th>
-            <th class="text-end">Rate</th>
-            <th class="text-end">Amount</th>
-            <th class="text-end">Tax %</th>
+            <th class="text-light bg-transparent">Charge</th>
+            <th class="text-light bg-transparent">Description</th>
+            <th class="text-light bg-transparent" width="5">Curr.</th>
+            <th class="text-light bg-transparent" width="90">No of Units</th>
+            <th class="text-light bg-transparent" width="100">Rate</th>
+            <th class="text-light bg-transparent" width="100">Amount</th>
+            <th class="text-light bg-transparent" width="60">Tax %</th>
             <!-- <th class="text-end">Tax Amount</th> -->
-            <th class="text-end">Local Amount</th>
-            <th>Status</th>
+            <th class="text-light bg-transparent" width="100">Local Amt.</th>
+            <th class="text-light bg-transparent" width="5">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -2924,7 +2924,7 @@
             </td>
           </tr>
           <tr *ngIf="uninvoicedChargesList.length === 0">
-            <td colspan="11" class="text-center py-4 text-muted">
+            <td colspan="11" class="text-center py-2 text-muted">
               <i class="fas fa-inbox fa-2x mb-2"></i>
               <p>No unbilled charges found</p>
             </td>
@@ -2933,13 +2933,13 @@
       </table>
     </div>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+  <div class="modal-footer pt-1 pb-1">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">
       <i class="fas fa-times me-1"></i>Cancel
     </button>
     <button 
       type="button" 
-      class="btn btn-primary"
+      class="btn btn-info me-2 btn-sm"
       [disabled]="selectedUninvoicedCharges.size === 0"
       (click)="addSelectedUninvoicedCharges()">
       <i class="fas fa-plus me-1"></i>Add Selected ({{ selectedUninvoicedCharges.size }})

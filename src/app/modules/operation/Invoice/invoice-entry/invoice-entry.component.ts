@@ -3949,7 +3949,8 @@ if (!customerMasterSid) {
           size: 'xl',
           backdrop: 'static',
           keyboard: false,
-          scrollable: true
+          scrollable: true,
+          centered:true
         });
       } else {
         this.appSettingService.showWarning(resp.message || 'No uninvoiced charges found');
