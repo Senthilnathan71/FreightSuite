@@ -35,7 +35,7 @@
               {{ report.ReportType }}
             </span> -->
             <span class="" [attr.data-format]="report.ReportFormat" style="font-size: 12px; font-weight: bold;">
-              {{ report.ReportFormat }}
+              {{ report.ReportFormat === "BOTH" ? "PDF / XL" : report.ReportFormat }}
             </span>
           </div>
 

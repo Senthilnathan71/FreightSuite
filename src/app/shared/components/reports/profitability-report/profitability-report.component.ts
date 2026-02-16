@@ -49,71 +49,96 @@ export class ProfitabilityReportComponent {
     return this.fullData?.bucketLabels || [];
   }
 
-
   getExcelData(): ComplexReportExportConfig {
-  const tableHeaders: ExcelHeader[] = [
-    { key: 'jobNumber', label: 'Job Number' },
-    { key: 'Mbl', label: 'MBL' },
-    { key: 'POL', label: 'POL' },
-    { key: 'POD', label: 'POD' },
-    { key: 'totalRevenueWithHouse', label: 'Prov.Revenue' },
-    { key: 'totalCostWithHouse', label: 'Prov.Cost' },
-    { key: 'GP', label: 'Prov.GP' },
-    { key: 'actualRevenue', label: 'Actual Revenue' },
-    { key: 'actualCost', label: 'Actual Cost' },
-    { key: 'actualGp', label: 'Actual GP' },
-    { key: 'profit', label: 'Profit %' },
-    { key: 'noOfShipment', label: 'No.of Shipment' },
-    { key: 'twentyft', label: 'No.of 20ft' },
-    { key: 'fourty', label: 'No.of 40ft' },
-    { key: 'containerNo', label: 'Container No.' },
-    { key: 'chargeable', label: 'Total Chargeable Wt' },
-    { key: 'Vol', label: 'Total CBM/Volume' },
-    { key: 'space', label: 'Unutilized Space in CBM' }
-  ];
 
-  const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
-    const cells: ExcelCell[] = [
-      { value: item.jobNumber || '' },
-      { value: item.Mbl || '' },
-      { value: item.POL || '' },
-      { value: item.POD || '' },
-      { value: item.totalRevenueWithHouse || 0 },
-      { value: item.totalCostWithHouse || 0 },
-      { value: item.GP || 0 },
-      { value: item.actualRevenue || 0 },
-      { value: item.actualCost || 0 },
-      { value: item.actualGp || 0 },
-      { value: item.profit || 0 },
-      { value: item.noOfShipment || 0 },
-      { value: item.twentyft || 0 },
-      { value: item.fourty || 0 },
-      { value: item.containerNo || '' },
-      { value: item.chargeable || 0 },
-      { value: item.Vol || 0 },
-      { value: item.space || 0 }
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'jobNumber', label: 'Job Number' },
+      { key: 'Mbl', label: 'MBL' },
+      { key: 'POL', label: 'POL' },
+      { key: 'POD', label: 'POD' },
+
+      { key: 'totalRevenueWithHouse', label: 'Prov.Revenue' },
+      { key: 'totalCostWithHouse', label: 'Prov.Cost' },
+      { key: 'GP', label: 'Prov.GP' },
+      { key: 'proveprofit', label: 'Prov.Profit %' },
+
+      { key: 'actualRevenue', label: 'Actual Revenue' },
+      { key: 'actualCost', label: 'Actual Cost' },
+      { key: 'actualGp', label: 'Actual GP' },
+      { key: 'profit', label: 'Act.Profit %' },
+
+      { key: 'noOfShipment', label: 'No.of Shipment' },
+      { key: 'twentyft', label: 'No.of 20ft' },
+      { key: 'fourty', label: 'No.of 40ft' },
+
+      { key: 'containerNo', label: 'Container No.' },
+      { key: 'chargeable', label: 'Total Chargeable Wt' },
+      { key: 'Vol', label: 'Total CBM/Volume' },
+      { key: 'space', label: 'Unutilized Space in CBM' }
     ];
-    return { cells, style: 'data' };
-  });
+    const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
+      const cells: ExcelCell[] = [
+        { value: item.jobNumber || '' },
+        { value: item.Mbl || '' },
+        { value: item.POL || '' },
+        { value: item.POD || '' },
 
-  return {
-    fileName: 'Profitability-Report',
-    sheetName: 'ProfitabilityReport',
-    reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: `Profitability Report as on ${this.formatDate(this.params?.FromMBLDt)}`,
-      additionalInfo: [
-        { label: 'Branch', value: this.params?.Branch || '' },
-        { label: 'Dept', value: this.params?.Dept || '' },
-        { label: 'From Date', value: this.formatDate(this.params?.FromMBLDt) },
-        { label: 'To Date', value: this.formatDate(this.params?.ToMBLDt) }
+        { value: this.formatNumber(item.totalRevenueWithHouse) || 0 },
+        { value: this.formatNumber(item.totalCostWithHouse) || 0 },
+        { value: this.formatNumber(item.GP) || 0 },
+        { value: this.formatNumber(item.proveprofit) || 0 },
+
+        { value: this.formatNumber(item.actualRevenue) || 0 },
+        { value: this.formatNumber(item.actualCost) || 0 },
+        { value: this.formatNumber(item.actualGp) || 0 },
+        { value: this.formatNumber(item.profit) || 0 },
+
+        { value: item.noOfShipment || 0 },
+        { value: item.twentyft || 0 },
+        { value: item.fourty || 0 },
+
+        { value: item.containerNo || '' },
+        { value: this.formatNumber(item.chargeable) || 0 },
+        { value: this.formatNumber(item.Vol) || 0 },
+        { value: this.formatNumber(item.space) || 0 }
+      ];
+
+      return { cells, style: 'data' };
+    });
+
+    return {
+      fileName: 'Profitability-Report',
+      sheetName: 'ProfitabilityReport',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: `Profitability Report`,
+        additionalInfo: [
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' },
+          { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) }
+        ]
+      },
+
+      tableHeaders,
+      rows,
+      columnWidths: [
+        15, 15, 12, 12,
+        15, 15, 15, 15,
+        15, 15, 15, 15,
+        12, 12, 12,
+        25, 18, 18, 20
       ]
-    },
-    tableHeaders,
-    rows,
-    columnWidths: [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 12, 12, 12, 12, 20, 15, 15, 18] // adjust as needed
-  };
-}
+    };
+  }
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
+
 
   private formatDate(date: any): string {
     if (!date) return '';

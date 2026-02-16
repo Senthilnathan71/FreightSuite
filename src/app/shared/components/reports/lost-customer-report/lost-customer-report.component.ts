@@ -69,7 +69,7 @@ export class LostCustomerReportComponent {
         { value: item.BookingNo || '' },
         { value: this.formatDate(item.BookingDateTime) },
         { value: item.SalesmanName || '' },
-        { value: item.GP ?? 0 },
+        { value: this.formatNumber(item.GP) ?? 0 },
         { value: item.days ?? 0 }
       ],
       style: 'data'
@@ -79,13 +79,14 @@ export class LostCustomerReportComponent {
       fileName: 'Lost-Customer-Report',
       sheetName: 'LostCustomer',
       reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
+        companyName: this.currentCompany?.companyName || '',
         reportTitle: `Lost Customer Report as on ${this.formatDate(this.params?.BookingFromDate)}`,
         additionalInfo: [
           { label: 'Booking From Date', value: this.formatDate(this.params?.BookingFromDate) },
           { label: 'Booking To Date', value: this.formatDate(this.params?.BookingToDate) },
-          { label: 'Branch', value: this.fullData?.branchNames || 'All' },
-          { label: 'Dept', value: this.fullData?.departmentNames || 'All' }
+          { label: 'Branch', value: this.fullData?.branchInvolved || 'All' },
+          { label: 'Dept', value: this.fullData?.departmentInvolved || 'All' },
+          { label: 'Customer', value: this.fullData?.customerInvolved || 'All' }
         ]
       },
       tableHeaders,
@@ -103,5 +104,13 @@ export class LostCustomerReportComponent {
       return String(date);
     }
   }
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
+
 
 }

@@ -9,13 +9,13 @@ import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 
 @Component({
-  selector: 'app-profit-summary',
+  selector: 'app-profit-summary-accounts',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
-  templateUrl: './profit-summary.component.html',
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  templateUrl: './profit-summary-accounts.component.html',
   styles: ``
 })
-export class ProfitSummaryComponent {
+export class ProfitSummaryAccountsComponent {
 
   currentCompany: any;
   currentBranch: any;
@@ -34,7 +34,7 @@ export class ProfitSummaryComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.orientation = this.reportRegistryService.getReportConfig('profit-summary').pdfOrientation;
+    this.orientation = this.reportRegistryService.getReportConfig('profit-summary-report').pdfOrientation;
   }
 
   get fullData(): any {
@@ -49,34 +49,34 @@ export class ProfitSummaryComponent {
     return this.fullData?.bucketLabels || [];
   }
 
-getHouseTotal(item: any, field: string): number {
-  if (!item?.houseWithCR?.length) return 0;
+  getHouseTotal(item: any, field: string): number {
+    if (!item?.houseWithCR?.length) return 0;
 
-  return item.houseWithCR.reduce(
-    (acc: number, h: any) =>
-      acc + (h?.costRevenues?.houseCrSummary?.[field] || 0),
-    0
-  );
-}
-getGrandTotal(field: string): number {
-  if (!this.fullData?.data?.length) return 0;
+    return item.houseWithCR.reduce(
+      (acc: number, h: any) =>
+        acc + (h?.costRevenues?.houseCrSummary?.[field] || 0),
+      0
+    );
+  }
+  getGrandTotal(field: string): number {
+    if (!this.fullData?.data?.length) return 0;
 
-  return this.fullData.data.reduce((total: number, item: any) => {
+    return this.fullData.data.reduce((total: number, item: any) => {
 
-    const masterValue =
-      item?.costRevenues?.masterCrSummary?.[field] || 0;
+      const masterValue =
+        item?.costRevenues?.masterCrSummary?.[field] || 0;
 
-    const houseValue =
-      item?.houseWithCR?.reduce(
-        (sum: number, h: any) =>
-          sum + (h?.costRevenues?.houseCrSummary?.[field] || 0),
-        0
-      ) || 0;
+      const houseValue =
+        item?.houseWithCR?.reduce(
+          (sum: number, h: any) =>
+            sum + (h?.costRevenues?.houseCrSummary?.[field] || 0),
+          0
+        ) || 0;
 
-    return total + masterValue + houseValue;
+      return total + masterValue + houseValue;
 
-  }, 0);
-}
+    }, 0);
+  }
 
   getExcelData(): ComplexReportExportConfig {
 
@@ -206,12 +206,12 @@ getGrandTotal(field: string): number {
     });
 
     return {
-      fileName: 'Profit-Summary-Report',
+      fileName: 'Profit-Summary-Dept-job-Report',
       sheetName: 'ProfitSummary',
 
       reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: 'Profit Summary Report',
+        companyName: this.currentCompany?.companyName || '',
+        reportTitle: 'Profit Summary Report Dept,Job',
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
           { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) },
@@ -234,19 +234,18 @@ getGrandTotal(field: string): number {
   }
 
 
-private formatDate(date: any): string {
-  if (!date) return '';
-  try {
-    return new Date(date).toLocaleDateString('en-GB');
-  } catch {
-    return String(date);
+  private formatDate(date: any): string {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
-}
 
-private formatNumber(value: any): number | string {
-  if (value === null || value === undefined) return '';
-  const num = Number(value);
-  return isNaN(num) ? '' : Number(num.toFixed(2));
-}
-
+  private formatNumber(value: any): number | string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : Number(num.toFixed(2));
+  }
 }

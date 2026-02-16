@@ -723,6 +723,37 @@ export class ReportRegistryService {
       console.warn(' Unposted Voucher List Report component not yet created:', error);
     }
 
+    // profit summary report by dept and job
+      // Profi_Summary_Report
+    try {
+      const { ProfitSummaryAccountsComponent } = await import(
+        '../components/reports/profit-summary-accounts/profit-summary-accounts.component'
+      );
+
+      this.registerReport({
+        id: 'profit-summary-report',
+        title: 'Profit_Summary_Report',
+        component: ProfitSummaryAccountsComponent,
+        filenameTemplate: 'Profit_Summary_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'Profit_Summary_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Profit_Summary_Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn(' Profit_Summary_Reportt component not yet created:', error);
+    }
 // ======================================================
     // operation report
 
