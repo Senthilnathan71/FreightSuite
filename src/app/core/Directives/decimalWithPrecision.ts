@@ -284,7 +284,8 @@ export class DecimalPrecisionDirective implements OnInit, AfterViewInit, OnChang
     // Only update if value actually changed
     if (currentValue !== controlValue) {
       this.control.control.setValue(controlValue, { 
-        emitEvent: parseAsNumber,
+        // emitEvent: parseAsNumber,
+        emitEvent: false,
         emitModelToViewChange: false 
       });
     }

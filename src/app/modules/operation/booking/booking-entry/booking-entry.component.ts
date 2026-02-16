@@ -869,7 +869,7 @@ subscribeToFormChanges() {
   });
   
   this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
-    if (!this.isPatching) {
+    if (!this.isPatching && !this.chargeableWeightManualOverride)  {
       this.setOrResetWeightError(this.cargoForm);
     }
   });
@@ -887,7 +887,9 @@ subscribeToFormChanges() {
   });
   
   this.cargoForm.valueChanges.subscribe(() => {
+     if (!this.isPatching) {
     this.syncFormValueWithRateComponent();
+     }
   });
 }
   // Product Form Initialization
@@ -920,42 +922,38 @@ subscribeToFormChanges() {
     this.setupImmediateVolumetricCalculation(this.productForm)
   }
 
-  private calculateChargeableWeight(): void {
-    if (this.isPatching || this.chargeableWeightManualOverride) {
+ private calculateChargeableWeight(): void {
+  console.error('calculateChargeableWeight');
+  // During patching, don't recalculate - use the patched value
+  if (this.isPatching) {
+    console.log('Skipping chargeable weight calculation during patching');
     return;
   }
+  
   if (this.chargeableWeightManualOverride) {
     return;
   }
+  
   const volumetric = Number(this.c['Volumetric']?.value) || 0;
-  const volume  = Number(this.c['Volume']?.value) || 0;
+  const volume = Number(this.c['Volume']?.value) || 0;
   const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
   
   let chargeableWeight = 0;
   
-  // Chargeable Weight is the greater of Volumetric or Gross Weight
+  // Chargeable Weight is the greater of Volumetric/Volume or Gross Weight
   if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
-    if (volumetric > grossWeight) {
-      chargeableWeight = volumetric;
-    } else {
-      chargeableWeight = grossWeight;
-    }
+    chargeableWeight = Math.max(volumetric, grossWeight);
   } else {
-    const volume = Number(this.c['Volume']?.value) || 0;
-    if (volume > grossWeight) {
-      chargeableWeight = volume;
-    } else {
-      chargeableWeight = grossWeight;
-    }
+    chargeableWeight = Math.max(volume, grossWeight);
   }
   
-  if (chargeableWeight > 0) {
+  // Only update if different from current value
+  const currentValue = Number(this.c['ChargeableWeight']?.value) || 0;
+  if (Math.abs(chargeableWeight - currentValue) > 0.001) {
     this.c['ChargeableWeight']?.setValue(
-      Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
+      chargeableWeight > 0 ? Number(chargeableWeight.toFixed(this.decimalAfterPrecision)) : '',
       { emitEvent: false }
     );
-  }else {
-    this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
   }
 }
 
@@ -1156,7 +1154,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
+      if (!isPatching) {
  this.setupProductCalculationSubscriptions(productForm);
+      }
       // Check if department is LCL or AIR
   const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
   
@@ -1456,28 +1456,29 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   
   patchValues(response: any) {
-    this.isPatching = true;
-    console.log(response);
-    try{
+  this.isPatching = true;
+  console.log(response);
+  try {
     this.bookingHeader = response;
     const barcodeData = `${response.BookingNo}`;
-    if(response.BookingNo){
+    if (response.BookingNo) {
       this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     }
-      const hasHBLNo = response.HBLNo && response.HBLNo.trim() !== '' && 
-                   response.HBLNo !== null && response.HBLNo !== undefined;
-      const hasHouseJobSid = response.HouseJobSid || null;
-                   if(hasHBLNo || hasHouseJobSid){
-                     this.disableAllForms();
-                   }
-  
+    
+    const hasHBLNo = response.HBLNo && response.HBLNo.trim() !== '' && 
+                     response.HBLNo !== null && response.HBLNo !== undefined;
+    const hasHouseJobSid = response.HouseJobSid || null;
+    if (hasHBLNo || hasHouseJobSid) {
+      this.disableAllForms();
+    }
 
-    // this.barcodeBookingNo = this.barcodeService.convertToBarcode(response.BookingNo);
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
     this.evaluateDropdownOrFreeText();
+    
+    // Patch booking form with emitEvent: false to prevent triggers
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
       BookingDateTime: response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -1503,7 +1504,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       MBLNo: response.MBLNo,
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
       status: response.status === "A" ? "Active" : "Suspended",
-
       VesselName: response.VesselName,
       VoyageMasterSid: response.VoyageMasterSid,
       JobType: response.JobType,
@@ -1528,24 +1528,27 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: response.FreightTerms,
       BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
-    },{emitEvent: false});
-     if (this.isEditMode) {
-        this.loadBookingARAPData();
+    });
+
+    // this.updateGenerateJobButtonVisibility()
+
+    if (this.isEditMode) {
+      this.loadBookingARAPData();
     }
+    
     this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
-    if (hasHBLNo||hasHouseJobSid) {
+    if (hasHBLNo || hasHouseJobSid) {
       this.b['HBLNo']?.disable();
       this.b['HouseJobSid']?.disable();
     }
-   
+
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
 
-
-
+    // Patch cargo form with emitEvent: false
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
       BookingCargoSid: cargoData?.BookingCargoSid,
@@ -1563,19 +1566,22 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport: cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
-    },{emitEvent: false});
+    }, { emitEvent: false });
+
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
-    
+
     if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
-      this.cargoForm.get('StuffingAt')?.setValue('Dock');
+      this.cargoForm.get('StuffingAt')?.setValue('Dock', { emitEvent: false });
       this.cargoForm.get('StuffingAt')?.disable();
     } else {
-      this.cargoForm.get('StuffingAt')?.enable();
+      this.cargoForm.get('StuffingAt')?.enable({emitEvent : false});
     }
 
-    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
-    this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel', { emitEvent: false }) : null;
+    this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight', { emitEvent: false }) : null;
     this.handleCFSOrYard();
+
+    // Patch other form
     const otherData = response.bookingOthers?.[0];
     this.otherForm.patchValue({
       BookingOthersSid: otherData?.BookingOthersSid,
@@ -1609,84 +1615,101 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       SwitchLocation: otherData?.SwitchLocation,
       CarrierBookingRef: otherData?.CarrierBookingRef,
       CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
-    },{ emitEvent: false });
-    const croData = response.bookingCro?.[0];
-  if (croData) {
-    this.croForm.patchValue({
-      BookingCroSid: croData.BookingCroSid,
-      OnHireRef: croData.OnHireRef,
-      ReleaseOrderDate: croData.ReleaseOrderDate ? new Date(croData.ReleaseOrderDate) : null,
-      ValidityDate: croData.ValidityDate ? new Date(croData.ValidityDate) : null,
-      Transporter: croData.Transporter,
-      EmptyYard: croData.EmptyYard,
-      NoteToYard: croData.NoteToYard,
-      NoteToShipper: croData.NoteToShipper
     }, { emitEvent: false });
-  }
 
+    // Patch CRO form
+    const croData = response.bookingCro?.[0];
+    if (croData) {
+      this.croForm.patchValue({
+        BookingCroSid: croData.BookingCroSid,
+        OnHireRef: croData.OnHireRef,
+        ReleaseOrderDate: croData.ReleaseOrderDate ? new Date(croData.ReleaseOrderDate) : null,
+        ValidityDate: croData.ValidityDate ? new Date(croData.ValidityDate) : null,
+        Transporter: croData.Transporter,
+        EmptyYard: croData.EmptyYard,
+        NoteToYard: croData.NoteToYard,
+        NoteToShipper: croData.NoteToShipper
+      }, { emitEvent: false });
+    }
+
+    // Clear and repopulate products
     this.bookingProducts.clear();
     const productsFromResponse = response.bookingProduct || [];
     this.productDataLength = productsFromResponse.length;
+    
     if (this.productDataLength) {
       for (const productData of productsFromResponse) {
         const formWithData = this.createBookingProductGroup(productData, true);
         const productExists = this.productList?.some(
-      p => p.ProductName?.trim().toLowerCase() ===
-           productData.ProductName?.trim().toLowerCase()
-    );
-
-    // ✅ Set free-text flag correctly
-    formWithData
-      .get('isProductFreeText')
-      ?.setValue(!productExists);
+          p => p.ProductName?.trim().toLowerCase() === productData.ProductName?.trim().toLowerCase()
+        );
+        
+        formWithData.get('isProductFreeText')?.setValue(!productExists, { emitEvent: false });
+        
+        // CRITICAL: Set the API values directly without triggering calculations
+        formWithData.patchValue({
+          Volume: productData.Volume,
+          Volumetric: productData.Volumetric,
+          GrossWeight: productData.GrossWeight,
+          NetWeight: productData.NetWeight,
+          ExternlQty: productData.ExternlQty,
+          Length: productData.Length,
+          Width: productData.Width,
+          Height: productData.Height
+        }, { emitEvent: false });
+        
         this.bookingProducts.push(formWithData);
       }
       this.updateProductPagination();
-     setTimeout(() => {
-        this.handleProductRelatedCalculation();
-      }, 100);
     }
 
+    // Handle connections, rates, etc.
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
       return {
         ...connection,
         BookingConnectionSid: connection.BookingConnectionSid,
       }
-    }); // for child component
-    this.connectionResult = [...this.bookingConnectionsArr]
+    });
+    this.connectionResult = [...this.bookingConnectionsArr];
 
     this.bookingRateArr = (response.bookingRates || []).map(br => ({
       ...br,
-      RateSid : br.BookingRatesSid,
-      RevenueCustomerMasterSid : br.CustomerMasterSid,
-      RevenueCustomerBranchSid : br.CustomerBranchSid,
-      CostAgentMasterSid : br.AgentMasterSid,
-      CostAgentBranchSid : br.AgentBranchSid,
-      status : br.status  === "A" ? "Active" : "Suspended"
+      RateSid: br.BookingRatesSid,
+      RevenueCustomerMasterSid: br.CustomerMasterSid,
+      RevenueCustomerBranchSid: br.CustomerBranchSid,
+      CostAgentMasterSid: br.AgentMasterSid,
+      CostAgentBranchSid: br.AgentBranchSid,
+      status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
+
     const shipmentTypeValue = response.ShipmentType === "Y" ? true : false;
     if (shipmentTypeValue) {
-      this.bookingForm.get('NominatedBy')?.setValue('Nomination');
+      this.bookingForm.get('NominatedBy')?.setValue('Nomination', { emitEvent: false });
     } else {
-      this.bookingForm.get('NominatedBy')?.setValue('Self');
+      this.bookingForm.get('NominatedBy')?.setValue('Self', { emitEvent: false });
     }
 
     this.syncFormValueWithRateComponent();
     this.applyTranshipmentRestrictions();
     this.isSaving = false;
-    
+
   } catch (error) {
     console.error('Error during patchValues:', error);
   } finally {
-    // CRITICAL: Reset isPatching after a delay to ensure all patching completes
+    // Reset isPatching after ALL patching is complete
     setTimeout(() => {
       this.isPatching = false;
       console.log('✅ isPatching reset to false - calculations now enabled');
       
-      // Force one final calculation to ensure totals are correct
+      // NOW trigger calculations AFTER patching is complete
+      if(!this.isEditMode){
       this.handleProductRelatedCalculation();
       this.calculateChargeableWeight();
+      }
+      
+      // Force one more sync with rate component
+      this.syncFormValueWithRateComponent();
     }, 1000);
   }
 }
@@ -3082,11 +3105,11 @@ getVesselVoyBasedOnPorts() {
 
   handleProductRelatedCalculation() {
   if (this.isPatching) {
+    console.log('Skipping product related calculation during patching');
     return; // Skip ALL changes during patching
   }
   
   if (this.bookingProducts.length === 0) {
-    // Only enable fields if NOT in patching mode
     if (!this.isPatching) {
       this.c['NoOfPackage']?.enable(); 
       this.c['NoOfPackage']?.setValue(0);
@@ -3104,38 +3127,54 @@ getVesselVoyBasedOnPorts() {
     return;
   }
 
+  // Calculate totals from existing product values
   let totalNoOfPkg = 0;
   let totalGrossWeight = 0;
   let totalNetWeight = 0;
   let totalVolume = 0;
   let totalVolumetric = 0;
 
-  let productValue = this.bookingProducts.getRawValue() || [];
-  productValue.forEach(product => {
-    totalNoOfPkg += (Number(product.ExternlQty) || 0);
-    totalGrossWeight += Number(product.GrossWeight) || 0;
-    totalNetWeight += Number(product.NetWeight) || 0;
-    totalVolume += Number(product.Volume) || 0;
-    totalVolumetric += Number(product.Volumetric) || 0;
+  this.bookingProducts.controls.forEach((product: FormGroup) => {
+    totalNoOfPkg += Number(product.get('ExternlQty')?.value) || 0;
+    totalGrossWeight += Number(product.get('GrossWeight')?.value) || 0;
+    totalNetWeight += Number(product.get('NetWeight')?.value) || 0;
+    totalVolume += Number(product.get('Volume')?.value) || 0;
+    totalVolumetric += Number(product.get('Volumetric')?.value) || 0;
   });
 
-  // Set values but DON'T disable/enable during patching
-  this.c['NoOfPackage']?.setValue(Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)));
-  this.c['GrossWeight']?.setValue(Number(totalGrossWeight.toFixed(this.decimalAfterPrecision)));
-  this.c['NetWeight']?.setValue(Number(totalNetWeight.toFixed(this.decimalAfterPrecision)));
-  this.c['Volume']?.setValue(Number(totalVolume.toFixed(this.decimalAfterPrecision)));
-  this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+  // Update cargo form totals
+  this.c['NoOfPackage']?.setValue(
+    totalNoOfPkg > 0 ? Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)) : '',
+    { emitEvent: false }
+  );
+  this.c['GrossWeight']?.setValue(
+    totalGrossWeight > 0 ? Number(totalGrossWeight.toFixed(this.decimalAfterPrecision)) : '',
+    { emitEvent: false }
+  );
+  this.c['NetWeight']?.setValue(
+    totalNetWeight > 0 ? Number(totalNetWeight.toFixed(this.decimalAfterPrecision)) : '',
+    { emitEvent: false }
+  );
+  this.c['Volume']?.setValue(
+    totalVolume > 0 ? Number(totalVolume.toFixed(this.decimalAfterPrecision)) : '',
+    { emitEvent: false }
+  );
+  this.c['Volumetric']?.setValue(
+    totalVolumetric > 0 ? Number(totalVolumetric.toFixed(this.decimalAfterPrecision)) : '',
+    { emitEvent: false }
+  );
   
-  // Only disable fields if NOT in patching mode
-  if (!this.isPatching) {
-    this.c['NoOfPackage']?.disable();
-    this.c['GrossWeight']?.disable();
-    this.c['NetWeight']?.disable();
-    this.c['Volume']?.disable();
-    this.c['Volumetric']?.disable();
-  }
+  // Disable fields since they're calculated from products
+ this.c['NoOfPackage']?.disable({ emitEvent: false });
+  this.c['GrossWeight']?.disable({ emitEvent: false });
+  this.c['NetWeight']?.disable({ emitEvent: false });
+  this.c['Volume']?.disable({ emitEvent: false });
+  this.c['Volumetric']?.disable({ emitEvent: false });
   
+  // Recalculate chargeable weight based on new totals
+
   this.calculateChargeableWeight();
+ 
 }
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
