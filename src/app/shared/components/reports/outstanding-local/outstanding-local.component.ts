@@ -228,9 +228,6 @@ export class OutstandingLocalComponent {
     return this.numberToWords.convert(totalAmount, currencySid);
   }
 
-
-
-
   getCumulative(transactions: any[], index: number): number {
     let total = 0;
 
@@ -248,13 +245,14 @@ export class OutstandingLocalComponent {
     return total;
   }
 
- 
   getExcelData(): ComplexReportExportConfig {
 
     const rows: ExcelRow[] = [];
+
     const currencyGroups = this.currencyGroups || [];
     const currencySummary = this.fullData?.currencyWiseSummary || [];
 
+    /* ================= MAIN TABLE HEADERS ================= */
 
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
@@ -268,11 +266,13 @@ export class OutstandingLocalComponent {
       { key: 'ageing', label: 'Ageing' }
     ];
 
-    const columnWidths = [10, 8, 5, 18, 4, 4, 12, 10, 6];
+    const columnWidths = [15, 15, 10, 30, 8, 15, 18, 15, 10];
+
+    /* ================= LOOP CURRENCY GROUPS ================= */
 
     currencyGroups.forEach(group => {
 
-
+      // ✅ Currency Header Row
       rows.push({
         cells: [
           { value: group.currencyCode, colspan: 9 }
@@ -280,7 +280,7 @@ export class OutstandingLocalComponent {
         style: 'header'
       });
 
-
+      // ✅ Transaction Rows
       group.transactions.forEach(item => {
         rows.push({
           cells: [
@@ -292,7 +292,6 @@ export class OutstandingLocalComponent {
 
             { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
             { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
-
             { value: this.formatNumber(item?.currencyWiseCumulative || 0) },
 
             { value: item?.ageingDays || 0 }
@@ -301,6 +300,7 @@ export class OutstandingLocalComponent {
         });
       });
 
+      // ✅ Total Row (Same as HTML)
       rows.push({
         cells: [
           {
@@ -311,7 +311,8 @@ export class OutstandingLocalComponent {
             colspan: 4
           },
           { value: 'Total', colspan: 1 },
-           {
+
+          {
             value: this.formatNumber(
               this.getSubtotal(group.transactions, 'signedOriginalCurrency')
             )
@@ -322,21 +323,23 @@ export class OutstandingLocalComponent {
             )
           },
 
-          { value: '', colspan: 3 }
+          { value: '', colspan: 2 }
         ],
         style: 'total'
       });
 
-
+      // ✅ Blank Row Space Between Groups
       rows.push({
         cells: [{ value: '', colspan: 9 }],
         style: 'section'
       });
     });
 
+    /* ================= SUMMARY TABLE (BOTTOM) ================= */
+
     const summaryHeaders = [
       'Currency',
-      'Total Outstanding',
+      `Total Outstanding [${this.currentCurrencyCode}]`,
       '0 - 30 Days',
       '31 - 60 Days',
       '61 - 90 Days',
@@ -344,18 +347,21 @@ export class OutstandingLocalComponent {
       '121+ Days'
     ];
 
-    const summaryColumnWidths = [12, 18, 14, 14, 14, 14, 14];
+    const summaryColumnWidths = [12, 20, 14, 14, 14, 14, 14];
+
+    /* ================= FINAL RETURN ================= */
 
     return {
       fileName: 'Outstanding-Report',
       sheetName: 'OutstandingReport',
 
+      // ✅ Header Like HTML
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Outstanding Report as on ${this.formatDate(this.params?.ToDate)}`,
+        reportTitle: `Outstanding Local Report as on ${this.formatDate(this.params?.ToDate)}`,
         additionalInfo: [
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-          { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
+          { label: 'Branch', value: this.fullData?.brancesInvoled || 'All' },
           { label: 'Subledger', value: this.fullData?.subledgerName || '' },
           { label: 'Ledger', value: this.fullData?.ledgerName || '' }
         ]
@@ -365,7 +371,7 @@ export class OutstandingLocalComponent {
       columnWidths,
       rows,
 
-      // ✅ Currency Summary Table (Bottom)
+      // ✅ Bottom Currency Summary Table
       summaryTable: {
         headers: summaryHeaders,
 
@@ -386,8 +392,6 @@ export class OutstandingLocalComponent {
       }
     };
   }
-
-
 
   private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';

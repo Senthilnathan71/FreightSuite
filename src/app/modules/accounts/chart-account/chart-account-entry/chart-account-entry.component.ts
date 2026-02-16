@@ -22,6 +22,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { errorLogger } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -153,7 +154,7 @@ export class ChartAccountEntryComponent implements OnInit {
     this.chartForm = this.fb.group({
       LedgerName: ['', [ Validators.maxLength(100)]],
       LedgerCode: ['', [ Validators.maxLength(10)]],
-      SubGroupName: ['', [Validators.maxLength(20)]],
+      SubGroupName: ['', [Validators.maxLength(50)]],
       LedgerCurrency: [],
       GroupName: ['', [Validators.maxLength(100)]],
       LedgerType: [''],
@@ -371,6 +372,7 @@ export class ChartAccountEntryComponent implements OnInit {
 
   onSubmit(): void {
     if (this.chartForm.invalid) {
+        errorLogger(this.chartForm);
         this.chartForm.markAllAsTouched();
         this.appSettingService.showWarning('Please fill out all required fields correctly.');
         return;
