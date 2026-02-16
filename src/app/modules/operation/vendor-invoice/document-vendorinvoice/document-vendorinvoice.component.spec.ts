@@ -1,18 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DocumentVendorInvoiceEntryComponent } from './document-vendorinvoice.component';
 
-import { DocumentVendorinvoiceComponent } from './document-vendorinvoice.component';
-
-describe('DocumentVendorinvoiceComponent', () => {
-  let component: DocumentVendorinvoiceComponent;
-  let fixture: ComponentFixture<DocumentVendorinvoiceComponent>;
+describe('DocumentVendorInvoiceEntryComponent', () => {
+  let component: DocumentVendorInvoiceEntryComponent;
+  let fixture: ComponentFixture<DocumentVendorInvoiceEntryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DocumentVendorinvoiceComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(DocumentVendorinvoiceComponent);
+      imports: [DocumentVendorInvoiceEntryComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(DocumentVendorInvoiceEntryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

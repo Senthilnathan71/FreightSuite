@@ -26,6 +26,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
+import { ExtractedInvoice } from '../../ocr.service';
 import { CommonService } from 'src/app/common/common.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
@@ -2599,82 +2600,78 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.appSettingService.showError('Failed to open upload modal');
     }
   }
-  // Add this method to handle processed vendor invoice data from document upload
-  onVendorInvoiceProcessed(processedData: any): void {
-    this.populateFormFromDocument(processedData);
-  }
+  // Handle processed vendor invoice data from OCR extraction modal
+  onVendorInvoiceProcessed(extractedData: ExtractedInvoice): void {
+    if (!extractedData) return;
 
-  // Add this method to populate form from document data
-  private populateFormFromDocument(data: any): void {
-    if (!data) return;
+    // Parse invoice date (format: DD/MM/YYYY from LLM)
+    let billDate: Date | null = null;
+    if (extractedData.invoice_date) {
+      const parts = extractedData.invoice_date.split('/');
+      if (parts.length === 3) {
+        billDate = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+      } else {
+        billDate = new Date(extractedData.invoice_date);
+      }
+      if (isNaN(billDate.getTime())) billDate = null;
+    }
 
-    // Populate header fields
+    // The seller is the vendor (party issuing the invoice)
     this.vendorInvoiceForm.patchValue({
-      PartyName: data.partyName || '',
-      PartyAddress: data.partyAddress || '',
-      GSTNo: data.gstNo || '',
-      PlaceOfSupply: data.placeOfSupply || '',
-      CurrencyCode: data.currencyCode || '',
-      ExchangeRate: data.exchangeRate || 0,
-      BillNo: data.documentNumber || '',
-      BillDate: data.documentDate ? new Date(data.documentDate) : null,
-      BillAmt: data.amount || 0,
-      MBLNo: data.masterNumber || '',
-      HBLNo: data.houseNumber || '',
-      MasterJobSid: data.masterJobSid || null,
-      HouseJobSid: data.houseJobSid || null,
-      Narration: data.narration || '',
-      GSTType: data.gstType || ''
+      BillNo: extractedData.invoice_number || '',
+      BillDate: billDate,
+      BillAmt: extractedData.grand_total || 0,
+      PlaceOfSupply: extractedData.place_of_supply || '',
+      Narration: extractedData.amount_in_words || '',
     });
 
-    // Clear existing details and populate with new ones
-    this.details.clear();
+    // Try to match seller name to existing vendor list
+    const sellerName = extractedData.seller?.name?.trim();
+    if (sellerName) {
+      const matchedVendor = this.vendorList.find(v =>
+        v.CustomerName?.toLowerCase().includes(sellerName.toLowerCase()) ||
+        sellerName.toLowerCase().includes(v.CustomerName?.toLowerCase())
+      );
+      if (matchedVendor) {
+        this.onVendorChange(matchedVendor);
+      }
+    }
 
-    if (data.voucherDetails && data.voucherDetails.length > 0) {
-      data.voucherDetails.forEach((detail: any, index: number) => {
+    // Populate line items as detail rows
+    this.details.clear();
+    if (extractedData.line_items && extractedData.line_items.length > 0) {
+      extractedData.line_items.forEach((item, index) => {
+        // Try to find matching charge by description
+        const matchedCharge = item.description
+          ? this.chargeList.find(c =>
+              c.chargeName?.toLowerCase().includes(item.description!.toLowerCase()) ||
+              item.description!.toLowerCase().includes(c.chargeName?.toLowerCase())
+            )
+          : null;
+
         const detailGroup = this.createDetailGroup({
-          ChargeMasterSid: this.findChargeIdByDescription(detail.chargeDescription),
-          ChargeDescription: detail.chargeDescription,
-          HSSACMasterSid: this.findHssacIdByCode(detail.sacCode, index),
-          NumberOfUnit: detail.numberOfUnit || 1,
-          Rate: detail.rate || 0,
-          Amount: detail.amount || 0,
-          TaxableAmount: detail.taxableAmount || 0,
-          TaxPercentage1: detail.cgstRate || 0,
-          TaxAmount1: detail.cgstAmount || 0,
-          TaxPercentage2: detail.sgstRate || 0,
-          TaxAmount2: detail.sgstAmount || 0,
-          TaxPercentageIGST: detail.igstRate || 0,
-          TaxAmountIGST: detail.igstAmount || 0,
-          LocalAmount: detail.localAmount || 0,
-          PartyAmount: detail.partyAmount || 0,
-          MasterJobSid: detail.masterJobSid,
-          HouseJobSid: detail.houseJobSid,
-          DepartmentMasterSid: detail.departmentMasterSid
+          Sno: item.sno || index + 1,
+          ChargeMasterSid: matchedCharge?.ChargeMasterSid || null,
+          ChargeDescription: item.description || '',
+          NumberOfUnit: item.qty || 1,
+          Rate: item.rate || 0,
+          Amount: item.taxable_value || 0,
+          TaxPercentage1: item.vat_percent || 0,
+          TaxAmount1: item.vat_amount || 0,
+          DrCr: 'D',
         });
 
         this.details.push(detailGroup);
+
+        // If charge matched, trigger HSN fetch and recalc
+        if (matchedCharge) {
+          this.onDetailChange(index, 'ChargeMasterSid');
+        }
       });
     }
 
-    // Recalculate all rows after population
     this.recalculateAllRows();
-  }
-
-  // Helper methods to find IDs from descriptions/codes
-  private findChargeIdByDescription(description: string): number | null {
-    if (!description) return null;
-    const charge = this.chargeList.find(c =>
-      c.ChargeDescription?.toLowerCase().includes(description.toLowerCase()) ||
-      c.chargeName?.toLowerCase().includes(description.toLowerCase())
-    );
-    return charge?.ChargeMasterSid || null;
-  }
-
-  private findHssacIdByCode(code: string, index: number): number | null {
-    if (!code) return null;
-    const hssac = this.hssacList[index].find(h => h.HSSACCode === code);
-    return hssac?.HSSACMasterSid || null;
+    this.appSettingService.showSuccess('Invoice data extracted and populated successfully.');
   }
   // eDoc Method
   openEDoc() {

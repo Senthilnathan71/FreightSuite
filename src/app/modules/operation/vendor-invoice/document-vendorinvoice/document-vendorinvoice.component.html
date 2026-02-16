@@ -1,480 +1,291 @@
 <div class="document-vendorinvoice-container">
-  <div class="header mb-3 d-flex align-items-start gap-3 modalHeaderpart">
-    <div class="">
-      <h4 class="text-start">Vendor Invoice Document Processing</h4>
-      <p class="subtitle">Upload a PDF Vendor Invoice to automatically extract and populate form data</p>
+
+  <!-- ── Header ─────────────────────────────────── -->
+  <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+    <div>
+      <h5 class="mb-0 fw-semibold">Extract Vendor Invoice</h5>
+      <small class="text-muted">Upload a PDF to auto-extract invoice data using AI</small>
     </div>
-    <div class="ms-auto p-">
-      <div class="p-2" style="cursor:pointer" (click)="clearForm()">
-        <i class="fas fa-times"></i>
-      </div>
-    </div>
+    <button type="button" class="btn-close" (click)="clearForm()"></button>
   </div>
 
-  <!-- File Upload Section -->
-  <div class="upload-section" *ngIf="!isReviewMode">
-    <div class="upload-card">
-      <div class="d-flex flex-wrap gap-3">
-        <div class="file-upload-wrapper col">
-          <input type="file" id="vendorInvoiceFile" accept=".pdf" (change)="onFileSelected($event)" 
-                 [disabled]="isUploading" #fileInput>
-          <label for="vendorInvoiceFile" class="file-label" [class.disabled]="isUploading">
-            <span class="file-text">
-              {{ selectedFile?.name || 'Choose Vendor Invoice PDF file...' }}
+  <!-- ── Upload Section ─────────────────────────── -->
+  <div class="card border-0 shadow-sm mb-3" *ngIf="!extractedData">
+    <div class="card-body">
+      <div class="d-flex flex-wrap align-items-end gap-3">
+        <!-- File Input -->
+        <div class="flex-grow-1">
+          <label for="vendorInvoiceFile" class="form-label small fw-medium mb-1">Select PDF</label>
+          <input type="file" class="form-control form-control-sm" id="vendorInvoiceFile"
+                 accept=".pdf" (change)="onFileSelected($event)" [disabled]="isProcessing">
+          <small class="text-muted" *ngIf="selectedFile">
+            {{ selectedFile.name }} ({{ getFileSizeMB() }} MB)
+          </small>
+        </div>
+
+        <!-- Process Button -->
+        <div>
+          <button type="button" class="btn btn-primary btn-sm px-4" style="min-width:170px"
+                  [disabled]="!selectedFile || isProcessing" (click)="processFile()">
+            <span *ngIf="!isProcessing">
+              <i class="fas fa-magic me-1"></i> Extract Data
             </span>
-            <span class="file-size" *ngIf="selectedFile">
-              ({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)
+            <span *ngIf="isProcessing">
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              Processing...
             </span>
-          </label>
-        </div>
-  
-        <button type="button" class="btn btn-info btn-sm process-btn" 
-                [disabled]="!selectedFile || isUploading" (click)="uploadAndProcess()">
-          <span *ngIf="!isUploading">
-            Process Vendor Invoice
-          </span>
-          <span *ngIf="isUploading">
-            <i class="spinner"></i>
-            {{ uploadProgress.message }}
-          </span>
-        </button>
-      </div>
-
-      <!-- Progress Bar -->
-      <div class="progress-section" *ngIf="isUploading || uploadProgress.stage === 'complete'">
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="uploadProgress.percentage" 
-               [class]="uploadProgress.stage"></div>
-        </div>
-        <div class="progress-text">
-          {{ uploadProgress.message }} ({{ uploadProgress.percentage }}%)
-        </div>
-      </div>
-
-      <!-- Status Messages -->
-      <div class="status-messages">
-        <div *ngIf="uploadError" class="error-message">
-          <i class="error-icon">⚠️</i>
-          {{ uploadError }}
-        </div>
-
-        <div *ngIf="extractedData && !uploadError" class="success-message">
-          <i class="success-icon">✅</i>
-          Vendor Invoice processed successfully!
-          <span class="confidence-score" [class]="getConfidenceClass(extractedData.confidence)">
-            Confidence: {{ getRoundedConfidence(extractedData.confidence * 100) }}%
-          </span>
-          <button type="button" class="link-btn" (click)="showExtractedDataModal()">
-            View extracted data
-          </button>
-          <button type="button" class="link-btn" (click)="showFieldMappingModal()">
-            View field mappings
           </button>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Review and Edit Section -->
-  <div class="review-section" *ngIf="isReviewMode">
-    <div class="card">
-      <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0">
-          <i class="fas fa-edit me-2"></i>
-          Review & Edit Extracted Data
-          <span class="badge bg-info ms-2">{{ getRoundedConfidence(extractedData?.confidence || 0) }}% Confidence</span>
-        </h5>
+      <!-- Processing indicator -->
+      <div *ngIf="isProcessing" class="mt-3">
+        <div class="progress" style="height: 4px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 100%"></div>
+        </div>
+        <small class="text-muted mt-1 d-block">
+          <i class="fas fa-robot me-1"></i>
+          AI is reading and extracting data from your invoice... This may take 15–40 seconds.
+        </small>
       </div>
-      <div class="card-body">
-        <form [formGroup]="vendorInvoiceForm">
-          
-          <!-- Header Information -->
-          <div class="section-header">
-            <h6>Header Information</h6>
-          </div>
-          <div class="row g-3 mb-4">
-            <!-- Vendor Information -->
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="form-label">Vendor Name *</label>
-                <input type="text" class="form-control" formControlName="partyName"
-                       [class.is-invalid]="f['partyName'].invalid && f['partyName'].touched">
-                <div class="field-mapping-info" *ngIf="getFieldMapping('partyName') as mapping">
-                  <small class="text-muted">
-                    Mapped from: "{{ mapping.pdfLabel }}" 
-                    <span class="confidence-badge" [class]="getConfidenceClass(mapping.confidence)">
-                      {{ getRoundedConfidence(mapping.confidence * 100) }}%
-                    </span>
-                  </small>
-                </div>
-              </div>
-            </div>
 
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="form-label">Vendor Address</label>
-                <textarea class="form-control" formControlName="partyAddress" rows="2"></textarea>
-                <div class="field-mapping-info" *ngIf="getFieldMapping('partyAddress') as mapping">
-                  <small class="text-muted">
-                    Mapped from: "{{ mapping.pdfLabel }}"
-                    <span class="confidence-badge" [class]="getConfidenceClass(mapping.confidence)">
-                      {{ getRoundedConfidence(mapping.confidence * 100) }}%
-                    </span>
-                  </small>
-                </div>
-              </div>
-            </div>
-
-            <!-- Document Information -->
-            <div class="col-md-4">
-              <div class="form-group">
-                <label class="form-label">Invoice Number *</label>
-                <input type="text" class="form-control" formControlName="documentNumber"
-                       [class.is-invalid]="f['documentNumber'].invalid && f['documentNumber'].touched">
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="form-group">
-                <label class="form-label">Invoice Date *</label>
-                <input type="date" class="form-control" formControlName="documentDate"
-                       [class.is-invalid]="f['documentDate'].invalid && f['documentDate'].touched">
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="form-group">
-                <label class="form-label">GST Number</label>
-                <input type="text" class="form-control" formControlName="gstNo">
-                <div class="field-mapping-info" *ngIf="getFieldMapping('gstNo') as mapping">
-                  <small class="text-muted">
-                    Mapped from: "{{ mapping.pdfLabel }}"
-                    <span class="confidence-badge" [class]="getConfidenceClass(mapping.confidence)">
-                      {{ getRoundedConfidence(mapping.confidence * 100) }}%
-                    </span>
-                  </small>
-                </div>
-              </div>
-            </div>
-
-            <!-- Financial Information -->
-            <div class="col-md-3">
-              <div class="form-group">
-                <label class="form-label">Currency *</label>
-                <input type="text" class="form-control" formControlName="currencyCode"
-                       [class.is-invalid]="f['currencyCode'].invalid && f['currencyCode'].touched">
-              </div>
-            </div>
-
-            <div class="col-md-3">
-              <div class="form-group">
-                <label class="form-label">Exchange Rate *</label>
-                <input type="number" step="0.0001" class="form-control" formControlName="exchangeRate"
-                       [class.is-invalid]="f['exchangeRate'].invalid && f['exchangeRate'].touched">
-              </div>
-            </div>
-
-            <div class="col-md-3">
-              <div class="form-group">
-                <label class="form-label">Total Amount *</label>
-                <input type="number" step="0.01" class="form-control" formControlName="amount"
-                       [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
-              </div>
-            </div>
-
-            <div class="col-md-3">
-              <div class="form-group">
-                <label class="form-label">Place of Supply</label>
-                <input type="text" class="form-control" formControlName="placeOfSupply">
-              </div>
-            </div>
-          </div>
-
-          <!-- Charge Details Section -->
-          <div class="section-header">
-            <h6>Charge Details</h6>
-            <button type="button" class="btn btn-sm btn-success" (click)="addChargeDetailRow()">
-              <i class="fas fa-plus me-1"></i>Add Charge
-            </button>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-              <thead class="table-light">
-                <tr>
-                  <th width="30"></th>
-                  <th width="250">Description *</th>
-                  <th width="100">SAC/HSN</th>
-                  <th width="80">Unit</th>
-                  <th width="100">Quantity *</th>
-                  <th width="100">Rate *</th>
-                  <th width="120">Amount *</th>
-                  <th width="80">CGST %</th>
-                  <th width="100">CGST Amt</th>
-                  <th width="80">SGST %</th>
-                  <th width="100">SGST Amt</th>
-                  <th width="80">IGST %</th>
-                  <th width="100">IGST Amt</th>
-                  <th width="120">Total Amount</th>
-                </tr>
-              </thead>
-              <tbody formArrayName="voucherDetails">
-                <tr *ngFor="let row of voucherDetails.controls; let i = index" [formGroupName]="i">
-                  <td>
-                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                            (click)="removeChargeDetailRow(i)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <input type="text" class="form-control form-control-sm" 
-                           formControlName="chargeDescription"
-                           [class.is-invalid]="row.get('chargeDescription')?.invalid && row.get('chargeDescription')?.touched">
-                  </td>
-                  <td>
-                    <input type="text" class="form-control form-control-sm" formControlName="sacCode">
-                  </td>
-                  <td>
-                    <input type="text" class="form-control form-control-sm" formControlName="unit">
-                  </td>
-                  <td>
-                    <input type="number" step="0.001" class="form-control form-control-sm" 
-                           formControlName="numberOfUnit"
-                           [class.is-invalid]="row.get('numberOfUnit')?.invalid && row.get('numberOfUnit')?.touched">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" 
-                           formControlName="rate"
-                           [class.is-invalid]="row.get('rate')?.invalid && row.get('rate')?.touched">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" 
-                           formControlName="amount"
-                           [class.is-invalid]="row.get('amount')?.invalid && row.get('amount')?.touched">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="cgstRate">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="cgstAmount">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="sgstRate">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="sgstAmount">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="igstRate">
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm" formControlName="igstAmount">
-                  </td>
-                  <td>
-                    <span class="form-control-plaintext">
-                      {{ (row.get('amount')?.value || 0) + (row.get('cgstAmount')?.value || 0) + 
-                         (row.get('sgstAmount')?.value || 0) + (row.get('igstAmount')?.value || 0) | currency:'INR' }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-              <tfoot class="table-info">
-                <tr>
-                  <td colspan="6" class="text-end"><strong>Totals:</strong></td>
-                  <td><strong>{{ getTotalAmount() | currency:'INR' }}</strong></td>
-                  <td colspan="2"><strong>{{ getTotalTaxAmount() | currency:'INR' }}</strong></td>
-                  <td colspan="3"></td>
-                  <td><strong>{{ getGrandTotal() | currency:'INR' }}</strong></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <!-- Validation Warnings -->
-          <div class="alert alert-warning mt-3" *ngIf="hasTotalMismatches()">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Total Amount Mismatch Detected:</strong><br>
-            Sum of line amounts: {{ totalMismatches?.lineTotal | currency:'INR' }}<br>
-            Header total amount: {{ totalMismatches?.headerTotal | currency:'INR' }}<br>
-            Difference: {{ totalMismatches?.difference | currency:'INR' }}
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="action-buttons mt-4">
-            <button type="button" class="btn btn-secondary" (click)="clearForm()">
-              <i class="fas fa-times me-1"></i>Cancel
-            </button>
-            
-            <button type="button" class="btn btn-warning" (click)="saveExtractionReview()">
-              <i class="fas fa-save me-1"></i>Save for Review
-            </button>
-            
-            <button type="button" class="btn btn-success" (click)="applyToDatabase()"
-                    [disabled]="vendorInvoiceForm.invalid || hasTotalMismatches()">
-              <i class="fas fa-database me-1"></i>Apply to Database
-            </button>
-          </div>
-        </form>
+      <!-- Error -->
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3 mb-0 py-2 small">
+        <i class="fas fa-exclamation-circle me-1"></i> {{ errorMessage }}
       </div>
     </div>
   </div>
 
-  <!-- Extracted Data Modal -->
-  <ng-template #extractedDataModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Extracted Vendor Invoice Data</h5>
-      <button type="button" class="btn-close" (click)="closeModal()"></button>
+  <!-- ── Extracted Data Review ──────────────────── -->
+  <div *ngIf="extractedData">
+
+    <!-- Timing Info -->
+    <div class="d-flex align-items-center gap-3 mb-3 small text-muted px-1" *ngIf="response">
+      <span><i class="fas fa-brain me-1"></i> Model: <strong>{{ response.model }}</strong></span>
+      <span><i class="fas fa-clock me-1"></i> Total: <strong>{{ (response.processingTime.totalMs / 1000).toFixed(1) }}s</strong></span>
+      <span *ngIf="response.ocrUsed" class="badge bg-warning text-dark">OCR Used</span>
+      <span *ngIf="!response.ocrUsed" class="badge bg-success">Digital PDF</span>
     </div>
-    <div class="modal-body">
-      <div class="confidence-display mb-3">
-        <div class="alert" [class.alert-success]="extractedData?.confidence >= 0.8" 
-                         [class.alert-warning]="extractedData?.confidence >= 0.6 && extractedData?.confidence < 0.8"
-                         [class.alert-danger]="extractedData?.confidence < 0.6">
-          <strong>Processing Confidence:</strong> 
-          {{ getRoundedConfidence(extractedData?.confidence || 0) }}%
-        </div>
+
+    <!-- Invoice Header -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header py-2 bg-light">
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-file-invoice me-1"></i> Invoice Header</h6>
       </div>
-
-      <div class="extracted-data-sections">
-        <!-- Header Information -->
-        <div class="data-section">
-          <h6>Header Information</h6>
-          <div class="row">
-            <div class="col-md-6" *ngIf="extractedData?.partyName">
-              <strong>Vendor Name:</strong> {{ extractedData.partyName }}
-            </div>
-            <div class="col-md-6" *ngIf="extractedData?.documentNumber">
-              <strong>Invoice Number:</strong> {{ extractedData.documentNumber }}
-            </div>
-            <div class="col-md-6" *ngIf="extractedData?.documentDate">
-              <strong>Invoice Date:</strong> {{ extractedData.documentDate }}
-            </div>
-            <div class="col-md-6" *ngIf="extractedData?.gstNo">
-              <strong>GST No:</strong> {{ extractedData.gstNo }}
-            </div>
-            <div class="col-md-6" *ngIf="extractedData?.amount">
-              <strong>Total Amount:</strong> {{ extractedData.amount | currency:extractedData.currencyCode }}
-            </div>
+      <div class="card-body py-2">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Invoice Number</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.invoice_number">
           </div>
-        </div>
-
-        <!-- Charge Details -->
-        <div class="data-section" *ngIf="extractedData?.voucherDetails?.length > 0">
-          <h6>Charge Details ({{ extractedData.voucherDetails.length }} items)</h6>
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Qty</th>
-                  <th>Rate</th>
-                  <th>Amount</th>
-                  <th>Taxes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let detail of extractedData.voucherDetails">
-                  <td>{{ detail.chargeDescription }}</td>
-                  <td>{{ detail.numberOfUnit }}</td>
-                  <td>{{ detail.rate | currency:extractedData.currencyCode }}</td>
-                  <td>{{ detail.amount | currency:extractedData.currencyCode }}</td>
-                  <td>
-                    <span *ngIf="detail.cgstAmount">CGST: {{ detail.cgstAmount | currency:extractedData.currencyCode }}</span>
-                    <span *ngIf="detail.sgstAmount">SGST: {{ detail.sgstAmount | currency:extractedData.currencyCode }}</span>
-                    <span *ngIf="detail.igstAmount">IGST: {{ detail.igstAmount | currency:extractedData.currencyCode }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Invoice Date</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.invoice_date">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Due Date</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.due_date">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Currency</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.currency">
           </div>
         </div>
       </div>
     </div>
-  </ng-template>
 
-  <!-- Field Mapping Modal -->
-  <ng-template #fieldMappingModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Field Mappings & Confidence Scores</h5>
-      <button type="button" class="btn-close" (click)="closeModal()"></button>
-    </div>
-    <div class="modal-body">
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>PDF Label</th>
-              <th>Mapped Field</th>
-              <th>Extracted Value</th>
-              <th>Confidence</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let mapping of fieldMappings" 
-                [class.table-success]="mapping.confidence >= 0.8"
-                [class.table-warning]="mapping.confidence >= 0.6 && mapping.confidence < 0.8"
-                [class.table-danger]="mapping.confidence < 0.6">
-              <td>{{ mapping.pdfLabel }}</td>
-              <td>{{ mapping.canonicalField }}</td>
-              <td>{{ mapping.extractedValue }}</td>
-              <td>
-                <span class="badge" [class.bg-success]="mapping.confidence >= 0.8"
-                      [class.bg-warning]="mapping.confidence >= 0.6 && mapping.confidence < 0.8"
-                      [class.bg-danger]="mapping.confidence < 0.6">
-                  {{ getRoundedConfidence(mapping.confidence * 100) }}%
-                </span>
-              </td>
-              <td>
-                <span *ngIf="mapping.userCorrected" class="badge bg-info">Corrected</span>
-                <span *ngIf="!mapping.userCorrected" class="badge bg-secondary">Auto-mapped</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </ng-template>
-
-  <!-- Validation Modal -->
-  <ng-template #validationModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Data Validation Results</h5>
-      <button type="button" class="btn-close" (click)="closeModal()"></button>
-    </div>
-    <div class="modal-body">
-      <!-- <div class="alert" [class.alert-success]="validationResults.every(r => r.isValid)"
-                       [class.alert-warning]="!validationResults.every(r => r.isValid)">
-        <strong>Validation Status:</strong> 
-        {{ validationResults.every(r => r.isValid) ? 'All checks passed' : 'Issues found' }}
-      </div> -->
-
-      <div class="validation-results">
-        <div *ngFor="let result of validationResults" 
-             class="validation-item" [class.invalid]="!result.isValid">
-          <div class="d-flex justify-content-between align-items-center">
-            <span>
-              <i class="fas" [class.fa-check]="result.isValid" [class.fa-times]="!result.isValid"
-                 [class.text-success]="result.isValid" [class.text-danger]="!result.isValid"></i>
-              {{ result.field }}
-            </span>
-            <span class="value">{{ result.value || 'Not provided' }}</span>
+    <!-- Seller / Buyer -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header py-2 bg-light">
+            <h6 class="mb-0 fw-semibold"><i class="fas fa-building me-1"></i> Seller (Invoice Issuer)</h6>
           </div>
-          <div *ngIf="result.issues" class="issues text-danger small">
-            <div *ngFor="let issue of result.issues">• {{ issue }}</div>
+          <div class="card-body py-2">
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-0">Name</label>
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="extractedData.seller.name">
+            </div>
+            <div>
+              <label class="form-label small text-muted mb-0">Address</label>
+              <textarea class="form-control form-control-sm" rows="2"
+                        [(ngModel)]="extractedData.seller.address"></textarea>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- <div *ngIf="totalMismatches" class="total-mismatch mt-3 p-3 border rounded"
-           [class.border-warning]="Math.abs(totalMismatches.difference) >= 0.01">
-        <h6>Total Amount Check</h6>
-        <div>Sum of line amounts: <strong>{{ totalMismatches.lineTotal | currency:'INR' }}</strong></div>
-        <div>Header total amount: <strong>{{ totalMismatches.headerTotal | currency:'INR' }}</strong></div>
-        <div [class.text-danger]="Math.abs(totalMismatches.difference) >= 0.01">
-          Difference: <strong>{{ totalMismatches.difference | currency:'INR' }}</strong>
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header py-2 bg-light">
+            <h6 class="mb-0 fw-semibold"><i class="fas fa-user me-1"></i> Buyer (Billed To)</h6>
+          </div>
+          <div class="card-body py-2">
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-0">Name</label>
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="extractedData.buyer.name">
+            </div>
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-0">Address</label>
+              <textarea class="form-control form-control-sm" rows="2"
+                        [(ngModel)]="extractedData.buyer.address"></textarea>
+            </div>
+            <div>
+              <label class="form-label small text-muted mb-0">VAT / GST No</label>
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="extractedData.buyer.vat_no">
+            </div>
+          </div>
         </div>
-      </div> -->
+      </div>
     </div>
-  </ng-template>
+
+    <!-- Shipping -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header py-2 bg-light">
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-ship me-1"></i> Shipping Details</h6>
+      </div>
+      <div class="card-body py-2">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">MBL</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.mbl">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">HBL</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.hbl">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Vessel</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.vessel">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Voyage</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.voyage">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Loading Port</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.loading_port">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Destination</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.destination">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0">Job Number</label>
+            <input type="text" class="form-control form-control-sm"
+                   [(ngModel)]="extractedData.shipping.job_number">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-1"></i> Line Items</h6>
+        <span class="badge bg-secondary">{{ extractedData.line_items?.length || 0 }} items</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-hover mb-0" style="font-size: 0.82rem;">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center" width="40">#</th>
+                <th>Description</th>
+                <th width="90">HSN/SAC</th>
+                <th width="60" class="text-center">Qty</th>
+                <th width="90" class="text-end">Rate</th>
+                <th width="100" class="text-end">Taxable</th>
+                <th width="70" class="text-end">VAT%</th>
+                <th width="90" class="text-end">VAT Amt</th>
+                <th width="100" class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of extractedData.line_items; let i = index">
+                <td class="text-center">{{ item.sno || (i + 1) }}</td>
+                <td>
+                  <input type="text" class="form-control form-control-sm border-0 p-0"
+                         [(ngModel)]="item.description">
+                </td>
+                <td>
+                  <input type="text" class="form-control form-control-sm border-0 p-0"
+                         [(ngModel)]="item.hsn_sac">
+                </td>
+                <td class="text-center">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-center"
+                         [(ngModel)]="item.qty" style="width:50px">
+                </td>
+                <td class="text-end">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
+                         [(ngModel)]="item.rate">
+                </td>
+                <td class="text-end">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
+                         [(ngModel)]="item.taxable_value">
+                </td>
+                <td class="text-end">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
+                         [(ngModel)]="item.vat_percent" style="width:55px">
+                </td>
+                <td class="text-end">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
+                         [(ngModel)]="item.vat_amount">
+                </td>
+                <td class="text-end">
+                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
+                         [(ngModel)]="item.total">
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light fw-semibold">
+              <tr>
+                <td colspan="5" class="text-end">Totals:</td>
+                <td class="text-end">{{ extractedData.subtotal || 0 }}</td>
+                <td></td>
+                <td class="text-end">{{ extractedData.total_vat || 0 }}</td>
+                <td class="text-end">{{ extractedData.grand_total || 0 }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amount in Words -->
+    <div class="mb-3 px-1" *ngIf="extractedData.amount_in_words">
+      <small class="text-muted">Amount in Words:</small>
+      <div class="fst-italic">{{ extractedData.amount_in_words }}</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+      <button type="button" class="btn btn-outline-secondary btn-sm px-4" (click)="clearForm()">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-outline-info btn-sm px-3" (click)="extractedData = null">
+        <i class="fas fa-redo me-1"></i> Re-upload
+      </button>
+      <button type="button" class="btn btn-success btn-sm px-4" (click)="applyData()">
+        <i class="fas fa-check me-1"></i> Apply to Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- Spinner overlay -->
+  <ngx-spinner name="ocrSpinner" type="ball-clip-rotate" size="medium" color="#0d6efd"
+               [fullScreen]="false">
+  </ngx-spinner>
 </div>

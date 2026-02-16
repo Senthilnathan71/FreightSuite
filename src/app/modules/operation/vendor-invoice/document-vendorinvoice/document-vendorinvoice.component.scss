@@ -1,0 +1,37 @@
+.document-vendorinvoice-container {
+  padding: 0.5rem;
+
+  .card-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  .table {
+    margin-bottom: 0;
+
+    th {
+      font-weight: 600;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      padding: 0.35rem 0.5rem;
+    }
+
+    td {
+      padding: 0.25rem 0.4rem;
+      vertical-align: middle;
+    }
+
+    input.border-0 {
+      background: transparent;
+
+      &:focus {
+        background: #f8f9fa;
+        outline: 1px solid #86b7fe;
+        border-radius: 2px;
+      }
+    }
+  }
+}
