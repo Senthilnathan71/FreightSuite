@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
+  ElementRef,
   HostListener,
   OnInit,
   TemplateRef,
@@ -115,7 +117,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     CustomDatePipe,
   ],
 })
-export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
+export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
   headerId: number;
@@ -167,6 +169,19 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   filteredChargeList: any[][] = [];
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
+
+  // Infinite scroll + typeahead state for Master/House Job dropdowns
+  private readonly JOB_BATCH_SIZE = 50;
+  masterJobTypeahead$: Subject<string>[] = [];
+  masterJobLoading: boolean[] = [];
+  private masterJobSkip: number[] = [];
+  private masterJobHasMore: boolean[] = [];
+  private masterJobSearchTerm: string[] = [];
+  houseJobTypeahead$: Subject<string>[] = [];
+  houseJobLoading: boolean[] = [];
+  private houseJobSkip: number[] = [];
+  private houseJobHasMore: boolean[] = [];
+  private houseJobSearchTerm: string[] = [];
   currentCompanyBranches: any[] = [];
   receiptPrintData: any;
   isLimitErrorShown: boolean = false;
@@ -256,6 +271,14 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   }
 
   @ViewChild('searchModal') searchModal!: TemplateRef<any>;
+  @ViewChild('matchingSentinel') matchingSentinel!: ElementRef;
+  @ViewChild('matchingScrollContainer') matchingScrollContainer!: ElementRef;
+  private matchingObserver!: IntersectionObserver;
+  private matchingSkip = 0;
+  private readonly MATCHING_BATCH_SIZE = 30;
+  hasMoreMatchingData = false;
+  isLoadingMatching = false;
+  private currentSearchPayload: any = null;
 
   // Tabs configuration
   tabs = [
@@ -377,6 +400,27 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     } else {
       this.subscribeToPartyAndBankChanges();
       this.setupFormChangeDetection();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.isEditMode) this.setupMatchingObserver();
+  }
+
+  private setupMatchingObserver(): void {
+    this.reobserveMatchingSentinel();
+  }
+
+  private reobserveMatchingSentinel(): void {
+    if (this.matchingSentinel?.nativeElement) {
+      this.matchingObserver?.disconnect();
+      this.matchingObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) this.loadMatchingData();
+        },
+        { root: this.matchingScrollContainer?.nativeElement, threshold: 0.1 }
+      );
+      this.matchingObserver.observe(this.matchingSentinel.nativeElement);
     }
   }
 
@@ -744,20 +788,151 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         payload.InvoiceNumber = form.FilterText;
     }
 
-    this.spinner.show();
+    // Reset pagination and clear existing data
+    this.matchingSkip = 0;
+    this.hasMoreMatchingData = true;
+    this.voucherMatchings.clear();
+    this.currentSearchPayload = payload;
 
-    this.receiptService.searchOutstandingInvoices(payload).subscribe((res) => {
-      if (res && Array.isArray(res) && res.length > 0) {
+    this.spinner.show();
+    this.loadMatchingData();
+  }
+
+  loadMatchingData() {
+    if (this.isLoadingMatching || !this.hasMoreMatchingData || !this.currentSearchPayload) return;
+    this.isLoadingMatching = true;
+
+    const paginatedPayload = {
+      ...this.currentSearchPayload,
+      Skip: this.matchingSkip,
+      Take: this.MATCHING_BATCH_SIZE,
+    };
+
+    this.receiptService.searchOutstandingInvoices(paginatedPayload).subscribe({
+      next: (res) => {
+        const data = Array.isArray(res) ? res : [];
+        if (data.length > 0) {
+          if (this.matchingSkip === 0) {
+            this.patchHeaderValue(data);
+          }
+          this.appendMatchingRows(data);
+          this.matchingSkip += data.length;
+          this.hasMoreMatchingData = data.length >= this.MATCHING_BATCH_SIZE;
+        } else {
+          if (this.matchingSkip === 0) {
+            const searchType = this.searchOutstandingForm.get('SearchType')?.value;
+            this.appSettingService.showError(
+              `No outstanding found for this ${searchType}.`
+            );
+          }
+          this.hasMoreMatchingData = false;
+        }
+        this.isLoadingMatching = false;
         this.spinner.hide();
-        this.patchHeaderValue(res);
-        this.patchOutstandingFormArray(res);
-      } else {
+        if (this.hasMoreMatchingData) {
+          setTimeout(() => this.reobserveMatchingSentinel(), 100);
+        }
+      },
+      error: () => {
+        this.isLoadingMatching = false;
         this.spinner.hide();
-        const searchType = this.searchOutstandingForm.get('SearchType')?.value;
-        this.appSettingService.showError(
-          `No outstanding found for this ${searchType}.`
-        );
-      }
+      },
+    });
+  }
+
+  /**
+   * Append matching rows without clearing existing ones (for infinite scroll)
+   */
+  private appendMatchingRows(transactions: any[]): void {
+    const searchType = this.searchOutstandingForm.get('SearchType')?.value;
+
+    transactions.forEach((tx) => {
+      const isMatchedRecord = !!tx.MatchingDetailSid;
+      const matchCurrencyForThisTxn = this.currencyList.find(
+        (c) => c.currencyCode === tx.CurrencyCode
+      )?.CurrencyMasterSid;
+      const form = this.fb.group({
+        VoucherMatchingHeaderSid: [tx.VoucherMatchingHeaderSid || null],
+        MatchingDetailSid: [tx.MatchingDetailSid || null],
+        VoucherMatchingSid: [tx.VoucherMatchingSid || null],
+        VoucherTransactionSid: [tx.VoucherTransactionSid],
+        VoucherHeaderSid: [tx.VoucherHeaderSid],
+        VoucherDetailSid: [tx.VoucherDetailSid],
+        LedgerMasterSid: [tx.LedgerMasterSid],
+        COAMasterSid: [tx.COAMasterSid],
+
+        voucherNo: [
+          tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo,
+        ],
+        voucherTypeMasterSid: [tx.VoucherTypeMasterSid],
+        voucherType: [
+          tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName ||
+            tx.VoucherType,
+        ],
+        voucherDate: [
+          new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate),
+        ],
+        drCr: [tx.DrCr === 'C' ? 'Cr' : 'Dr'],
+
+        curr: [tx.CurrencyCode],
+        currAmt: [tx.OriginalCurrencyAmount],
+        localAmt: [tx.OriginalLocalAmount],
+
+        osCurrAmt: [tx.OutstandingCurrencyAmount],
+        osLocalAmt: [tx.OutstandingLocalAmount],
+
+        exRate: [tx.ExchangeRate || 1],
+
+        matchCurr: [
+          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
+        ],
+        matchExRate: [
+          isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+        ],
+        matchCurrAmt: [
+          isMatchedRecord
+            ? tx.MatchingAmount
+            : searchType === 'Invoice' && !this.isEditMode
+            ? tx.OutstandingCurrencyAmount
+            : null,
+        ],
+        matchLocalAmt: [
+          isMatchedRecord
+            ? tx.MatchingLocalAmount
+            : searchType === 'Invoice' && !this.isEditMode
+            ? tx.OutstandingLocalAmount
+            : null,
+        ],
+        matchPartyAmt: [tx.PartyAmount ?? 0],
+        tdsAmt: [isMatchedRecord ? tx.MatchingTDSAmount ?? null : null],
+
+        balance: [
+          isMatchedRecord ? tx.OutstandingLocalAmount - tx.LocalAmount : null,
+        ],
+        isTicked: [false],
+        isLimitErrorShown: [false],
+      });
+
+      [
+        'voucherNo',
+        'voucherType',
+        'voucherDate',
+        'drCr',
+        'curr',
+        'exRate',
+        'currAmt',
+        'localAmt',
+        'matchPartyAmt',
+        'osCurrAmt',
+        'osLocalAmt',
+        'balance',
+      ].forEach((field) => form.get(field)?.disable());
+      form.get('matchLocalAmt').valueChanges.subscribe((val) => {
+        const osLocalAmt = form.get('osLocalAmt')?.value;
+        const balance = Number(osLocalAmt - val).toFixed(2);
+        form.get('balance')?.setValue(Number(balance));
+      });
+      this.voucherMatchings.push(form);
     });
   }
 
@@ -869,6 +1044,24 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     if (this.totalDebits === 0 || this.totalCredits === 0) {
       this.appSettingService.showError(
         'Please add at least one debit or credit amount.'
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
+    if (this.totalCredits < 0) {
+      this.appSettingService.showError(
+        'Credit amount cannot be negative.'
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
+    if (this.totalDebits < 0) {
+      this.appSettingService.showError(
+        'Debit amount cannot be negative.'
       );
       if (resolve) resolve(false);
       this.isSaving = false;
@@ -1435,6 +1628,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     }
 
     const lastAddedRow = this.detailItems.length - 1;
+    this.initJobSearchState(lastAddedRow);
     this.filteredCoaList[lastAddedRow] = this.getFilteredCoaListForRow(lastAddedRow);
     this.checkAndUpdateForPartyDetail(lastAddedRow, syncExRate);
     const currencySid = newRow.get('CurrencyMasterSid')?.value;
@@ -1490,6 +1684,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
           // On success, remove row from form array
           (this.detailItems as FormArray).removeAt(detailIndex);
           this.filteredCoaList.splice(detailIndex, 1);
+          this.removeJobSearchState(detailIndex);
           this.rebuildFilteredCoaListForAllRows();
           this.markAsDirty();
         },
@@ -1502,6 +1697,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
     else {
       (this.detailItems as FormArray).removeAt(detailIndex);
       this.filteredCoaList.splice(detailIndex, 1);
+      this.removeJobSearchState(detailIndex);
       this.rebuildFilteredCoaListForAllRows();
       this.markAsDirty();
     }
@@ -1982,44 +2178,209 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       this.filteredChargeList[detailIndex] = [];
       this.masterJobList[detailIndex] = [];
       this.houseJobList[detailIndex] = [];
+      this.masterJobSkip[detailIndex] = 0;
+      this.masterJobHasMore[detailIndex] = false;
+      this.houseJobSkip[detailIndex] = 0;
+      this.houseJobHasMore[detailIndex] = false;
       return;
     }
     this.filterChargeByDeptForARow(dept, detailIndex);
+
+    // Reset and load master jobs with pagination
+    this.masterJobSearchTerm[detailIndex] = '';
+    this.masterJobSkip[detailIndex] = 0;
+    this.masterJobList[detailIndex] = [];
+    this.masterJobHasMore[detailIndex] = true;
+    this.loadMasterJobs(detailIndex);
+  }
+
+  onMasterJobChange(detailIndex: number, masterJob: any) {
+    const row = this.detailItems.at(detailIndex) as FormGroup;
+
+    if (!masterJob || !masterJob.MasterJobSid) {
+      this.houseJobList[detailIndex] = [];
+      this.houseJobSkip[detailIndex] = 0;
+      this.houseJobHasMore[detailIndex] = false;
+
+      // Re-enable department when master job is cleared
+      row.get('DepartmentMasterSid')?.enable();
+      return;
+    }
+
+    // Auto-patch department from master job (full object from ng-select)
+    if (masterJob.DepartmentMasterSid) {
+      row.patchValue({ DepartmentMasterSid: masterJob.DepartmentMasterSid });
+
+      // Load charges for the auto-patched department
+      const dept = this.deptList.find(
+        (d) => d.DepartmentMasterSid === masterJob.DepartmentMasterSid
+      );
+      if (dept) {
+        this.filterChargeByDeptForARow(dept, detailIndex);
+      }
+    }
+
+    // Disable department when a master job is selected
+    row.get('DepartmentMasterSid')?.disable();
+
+    // Reset and load house jobs with pagination
+    this.houseJobSearchTerm[detailIndex] = '';
+    this.houseJobSkip[detailIndex] = 0;
+    this.houseJobList[detailIndex] = [];
+    this.houseJobHasMore[detailIndex] = true;
+    this.loadHouseJobs(detailIndex);
+  }
+
+  /**
+   * Initialize typeahead Subjects and pagination state for a detail row.
+   */
+  private initJobSearchState(index: number): void {
+    // Master job typeahead
+    const masterSubject = new Subject<string>();
+    this.masterJobTypeahead$[index] = masterSubject;
+    this.masterJobLoading[index] = false;
+    this.masterJobSkip[index] = 0;
+    this.masterJobHasMore[index] = false;
+    this.masterJobSearchTerm[index] = '';
+
+    masterSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
+      // Find current index by Subject reference (handles row removal/reorder)
+      const currentIndex = this.masterJobTypeahead$.indexOf(masterSubject);
+      if (currentIndex === -1) return;
+      this.masterJobSearchTerm[currentIndex] = term || '';
+      this.masterJobSkip[currentIndex] = 0;
+      this.masterJobList[currentIndex] = [];
+      this.loadMasterJobs(currentIndex);
+    });
+
+    // House job typeahead
+    const houseSubject = new Subject<string>();
+    this.houseJobTypeahead$[index] = houseSubject;
+    this.houseJobLoading[index] = false;
+    this.houseJobSkip[index] = 0;
+    this.houseJobHasMore[index] = false;
+    this.houseJobSearchTerm[index] = '';
+
+    houseSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
+      const currentIndex = this.houseJobTypeahead$.indexOf(houseSubject);
+      if (currentIndex === -1) return;
+      this.houseJobSearchTerm[currentIndex] = term || '';
+      this.houseJobSkip[currentIndex] = 0;
+      this.houseJobList[currentIndex] = [];
+      this.loadHouseJobs(currentIndex);
+    });
+  }
+
+  /**
+   * Clean up job search state arrays when a detail row is removed.
+   */
+  private removeJobSearchState(index: number): void {
+    this.masterJobTypeahead$.splice(index, 1);
+    this.masterJobLoading.splice(index, 1);
+    this.masterJobSkip.splice(index, 1);
+    this.masterJobHasMore.splice(index, 1);
+    this.masterJobSearchTerm.splice(index, 1);
+    this.masterJobList.splice(index, 1);
+
+    this.houseJobTypeahead$.splice(index, 1);
+    this.houseJobLoading.splice(index, 1);
+    this.houseJobSkip.splice(index, 1);
+    this.houseJobHasMore.splice(index, 1);
+    this.houseJobSearchTerm.splice(index, 1);
+    this.houseJobList.splice(index, 1);
+  }
+
+  /**
+   * Load master jobs with pagination for a detail row.
+   */
+  loadMasterJobs(index: number): void {
+    const row = this.detailItems.at(index) as FormGroup;
+    const deptId = row?.get('DepartmentMasterSid')?.value;
+
+    this.masterJobLoading[index] = true;
+
+    const payload: any = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      SearchText: this.masterJobSearchTerm[index] || '',
+      Skip: this.masterJobSkip[index],
+      Take: this.JOB_BATCH_SIZE,
+    };
+
+    // Include department filter only if a department is selected
+    if (deptId) {
+      payload.DepartmentMasterSid = deptId;
+    }
+
     this.accountService
-      .getMasterJobByDepartment({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        DepartmentMasterSid: dept?.DepartmentMasterSid,
-      })
+      .getMasterJobByDepartment(payload)
       .subscribe({
         next: (resp: any) => {
-          this.masterJobList[detailIndex] = resp;
+          const data = Array.isArray(resp) ? resp : (resp?.data || []);
+          this.masterJobList[index] = [...(this.masterJobList[index] || []), ...data];
+          this.masterJobSkip[index] += data.length;
+          this.masterJobHasMore[index] = data.length >= this.JOB_BATCH_SIZE;
+          this.masterJobLoading[index] = false;
         },
         error: (err) => {
           console.error('Failed to load master jobs:', err);
+          this.masterJobLoading[index] = false;
         },
       });
   }
 
-  onMasterJobChange(detailIndex: number, masterJob: any) {
-    if (!masterJob || !masterJob.MasterJobSid) {
-      this.houseJobList[detailIndex] = [];
-      return;
+  onMasterJobScrollToEnd(index: number): void {
+    if (this.masterJobHasMore[index] && !this.masterJobLoading[index]) {
+      this.loadMasterJobs(index);
     }
+  }
+
+  /**
+   * Load house jobs with pagination for a detail row.
+   */
+  loadHouseJobs(index: number): void {
+    const row = this.detailItems.at(index) as FormGroup;
+    const masterJobSid = row?.get('MasterJobSid')?.value;
+    if (!masterJobSid) return;
+
+    this.houseJobLoading[index] = true;
+
     this.accountService
       .getHouseJobByMasterJob({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        MasterJobSid: masterJob?.MasterJobSid,
+        MasterJobSid: masterJobSid,
+        SearchText: this.houseJobSearchTerm[index] || '',
+        Skip: this.houseJobSkip[index],
+        Take: this.JOB_BATCH_SIZE,
       })
       .subscribe({
         next: (resp: any) => {
-          this.houseJobList[detailIndex] = resp;
+          const data = Array.isArray(resp) ? resp : (resp?.data || []);
+          this.houseJobList[index] = [...(this.houseJobList[index] || []), ...data];
+          this.houseJobSkip[index] += data.length;
+          this.houseJobHasMore[index] = data.length >= this.JOB_BATCH_SIZE;
+          this.houseJobLoading[index] = false;
         },
         error: (err) => {
           console.error('Failed to load house jobs:', err);
+          this.houseJobLoading[index] = false;
         },
       });
+  }
+
+  onHouseJobScrollToEnd(index: number): void {
+    if (this.houseJobHasMore[index] && !this.houseJobLoading[index]) {
+      this.loadHouseJobs(index);
+    }
   }
 
   filterChargeByDeptForAllRow() {
@@ -2142,9 +2503,9 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
         'balance',
       ].forEach((field) => form.get(field)?.disable());
       form.get('matchLocalAmt').valueChanges.subscribe((val) => {
-        const osLocalAmt = form.get('osLocalAmt')?.value;
+        const osLocalAmt = form.get('osLocalAmt')?.value || 0;
         const balance = Number(osLocalAmt - val).toFixed(2);
-        form.get('balance')?.setValue(Number(balance));
+        form.get('balance')?.setValue(Number(balance || 0));
       });
       this.voucherMatchings.push(form);
     });
@@ -2634,7 +2995,10 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
       ClearanceDate: null,
     });
 
-    if (selectedMode === 'C') {
+    // Read from form value (ng-select (change) may emit full item object)
+    const isCash = this.receiptForm.get('CashOrBank')?.value === 'C';
+
+    if (isCash) {
       mode?.clearValidators();
       number?.clearValidators();
       date?.clearValidators();
@@ -3069,6 +3433,7 @@ export class ReceiptEntryComponent implements OnInit, HasUnsavedChanges {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.matchingObserver?.disconnect();
   }
   getCurrencySidFromCode(code: string) {
     if (!code || !this.currencyList) return null;

@@ -3220,6 +3220,7 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private autoGenerateNarration(): string {
+    const segment = this.parentFormValue?.Segment || '';
     if (this.currentCompany?.CompanyMasterSid === 12) {
       if (this.screenName === 'Booking') {
         const BookingNo = this.parentFormValue?.BookingNumber || '';
@@ -3227,14 +3228,14 @@ createRateFormGroup(data?: any): FormGroup {
       }
       else if (this.screenName === 'Master Job' || this.screenName === 'Master Air Waybill') {
         const MBLNo = this.parentFormValue?.MBLNo || '';
-        return `MBLNo : ${MBLNo}`;
+        return `${segment === 'AIR' ? 'MAWBNo' : 'MBLNo'} : ${MBLNo}`;
       }
       else if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
         const MBLNo = this.parentFormValue?.MBLNo || '';
         if(MBLNo){
-          return `MBLNo : ${MBLNo}`;
+          return `${segment === 'AIR' ? 'MAWBNo' : 'MBLNo'} : ${MBLNo}`;
         } else {
-          return `HBLNo : ${this.parentFormValue?.HBLNo}`;
+          return `${segment === 'AIR' ? 'HAWBNo' : 'HBLNo'} : ${this.parentFormValue?.HBLNo}`;
         }
       }
     }
