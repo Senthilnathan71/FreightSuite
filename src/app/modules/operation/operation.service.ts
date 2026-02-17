@@ -1775,4 +1775,18 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     );
   }
 
+  getMawbStockForHouseJob(payload: {
+  customerId: number;
+  airlineId: number;
+  companyId: number;
+  branchId: number;
+}){
+    return this.http.post<{data:any[]}>('mawb-stock/free-job-stock', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;  
+      })
+    ) 
+  }
+
 }
