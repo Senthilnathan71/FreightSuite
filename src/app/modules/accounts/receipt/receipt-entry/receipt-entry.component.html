@@ -831,30 +831,42 @@
 
       <!-- Totals / Warning (right aligned) -->
       <div class="d-flex align-items-center gap-3 text-end flex-shrink-0">
+
         @if(validatePartyMatchingAmount()){
-        <span class="text-warning fw-semibold">
+        <span class="text-danger fw-semibold me-2">
           !! Matching Amount exceeds party amount
         </span>
         }
 
-        <span>
-          Total Credits :
-          <span class="fw-bold text-success">
-            {{ totalCredits | number : "1.2-2" }}
+        <!-- DETAIL TOTALS (Blue Tone) -->
+        <div class="px-2 py-1 rounded bg-primary bg-opacity-10 border border-primary">
+          <span class="me-3">
+            Total Cr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-primary">
+              {{ totalCredits | number : "1.2-2" }}
+            </span>
           </span>
-        </span>
 
-        <span>
-          Total Debits :
-          <span class="fw-bold text-danger">
-            {{ totalDebits | number : "1.2-2" }}
+          <span>
+            Total Dr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-primary">
+              {{ totalDebits | number : "1.2-2" }}
+            </span>
           </span>
-        </span>
+        </div>
+
+        <!-- MATCHING TOTAL (Warning Tone) -->
+        <div class="px-2 py-1 rounded bg-warning bg-opacity-10 border border-warning">
+          Net Matching ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+          <span class="fw-bold text-warning">
+            {{ getTotalMatchPartyAmt() | number : "1.2-2" }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="content-workspace">
+  <div class="content-workspace px-0">
     <div
       class="workspace-content px-0"
       [hidden]="selectedTab !== 'Detail'"
@@ -906,15 +918,15 @@
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
               </th>
+              <!-- <th class="bg-transparent text-light" style="font-size: 14px">
+                Dept
+              </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Master
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 House
-              </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">
-                Dept
-              </th>
+              </th> -->
             </tr>
           </thead>
           <tbody formArrayName="detailItems">
@@ -1090,28 +1102,7 @@
                     appendTo="body"
                   ></ng-select>
                 </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
-                    [items]="masterJobList[i]"
-                    bindLabel="MasterJobNumber"
-                    bindValue="MasterJobSid"
-                    formControlName="MasterJobSid"
-                    (change)="onMasterJobChange(i, $event)"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
-                    [items]="houseJobList[i]"
-                    bindLabel="HBLNo"
-                    bindValue="HouseJobSid"
-                    formControlName="HouseJobSid"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
+                <!-- <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
                     [items]="deptList"
@@ -1122,6 +1113,34 @@
                     appendTo="body"
                   ></ng-select>
                 </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="masterJobList[i]"
+                    bindLabel="MasterJobNumber"
+                    bindValue="MasterJobSid"
+                    formControlName="MasterJobSid"
+                    (change)="onMasterJobChange(i, $event)"
+                    (scrollToEnd)="onMasterJobScrollToEnd(i)"
+                    [typeahead]="masterJobTypeahead$[i]"
+                    [loading]="masterJobLoading[i]"
+                    appendTo="body"
+                  ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="houseJobList[i]"
+                    bindLabel="HBLNo"
+                    bindValue="HouseJobSid"
+                    formControlName="HouseJobSid"
+                    (scrollToEnd)="onHouseJobScrollToEnd(i)"
+                    [typeahead]="houseJobTypeahead$[i]"
+                    [loading]="houseJobLoading[i]"
+                    appendTo="body"
+                  ></ng-select>
+                </td> -->
+                
               </tr>
             </ng-container>
             <ng-template #noDetails>
@@ -1150,7 +1169,7 @@
       [formGroup]="receiptForm"
       [hidden]="selectedTab !== 'Voucher Matching'"
     >
-      <div class="table-responsive table-borderless">
+      <div class="table-responsive table-borderless" #matchingScrollContainer style="max-height: 55vh; overflow-y: auto;">
         <table class="table table-hover align-middle no-wrap table-sm mb-1">
           <thead>
             <tr class="bg-info text-center">
@@ -1590,6 +1609,15 @@
               </td>
             </tr>
 
+            <!-- Loading row for infinite scroll -->
+            <tr *ngIf="isLoadingMatching">
+              <td [attr.colspan]="isIndianCompany() ? (isPosted ? 16 : 18) : (isPosted ? 15 : 17)" class="text-center text-muted py-2">
+                <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+              </td>
+            </tr>
+
+          </tbody>
+          <tfoot class="sticky-bottom" style="position: sticky; bottom: 0; z-index: 1;">
             <!-- TOTAL ROW -->
             <tr class="table-info fw-bold text-end">
               <td colspan="7" class="text-end">Total</td>
@@ -1613,8 +1641,9 @@
               }
               <td></td>
             </tr>
-          </tbody>
+          </tfoot>
         </table>
+        <div #matchingSentinel style="height: 1px;"></div>
       </div>
     </div>
 
