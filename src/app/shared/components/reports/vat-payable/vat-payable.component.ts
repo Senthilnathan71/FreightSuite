@@ -70,7 +70,7 @@ export class VatPayableComponent {
       { key: 'date', label: 'Date' },
       { key: 'particulars', label: 'Particulars' },
       { key: 'trn', label: 'TRN' },
-      { key: 'voucherType', label: 'Voucher Type' },
+      { key: 'vocuherType', label: 'Voucher Type' },
       { key: 'voucherNo', label: 'Voucher No.' },
       { key: 'supplierRef', label: 'Supplier Inv / Ref No / Date' },
       { key: 'taxableAmt', label: 'Taxable Amt' },
@@ -93,7 +93,7 @@ export class VatPayableComponent {
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.subledgerName || '' },
         { value: item?.panType || '' },
-        { value: item?.voucherType2 || '' },   // same as HTML
+        { value: item?.vocuherType || '' },   // same as HTML
         { value: item?.voucherNo || '' },
         { value: supplierRef },
         { value: this.formatNumber(item?.taxableAmt) },
@@ -147,10 +147,11 @@ export class VatPayableComponent {
   }
 
 
-  private formatNumber(value: any): number | string {
+  private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';
+
     const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+    return isNaN(num) ? '' : num.toFixed(2);
   }
 
 

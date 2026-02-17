@@ -339,6 +339,7 @@ export class ReportService {
     modalRef.componentInstance.reportId = reportDetails.ReportName;
     modalRef.componentInstance.entityId = entityId;
     modalRef.componentInstance.payload = payload;
+    modalRef.componentInstance.reportHeader = reportDetails;
 
     return modalRef;
   }

@@ -83,12 +83,12 @@ export class DoIssueListComponent {
       sheetName: 'DOIssueReport',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `DO Issue List as on ${this.formatDate(this.params?.FromHBLDt)}`,
+        reportTitle: `DO Issue List`,
         additionalInfo: [
-          { label: 'Branch', value: this.params?.Branch || '' },
-          { label: 'Dept', value: this.params?.Dept || '' },
-          { label: 'From Date', value: this.formatDate(this.params?.FromHBLDt) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToHBLDt) }
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' },
+          { label: 'From Date', value: this.formatDate(this.params?.FromHblDt) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToHblDt) }
         ]
       },
       tableHeaders,

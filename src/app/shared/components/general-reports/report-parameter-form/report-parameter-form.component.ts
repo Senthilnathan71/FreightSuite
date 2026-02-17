@@ -9,8 +9,9 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
-import { toNgbDateStruct } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { FeatherModule } from 'angular-feather';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -49,7 +50,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   @Input() companyId!: number;
   @Output() onGenerate = new EventEmitter<any>();
   @Output() onReset = new EventEmitter<void>();
-
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
   parameterForm!: FormGroup;
   dropdownData: Map<string, any[]> = new Map();
   loadingDropdowns: Map<string, boolean> = new Map();
@@ -78,11 +80,19 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
   constructor(
     private fb: FormBuilder,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private appSettingsService: AppSettingsService,
   ) {}
 
   ngOnInit(): void {
     this.buildForm();
+     const fy = this.appSettingsService.getCurrentFinancialYear();
+            if (fy) {
+              this.fyMinDate = toNgbDateStruct(fy.StartDate);
+              const fyEnd = new Date(fy.EndDate);
+              const today = getDefaultTodayDate();
+              this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+            }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -271,6 +281,11 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
    */
   private buildValidators(param: ReportParameter): ValidatorFn[] {
     const validators: ValidatorFn[] = [];
+    const financialYr = this.appSettingsService.getCurrentFinancialYear();
+    const today = getDefaultTodayDate();
+    const startDate = new Date(financialYr.StartDate);
+    const endDate = new Date(financialYr.EndDate);
+    const isCurrentYr = today <= endDate && today>= startDate;
 
     // Required
     const rules = typeof param.ValidationRules === 'string'
@@ -285,12 +300,32 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     if (rules?.max != null) validators.push(Validators.max(rules.max));
     if (rules?.pattern) validators.push(Validators.pattern(rules.pattern));
     if (rules?.minDate) {
-      const d = rules.minDate === 'today' ? new Date() : new Date(rules.minDate);
+      let d : Date;
+      switch(rules.minDate){
+        case 'fy' : 
+          d = startDate;
+          break;
+        case 'today':
+          d = today
+          break;
+        default :
+          d = new Date(rules.minDate)
+      }
       this.minDates.set(param.ParameterName, toNgbDateStruct(d));
     }
 
     if (rules?.maxDate) {
-      const d = rules.maxDate === 'today' ? new Date() : new Date(rules.maxDate);
+      let d : Date;
+      switch(rules.maxDate){
+        case 'fy' : 
+          d = isCurrentYr ? today : endDate;
+          break;
+        case 'today':
+          d = today
+          break;
+        default :
+          d = new Date(rules.maxDate)
+      }
       this.maxDates.set(param.ParameterName, toNgbDateStruct(d));
     }
 

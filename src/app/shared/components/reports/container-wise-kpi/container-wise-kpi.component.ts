@@ -85,7 +85,7 @@ export class ContainerWiseKpiComponent {
     const cells: ExcelCell[] = [
       { value: item.bookingNo || '' },
       { value: item.freightRevenue || 0 },
-      { value: this.params?.FromHBLDt ? new Date(this.params?.FromHBLDt).toLocaleString('default', { month: 'long' }) : '' },
+      { value: this.params?.FromHblDt ? new Date(this.params?.FromHblDt).toLocaleString('default', { month: 'long' }) : '' },
       { value: item.vesselName || '' },
       { value: item.MBL || '' },
       { value: item.HBL || '' },
@@ -94,11 +94,11 @@ export class ContainerWiseKpiComponent {
       { value: item.consigneeName || '' },
       { value: item.countryName || '' },
       { value: item.fnalDestination || '' },
-      { value: item.dgDelaration || '' },
+      { value: item.dgDelaration === 'true' ? 'Y' : "N" },
       { value: item.containerNo || '' },
-      { value: item.containerName || '' },
-      { value: item.vol || 0 },
-      { value: item.weight || 0 },
+      { value: item.containerInfo || '' },
+      { value: this.formatNumber(item.vol) || 0 },
+      { value: this.formatNumber(item.weight) || 0 },
       { value: item.bookingDate ? this.formatDate(item.bookingDate) : '' },
       { value: item.ETD ? this.formatDate(item.ETD) : '' },
       { value: item.ATDPOL ? this.formatDate(item.ATDPOL) : '' },
@@ -119,12 +119,12 @@ export class ContainerWiseKpiComponent {
     sheetName: 'ContainerKPIReport',
     reportHeader: {
       companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: `Container Wise KPI as on ${this.formatDate(this.params?.FromHBLDt)}`,
+      reportTitle: `Container Wise KPI`,
       additionalInfo: [
-        { label: 'Branch', value: this.params?.Branch || '' },
-        { label: 'Dept', value: this.params?.Dept || '' },
-        { label: 'From Date', value: this.formatDate(this.params?.FromHBLDt) },
-        { label: 'To Date', value: this.formatDate(this.params?.ToHBLDt) }
+        { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+        { label: 'Dept', value: this.fullData?.departmentNames || '' },
+        { label: 'From Date', value: this.formatDate(this.params?.FromHblDt) },
+        { label: 'To Date', value: this.formatDate(this.params?.ToHblDt) }
       ]
     },
     tableHeaders,
@@ -140,5 +140,12 @@ export class ContainerWiseKpiComponent {
     } catch {
       return String(date);
     }
+  }
+
+    private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
   }
 }
