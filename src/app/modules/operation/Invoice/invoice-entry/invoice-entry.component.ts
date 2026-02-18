@@ -1207,7 +1207,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BilledTo: this.invoiceData?.PartyName || this.invoiceData?.subledgerMaster?.SubledgerName || '',
       BillingAddress: this.invoiceData?.PartyAddress || this.invoiceData?.subledgerMaster?.Address || '',
       PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
-      InvoiceNo: this.invoiceData?.VoucherNumber || '',
+      InvoiceNo: `${this.invoiceData?.VoucherNumber} ${this.invoiceData?.PostStatus === 'P' ? '' : '( DRAFT )'}` || '',
       InvoiceDate: this.invoiceData?.VoucherDate || '',
       GST_VAT: this.invoiceData?.GST_VAT || '',
       IRNNumber: this.invoiceData?.IRNNumber || '',
@@ -1228,6 +1228,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
       ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
       DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
+      isPosted : this.isPosted,
       FreightTerms:
         isHouseJobInvoice ?
           this.invoiceData?.houseJob?.FreightTerms :
@@ -2788,9 +2789,9 @@ isSeaDepartment(): boolean {
     }, 0);
   }
   getInvoiceTitle(): string {
-    const postStatus = this.invoiceData?.PostStatus || 'U';
-    return postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT';
-  }
+  return 'TAX INVOICE';
+}
+
 
   getDisplayValue(cargoValue: any, bookingValue: any): string {
     return cargoValue || bookingValue || '';

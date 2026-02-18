@@ -1711,7 +1711,10 @@
             "
           >
             <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
-              <strong>{{ invoicePrintData?.invoiceTitle }}</strong>
+              <strong>
+                TAX INVOICE
+                 <!-- {{ invoicePrintData?.invoiceTitle }}     -->
+                </strong>
             </h3>
             <p
               style="font-size: 12px; margin: 2px 0"
@@ -1756,7 +1759,7 @@
                     <strong>Invoice No.</strong>
                   </div>
                   <div>
-                    : {{ invoicePrintData?.InvoiceNo }} @if(currentCompany.CompanyMasterSid === 13) { <span> (CREATED)</span> }
+                    : {{ invoicePrintData?.InvoiceNo }}
                   </div>
                 </div>
                 <div style="display: flex">
