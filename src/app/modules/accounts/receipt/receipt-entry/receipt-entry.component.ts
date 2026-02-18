@@ -1131,7 +1131,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       MatchingExRate: vm.matchExRate,
       MatchingAmount: vm.matchCurrAmt,
       MatchingLocalAmount: vm.matchLocalAmt,
-      PartyAmount: vm.matchCurrAmt,
+      PartyAmount: vm.matchPartyAmt,
       MatchingTDSAmount: vm.tdsAmt,
       tdsAmt: vm.tdsAmt,
     }));
