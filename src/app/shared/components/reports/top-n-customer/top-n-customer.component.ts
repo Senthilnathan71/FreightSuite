@@ -26,7 +26,7 @@ export class TopNCustomerComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Outstanding Report Data:', this.data);
+    console.log('Top N Customer Report Data:', this.data);
   }
 
   ngOnInit(): void {
@@ -50,65 +50,64 @@ export class TopNCustomerComponent {
   }
 
 
- getExcelData(): ComplexReportExportConfig {
+  getExcelData(): ComplexReportExportConfig {
 
-  const tableHeaders: ExcelHeader[] = [
-    { key: 'customer', label: 'Customer' },
-    { key: 'gp', label: 'GP' },
-    { key: 'revenue', label: 'Revenue' },
-    { key: 'volume', label: 'Volume' },
-    { key: 'weight', label: 'Weight' },
-    { key: 'volumeWt', label: 'Volume Wt' },
-    { key: 'chargeableWt', label: 'Chargeable Wt' },
-    { key: 'noOfHouse', label: 'No of House' }
-  ];
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'customer', label: 'Customer' },
+      { key: 'gp', label: 'GP' },
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'volume', label: 'Volume' },
+      { key: 'weight', label: 'Weight' },
+      { key: 'volumeWt', label: 'Volume Wt' },
+      { key: 'chargeableWt', label: 'Chargeable Wt' },
+      { key: 'noOfHouse', label: 'No of House' }
+    ];
 
-  const rows: ExcelRow[] = [];
-  const data = this.fullData?.data || [];
+    const rows: ExcelRow[] = [];
+    const data = this.fullData?.data || [];
 
-  data.forEach(item => {
-    rows.push({
-      cells: [
-        { value: item.customerName || '' },
-        { value: this.formatNumber(item.GP) },
-        { value: this.formatNumber(item.totalRevenue) },
-        { value: this.formatNumber(item.Vol) },
-        { value: this.formatNumber(item.Weight) },
-        { value: this.formatNumber(item.netwt) },
-        { value: this.formatNumber(item.chargeable) },
-        { value: item.noOfShipment || 0 }
-      ],
-      style: 'data'
+    data.forEach(item => {
+      rows.push({
+        cells: [
+          { value: item.customerName || '' },
+          { value: this.formatNumber(item.GP) },
+          { value: this.formatNumber(item.totalRevenue) },
+          { value: this.formatNumber(item.Vol) },
+          { value: this.formatNumber(item.Weight) },
+          { value: this.formatNumber(item.netwt) },
+          { value: this.formatNumber(item.chargeable) },
+          { value: item.noOfShipment || 0 }
+        ],
+        style: 'data'
+      });
     });
-  });
 
-  return {
-    fileName: 'Top-N-Customer-Report',
-    sheetName: 'Top N Customer',
-    reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: 'Top N Customer Report',
-      additionalInfo: [
-        { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
-        { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-        { label: 'Branch', value: this.fullData?.branchInvolved || '' },
-        { label: 'Dept', value: this.fullData?.departmentInvoled || '' },
-        { label: 'Top N', value: this.params?.TopN || '' }
-      ]
-    },
-    tableHeaders,
-    rows,
-    columnWidths: [30, 15, 15, 15, 15, 18, 18, 15]
-  };
-}
-
-
-  private formatNumber(value: any): number | string {
-    if (value === null || value === undefined) return '';
-    const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+    return {
+      fileName: 'Top-N-Customer-Report',
+      sheetName: 'Top N Customer',
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || '',
+        reportTitle: 'Top N Customer Report',
+        additionalInfo: [
+          { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentInvoled || '' },
+          { label: 'Top N', value: this.params?.TopN || '' }
+        ]
+      },
+      tableHeaders,
+      rows,
+      columnWidths: [30, 15, 15, 15, 15, 18, 18, 15]
+    };
   }
 
+
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
 
   private formatDate(date: any): string {
     if (!date) return '';

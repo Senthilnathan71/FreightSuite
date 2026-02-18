@@ -16,13 +16,14 @@
                     <strong style="width: 130px;">Booking To Date </strong>
                     <p class="ms-1">: {{ params?.BookingToDate | formatDate }}</p>
                 </div>
-                  <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
-                </div>
+                 
             </div>
 
             <div>
+                 <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Branch </strong>
+                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+                </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
                     <p class="ms-1">: {{ fullData?.departmentInvolved }}</p>
@@ -62,7 +63,7 @@
                         <td>{{item.BookingDateTime | formatDate}}</td>
                         <td>{{item.SalesmanName}}</td>
                         <td class="text-end">{{item.GP | number:'1.2-2'}}</td>
-                        <td>{{item.days}}</td>
+                        <td class="text-center">{{item.days}}</td>
                     </tr>
                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
                         <td colspan="8" class="text-center fw-bold py-1">
@@ -77,7 +78,7 @@
             Note : 
             <ul>
                 <li>
-                    Shipper/Customer who has booking earlier but no booking has been given between From and To Booking Date.
+                    Shipper & Customer who has booking earlier but no booking has been given between From and To Booking Date.
                 </li>
             </ul>
         </div>

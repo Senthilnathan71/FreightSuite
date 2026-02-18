@@ -37,7 +37,7 @@ export class HAWBComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-   @Input() selectedReportAir: 'HAWB' | 'HAWBDraft' = 'HAWB'; 
+  @Input() selectedReportAir: 'HAWB' | 'HAWBDraft' = 'HAWB';
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() packageTypeList: any;
@@ -114,8 +114,8 @@ export class HAWBComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private pdfService: PdfDownloadService,
-    private operationService : OperationService,
-    public logoService : LogoService
+    private operationService: OperationService,
+    public logoService: LogoService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -169,7 +169,7 @@ export class HAWBComponent {
 
   printDiv(divId: string): void {
     // HAWB Draft - print directly
-    if(this.selectedReportAir === 'HAWBDraft'){
+    if (this.selectedReportAir === 'HAWBDraft') {
       this.print(divId);
       return;
     }
@@ -177,27 +177,27 @@ export class HAWBComponent {
     // HAWB - increment HBL count
     const payload = {
       HouseJobSid: this.housejobData?.HouseJobSid,
-      CompanyMasterSid : this.housejobData?.CompanyMasterSid,
-      BranchMasterSid : this.housejobData?.BranchMasterSid,
+      CompanyMasterSid: this.housejobData?.CompanyMasterSid,
+      BranchMasterSid: this.housejobData?.BranchMasterSid,
     }
     this.operationService.incrementHBLCount(payload).subscribe({
-      next : (resp:any)=>{
+      next: (resp: any) => {
         if (resp.status) {
           this.print(divId);
           this.updateHBLCountInDisplay();
-        } else{
+        } else {
           this.appSettingService.showError("Error incrementing HBL Count")
         }
       },
-      error : (error)=>{
+      error: (error) => {
         this.appSettingService.showError(error.message)
         console.error(error);
       }
     });
-    
+
   }
 
-  print(divId:string) {
+  print(divId: string) {
     this.showPrintLogo = true;
     this.showPdfLogo = false;
     const printContents = document.getElementById(divId)?.innerHTML;
@@ -223,11 +223,11 @@ export class HAWBComponent {
 
   async downloadPDF() {
     // HAWB Draft - download directly
-    if(this.selectedReportAir === 'HAWBDraft'){
+    if (this.selectedReportAir === 'HAWBDraft') {
       this.download();
       return;
     }
-  
+
     // HAWB - increment HBL count
     const payload = {
       HouseJobSid: this.housejobData?.HouseJobSid,
@@ -256,8 +256,6 @@ export class HAWBComponent {
   }
 
   async download() {
-    this.showPrintLogo = false;
-    this.showPdfLogo = true;
     try {
       const BankPaymentNo = this.housejobData?.HBLNo || '';
       await this.pdfService.downloadBalancedPDF(
@@ -311,31 +309,31 @@ export class HAWBComponent {
   }
 
   getTotalPieces(): number {
-  return (this.housejobData?.Cargo || []).reduce(
-    (sum: number, c: any) => sum + Number(c.NoOfPackage || 0),
-    0
-  );
-}
+    return (this.housejobData?.Cargo || []).reduce(
+      (sum: number, c: any) => sum + Number(c.NoOfPackage || 0),
+      0
+    );
+  }
 
-getTotalGrossWeight(): number {
-  return (this.housejobData?.Cargo || []).reduce(
-    (sum: number, c: any) => sum + Number(c.GrossWeight || 0),
-    0
-  );
-}
+  getTotalGrossWeight(): number {
+    return (this.housejobData?.Cargo || []).reduce(
+      (sum: number, c: any) => sum + Number(c.GrossWeight || 0),
+      0
+    );
+  }
 
-getTotalChargeableWeight(): number {
-  return (this.housejobData?.Cargo || []).reduce(
-    (sum: number, c: any) => sum + Number(c.ChargeableWeight || 0),
-    0
-  );
-}
+  getTotalChargeableWeight(): number {
+    return (this.housejobData?.Cargo || []).reduce(
+      (sum: number, c: any) => sum + Number(c.ChargeableWeight || 0),
+      0
+    );
+  }
 
-getTotalRate(): number {
-  return this.freightCharges.reduce(
-    (sum, c) => sum + Number(c.RevenueExchangeRate || 0),
-    0
-  );
-}
+  getTotalRate(): number {
+    return this.freightCharges.reduce(
+      (sum, c) => sum + Number(c.RevenueExchangeRate || 0),
+      0
+    );
+  }
 
 }

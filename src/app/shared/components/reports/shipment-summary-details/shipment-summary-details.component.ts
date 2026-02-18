@@ -176,24 +176,16 @@ export class ShipmentSummaryDetailsComponent {
     });
 
     return {
-      fileName: 'Shipment-Summary-Details',
-      sheetName: 'ShipmentSummary',
+      fileName: 'House-Summary-Details',
+      sheetName: 'HouseSummaryDetails',
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || '',
-        reportTitle: `Shipment Summary Details (${this.formatDate(
+        reportTitle: `House Summary Details (${this.formatDate(
           this.params?.FromHblDt
         )} - ${this.formatDate(this.params?.ToHblDt)})`,
 
         additionalInfo: [
-          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
-          { label: 'Dept', value: this.fullData?.departmentNames || '' },
-          { label: 'Customer', value: this.fullData?.Customer || '' },
-          { label: 'Salesperson', value: this.fullData?.SalePerson || '' },
-          {
-            label: 'Transhipment',
-            value: this.params?.Transhipment ? 'Yes' : 'No'
-          },
           {
             label: 'HBL From Date',
             value: this.formatDate(this.params?.FromHblDt)
@@ -201,6 +193,14 @@ export class ShipmentSummaryDetailsComponent {
           {
             label: 'HBL To Date',
             value: this.formatDate(this.params?.ToHblDt)
+          },
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' },
+          { label: 'Customer', value: this.fullData?.Customer || '' },
+          { label: 'Salesperson', value: this.fullData?.SalePerson || '' },
+          {
+            label: 'Transhipment',
+            value: this.params?.Transhipment ? 'Yes' : 'No'
           }
         ]
       },

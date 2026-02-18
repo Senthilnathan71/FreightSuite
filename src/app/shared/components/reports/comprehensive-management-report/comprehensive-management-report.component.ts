@@ -101,30 +101,13 @@ export class ComprehensiveManagementReportComponent {
   }
 
   getExcelData(): ComplexReportExportConfig {
+    // Define table headers for each section (we'll use the main one for structure)
+    const tableHeaders: ExcelHeader[] = [
+      { key: 'section', label: 'Comprehensive Management Report' }
+    ];
 
     const rows: ExcelRow[] = [];
-    rows.push({
-      cells: [{ value: 'Comprehensive Management Report', colspan: 10 }],
-      style: 'section'
-    });
 
-    rows.push({
-      cells: [
-        { value: `From Date : ${this.formatDate(this.params?.FromDate)}`, colspan: 5 },
-        { value: `To Date : ${this.formatDate(this.params?.ToDate)}`, colspan: 5 }
-      ],
-      style: 'section'
-    });
-
-    rows.push({
-      cells: [
-        { value: `Branch : ${this.fullData?.branchesInvolved}`, colspan: 5 },
-        { value: `Dept : ${this.fullData?.departmentInvolved}`, colspan: 5 }
-      ],
-      style: 'section'
-    });
-
-    rows.push({ cells: [{ value: '' }], style: 'section' });
 
 
     rows.push({
@@ -132,6 +115,7 @@ export class ComprehensiveManagementReportComponent {
       style: 'section'
     });
 
+    // Booking Details Header
     rows.push({
       cells: [
         { value: 'Dept' },
@@ -141,35 +125,47 @@ export class ComprehensiveManagementReportComponent {
         { value: 'Profit' },
         { value: 'Gross Wt' },
         { value: 'Net Wt' },
-        { value: 'CBM' }
+        { value: 'CBM' },
+        { value: '', colspan: 2 }
       ],
       style: 'header'
     });
 
-    (this.bookingRows || []).forEach(item => {
+    // Booking Details Data
+    if (this.bookingRows && this.bookingRows.length > 0) {
+      this.bookingRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.dept || '' },
+            { value: item.totalBookings || 0 },
+            { value: this.formatNumber(item.totalRevenue) },
+            { value: this.formatNumber(item.totalCost) },
+            { value: this.formatNumber(item.totalProfit) },
+            { value: this.formatNumber(item.totalGrossWt) },
+            { value: this.formatNumber(item.totalNetWt) },
+            { value: this.formatNumber(item.totalVolume) },
+            { value: '', colspan: 2 }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.dept },
-          { value: item.totalBookings },
-          { value: this.formatNumber(item.totalRevenue) },
-          { value: this.formatNumber(item.totalCost) },
-          { value: this.formatNumber(item.totalProfit) },
-          { value: this.formatNumber(item.totalGrossWt) },
-          { value: this.formatNumber(item.totalNetWt) },
-          { value: this.formatNumber(item.totalVolume) }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 8 }, { value: '', colspan: 2 }],
         style: 'data'
       });
-    });
+    }
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
-
+    // MASTER JOB DETAILS SECTION
     rows.push({
       cells: [{ value: 'Master Job Details', colspan: 9 }],
       style: 'section'
     });
 
+    // Master Job Details Header
     rows.push({
       cells: [
         { value: 'Dept' },
@@ -180,36 +176,48 @@ export class ComprehensiveManagementReportComponent {
         { value: 'Gross Wt' },
         { value: 'Net Wt' },
         { value: 'CBM' },
-        { value: 'TEUs' }
+        { value: 'TEUs' },
+        { value: '' }
       ],
       style: 'header'
     });
 
-    (this.masterJobRows || []).forEach(item => {
+    // Master Job Details Data
+    if (this.masterJobRows && this.masterJobRows.length > 0) {
+      this.masterJobRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.Department || '' },
+            { value: item.NoOfMasterJobs || 0 },
+            { value: this.formatNumber(item.Revenue) },
+            { value: this.formatNumber(item.Cost) },
+            { value: this.formatNumber(item.Profit) },
+            { value: this.formatNumber(item.GrossWeight) },
+            { value: this.formatNumber(item.NetWeight) },
+            { value: this.formatNumber(item.CBM) },
+            { value: item.TEU || 0 },
+            { value: '' }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.Department },
-          { value: item.NoOfMasterJobs },
-          { value: this.formatNumber(item.Revenue) },
-          { value: this.formatNumber(item.Cost) },
-          { value: this.formatNumber(item.Profit) },
-          { value: this.formatNumber(item.GrossWeight) },
-          { value: this.formatNumber(item.NetWeight) },
-          { value: this.formatNumber(item.CBM) },
-          { value: item.TEU || 0 }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 9 }, { value: '' }],
         style: 'data'
       });
-    });
+    }
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
-
+    // HOUSE JOB DETAILS SECTION
     rows.push({
       cells: [{ value: 'House Job Details', colspan: 8 }],
       style: 'section'
     });
 
+    // House Job Details Header
     rows.push({
       cells: [
         { value: 'Dept' },
@@ -219,82 +227,103 @@ export class ComprehensiveManagementReportComponent {
         { value: 'Profit' },
         { value: 'Gross Wt' },
         { value: 'Net Wt' },
-        { value: 'CBM' }
+        { value: 'CBM' },
+        { value: '', colspan: 2 }
       ],
       style: 'header'
     });
 
-    (this.houseJobRows || []).forEach(item => {
+    // House Job Details Data
+    if (this.houseJobRows && this.houseJobRows.length > 0) {
+      this.houseJobRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.Department || '' },
+            { value: item.NoOfHouseJobs || 0 },
+            { value: this.formatNumber(item.Revenue) },
+            { value: this.formatNumber(item.Cost) },
+            { value: this.formatNumber(item.Profit) },
+            { value: this.formatNumber(item.GrossWeight) },
+            { value: this.formatNumber(item.NetWeight) },
+            { value: this.formatNumber(item.CBM) },
+            { value: '', colspan: 2 }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.Department },
-          { value: item.NoOfHouseJobs },
-          { value: this.formatNumber(item.Revenue) },
-          { value: this.formatNumber(item.Cost) },
-          { value: this.formatNumber(item.Profit) },
-          { value: this.formatNumber(item.GrossWeight) },
-          { value: this.formatNumber(item.NetWeight) },
-          { value: this.formatNumber(item.CBM) }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 8 }, { value: '', colspan: 2 }],
         style: 'data'
       });
-    });
+    }
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
-
+    // SALESMAN PERFORMANCE SECTION
     rows.push({
       cells: [{ value: 'Salesman Performance', colspan: 7 }],
       style: 'section'
     });
 
-    (this.groupedSalesmanRows || []).forEach(dept => {
+    if (this.groupedSalesmanRows && this.groupedSalesmanRows.length > 0) {
+      this.groupedSalesmanRows.forEach(dept => {
+        // Department Header
+        rows.push({
+          cells: [{ value: dept.DepartmentName || '', colspan: 7 }, { value: '', colspan: 3 }],
+          style: 'section'
+        });
 
-      // Dept Header
-      rows.push({
-        cells: [{ value: dept.DepartmentName, colspan: 7 }],
-        style: 'section'
-      });
-
-      // Table Header
-      rows.push({
-        cells: [
-          { value: 'Salesman' },
-          { value: 'Lead' },
-          { value: 'Opportunity' },
-          { value: 'Meetings' },
-          { value: 'Enquiry' },
-          { value: 'Quotation' },
-          { value: 'Booking' }
-        ],
-        style: 'header'
-      });
-
-      // Salesman Rows
-      dept.salesmen.forEach(item => {
+        // Salesman Table Header
         rows.push({
           cells: [
-            { value: item.SalesmanName },
-            { value: item.TotalLeads },
-            { value: item.TotalOpportunity },
-            { value: item.TotalMeetings },
-            { value: item.TotalEnquiries },
-            { value: item.TotalQuotations },
-            { value: item.TotalBookings }
+            { value: 'Salesman' },
+            { value: 'Lead' },
+            { value: 'Opportunity' },
+            { value: 'Meetings' },
+            { value: 'Enquiry' },
+            { value: 'Quotation' },
+            { value: 'Booking' },
+            { value: '', colspan: 3 }
           ],
-          style: 'data'
+          style: 'header'
+        });
+
+        // Salesman Data Rows
+        dept.salesmen.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.SalesmanName || '' },
+              { value: item.TotalLeads || 0 },
+              { value: item.TotalOpportunity || 0 },
+              { value: item.TotalMeetings || 0 },
+              { value: item.TotalEnquiries || 0 },
+              { value: item.TotalQuotations || 0 },
+              { value: item.TotalBookings || 0 },
+              { value: '', colspan: 3 }
+            ],
+            style: 'data'
+          });
         });
       });
+    } else {
+      rows.push({
+        cells: [{ value: 'No Record Found', colspan: 7 }, { value: '', colspan: 3 }],
+        style: 'data'
+      });
+    }
 
-    });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
-
+    // CUSTOMER OUTSTANDING SECTION
     rows.push({
       cells: [{ value: 'Customer Outstanding', colspan: 10 }],
       style: 'section'
     });
 
+    // Customer Outstanding Header
     rows.push({
       cells: [
         { value: 'Customer' },
@@ -311,31 +340,42 @@ export class ComprehensiveManagementReportComponent {
       style: 'header'
     });
 
-    (this.customerRows || []).forEach(item => {
+    // Customer Outstanding Data
+    if (this.customerRows && this.customerRows.length > 0) {
+      this.customerRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.SubledgerName || '' },
+            { value: item.SalesmanName || '' },
+            { value: this.formatNumber(item.TotalOutstanding) },
+            { value: this.formatNumber(item.buckets?.['0-30']) },
+            { value: this.formatNumber(item.buckets?.['31-60']) },
+            { value: this.formatNumber(item.buckets?.['61-90']) },
+            { value: this.formatNumber(item.buckets?.['91-120']) },
+            { value: this.formatNumber(item.buckets?.['120 & Above']) },
+            { value: item.CreditDays || 0 },
+            { value: this.formatNumber(item.CreditLimit) }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.SubledgerName },
-          { value: item.SalesmanName },
-          { value: this.formatNumber(item.TotalOutstanding) },
-          { value: this.formatNumber(item.buckets['0-30']) },
-          { value: this.formatNumber(item.buckets['31-60']) },
-          { value: this.formatNumber(item.buckets['61-90']) },
-          { value: this.formatNumber(item.buckets['91-120']) },
-          { value: this.formatNumber(item.buckets['120 & Above']) },
-          { value: item.CreditDays },
-          { value: this.formatNumber(item.CreditLimit) }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 10 }],
         style: 'data'
       });
-    });
+    }
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
+    // VENDOR OUTSTANDING SECTION
     rows.push({
       cells: [{ value: 'Vendor Outstanding', colspan: 9 }],
       style: 'section'
     });
 
+    // Vendor Outstanding Header
     rows.push({
       cells: [
         { value: 'Vendor' },
@@ -346,64 +386,97 @@ export class ComprehensiveManagementReportComponent {
         { value: '91-120' },
         { value: '120 & Above' },
         { value: 'Credit Days' },
-        { value: 'Credit Limit' }
+        { value: 'Credit Limit' },
+        { value: '' }
       ],
       style: 'header'
     });
 
-    (this.vendorRows || []).forEach(item => {
+    // Vendor Outstanding Data
+    if (this.vendorRows && this.vendorRows.length > 0) {
+      this.vendorRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.SubledgerName || '' },
+            { value: this.formatNumber(item.TotalOutstanding) },
+            { value: this.formatNumber(item.buckets?.['0-30']) },
+            { value: this.formatNumber(item.buckets?.['31-60']) },
+            { value: this.formatNumber(item.buckets?.['61-90']) },
+            { value: this.formatNumber(item.buckets?.['91-120']) },
+            { value: this.formatNumber(item.buckets?.['120 & Above']) },
+            { value: item.CreditDays || 0 },
+            { value: this.formatNumber(item.CreditLimit) },
+            { value: '' }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.SubledgerName },
-          { value: this.formatNumber(item.TotalOutstanding) },
-          { value: this.formatNumber(item.buckets['0-30']) },
-          { value: this.formatNumber(item.buckets['31-60']) },
-          { value: this.formatNumber(item.buckets['61-90']) },
-          { value: this.formatNumber(item.buckets['91-120']) },
-          { value: this.formatNumber(item.buckets['120 & Above']) },
-          { value: item.CreditDays },
-          { value: this.formatNumber(item.CreditLimit) }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 9 }, { value: '' }],
         style: 'data'
       });
-    });
+    }
 
-    rows.push({ cells: [{ value: '' }], style: 'section' });
+    // Empty row for spacing
+    rows.push({ cells: [{ value: '', colspan: 10 }], style: 'data' });
 
+    // CASH AND BANK SECTION
     rows.push({
       cells: [{ value: 'Cash and Bank', colspan: 4 }],
       style: 'section'
     });
 
+    // Cash and Bank Header
     rows.push({
       cells: [
         { value: 'Account' },
         { value: 'Dr Amount' },
         { value: 'Cr Amount' },
-        { value: 'Dr-Cr Balance' }
+        { value: 'Dr-Cr Balance' },
+        { value: '', colspan: 6 }
       ],
       style: 'header'
     });
 
-    (this.cashBankRows || []).forEach(item => {
+    // Cash and Bank Data
+    if (this.cashBankRows && this.cashBankRows.length > 0) {
+      this.cashBankRows.forEach(item => {
+        rows.push({
+          cells: [
+            { value: item.SubledgerName || '' },
+            { value: this.formatNumber(item.DrAmount) },
+            { value: this.formatNumber(item.CrAmount) },
+            { value: this.formatNumber(item.Balance) },
+            { value: '', colspan: 6 }
+          ],
+          style: 'data'
+        });
+      });
+    } else {
       rows.push({
-        cells: [
-          { value: item.SubledgerName },
-          { value: this.formatNumber(item.DrAmount) },
-          { value: this.formatNumber(item.CrAmount) },
-          { value: this.formatNumber(item.Balance) }
-        ],
+        cells: [{ value: 'No Record Found', colspan: 4 }, { value: '', colspan: 6 }],
         style: 'data'
       });
-    });
+    }
 
     return {
       fileName: 'Comprehensive-Management-Report',
       sheetName: 'ComprehensiveReport',
-      reportHeader: null,
-      tableHeaders: [],
+      reportHeader: {
+        companyName: this.currentCompany?.companyName || 'Company',
+        reportTitle: 'Comprehensive Management Report',
+        additionalInfo: [
+          { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          { label: 'Branch', value: this.fullData?.branchesInvolved || '' },
+          { label: 'Department', value: this.fullData?.departmentInvolved || '' }
+        ]
+      },
+      tableHeaders,
       rows,
-      columnWidths: [25, 18, 18, 18, 18, 15, 15, 15, 15, 15]
+      columnWidths: [25, 18, 18, 18, 18, 15, 15, 15, 15, 15],
+      notes: ['Comprehensive management report including booking details, master/house job details, salesman performance, customer/vendor outstanding, and cash/bank information.']
     };
   }
 
@@ -416,9 +489,11 @@ export class ComprehensiveManagementReportComponent {
     }
   }
 
-  private formatNumber(value: any): number | string {
+  private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';
+
     const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
+    return isNaN(num) ? '' : num.toFixed(2);
   }
+
 }
