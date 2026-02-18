@@ -113,10 +113,10 @@ export class ProfitabilityReportComponent {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Profitability Report`,
         additionalInfo: [
-          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
-          { label: 'Dept', value: this.fullData?.departmentNames || '' },
           { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) }
+          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) },
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' }
         ]
       },
 

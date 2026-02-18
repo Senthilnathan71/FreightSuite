@@ -3938,7 +3938,14 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.housejobData = this.housejobData || [];
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
-          modalRef.componentInstance.selectedReport = type; 
+          modalRef.componentInstance.selectedReport = type;
+          modalRef.componentInstance.hblCount = this.houseJobForm.get('HBLCount')?.getRawValue();
+         modalRef.componentInstance.hblCountUpdated.subscribe(() => {
+           const prev = toNumber(this.houseJobForm.get('HBLCount')?.value);
+           this.houseJobForm.patchValue({
+             HBLCount: prev + 1
+           });
+         }); 
       }
 
 
