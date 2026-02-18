@@ -116,6 +116,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   public followUpComponent = FollowUpComponent;
   public edocComponent = EdocComponent;
   public emailComponent = EmailEntryComponent;
+
+  mawbStockList: any[] = [];
+  mawbStockSource: 'ALLOCATED' | 'FREE' | 'NONE' | null = null;
+  isMawbDropdownDisabled = false;
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
   masterJobForm: FormGroup;
@@ -141,6 +145,11 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     displayLabels : ['Code', 'Name','Country'],
     labelFields :['currencyCode'],
   };
+  mawbStockLookupConfig = {
+  displayFields: ['MasterBillNumber', 'AgentName'],
+  displayLabels: ['MAWB', 'AirLine'],
+  labelFields: ['MasterBillNumber']
+};
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
@@ -409,6 +418,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       GrossWeight : data.GrossWeight,
       NetWeight : data.NetWeight,
       Volume : data.Volume,
+
     });
 
     this.handlePOLChange(selectedPOL);
@@ -531,6 +541,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
       MBLNo: [''],
+      isMawbFreeText: [false],
       MBLDate: [null],
       BLReleaseType: ['Original'],
       NoofOriginal: [3, Validators.required],
@@ -671,7 +682,17 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     
     this.masterJobContainers.push(containerGroup);
   }
-
+toggleMawbInputType(event: MouseEvent): void {
+  event.stopPropagation();
+  const isFreeText = this.f['isMawbFreeText']?.value;
+  this.f['isMawbFreeText']?.setValue(!isFreeText);
+  this.masterJobForm.get('MBLNo')?.reset();
+  
+  // If toggling to dropdown mode and no stock available, force back to manual
+  if (!isFreeText && this.isMawbDropdownDisabled) {
+    this.f['isMawbFreeText']?.setValue(true);
+  }
+}
   loadInitialData() {
   const companySid = this.currentCompany?.CompanyMasterSid;
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid
@@ -753,8 +774,75 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   this.f[flagCtrl]?.setValue(!value);
   this.masterJobForm.get(mainCtrl)?.reset();
 }
+loadMawbStock(data: any): void {
+  const isAirDept = this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR';
+  if (!isAirDept) return;
 
+  const companyId = data?.CompanyMasterSid ?? this.currentCompany?.CompanyMasterSid;
+  const branchId  = data?.BranchMasterSid  ?? this.currentBranch?.BranchMasterSid;
 
+  // Extract optional values
+  const customerId: number | null = data?.houseJob?.[0]?.CustomerMasterSid ?? null;
+  const carrierName: string | null = data?.voyages?.[0]?.CarrierName ?? null;
+
+  // Resolve airlineId from airlineList using carrierName
+  const airlineId: number | null = carrierName
+    ? (this.airlineList?.find(
+        (a: any) => a.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase()
+      )?.CustomerMasterSid ?? null)
+    : null;
+
+  // If BOTH are null → disable immediately, no API call
+  if (!customerId && !airlineId) {
+    this.mawbStockList        = [];
+    this.mawbStockSource      = 'NONE';
+    this.isMawbDropdownDisabled = true;
+    this.f['isMawbFreeText']?.setValue(true);
+    return;
+  }
+
+  // Build payload — send null if not available
+  const payload = {
+    customerId: customerId,   // null → backend skips Step 1
+    airlineId:  airlineId,    // null → backend skips Step 2
+    companyId,
+    branchId
+  };
+
+  this.operationService.getMawbStockForHouseJob(payload).subscribe({
+    next: (resp: any) => {
+      this.mawbStockSource = resp?.stockSource || 'NONE';
+      if (resp?.data && Array.isArray(resp.data)) {
+        this.mawbStockList = resp.data.map(stock => {
+          // Find the airline name from airlineList using the Agent ID
+          const airline = this.airlineList.find(a => a.CustomerMasterSid === stock.Agent);
+          return {
+            ...stock,
+            AgentName: airline ? airline.CustomerName : `Airline ID: ${stock.Agent}` // Fallback if not found
+          };
+        });
+      } else {
+        this.mawbStockList = [];
+      }
+
+      if (this.mawbStockSource === 'NONE' || this.mawbStockList.length === 0) {
+        this.isMawbDropdownDisabled = true;
+         this.f['isMawbFreeText']?.setValue(true);
+        this.toastr.warning('No MAWB Stock Available');
+      } else {
+        this.isMawbDropdownDisabled = false;
+        this.f['isMawbFreeText']?.setValue(false);
+      }
+    },
+    error: (err) => {
+      console.error('[MAWB Stock] Error:', err);
+      this.mawbStockList        = [];
+      this.mawbStockSource      = 'NONE';
+      this.isMawbDropdownDisabled = true;
+      this.f['isMawbFreeText']?.setValue(true);
+    }
+  });
+}
   loadMasterJobData(masterJobSid: number): void {
       this.spinner.show();
       const payload = {
@@ -781,7 +869,11 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
             Volume: aggregatedTotals?.Volume || data.Volume,
             WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
           });
+         setTimeout(() => {
+          this.loadMawbStock(data);
+        }, 1000);
         }
+        console.log("loadMasterStock", response);
         // Handle AR/AP data - Ensure it's always an array
         if (response.arapData) {
           // Check if the response is an object with data property
@@ -850,6 +942,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     DestinationAgent: data.DestinationAgent,
     DestinationAgentAddress: data.DestinationAgentAddress,
     MBLNo: data.MBLNo,
+    isMawbFreeText: false,
     MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
     BLReleaseType: data.BLReleaseType,
     NoofOriginal: data.NoofOriginal,
@@ -1127,6 +1220,8 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     this.masterJobForm.get('ETA')?.setValue('');
     this.masterJobForm.get('ETD')?.setValue('');
     this.masterJobForm.get('MovementType')?.setValue(null);
+
+    this.f['isMawbFreeText']?.setValue(false);
     
     // In edit mode, enable MBLNo field if it already has a value
     if (this.isEditMode) {
@@ -1145,6 +1240,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
 
   this.isAirDepartment = this.selectedDepartmentType === "AIR";
   const mblNoControl = this.masterJobForm.get('MBLNo');
+  this.f['isMawbFreeText']?.setValue(false);
   
   // Special handling for edit mode
   if (this.isEditMode) {
@@ -1154,6 +1250,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     // For Air departments in edit mode, set appropriate validators
     if (this.isAirDepartment) {
       const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
+      const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
       
       if (isAirImport) {
         // Air Import - required field in edit mode
@@ -1161,7 +1258,14 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
           Validators.required,
           Validators.maxLength(50)
         ]);
-      } else {
+          this.toastr.info('MAWB is required for Air Import', 'Required Field');
+      }
+      else if (isAirExport) {
+        // ✅ Air Export edit mode - ALSO REQUIRED (must have MAWB to edit)
+        mblNoControl?.setValidators([
+          Validators.required,
+          Validators.maxLength(50)
+        ]); }else {
         // Air Export - optional in edit mode
         mblNoControl?.setValidators([
           Validators.maxLength(50)
@@ -1181,7 +1285,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
       
       if (isAirExport) {
         // Air Export - disable MBLNo (auto-allocated), optional
-        mblNoControl?.enable();
+        mblNoControl?.disable();
         mblNoControl?.clearValidators();
         if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
           mblNoControl?.setValue('');
@@ -1201,6 +1305,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
           mblNoControl?.setValue('');
         }
+        this.f['isMawbFreeText']?.setValue(false);
       }
     } else {
       // For non-Air departments, MBLNo is optional
@@ -1222,6 +1327,16 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   } else if (this.selectedDepartmentType === "AIR") {
     this.masterJobForm.get('MovementType')?.setValue('Flight');
   }
+  //  if (
+  //   this.selectedDepartmentType === 'AIR' &&
+  //   this.isEditMode &&
+  //   this.masterAirWayData
+  // ) {
+  //   setTimeout(() => {
+  //     this.loadMawbStock(this.masterAirWayData);
+  //   }, 300);
+  // }
+
 }
 
   onRouteChange(): void {
@@ -1312,10 +1427,23 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
         this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
         this.selectedDepartment?.ExportImport?.toUpperCase() === 'IMPORT'
     );
-    
+     const isAirExport = (
+    this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+    this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
+  );
     const mblNoValue = this.masterJobForm.get('MBLNo')?.value;
-    
-    if (isAirImport && (!mblNoValue || mblNoValue.trim() === '')) {
+    if (!this.isEditMode && isAirExport) {
+    // MBLNo is optional in create mode for Air Export - will be auto-allocated on save
+    // No validation needed
+  }
+  // In EDIT MODE - Air Export can have MBLNo but it's optional
+  else if (this.isEditMode && isAirExport) {
+    // MBLNo is optional in edit mode for Air Export
+    if (mblNoValue && mblNoValue.trim() !== '') {
+      // Has value, check if it exists in validation? Optional field, so no error
+    }
+  }
+    else if (isAirImport && (!mblNoValue || mblNoValue.trim() === '')) {
         this.toastr.warning('Please enter MAWB number for Air Import', 'MAWB Required');
         // Highlight the MBLNo field
         this.masterJobForm.get('MBLNo')?.markAsTouched();
@@ -1365,10 +1493,10 @@ if (polSid && !podSid) {
     };
 
     const formValue = this.masterJobForm.getRawValue();
-        const isAirExport = (
-        this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
-        this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
-    );
+    //     const isAirExport = (
+    //     this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+    //     this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
+    // );
 
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
@@ -1417,7 +1545,7 @@ if (polSid && !podSid) {
         // Add the others data as a separate object
         others: othersData,
         voyages: [voyageData],
-        MBLNo: isAirExport ? (formValue.MBLNo || '') : formValue.MBLNo,
+       MBLNo: isAirExport && !this.isEditMode ? (formValue.MBLNo || '') : formValue.MBLNo,
         // Ensure other string fields don't exceed limits
         DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
         POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',

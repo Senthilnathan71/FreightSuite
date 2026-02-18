@@ -317,7 +317,8 @@
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="MBLDate" ngbDatepicker
+                                                    formControlName="MBLDate" ngbDatepicker [minDate]="fyMinDate"
+                                                   [maxDate]="fyMaxDate" 
                                                     #mblDatePicker="ngbDatepicker" (click)="mblDatePicker.toggle()"
                                                     container="body" />
                                                 <button class="btn bi bi-calendar3 px-0" (click)="mblDatePicker.toggle()"

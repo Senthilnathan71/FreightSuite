@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { ReportService, REPORT_DATA } from '../../services/report.service';
+import { ReportService, REPORT_DATA, ReportCard } from '../../services/report.service';
 import { ReportConfig } from '../../services/report-registry.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from '../../excel-report-service';
@@ -57,6 +57,11 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
    * Used when request type is 'POST' in report config
    */
   @Input() payload: any;
+
+  /**
+   * This is the report header itself
+   */
+  @Input() reportHeader : ReportCard;
 
   /**
    * View container for dynamic component loading

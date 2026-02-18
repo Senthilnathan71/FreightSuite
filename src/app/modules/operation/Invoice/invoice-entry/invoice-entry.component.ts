@@ -3943,8 +3943,24 @@ if (!customerMasterSid) {
     next: (resp: any) => {
       this.spinner.hide();
       if (resp?.status && resp.data) {
-        this.uninvoicedChargesList = resp.data || [];
+        const addedChargeSids = new Set(
+          this.details.getRawValue()
+            .map((detail: any) => detail.CostRevenueChargesSid)
+            .filter((sid: number) => sid != null)
+        );
+        
+        // Filter out charges that are already added to the invoice
+        this.uninvoicedChargesList = (resp.data || []).filter(
+          (charge: any) => !addedChargeSids.has(charge.CostRevenueChargesSid)
+        );
+        
         this.selectedUninvoicedCharges.clear();
+        
+        // Check if there are any charges left after filtering
+        if (this.uninvoicedChargesList.length === 0) {
+          this.appSettingService.showWarning('No new uninvoiced charges available to add');
+          return;
+        }
         this.modalService.open(this.uninvoicedChargesModalRef, {
           size: 'xl',
           backdrop: 'static',
@@ -4045,6 +4061,40 @@ patchUninvoicedChargeToDetails(charge: any) {
    // Add to form array first
   this.details.push(detailGroup);
   const index = this.details.length - 1;
+  const controlsToDisable = [
+    'ChargeMasterSid',
+    'ChargeDescription',
+    'HSSACMasterSid',
+    'ChargeUOMSid',
+    'NumberOfUnit',
+    'DrCr',
+    'CurrencyMasterSid',
+    'CurrencyCode',
+    'ExchangeRate',
+    'Amount',
+    'TaxableAmount',
+    'TaxPercentage1',
+    'TaxAmount1',
+    'TaxPercentage2',
+    'TaxAmount2',
+    'LocalAmount',
+    'PartyAmount',
+    'MasterJobSid',
+    'HouseJobSid',
+    'DepartmentMasterSid',
+    'LedgerMasterSid',
+    'COAMasterSid',
+    'CostRevenueChargesSid'
+  ];
+   controlsToDisable.forEach(controlName => {
+    const control = this.details.at(index).get(controlName);
+    if (control) {
+      control.disable({ emitEvent: false });
+    }
+  });
+  
+  // Ensure Rate is enabled
+  this.details.at(index).get('Rate')?.enable({ emitEvent: false });
 
   // Fetch ledger details using the same logic as cost-entry.component.ts
   this.operationService.getLedgerDetails({
@@ -4063,7 +4113,16 @@ patchUninvoicedChargeToDetails(charge: any) {
           LedgerMasterSid: ledgerDetail.SubledgerMasterSid,
           COAMasterSid: ledgerDetail.COAMasterSid
         });
+         this.fetchHSN(index, true);
+          if (this.invoiceData.MasterJobSid) {
+          this.onDetailMasterJobSelected(
+            { MasterJobSid: this.invoiceData.MasterJobSid },
+            index
+          );
+        }
         
+        // Trigger tax calculation
+        this.recalcRow(index);
         // Now continue with other operations
         this.details.at(index).updateValueAndValidity();
         
@@ -4073,17 +4132,9 @@ patchUninvoicedChargeToDetails(charge: any) {
           detailGroup.get('ExchangeRate')?.disable();
         }
         
-        this.fetchHSN(index, true);
+       
         
-        if (this.invoiceData.MasterJobSid) {
-          this.onDetailMasterJobSelected(
-            { MasterJobSid: this.invoiceData.MasterJobSid },
-            index
-          );
-        }
-        
-        // Trigger tax calculation
-        this.recalcRow(index);
+       
       } else {
         this.appSettingService.showError(ledgerResp.message || 'Failed to fetch ledger details');
       }

@@ -812,6 +812,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const today = getDefaultTodayDate();
     const fyDefault = this.appSettingService.getCurrentFinancialYear();
     const defaultMasterJobDate=  fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
+    const defaultMBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate));
     this.masterJobForm = this.fb.group({
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
@@ -822,7 +823,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
       MBLNo: [''],
-      MBLDate: [null],
+      MBLDate: [defaultMBLDate],
       BLReleaseType: ['Original'],
       NoofOriginal: [3, Validators.required],
       OriginAgent: [''],

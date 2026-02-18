@@ -70,7 +70,7 @@ getExcelData(): ComplexReportExportConfig {
     { key: 'date', label: 'Date' },
     { key: 'particulars', label: 'Particulars' },
     { key: 'trn', label: 'TRN' },
-    { key: 'voucherType', label: 'Voucher Type' },
+    { key: 'vocuherType', label: 'Voucher Type' },
     { key: 'voucherNo', label: 'Voucher No.' },
     { key: 'supplierRef', label: 'Supplier Inv / Ref No / Date' },
     { key: 'taxableAmt', label: 'Taxable Amt' },
@@ -93,7 +93,7 @@ getExcelData(): ComplexReportExportConfig {
       { value: this.formatDate(item?.voucherDate) },
       { value: item?.subledgerName || '' },
       { value: item?.panType || '' },
-      { value: item?.voucherType1 || '' },     // ✅ matches HTML
+      { value: item?.vocuherType || '' },     // ✅ matches HTML
       { value: item?.voucherNo || '' },
       { value: supplierRef },
       { value: this.formatNumber(item?.taxableAmt) },
@@ -147,12 +147,12 @@ getExcelData(): ComplexReportExportConfig {
 }
 
 
-  private formatNumber(value: any): number | string {
+  private formatNumber(value: any): string {
     if (value === null || value === undefined) return '';
-    const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
-  }
 
+    const num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
 
     private formatDate(date: any): string {
     if (!date) return '';

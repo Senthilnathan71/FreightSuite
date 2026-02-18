@@ -93,8 +93,8 @@ export class UnpostedVoucherListReportComponent {
     fileName: 'Unposted-Voucher-List-Report',
     sheetName: 'UnpostedVoucherList',
     reportHeader: {
-      companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: `Unposted Voucher List Report as on ${this.formatDate(this.params?.VoucherFromDate)}`,
+      companyName: this.currentCompany?.companyName || '',
+      reportTitle: `Unposted Voucher List Report`,
       additionalInfo: [
         { label: 'From Date', value: this.formatDate(this.params?.VoucherFromDate) },
         { label: 'To Date', value: this.formatDate(this.params?.VoucherToDate) },
@@ -108,7 +108,7 @@ export class UnpostedVoucherListReportComponent {
 }
 
 
-private formatNumber(value: any): number | string {
+  private formatNumber(value: any): number | string {
     if (value === null || value === undefined) return '';
     const num = Number(value);
     return isNaN(num) ? '' : Number(num.toFixed(2));

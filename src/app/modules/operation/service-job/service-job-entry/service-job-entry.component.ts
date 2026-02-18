@@ -43,9 +43,10 @@ import html2canvas from 'html2canvas';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
-import { getFormattedPort } from 'src/app/common/helper';
+import { getDefaultTodayDate, getFormattedPort,toNgbDateStruct } from 'src/app/common/helper';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { ToastrService } from 'ngx-toastr';
 
 
 
@@ -102,7 +103,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
 
 
-
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
 
   //Variable Declaration - Common 
   serviceJobForm !: FormGroup;
@@ -254,6 +256,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     public mps: MenuPermissionService,
     private ngbModal: NgbModal,
     private commonModalService : ModalService,
+     private toastr: ToastrService,
   ) {
     this.today = this.calendar.getToday();
   }
@@ -266,6 +269,13 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
+    const fy = this.appSettingService.getCurrentFinancialYear();
+        if (fy) {
+          this.fyMinDate = toNgbDateStruct(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          const today = getDefaultTodayDate();
+          this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+        }
     if (this.userData) {
     
     }
@@ -322,6 +332,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
   // Header Form Initialization
   initServiceJobForm() {
+     const today = getDefaultTodayDate();
+    const fyDefault = this.appSettingService.getCurrentFinancialYear();
+    const defaultMasterJobDate=  fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
+    const defaultMBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate))? fyDefault.EndDate : today;
+    const defaultHBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate));
     this.serviceJobForm = this.fb.group({
       DepartmentMasterSid: [null, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
@@ -331,8 +346,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       ShipmentNo : [],
       MasterJobNumber : [{ value: '', disabled: true }],
       HBLNo: [{value: '', disabled: true}],
+      HBLDate: [defaultHBLDate],
       MBLNo: [null],
-      MBLDate: [null],
+      MBLDate: [defaultMBLDate],
+      MasterJobDate: [defaultMasterJobDate],
       status: ['Active'],
       HouseJobSid : [null],
       MasterJobSid : [null],
@@ -521,6 +538,17 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
    async onSubmit() {
+   const fy = this.appSettingService.getCurrentFinancialYear();
+    if(fy){
+      const MBLDate =new Date (this. serviceJobForm.getRawValue().MBLDate);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+      if(MBLDate < fyStartDate || MBLDate > fyEndDate){
+        this.toastr.error('The date of the master job must be between the financial year start date and end date');
+        this.serviceJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
+        return;
+      }
+    }
     console.log('Submit triggered', this.serviceJobForm.value);
     if (this.isEditMode) {
       const currentFormState = JSON.stringify(this.getCurrentFormState());
@@ -561,6 +589,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       HBLNo: serviceFormValue.HBLNo,
       MBLNo: serviceFormValue.MBLNo,
       MBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
+      HBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.HBLDate) : null,
+      MasterJobDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MasterJobDate) : null,
       CustomerMasterSid: serviceFormValue.CustomerMasterSid,
       CustomerBranchSid: serviceFormValue.CustomerBranchSid || null,
       CustomerName: serviceFormValue.CustomerName,
