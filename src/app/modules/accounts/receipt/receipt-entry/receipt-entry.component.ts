@@ -770,10 +770,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
-    // Reset pagination and clear existing data
+    // Reset pagination for the new search; existing matched rows are preserved
     this.matchingSkip = 0;
     this.hasMoreMatchingData = true;
-    this.voucherMatchings.clear();
     this.currentSearchPayload = payload;
 
     this.spinner.show();
@@ -828,7 +827,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   private appendMatchingRows(transactions: any[]): void {
     const searchType = this.searchOutstandingForm.get('SearchType')?.value;
 
+    // Collect VoucherTransactionSids already in the list so we don't duplicate them
+    const existingSids = new Set(
+      this.voucherMatchings.controls.map(c => c.get('VoucherTransactionSid')?.value)
+    );
+
     transactions.forEach((tx) => {
+      // Skip rows that are already present (e.g. from a previous Get OS call)
+      if (existingSids.has(tx.VoucherTransactionSid)) return;
+
       const isMatchedRecord = !!tx.MatchingDetailSid;
       const matchCurrencyForThisTxn = this.currencyList.find(
         (c) => c.currencyCode === tx.CurrencyCode
