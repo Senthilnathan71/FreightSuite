@@ -120,7 +120,6 @@
               </div>
             </div>
           </div>
-
           
           <button
             type="button"
@@ -392,35 +391,6 @@
               </aside>
 
               
-
-              <!-- Mode of Payment -->
-
-              <!-- <aside class="col-md-3 d-flex align-items-center">
-                <div class="form-check form-check-inline p-0 mt-0">
-                  <div class="form-check d-flex align-items-center">
-                    <input
-                      type="checkbox"
-                      id=""
-                      class="form-check-input sm"
-                      formControlName="CashOrBank"
-                      (keydown.enter)="toggleCashOrBank($event)"
-                      (click)="toggleCashOrBank($event)"
-                    />
-                    <label
-                      class="form-check-label sm"
-                      for="paymentMode"
-                      style="font-size: 14px"
-                    >
-                      Payment :
-                      <b class="text-warning">
-                        {{
-                          receiptForm.get("CashOrBank")?.value ? "Cash" : "Bank"
-                        }}
-                      </b>
-                    </label>
-                  </div>
-                </div>
-              </aside> -->
               <aside class="col-md-3">
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -729,7 +699,7 @@
                 </div>
               </aside>
 
-              <!-- Insta Date -->
+              <!-- Instrument Date -->
 
               <aside class="col-md-6 pe-0">
                 <div class="custom-form-group custom-form-group-select filled">
@@ -759,7 +729,7 @@
                 </div>
               </aside>
 
-              <!-- Clerance Date -->
+              <!-- Clearance Date -->
 
               <aside class="col-md-6 pe-1">
                 <div class="custom-form-group custom-form-group-select filled">
@@ -831,7 +801,6 @@
 
       <!-- Totals / Warning (right aligned) -->
       <div class="d-flex align-items-center gap-3 text-end flex-shrink-0">
-
         @if(validatePartyMatchingAmount()){
         <span class="text-danger fw-semibold me-2">
           !! Matching Amount exceeds party amount
@@ -916,17 +885,17 @@
                 Profit Center
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
-                Charge
-              </th>
-              <!-- <th class="bg-transparent text-light" style="font-size: 14px">
                 Dept
+              </th>
+              <th class="bg-transparent text-light" style="font-size: 14px">
+                Charge
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Master
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 House
-              </th> -->
+              </th>
             </tr>
           </thead>
           <tbody formArrayName="detailItems">
@@ -1094,22 +1063,22 @@
                 <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
-                    [items]="filteredChargeList[i]"
-                    bindLabel="chargeCode"
-                    bindValue="ChargeMasterSid"
-                    formControlName="ChargeMasterSid"
-                    (change)="onChargeChange(i, $event)"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <!-- <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
                     [items]="deptList"
                     bindLabel="departmentName"
                     bindValue="DepartmentMasterSid"
                     formControlName="DepartmentMasterSid"
                     (change)="filterDetailsWithDept($event, i)"
+                    appendTo="body"
+                  ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="filteredChargeList[i]"
+                    bindLabel="chargeCode"
+                    bindValue="ChargeMasterSid"
+                    formControlName="ChargeMasterSid"
+                    (change)="onChargeChange(i, $event)"
                     appendTo="body"
                   ></ng-select>
                 </td>
@@ -1139,8 +1108,7 @@
                     [loading]="houseJobLoading[i]"
                     appendTo="body"
                   ></ng-select>
-                </td> -->
-                
+                </td>
               </tr>
             </ng-container>
             <ng-template #noDetails>
@@ -1233,7 +1201,7 @@
               }
               <th
                 class="bg-transparent text-light"
-                *ngIf="!isEditMode"
+                *ngIf="!isPosted"
                 style="font-size: 14px"
               >
                 ✓
@@ -1604,8 +1572,8 @@
                 />
               </td>
               }
-              <td *ngIf="!isEditMode" class="text-center">
-                <input type="checkbox" (change)="onTickMatch(i, $event)" />
+              <td *ngIf="!isPosted" class="text-center">
+                <input type="checkbox" [checked]="v.get('isTicked')?.value" (change)="onTickMatch(i, $event)" />
               </td>
             </tr>
 

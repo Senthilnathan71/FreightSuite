@@ -164,7 +164,7 @@ private formatAmount(amount: number | string): string {
   
   // If negative, show without decimals
   if (numValue < 0) {
-    return Math.round(numValue).toString();
+    return Math.round(Math.abs(numValue)).toString();
   }
   
   // If positive, show with 2 decimals

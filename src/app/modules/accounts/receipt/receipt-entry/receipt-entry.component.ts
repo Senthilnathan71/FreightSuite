@@ -263,7 +263,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   },
 };
 
-
   // Outstanding invoices
 
   get isEditMode() {
@@ -331,14 +330,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   };
 
   private isLoading = false;
-  isDirty = false;
-  private initialDetailCount = 0;
-  private initialMatchingCount = 0;
-  private formSaved = false;
-  private markAsDirty(): void {
-    this.isDirty = true;
-    this.formSaved = false;
-  }
+
+  // Unsaved changes related variable declarations
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
 
   constructor(
     public mps: MenuPermissionService,
@@ -346,7 +341,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private commonModalService : ModalService,
     private modalService: NgbModal,
     private toastr: ToastrService,
     private receiptService: ReceiptService,
@@ -399,7 +393,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.loadReceipt(this.headerId);
     } else {
       this.subscribeToPartyAndBankChanges();
-      this.setupFormChangeDetection();
     }
   }
 
@@ -424,51 +417,58 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
   }
 
-  private setupFormChangeDetection(): void {
+  subscribeToFormChanges() {
     this.receiptForm.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(
-          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-        ),
-        takeUntil(this.destroy$)
-      )
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
       .subscribe(() => {
-        if (
-          !this.formSaved &&
-          !this.isSaving &&
-          this.receiptForm.dirty &&
-          !this.isLoading
-        ) {
-          this.markAsDirty();
-        }
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.receiptForm.getRawValue()
+        );
       });
+  }
 
-    this.detailItems.valueChanges
-      .pipe(debounceTime(300), takeUntil(this.destroy$))
-      .subscribe(() => {
-        if (!this.formSaved && !this.isSaving && !this.isLoading) {
-          this.markAsDirty();
-        }
-      });
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
 
-    // Track voucher matching changes
-    this.voucherMatchings.valueChanges
-      .pipe(debounceTime(300), takeUntil(this.destroy$))
-      .subscribe(() => {
-        if (!this.formSaved && !this.isSaving && !this.isLoading) {
-          this.markAsDirty();
-        }
-      });
+    // Handle Date
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0]; // DATE only
+    }
 
-    // Track inter-branch changes if applicable
-    this.interBranches.valueChanges
-      .pipe(debounceTime(300), takeUntil(this.destroy$))
-      .subscribe(() => {
-        if (!this.formSaved && !this.isSaving && !this.isLoading) {
-          this.markAsDirty();
-        }
-      });
+    // Handle numeric strings and numbers
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6)); // prevent float noise
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    // Handle objects
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
   loadVoucherPeriods(): void {
@@ -590,42 +590,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   hasUnsavedChanges(): boolean {
-    if (this.formSaved) {
-      return false;
-    }
-
-    // Check if main form is dirty
-    if (this.receiptForm?.dirty) {
-      return true;
-    }
-
-    // Check if details changed
-    if (this.detailItems?.length !== this.initialDetailCount) {
-      return true;
-    }
-
-    // Check if matching count changed
-    if (this.voucherMatchings?.length !== this.initialMatchingCount) {
-      return true;
-    }
-
-    // Check if any detail item is dirty
-    const hasDetailChanges = this.detailItems?.controls.some(
-      (control) => control.dirty
-    );
-    if (hasDetailChanges) {
-      return true;
-    }
-
-    // Check if any voucher matching is dirty
-    const hasMatchingChanges = this.voucherMatchings?.controls.some(
-      (control) => control.dirty
-    );
-    if (hasMatchingChanges) {
-      return true;
-    }
-
-    // Check custom dirty flag
     return this.isDirty;
   }
 
@@ -643,9 +607,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // SAME CURRENCY
     if (currencySid === this.currentCompany?.CurrencyMasterSid) {
-      exCtrl?.setValue(this.getFormattedExchangeRate(1, currencySid));
+      exCtrl?.setValue(this.getFormattedAndPaddedExchangeRate(1, currencySid));
       exCtrl?.disable({ emitEvent: false });
-      // this.recalcPartyAmtForAllDetails();
       this.checkAndUpdateForAllPartyDetail();
       this.recalculateAllMatchingPartyAmounts();
       return;
@@ -702,6 +665,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           cusMap.set(customer.CustomerMasterSid, customer);
         });
         this.onlyCustomerList = Array.from(cusMap.values());
+
+        // Snapshot after all lookups loaded (create mode only)
+        if (!this.isEditMode) {
+          setTimeout(() => {
+            this.initialFormValue = this.receiptForm.getRawValue();
+            this.isDirty = false;
+            this.subscribeToFormChanges();
+          }, 0);
+        }
       }
     );
   }
@@ -851,6 +823,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const matchCurrencyForThisTxn = this.currencyList.find(
         (c) => c.currencyCode === tx.CurrencyCode
       )?.CurrencyMasterSid;
+      const txCurrencySid = matchCurrencyForThisTxn || null;
       const form = this.fb.group({
         VoucherMatchingHeaderSid: [tx.VoucherMatchingHeaderSid || null],
         MatchingDetailSid: [tx.MatchingDetailSid || null],
@@ -881,13 +854,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         osCurrAmt: [tx.OutstandingCurrencyAmount],
         osLocalAmt: [tx.OutstandingLocalAmount],
 
-        exRate: [tx.ExchangeRate || 1],
+        exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
         matchCurr: [
           isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
         ],
         matchExRate: [
-          isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+          this.getFormattedAndPaddedExchangeRate(
+            isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+            isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
+          ),
         ],
         matchCurrAmt: [
           isMatchedRecord
@@ -928,9 +904,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         'balance',
       ].forEach((field) => form.get(field)?.disable());
       form.get('matchLocalAmt').valueChanges.subscribe((val) => {
-        const osLocalAmt = form.get('osLocalAmt')?.value;
+        const osLocalAmt = form.get('osLocalAmt')?.value || 0;
         const balance = Number(osLocalAmt - val).toFixed(2);
-        form.get('balance')?.setValue(Number(balance));
+        form.get('balance')?.setValue(Number(balance || 0));
       });
       this.voucherMatchings.push(form);
     });
@@ -946,17 +922,19 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
       );
       this.onPartyChange(party);
+      this.receiptForm.get('PartyMasterSid')?.disable();
     } else if (
       res.length > 0 &&
       this.searchOutstandingForm.get('SearchType')?.value === 'Party' &&
       this.searchOutstandingForm.get('LedgerMasterSid')?.value
     ) {
       const partyIdInSearch =
-        this.searchOutstandingForm.get('LedgerMasterSid')?.value;
+      this.searchOutstandingForm.get('LedgerMasterSid')?.value;
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === partyIdInSearch
       );
       this.onPartyChange(party);
+      this.receiptForm.get('PartyMasterSid')?.disable();
     }
   }
 
@@ -985,8 +963,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    const raw = this.receiptForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.receiptForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     this.isSaving = true;
-    const formValue = this.receiptForm.getRawValue();
+    const formValue = raw;
     const detailItems = this.detailItems.getRawValue();
 
     if (this.detailItems.length === 0) {
@@ -1188,11 +1174,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         next: (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
-            this.appSettingService.showSuccess(resp.message);
-
-            this.formSaved = true;
             this.isDirty = false;
-
+            this.appSettingService.showSuccess(resp.message);
             if (resolve) resolve(true);
             this.spinner.hide();
             this.loadReceipt(this.headerId);
@@ -1220,8 +1203,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             } else {
               this.spinner.hide();
             }
-            this.resetDirtyState();
-            this.formSaved = true;
+            this.isDirty = false;
             if (resolve) resolve(true);
             if (this.headerId) {
               this.router.navigate(['accounts/receipt/entry', this.headerId]);
@@ -1240,14 +1222,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
       });
     }
-  }
-
-  private resetDirtyState(): void {
-    this.isDirty = false;
-    this.formSaved = false;
-    this.receiptForm?.markAsPristine();
-    this.initialDetailCount = this.detailItems?.length || 0;
-    this.initialMatchingCount = this.voucherMatchings?.length || 0;
   }
 
   async postVoucher(notFromSubmit: boolean = false) {
@@ -1304,6 +1278,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         YearMasterSid: currentFinancialYear,
         LocalCurrencyMasterSid: currentCurrency,
         LocalCurrencyCode: this.companyCurrency.code,
+        current_date : getDefaultTodayDate(),
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCompanyCountry,
@@ -1380,7 +1355,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         BankCOA: headerInfo.BankCOA,
         CurrencyMasterSid: headerInfo.CurrencyMasterSid,
         CurrencyCode: headerInfo.CurrencyCode,
-        ExchangeRate: headerInfo.ExchangeRate,
+        ExchangeRate: this.getFormattedAndPaddedExchangeRate(headerInfo.ExchangeRate, headerInfo.CurrencyMasterSid),
         PartyMasterSid: headerInfo.PartyMasterSid,
         PartyName: headerInfo.PartyName,
         PartyAddress: headerInfo.PartyAddress,
@@ -1484,25 +1459,22 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
     if (this.isPosted) {
+      this.isDirty = false;
+      this.initialFormValue = this.receiptForm.getRawValue();
       this.receiptForm.disable();
+      this.destroy$.next();
+      this.destroy$.complete();
+      return;
     }
 
+    // unsaved changes related — allow all recalculations to settle before snapshotting
+    this.isLoading = true;
     setTimeout(() => {
+      this.initialFormValue = this.receiptForm.getRawValue();
       this.isDirty = false;
-      this.formSaved = true;
       this.isLoading = false;
-
-      this.receiptForm.markAsPristine();
-      this.receiptForm.markAsUntouched();
-      this.detailItems.markAsPristine();
-      this.voucherMatchings.markAsPristine();
-
-      this.initialDetailCount = this.detailItems?.length || 0;
-      this.initialMatchingCount = this.voucherMatchings?.length || 0;
-
-
-    }, 100);
-    this.setupFormChangeDetection();
+      this.subscribeToFormChanges();
+    }, 1000);
   }
 
   /**
@@ -1617,16 +1589,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
 
-    const isNewRow = !data?.VoucherDetailSid;
-    if (
-      isNewRow &&
-      !this.formSaved &&
-      !this.isLoading &&
-      this.initialDetailCount > 0
-    ) {
-      this.markAsDirty();
-    }
-
     const lastAddedRow = this.detailItems.length - 1;
     this.initJobSearchState(lastAddedRow);
     this.filteredCoaList[lastAddedRow] = this.getFilteredCoaListForRow(lastAddedRow);
@@ -1651,9 +1613,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // Only sync currency when both values are non-null and match (actual party row)
     if (headerPartyValue && detailLedgerValue && headerPartyValue === detailLedgerValue) {
       if (patch) {
+        // Use emitEvent: false to prevent valueChanges subscriber from
+        // wiping CurrencyCode when currencyList hasn't loaded yet
         detail
           .get('CurrencyMasterSid')
-          ?.setValue(this.r['CurrencyMasterSid']?.getRawValue());
+          ?.setValue(this.r['CurrencyMasterSid']?.getRawValue(), { emitEvent: false });
         detail
           .get('CurrencyCode')
           ?.setValue(this.r['CurrencyCode']?.getRawValue());
@@ -1686,7 +1650,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           this.filteredCoaList.splice(detailIndex, 1);
           this.removeJobSearchState(detailIndex);
           this.rebuildFilteredCoaListForAllRows();
-          this.markAsDirty();
         },
         error: (err) => {
           console.error('Error deleting voucher detail:', err);
@@ -1699,7 +1662,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.filteredCoaList.splice(detailIndex, 1);
       this.removeJobSearchState(detailIndex);
       this.rebuildFilteredCoaListForAllRows();
-      this.markAsDirty();
     }
   }
 
@@ -1789,7 +1751,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.detailItems.insert(0, newRow);
 
     if (headerCurrencyId === this.currentCompany?.CurrencyMasterSid) {
-      this.detailItems.at(0).get('ExchangeRate')?.disable();
+      this.detailItems.at(0).get('ExchangeRate')?.disable({ emitEvent : false });
     }
 
     ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
@@ -2397,7 +2359,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   filterChargeByDeptForARow(dept, rowIndex) {
-
     const departmentName = dept.departmentName;
     this.filteredChargeList[rowIndex] = (this.chargeList || []).filter(
       (charge) => {
@@ -2422,6 +2383,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const matchCurrencyForThisTxn = this.currencyList.find(
         (c) => c.currencyCode === tx.CurrencyCode
       )?.CurrencyMasterSid;
+      const txCurrencySid = matchCurrencyForThisTxn || null;
       const form = this.fb.group({
         VoucherMatchingHeaderSid: [tx.VoucherMatchingHeaderSid || null],
         MatchingDetailSid: [tx.MatchingDetailSid || null],
@@ -2454,14 +2416,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         osCurrAmt: [tx.OutstandingCurrencyAmount],
         osLocalAmt: [tx.OutstandingLocalAmount],
 
-        exRate: [tx.ExchangeRate || 1],
+        exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
         // Matching values (either blank or existing)
         matchCurr: [
           isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
         ],
         matchExRate: [
-          isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+          this.getFormattedAndPaddedExchangeRate(
+            isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
+            isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
+          ),
         ],
         matchCurrAmt: [
           isMatchedRecord
@@ -2481,9 +2446,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         tdsAmt: [isMatchedRecord ? tx.MatchingTDSAmount ?? null : null],
 
         balance: [
-          isMatchedRecord ? tx.OutstandingLocalAmount - tx.LocalAmount : null,
+          isMatchedRecord ? Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0) : null,
         ],
-        isTicked: [false],
+        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0.01 : false],
         isLimitErrorShown: [false],
       });
 
@@ -2508,6 +2473,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         form.get('balance')?.setValue(Number(balance || 0));
       });
       this.voucherMatchings.push(form);
+
+      // Trigger balance recalculation for patched matched records
+      const matchLocalAmtVal = form.get('matchLocalAmt')?.value;
+      if (matchLocalAmtVal != null) {
+        form.get('matchLocalAmt')?.updateValueAndValidity();
+      }
     });
 
   }
@@ -2529,27 +2500,36 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const row = this.voucherMatchings.at(index) as FormGroup;
 
     const amount = Number(row.get('matchCurrAmt')?.value);
-    const exchangeRate = Number(row.get('matchExRate')?.value);
-    const formattedExchangeRate = this.getFormattedExchangeRate(
-      exchangeRate,
-      row.get('matchCurr')?.value
-    );
-    const formattedAmount = this.getFormattedAmount(
-      amount,
-      row.get('matchCurr')?.value
-    );
+    const osCurrAmt = Number(row.get('osCurrAmt')?.value || 0);
+    const osLocalAmt = Number(row.get('osLocalAmt')?.value || 0);
 
-    let finalAmount;
-    if (this.formatCurrencyAmountBeforeConcludingLocal) {
-      finalAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+    // If matching currency amount equals outstanding currency amount,
+    // use outstanding local amount directly to avoid rounding differences
+    if (amount === osCurrAmt) {
+      row.get('matchLocalAmt')?.setValue(osLocalAmt);
     } else {
-      finalAmount = Number(amount) * Number(formattedExchangeRate);
-    }
-    row
-      .get('matchLocalAmt')
-      ?.setValue(
-        this.getFormattedAmount(finalAmount, row.get('matchCurr')?.value)
+      const exchangeRate = Number(row.get('matchExRate')?.value);
+      const formattedExchangeRate = this.getFormattedExchangeRate(
+        exchangeRate,
+        row.get('matchCurr')?.value
       );
+      const formattedAmount = this.getFormattedAmount(
+        amount,
+        row.get('matchCurr')?.value
+      );
+
+      let finalAmount;
+      if (this.formatCurrencyAmountBeforeConcludingLocal) {
+        finalAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+      } else {
+        finalAmount = Number(amount) * Number(formattedExchangeRate);
+      }
+      row
+        .get('matchLocalAmt')
+        ?.setValue(
+          this.getFormattedAmount(finalAmount, row.get('matchCurr')?.value)
+        );
+    }
 
     if (recalPartyAmt) {
       this.calculatePartyAmount(index);
@@ -2883,7 +2863,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     if (currencySid === companyCurrency && currencySid !== null) {
       this.receiptForm.patchValue({
-        ExchangeRate: this.getFormattedExchangeRate(1, currencySid),
+        ExchangeRate: this.getFormattedAndPaddedExchangeRate(1, currencySid),
       });
       this.recalculateAllMatchingPartyAmounts();
       // this.recalcPartyAmtForAllDetails();
@@ -2913,16 +2893,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       if (resp?.status) {
         if (resp.data) {
           this.receiptForm.patchValue({
-            ExchangeRate: this.getFormattedExchangeRate(resp.data, currencySid),
+            ExchangeRate: this.getFormattedAndPaddedExchangeRate(resp.data, currencySid),
           });
         } else {
           this.receiptForm.patchValue({
-            ExchangeRate: this.getFormattedExchangeRate(0, currencySid),
+            ExchangeRate: this.getFormattedAndPaddedExchangeRate(0, currencySid),
           });
           this.appSettingService.showError(resp.message);
         }
         this.recalculateAllMatchingPartyAmounts();
-        // this.recalcPartyAmtForAllDetails();
         this.checkAndUpdateForAllPartyDetail();
       } else {
         this.appSettingService.showError('Error fetching exchange rate');
@@ -2982,30 +2961,60 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
   }
 
+  private bankFieldsBackup: any = null;
+  private cashFieldsBackup: any = null;
+
   toggleCashOrBank(selectedMode: any) {
     const mode = this.receiptForm.get('InstrumentMode');
     const number = this.receiptForm.get('InstrumentNumber');
     const date = this.receiptForm.get('InstrumentDate');
+    const prevMode = this.bankFieldsBackup ? 'B' : (this.cashFieldsBackup ? 'C' : null);
 
-    this.receiptForm.patchValue({
-      BankCOA : null,
-      InstrumentMode: null,
-      InstrumentNumber: '',
-      InstrumentDate: null,
-      ClearanceDate: null,
-    });
+    // Save current field values before clearing
+    const currentCashOrBank = prevMode || (this.receiptForm.get('CashOrBank')?.value === 'C' ? 'B' : 'C');
+    if (currentCashOrBank === 'B') {
+      this.bankFieldsBackup = {
+        BankCOA: this.receiptForm.get('BankCOA')?.value,
+        InstrumentMode: mode?.value,
+        InstrumentNumber: number?.value,
+        InstrumentDate: date?.value,
+        ClearanceDate: this.receiptForm.get('ClearanceDate')?.value,
+      };
+    } else {
+      this.cashFieldsBackup = {
+        BankCOA: this.receiptForm.get('BankCOA')?.value,
+      };
+    }
 
     // Read from form value (ng-select (change) may emit full item object)
     const isCash = this.receiptForm.get('CashOrBank')?.value === 'C';
 
     if (isCash) {
+      // Switching to Cash — restore cash backup if available, else clear
+      this.receiptForm.patchValue({
+        BankCOA: this.cashFieldsBackup?.BankCOA ?? null,
+        InstrumentMode: null,
+        InstrumentNumber: '',
+        InstrumentDate: null,
+        ClearanceDate: null,
+      });
       mode?.clearValidators();
       number?.clearValidators();
       date?.clearValidators();
+      this.cashFieldsBackup = null;
     } else {
+      // Switching to Bank — restore bank backup if available, else set defaults
+      this.receiptForm.patchValue({
+        BankCOA: this.bankFieldsBackup?.BankCOA ?? null,
+        InstrumentMode: this.bankFieldsBackup?.InstrumentMode ?? null,
+        InstrumentNumber: this.bankFieldsBackup?.InstrumentNumber ?? '',
+        InstrumentDate: this.bankFieldsBackup?.InstrumentDate ?? null,
+        ClearanceDate: this.bankFieldsBackup?.ClearanceDate ?? null,
+      });
       mode?.setValidators([Validators.required]);
       number?.setValidators([Validators.required]);
       date?.setValidators([Validators.required]);
+      this.bankFieldsBackup = null;
     }
 
     mode?.updateValueAndValidity();
@@ -3188,7 +3197,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       );
       return config?.amountDecimal;
     }
-    return 2;
+    return 4;
   }
 
   /**
@@ -3458,7 +3467,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchPartyAmt: null,
       });
       this.updateDetailAmountsFromMatching();
-      this.markAsDirty();
       return;
     }
 
@@ -3479,7 +3487,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.calculatePartyAmount(index);
     row.get('isTicked')?.setValue(checked);
     this.updateDetailAmountsFromMatching();
-    this.markAsDirty();
 
     // this.calculateLocalAmountForMatchRow(index);
   }

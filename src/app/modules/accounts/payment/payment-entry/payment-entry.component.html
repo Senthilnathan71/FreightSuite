@@ -99,7 +99,7 @@
 
       <!-- Button Section -->
 
-      <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-0'">
+      <div [ngClass]="isEditMode ? 'col-md-6 pb-0' : 'col-md-5 pb-1'">
         <div
           class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0"
         >
@@ -124,8 +124,8 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value"
-            (click)="reportPayment()"
+            *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value === 'B'"
+            (click)="reportBankPayment()"
             [disabled]="!paymentDataPrint || !isPosted"
           >
             <i class="fas fa-print me-1"></i> Print
@@ -134,8 +134,8 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && !paymentForm.get('CashOrBank')?.value"
-            (click)="reportBankPayment()"
+            *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value === 'C'"
+            (click)="reportPayment()"
             [disabled]="!paymentDataPrint || !isPosted"
           >
             <i class="fas fa-print me-1"></i> Print
@@ -309,8 +309,8 @@
     <div class="row">
       <div
         [ngClass]="{
-          'col-md-12': paymentForm.get('CashOrBank')?.value,
-          'col-md-8 pe-md-0': !paymentForm.get('CashOrBank')?.value
+          'col-md-12': paymentForm.get('CashOrBank')?.value === 'C',
+          'col-md-8 pe-md-0': paymentForm.get('CashOrBank')?.value === 'B'
         }"
       >
         <div class="card h-100 mb-0">
@@ -390,59 +390,35 @@
                 </div>
               </aside>
 
-              <!-- Remarks -->
 
               <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="text-input"
-                    placeholder=""
-                    class="custom-input-field sm"
-                    formControlName="Remarks"
-                  />
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['CashOrBank']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="modeOfPayment"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="CashOrBank"
+                    [clearable]="false"
+                    (change)="toggleCashOrBank($event)"
+                  >
+                  </ng-select>
                   <label
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Remarks
-                  </label>
-                </div>
-              </aside>
-
-              <!-- Mode of Payment -->
-
-              <aside class="col-md-3 d-flex align-items-center">
-                <div class="form-check form-check-inline p-0 mt-0">
-                  <div class="form-check d-flex align-items-center">
-                    <input
-                      type="checkbox"
-                      id=""
-                      class="form-check-input sm"
-                      formControlName="CashOrBank"
-                      (keydown.enter)="toggleCashOrBank($event)"
-                      (click)="toggleCashOrBank($event)"
-                    />
-                    <label
-                      class="form-check-label sm"
-                      for="paymentMode"
-                      style="font-size: 14px"
-                    >
-                      Payment :
-                      <b class="text-warning">
-                        {{
-                          paymentForm.get("CashOrBank")?.value ? "Cash" : "Bank"
-                        }}
-                      </b>
-                    </label>
-                  </div>
+                    >Payment Mode <span class="text-danger">*</span></label
+                  >
                 </div>
               </aside>
 
               <!-- Cash -->
               <aside
                 class="col-md-3"
-                *ngIf="paymentForm.get('CashOrBank')?.value"
+                *ngIf="paymentForm.get('CashOrBank')?.value === 'C'"
               >
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -471,7 +447,7 @@
               <!-- Bank -->
               <aside
                 class="col-md-3"
-                *ngIf="!paymentForm.get('CashOrBank')?.value"
+                *ngIf="paymentForm.get('CashOrBank')?.value === 'B'"
               >
                 <div
                   class="custom-form-group custom-form-group-select"
@@ -551,34 +527,6 @@
                 </div>
               </aside>
 
-              <!-- Party -->
-
-              <!-- <aside class="col-md-3">
-                <div
-                  class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!paymentForm.get('CustomerBranchSid')?.value"
-                >
-                  <dofi-searchable-dropdown
-                    [items]="partyList"
-                    formControlName="CustomerBranchSid"
-                    placeholder=""
-                    [displayFields]="CustomerLookupConfig.displayFields"
-                    [displayLabels]="CustomerLookupConfig.displayLabels"
-                    [labelFields]="CustomerLookupConfig.labelFields"
-                    bindLabel="CustomerName"
-                    bindValue="CustomerBranchSid"
-                    (itemSelected)="onPartyChange($event)"
-                  >
-                  </dofi-searchable-dropdown>
-                  <label
-                    for="text-input"
-                    class="input-label"
-                    style="font-size: 14px"
-                    >Party <span class="text-danger">*</span></label
-                  >
-                </div>
-              </aside> -->
-
               <!-- Received From -->
 
               <aside class="col-md-3">
@@ -644,6 +592,25 @@
                   >
                 </div>
               </aside> -->
+                            <!-- Remarks -->
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="text-input"
+                    placeholder=""
+                    class="custom-input-field sm"
+                    formControlName="Remarks"
+                  />
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
+                    >Remarks
+                  </label>
+                </div>
+              </aside>
             </div>
           </div>
         </div>
@@ -652,7 +619,7 @@
       <!-- SECOND CARD (Visible only when Bank is selected) -->
       <div
         class="col-md-4 ps-md-1 mt-1 mt-md-0"
-        *ngIf="!paymentForm.get('CashOrBank')?.value"
+        *ngIf="paymentForm.get('CashOrBank')?.value === 'B'"
       >
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
@@ -803,29 +770,40 @@
       <!-- Totals / Warning (right aligned) -->
       <div class="d-flex align-items-center gap-3 text-end flex-shrink-0">
         @if(validatePartyMatchingAmount()){
-        <span class="text-warning fw-semibold">
+        <span class="text-danger fw-semibold me-2">
           !! Matching Amount exceeds party amount
         </span>
         }
 
-        <span>
-          Total Credits :
-          <span class="fw-bold text-success">
-            {{ totalCredits | number : "1.2-2" }}
+        <!-- DETAIL TOTALS (Blue Tone) -->
+        <div class="px-2 py-1 rounded bg-primary bg-opacity-10 border border-primary">
+          <span class="me-3">
+            Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-primary">
+              {{ totalCredits | number : "1.2-2" }}
+            </span>
           </span>
-        </span>
 
-        <span>
-          Total Debits :
-          <span class="fw-bold text-danger">
-            {{ totalDebits | number : "1.2-2" }}
+          <span>
+            Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-primary">
+              {{ totalDebits | number : "1.2-2" }}
+            </span>
           </span>
-        </span>
+        </div>
+        
+        <!-- MATCHING TOTAL (Warning Tone) -->
+        <div class="px-2 py-1 rounded bg-warning bg-opacity-10 border border-warning">
+          Net Matching ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
+          <span class="fw-bold text-warning">
+            {{ getTotalMatchPartyAmt() | number : "1.2-2" }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="content-workspace">
+  <div class="content-workspace px-0">
     <div
       class="workspace-content px-0"
       [hidden]="selectedTab !== 'Detail'"
@@ -905,18 +883,24 @@
                     <i class="fas fa-plus text-info"></i>
                   </button>
                   }
+                  <span
+                    [ngbTooltip]="getDeleteTooltip(i)"
+                    placement="right"
+                    class="d-inline-block"
+                  >
                   <button
                     type="button"
                     class="btn waves-effect waves-light text-light py-0 px-1"
                     (click)="removeDetail(i, d.get('VoucherDetailSid')?.value)"
-                    [disabled]="isPosted"
+                    [disabled]="isPosted || isDeleteBlocked(i)"
                   >
-                    <i class="fas fa-trash text-danger" name="trash-2"></i>
+                    <i class="fas fa-trash" [class.text-danger]="!isDeleteBlocked(i)" [class.text-muted]="isDeleteBlocked(i)" name="trash-2"></i>
                   </button>
+                  </span>
                 </td>
                 <td class="dofi-min-w-150">
                   <ng-select
-                    [items]="coaList"
+                    [items]="filteredCoaList[i]"
                     bindLabel="LedgerName"
                     bindValue="COAMasterSid"
                     formControlName="COAMasterSid"
@@ -954,6 +938,7 @@
                     [displayLabels]="CurrencyLookupConfig.displayLabels"
                     [labelFields]="CurrencyLookupConfig.labelFields"
                     [bindValue]="'CurrencyMasterSid'"
+                    [readonly]="isAutoPartyRow(i) || isAutoBankRow(i)"
                     (itemSelected)="onCurrencyChangeForEachRow($event, i)"
                   >
                   </dofi-searchable-dropdown>
@@ -967,7 +952,7 @@
                     [DecimalPrecisionBefore]="4"
                     [DecimalPrecisionAfter]="
                       getExchangeRateDecimalPlaces(
-                        d.get('CurrencyMasterSid')?.value
+                        d.get('CurrencyMasterSid')?.getRawValue()
                       )
                     "
                     (input)="calculateLocalAmount(i, true)"
@@ -1073,6 +1058,9 @@
                     bindValue="MasterJobSid"
                     formControlName="MasterJobSid"
                     (change)="onMasterJobChange(i, $event)"
+                    (scrollToEnd)="onMasterJobScrollToEnd(i)"
+                    [typeahead]="masterJobTypeahead$[i]"
+                    [loading]="masterJobLoading[i]"
                     appendTo="body"
                   ></ng-select>
                 </td>
@@ -1083,6 +1071,9 @@
                     bindLabel="HBLNo"
                     bindValue="HouseJobSid"
                     formControlName="HouseJobSid"
+                    (scrollToEnd)="onHouseJobScrollToEnd(i)"
+                    [typeahead]="houseJobTypeahead$[i]"
+                    [loading]="houseJobLoading[i]"
                     appendTo="body"
                   ></ng-select>
                 </td>
@@ -1114,7 +1105,7 @@
       [formGroup]="paymentForm"
       [hidden]="selectedTab !== 'Voucher Matching'"
     >
-      <div class="table-responsive table-borderless">
+      <div class="table-responsive table-borderless" #matchingScrollContainer style="max-height: 55vh; overflow-y: auto;">
         <table class="table table-hover align-middle no-wrap table-sm mb-1">
           <thead>
             <tr class="bg-info text-center">
@@ -1178,7 +1169,7 @@
               }
               <th
                 class="bg-transparent text-light"
-                *ngIf="!isEditMode"
+                *ngIf="!isPosted"
                 style="font-size: 14px"
               >
                 ✓
@@ -1549,11 +1540,20 @@
                 />
               </td>
               }
-              <td *ngIf="!isEditMode" class="text-center">
-                <input type="checkbox" (change)="onTickMatch(i, $event)" />
+              <td *ngIf="!isPosted" class="text-center">
+                <input type="checkbox"  [checked]="v.get('isTicked')?.value" (change)="onTickMatch(i, $event)" />
               </td>
             </tr>
 
+            <!-- Loading row for infinite scroll -->
+            <tr *ngIf="isLoadingMatching">
+              <td [attr.colspan]="isIndianCompany() ? (isPosted ? 16 : 18) : (isPosted ? 15 : 17)" class="text-center text-muted py-2">
+                <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+              </td>
+            </tr>
+
+          </tbody>
+          <tfoot class="sticky-bottom" style="position: sticky; bottom: 0; z-index: 1;">
             <!-- TOTAL ROW -->
             <tr class="table-info fw-bold text-end">
               <td colspan="7" class="text-end">Total</td>
@@ -1577,8 +1577,9 @@
               }
               <td></td>
             </tr>
-          </tbody>
+          </tfoot>
         </table>
+        <div #matchingSentinel style="height: 1px;"></div>
       </div>
     </div>
 
