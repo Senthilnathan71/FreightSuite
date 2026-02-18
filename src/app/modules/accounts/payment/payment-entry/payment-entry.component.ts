@@ -397,7 +397,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   ngAfterViewInit(): void {
-    if (!this.isEditMode) this.setupMatchingObserver();
+    if (!this.isPosted) this.setupMatchingObserver();
   }
 
   private setupMatchingObserver(): void {
@@ -1706,7 +1706,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ledgerObj?.LedgerType === 'Sy Cr' ||
         ledgerObj?.LedgerType === 'Sy Dr' ||
         d.LedgerMasterSid === partyLedger.SubledgerMasterSid ||
-        (d.DrCr === 'C' && d.COAMasterSid === partyLedger.COAMappedId)
+        (d.DrCr === 'D' && d.COAMasterSid === partyLedger.COAMappedId)
       ) {
         partyIndexes.push(index);
       }
@@ -1730,7 +1730,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
-      DrCr: 'C',
+      DrCr: 'D',
       CurrencyMasterSid: headerCurrencyId,
       CurrencyCode: headerCurrencyCode,
       ExchangeRate: this.getFormattedAndPaddedExchangeRate(this.r['ExchangeRate']?.value, headerCurrencyId),
@@ -1792,7 +1792,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ledgerObj?.LedgerType === 'Bank' ||
         ledgerObj?.LedgerType === 'Cash' ||
         allBankCashCoaSids.includes(d.COAMasterSid) ||
-        (d.DrCr === 'D' && allBankCashCoaSids.includes(d.COAMasterSid))
+        (d.DrCr === 'C' && allBankCashCoaSids.includes(d.COAMasterSid))
       ) {
         cashBankIndexes.push(index);
       }
@@ -1820,7 +1820,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Sno: this.detailItems.length + 1,
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
-      DrCr: 'D',
+      DrCr: 'C',
       CurrencyMasterSid: bankCurrencyId,
       CurrencyCode: bankCurrencyCode,
       ExchangeRate: this.getFormattedAndPaddedExchangeRate(1, bankCurrencyId),
