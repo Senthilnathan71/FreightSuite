@@ -340,7 +340,12 @@ export class LoadingPlanEntryComponent {
   setInitialConfig() {
     if (this.screenName === 'Loading Plan') {
       this.filterDepartments();
-      this.filteredDepartments = this.departmentList.filter(dept => dept.departmentType === 'Sea').filter(d => d.FCLLCL === 'LCL');
+      // this.filteredDepartments = this.departmentList.filter(dept => dept.departmentType === 'Sea').filter(d => d.FCLLCL === 'LCL');
+      this.filteredDepartments = this.departmentList.filter(dept => 
+      dept.departmentType === 'Sea' && 
+      dept.FCLLCL === 'LCL' && 
+      dept.ExportImport === 'Export'  // Add this condition to show only Export
+    );
       this.selectedDepartment = this.filteredDepartments.find(dept => dept.departmentType === 'Sea' && dept.FCLLCL === 'LCL' && dept.ExportImport === 'Export');
       const lclExportId = this.selectedDepartment?.DepartmentMasterSid;
       if (lclExportId) {
@@ -593,11 +598,14 @@ export class LoadingPlanEntryComponent {
     if (event instanceof KeyboardEvent) {
       target.checked = !target.checked;
     }
+    const key = booking.BookingHeaderSid ?? booking.HouseJobSid;
     const currentState = target.checked;
     if (currentState) {
+      if (!this.selectedBookings.some(b => b.BookingHeaderSid ?? b.HouseJobSid === key)) {
       this.selectedBookings.push(booking);
+      }
     } else {
-      this.selectedBookings = this.selectedBookings.filter(b => b.BookingHeaderSid !== booking.BookingHeaderSid);
+      this.selectedBookings = this.selectedBookings.filter(b => (b.BookingHeaderSid ?? b.HouseJobSid )!== key);
     }
     this.handleMultipleVoyages();
     this.calculateTotal();
@@ -1190,7 +1198,8 @@ formatContainerNumber(): void {
     });
   }
   existInSelected(item) {
-    return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);
+    const key = item.BookingHeaderSid ?? item.HouseJobSid;
+    return this.selectedBookings.find(b => b.BookingHeaderSid ?? b.HouseJobSid) === key;
   }
 
   getVesselVoy(booking: any) {

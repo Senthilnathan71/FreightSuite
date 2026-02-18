@@ -346,6 +346,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       ShipmentNo : [],
       MasterJobNumber : [{ value: '', disabled: true }],
       HBLNo: [{value: '', disabled: true}],
+      JobType: [null],
       HBLDate: [defaultHBLDate],
       MBLNo: [null],
       MBLDate: [defaultMBLDate],
@@ -477,6 +478,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CustomerAddress: response.CustomerAddress,
       MasterJobNumber : response.masterJob?.MasterJobNumber || "",
       HBLNo: response.HBLNo,
+      JobType: response.JobType,
       MBLNo: response.MBLNo,
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
       status: response.status === "A" ? "Active" : "Suspended",
@@ -587,6 +589,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       POL: serviceFormValue.POL || "",
       POD: serviceFormValue.POD || "",
       HBLNo: serviceFormValue.HBLNo,
+      JobType: serviceFormValue.JobType,
       MBLNo: serviceFormValue.MBLNo,
       MBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
       HBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.HBLDate) : null,
@@ -748,13 +751,47 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       this.filteredPOD = [];
       this.b['POL'].setValue(null);
       this.b['POD'].setValue(null);
+      this.b['JobType'].setValue(null);
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
-
+    // this.b['JobType'].setValue(department.ExportImport);
+    
     this.onRouteChange()
     this.syncFormValueWithRateComponent();
+    this.autoSetJobType(department);
+
+  }
+
+  autoSetJobType(department: any): void {
+    if (!department) {
+      this.b['JobType'].setValue(null);
+      return;
+    }
+
+    const departmentName = department.departmentName?.toLowerCase();
+    const exportImportType = department.ExportImport;
+    
+    let jobType : 'Import' | 'Export' | 'Transhipment' | '' = '';
+
+    // // Determine JobType based on department name and export/import
+    if (departmentName.includes('fcl') || departmentName.includes('lcl')) {
+      if (exportImportType === 'Export') {
+        // FCL Export with Factory Stuffing -> Container Yard
+        jobType = 'Export';
+      } else if (exportImportType === 'Import') {
+        // FCL Import with Factory Stuffing -> Container Yard
+        jobType = 'Import';
+      }
+    } else {
+      // Other departments - enable all job types
+      jobType = 'Transhipment';
+    }
+
+    
+    // Set the JobType value
+    this.b['JobType']?.setValue(jobType);
   }
 
   onRouteChange(): void {
@@ -1308,5 +1345,8 @@ openEDoc() {
       return true;
     }
   }
+  navigateToServiceJobEntry(): void {
+        this.router.navigate(['operation/service-job/entry']);
+    }
   
 }

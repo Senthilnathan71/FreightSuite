@@ -4064,8 +4064,6 @@ patchUninvoicedChargeToDetails(charge: any) {
   const index = this.details.length - 1;
   const controlsToDisable = [
     'ChargeMasterSid',
-    'ChargeDescription',
-    'HSSACMasterSid',
     'ChargeUOMSid',
     'NumberOfUnit',
     'DrCr',
@@ -4096,6 +4094,17 @@ patchUninvoicedChargeToDetails(charge: any) {
   
   // Ensure Rate is enabled
   this.details.at(index).get('Rate')?.enable({ emitEvent: false });
+  const rateControl = this.details.at(index).get('Rate');
+const maxAllowedRate = charge.RevenueRate || 0;
+
+// User cannot enter rate greater than unbilled rate
+rateControl?.setValidators([
+  Validators.required,
+  Validators.min(0),
+  Validators.max(maxAllowedRate)
+]);
+
+rateControl?.updateValueAndValidity({ emitEvent: false });
 
   // Fetch ledger details using the same logic as cost-entry.component.ts
   this.operationService.getLedgerDetails({
