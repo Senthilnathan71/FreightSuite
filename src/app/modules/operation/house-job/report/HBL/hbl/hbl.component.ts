@@ -285,7 +285,7 @@ export class HblComponent {
   }
 
   updateHBLCountInDisplay() {
-    this.hblCountUpdated.emit();
+    this.activeModal.close('UPDATED');
   }
 
 

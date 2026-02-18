@@ -70,7 +70,7 @@
                         <th class="bg-transparent text-light" style="white-space: nowrap;">No of Containers</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">20'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">40'</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">40' HC</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">45'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Shipper</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Container No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Status</th>
@@ -84,12 +84,12 @@
                         <td class="text-center">{{ item.masterNo || '' }}</td>
                         <td>{{ item.mblNo || '' }}</td>
                         <td>{{ item.Hblno || '' }}</td>
-                        <td>{{ item.HblDate | date:'yyyy-MM-dd' }}</td>
+                        <td>{{ item.HblDate | formatDate }}</td>
                         <td>{{ item.department || '' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.voyageNo || '' }}</td>
-                        <td>{{ item.etd | date:'yyyy-MM-dd' || '' }}</td>
-                        <td>{{ item.eta | date:'yyyy-MM-dd' || '' }}</td>
+                        <td>{{ item.etd | formatDate  }}</td>
+                        <td>{{ item.eta | formatDate  }}</td>
                         <td>{{ item.originPort || '' }}</td>
                         <td>{{ item.originPortName || '' }}</td>
                         <td>{{ item.loadPort || '' }}</td>
