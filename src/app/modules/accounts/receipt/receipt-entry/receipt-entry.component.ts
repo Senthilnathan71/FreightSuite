@@ -335,6 +335,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isDirty: boolean = false;
   private initialFormValue: any = null;
 
+  get hasMatchingDetails(): boolean {
+    return this.voucherMatchings?.length > 0;
+  }
+
   constructor(
     public mps: MenuPermissionService,
     private commonService: CommonService,
@@ -351,7 +355,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private currencyConfigService: CurrencyConfigurationService,
     private spinner: NgxSpinnerService,
     private companySettings: CompanySettingsManagerService,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
+    private confirmService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -397,7 +402,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   ngAfterViewInit(): void {
-    if (!this.isEditMode) this.setupMatchingObserver();
+    if (!this.isPosted) this.setupMatchingObserver();
   }
 
   private setupMatchingObserver(): void {
@@ -666,8 +671,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         });
         this.onlyCustomerList = Array.from(cusMap.values());
 
-        // Snapshot after all lookups loaded (create mode only)
         if (!this.isEditMode) {
+          // Snapshot after all lookups loaded (create mode only)
           setTimeout(() => {
             this.initialFormValue = this.receiptForm.getRawValue();
             this.isDirty = false;
@@ -758,6 +763,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       default:
         // For HBL, MBL, HAWB, MAWB, MasterNo etc.
         payload.InvoiceNumber = form.FilterText;
+    }
+
+    if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue() && this.hasMatchingDetails) {
+      this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
+      return;
     }
 
     // Reset pagination and clear existing data
@@ -921,7 +931,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
       );
+      if (this.isEditMode && 
+        this.searchOutstandingForm.get('SearchType').getRawValue() === 'Party' && 
+        res[0].LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue()
+      ) {
+        this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
+        return;
+      }
       this.onPartyChange(party);
+      this.searchOutstandingForm.get('LedgerMasterSid')?.disable();
       this.receiptForm.get('PartyMasterSid')?.disable();
     } else if (
       res.length > 0 &&
@@ -1372,6 +1390,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       },
       { emitEvent: false }
     );
+
+    this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
+    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);
 
     if(headerInfo.CashOrBank === 'C'){
       this.receiptForm.get('InstrumentMode')?.clearValidators();
@@ -2909,11 +2930,33 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
   }
 
-  onPartyChange(party: any) {
+  private previousPartyBranchSid: number | null = null;
+
+  async onPartyChange(party: any) {
+    // If matchings exist in create mode, confirm before clearing
+    if (!this.isEditMode && this.voucherMatchings?.length > 0) {
+      const confirmed = await this.confirmService.confirm(
+        'Changing the party will clear all voucher matchings. Do you want to proceed?',
+        'Change Party',
+        'Clear & Proceed'
+      );
+      if (!confirmed) {
+        // Revert party selection
+        this.receiptForm.get('CustomerBranchSid')?.setValue(
+          this.previousPartyBranchSid,
+          { emitEvent: false }
+        );
+        return;
+      }
+      this.voucherMatchings.clear();
+      this.updateDetailAmountsFromMatching();
+    }
+
     const partyCountry = String(party?.countryMaster?.countryName)
       .trim()
       .toLowerCase();
     if (!party) {
+      this.previousPartyBranchSid = null;
       this.receiptForm.patchValue({
         PartyMasterSid: null,
         PartyName: '',
@@ -2925,6 +2968,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       });
       return;
     }
+    this.previousPartyBranchSid = party.CustomerBranchSid;
     this.receiptForm.patchValue({
       PartyMasterSid: party.SubledgerMasterSid,
       PartyName: party.CustomerName,
