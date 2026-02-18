@@ -6,6 +6,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-accounts-close-detail-modal',
@@ -14,7 +15,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
     CommonModule,
     ReactiveFormsModule,
     NgxSpinnerModule,
-    DatePipe
+    DatePipe,
+    NgSelectModule
   ],
   templateUrl: './accounts-close-detail-modal.component.html',
   styleUrl: './accounts-close-detail-modal.component.scss'
