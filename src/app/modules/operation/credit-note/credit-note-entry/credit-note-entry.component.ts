@@ -242,6 +242,7 @@ export class CreditNoteEntryComponent {
 
   // Credit Note specific variable declaration
   invoiceOutstandingAmount: number = 0;
+  invoiceOutstandingLocalAmount : number = 0;
   selectedOutstandingInvoice: any = null;
   showOutstandingInfo: boolean = false;
 
@@ -951,6 +952,7 @@ export class CreditNoteEntryComponent {
 
     if (data.hasOutstandingAmount) {
       this.invoiceOutstandingAmount = data.totalOSAmount;
+      this.invoiceOutstandingLocalAmount = data.totalOSLocalAmount;
       this.showOutstandingInfo = true;
     }
 
@@ -2410,14 +2412,38 @@ export class CreditNoteEntryComponent {
       return;
     }
 
-    const actualLocalAmount = toNumber(this.getTotalLocalDebits()) + toNumber(this.getTotalTaxAmount());
-    const actualMatchedAmount = toNumber(this.getFormattedAmount(actualLocalAmount,this.currentCompany?.CurrencyMasterSid));
-    console.info('actualMatchedAmount', actualMatchedAmount);
-    console.info('invoiceOutstandingAmount', this.invoiceOutstandingAmount);
-    if(actualMatchedAmount > this.invoiceOutstandingAmount){
-      this.appSettingService.showWarning(`The invoice amount is greater than the outstanding amount. \nPlease check the invoice amount and try again.`);
+    const actualLocalAmount = toNumber(this.getTotalLocalDebits()) + toNumber(this.getTotalTaxAmount()) - toNumber(this.getTotalLocalCredits());
+    const headerCurrency = this.creditNoteForm.get('CurrencyMasterSid')?.getRawValue();
+    const headerExRate = this.creditNoteForm.get('ExchangeRate')?.getRawValue();
+    const actualPartyAmount = toNumber(this.getFormattedAmount((toNumber(actualLocalAmount) / toNumber(headerExRate)), headerCurrency));
+    const actualMatchedAmount = toNumber(this.getFormattedAmount(actualPartyAmount, this.currentCompany?.CurrencyMasterSid));
+    if (actualMatchedAmount > this.invoiceOutstandingAmount) {
+
+      const matched = actualMatchedAmount.toFixed(2);
+      const outstanding = this.invoiceOutstandingAmount.toFixed(2);
+
+      this.appSettingService.showWarning(
+        `Entered Amount (${matched}) exceeds the Outstanding Amount (${outstanding}). 
+     Please enter an amount less than or equal to the outstanding balance.`
+      );
+
       if (resolve) resolve(false);
       return;
+    } else if (actualMatchedAmount === this.invoiceOutstandingAmount) {
+      const totalMatchedLocalAmount = toNumber(this.getTotalLocalDebits()) - toNumber(this.getTotalLocalCredits());
+      const osLocalAmount = toNumber(this.invoiceOutstandingLocalAmount);
+      if (totalMatchedLocalAmount > osLocalAmount) {
+        const matched = totalMatchedLocalAmount.toFixed(2);
+        const outstanding = osLocalAmount.toFixed(2);
+
+        this.appSettingService.showWarning(
+          `Entered Local Amount (${matched}) exceeds the Outstanding Local Amount (${outstanding}). 
+     Please enter an amount less than or equal to the outstanding local balance.`
+        );
+
+        if (resolve) resolve(false);
+        return;
+      }
     }
 
     // Enhanced exchange rate validation - checks all three error types
