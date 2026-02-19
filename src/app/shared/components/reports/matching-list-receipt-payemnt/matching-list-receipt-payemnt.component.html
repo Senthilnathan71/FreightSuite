@@ -100,23 +100,21 @@
                 </td>
               </tr>
             </ng-container>
-
-            <tr style="font-weight: bold; background: #f2f2f2">
-              <td colspan="7"></td>
-
-              <!-- TOTAL under ExRate -->
-              <td style="text-align: right">TOTAL</td>
-
-              <!-- Totals -->
-              <td class="text-end">
-                {{ v.totalAmt | number: "1.2-2" }}
-              </td>
-
-              <td class="text-end">
-                {{ v.totalLocalAmt | number: "1.2-2" }}
-              </td>
-            </tr>
           </ng-container>
+          <tr *ngIf="groupedData.length > 0" style="font-weight: bold; background: #d9edf7">
+            <td colspan="7"></td>
+          
+            <td style="text-align: right">TOTAL</td>
+          
+            <td class="text-end">
+              {{ grandTotalAmt | number: "1.2-2" }}
+            </td>
+          
+            <td class="text-end">
+              {{ grandTotalLocalAmt | number: "1.2-2" }}
+            </td>
+          </tr>
+
 
           <tr *ngIf="groupedData.length === 0">
             <td colspan="10" class="text-center fw-bold">No Record Found</td>

@@ -184,155 +184,237 @@ export class Vat210Component {
     );
   }
 
-  getExcelData(): ComplexReportExportConfig {
+ getExcelData(): ComplexReportExportConfig {
 
-    const tableHeaders: ExcelHeader[] = [
-      { key: 'particular', label: 'Particulars' },
-      { key: 'taxable', label: 'Taxable Amount' },
-      { key: 'tax', label: 'Tax Amount' }
-    ];
+  const tableHeaders: ExcelHeader[] = [
+    { key: 'particular', label: 'Particulars' },
+    { key: 'taxable', label: 'Taxable Amount' },
+    { key: 'tax', label: 'Tax Amount' }
+  ];
 
-    const rows: ExcelRow[] = [];
+  const rows: ExcelRow[] = [];
 
-    /* =======================
-       VOUCHER SUMMARY
-       ======================= */
+  /* ======================================================
+     ✅ VOUCHER SUMMARY (2 Columns Like HTML)
+     ====================================================== */
 
-    rows.push(this.sectionRow('VOUCHER SUMMARY'));
+  rows.push(this.sectionRow('VOUCHER SUMMARY'));
 
-    rows.push(this.simpleRow('Total Vouchers', this.summary?.totalVouchers));
-    rows.push(this.simpleRow('Included in Return', this.summary?.vouchersWithTaxLedger));
-    rows.push(this.simpleRow('Not relevant for this Return', this.summary?.vouchersWithoutTaxLedger));
-    rows.push(this.simpleRow('Uncertain Transactions', 0));
-    rows.push(this.simpleRow('Information required for Audit File not provided', this.summary?.unpostedVoucher));
+  rows.push({
+    cells: [
+      { value: 'Total Vouchers', colspan: 2 },
+      { value: this.summary?.totalVouchers || 0 }
+    ]
+  });
 
-    /* =======================
-       SALES – OUTWARDS
-       ======================= */
+  rows.push({
+    cells: [
+      { value: 'Included in Return', colspan: 2 },
+      { value: this.summary?.vouchersWithTaxLedger || 0 }
+    ]
+  });
 
-    rows.push(this.sectionRow('SALES (OUTWARDS)'));
-    rows.push(this.subSectionRow('Local Supplies'));
+  rows.push({
+    cells: [
+      { value: 'Not Relevant for this Return', colspan: 2 },
+      { value: this.summary?.vouchersWithoutTaxLedger || 0 }
+    ]
+  });
 
-    this.localInputTax.forEach(item => {
-      rows.push(this.amountRow(item));
-    });
+  rows.push({
+    cells: [
+      { value: 'Uncertain Transactions (Corrections needed)', colspan: 2 },
+      { value: 0 }
+    ]
+  });
 
-    rows.push(this.totalRow(
-      'Total Local Supplies',
-      this.localSalesTaxableTotal,
-      this.localSalesTaxTotal
-    ));
+  rows.push({
+    cells: [
+      { value: 'Audit File Info Not Provided (Unposted)', colspan: 2 },
+      { value: this.summary?.unpostedVoucher || 0 }
+    ]
+  });
 
-    rows.push(this.subSectionRow('Outside GCC Supplies'));
+  /* ======================================================
+     ✅ SALES (OUTWARDS)
+     ====================================================== */
 
-    this.outSideInputTax.forEach(item => {
-      rows.push(this.amountRow(item));
-    });
+  rows.push(this.sectionRow('SALES (OUTWARDS)'));
 
-    rows.push(this.totalRow(
-      'Total Outside GCC Supplies',
-      this.overseasSalesTaxableTotal,
-      this.overseasSalesTaxTotal
-    ));
+  // Local Supplies
+  rows.push(this.subSectionRow('Local Supplies'));
 
-    rows.push(this.grandTotalRow(
-      'GRAND TOTAL – SALES (OUTWARDS)',
-      this.grandSalesTaxableTotal,
-      this.grandSalesTaxTotal
-    ));
-
-    /* =======================
-       PURCHASES – INWARDS
-       ======================= */
-
-    rows.push(this.sectionRow('PURCHASES (INWARDS)'));
-    rows.push(this.subSectionRow('Local Purchases'));
-
-    this.localoutputTax.forEach(item => {
-      rows.push(this.amountRow(item));
-    });
-
-    rows.push(this.totalRow(
-      'Total Local Purchases',
-      this.localPurchaseTaxableTotal,
-      this.localPurchaseTaxTotal
-    ));
-
-    rows.push(this.subSectionRow('Outside GCC Purchases'));
-
-    this.overseasoutputTax.forEach(item => {
-      rows.push(this.amountRow(item));
-    });
-
-    rows.push(this.totalRow(
-      'Total Outside GCC Purchases',
-      this.overseasPurchaseTaxableTotal,
-      this.overseasPurchaseTaxTotal
-    ));
-
-    rows.push(this.grandTotalRow(
-      'GRAND TOTAL – PURCHASES (INWARDS)',
-      this.grandPurchaseTaxableTotal,
-      this.grandPurchaseTaxTotal
-    ));
-
-    /* =======================
-       PAYABLE
-       ======================= */
-
-    rows.push(this.sectionRow('PAYABLE'));
+  this.localInputTax.forEach(item => {
     rows.push({
       cells: [
-        { value: 'VAT Payable', colspan: 2 },
-        { value: this.vatPayableAmountOversea }
-      ],
-      style: 'total'
-    });
-
-    /* =======================
-       PAYMENT DETAILS
-       ======================= */
-
-    rows.push(this.sectionRow('PAYMENT DETAILS'));
-
-    rows.push(this.simpleRow('Tax payment (included)', this.payment?.totalPaymentVoucher));
-    rows.push(this.simpleRow('Tax payments (not included/uncertain)', this.payment?.totalWithoutPayment));
-    rows.push(this.simpleRow('Tax paid at customs', ''));
-    rows.push(this.simpleRow('VAT Paid', ''));
-
-    rows.push({
-      cells: [
-        { value: 'Balance VAT Payable', colspan: 2 },
-        { value: this.vatPayableAmountLocal }
-      ],
-      style: 'grandTotal'
-    });
-
-    return {
-      fileName: 'VAT-201-Report',
-      sheetName: 'VAT201',
-      reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `VAT-201 Report`,
-        additionalInfo: [
-          { label: 'From Date', value: this.formatDate(this.param?.FromDate) },
-          { label: 'To Date', value: this.formatDate(this.param?.ToDate) },
-          { label: 'Branch', value: this.fullData?.BranchName }
-        ]
-      },
-      tableHeaders,
-      rows,
-      columnWidths: [40, 20, 20],
-      notes: [
-        'Total Vouchers: Includes all vouchers (posted), such as invoices, credit notes, vendor invoices, and vendor credit notes.',
-        'Included in Return: Includes vouchers whose headers contain VAT-related transactions.',
-        'Not Relevant for this Return: Includes vouchers that do not have any VAT transactions.',
-        'Information Required for Generating the Audit File Not Provided: Includes unposted vouchers.',
-        'Tax Payments (Included): Vouchers are taken only from payment vouchers.',
-        'Tax Payments (Not Included / Uncertain): Includes unposted payment vouchers.'
+        { value: item.LedgerName },
+        { value: this.formatNumber(item.TaxableAmount) },
+        { value: this.formatNumber(item.TaxAmount) }
       ]
-    };
-  }
+    });
+  });
+
+  rows.push(this.totalRow(
+    'Total Local Supplies',
+    this.localSalesTaxableTotal,
+    this.localSalesTaxTotal
+  ));
+
+  // Outside GCC Supplies
+  rows.push(this.subSectionRow('Outside GCC Supplies'));
+
+  this.outSideInputTax.forEach(item => {
+    rows.push({
+      cells: [
+        { value: item.LedgerName },
+        { value: this.formatNumber(item.TaxableAmount) }, 
+        { value: this.formatNumber(item.TaxAmount) }
+      ]
+    });
+  });
+
+  rows.push(this.totalRow(
+    'Total Outside GCC Supplies',
+    this.overseasSalesTaxableTotal,
+    this.overseasSalesTaxTotal
+  ));
+
+  // Grand Total Sales
+  rows.push(this.grandTotalRow(
+    'GRAND TOTAL – SALES (OUTWARDS)',
+    this.grandSalesTaxableTotal,
+    this.grandSalesTaxTotal
+  ));
+
+  /* ======================================================
+     ✅ PURCHASES (INWARDS)
+     ====================================================== */
+
+  rows.push(this.sectionRow('PURCHASES (INWARDS)'));
+
+  // Local Purchases
+  rows.push(this.subSectionRow('Local Purchases'));
+
+  this.localoutputTax.forEach(item => {
+    rows.push({
+      cells: [
+        { value: item.LedgerName },
+        { value: this.formatNumber(item.TaxableAmount) },
+        { value: this.formatNumber(item.TaxAmount) }
+      ]
+    });
+  });
+
+  rows.push(this.totalRow(
+    'Total Local Purchases',
+    this.localPurchaseTaxableTotal,
+    this.localPurchaseTaxTotal
+  ));
+
+  // Outside GCC Purchases
+  rows.push(this.subSectionRow('Outside GCC Purchases'));
+
+  this.overseasoutputTax.forEach(item => {
+    rows.push({
+      cells: [
+        { value: item.LedgerName },
+        { value: this.formatNumber(item.TaxableAmount) },
+        { value: this.formatNumber(item.TaxAmount) }
+      ]
+    });
+  });
+
+  rows.push(this.totalRow(
+    'Total Outside GCC Purchases',
+    this.overseasPurchaseTaxableTotal,
+    this.overseasPurchaseTaxTotal
+  ));
+
+  // Grand Total Purchases
+  rows.push(this.grandTotalRow(
+    'GRAND TOTAL – PURCHASES (INWARDS)',
+    this.grandPurchaseTaxableTotal,
+    this.grandPurchaseTaxTotal
+  ));
+
+  rows.push(this.sectionRow('PAYABLE'));
+
+  rows.push({
+    cells: [
+      { value: 'VAT PAYABLE', colspan: 2 },
+      { value: this.formatNumber(this.vatPayableAmountOversea) }
+    ],
+    style: 'grandTotal'
+  });
+
+  rows.push(this.sectionRow('PAYMENT DETAILS'));
+
+  rows.push({
+    cells: [
+      { value: 'Tax payment (included)', colspan: 2 },
+      { value: this.payment?.totalPaymentVoucher || 0 }
+    ]
+  });
+
+  rows.push({
+    cells: [
+      { value: 'Tax payments (not included/uncertain)', colspan: 2 },
+      { value: this.payment?.totalWithoutPayment || 0 }
+    ]
+  });
+
+  rows.push({
+    cells: [
+      { value: 'Tax paid at customs', colspan: 2 },
+      { value: '' }
+    ]
+  });
+
+  rows.push({
+    cells: [
+      { value: 'VAT Paid', colspan: 2 },
+      { value: '' }
+    ]
+  });
+
+  rows.push({
+    cells: [
+      { value: 'Balance VAT Payable', colspan: 2 },
+      { value: this.formatNumber(this.vatPayableAmountLocal) }
+    ],
+    style: 'grandTotal'
+  });
+
+  return {
+    fileName: 'VAT-201-Report',
+    sheetName: 'VAT201',
+
+    reportHeader: {
+      companyName: this.currentCompany?.companyName || '',
+      reportTitle: 'VAT-201 Report',
+      additionalInfo: [
+        { label: 'From Date', value: this.formatDate(this.param?.FromDate) },
+        { label: 'To Date', value: this.formatDate(this.param?.ToDate) },
+        { label: 'Branch', value: this.fullData?.BranchName }
+      ]
+    },
+
+    tableHeaders,
+    rows,
+
+    columnWidths: [45, 20, 20],
+
+    notes: [
+      'Total Vouchers: Includes all posted invoices, credit notes, vendor invoices, etc.',
+      'Included in Return: Includes vouchers containing VAT-related transactions.',
+      'Not Relevant: Includes vouchers with no VAT transactions.',
+      'Audit File Info Not Provided: Includes unposted vouchers.',
+      'Tax Payments (Included): Taken only from payment vouchers.',
+      'Tax Payments (Uncertain): Includes unposted payment vouchers.'
+    ]
+  };
+}
+
 
 
   private sectionRow(title: string): ExcelRow {
@@ -353,8 +435,8 @@ export class Vat210Component {
     return {
       cells: [
         { value: item.LedgerName },
-        { value: item.TaxableAmount || 0 },
-        { value: item.TaxAmount || 0 }
+        { value: this.formatNumber(item.TaxableAmount || 0) },
+        { value: this.formatNumber(item.TaxAmount || 0) } 
       ],
       style: 'data'
     };
@@ -364,8 +446,8 @@ export class Vat210Component {
     return {
       cells: [
         { value: label },
-        { value: taxable || 0 },
-        { value: tax || 0 }
+        { value: this.formatNumber(taxable || 0) },
+        { value: this.formatNumber(tax || 0) }  
       ],
       style: 'total'
     };
@@ -375,8 +457,8 @@ export class Vat210Component {
     return {
       cells: [
         { value: label },
-        { value: taxable || 0 },
-        { value: tax || 0 }
+        { value: this.formatNumber(taxable || 0) },
+        { value: this.formatNumber(tax || 0) }  
       ],
       style: 'grandTotal'
     };
@@ -402,5 +484,16 @@ export class Vat210Component {
     }
   }
 
+private formatNumber(value: any): string {
+  if (value === null || value === undefined) return '';
+
+  const num = Number(value);
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 }

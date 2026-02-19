@@ -129,6 +129,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : '',
                 MasterNoSid: item.MasterNoSid ?? null, 
                 Dept: item.departmentMaster?.departmentName,
+                displayHBL: item.HBLNo || item.HouseNo || '',
                 departmentType: item.departmentMaster?.departmentType,
                 vslvoy: item.VesselName && item.VoyageNo ? item.VesselName + ' / ' + item.VoyageNo : '',
                 milestone: item.Milestone?.MilestoneName,
@@ -283,6 +284,13 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
   }
 
+  navigateToHouse(row: any): void {
+  if (row?.HouseJobSid) {
+    this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
+  } else {
+    this.appSettingService.showWarning('House Job not available');
+  }
+}
 
     navigateToCreate() {
         this.router.navigate(['operation/booking/entry']);
@@ -319,6 +327,16 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             dataType: 'string',
             template: 'link', 
             cellClass: 'master-job-column'
+        },
+        {
+            key: 'displayHBL',
+            label: 'HBL/HAWB',
+            sortable: true,
+            filterable: true,
+            visible: true,
+            dataType: 'string',
+            template: 'link', 
+            cellClass: 'hbl-column'
         },
             {
                 key: 'Dept',
@@ -431,8 +449,15 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     // Table event handlers
    onTableActionClick(event: TableEventData): void {
     if (event.column?.template === "link") {
-        // Handle link template click (Master Job Number)
-         this.navigateToMasterJob(event.row);
+        if (event.column.key === 'MasterJobNumber') {
+      this.navigateToMasterJob(event.row);
+      return;
+    }
+
+    if (event.column.key === 'displayHBL') {
+      this.navigateToHouse(event.row);
+      return;
+    }
     } else if (event.action === 'view') {
         // Handle view action - navigate to booking entry page
         this.viewBooking(event.row);

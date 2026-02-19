@@ -86,49 +86,55 @@ export class LedgerReportComponent {
     return total;
   }
 
-      getLocalTotal(transactions: any[]): number {
-    if (!transactions || !transactions.length) return 0;
-    const ledgerType = this.fullData?.ledgerType?.trim();
-    let total = 0;
-    transactions.forEach((item) => {
-      const drCr = item?.drCr;
-      const amount = +item?.originalLocalAmount || 0;
+getLocalTotal(transactions: any[]): number {
+  if (!transactions || !transactions.length) return 0;
 
-      if (ledgerType === "Sy Dr") {
-        total += drCr === "D" ? amount : -amount;
-      }
+  const ledgerType = this.fullData?.ledgerType?.trim();
+  let total = 0;
 
-      if (ledgerType === "Sy Cr") {
-        total += drCr === "C" ? amount : -amount;
-      }
-    });
+  transactions.forEach((item) => {
+    const drCr = item?.drCr;
+    const amount = +item?.originalLocalAmount || 0;
 
-    return total;
-  }
+    if (ledgerType === "Sy Dr") {
+      total += drCr === "D" ? amount : -amount;
+    } 
+    else if (ledgerType === "Sy Cr") {
+      total += drCr === "C" ? amount : -amount;
+    } 
+    else {
+      total += drCr === "D" ? amount : -amount;
+    }
+  });
+
+  return total;
+}
 
 
-    getSignedTotal(transactions: any[]): number {
-    if (!transactions || !transactions.length) return 0;
+getSignedTotal(transactions: any[]): number {
+  if (!transactions || !transactions.length) return 0;
 
-    const ledgerType = this.fullData?.ledgerType?.trim(); 
+  const ledgerType = this.fullData?.ledgerType?.trim();
+  let total = 0;
 
-    let total = 0;
+  transactions.forEach((item) => {
+    const drCr = item?.drCr;
+    const amount = +item?.outstandingLocalAmount || 0;
 
-    transactions.forEach((item) => {
-      const drCr = item?.drCr;
-      const amount = +item?.outstandingLocalAmount || 0;
+    if (ledgerType === "Sy Dr") {
+      total += drCr === "D" ? amount : -amount;
+    } 
+    else if (ledgerType === "Sy Cr") {
+      total += drCr === "C" ? amount : -amount;
+    } 
+    else {
+      total += drCr === "D" ? amount : -amount;
+    }
+  });
 
-      if (ledgerType === "Sy Dr") {
-        total += drCr === "D" ? amount : -amount;
-      }
+  return total;
+}
 
-      if (ledgerType === "Sy Cr") {
-        total += drCr === "C" ? amount : -amount;
-      }
-    });
-
-    return total;
-  }
   
 
   getExcelData(): ComplexReportExportConfig {
@@ -219,18 +225,23 @@ export class LedgerReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 15, 25, 8, 8, 15, 15, 15, 15, 15],
+      columnWidths: [12, 12, 6, 25, 6, 6, 15, 15, 15, 15, 15],
       notes: ['This ledger report includes only posted voucher transactions.']
     };
   }
 
 
-  private formatNumber(value: any): string {
-    if (value === null || value === undefined) return '';
+private formatNumber(value: any): string {
+  if (value === null || value === undefined) return '';
 
-    const num = Number(value);
-    return isNaN(num) ? '' : num.toFixed(2);
-  }
+  const num = Number(value);
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 
 

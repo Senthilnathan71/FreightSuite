@@ -172,12 +172,13 @@ export class ShipmentSummaryReportComponent {
       sheetName: 'HouseSummary',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `House Summary as on ${this.formatDate(this.params?.FromMBLDt)}`,
+        reportTitle: `House Summary Report`,
         additionalInfo: [
+          { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
+          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) },
           { label: 'Branch', value: this.currentBranch?.branchName || '' },
           { label: 'Dept', value: this.departmentNamesList || '' },
-          { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) }
+          { label: 'JobGenerated', value: this.params?.JobGenerated ? 'Yes' : 'No' }
         ]
       },
       tableHeaders,

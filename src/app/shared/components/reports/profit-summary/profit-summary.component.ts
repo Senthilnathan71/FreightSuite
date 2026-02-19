@@ -243,10 +243,16 @@ private formatDate(date: any): string {
   }
 }
 
-private formatNumber(value: any): number | string {
+private formatNumber(value: any): string {
   if (value === null || value === undefined) return '';
+
   const num = Number(value);
-  return isNaN(num) ? '' : Number(num.toFixed(2));
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 }

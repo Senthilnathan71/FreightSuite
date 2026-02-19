@@ -1324,6 +1324,38 @@ export class ReportRegistryService {
     } catch (error) {
       console.warn('Freight MoM Growth Report component not yet created:', error);
     }
+
+    // Cost & Revenue Not Booked 
+      try {
+      const { CostRevenueNotBookedComponent } = await import(
+        '../components/reports/cost-revenue-not-booked/cost-revenue-not-booked.component'
+      );
+
+      this.registerReport({
+        id: 'not-booked-rates',
+        title: 'Cost & Revenue Not Booked Report',
+        component: CostRevenueNotBookedComponent,
+        filenameTemplate: 'Cost_Revenue_Not_Booked_report_{date}',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'cost_revenue_not_booked_report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>cost_revenue_not_booked_report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Freight MoM Growth Report component not yet created:', error);
+    }
+
   }
 
   /**

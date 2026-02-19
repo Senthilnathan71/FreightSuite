@@ -98,7 +98,7 @@
                                         </aside>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group">
-                                                <input type="text" id="text-input" class="custom-input-field sm "
+                                                <input type="text" id="text-input" class="custom-input-field sm " (blur)="checkPortCodeLengthWarning()"
                                                     formControlName="PortCode" placeholder="" [textWithNumbers]="5" />
                                                 <label for="text-input" class="input-label">Code <span
                                                         class="text-danger fw-semibold">*</span></label>
@@ -107,9 +107,7 @@
                                                 <div class="error-message">
                                                     @if(portForm.get('PortCode').hasError('required')){
                                                     <span>Required</span>
-                                                    } @else if(portForm.get('PortCode').hasError('maxlength')){
-                                                    <span>Max 5 Chars</span>
-                                                    }
+                                                    } 
                                                 </div>
                                                 }
                                             </div>
