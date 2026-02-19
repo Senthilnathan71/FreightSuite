@@ -43,6 +43,7 @@
           <i class="fas fa-save me-1"></i>
           <span>Save</span>
         </button>
+        
       </div>
          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -115,7 +116,7 @@
                 <label for="text-input" [ngClass]="{
               'input-label': true,
               'bg-transparent': !b['MasterJobNumber']?.getRawValue()
-             }">Master Job No.<span class="text-danger"></span></label>
+             }">Job No.<span class="text-danger"></span></label>
               </div>
             </aside>
             <aside class="col-md-3">

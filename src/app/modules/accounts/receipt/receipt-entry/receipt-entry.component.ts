@@ -130,6 +130,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isSaving = false;
   isViewMode: boolean = false;
   isPosted: boolean = false;
+  isReadOnly: boolean = false;
   /**
    * Calculate local amount before round off the Currency Amount
    *
@@ -873,15 +874,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
         exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
-        matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
-        ],
-        matchExRate: [
-          this.getFormattedAndPaddedExchangeRate(
+        matchCurr: [{
+          value : isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
+          disabled : true
+        }],
+        matchExRate: [{
+          value : this.getFormattedAndPaddedExchangeRate(
             isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
             isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
           ),
-        ],
+          disabled : true
+        }],
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
@@ -1082,6 +1085,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.totalDebits !== this.totalCredits) {
       this.appSettingService.showError(
         'Please make sure the sum of debit amounts and credit amounts are equal.'
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
+    const matchingHappened = (this.voucherMatchings.getRawValue() || []).some(mt => toNumber(mt.matchCurrAmt) || toNumber(mt.matchLocalAmt));
+    if(matchingHappened && toNumber(this.getTotalMatchPartyAmt()) < 0) {
+      this.appSettingService.showError(
+        'Please make sure the matching amount is greater or equal to zero.'
       );
       if (resolve) resolve(false);
       this.isSaving = false;
@@ -1410,6 +1423,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.receiptForm.get('InstrumentDate')?.updateValueAndValidity();
     }
     this.isPosted = response.PostStatus === 'P';
+    this.isReadOnly = response.PostStatus !== 'U' || response.Status !== 'A';
 
     this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
@@ -1486,7 +1500,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const voucherMatchingRecords = response.voucherMatchings || [];
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
-    if (this.isPosted) {
+    if (this.isReadOnly) {
       this.isDirty = false;
       this.initialFormValue = this.receiptForm.getRawValue();
       this.receiptForm.disable();
@@ -1935,7 +1949,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const isPartyRow = partySid && rowLedgerSid === partySid;
     const isBankRow = bankCoaSid && rowCoaSid === bankCoaSid;
 
-    let filtered = [...this.coaList];
+    let filtered : any[];
+    if(this.coaList){
+      filtered = [...this.coaList];
+    }
 
     if (isPartyRow) {
       // Party row: exclude the selected bank/cash COA only
@@ -2447,15 +2464,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
         // Matching values (either blank or existing)
-        matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
-        ],
-        matchExRate: [
-          this.getFormattedAndPaddedExchangeRate(
+        matchCurr: [{
+          value : isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
+          disabled : true
+        }],
+        matchExRate: [{
+          value  : this.getFormattedAndPaddedExchangeRate(
             isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
             isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
           ),
-        ],
+          disabled : true
+        }],
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
@@ -2513,7 +2532,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   patchExchangeRateForMatchRow(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
-    const curr = row.get('matchCurr')?.value;
+    const curr = row.get('matchCurr')?.getRawValue();
 
     this.getExchangeRate(curr).subscribe((rate) => {
       row.get('matchExRate')?.setValue(rate);
@@ -2956,6 +2975,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         return;
       }
       this.voucherMatchings.clear();
+      this.searchOutstanding();
       this.updateDetailAmountsFromMatching();
     }
 

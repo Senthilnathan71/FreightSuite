@@ -922,7 +922,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceForm.get('CustomerBranchSid')?.disable();
           this.invoiceForm.get('CurrencyMasterSid')?.disable();
           this.invoiceForm.get('CurrencyCode')?.disable();
-          if (this.isPosted) {
+          if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;
             this.initialFormValue = this.invoiceForm.getRawValue();
@@ -2475,6 +2475,11 @@ isSeaDepartment(): boolean {
       this.invoiceForm.disable();
     }
     return this.invoiceData?.PostStatus === 'P' || false;
+  }
+
+  get isReadOnly(): boolean {
+    if(!this.isEditMode) return false;
+    return this.invoiceData?.PostStatus !== 'U' || this.invoiceData?.Status !== 'A';
   }
 
   // Check if voucher is draft
@@ -4064,8 +4069,6 @@ patchUninvoicedChargeToDetails(charge: any) {
   const index = this.details.length - 1;
   const controlsToDisable = [
     'ChargeMasterSid',
-    'ChargeDescription',
-    'HSSACMasterSid',
     'ChargeUOMSid',
     'NumberOfUnit',
     'DrCr',
@@ -4096,6 +4099,17 @@ patchUninvoicedChargeToDetails(charge: any) {
   
   // Ensure Rate is enabled
   this.details.at(index).get('Rate')?.enable({ emitEvent: false });
+  const rateControl = this.details.at(index).get('Rate');
+const maxAllowedRate = charge.RevenueRate || 0;
+
+// User cannot enter rate greater than unbilled rate
+rateControl?.setValidators([
+  Validators.required,
+  Validators.min(0),
+  Validators.max(maxAllowedRate)
+]);
+
+rateControl?.updateValueAndValidity({ emitEvent: false });
 
   // Fetch ledger details using the same logic as cost-entry.component.ts
   this.operationService.getLedgerDetails({

@@ -853,7 +853,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
           this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();
           this.vendorInvoiceForm.get('CurrencyCode')?.disable();
-          if (this.isPosted) {
+          if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;
             this.initialFormValue = this.vendorInvoiceForm.getRawValue();
@@ -1849,12 +1849,21 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.vendorInvoiceData?.PostStatus === 'P' || false;
   }
 
+  get isReadOnly(): boolean {
+    if(!this.isEditMode) return false;
+    return this.vendorInvoiceData?.PostStatus !== 'U' || this.vendorInvoiceData?.Status !== 'A';
+  }
+
   // Check if voucher is draft
   get isDraft(): boolean {
     return !this.vendorInvoiceData?.PostStatus || this.vendorInvoiceData?.PostStatus === 'U';
   }
 
   onReset() {
+    if (this.isDirty) {
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to reset?');
+      if (!confirmed) return;
+    }
     if(this.isEditMode){
       this.patchValues(this.vendorInvoiceData);
     } else {

@@ -336,7 +336,8 @@ private formatAmount(amount: number | string): string {
           action: 'delete',
           tooltip: 'Delete Receipt',
           class: 'text-danger',
-          state: !this.mps.can('delete')
+          state: !this.mps.can('delete'),
+          condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'Unposted'
         }
       ],
       selectable: false,
@@ -435,7 +436,7 @@ private formatAmount(amount: number | string): string {
   }
 
   deleteReceiptByRow(row: any) {
-    this.deleteReceipt(row.VoucherHeaderSid);
+    this.deleteReceipt(row);
   }
 
   onTableRowClick(row: any): void {
@@ -545,16 +546,32 @@ private formatAmount(amount: number | string): string {
     return index;
   }
 
-  deleteReceipt(id: number) {
+  deleteReceipt(receipt: any) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        // TODO: Implement delete receipt API
-        this.appSettingService.showWarning('Delete receipt functionality not yet implemented');
-        // this.receiptService.deleteReceiptById(id).subscribe((resp: any) => {
-        //   this.appSettingService.showSuccess("Receipt deleted!");
-        //   this.loadReceipts();
-        // });
+        this.spinner.show();
+        this.accountService.deleteVoucher({
+          VoucherHeaderSid: receipt.VoucherHeaderSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          UserEmail: this.userData?.userEmail
+        }).subscribe({
+          next: (resp: any) => {
+            this.spinner.hide();
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Receipt deleted successfully');
+              this.search();
+            } else {
+              this.appSettingService.showError(resp.message || 'Failed to delete receipt');
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting receipt:', error);
+            this.appSettingService.showError('Failed to delete receipt');
+            this.spinner.hide();
+          }
+        });
       }
     });
   }

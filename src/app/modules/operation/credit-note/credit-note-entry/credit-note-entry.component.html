@@ -72,7 +72,7 @@
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onReset()"
-            [disabled]="isPosted"
+            [disabled]="isReadOnly"
           >
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
@@ -84,7 +84,7 @@
               [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
               (click)="onSubmit(undefined, true)"
               [disabled]="
-                isPosted || (!mps.can('update') && isEditMode) || isSaving
+                isReadOnly || (!mps.can('update') && isEditMode) || isSaving
               "
             >
               <i class="fas fa-save me-1"></i>
@@ -116,7 +116,7 @@
               [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
               (click)="onSubmit()"
               [disabled]="
-                isPosted || (!mps.can('update') && isEditMode) || isSaving
+                isReadOnly || (!mps.can('update') && isEditMode) || isSaving
               "
             >
               <i class="fas fa-save me-1"></i>
@@ -138,7 +138,7 @@
               (click)="postVoucher(true)"
               [disabled]="
                 creditNoteForm.invalid ||
-                isPosted ||
+                isReadOnly ||
                 (!mps.can('update') && isEditMode) ||
                 isDirty ||
                 isSaving

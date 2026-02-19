@@ -24,6 +24,7 @@ import { ToolsDropdownComponent, DropdownMenuItem } from 'src/app/shared/compone
 import { PaymentListItem, PaymentFilter } from '../../models/payment.model';
 import { PaymentService } from '../../services/payment.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AccountsService } from '../../accounts.service';
 
 /**
  * Payment List Component
@@ -137,6 +138,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     public spinner: NgxSpinnerService,
     public excelService: ExcelExportService,
     private paymentService: PaymentService,
+    private accountService: AccountsService,
     private datePipe: CustomDatePipe,
     paginationService : PaginationService
   ) {
@@ -282,6 +284,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           action: 'delete',
           tooltip: 'Delete Payment',
           state: !this.mps.can('delete'),
+          condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'Unposted',
           class: "text-danger"
         }
       ],
@@ -502,14 +505,24 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       if (result) {
         this.spinner.show();
 
-        this.paymentService.deletePayment(payment.VoucherHeaderSid).subscribe({
-          next: () => {
-            this.appSettingsService.showSuccess('Payment deleted successfully');
-            this.search();
+        this.accountService.deleteVoucher({
+          VoucherHeaderSid: payment.VoucherHeaderSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          UserEmail: this.userData?.userEmail
+        }).subscribe({
+          next: (resp: any) => {
             this.spinner.hide();
+            if (resp.status) {
+              this.appSettingsService.showSuccess(resp.message || 'Payment deleted successfully');
+              this.search();
+            } else {
+              this.appSettingsService.showError(resp.message || 'Failed to delete payment');
+            }
           },
           error: (error) => {
             console.error('Error deleting payment:', error);
+            this.appSettingsService.showError('Failed to delete payment');
             this.spinner.hide();
           }
         });
