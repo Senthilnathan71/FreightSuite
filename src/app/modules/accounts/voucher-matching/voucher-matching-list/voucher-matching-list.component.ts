@@ -241,7 +241,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '200px',
+          width: '100px',
         },
         {
           key: 'Status',
@@ -250,7 +250,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           template: 'status',
-          width: '100px',
+          width: '70px',
           dataType: 'string',
           cellClass: 'status-column'
         },

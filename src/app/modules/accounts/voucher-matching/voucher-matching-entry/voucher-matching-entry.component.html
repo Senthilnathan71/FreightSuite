@@ -28,12 +28,16 @@
       <div class="card-body py-2">
         <form [formGroup]="voucherMatchingForm" novalidate>
           <div class="row g-2 align-items-end">
+
+
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
                 <label class="input-label">Matching No.</label>
               </div>
             </div>
+
+
             <div class="col-md-2">
               <div class="custom-form-group custom-form-group-select-date"
                 [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value">
@@ -47,18 +51,24 @@
                 <label class="input-label">Matching Date</label>
               </div>
             </div>
+
+
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="LedgerName" class="custom-input-field sm" />
                 <label class="input-label">Ledger</label>
               </div>
             </div>
+
+
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="SubledgerName" class="custom-input-field sm" />
                 <label class="input-label">Subledger</label>
               </div>
             </div>
+
+
             <div class="col-md-2">
               <div class="custom-form-group custom-form-group-select-date"
                 [class.filled]="!!voucherMatchingForm.get('PostDate')?.value">
@@ -72,12 +82,15 @@
                 <label class="input-label">Post Date</label>
               </div>
             </div>
+
+
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="Status" class="custom-input-field sm" />
                 <label class="input-label">Status</label>
               </div>
             </div>
+            
           </div>
         </form>
       </div>
@@ -144,11 +157,15 @@
           <h5 class="page-title my-0 text-info">Voucher Matching</h5>
         </div>
       </div>
-      <div class="col-md-8 pb-1">
+      <div class="col-md-10 pb-1">
         <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mx-0">
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="navigateToBack()">
             <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-sync-alt me-1"></i>
+              Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             [disabled]="isSaving || !hasMatchingAmounts"
@@ -191,7 +208,7 @@
                 <div class="input-group">
                   <input class="form-control" formControlName="PostDate"
                     placeholder="dd-mm-yyyy" ngbDatepicker #d2="ngbDatepicker" readonly />
-                  <button class="btn" type="button" disabled>
+                  <button class="btn btn-light" type="button" disabled >
                     <i-feather name="calendar" class="feather-sm"></i-feather>
                   </button>
                 </div>
@@ -199,29 +216,31 @@
               </div>
             </div>
             <div class="col-md-2">
-              <div class="custom-form-group">
+              <div class="custom-form-group custom-form-group-select"[class.filled]="!!headerForm.get('Ledger')?.value">
                 <ng-select formControlName="Ledger" [items]="ledgerList" bindLabel="LedgerName"
-                  [clearable]="true" placeholder="Select Ledger" (change)="onLedgerChange($event)"
+                  [clearable]="true" placeholder="" (change)="onLedgerChange($event)"
                   class="ng-select">
                 </ng-select>
                 <label class="input-label">Ledger</label>
               </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
               <div class="d-flex">
-              <div class="custom-form-group-select-date w-100">
+              <div class="custom-form-group custom-form-group-select w-100"[class.filled]="!!headerForm.get('Subledger')?.value">
                 <ng-select formControlName="Subledger" [items]="subledgerList" bindLabel="SubledgerName"
-                  [clearable]="true" placeholder="Select Subledger" (change)="onSubledgerChange($event)"
+                  [clearable]="true" placeholder="" (change)="onSubledgerChange($event)"
                   class="ng-select">
                 </ng-select>
                 <label class="input-label">Subledger</label>
               </div>
-                <button type="button" class="btn btn-info btn-sm w-100" (click)="onGet()">
-                  <i class="fas fa-download me-1"></i> Get
-                </button>
+                <div class="pt-2">
+                  <button type="button" class="btn btn-info btn-sm w-100 d-flex align-items-center" (click)="onGet()">
+                  Get
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
               <div class="custom-form-group">
                 <input type="text" formControlName="Status" class="custom-input-field sm" />
                 <label class="input-label">Status</label>
@@ -241,23 +260,23 @@
       </div>
       <div #sourceScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
         <form [formGroup]="sourceForm" novalidate>
-          <div class="table-responsive table-borderless">
+          <div class="table-responsive table-borderless p-1">
             <table class="table table-hover align-middle table-sm mb-0">
               <thead class="bg-info">
                 <tr>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 13%;">Voucher No.</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 5%;">Type</th>
+                  <th class="bg-transparent text-light text-center" style="font-size: 14px; width: 18%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
                   <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
                   <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
                   <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt</th>
-                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 4%;">&#10003;</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
                 </tr>
               </thead>
               <tbody formArrayName="items">
@@ -346,30 +365,30 @@
   </div>
 
   <!-- Object Panel -->
-  <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
+   <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
     <div class="card mb-0">
       <div class="card-header py-1 bg-secondary">
         <h6 class="mb-0 text-white">Object</h6>
       </div>
       <div #objectScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
         <form [formGroup]="objectForm" novalidate>
-          <div class="table-responsive table-borderless">
+          <div class="table-responsive table-borderless p-1">
             <table class="table table-hover align-middle table-sm mb-0">
               <thead class="bg-info">
                 <tr>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 13%;">Voucher No.</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 5%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 18%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
                   <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
                   <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
                   <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt</th>
-                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 4%;">&#10003;</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
                 </tr>
               </thead>
               <tbody formArrayName="items">
@@ -455,7 +474,7 @@
         </table>
       </div>
     </div>
-  </div>
+  </div> 
 
   <!-- Empty state -->
   <div class="col-12 px-0" *ngIf="sourceItems.length === 0 && objectItems.length === 0">
