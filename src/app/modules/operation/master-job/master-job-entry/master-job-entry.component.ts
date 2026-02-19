@@ -222,11 +222,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   currentCustomsFormValue: any = null;
   pdfModel: any
 
-  // EDI Manifest validation modal properties
-  showValidationModal = false;
-  validationErrors: any[] = [];
-  groupedErrors: { [key: string]: any[] } = {};
-  groupedByHBL: { [hblNo: string]: { [recordType: string]: any[] } } = {};
   // Shipment related variable declarations
   attachedBookings: FormArray;
   slicedAttachedBookings: any[] = [];
@@ -4184,126 +4179,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     modalRef.componentInstance.idLabel = 'Booking Id';
     modalRef.componentInstance.idValue = this.masterJobData?.MasterJobSid;
   }
-  generateEDIManifest() {
-    if (!this.masterJobSid) {
-      this.toastr.error('Master Job ID not found');
-      return;
-    }
-
-    this.spinner.show();
-    this.operationService.generateMasterJobEDIManifest(this.masterJobSid).subscribe({
-      next: (response: string) => {
-        this.spinner.hide();
-
-        // Create blob and download
-        const blob = new Blob([response], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `EDI_Manifest_${this.masterJobForm.get('MasterJobNumber')?.value || 'MasterJob'}_${Date.now()}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-
-        this.toastr.success('EDI Manifest generated successfully');
-      },
-      error: (error) => {
-        this.spinner.hide();
-        this.handleEDIValidationError(error);
-      }
-    });
-  }
-
-  /**
-   * Handle EDI Manifest validation errors from backend
-   */
-  private handleEDIValidationError(error: any) {
-    // When responseType is 'text', Angular returns the error body as a raw string
-    let errorBody = error.error;
-    if (typeof errorBody === 'string') {
-      try {
-        errorBody = JSON.parse(errorBody);
-      } catch (e) {
-        // Not valid JSON, keep as-is
-      }
-    }
-
-    // Check if this is a validation error with field list
-    if (errorBody?.errors && Array.isArray(errorBody.errors)) {
-      this.validationErrors = errorBody.errors;
-      this.groupEDIErrorsByHBL();
-      this.showValidationModal = true;
-    } else {
-      // Generic error
-      this.toastr.error(errorBody?.message || 'Failed to generate EDI Manifest');
-    }
-  }
-
-  /**
-   * Get tab name fallback for errors without tabName (frontend-generated)
-   */
-  private getTabNameForField(error: any): string {
-    const map: { [fieldRef: string]: string } = {
-      '1.1': 'Customs', '1.2': 'Customs', '1.10': 'Customs',
-      '2.29': 'Customs', '2.46': 'Customs',
-      '3.1': 'Customs', '3.5': 'Customs',
-    };
-    return map[error.fieldRef] || 'Customs';
-  }
-
-  /**
-   * Group validation errors by HBL number first, then by tab name for user-friendly display
-   */
-  private groupEDIErrorsByHBL() {
-    this.groupedByHBL = {};
-
-    for (const error of this.validationErrors) {
-      const hblKey = error.hblNo || 'Common Fields';
-      const tabLabel = error.tabName || this.getTabNameForField(error);
-
-      if (!this.groupedByHBL[hblKey]) {
-        this.groupedByHBL[hblKey] = {};
-      }
-      if (!this.groupedByHBL[hblKey][tabLabel]) {
-        this.groupedByHBL[hblKey][tabLabel] = [];
-      }
-      this.groupedByHBL[hblKey][tabLabel].push(error);
-    }
-  }
-
-  /**
-   * Get HBL keys for template iteration (Common Fields first, then HBL numbers)
-   */
-  getHBLKeys(): string[] {
-    const keys = Object.keys(this.groupedByHBL);
-    // Sort to put 'Common Fields' first
-    return keys.sort((a, b) => {
-      if (a === 'Common Fields') return -1;
-      if (b === 'Common Fields') return 1;
-      return a.localeCompare(b);
-    });
-  }
-
-  /**
-   * Get tab name keys for a specific HBL, sorted in logical tab order
-   */
-  getRecordTypeKeys(hblNo: string): string[] {
-    if (!this.groupedByHBL[hblNo]) return [];
-    const order = ['Master', 'Shipment', 'Cargo', 'Others', 'Customs', 'Container'];
-    return Object.keys(this.groupedByHBL[hblNo]).sort((a, b) => {
-      const ia = order.indexOf(a);
-      const ib = order.indexOf(b);
-      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-    });
-  }
-
  // Get list of unmapped containers
 getUnmappedContainers(): any[] {
   if (!this.masterJobContainers || this.masterJobContainers.length === 0) {
     return [];
   }
-  
+
   return this.masterJobContainers.controls
     .map(control => control.value)
     .filter(container => !this.isContainerMapped(container.MasterJobContainerSid));
@@ -4312,7 +4193,7 @@ getUnmappedContainers(): any[] {
 // Optional: Scroll to container in the table when clicked
 scrollToContainer(containerNumber: string): void {
   this.selectedTab = 'Container';
-  
+
   setTimeout(() => {
     const element = this.findElementByTextContent('td', containerNumber);
     if (element) {
@@ -4333,16 +4214,6 @@ findElementByTextContent(selector: string, text: string): Element | null {
   }
   return null;
 }
-
-  /**
-   * Close validation modal
-   */
-  closeValidationModal() {
-    this.showValidationModal = false;
-    this.validationErrors = [];
-    this.groupedErrors = {};
-    this.groupedByHBL = {};
-  }
   // Get gross weight from house job cargo
   getHouseJobGrossWeight(shipment: any): string {
     if (!shipment || !shipment.Cargo || !Array.isArray(shipment.Cargo) || shipment.Cargo.length === 0) {
@@ -4719,13 +4590,6 @@ findElementByTextContent(selector: string, text: string): Element | null {
 
     return totalAllowed;
   }
-  /**
-   * Get grouped error keys for template iteration
-   */
-  getGroupedErrorKeys(): string[] {
-    return Object.keys(this.groupedErrors);
-  }
-
   getFormattedPort(code: string) {
 
     if (!code) return '';
