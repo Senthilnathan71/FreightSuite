@@ -1283,7 +1283,7 @@ export class CreditNoteEntryComponent {
           this.creditNoteForm.get('CustomerBranchSid')?.disable();
           this.creditNoteForm.get('CurrencyMasterSid')?.disable();
           this.creditNoteForm.get('CurrencyCode')?.disable();
-          if (this.isPosted) {
+          if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;
             this.initialFormValue = this.creditNoteForm.getRawValue();
@@ -2410,6 +2410,16 @@ export class CreditNoteEntryComponent {
       return;
     }
 
+    const actualLocalAmount = toNumber(this.getTotalLocalDebits()) + toNumber(this.getTotalTaxAmount());
+    const actualMatchedAmount = toNumber(this.getFormattedAmount(actualLocalAmount,this.currentCompany?.CurrencyMasterSid));
+    console.info('actualMatchedAmount', actualMatchedAmount);
+    console.info('invoiceOutstandingAmount', this.invoiceOutstandingAmount);
+    if(actualMatchedAmount > this.invoiceOutstandingAmount){
+      this.appSettingService.showWarning(`The invoice amount is greater than the outstanding amount. \nPlease check the invoice amount and try again.`);
+      if (resolve) resolve(false);
+      return;
+    }
+
     // Enhanced exchange rate validation - checks all three error types
     if (this.creditNoteForm.errors) {
       const hasExchangeRateError =
@@ -2626,6 +2636,11 @@ export class CreditNoteEntryComponent {
 
   get isPosted(): boolean {
     return this.creditNoteData?.PostStatus === 'P' || false;
+  }
+
+  get isReadOnly(): boolean {
+    if(!this.isEditMode) return false;
+    return this.creditNoteData?.PostStatus !== 'U' || this.creditNoteData?.Status !== 'A';
   }
 
   // Check if voucher is draft

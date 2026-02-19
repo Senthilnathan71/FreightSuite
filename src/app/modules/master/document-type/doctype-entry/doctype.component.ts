@@ -86,7 +86,8 @@ currentBranch: any;
 		{ id : 3 , code : 'CRN'},
 		{ id : 6 , code : 'VRN'},
 		{ id : 7 , code : 'JV'},
-		{ id : 8 , code : 'RJV'}
+		{ id : 8 , code : 'RJV'},
+		{ id : 8 , code : 'VM'},
 	]
 
 	currentMenuId: number;

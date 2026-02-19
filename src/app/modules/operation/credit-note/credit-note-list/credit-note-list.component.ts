@@ -23,6 +23,7 @@ import { OperationService } from '../../operation.service';
 import { Observable } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AccountsService } from '../../../accounts/accounts.service';
 
 @Component({
   selector: 'app-credit-note-list',
@@ -84,6 +85,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
 
   constructor(
     private operationService: OperationService,
+    private accountService: AccountsService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
@@ -346,7 +348,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        state: !this.mps.can('delete')
+        state: !this.mps.can('delete'),
+        condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'Unposted'
       }
     ],
     selectable: false,
@@ -570,14 +573,19 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       dialogRef.afterClosed().subscribe(result => {
         if (result === true) {
           this.spinner.show();
-          this.operationService.deleteCreditNoteById(id.VoucherHeaderSid).subscribe({
-            next: (response) => {
+          this.accountService.deleteVoucher({
+            VoucherHeaderSid: id.VoucherHeaderSid,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            BranchMasterSid: this.currentBranch?.BranchMasterSid,
+            UserEmail: this.userData?.userEmail
+          }).subscribe({
+            next: (response: any) => {
               this.spinner.hide();
               if (response.status) {
-                this.appSettingService.showSuccess("Credit Note Deleted Successfully!");
+                this.appSettingService.showSuccess(response.message || 'Credit Note deleted successfully');
                 this.search();
               } else {
-                this.appSettingService.showError('Failed to delete Credit Note');
+                this.appSettingService.showError(response.message || 'Failed to delete Credit Note');
               }
             },
             error: (error) => {

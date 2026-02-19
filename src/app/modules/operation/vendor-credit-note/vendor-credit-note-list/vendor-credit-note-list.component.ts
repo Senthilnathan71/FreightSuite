@@ -23,6 +23,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AccountsService } from '../../../accounts/accounts.service';
 
 @Component({
   selector: 'app-vendor-credit-note-list',
@@ -178,7 +179,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        state: !this.mps.can('delete')
+        state: !this.mps.can('delete'),
+        condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'Unposted'
       }
       ],
       selectable: false,
@@ -210,6 +212,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   
     constructor(
       private operationService: OperationService,
+      private accountService: AccountsService,
       private router: Router,
       private appSettingService: AppSettingsService,
       private dialog: MatDialog,
@@ -288,9 +291,10 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           BillDate: this.datePipe.transform(item?.BillDate),
           CurrencyCode: item.currencyMaster.currencyCode,
           Status: item.Status === 'A' ? 'Active' : 'Suspended',
+          PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
           ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
           AmountFormatted: this.formatAmount(item.Amount)
-          
+
         }));
         this.totalLengthOfCollection = response.data.totalCount || 0;
         this.applySorting();
@@ -479,18 +483,23 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           message: `Are you sure you want to delete Vendor CreditNote ${vendorCreditNote.VoucherNumber}?`
         }
       });
-  
+
       dialogRef.afterClosed().subscribe(result => {
         if (result === 'confirm') {
           this.spinner.show();
-          this.operationService.deleteVendorCreditNoteById(vendorCreditNote.VoucherHeaderSid).subscribe({
-            next: (response) => {
+          this.accountService.deleteVoucher({
+            VoucherHeaderSid: vendorCreditNote.VoucherHeaderSid,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            BranchMasterSid: this.currentBranch?.BranchMasterSid,
+            UserEmail: this.userData?.userEmail
+          }).subscribe({
+            next: (response: any) => {
               this.spinner.hide();
               if (response.status) {
-                this.appSettingService.showSuccess('Vendor CreditNote deleted successfully');
+                this.appSettingService.showSuccess(response.message || 'Vendor CreditNote deleted successfully');
                 this.search();
               } else {
-                this.appSettingService.showError('Failed to delete Vendor CreditNote');
+                this.appSettingService.showError(response.message || 'Failed to delete Vendor CreditNote');
               }
             },
             error: (error) => {

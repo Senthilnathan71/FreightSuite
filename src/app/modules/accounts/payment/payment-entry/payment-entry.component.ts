@@ -130,6 +130,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isSaving = false;
   isViewMode: boolean = false;
   isPosted: boolean = false;
+  isReadOnly: boolean = false;
   /**
    * Calculate local amount before round off the Currency Amount
    *
@@ -534,11 +535,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ExchangeRate: [1, [Validators.required, Validators.min(0)]],
 
       // Party related info
-      PartyMasterSid: [null, [Validators.required]],
+      PartyMasterSid: [null],
       PartyName: [''],
       PartyAddress: [''],
       CustomerBranchSid: [null],
-      COAMasterSid: [null, [Validators.required]],
+      COAMasterSid: [null],
       GST_VAT: [''],
       BankPartyName: [''],
       Narration: ['', [Validators.required]],
@@ -1054,6 +1055,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+
+    if (toNumber(this.getTotalMatchPartyAmt()) <= 0) {
+      this.appSettingService.showError(
+        'Please make sure the matching amount is greater than zero.'
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
     const matchingAmt = this.getTotalMatchPartyAmt();
     const partyAmt = partyDetail.PartyAmount;
     if (toNumber(matchingAmt) > toNumber(partyAmt)) {
@@ -1373,6 +1384,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.paymentForm.get('InstrumentDate')?.updateValueAndValidity();
     }
     this.isPosted = response.PostStatus === 'P';
+    this.isReadOnly = response.PostStatus !== 'U' || response.Status !== 'A';
 
     this.detailItems.clear();
     const detailItems = response.VoucherDetail || [];
@@ -1449,7 +1461,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const voucherMatchingRecords = response.voucherMatchings || [];
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
-    if (this.isPosted) {
+    if (this.isReadOnly) {
       this.isDirty = false;
       this.initialFormValue = this.paymentForm.getRawValue();
       this.paymentForm.disable();
@@ -1854,7 +1866,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.detailItems.length > 0) {
       const row = this.detailItems.at(0);
       const rowDrCr = row?.get('DrCr')?.getRawValue();
-      if (rowDrCr === 'C') {
+      if (rowDrCr === 'D') {
         this.detailItems.removeAt(0);
         this.filteredCoaList.splice(0, 1);
         this.rebuildFilteredCoaListForAllRows();
@@ -1873,7 +1885,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ...this.cashTypeLedgers.map((l) => l.COAMasterSid),
     ];
     const bankIndex = details.findIndex(
-      (d) => d.DrCr === 'D' && allBankCashCoaSids.includes(d.COAMasterSid)
+      (d) => d.DrCr === 'C' && allBankCashCoaSids.includes(d.COAMasterSid)
     );
     if (bankIndex !== -1) {
       this.detailItems.removeAt(bankIndex);
@@ -2410,15 +2422,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
         // Matching values (either blank or existing)
-        matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
-        ],
-        matchExRate: [
-          this.getFormattedAndPaddedExchangeRate(
+        matchCurr: [{
+          value : isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
+          disabled : true
+        }],
+        matchExRate: [{
+          value  : this.getFormattedAndPaddedExchangeRate(
             isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
             isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
           ),
-        ],
+          disabled : true
+        }],
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
