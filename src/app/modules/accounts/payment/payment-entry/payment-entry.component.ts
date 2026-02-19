@@ -40,6 +40,7 @@ import {
   catchError,
   debounceTime,
   distinctUntilChanged,
+  filter,
   firstValueFrom,
   forkJoin,
   map,
@@ -199,6 +200,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     VoucherMatchingHeaderSid: number;
     VoucherMatchingNo: string;
   };
+  private isPatching = false;
 
   paymentValidationConfig: ValidationMessageConfig = {
   labels: {
@@ -424,7 +426,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   subscribeToFormChanges() {
     this.paymentForm.valueChanges
-      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .pipe(takeUntil(this.destroy$), debounceTime(300),filter(() => !this.isPatching))
       .subscribe(() => {
         this.isDirty = !this.deepEqual(
           this.initialFormValue,
@@ -1372,6 +1374,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   patchValues(response: any) {
+    this.isPatching = true;
     this.paymentData = response;
     const {
       VoucherDetail,
@@ -1508,6 +1511,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.isLoading = true;
     setTimeout(() => {
       this.initialFormValue = this.paymentForm.getRawValue();
+      this.isPatching = false;
       this.isDirty = false;
       this.isLoading = false;
       this.subscribeToFormChanges();
@@ -1557,7 +1561,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ],
       CurrencyCode: [
         data?.CurrencyCode || this.currentCurrencyCode,
-        Validators.required,
       ],
       ExchangeRate: [this.getFormattedAndPaddedExchangeRate(data?.ExchangeRate || 0, data?.CurrencyMasterSid || null), Validators.required],
 
@@ -1630,7 +1633,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.initJobSearchState(lastAddedRow);
     this.filteredCoaList[lastAddedRow] = this.getFilteredCoaListForRow(lastAddedRow);
     this.checkAndUpdateForPartyDetail(lastAddedRow, syncExRate);
-    const currencySid = newRow.get('CurrencyMasterSid')?.value;
+    const currencySid = newRow.get('CurrencyMasterSid')?.getRawValue();
     if (syncExRate) {
       this.handleDetailExchangeRate(currencySid, lastAddedRow);
     }
