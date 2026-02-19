@@ -85,7 +85,8 @@ export function consistentExchangeRatesValidator(
             }
           });
           entry.control.setErrors(
-            Object.keys(currentErrors).length > 0 ? currentErrors : null
+            Object.keys(currentErrors).length > 0 ? currentErrors : null,
+            { emitEvent: false }
           );
         }
       });
@@ -124,8 +125,8 @@ export function consistentExchangeRatesValidator(
           entry.control.setErrors({
             ...entry.control.errors,
             exchangeRateZero: true
-          });
-          entry.control.markAsTouched();
+          }, { emitEvent: false });
+          entry.control.markAsTouched({ onlySelf: true });
 
           // Track for global error message
           if (!exchangeRateZeroErrors.some(e => e.currencySid === currencySid)) {
@@ -142,8 +143,8 @@ export function consistentExchangeRatesValidator(
           entry.control.setErrors({
             ...entry.control.errors,
             foreignCurrencyRateOne: true
-          });
-          entry.control.markAsTouched();
+          }, { emitEvent: false });
+          entry.control.markAsTouched({ onlySelf: true });
 
           // Track for global error message
           if (!foreignCurrencyRateOneErrors.some(e => e.currencySid === currencySid)) {
@@ -175,8 +176,8 @@ export function consistentExchangeRatesValidator(
           entry.control.setErrors({
             ...entry.control.errors,
             inconsistentRate: true
-          });
-          entry.control.markAsTouched();
+          }, { emitEvent: false });
+          entry.control.markAsTouched({ onlySelf: true });
         });
       }
     });
