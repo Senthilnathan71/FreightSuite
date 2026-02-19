@@ -109,6 +109,10 @@ export class PostMasterViewComponent {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.initPortForm();
+      this.portForm.get('PortType')?.valueChanges.subscribe(type => {
+    this.setPortCodeValidation(type);
+  });
+  
     this.loadAllFields();
     this.mps.init().subscribe();
       // Enable Save button only if form is valid
@@ -133,6 +137,7 @@ export class PostMasterViewComponent {
 			this.userData = userProfile;
      
 		}
+    this.setPortCodeValidation(this.portForm.get('PortType')?.value);
   }
 
     
@@ -141,10 +146,21 @@ hasAnyDropdownPermission(): boolean {
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
+    setPortCodeValidation(portType: string) {
+  const portCodeCtrl = this.portForm.get('PortCode');
+  if (!portCodeCtrl) return;
+
+  // ✅ Only required — no length validation
+  portCodeCtrl.setValidators([Validators.required]);
+
+  portCodeCtrl.updateValueAndValidity();
+}
+
+
   initPortForm() {
     this.portForm = this.fb.group({
       PortName: ['', [Validators.required, Validators.maxLength(50)]],
-      PortCode: ['', [Validators.required, Validators.maxLength(5)]],
+      PortCode: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]],
       StateMasterSid: ['',],
       TimeZone: [''],
@@ -173,7 +189,9 @@ hasAnyDropdownPermission(): boolean {
           CBMRequire: (resp.CBMRequire == 'Y' ? true : false),
           status: resp.status === 'A' ? 'Active' : 'Suspended'
         });
+        
         console.log(this.portForm.value);
+        this.setPortCodeValidation(resp.PortType?.toString());
       },
       (error) => {
         this.errorMessage = error.message;
@@ -181,6 +199,19 @@ hasAnyDropdownPermission(): boolean {
       }
     );
   }
+  checkPortCodeLengthWarning() {
+  const portType = this.portForm.get('PortType')?.value;
+  const portCode = this.portForm.get('PortCode')?.value;
+
+  if (!portCode) return;
+
+  if (portType === 'Air' && portCode.length !== 3) {
+    this.appSettingService.showWarning(
+      'Air Port Code must be exactly 3 characters.'
+    );
+  }
+}
+
   
   handlePortCodePatch(PortCode:String,PortType:String){
     if(PortType === 'Sea'){
@@ -313,6 +344,16 @@ hasAnyDropdownPermission(): boolean {
 
   // Handle Form Submission
   onSubmit() {
+      const portType = this.portForm.get('PortType')?.value;
+  const portCode = this.portForm.get('PortCode')?.value?.trim();
+
+  
+  if (portType === 'Air' && portCode?.length !== 3) {
+    this.appSettingService.showWarning(
+      'Air Port Code must be exactly 3 characters.'
+    );
+    return; 
+  }
     if (this.portForm.invalid) {
       this.portForm.markAllAsTouched(); // Force validation messages to show
       this.portForm.updateValueAndValidity(); // Ensure validation is refreshed
@@ -388,14 +429,47 @@ hasAnyDropdownPermission(): boolean {
     }
   }
 
-  handlePortCodeSubmit(port:Port){
-    if(port.PortType=== 'Sea'){
-      const countryCode = (this.dropdownStore.countries().find(c => c.CountryMasterSid === port.CountryMasterSid)).countryCode;
-      return countryCode+port.PortCode;
-    } else {
-      return port.PortCode;
+  // handlePortCodeSubmit(port:Port){
+  //   if(port.PortType=== 'Sea'){
+  //     const countryCode = (this.dropdownStore.countries().find(c => c.CountryMasterSid === port.CountryMasterSid)).countryCode;
+  //     return countryCode+port.PortCode;
+  //   } else {
+  //     return port.PortCode;
+  //   }
+  // }
+
+  handlePortCodeSubmit(port: Port) {
+  if (port.PortType === 'Sea') {
+
+    const portCode = port.PortCode?.trim();
+
+    if (!portCode) return portCode;
+
+    // If already full length (5) → do not add country code
+    if (portCode.length === 5) {
+      return portCode;
     }
+
+    // If short length (3) → add country code prefix
+    if (portCode.length === 3) {
+      const country = this.dropdownStore
+        .countries()
+        .find(c => c.CountryMasterSid === port.CountryMasterSid);
+
+      const countryCode = country?.countryCode || '';
+
+      return countryCode + portCode;
+    }
+
+    // Fallback → return as entered
+    return portCode;
+
+  } else {
+    // Non-Sea ports → no prefix logic
+    return port.PortCode;
   }
+}
+
 
   showInfo() {
     if(!this.portData) return;

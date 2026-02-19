@@ -1180,12 +1180,24 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       })
     }
     productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
-      if(value){
-        ['ExternlQty','NetWeight','Volume'].forEach(field => {
-          productForm.get(field)?.disable();
-        })
-      }
-    })
+  if (value) {
+
+    const volume = productForm.get('Volume')?.value;
+    const netWeight = productForm.get('NetWeight')?.value;
+    const qty = productForm.get('ExternlQty')?.value;
+
+    ['ExternlQty','NetWeight','Volume'].forEach(field => {
+      productForm.get(field)?.disable({ emitEvent: false });
+    });
+
+    // Restore values after disable
+    productForm.patchValue({
+      Volume: volume,
+      NetWeight: netWeight,
+      ExternlQty: qty
+    }, { emitEvent: false });
+  }
+});
 
     return productForm;
   }
@@ -4179,6 +4191,8 @@ getFormattedPort(code: string): string {
 deepEqual(obj1: any, obj2: any): boolean {
   const normalizedObj1 = this.normalizeValue(obj1);
   const normalizedObj2 = this.normalizeValue(obj2);
+  console.log(normalizedObj1,'obj1');
+  console.log(normalizedObj2,'obj2');
   return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
 }
 
