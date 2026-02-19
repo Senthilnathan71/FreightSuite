@@ -1,4 +1,4 @@
-<div class="compact-form">
+<div class="compact-form" style="min-height: 80vh;">
   <div class="d-flex justify-content-between align-items-center">
     <h6 class="mb-0">Customs Information</h6>
     <div>
@@ -269,9 +269,9 @@
 <!-- EDI Validation Error Modal -->
 <div class="modal fade" [class.show]="showValidationModal"
      [style.display]="showValidationModal ? 'block' : 'none'"
-     tabindex="-1" role="dialog" aria-labelledby="validationModalLabel" aria-modal="true"  style="height:600px;">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 520px;">
-    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden" style="height:600px;">
+     tabindex="-1" role="dialog" aria-labelledby="validationModalLabel" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 650px;">
+    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
       <!-- Header -->
       <div class="modal-header py-2 px-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
         <div class="d-flex align-items-center">
@@ -288,7 +288,7 @@
       </div>
 
       <!-- Body -->
-      <div class="modal-body p-0" style="height: 500px; overflow-y: auto;">
+      <div class="modal-body p-0" style="min-height: 350px; max-height: 65vh; overflow-y: auto;">
         <div class="px-3 py-2 bg-light border-bottom">
           <p class="text-muted small mb-0">
             <i class="fas fa-info-circle me-1"></i>
