@@ -439,40 +439,35 @@ editJournalVoucher(item: any): void {
   }
 
   report(): void {
-    const formattedData = this.allJournalVoucher.map(item => ({
-      VoucherNumber: item.VoucherNumber,
-      VoucherDate: item.VoucherDateFormatted,
-      PostStatus: item.PostStatusLabel,
-      PostDate: item.PostDateFormatted,
-      Amount: item.LocalAmountFormatted,
-      Narration: item.Narration || '',
-      Status: item.StatusLabel,
-    }));
 
-    const companyName = this.currentCompany?.companyName ?? 'Company';
+  const formattedData = this.allJournalVoucher.map(item => ({
+    VoucherNumber: item.VoucherNumber,
+    VoucherDateFormatted: item.VoucherDateFormatted,
+    PostStatusLabel: item.PostStatusLabel,
+    PostDateFormatted: item.PostDateFormatted,
+    LocalAmountFormatted: item.LocalAmountFormatted,
+    Narration: item.Narration || '',
+    StatusLabel: item.StatusLabel,
+  }));
 
-    // Get visible columns in their current order from the table component
-    const visibleColumns = this.JournalVoucherTable?.getVisibleColumns() || this.tableConfig.columns.filter(c => c.visible);
-    const dynamicHeaders = visibleColumns.map(column => ({
-      key: column.key,
-      label: column.label
-    }));
+  const companyName = this.currentCompany?.companyName ?? 'Company';
 
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: dynamicHeaders.length > 0 ? dynamicHeaders : [
-        { key: 'VoucherNumber', label: 'Voucher No.' },
-        { key: 'VoucherDate', label: 'Voucher Date' },
-        { key: 'PostStatus', label: 'Posted Status' },
-        { key: 'PostDate', label: 'Posted On' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'Narration', label: 'Narration' },
-        { key: 'Status', label: 'Status' },
-      ],
-      fileName: 'Journal-Voucher-Report',
-      title: companyName
-    });
-  }
+  const visibleColumns = this.JournalVoucherTable?.getVisibleColumns() 
+    || this.tableConfig.columns.filter(c => c.visible);
+
+  const dynamicHeaders = visibleColumns.map(column => ({
+    key: column.key,
+    label: column.label
+  }));
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: dynamicHeaders,
+    fileName: 'Journal-Voucher-Report',
+    title: companyName
+  });
+}
+
 
   updatePaginatedData(): void {
     const start = (this.page - 1) * this.pageSize;
