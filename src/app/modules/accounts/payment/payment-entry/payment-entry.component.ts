@@ -333,6 +333,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   private isLoading = false;
   isDirty = false;
   private initialFormValue : any = null;
+  private previousPartyBranchSid: number | null = null;
+
+  get hasMatchingDetails(): boolean {
+    return this.voucherMatchings?.length > 0;
+  }
 
   constructor(
     public mps: MenuPermissionService,
@@ -350,7 +355,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private currencyConfigService: CurrencyConfigurationService,
     private spinner: NgxSpinnerService,
     private companySettings: CompanySettingsManagerService,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
+    private confirmService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -392,8 +398,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.loadPayment(this.headerId);
     } else {
       this.subscribeToPartyAndBankChanges();
-      this.initialFormValue = this.paymentForm.getRawValue();
-      this.subscribeToFormChanges();
     }
   }
 
@@ -428,7 +432,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         );
       });
   }
-
   
   private normalizeValue(value: any): any {
     if (value === null || value === undefined) {
@@ -667,6 +670,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           cusMap.set(customer.CustomerMasterSid, customer);
         });
         this.onlyCustomerList = Array.from(cusMap.values());
+
+        if (!this.isEditMode) {
+          // Snapshot after all lookups loaded (create mode only)
+          setTimeout(() => {
+            this.initialFormValue = this.paymentForm.getRawValue();
+            this.isDirty = false;
+            this.subscribeToFormChanges();
+          }, 0);
+        }
       }
     );
   }
@@ -751,12 +763,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       default:
         // For HBL, MBL, HAWB, MAWB, MasterNo etc.
         payload.VendorInvoiceNumber = form.FilterText;
-    }
+      }
+
+      if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue() && this.hasMatchingDetails) {
+        this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
+        return;
+      }
 
     // Reset pagination and clear existing data
     this.matchingSkip = 0;
     this.hasMoreMatchingData = true;
-    this.voucherMatchings.clear();
     this.currentSearchPayload = payload;
 
     this.spinner.show();
@@ -810,8 +826,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    */
   private appendMatchingRows(transactions: any[]): void {
     const searchType = this.searchOutstandingForm.get('SearchType')?.value;
+    
+    // Collect VoucherTransactionSids already in the list so we don't duplicate them
+    const existingSids = new Set(
+      this.voucherMatchings.controls.map(c => c.get('VoucherTransactionSid')?.value)
+    );
 
     transactions.forEach((tx) => {
+      // Skip rows that are already present (e.g. from a previous Get OS call)
+      if (existingSids.has(tx.VoucherTransactionSid)) return;
+
       const isMatchedRecord = !!tx.MatchingDetailSid;
       const matchCurrencyForThisTxn = this.currencyList.find(
         (c) => c.currencyCode === tx.CurrencyCode
@@ -849,27 +873,25 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
         exRate: [this.getFormattedAndPaddedExchangeRate(tx.ExchangeRate || 1, txCurrencySid)],
 
-        matchCurr: [
-          isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
-        ],
-        matchExRate: [
-          this.getFormattedAndPaddedExchangeRate(
+        matchCurr: [{
+          value : isMatchedRecord ? tx.MatchingCurrency : matchCurrencyForThisTxn,
+          disabled : true
+        }],
+        matchExRate: [{
+          value : this.getFormattedAndPaddedExchangeRate(
             isMatchedRecord ? tx.MatchingExRate : tx.ExchangeRate || 0,
             isMatchedRecord ? tx.MatchingCurrency : txCurrencySid
           ),
-        ],
+          disabled : true
+        }],
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingCurrencyAmount
             : null,
         ],
         matchLocalAmt: [
           isMatchedRecord
             ? tx.MatchingLocalAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingLocalAmount
             : null,
         ],
         matchPartyAmt: [tx.PartyAmount ?? 0],
@@ -914,7 +936,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
       );
+      if (this.isEditMode && 
+        this.searchOutstandingForm.get('SearchType').getRawValue() === 'Party' && 
+        res[0].LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue()
+      ) {
+        this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
+        return;
+      }
       this.onPartyChange(party);
+      this.searchOutstandingForm.get('LedgerMasterSid')?.disable();
       this.paymentForm.get('PartyMasterSid')?.disable();
     } else if (
       res.length > 0 &&
@@ -955,6 +985,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       if (resolve) resolve(false);
       return;
     }
+
     const raw = this.paymentForm.getRawValue();
     if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
       this.appSettingService.showWarning('No changes to save');
@@ -1055,10 +1086,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
-
-    if (toNumber(this.getTotalMatchPartyAmt()) <= 0) {
+    const matchingHappened = (this.voucherMatchings.getRawValue() || []).some(mt => toNumber(mt.matchCurrAmt) || toNumber(mt.matchLocalAmt));
+    if(matchingHappened && toNumber(this.getTotalMatchPartyAmt()) < 0) {
       this.appSettingService.showError(
-        'Please make sure the matching amount is greater than zero.'
+        'Please make sure the matching amount is greater or equal to zero.'
       );
       if (resolve) resolve(false);
       this.isSaving = false;
@@ -1374,6 +1405,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       },
       { emitEvent: false }
     );
+
+    this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
+    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);
 
     if (headerInfo.CashOrBank === 'C') {
       this.paymentForm.get('InstrumentMode')?.clearValidators();
@@ -1910,7 +1944,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const isPartyRow = partySid && rowLedgerSid === partySid;
     const isBankRow = bankCoaSid && rowCoaSid === bankCoaSid;
 
-    let filtered = [...this.coaList];
+    let filtered : any[];
+    if(this.coaList){
+      filtered = [...this.coaList];
+    }
 
     if (isPartyRow) {
       // Party row: exclude the selected bank/cash COA only
@@ -2073,7 +2110,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             }
             // Re-disable after async data load for auto-inserted rows
             if (isLockedRow) {
-              ledgerCtrl.disable();
+              ledgerCtrl.disable({ emitEvent: false });
             }
           } else {
             this.appSettingService.showError('Error fetching ledger for COA');
@@ -2436,15 +2473,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingCurrencyAmount
             : null,
         ],
         matchLocalAmt: [
           isMatchedRecord
             ? tx.MatchingLocalAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingLocalAmount
             : null,
         ],
         matchPartyAmt: [tx.PartyAmount ?? 0],
@@ -2453,7 +2486,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         balance: [
           isMatchedRecord ? Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0) : null,
         ],
-        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0.01 : false],
+        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0 : false],
         isLimitErrorShown: [false],
       });
 
@@ -2490,7 +2523,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   patchExchangeRateForMatchRow(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
-    const curr = row.get('matchCurr')?.value;
+    const curr = row.get('matchCurr')?.getRawValue();
 
     this.getExchangeRate(curr).subscribe((rate) => {
       row.get('matchExRate')?.setValue(rate);
@@ -2914,11 +2947,32 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
   }
 
-  onPartyChange(party: any) {
+  async onPartyChange(party: any) {
+        // If matchings exist in create mode, confirm before clearing
+    if (!this.isEditMode && this.voucherMatchings?.length > 0) {
+      const confirmed = await this.confirmService.confirm(
+        'Changing the party will clear all voucher matchings. Do you want to proceed?',
+        'Change Party',
+        'Clear & Proceed'
+      );
+      if (!confirmed) {
+        // Revert party selection
+        this.paymentForm.get('CustomerBranchSid')?.setValue(
+          this.previousPartyBranchSid,
+          { emitEvent: false }
+        );
+        return;
+      }
+      this.voucherMatchings.clear();
+      this.searchOutstanding();
+      this.updateDetailAmountsFromMatching();
+    }
+
     const partyCountry = String(party?.countryMaster?.countryName)
       .trim()
       .toLowerCase();
     if (!party) {
+      this.previousPartyBranchSid = null;
       this.paymentForm.patchValue({
         PartyMasterSid: null,
         PartyName: '',
@@ -2930,6 +2984,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       });
       return;
     }
+    this.previousPartyBranchSid = party.CustomerBranchSid;
     this.paymentForm.patchValue({
       PartyMasterSid: party.SubledgerMasterSid,
       PartyName: party.CustomerName,
@@ -2965,31 +3020,61 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.interBranches.clear();
     }
   }
+  
+  private bankFieldsBackup: any = null;
+  private cashFieldsBackup: any = null;
 
   toggleCashOrBank(selectedMode: any) {
     const mode = this.paymentForm.get('InstrumentMode');
     const number = this.paymentForm.get('InstrumentNumber');
     const date = this.paymentForm.get('InstrumentDate');
+    const prevMode = this.bankFieldsBackup ? 'B' : (this.cashFieldsBackup ? 'C' : null);
 
-    this.paymentForm.patchValue({
-      BankCOA : null,
-      InstrumentMode: null,
-      InstrumentNumber: '',
-      InstrumentDate: null,
-      ClearanceDate: null,
-    });
+    // Save current field values before clearing
+    const currentCashOrBank = prevMode || (this.paymentForm.get('CashOrBank')?.value === 'C' ? 'B' : 'C');
+    if (currentCashOrBank === 'B') {
+      this.bankFieldsBackup = {
+        BankCOA: this.paymentForm.get('BankCOA')?.value,
+        InstrumentMode: mode?.value,
+        InstrumentNumber: number?.value,
+        InstrumentDate: date?.value,
+        ClearanceDate: this.paymentForm.get('ClearanceDate')?.value,
+      };
+    } else {
+      this.cashFieldsBackup = {
+        BankCOA: this.paymentForm.get('BankCOA')?.value,
+      };
+    }
 
     // Read from form value (ng-select (change) may emit full item object)
     const isCash = this.paymentForm.get('CashOrBank')?.value === 'C';
 
     if (isCash) {
+      // Switching to Cash — restore cash backup if available, else clear
+      this.paymentForm.patchValue({
+        BankCOA: this.cashFieldsBackup?.BankCOA ?? null,
+        InstrumentMode: null,
+        InstrumentNumber: '',
+        InstrumentDate: null,
+        ClearanceDate: null,
+      });
       mode?.clearValidators();
       number?.clearValidators();
       date?.clearValidators();
+      this.cashFieldsBackup = null;
     } else {
+      // Switching to Bank — restore bank backup if available, else set defaults
+      this.paymentForm.patchValue({
+        BankCOA: this.bankFieldsBackup?.BankCOA ?? null,
+        InstrumentMode: this.bankFieldsBackup?.InstrumentMode ?? null,
+        InstrumentNumber: this.bankFieldsBackup?.InstrumentNumber ?? '',
+        InstrumentDate: this.bankFieldsBackup?.InstrumentDate ?? null,
+        ClearanceDate: this.bankFieldsBackup?.ClearanceDate ?? null,
+      });
       mode?.setValidators([Validators.required]);
       number?.setValidators([Validators.required]);
       date?.setValidators([Validators.required]);
+      this.bankFieldsBackup = null;
     }
 
     mode?.updateValueAndValidity();
@@ -3144,7 +3229,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const code = this.currencyList.find(
       (c) => c.CurrencyMasterSid === CurrencyMasterSid
     )?.currencyCode;
-    this.r['CurrencyCode']?.setValue(code);
+    this.r['CurrencyCode']?.setValue(code, { emitEvent: false });
   }
 
   clearSearchFields(type: string) {
