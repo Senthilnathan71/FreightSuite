@@ -922,7 +922,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceForm.get('CustomerBranchSid')?.disable();
           this.invoiceForm.get('CurrencyMasterSid')?.disable();
           this.invoiceForm.get('CurrencyCode')?.disable();
-          if (this.isPosted) {
+          if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;
             this.initialFormValue = this.invoiceForm.getRawValue();
@@ -2475,6 +2475,11 @@ isSeaDepartment(): boolean {
       this.invoiceForm.disable();
     }
     return this.invoiceData?.PostStatus === 'P' || false;
+  }
+
+  get isReadOnly(): boolean {
+    if(!this.isEditMode) return false;
+    return this.invoiceData?.PostStatus !== 'U' || this.invoiceData?.Status !== 'A';
   }
 
   // Check if voucher is draft

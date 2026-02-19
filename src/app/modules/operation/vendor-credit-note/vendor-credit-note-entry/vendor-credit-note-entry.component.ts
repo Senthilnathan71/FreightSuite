@@ -1205,7 +1205,7 @@ export class VendorCreditNoteEntryComponent {
               this.vendorCreditNoteForm.get('CustomerBranchSid')?.disable();
               this.vendorCreditNoteForm.get('CurrencyMasterSid')?.disable();
               this.vendorCreditNoteForm.get('CurrencyCode')?.disable();
-              if (this.isPosted) {
+              if (this.isReadOnly) {
                 this.details.disable({ emitEvent: false });
                 this.isDirty = false;
                 this.initialFormValue = this.vendorCreditNoteForm.getRawValue();
@@ -2340,6 +2340,11 @@ export class VendorCreditNoteEntryComponent {
 
   get isPosted(): boolean {
     return this.vendorCreditNoteData?.PostStatus === 'P' || false;
+  }
+
+  get isReadOnly(): boolean {
+    if(!this.isEditMode) return false;
+    return this.vendorCreditNoteData?.PostStatus !== 'U' || this.vendorCreditNoteData?.Status !== 'A';
   }
 
   // Check if voucher is draft
