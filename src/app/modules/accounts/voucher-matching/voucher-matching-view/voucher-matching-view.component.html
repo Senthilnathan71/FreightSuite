@@ -1,0 +1,282 @@
+<div class="row compact-form">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
+                </div>
+            </div>
+            <div class="col-md-8 pb-1">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 px-0">
+        <div class="card mb-1">
+            <div class="card-body">
+                <form [formGroup]="voucherMatchingForm" novalidate>
+                    <div class="row g-2 align-items-end">
+
+  <!-- Matching No -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="VoucherMatchingNo"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Matching No.</label>
+    </div>
+  </div>
+
+  <!-- Matching Date -->
+  <div class="col-md-2">
+    <div
+      class="custom-form-group custom-form-group-select-date"
+      [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value"
+    >
+      <div class="input-group">
+        <input
+          class="form-control"
+          formControlName="VoucherMatchingDate"
+          placeholder="dd-mm-yyyy"
+          ngbDatepicker
+          #d1="ngbDatepicker"
+          (click)="d1.toggle()"
+          readonly
+        />
+        <button class="btn" type="button" (click)="d1.toggle()">
+          <i-feather name="calendar" class="feather-sm"></i-feather>
+        </button>
+      </div>
+      <label class="input-label">Matching Date</label>
+    </div>
+  </div>
+
+  <!-- Post Date -->
+  <div class="col-md-2">
+    <div
+      class="custom-form-group custom-form-group-select-date"
+      [class.filled]="!!voucherMatchingForm.get('PostDate')?.value"
+    >
+      <div class="input-group">
+        <input
+          class="form-control"
+          formControlName="PostDate"
+          placeholder="dd-mm-yyyy"
+          ngbDatepicker
+          #d2="ngbDatepicker"
+          (click)="d2.toggle()"
+          readonly
+        />
+        <button class="btn" type="button" (click)="d2.toggle()">
+          <i-feather name="calendar" class="feather-sm"></i-feather>
+        </button>
+      </div>
+      <label class="input-label">Post Date</label>
+    </div>
+  </div>
+
+  <!-- Ledger -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="LedgerName"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Ledger</label>
+    </div>
+  </div>
+
+  <!-- Subledger -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="SubledgerName"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Subledger</label>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="col-md-2">
+    <div class="custom-form-group">
+      <input
+        type="text"
+        formControlName="Status"
+        class="custom-input-field sm"
+      />
+      <label class="input-label">Status</label>
+    </div>
+  </div>
+
+</div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section with FormArray -->
+    <div class="col-12 mt-1 px-0">
+        <form [formGroup]="voucherMatchingForm" novalidate>
+            <div class="table-wrapper">
+                <div class="table-responsive table-borderless">
+                    <table class="table table-hover align-middle no-wrap table-sm mb-0">
+                        <thead class="bg-info">
+                            <tr>
+                                <th class="bg-transparent text-light">Branch</th>
+                                <th class="bg-transparent text-light">Ledger</th>
+                                <th class="bg-transparent text-light">Subledger</th>
+                                <th class="bg-transparent text-light">Voucher No.</th>
+                                <th class="bg-transparent text-light">Voucher Type</th>
+                                <th class="bg-transparent text-light">Voucher Date</th>
+                                <th class="bg-transparent text-light">Dr/Cr</th>
+                                <th class="bg-transparent text-light">Curr.</th>
+                                <th class="bg-transparent text-light">Ex.Rate</th>
+                                <th class="bg-transparent text-light">Curr.Amt</th>
+                                <th class="bg-transparent text-light">Local Amt</th>
+                                <th class="bg-transparent text-light">Matching Type</th>
+                            </tr>
+                        </thead>
+
+                        <tbody formArrayName="voucherMatching">
+                            <!-- Use *ngFor to iterate over the FormArray -->
+                            <tr *ngFor="let detail of detail.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="BranchName"
+                                        class="custom-input-field sm"
+                                        style="min-width: 250px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="LedgerName"
+                                        class="custom-input-field sm"
+                                        style="min-width: 100px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="SubledgerName"
+                                        class="custom-input-field sm"
+                                        style="min-width: 100px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="VoucherNumber"
+                                        class="custom-input-field sm"
+                                        style="min-width: 200px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="VoucherType"
+                                        class="custom-input-field sm"
+                                        style="min-width: 75px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        ngbDatepicker
+                                        #d5="ngbDatepicker"
+                                        type="text"
+                                        formControlName="VoucherDate"
+                                        class="custom-input-field sm"
+                                        style="min-width: 170px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="DrCr"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="CurrencyCode"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="ExchangeRate"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="Amount"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="LocalAmount"
+                                        class="custom-input-field sm"
+                                        style="min-width: 30px;"
+                                    />
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        formControlName="MatchingType"
+                                        class="custom-input-field sm"
+                                        style="min-width: 75px;"
+                                    />
+                                </td>
+                            </tr>
+
+                            <!-- If no rows exist, show empty state -->
+                            <tr *ngIf="detail.length === 0">
+                                <td colspan="12" class="text-center py-3">
+                                    No voucher matching details available
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -184,12 +184,12 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      // {
-      //   label: 'Create',
-      //   icon: 'fas fa-plus',
-      //   action: 'create',
-      //   disabled : !this.mps.can('insert')
-      // },
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        disabled : !this.mps.can('insert')
+      },
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -325,7 +325,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   viewVoucherMatching(row: any) {
-    this.router.navigate(['accounts/voucher-matching/entry/', row.VoucherMatchingHeaderSid]);
+    this.router.navigate(['accounts/voucher-matching/view/', row.VoucherMatchingHeaderSid]);
   }
 
 
