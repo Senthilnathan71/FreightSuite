@@ -1,14 +1,14 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule, DatePipe } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -16,6 +16,7 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -24,7 +25,6 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
         FeatherModule,
         NgSelectModule,
         ReactiveFormsModule,
-        NgbNavModule,
         NgbPaginationModule,
         NgbModalModule,
         CommonModule,
@@ -40,30 +40,39 @@ export class TermsConditionEntryComponent implements OnInit{
 
     TermsAndConditionsMasterSid: number;
     departmentOnTermsId : number;
-    TermsAndConditionsDetailSid:number;
-    isEditMode : boolean;
-    isModalEditMode : boolean;
+    TermsAndConditionsDetailSid:number | null;
+    isEditMode : boolean = false;
+    isModalEditMode : boolean = false;
+    isSaving: boolean = false;
+    isDetailSaving: boolean = false;
     termsAndConditionForm !:FormGroup;
     termsAndConditionDetailForm !:FormGroup;
-    menuList : any[];
-    portList : any[];
-    carrierList : any[];
-    branchList : any[];
-    departmentList : any[];
-    active = 1;
-    TandCDetail : any[];
-    filteredTandCDetail : any[];
-    TandCDetailLength : number;
-    modalRef : NgbModalRef;
+    menuList : any[] = [];
+    portList : any[] = [];
+    carrierList : any[] = [];
+    branchList : any[] = [];
+    departmentList : any[] = [];
+    selectedDepartment: any;
+    selectedDepartmentType: string = '';
+    selectedFCLLCL: string = '';
+    filteredPorts: any[] = [];
+    filteredPOL: any[] = [];
+    filteredPOD: any[] = [];
+    filteredFDC: any[] = [];
+    TandCDetail : any[] = [];
+    filteredTandCDetail : any[] = [];
+    TandCDetailLength : number = 0;
     page = 1;
     pageSize = 5;
     totalAmountOfCollections: number;
     tandCHeaderData: any;
     tandCDetailData: any;
     currentMenuId: number;
-    TandCList: any;
+    TandCList: any[] = [];
     currentCompany: any;
     currentBranch: any;
+    pendingDetailEditIndex: number | null = null;
+    pendingDepartmentSid: number | null = null;
 
     constructor(
         private masterService : MasterService,
@@ -73,13 +82,16 @@ export class TermsConditionEntryComponent implements OnInit{
         private currentRoute : ActivatedRoute,
         private modalService : NgbModal,
         private fb:FormBuilder,
-        private dialog : MatDialog
+        private dialog : MatDialog,
+        public mps: MenuPermissionService
     ){}
 
     ngOnInit(){
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.mps.init().subscribe();
         this.initTandCForm();
+        this.initTandDetailForm();
         this.loadAllFields();
         this.currentRoute.paramMap.subscribe(
             (param)=>{
@@ -105,13 +117,30 @@ export class TermsConditionEntryComponent implements OnInit{
         })
     }
 
+    private getDetailPayloadFromForm(formValue: any) {
+        return {
+            TermsAndConditionsDetailSid: formValue?.TermsAndConditionsDetailSid || this.TermsAndConditionsDetailSid || null,
+            TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
+            IsDefaut: formValue?.IsDefaut === true || formValue?.IsDefaut === 'Y' ? 'Y' : 'N',
+            TandC: formValue?.TandC || '',
+            Type: formValue?.Type || '',
+            TypeValue: formValue?.TypeValue || '',
+            status: (formValue?.detailstatus ? formValue.detailstatus : formValue?.status) === 'Active' || formValue?.status === 'A' ? 'A' : 'S'
+        };
+    }
+
+    private buildTermsDetailPayload(): any[] {
+        const details = [...(this.TandCDetail || [])];
+        return details.map((item: any) => this.getDetailPayloadFromForm(item));
+    }
+
     initTandDetailForm(){
         this.termsAndConditionDetailForm = this.fb.group({
-            TermsAndConditionsMasterSid: [, [Validators.required]],
+            TermsAndConditionsMasterSid: [],
             IsDefaut : [false,[Validators.required]],
-            TandC: ['',[Validators.required]],
-            Type : [''],
-            TypeValue : [''],
+            TandC: ['',[Validators.required, Validators.maxLength(500)]],
+            Type : ['',[Validators.maxLength(20)]],
+            TypeValue : ['',[Validators.maxLength(20)]],
             detailstatus : ['Active'], 
         })
     }
@@ -128,122 +157,246 @@ export class TermsConditionEntryComponent implements OnInit{
             menus : this.settingsService.getAllMenu(),
             ports : this.masterService.getAllPorts(),
             carriers : this.masterService.getAllCustomers(CompanyMasterSid),
-            branches : this.masterService.getAllBranches(),
+            branches : this.masterService.getCurrentBranch(CompanyMasterSid),
             departments : this.masterService.getAllDepartments(CompanyMasterSid)
         }).subscribe(({menus,ports,carriers,branches,departments})=>{
             this.menuList = menus,
             this.portList = ports.data,
+            this.filteredPorts = [...this.portList],
+            this.filteredPOL = [...this.portList],
+            this.filteredPOD = [...this.portList],
+            this.filteredFDC = [...this.portList],
             this.carrierList = carriers,
             this.branchList = branches,
-            this.departmentList = departments
+            this.departmentList = departments;
+            if (this.pendingDepartmentSid) {
+                this.onDepartmentChange(this.pendingDepartmentSid);
+                this.pendingDepartmentSid = null;
+            }
         })
     }
 
+    onDepartmentChange(departmentSid: any){
+        const selectedDepartmentSid = typeof departmentSid === 'object'
+            ? Number(departmentSid?.DepartmentMasterSid ?? departmentSid?.departmentId ?? 0)
+            : Number(departmentSid);
+
+        if (!selectedDepartmentSid) {
+            this.selectedDepartment = null;
+            this.selectedDepartmentType = '';
+            this.selectedFCLLCL = '';
+            this.filteredPorts = [];
+            this.filteredPOL = [];
+            this.filteredPOD = [];
+            this.filteredFDC = [];
+            this.termsAndConditionForm.patchValue({
+                POL: [],
+                POD: [],
+                FDC: []
+            }, { emitEvent: false });
+            return;
+        }
+        if (!this.departmentList?.length) {
+            this.pendingDepartmentSid = selectedDepartmentSid;
+            return;
+        }
+        const department = this.departmentList.find(
+            (dep: any) => Number(dep?.DepartmentMasterSid) === selectedDepartmentSid
+        );
+        this.selectedDepartment = department || null;
+
+        if (!department) {
+            this.selectedDepartmentType = '';
+            this.selectedFCLLCL = '';
+            this.filteredPorts = [];
+            this.filteredPOL = [];
+            this.filteredPOD = [];
+            this.filteredFDC = [];
+            this.termsAndConditionForm.patchValue({
+                POL: [],
+                POD: [],
+                FDC: []
+            }, { emitEvent: false });
+            return;
+        }
+
+        this.selectedDepartmentType = String(department?.departmentType || '').toUpperCase();
+        this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
+            ? String(department?.FCLLCL || '').toUpperCase()
+            : 'AIR';
+
+        this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
+        this.onPortSelectionChange();
+    }
+
+    getFilteredPortsBySegment(segment: string): any[] {
+        const normalized = String(segment || '').toUpperCase();
+        if (normalized === 'AIR') {
+            return this.portList.filter((port: any) => String(port?.PortType || '').toUpperCase() === 'AIR');
+        }
+        if (normalized === 'FCL' || normalized === 'LCL') {
+            return this.portList.filter((port: any) => String(port?.PortType || '').toUpperCase() === 'SEA');
+        }
+        return [...this.portList];
+    }
+
+    onPortSelectionChange(): void {
+        const pol = this.asArray(this.termsAndConditionForm.get('POL')?.value);
+        const pod = this.asArray(this.termsAndConditionForm.get('POD')?.value);
+        const fdc = this.asArray(this.termsAndConditionForm.get('FDC')?.value);
+
+        const polExclude = new Set([...pod, ...fdc]);
+        const podExclude = new Set([...pol, ...fdc]);
+        const fdcExclude = new Set([...pol, ...pod]);
+
+        this.filteredPOL = this.filteredPorts.filter((port: any) => !polExclude.has(port.PortCode));
+        this.filteredPOD = this.filteredPorts.filter((port: any) => !podExclude.has(port.PortCode));
+        this.filteredFDC = this.filteredPorts.filter((port: any) => !fdcExclude.has(port.PortCode));
+
+        const allowedPOL = new Set(this.filteredPOL.map((p: any) => p.PortCode));
+        const allowedPOD = new Set(this.filteredPOD.map((p: any) => p.PortCode));
+        const allowedFDC = new Set(this.filteredFDC.map((p: any) => p.PortCode));
+
+        const validPOL = pol.filter((code: string) => allowedPOL.has(code));
+        const validPOD = pod.filter((code: string) => allowedPOD.has(code));
+        const validFDC = fdc.filter((code: string) => allowedFDC.has(code));
+
+        this.termsAndConditionForm.patchValue({
+            POL: validPOL,
+            POD: validPOD,
+            FDC: validFDC
+        }, { emitEvent: false });
+    }
+
+    private asArray(value: any): any[] {
+        if (Array.isArray(value)) return value;
+        if (value === null || value === undefined || value === '') return [];
+        return [value];
+    }
+
     onSubmit(){
+        if (this.isSaving) return;
         if(this.termsAndConditionForm.invalid){
             this.termsAndConditionForm.markAllAsTouched();
             this.termsAndConditionForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
+            return;
         }
-        else {
-            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const formValue = this.termsAndConditionForm.value;
-            const payload = {
-                ...formValue,
-                status : formValue.status === 'Active' ? 'A' : 'S',
-                ...(this.isEditMode ? {updatedBy:updatedBy,DepartmentOnTermSid:this.departmentOnTermsId}: {createdBy:createdBy})
-            }
-            if(this.isEditMode){
-                this.masterService.updateTandCById(this.TermsAndConditionsMasterSid,payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess('Terms and Conditions updated Successfully');
-                            this.route.navigate(['master/terms-condition/list']);
-                        } else {
-                            this.appSettingService.showError('Error Updating Terms and Conditions')
-                        }
-                    },
-                    (error)=>{
-                        console.error('Error Updating Terms and Conditions',error);
+        this.isSaving = true;
+        const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const formValue = this.termsAndConditionForm.value;
+        const { departmentId, ...masterFormValue } = formValue;
+        const termsAndConditionsDetail = this.buildTermsDetailPayload();
+        const departmentPayload = departmentId
+            ? [{ departmentId: Number(departmentId), status: formValue.status === 'Active' ? 'A' : 'S' }]
+            : [];
+        const payload = {
+            ...masterFormValue,
+            status : formValue.status === 'Active' ? 'A' : 'S',
+            departmentOnTerms: departmentPayload,
+            termsAndConditionsDetail,
+            ...(this.isEditMode ? {updatedBy:updatedBy}: {createdBy:createdBy})
+        };
+        if(this.isEditMode){
+            this.masterService.updateTandCById(this.TermsAndConditionsMasterSid,payload).subscribe(
+                (resp:any)=>{
+                    if(resp.status){
+                        this.appSettingService.showSuccess('Terms and Conditions updated successfully');
+                        this.loadTermsAndConditions();
+                    } else {
+                        this.appSettingService.showError('Error updating Terms and Conditions');
                     }
-                )
-            } else {
-                this.masterService.createNewTandC(payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess('New Terms and Conditions created Successfully');
-                            this.route.navigate(['master/terms-condition/list']);
+                    this.isSaving = false;
+                },
+                (error)=>{
+                    this.isSaving = false;
+                    console.error('Error Updating Terms and Conditions',error);
+                }
+            )
+        } else {
+            this.masterService.createNewTandC(payload).subscribe(
+                (resp:any)=>{
+                    if(resp.status){
+                        const createdId = resp?.data?.TermsAndConditionsMasterSid
+                            || resp?.data?.termsAndCondition?.TermsAndConditionsMasterSid
+                            || resp?.data?.id;
+                        if (createdId) {
+                            this.appSettingService.showSuccess('New Terms and Conditions created successfully');
+                            this.route.navigate(['master/terms-condition/entry', createdId]);
                         } else {
-                            this.appSettingService.showError('Error Creating Terms and Conditions');
+                            this.appSettingService.showSuccess('New Terms and Conditions created successfully');
+                            this.route.navigate(['master/terms-condition/list']);
                         }
-                    },
-                    (error)=>{
-                        console.error('Error Creating Terms and Conditions',error)
+                    } else {
+                        this.appSettingService.showError('Error creating Terms and Conditions');
                     }
-                )
-            }
+                    this.isSaving = false;
+                },
+                (error)=>{
+                    this.isSaving = false;
+                    console.error('Error Creating Terms and Conditions',error)
+                }
+            )
         }
     }
 
-    onModalSubmit(){
+    upsertDetailRow(){
+        if (this.isDetailSaving) return;
         if(this.termsAndConditionDetailForm.invalid){
             this.termsAndConditionDetailForm.markAllAsTouched();
             this.termsAndConditionDetailForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
+            return;
         }
-        else {
-            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const formValue = this.termsAndConditionDetailForm.value;
-            const payload = {
-                TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || formValue.TermsAndConditionsMasterSid,
-                TandC: formValue.TandC,
-                Type: formValue.Type,
-                TypeValue: formValue.TypeValue,
-                IsDefaut: formValue.IsDefaut ? 'Y' : 'N',
-                status: formValue.detailstatus === 'Active' ? 'A' : 'S',
-                ...(this.isModalEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
-            }
-            if(this.isModalEditMode){
-                this.masterService.updateTandCDetailById(this.TermsAndConditionsDetailSid,payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess('Terms and Conditions Details updated Successfully');
-                            this.loadTandCDetails();
-                            this.closeDetailForm();
-                        } else {
-                            this.appSettingService.showError('Error Updating Terms and Conditions Details')
-                        }
-                    },
-                    (error)=>{
-                        console.error('Error Updating Terms and Conditions Details',error);
-                    }
-                )
-            } else {
-                this.masterService.createNewTandCDetail(payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess('New Terms and Conditions Detail created Successfully');
-                            this.loadTandCDetails();
-                            this.closeDetailForm();
-                        } else {
-                            this.appSettingService.showError('Error Creating Terms and Conditions Details');
-                        }
-                    },
-                    (error)=>{
-                        console.error('Error Creating Terms and Conditions Details',error)
-                    }
-                )
-            }
+        const formValue = this.termsAndConditionDetailForm.value;
+        const localDetail = {
+            TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
+            TermsAndConditionsDetailSid: this.TermsAndConditionsDetailSid || null,
+            IsDefaut: formValue.IsDefaut ? 'Y' : 'N',
+            TandC: formValue.TandC,
+            Type: formValue.Type,
+            TypeValue: formValue.TypeValue,
+            status: formValue.detailstatus === 'Active' ? 'A' : 'S'
+        };
+
+        if (this.isModalEditMode && this.pendingDetailEditIndex !== null) {
+            this.TandCDetail[this.pendingDetailEditIndex] = localDetail;
+        } else {
+            this.TandCDetail.push(localDetail);
         }
+        this.TandCDetailLength = this.TandCDetail.length;
+        this.totalAmountOfCollections = this.TandCDetailLength;
+        this.updatePaginationData();
+        this.closeDetailForm();
     }
 
-    openTandCEntryModal(content:TemplateRef<any>,data ?:any){
+    startNewDetail(){
         this.initTandDetailForm();
+        this.isModalEditMode = false;
+        this.TermsAndConditionsDetailSid = null;
+        this.pendingDetailEditIndex = null;
+        this.termsAndConditionDetailForm.patchValue({
+            TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
+            IsDefaut: false,
+            TandC: '',
+            Type: '',
+            TypeValue: '',
+            detailstatus: 'Active'
+        });
+    }
+
+    editDetail(data ?:any, index?: number){
+        this.initTandDetailForm();
+        this.isModalEditMode = false;
+        this.TermsAndConditionsDetailSid = null;
+        this.pendingDetailEditIndex = null;
         if(data){
             this.isModalEditMode = true;
             this.tandCDetailData = data;
+            if (typeof index === 'number') {
+                this.pendingDetailEditIndex = index;
+            }
             this.termsAndConditionDetailForm.patchValue({
                 ...data,
                 IsDefaut : data.IsDefaut === 'Y' ? true : false,
@@ -256,15 +409,21 @@ export class TermsConditionEntryComponent implements OnInit{
         } else {
             this.termsAndConditionDetailForm.get('TermsAndConditionsMasterSid').setValue(this.TermsAndConditionsMasterSid);
         }
-        this.modalRef = this.modalService.open(content , {size:'lg',centered:true});
     }
 
-    deleteTandCDetail(TermsAndConditionsDetailSid) {
+    deleteTandCDetail(item: any, index: number) {
+        if (!item?.TermsAndConditionsDetailSid) {
+            this.TandCDetail.splice(index, 1);
+            this.TandCDetailLength = this.TandCDetail.length;
+            this.totalAmountOfCollections = this.TandCDetailLength;
+            this.updatePaginationData();
+            return;
+        }
         const modalRef = this.dialog.open(DeleteWarningComponent);
         modalRef.afterClosed().subscribe(
             (res) => {
                 if (res) {
-                    this.masterService.deleteTandCDetailById(TermsAndConditionsDetailSid).subscribe(
+                    this.masterService.deleteTandCDetailById(item.TermsAndConditionsDetailSid).subscribe(
                         (resp: any) => {
                             if (resp.status) {
                                 this.appSettingService.showSuccess('Terms and Conditions Details successfully deleted');
@@ -290,9 +449,10 @@ export class TermsConditionEntryComponent implements OnInit{
                     this.tandCHeaderData = response;
                     this.termsAndConditionForm.patchValue({
                         ...response,
-                        departmentId : response.departments[0]?.departmentId || '',
+                        departmentId : response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid || '',
                         status : response.status === 'A' ? 'Active':'Suspended'    
                     })
+                    this.onDepartmentChange(response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid);
                     this.departmentOnTermsId = response.departments[0]?.DepartmentOnTermSid;
                     this.loadTandCDetails();
                 } else {
@@ -325,15 +485,35 @@ export class TermsConditionEntryComponent implements OnInit{
     }
 
     closeDetailForm(){
-        this.modalRef.close();
         this.isModalEditMode = false;
-        this.termsAndConditionDetailForm.reset();
+        this.isDetailSaving = false;
+        this.TermsAndConditionsDetailSid = null;
+        this.pendingDetailEditIndex = null;
+        this.termsAndConditionDetailForm.reset({
+            TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
+            IsDefaut: false,
+            TandC: '',
+            Type: '',
+            TypeValue: '',
+            detailstatus: 'Active'
+        });
     }
 
     resetForm(){
         this.termsAndConditionForm.reset({
             status : 'Active'
         })
+        this.selectedDepartment = null;
+        this.selectedDepartmentType = '';
+        this.selectedFCLLCL = '';
+        this.filteredPorts = [];
+        this.filteredPOL = [];
+        this.filteredPOD = [];
+        this.filteredFDC = [];
+    }
+
+    navigateToCreate() {
+        this.route.navigate(['master/terms-condition/entry']);
     }
 
 
@@ -356,30 +536,6 @@ export class TermsConditionEntryComponent implements OnInit{
         modalRef.componentInstance.idValue = this.tandCDetailData?.TermsAndConditionsDetailSid;
     }
 
-    openTandC() {
-		this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.TermsAndConditionsMasterSid;
-
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+    
 
 }

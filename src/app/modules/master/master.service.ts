@@ -1208,6 +1208,15 @@ export class MasterService {
       })
     )
   }
+
+  getCurrentBranch(CompanyMasterSid: number) {
+    return this.http.post<{ data: any }>('branch',{ CompanyMasterSid }).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   getBranchesByCompanyId(CompanyMasterID: number) {
     return this.http.get<{ data: Branch[] }>(`branch/company/${CompanyMasterID}`).pipe(
       map((resp) => {

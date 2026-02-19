@@ -1,215 +1,485 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { MasterService } from '../../master.service';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { MatDialog } from '@angular/material/dialog';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { forkJoin, Observable } from 'rxjs';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { authService } from 'src/app/modules/authentication/auth.service';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableConfig, TableEventData, TableFilter, TableSortConfig } from 'src/app/shared/interfaces/table.interface';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { MasterService } from '../../master.service';
 
 @Component({
     selector: 'app-terms-condition-list',
     standalone: true,
     imports: [
-        RouterModule,
-        FormsModule,
-        CommonModule,
         FeatherModule,
-        NgbPaginationModule,
-        ListpageComponent
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        FavoriteStarComponent,
+        NgxSpinnerModule,
+        ReusableTableComponent,
+        PageHeaderComponent
     ],
-    templateUrl: './terms-condition-list.component.html',
+    template: `
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+    <app-page-header
+        [title]="'Terms And Conditions'"
+        [showFavorite]="true"
+        [showSearch]="true"
+        [searchPlaceholder]="'Search'"
+        [searchButtonText]="'Search'"
+        [(searchValue)]="filterValue"
+        [actions]="headerActions"
+        (searchTriggered)="onSearchTriggered($event)"
+        (searchCleared)="onSearchCleared()"
+        (actionTriggered)="onActionTriggered($event)">
+    </app-page-header>
+
+    <div class="col-12 px-0 table-scroll-wrapper">
+        <app-reusable-table
+            #termsConditionTable
+            [config]="tableConfig"
+            [data]="allTermsConditions"
+            [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection"
+            [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)"
+            (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)"
+            (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+</div>
+`,
     styleUrl: './terms-condition-list.component.scss'
 })
-export class TermsConditionListComponent implements OnInit {
+export class TermsConditionListComponent extends BaseListComponent implements OnInit {
+    @ViewChild('termsConditionTable') termsConditionTable!: ReusableTableComponent;
+    headerActions: HeaderAction[] = [];
+    tableConfig: TableConfig;
+    tableLoading = false;
 
-    searchType : string ='status';
-    filterValue : any;
-    TandCList : any[];
-    slicedTandCList : any[];
-    searchPerformed : boolean;
     userData : any;
-
-    page = 1;
-    pageSize = 10;
-    totalAmountOfCollections : number;
-    isFavorite: boolean = false;
-    sortColumn: string = 'status'; 
-    sortDirection: string = 'asc';
-
-      // Company
     currentCompany : any;
     currentBranch : any;
-    toggleFavorite() {
-        this.isFavorite = !this.isFavorite;
-    } 
-    
+    private branchNameMap = new Map<number, string>();
+    private menuNameMap = new Map<number, string>();
+    private departmentNameMap = new Map<number, string>();
+
+    protected config: ListComponentConfig = {
+        storageKey: 'terms-condition-list-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'branchName',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    get allTermsConditions() {
+        return this.allItems;
+    }
+
     constructor(
         private router: Router,
         private masterService:MasterService,
         private appSettingService:AppSettingsService,
         private dialog:MatDialog,
-        private userService : authService,
-        private excelReportService : ExcelExportService
-    ) { }
+        private excelReportService : ExcelExportService,
+        private spinner: NgxSpinnerService,
+        paginationService: PaginationService,
+        public mps: MenuPermissionService
+    ) {
+        super(paginationService);
+    }
 
-    ngOnInit(): void {
-        // this.appSettingService.getUser().subscribe(
-        //     user=>{
-        //         if(user){
-        //             this.userData = user;
-        //         }
-        //     }
-        // )
+    override ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-		}
-    }
-
-    onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-    search(){
-        const intFields=[
-            "BranchMasterSid",
-            "MenuMasterSid",
-            "Carrier",
-        ];
-        const payload = {
-            searchType : this.searchType,
-            filterValue : intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
+        if(userProfile){
+            this.userData = userProfile;
         }
 
-        this.masterService.searchTandC(payload).subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                    this.searchPerformed = true;
-                    this.TandCList = resp.data;
-                    this.totalAmountOfCollections = this.TandCList.length;
-                    this.updatePaginationData();
-                    this.applySorting();
-                }
-                else{
-                    this.appSettingService.showError('Error Searching Terms and Conditions');
-                }
+        this.initializeTableConfig();
+        this.initializeHeaderActions();
+        this.mps.init().subscribe(() => {
+            this.initializeTableConfig();
+            this.initializeHeaderActions();
+        });
+
+        super.ngOnInit();
+        this.loadLookupData();
+    }
+
+    protected searchItems(): Observable<any> {
+        this.tableLoading = true;
+        this.spinner.show();
+        return this.masterService.getAllTandC();
+    }
+
+    protected getSearchParams(): SearchParams {
+        return {
+            search: this.filterValue.trim(),
+            page: Number(this.page),
+            pageSize: Number(this.pageSize),
+            activeCompanyId: this.currentCompany?.CompanyMasterSid,
+            activeBranchId: this.currentBranch?.BranchMasterSid,
+            sortColumn: this.sortColumn,
+            sortDirection: this.sortDirection
+        };
+    }
+
+    protected processSearchResults(response: any): void {
+        this.tableLoading = false;
+        this.spinner.hide();
+        if (response.status) {
+            const rawData = response.data ?? [];
+            const formatted = rawData.map(item => ({
+                ...item,
+                branchName: this.getBranchName(item),
+                menuName: this.getMenuName(item),
+                departmentName: this.getDepartmentName(item),
+                status: item.status === 'A' ? 'Active' : 'Suspended'
+            }));
+
+            const searchText = this.filterValue.trim().toLowerCase();
+            const filtered = !searchText
+                ? formatted
+                : formatted.filter(item =>
+                    (item.branchName || '').toLowerCase().includes(searchText) ||
+                    (item.menuName || '').toLowerCase().includes(searchText) ||
+                    (item.departmentName || '').toLowerCase().includes(searchText) ||
+                    (item.status || '').toLowerCase().includes(searchText)
+                );
+
+            filtered.sort((a, b) => {
+                let valueA = a[this.sortColumn] ?? '';
+                let valueB = b[this.sortColumn] ?? '';
+                valueA = typeof valueA === 'number' ? valueA : valueA.toString().toLowerCase();
+                valueB = typeof valueB === 'number' ? valueB : valueB.toString().toLowerCase();
+
+                if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            this.totalLengthOfCollection = filtered.length;
+            const start = (this.page - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            this.allItems = filtered.slice(start, end);
+            this.updateHeaderActionState();
+        } else {
+            this.appSettingService.showError('Error searching Terms and Conditions.');
+            this.allItems = [];
+            this.totalLengthOfCollection = 0;
+        }
+    }
+
+    protected override handleSearchError(error: any): void {
+        this.tableLoading = false;
+        this.spinner.hide();
+        this.appSettingService.showError('Error searching Terms and Conditions.');
+        console.error('Error searching Terms and Conditions', error);
+        super.handleSearchError(error);
+    }
+
+    onSearchTriggered(searchValue: string): void {
+        this.filterValue = searchValue;
+        this.searchTermsAndConditions();
+    }
+
+    onSearchCleared(): void {
+        this.filterValue = '';
+        this.clearFilterValue();
+    }
+
+    initializeHeaderActions(): void {
+        this.headerActions = [
+            {
+                label: 'Create',
+                icon: 'fas fa-plus',
+                action: 'create',
+                // disabled: !this.mps.can('insert')
             },
-            (error)=>{
-                console.error('Error Searching Terms and Conditions',error);
+            {
+                label: 'Report',
+                icon: 'fas fa-file-alt',
+                action: 'report',
+                disabled: this.totalLengthOfCollection === 0
+            },
+            {
+                label: 'Reset',
+                icon: 'fas fa-sync-alt',
+                action: 'reset'
             }
-        )
+        ];
     }
 
-    deleteTandC(TermsAndConditionsMasterSid){
-        const modalRef = this.dialog.open(DeleteWarningComponent);
-        modalRef.afterClosed().subscribe(
-            (res)=>{
-                if(res){
-                    this.masterService.deleteTandCById(TermsAndConditionsMasterSid).subscribe(
-                        (resp:any)=>{
-                            if(resp.status){
-                                this.appSettingService.showSuccess('Terms and Conditions successfully deleted');
-                                this.search();
-                            } else {
-                                this.appSettingService.showError('Error Deleting Terms and Conditions')
-                            }
-                        },
-                        (error)=>{
-                            console.error('Error Deleting Terms and Conditions',error);
+    onActionTriggered(action: string): void {
+        switch (action) {
+            case 'create':
+                this.navigateTocreateTerms();
+                break;
+            case 'report':
+                this.report();
+                break;
+            case 'reset':
+                this.resetPage();
+                break;
+            default:
+                console.warn(`Unknown action: ${action}`);
+        }
+    }
+
+    private updateHeaderActionState(): void {
+        this.headerActions = this.headerActions.map(action => {
+            if (action.action === 'report') {
+                return { ...action, disabled: this.totalLengthOfCollection === 0 };
+            }
+            return action;
+        });
+    }
+
+    searchTermsAndConditions() {
+        this.search();
+    }
+
+    clearFilterValue() {
+        this.clearFilter();
+    }
+
+    override trackBy(index: number, item: any): number {
+        return item.TermsAndConditionsMasterSid || index;
+    }
+
+    viewTermsAndCondition(item: any): void {
+        this.router.navigate(['/master/terms-condition/entry/', item.TermsAndConditionsMasterSid]);
+    }
+
+    deleteTandC(item: any) {
+        const dialogRef = this.dialog.open(DeleteWarningComponent);
+        dialogRef.afterClosed().subscribe(result => {
+            if (result === true) {
+                this.spinner.show();
+                this.masterService.deleteTandCById(item.TermsAndConditionsMasterSid).subscribe({
+                    next: (resp: any) => {
+                        this.spinner.hide();
+                        if (resp.status) {
+                            this.appSettingService.showSuccess('Terms and Conditions successfully deleted');
+                            this.search();
+                        } else {
+                            this.appSettingService.showError('Error deleting Terms and Conditions');
                         }
-                    )
-                }
+                    },
+                    error: (error) => {
+                        this.spinner.hide();
+                        this.appSettingService.showError('Error deleting Terms and Conditions');
+                        console.error('Error deleting Terms and Conditions', error);
+                    }
+                });
             }
-        )
+        });
     }
-
-    sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginationData();
-}
-
-applySorting() {
-  this.TandCList.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
-
-    updatePaginationData(){
-        let start = (this.page - 1 ) * this.pageSize;
-        let end = start + this.pageSize;
-        this.slicedTandCList = this.TandCList.slice(start,end);
-    }
-
 
     navigateTocreateTerms() {
-        this.router.navigate(['master/terms-condition/entry'])
+        this.router.navigate(['master/terms-condition/entry']);
     }
 
     report(): void {
-        const formattedData = this.TandCList.map(item => ({
-            ...item,
-            status: item.status === 'A' ? 'Active' : 'Suspended',
-            menu : item.menu?.MenuName,
-            branch : item.branch?.branchName
+        const formattedData = this.allTermsConditions;
+        const companyName = this.currentCompany?.companyName ?? 'Company';
+
+        const visibleColumns = this.termsConditionTable.getVisibleColumns();
+        const dynamicHeaders = visibleColumns.map(column => ({
+            key: column.key,
+            label: column.label
         }));
 
-        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data: formattedData,
-            headers: [
-                { key: 'branch', label: 'Branch' },
-                { key: 'menu', label: 'Menu' },
-                { key: 'status', label: 'Status' }
-            ],
-            fileName: 'Terms-and-Condition-Report', 
+            headers: dynamicHeaders,
+            fileName: 'Terms-and-Condition-Report',
             title: companyName
         });
     }
-    reset(){
-        this.slicedTandCList =[];
-        this.totalAmountOfCollections = 0;
-        this.searchPerformed = false;
-        this.filterValue = '';
-        this.searchType = 'status';
-        this.page = 1;
-        this.sortColumn = 'status';
-  this.sortDirection = 'asc';
+
+    private initializeTableConfig(): void {
+        this.tableConfig = {
+            columns: [
+                {
+                    key: 'branchName',
+                    label: 'Branch',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'menuName',
+                    label: 'Menu',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'departmentName',
+                    label: 'Department',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'status',
+                    label: 'Status',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    template: 'status',
+                    dataType: 'string',
+                    cellClass: 'status-column'
+                }
+            ],
+            actions: [
+                {
+                    icon: 'fas fa-eye',
+                    label: 'View',
+                    action: 'view',
+                    tooltip: 'View',
+                    // state: !this.mps.can('view')
+                },
+                {
+                    icon: 'fas fa-trash',
+                    label: 'Delete',
+                    action: 'delete',
+                    tooltip: 'Delete',
+                    class: 'text-danger',
+                    // state: !this.mps.can('delete')
+                }
+            ],
+            selectable: false,
+            multiSelect: false,
+            showColumnToggle: true,
+            showFilters: true,
+            showPagination: true,
+            trackByKey: 'TermsAndConditionsMasterSid',
+            emptyMessage: 'No Terms and Conditions found',
+            dragAndDrop: true
+        };
+    }
+
+    onTableActionClick(event: TableEventData): void {
+        if (event.action === 'view') {
+            this.viewTermsAndCondition(event.row);
+        } else if (event.action === 'delete') {
+            this.deleteTandC(event.row);
+        }
+    }
+
+    onTableRowClick(row: any): void {}
+
+    onTableSortChange(sort: TableSortConfig): void {
+        this.sortColumn = sort.column;
+        this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+        this.search();
+    }
+
+    onTableFilterChange(filters: TableFilter[]): void {
+        console.log('Filters changed:', filters);
+    }
+
+    private loadLookupData(): void {
+        const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+        if (!companyMasterSid) {
+            return;
+        }
+
+        forkJoin({
+            branches: this.masterService.getCurrentBranch(companyMasterSid),
+            menus: this.masterService.getAllMenu(),
+            departments: this.masterService.getAllDepartments(companyMasterSid)
+        }).subscribe({
+            next: ({ branches, menus, departments }) => {
+                this.branchNameMap.clear();
+                this.menuNameMap.clear();
+                this.departmentNameMap.clear();
+
+                (branches || []).forEach((branch: any) => {
+                    if (branch?.BranchMasterSid != null) {
+                        this.branchNameMap.set(Number(branch.BranchMasterSid), branch?.branchName || '');
+                    }
+                });
+
+                (menus || []).forEach((menu: any) => {
+                    if (menu?.MenuMasterSid != null) {
+                        this.menuNameMap.set(Number(menu.MenuMasterSid), menu?.MenuName || '');
+                    }
+                });
+
+                (departments || []).forEach((department: any) => {
+                    const sid = department?.DepartmentMasterSid ?? department?.departmentId;
+                    if (sid != null) {
+                        this.departmentNameMap.set(Number(sid), department?.departmentName || '');
+                    }
+                });
+
+                this.search();
+            },
+            error: (error) => {
+                console.error('Error loading lookup data for Terms and Conditions list', error);
+            }
+        });
+    }
+
+    private getBranchName(item: any): string {
+        return item?.branch?.branchName
+            || this.branchNameMap.get(Number(item?.BranchMasterSid))
+            || (item?.BranchMasterSid != null ? String(item.BranchMasterSid) : '');
+    }
+
+    private getMenuName(item: any): string {
+        return item?.menu?.MenuName
+            || this.menuNameMap.get(Number(item?.MenuMasterSid))
+            || (item?.MenuMasterSid != null ? String(item.MenuMasterSid) : '');
+    }
+
+    private getDepartmentName(item: any): string {
+        const departments = Array.isArray(item?.departments) ? item.departments : [];
+        if (departments.length > 0) {
+            const names = departments
+                .map((department: any) => {
+                    const nestedName = department?.departmentName || department?.DepartmentMaster?.departmentName;
+                    if (nestedName) return nestedName;
+                    const sid = department?.DepartmentMasterSid ?? department?.departmentId;
+                    return this.departmentNameMap.get(Number(sid)) || '';
+                })
+                .filter((name: string) => !!name);
+            return names.length ? names.join(', ') : '-';
+        }
+
+        const sid = item?.DepartmentMasterSid ?? item?.departmentId;
+        if (sid != null) {
+            return this.departmentNameMap.get(Number(sid)) || '-';
+        }
+        return '-';
     }
 }

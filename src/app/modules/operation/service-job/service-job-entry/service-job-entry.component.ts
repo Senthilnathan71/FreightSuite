@@ -336,7 +336,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     const fyDefault = this.appSettingService.getCurrentFinancialYear();
     const defaultMasterJobDate=  fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)) ? fyDefault.EndDate : today;
     const defaultMBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate))? fyDefault.EndDate : today;
-    const defaultHBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate));
+    const defaultHBLDate = fyDefault && (today < new Date(fyDefault.StartDate) || today > new Date(fyDefault.EndDate)); 
     this.serviceJobForm = this.fb.group({
       DepartmentMasterSid: [null, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
@@ -592,7 +592,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       JobType: serviceFormValue.JobType,
       MBLNo: serviceFormValue.MBLNo,
       MBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
-      HBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.HBLDate) : null,
+      HBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
       MasterJobDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MasterJobDate) : null,
       CustomerMasterSid: serviceFormValue.CustomerMasterSid,
       CustomerBranchSid: serviceFormValue.CustomerBranchSid || null,
