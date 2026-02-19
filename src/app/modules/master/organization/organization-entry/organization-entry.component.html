@@ -206,7 +206,7 @@
 
                 <!-- Customer Search Dropdown -->
                 <div *ngIf="showCustomerDropdown && customerSearchResults.length > 0" class="customer-search-dropdown">
-                  <div *ngIf="isSearchingCustomers" class="dropdown-item text-center">
+                  <div *ngIf="isSearchingCustomers" class="dropdown-item text-center ">
                     <div class="spinner-border spinner-border-sm" role="status">
 
                     </div>
@@ -216,7 +216,7 @@
                   <div *ngFor="let customer of customerSearchResults" class="dropdown-item cursor-pointer"
                     (mousedown)="selectCustomer(customer)">
                     <div class="d-flex justify-content-between align-items-center">
-                      <span class="customer-name">{{ customer.CustomerName }}</span>
+                      <span class="customer-name text-danger">{{ customer.CustomerName }}</span>
                       <small class="text-muted">{{ customer.CustomerShortCode }}</small>
                     </div>
                   </div>

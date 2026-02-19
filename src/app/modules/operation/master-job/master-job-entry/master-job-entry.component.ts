@@ -429,7 +429,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         if (this.masterJobSid) {
           this.isEditMode = true;
             this.masterJobForm.get('POL')?.disable();
-                this.masterJobForm.get('POD')?.disable();
+            this.masterJobForm.get('POD')?.disable();
+            this.masterJobForm.get('DepartmentMasterSid')?.disable();
           this.loadMasterJobData(this.masterJobSid);
         }
       });
@@ -514,7 +515,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return port ? port.PortCode : portSid?.toString().substring(0, 100);
     };
 
-    const formValue = this.masterJobForm.value;
+    const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
     const voyageData = {
       MasterJobVoyageSid: formValue.MasterJobVoyageSid,
@@ -1448,7 +1449,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     if (selectedDepartment) {
       this.onDeptChange(selectedDepartment);
     }
-
+     if (this.isEditMode) {
+  this.masterJobForm.get('DepartmentMasterSid')?.disable();
+}
     // Patch voyage fields if voyage data exists
     if (data.voyages && data.voyages.length > 0) {
       const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
@@ -2123,6 +2126,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.masterJobForm.get('POL')?.markAsTouched();
     return;
   }
+  //  Object.keys(this.masterJobForm.controls).forEach(key => {
+  //   const control = this.masterJobForm.get(key);
+  //   if (control && control.invalid) {
+  //     console.log('Invalid control:', key, control.errors, 'Value:', control.value);
+  //   }
+  // });
     if (this.masterJobForm.invalid) {
       this.toastr.error('Please fill all required fields');
       this.masterJobForm.markAllAsTouched();
@@ -2414,6 +2423,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       Haz: false,
       FreightPPCC: 'Prepaid'
     });
+    if (!this.isEditMode) {
+    this.masterJobForm.get('DepartmentMasterSid')?.enable();
+  }
 
     this.connections.clear();
     this.masterJobContainers.clear();
@@ -2968,7 +2980,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   createShipmentGroup(data?: any): FormGroup {
     const shipmentForm = this.fb.group({
       HouseJobSid: [data?.HouseJobSid || null],
-      BookingHeaderSid: [data?.BookingHeaderSid || ''],
+      BookingHeaderSid: [data?.BookingHeaderSid || null],
       BookingNo: [data?.BookingNo || '', Validators.required],
       BookingDateTime: [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null],
@@ -3151,7 +3163,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       windowClass: 'custom-modal-size'
     });
     modalRef.componentInstance.screenName = 'Master Job';
-    const value = this.masterJobForm.value;
+    const value = this.masterJobForm.getRawValue();
     modalRef.componentInstance.masterJobFormValue = {
       DepartmentMasterSid: value.DepartmentMasterSid,
       POL: this.getPortCode(value.POL),
@@ -3177,8 +3189,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   hasEveryRequiredFieldsFilled(requiredFields: string[], group: FormGroup): boolean {
-    const formValue = group.value;
-    return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined && group.get(field)?.valid);
+    const formValue = group.getRawValue();
+    return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined );
   }
 
   getPortCode(portSid: number): string {
@@ -4285,6 +4297,42 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
     });
   }
+
+ // Get list of unmapped containers
+getUnmappedContainers(): any[] {
+  if (!this.masterJobContainers || this.masterJobContainers.length === 0) {
+    return [];
+  }
+  
+  return this.masterJobContainers.controls
+    .map(control => control.value)
+    .filter(container => !this.isContainerMapped(container.MasterJobContainerSid));
+}
+
+// Optional: Scroll to container in the table when clicked
+scrollToContainer(containerNumber: string): void {
+  this.selectedTab = 'Container';
+  
+  setTimeout(() => {
+    const element = this.findElementByTextContent('td', containerNumber);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('highlight-container');
+      setTimeout(() => element.classList.remove('highlight-container'), 2000);
+    }
+  }, 100);
+}
+
+// Helper function to find element by text content
+findElementByTextContent(selector: string, text: string): Element | null {
+  const elements = document.querySelectorAll(selector);
+  for (let i = 0; i < elements.length; i++) {
+    if (elements[i].textContent?.includes(text)) {
+      return elements[i];
+    }
+  }
+  return null;
+}
 
   /**
    * Close validation modal

@@ -26,6 +26,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AccountsService } from '../../../accounts/accounts.service';
 
 @Component({
   selector: 'app-invoice-list',
@@ -98,6 +99,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
 
   constructor(
     private operationService: OperationService,
+    private accountService: AccountsService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
@@ -340,7 +342,8 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        state: !this.mps.can('delete')
+        state: !this.mps.can('delete'),
+        condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'U'
       }
     ],
     selectable: false,
@@ -618,9 +621,27 @@ navigateToBooking(row: any): void {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.operationService.deleteInvoiceById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.loadInvoices();
+        this.spinner.show();
+        this.accountService.deleteVoucher({
+          VoucherHeaderSid: id,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          UserEmail: this.userData?.userEmail
+        }).subscribe({
+          next: (resp: any) => {
+            this.spinner.hide();
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Invoice deleted successfully');
+              this.search();
+            } else {
+              this.appSettingService.showError(resp.message || 'Failed to delete invoice');
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting invoice:', error);
+            this.appSettingService.showError('Failed to delete invoice');
+            this.spinner.hide();
+          }
         });
       }
     });

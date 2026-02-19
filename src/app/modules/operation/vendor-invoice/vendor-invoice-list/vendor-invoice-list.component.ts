@@ -24,6 +24,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AccountsService } from '../../../accounts/accounts.service';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -86,6 +87,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
   constructor(
     private operationService: OperationService,
+    private accountService: AccountsService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
@@ -360,7 +362,8 @@ private formatAmount(amount: number | string): string {
         action: 'delete',
         tooltip: 'Delete Vendor Invoice',
         class: "text-danger",
-        state : !this.mps.can('delete')
+        state : !this.mps.can('delete'),
+        condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'Unposted'
       }
     ],
     selectable: false,
@@ -541,14 +544,19 @@ private formatAmount(amount: number | string): string {
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'confirm') {
         this.spinner.show();
-        this.operationService.deleteVendorInvoiceById(vendorInvoice.VoucherHeaderSid).subscribe({
-          next: (response) => {
+        this.accountService.deleteVoucher({
+          VoucherHeaderSid: vendorInvoice.VoucherHeaderSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          UserEmail: this.userData?.userEmail
+        }).subscribe({
+          next: (response: any) => {
             this.spinner.hide();
             if (response.status) {
-              this.appSettingService.showSuccess('Vendor Invoice deleted successfully');
+              this.appSettingService.showSuccess(response.message || 'Vendor Invoice deleted successfully');
               this.search();
             } else {
-              this.appSettingService.showError('Failed to delete Vendor Invoice');
+              this.appSettingService.showError(response.message || 'Failed to delete Vendor Invoice');
             }
           },
           error: (error) => {

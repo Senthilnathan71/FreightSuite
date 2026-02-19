@@ -1,0 +1,128 @@
+<div
+  [ngClass]="
+    orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'
+  "
+>
+  <app-print-header></app-print-header>
+
+  <h4 class="text-center fw-bold py-2" style="margin: 0">
+    Matching List Receipt and Payment Report
+  </h4>
+  <div style="margin-top: 1rem">
+    <div style="display: flex; justify-content: space-between">
+      <div>
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px">From Date </strong>
+          <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
+        </div>
+
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px">To Date </strong>
+          <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+        </div>
+      </div>
+
+      <div>
+        <!-- <div class="d-flex align-items-center">
+          <strong style="width: 100px">Branch </strong>
+          <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+        </div> -->
+
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px">Ledger </strong>
+          <p class="ms-1">: {{ fullData?.coaMasterSid }}</p>
+        </div>
+
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px">Subledger </strong>
+          <p class="ms-1">: {{ fullData?.ledgerMasterSid }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table tablebordered table-sm" style="font-size: 12px">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light">Voucher No</th>
+            <th class="bg-transparent text-light" width="10%">Voucher Type</th>
+            <th class="bg-transparent text-light">Voucher Date</th>
+            <th class="bg-transparent text-light">Voucher Matching No</th>
+            <th class="bg-transparent text-light" width="10%">
+              Voucher Matching Date
+            </th>
+            <th class="bg-transparent text-light">Curr</th>
+            <th class="bg-transparent text-light">Ex.Rate</th>
+            <th class="bg-transparent text-light" width="3%">DrCr</th>
+            <th class="bg-transparent text-light">Amt</th>
+            <th class="bg-transparent text-light">Local Amt</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <ng-container *ngFor="let v of groupedData">
+            <ng-container *ngFor="let c of v.children; let i = index">
+              <tr>
+                <td>
+                  {{ i === 0 ? v.VoucherNumber : "" }}
+                </td>
+                <td>
+                  {{ i === 0 ? v.voucherName : "" }}
+                </td>
+                <td>
+                  {{ i === 0 ? (v.VoucherDate | formatDate) : "" }}
+                </td>
+                <td>
+                  {{ c.vouchermactingNo }}
+                </td>
+
+                <td>
+                  {{ c.VoucherMatchingDate | formatDate }}
+                </td>
+
+                <td style="text-align: center">
+                  {{ c.CurrencyCode }}
+                </td>
+
+                <td style="text-align: right">
+                  {{ c.ExRate | number: "1.3-3" }}
+                </td>
+
+                <td style="text-align: center">
+                  {{ c.DrCr }}
+                </td>
+
+                <td class="text-end">
+                  {{ c.Amount | number: "1.2-2" }}
+                </td>
+
+                <td class="text-end">
+                  {{ c.LocalAmount | number: "1.2-2" }}
+                </td>
+              </tr>
+            </ng-container>
+
+            <tr style="font-weight: bold; background: #f2f2f2">
+              <td colspan="7"></td>
+
+              <!-- TOTAL under ExRate -->
+              <td style="text-align: right">TOTAL</td>
+
+              <!-- Totals -->
+              <td class="text-end">
+                {{ v.totalAmt | number: "1.2-2" }}
+              </td>
+
+              <td class="text-end">
+                {{ v.totalLocalAmt | number: "1.2-2" }}
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="groupedData.length === 0">
+            <td colspan="10" class="text-center fw-bold">No Record Found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
