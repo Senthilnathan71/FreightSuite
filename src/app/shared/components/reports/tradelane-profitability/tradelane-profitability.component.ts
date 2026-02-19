@@ -221,12 +221,17 @@ export class TradelaneProfitabilityComponent {
     };
   }
 
-  private formatNumber(value: any): string {
-    if (value === null || value === undefined) return '';
+ private formatNumber(value: any): string {
+  if (value === null || value === undefined) return '';
 
-    const num = Number(value);
-    return isNaN(num) ? '' : num.toFixed(2);
-  }
+  const num = Number(value);
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 
   private formatDate(date: any): string {

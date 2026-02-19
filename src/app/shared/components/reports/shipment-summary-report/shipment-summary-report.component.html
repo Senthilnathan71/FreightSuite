@@ -33,6 +33,10 @@
                     <strong style="width: 100px;">Dept </strong>
                     <p class="ms-1">: {{ departmentNamesList }}</p>
                 </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Job Generated </strong>
+                    <p class="ms-1">: {{params?.JobGenerated ? "Yes" : "No" }}</p>
+                </div>
             </div>
         </div>
         <div class="table-responsive">
@@ -112,7 +116,7 @@
                         <td>{{ item.nofcontainer || '' }}</td>
                         <td>{{ item.numberOfTwentyFt || '' }}</td>
                         <td>{{ item.numberOfFourtyFt || '' }}</td>
-                        <td>{{ item.numberofFurtyFive || '' }}</td>
+                        <td>{{ item.numberOfFortyFive || '' }}</td>
                         <td>{{ item.shipper || '' }}</td>
                         <td>{{ item.containerNoList || '' }}</td>
                         <td>{{ item.houseStatus || '' }}</td>

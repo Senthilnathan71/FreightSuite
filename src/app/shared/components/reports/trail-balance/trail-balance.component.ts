@@ -442,11 +442,17 @@ export class TrailBalanceComponent {
   /**
    * Format number for Excel display
    */
-  private formatNumber(value: any): number | string {
-    if (value === null || value === undefined) return '';
-    const num = Number(value);
-    return isNaN(num) ? '' : Number(num.toFixed(2));
-  }
+private formatNumber(value: any): string {
+  if (value === null || value === undefined) return '';
+
+  const num = Number(value);
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
   /**
    * Format date for display

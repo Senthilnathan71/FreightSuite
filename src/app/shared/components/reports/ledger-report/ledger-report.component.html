@@ -79,23 +79,23 @@
                         <td>
                             {{ params?.FromDate | formatDate }}
                         </td>
-
                         <td>
-
                         </td>
                         <td>
-
                         </td>
                         <td>
-
                         </td>
                         <td>
-
                         </td>
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
                         </td>
-
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-end">
+                            {{fullData?.openingBalance | number:"1.2-2"}}
+                        </td>
                     </tr>
                     <tr *ngFor="let item of fullData?.transactions; let i = index">
                         <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
