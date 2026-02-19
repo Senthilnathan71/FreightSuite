@@ -1252,7 +1252,7 @@ loadMawbStock(data: any): void {
       const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
       const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
       
-      if (isAirImport) {
+      if (isAirImport && !isEditMode) {
         // Air Import - required field in edit mode
         mblNoControl?.setValidators([
           Validators.required,
