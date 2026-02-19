@@ -888,15 +888,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingCurrencyAmount
             : null,
         ],
         matchLocalAmt: [
           isMatchedRecord
             ? tx.MatchingLocalAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingLocalAmount
             : null,
         ],
         matchPartyAmt: [tx.PartyAmount ?? 0],
@@ -2478,15 +2474,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchCurrAmt: [
           isMatchedRecord
             ? tx.MatchingAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingCurrencyAmount
             : null,
         ],
         matchLocalAmt: [
           isMatchedRecord
             ? tx.MatchingLocalAmount
-            : searchType === 'Invoice' && !this.isEditMode
-            ? tx.OutstandingLocalAmount
             : null,
         ],
         matchPartyAmt: [tx.PartyAmount ?? 0],
@@ -2495,7 +2487,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         balance: [
           isMatchedRecord ? Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0) : null,
         ],
-        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0.01 : false],
+        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0 : false],
         isLimitErrorShown: [false],
       });
 

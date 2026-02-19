@@ -37,7 +37,7 @@
       <!-- Search Section -->
 
       <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
-        <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
+        <form [formGroup]="searchOutstandingForm" *ngIf="!isPosted">
           <div
             class="d-flex pb-1 align-items-center ps-5"
             [ngClass]="{ 'gap-2': !isEditMode, 'gap-0': isEditMode }"
@@ -50,6 +50,7 @@
                 bindLabel="label"
                 bindValue="value"
                 clearable="false"
+                [readonly]="isEditMode"
               >
               </ng-select>
             </div>
@@ -63,6 +64,7 @@
                 bindValue="SubledgerMasterSid"
                 formControlName="LedgerMasterSid"
                 placeholder="Select Party"
+                [readonly]="hasMatchingDetails && isEditMode"
               >
               </ng-select>
             </div>
@@ -85,8 +87,7 @@
                   !(
                     searchOutstandingForm.get('LedgerMasterSid')?.value ||
                     searchOutstandingForm.get('FilterText')?.value
-                  ) ||
-                  r['LedgerMasterSid']?.value
+                  )
                 "
                 (click)="searchOutstanding()"
               >
