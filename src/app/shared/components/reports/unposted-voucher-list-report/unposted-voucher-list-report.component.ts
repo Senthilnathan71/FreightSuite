@@ -98,7 +98,7 @@ export class UnpostedVoucherListReportComponent {
       additionalInfo: [
         { label: 'From Date', value: this.formatDate(this.params?.VoucherFromDate) },
         { label: 'To Date', value: this.formatDate(this.params?.VoucherToDate) },
-        { label: 'Branch', value: this.fullData?.branchNames || 'All' }
+        { label: 'Branch', value: this.fullData?.brancesInvoled || '' }
       ]
     },
     tableHeaders,
