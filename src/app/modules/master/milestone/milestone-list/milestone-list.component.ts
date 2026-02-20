@@ -372,7 +372,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   }
 
   report(): void {
-    const formattedData = this.allMilestones;
+    const formattedData = this.allMilestone;
     const companyName = this.currentCompany?.companyName ?? 'Company';
 
     // Get visible columns in their current order from the table component

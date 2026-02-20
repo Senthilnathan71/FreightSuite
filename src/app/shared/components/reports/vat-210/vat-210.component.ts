@@ -337,17 +337,27 @@ export class Vat210Component {
     this.grandPurchaseTaxTotal
   ));
 
-  rows.push(this.sectionRow('PAYABLE'));
 
   rows.push({
     cells: [
-      { value: 'VAT PAYABLE', colspan: 2 },
+      { value: 'PAYABLE', colspan: 2 },
       { value: this.formatNumber(this.vatPayableAmountOversea) }
     ],
     style: 'grandTotal'
   });
 
-  rows.push(this.sectionRow('PAYMENT DETAILS'));
+    rows.push({
+    cells: [
+    { value: 'PAYMENT DATE', colspan: 2 },
+    {
+      value:
+        this.param?.FromDate && this.param?.ToDate
+          ? `${this.formatDate(this.param.FromDate)} - ${this.formatDate(this.param.ToDate)}`
+          : '',
+         alignment: { horizontal: 'right' }
+    }
+  ]
+  });
 
   rows.push({
     cells: [

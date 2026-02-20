@@ -649,7 +649,7 @@ onUOMChange() {
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
-        if (resp.Status) {
+        if (resp.status) {
           this.TandCList = resp.data;
           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',

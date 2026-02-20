@@ -21,6 +21,10 @@ export interface ExcelExportConfig {
 export interface ExcelCell {
   value: string | number;
   colspan?: number;
+  alignment?: {
+    horizontal?: 'left' | 'center' | 'right';
+    vertical?: 'top' | 'middle' | 'bottom';
+  };
 }
 
 /**

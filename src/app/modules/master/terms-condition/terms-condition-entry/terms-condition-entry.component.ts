@@ -5,7 +5,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,6 +17,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -76,6 +77,7 @@ export class TermsConditionEntryComponent implements OnInit{
 
     constructor(
         private masterService : MasterService,
+        private operationService: OperationService,
         private settingsService: SettingsService,
         private appSettingService : AppSettingsService,
         private route : Router,
@@ -108,7 +110,7 @@ export class TermsConditionEntryComponent implements OnInit{
         this.termsAndConditionForm = this.fb.group({
             MenuMasterSid : [,[Validators.required]],
             BranchMasterSid : [,[Validators.required]],
-            departmentId : [,[Validators.required]],
+            departmentId : [],
             Carrier : [],
             POL : [],
             POD : [],
@@ -121,7 +123,7 @@ export class TermsConditionEntryComponent implements OnInit{
         return {
             TermsAndConditionsDetailSid: formValue?.TermsAndConditionsDetailSid || this.TermsAndConditionsDetailSid || null,
             TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
-            IsDefaut: formValue?.IsDefaut === true || formValue?.IsDefaut === 'Y' ? 'Y' : 'N',
+            IsDefaut: formValue?.IsDefaut === true || formValue?.IsDefaut === 'S' ? 'S' : 'N',
             TandC: formValue?.TandC || '',
             Type: formValue?.Type || '',
             TypeValue: formValue?.TypeValue || '',
@@ -151,22 +153,38 @@ export class TermsConditionEntryComponent implements OnInit{
         this.filteredTandCDetail = this.TandCDetail.slice(start,end);
     }
 
+    private filterOnlyLeafMenus(menuList: any[]): any[] {
+  if (!Array.isArray(menuList)) return [];
+
+  // Collect all parentIds that exist
+  const parentIds = new Set(
+    menuList
+      .map(menu => Number(menu.parentId))
+      .filter(parentId => !!parentId)
+  );
+
+  // Keep only menus that are NOT parents
+  return menuList.filter(
+    menu => !parentIds.has(Number(menu.MenuMasterSid))
+  );
+}
+    
     loadAllFields(){
          const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
-            menus : this.settingsService.getAllMenu(),
+            menus : this.masterService.getAllMenu(),
             ports : this.masterService.getAllPorts(),
-            carriers : this.masterService.getAllCustomers(CompanyMasterSid),
+            carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier' , 'airLine'] }).pipe(catchError(err => of([]))),
             branches : this.masterService.getCurrentBranch(CompanyMasterSid),
             departments : this.masterService.getAllDepartments(CompanyMasterSid)
         }).subscribe(({menus,ports,carriers,branches,departments})=>{
-            this.menuList = menus,
+            this.menuList = this.filterOnlyLeafMenus(menus),
             this.portList = ports.data,
             this.filteredPorts = [...this.portList],
             this.filteredPOL = [...this.portList],
             this.filteredPOD = [...this.portList],
             this.filteredFDC = [...this.portList],
-            this.carrierList = carriers,
+            this.carrierList = carriers.data,
             this.branchList = branches,
             this.departmentList = departments;
             if (this.pendingDepartmentSid) {
@@ -243,28 +261,22 @@ export class TermsConditionEntryComponent implements OnInit{
     onPortSelectionChange(): void {
         const pol = this.asArray(this.termsAndConditionForm.get('POL')?.value);
         const pod = this.asArray(this.termsAndConditionForm.get('POD')?.value);
-        const fdc = this.asArray(this.termsAndConditionForm.get('FDC')?.value);
 
-        const polExclude = new Set([...pod, ...fdc]);
-        const podExclude = new Set([...pol, ...fdc]);
-        const fdcExclude = new Set([...pol, ...pod]);
+        const polExclude = new Set([...pod]);
+        const podExclude = new Set([...pol]);
 
         this.filteredPOL = this.filteredPorts.filter((port: any) => !polExclude.has(port.PortCode));
         this.filteredPOD = this.filteredPorts.filter((port: any) => !podExclude.has(port.PortCode));
-        this.filteredFDC = this.filteredPorts.filter((port: any) => !fdcExclude.has(port.PortCode));
 
         const allowedPOL = new Set(this.filteredPOL.map((p: any) => p.PortCode));
         const allowedPOD = new Set(this.filteredPOD.map((p: any) => p.PortCode));
-        const allowedFDC = new Set(this.filteredFDC.map((p: any) => p.PortCode));
 
         const validPOL = pol.filter((code: string) => allowedPOL.has(code));
         const validPOD = pod.filter((code: string) => allowedPOD.has(code));
-        const validFDC = fdc.filter((code: string) => allowedFDC.has(code));
 
         this.termsAndConditionForm.patchValue({
             POL: validPOL,
             POD: validPOD,
-            FDC: validFDC
         }, { emitEvent: false });
     }
 
@@ -289,8 +301,12 @@ export class TermsConditionEntryComponent implements OnInit{
         const { departmentId, ...masterFormValue } = formValue;
         const termsAndConditionsDetail = this.buildTermsDetailPayload();
         const departmentPayload = departmentId
-            ? [{ departmentId: Number(departmentId), status: formValue.status === 'Active' ? 'A' : 'S' }]
-            : [];
+    ? [{
+        DepartmentOnTermSid: this.isEditMode ? this.departmentOnTermsId : null,
+        departmentId: Number(departmentId),
+        status: formValue.status === 'Active' ? 'A' : 'S'
+      }]
+    : [];
         const payload = {
             ...masterFormValue,
             status : formValue.status === 'Active' ? 'A' : 'S',
@@ -353,7 +369,7 @@ export class TermsConditionEntryComponent implements OnInit{
         const localDetail = {
             TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || null,
             TermsAndConditionsDetailSid: this.TermsAndConditionsDetailSid || null,
-            IsDefaut: formValue.IsDefaut ? 'Y' : 'N',
+            IsDefaut: formValue.IsDefaut ? 'S' : 'N',
             TandC: formValue.TandC,
             Type: formValue.Type,
             TypeValue: formValue.TypeValue,
@@ -399,7 +415,7 @@ export class TermsConditionEntryComponent implements OnInit{
             }
             this.termsAndConditionDetailForm.patchValue({
                 ...data,
-                IsDefaut : data.IsDefaut === 'Y' ? true : false,
+                IsDefaut : data.IsDefaut === 'S' ? true : false,
                 detailstatus : data.status === 'A' ? 'Active' : 'Suspended'
             })
             if(data.TermsAndConditionsDetailSid){

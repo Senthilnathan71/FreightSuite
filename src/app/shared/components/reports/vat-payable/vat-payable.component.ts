@@ -135,7 +135,6 @@ export class VatPayableComponent {
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.VoucherFromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.VoucherToDate) },
-          { label: 'Branch', value: this.currentBranch?.branchName || '' }
         ]
       },
 

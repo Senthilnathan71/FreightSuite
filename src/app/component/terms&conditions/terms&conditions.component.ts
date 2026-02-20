@@ -18,6 +18,11 @@ export class TermsAndConditionsComponent implements OnInit {
   @Input() terms: any[] = [];
   @Input() MenuMasterSid: number;
   @Input() DocumentSid: number;
+  @Input() DepartmentMasterSid?: number;
+  @Input() POL?: string;
+  @Input() POD?: string;
+  @Input() FDC?: string;
+  @Input() Carrier?: number;
   @Output() termsUpdated = new EventEmitter<void>(); // Event to notify parent
   isAgreed: boolean = false;
   toggleBtn: boolean;
@@ -80,8 +85,13 @@ export class TermsAndConditionsComponent implements OnInit {
       MenuMasterSid: this.MenuMasterSid,
       createdBy: currentUserEmail,
       TandC: formValue.newTerm,
-      IsDefaut: formValue.IsDefaut ? 'A' : 'S',
+      IsDefaut: formValue.IsDefaut ? 'S' : 'N',
       DocumentSid: this.DocumentSid,
+      ...(this.DepartmentMasterSid != null && { DepartmentMasterSid: this.DepartmentMasterSid }),
+      ...(this.POL && { POL: this.POL }),
+      ...(this.POD && { POD: this.POD }),
+      ...(this.FDC && { FDC: this.FDC }),
+      ...(this.Carrier != null && { Carrier: this.Carrier }),
     };
 
     try {
@@ -92,7 +102,7 @@ export class TermsAndConditionsComponent implements OnInit {
         this.terms.push(
           {
             TandC: this.addForm.get('newTerm').value,
-            IsDefaut: this.addForm.get('IsDefaut').value ? 'A' : 'S'
+            IsDefaut: this.addForm.get('IsDefaut').value ? 'S' : 'N'
           }
         )
         this.showAddRow = !this.showAddRow;

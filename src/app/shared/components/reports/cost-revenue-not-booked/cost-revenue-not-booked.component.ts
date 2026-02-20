@@ -30,7 +30,7 @@ export class CostRevenueNotBookedComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService,
   ) {
-    console.log('Outstanding Report Data:', this.data);
+    console.log('Cost & Revenue Not Booked Report Data:', this.data);
   }
 
   ngOnInit(): void {

@@ -162,10 +162,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }
 
     // Thin divider line
-    stack.push({
-      canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }],
-      margin: [0, 3, 0, 0]
-    });
+    // stack.push({
+    //   canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }],
+    //   margin: [0, 3, 0, 0]
+    // });
 
     return {
       margin: [30, 15, 30, 0],
@@ -295,7 +295,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }),
     header: headerFunction,
     content,
-    footer: createFooterFunction(userData),
+    footer: createFooterFunction(userData, {showPageNumbers: true}),
     styles: getPdfStyles(),
     defaultStyle: { fontSize: 8, lineHeight: 1.2, color: '#333333' }
   };
