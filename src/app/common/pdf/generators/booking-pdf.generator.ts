@@ -35,6 +35,24 @@ export function generateBookingDocument(
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
     pageMargins: data.config?.pageMargins || PDF_DEFAULT_CONFIG.pageMargins,
+    // pageMargins: data.config?.pageMargins || [20, 180, 20, 60], // Reduced from 200 to 150
+
+    //  background: function (currentPage, pageSize) {
+        
+    //     return {
+    //       canvas: [
+    //         // LEFT BORDER
+    //         { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+    //         // RIGHT BORDER
+    //         { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+    //         // TOP BORDER
+    //         { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+    //         // BOTTOM BORDER
+    //         { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+    //       ]
+    //     };
+    //   },
+
     content: [
       // Header
       buildHeader(data.company, data.branch, data.logo),
@@ -46,7 +64,7 @@ export function generateBookingDocument(
       buildBookingInfo(data),
 
       // Divider
-      buildDivider(),
+      // buildDivider(),
 
       // Confirmation message
       buildConfirmationMessage(),
