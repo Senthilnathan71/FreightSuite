@@ -76,7 +76,7 @@
   : []),
         ...buildAuthorisedSignatory(data)
       ],
-      footer: createFooterFunction(data.userData),
+      footer: createFooterFunction(data.userData,{showPageNumbers:true}),
       styles: getPdfStyles(),
       defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
     };

@@ -386,7 +386,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
       },
        {
         key: 'RegionCode',
-        label: 'Region Name',
+        label: 'Region Code',
         sortable: true,
         filterable: true,
         visible: true,
