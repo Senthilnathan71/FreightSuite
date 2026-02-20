@@ -1,282 +1,488 @@
-<div class="row compact-form">
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="brand-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
-                </div>
-            </div>
-            <div class="col-md-8 pb-1">
-                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="navigateToBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                </div>
-            </div>
+<!-- ==================== VIEW MODE ==================== -->
+<div class="row compact-form" *ngIf="isEditMode">
+  <!-- Toolbar -->
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-invoice"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
         </div>
-    </div>
-
-    <div class="col-12 px-0">
-        <div class="card mb-1">
-            <div class="card-body">
-                <form [formGroup]="voucherMatchingForm" novalidate>
-                    <div class="row g-2 align-items-end">
-
-  <!-- Matching No -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="VoucherMatchingNo"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Matching No.</label>
-    </div>
-  </div>
-
-  <!-- Matching Date -->
-  <div class="col-md-2">
-    <div
-      class="custom-form-group custom-form-group-select-date"
-      [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value"
-    >
-      <div class="input-group">
-        <input
-          class="form-control"
-          formControlName="VoucherMatchingDate"
-          placeholder="dd-mm-yyyy"
-          ngbDatepicker
-          #d1="ngbDatepicker"
-          (click)="d1.toggle()"
-          readonly
-        />
-        <button class="btn" type="button" (click)="d1.toggle()">
-          <i-feather name="calendar" class="feather-sm"></i-feather>
-        </button>
       </div>
-      <label class="input-label">Matching Date</label>
-    </div>
-  </div>
-
-  <!-- Post Date -->
-  <div class="col-md-2">
-    <div
-      class="custom-form-group custom-form-group-select-date"
-      [class.filled]="!!voucherMatchingForm.get('PostDate')?.value"
-    >
-      <div class="input-group">
-        <input
-          class="form-control"
-          formControlName="PostDate"
-          placeholder="dd-mm-yyyy"
-          ngbDatepicker
-          #d2="ngbDatepicker"
-          (click)="d2.toggle()"
-          readonly
-        />
-        <button class="btn" type="button" (click)="d2.toggle()">
-          <i-feather name="calendar" class="feather-sm"></i-feather>
-        </button>
+      <div class="col-md-8 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateToBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+        </div>
       </div>
-      <label class="input-label">Post Date</label>
     </div>
   </div>
 
-  <!-- Ledger -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="LedgerName"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Ledger</label>
+  <!-- View Header -->
+  <div class="col-12 px-0">
+    <div class="card mb-1">
+      <div class="card-body py-2">
+        <form [formGroup]="voucherMatchingForm" novalidate>
+          <div class="row g-2 align-items-end">
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
+                <label class="input-label">Matching No.</label>
+              </div>
+            </div>
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value">
+                <div class="input-group">
+                  <input class="form-control" formControlName="VoucherMatchingDate"
+                    placeholder="dd-mm-yyyy" ngbDatepicker #dv1="ngbDatepicker" readonly />
+                  <button class="btn" type="button" disabled>
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Matching Date</label>
+              </div>
+            </div>
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="LedgerName" class="custom-input-field sm" />
+                <label class="input-label">Ledger</label>
+              </div>
+            </div>
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="SubledgerName" class="custom-input-field sm" />
+                <label class="input-label">Subledger</label>
+              </div>
+            </div>
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!voucherMatchingForm.get('PostDate')?.value">
+                <div class="input-group">
+                  <input class="form-control" formControlName="PostDate"
+                    placeholder="dd-mm-yyyy" ngbDatepicker #dv2="ngbDatepicker" readonly />
+                  <button class="btn" type="button" disabled>
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Post Date</label>
+              </div>
+            </div>
+
+
+            <div class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="Status" class="custom-input-field sm" />
+                <label class="input-label">Status</label>
+              </div>
+            </div>
+            
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Subledger -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="SubledgerName"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Subledger</label>
+  <!-- View Detail Table -->
+  <div class="col-12 px-0" *ngIf="detail.length > 0">
+    <div class="card mb-1">
+      <div class="card-body p-0">
+        <form [formGroup]="voucherMatchingForm" novalidate>
+          <div class="table-responsive table-borderless">
+            <table class="table table-hover align-middle table-sm mb-0">
+              <thead class="bg-info">
+                <tr>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 10%;">Branch</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Ledger</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Subledger</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 6%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Amount</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Match Type</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="voucherMatching">
+                <tr *ngFor="let d of detail.controls; let i = index" [formGroupName]="i">
+                  <td><input type="text" formControlName="BranchName" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="LedgerName" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="SubledgerName" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
+                  <td><input type="text" [value]="(d.getRawValue().VoucherDate | formatDate)" class="custom-input-field sm" disabled /></td>
+                  <td><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="CurrencyCode" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end" /></td>
+                  <td><input type="text" formControlName="Amount" class="custom-input-field sm text-end" /></td>
+                  <td><input type="text" formControlName="LocalAmount" class="custom-input-field sm text-end" /></td>
+                  <td><input type="text" formControlName="MatchingType" class="custom-input-field sm" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-
-  <!-- Status -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="Status"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Status</label>
-    </div>
-  </div>
-
 </div>
 
-                </form>
-            </div>
+<!-- ==================== CREATE MODE ==================== -->
+<div class="row compact-form" *ngIf="!isEditMode">
+  <!-- Toolbar -->
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+      <div class="col-md-2 pb-0">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-invoice"></i>
+          </div>
+          <h5 class="page-title my-0 text-info">Voucher Matching</h5>
         </div>
+      </div>
+      <div class="col-md-10 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateToBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-sync-alt me-1"></i>
+              Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="isSaving || !hasMatchingAmounts"
+            (click)="onSubmit()">
+            <i class="fas fa-save me-1"></i> Save
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Table Section with FormArray -->
-    <div class="col-12 mt-1 px-0">
-        <form [formGroup]="voucherMatchingForm" novalidate>
-            <div class="table-wrapper">
-                <div class="table-responsive table-borderless">
-                    <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                        <thead class="bg-info">
-                            <tr>
-                                <th class="bg-transparent text-light">Branch</th>
-                                <th class="bg-transparent text-light">Ledger</th>
-                                <th class="bg-transparent text-light">Subledger</th>
-                                <th class="bg-transparent text-light">Voucher No.</th>
-                                <th class="bg-transparent text-light">Voucher Type</th>
-                                <th class="bg-transparent text-light">Voucher Date</th>
-                                <th class="bg-transparent text-light">Dr/Cr</th>
-                                <th class="bg-transparent text-light">Curr.</th>
-                                <th class="bg-transparent text-light">Ex.Rate</th>
-                                <th class="bg-transparent text-light">Curr.Amt</th>
-                                <th class="bg-transparent text-light">Local Amt</th>
-                                <th class="bg-transparent text-light">Matching Type</th>
-                            </tr>
-                        </thead>
-
-                        <tbody formArrayName="voucherMatching">
-                            <!-- Use *ngFor to iterate over the FormArray -->
-                            <tr *ngFor="let detail of detail.controls; let i = index" [formGroupName]="i">
-                                <td>
-                                    <input 
-                                        type="text"
-                                        formControlName="BranchName"
-                                        class="custom-input-field sm" 
-                                        style="min-width: 250px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="LedgerName"
-                                        class="custom-input-field sm"
-                                        style="min-width: 100px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="SubledgerName"
-                                        class="custom-input-field sm"
-                                        style="min-width: 100px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="VoucherNumber"
-                                        class="custom-input-field sm"
-                                        style="min-width: 200px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="VoucherType"
-                                        class="custom-input-field sm"
-                                        style="min-width: 75px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        ngbDatepicker 
-                                        #d5="ngbDatepicker"
-                                        type="text" 
-                                        formControlName="VoucherDate"
-                                        class="custom-input-field sm"
-                                        style="min-width: 170px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="DrCr"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="CurrencyCode"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="ExchangeRate"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="Amount"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="LocalAmount"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="MatchingType"
-                                        class="custom-input-field sm"
-                                        style="min-width: 75px;" 
-                                    />
-                                </td>
-                            </tr>
-                            
-                            <!-- If no rows exist, show empty state -->
-                            <tr *ngIf="detail.length === 0">
-                                <td colspan="12" class="text-center py-3">
-                                    No voucher matching details available
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+  <!-- Header Section -->
+  <div class="col-md-12 px-0">
+    <div class="card h-100 mb-0">
+      <div class="card-body pb-1">
+        <form [formGroup]="headerForm" novalidate>
+          <div class="row">
+            <div class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
+                <label class="input-label">Matching No.</label>
+              </div>
             </div>
+            <div class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!headerForm.get('VoucherMatchingDate')?.value">
+                <div class="input-group">
+                  <input class="form-control" formControlName="VoucherMatchingDate"
+                    placeholder="dd-mm-yyyy" ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" />
+                  <button class="btn" type="button" (click)="d1.toggle()">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Matching Date</label>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!headerForm.get('PostDate')?.value">
+                <div class="input-group">
+                  <input class="form-control" formControlName="PostDate"
+                    placeholder="dd-mm-yyyy" ngbDatepicker #d2="ngbDatepicker" readonly />
+                  <button class="btn btn-light" type="button" disabled >
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Post Date</label>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"[class.filled]="!!headerForm.get('Ledger')?.value">
+                <ng-select formControlName="Ledger" [items]="ledgerList" bindLabel="LedgerName"
+                  [clearable]="true" placeholder="" (change)="onLedgerChange($event)"
+                  class="ng-select">
+                </ng-select>
+                <label class="input-label">Ledger</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="d-flex">
+              <div class="custom-form-group custom-form-group-select w-100"[class.filled]="!!headerForm.get('Subledger')?.value">
+                <ng-select formControlName="Subledger" [items]="subledgerList" bindLabel="SubledgerName"
+                  [clearable]="true" placeholder="" (change)="onSubledgerChange($event)"
+                  class="ng-select">
+                </ng-select>
+                <label class="input-label">Subledger</label>
+              </div>
+                <div class="pt-2">
+                  <button type="button" class="btn btn-info btn-sm w-100 d-flex align-items-center" (click)="onGet()">
+                  Get
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-1">
+              <div class="custom-form-group">
+                <input type="text" formControlName="Status" class="custom-input-field sm" />
+                <label class="input-label">Status</label>
+              </div>
+            </div>
+          </div>
         </form>
+      </div>
     </div>
+  </div>
+
+  <!-- Source Panel -->
+  <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
+    <div class="card mb-0">
+      <div class="card-header py-1 bg-info">
+        <h6 class="mb-0 text-white">Source</h6>
+      </div>
+      <div #sourceScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
+        <form [formGroup]="sourceForm" novalidate>
+          <div class="table-responsive table-borderless p-1">
+            <table class="table table-hover align-middle table-sm mb-0">
+              <thead class="bg-info">
+                <tr>
+                  <th class="bg-transparent text-light text-center" style="font-size: 14px; width: 18%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="items">
+                <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
+                  <td><input type="text" formControlName="voucherNo" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="voucherType" class="custom-input-field sm" /></td>
+                  <td><input type="text" [value]="(s.getRawValue().voucherDate | formatDate)" class="custom-input-field sm" disabled /></td>
+                  <td><input type="text" formControlName="drCr" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="curr" class="custom-input-field sm" /></td>
+                  <td>
+                    <input type="text" formControlName="exRate"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="4"
+                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="currAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="localAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="osCurrAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="osLocalAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td class="table-warning">
+                    <input type="text" formControlName="matchCurrAmt"
+                      class="custom-input-field sm text-end"
+                      [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)"
+                      (input)="calculateLocalAmountForRow(sourceItems, i)"
+                      (blur)="calculateLocalAmountForRow(sourceItems, i)" />
+                  </td>
+                  <td class="table-warning">
+                    <input type="text" formControlName="matchLocalAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" class="form-check-input"
+                      (change)="onTickMatch(sourceItems, i, $event)" />
+                  </td>
+                </tr>
+                <tr *ngIf="isLoadingSource">
+                  <td colspan="13" class="text-center text-muted py-2">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div #sourceSentinel style="height: 1px;"></div>
+        </form>
+      </div>
+      <div class="card-footer p-0 border-top-0" *ngIf="sourceItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
+          <tr class="table-info fw-bold text-end">
+            <td style="width: 40%;" class="text-end">Totals</td>
+            <td style="width: 9%;" class="text-end">{{ sourceTotalCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ sourceTotalOsCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 4%;"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Object Panel -->
+   <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
+    <div class="card mb-0">
+      <div class="card-header py-1 bg-secondary">
+        <h6 class="mb-0 text-white">Object</h6>
+      </div>
+      <div #objectScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
+        <form [formGroup]="objectForm" novalidate>
+          <div class="table-responsive table-borderless p-1">
+            <table class="table table-hover align-middle table-sm mb-0">
+              <thead class="bg-info">
+                <tr>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 18%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="items">
+                <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
+                  <td><input type="text" formControlName="voucherNo" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="voucherType" class="custom-input-field sm" /></td>
+                  <td><input type="text" [value]="(o.getRawValue().voucherDate | formatDate)" class="custom-input-field sm" disabled /></td>
+                  <td><input type="text" formControlName="drCr" class="custom-input-field sm" /></td>
+                  <td><input type="text" formControlName="curr" class="custom-input-field sm" /></td>
+                  <td>
+                    <input type="text" formControlName="exRate"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="4"
+                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="currAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="localAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="osCurrAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td>
+                    <input type="text" formControlName="osLocalAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td class="table-warning">
+                    <input type="text" formControlName="matchCurrAmt"
+                      class="custom-input-field sm text-end"
+                      [class.is-invalid]="o.get('matchCurrAmt')?.errors?.['limitExceeded']"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)"
+                      (input)="calculateLocalAmountForRow(objectItems, i)"
+                      (blur)="calculateLocalAmountForRow(objectItems, i)" />
+                  </td>
+                  <td class="table-warning">
+                    <input type="text" formControlName="matchLocalAmt"
+                      class="custom-input-field sm text-end"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)" />
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" class="form-check-input"
+                      (change)="onTickMatch(objectItems, i, $event)" />
+                  </td>
+                </tr>
+                <tr *ngIf="isLoadingObject">
+                  <td colspan="13" class="text-center text-muted py-2">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div #objectSentinel style="height: 1px;"></div>
+        </form>
+      </div>
+      <div class="card-footer p-0 border-top-0" *ngIf="objectItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
+          <tr class="table-info fw-bold text-end">
+            <td style="width: 40%;" class="text-end">Totals</td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalOsCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 4%;"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div> 
+
+  <!-- Empty state -->
+  <div class="col-12 px-0" *ngIf="sourceItems.length === 0 && objectItems.length === 0">
+    <div class="card">
+      <div class="card-body text-center py-4 text-muted">
+        <i class="fas fa-search fa-2x mb-2"></i>
+        <p class="mb-0">Select a Ledger and Subledger, then click Get to load outstanding vouchers for matching.</p>
+      </div>
+    </div>
+  </div>
 </div>

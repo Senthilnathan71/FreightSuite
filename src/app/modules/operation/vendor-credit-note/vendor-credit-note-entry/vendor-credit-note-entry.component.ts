@@ -2225,6 +2225,17 @@ export class VendorCreditNoteEntryComponent {
       return;
     }
 
+
+    const actualLocalAmount = toNumber(this.getTotalLocalDebits()) + toNumber(this.getTotalTaxAmount());
+    const actualMatchedAmount = toNumber(this.getFormattedAmount(actualLocalAmount, this.currentCompany?.CurrencyMasterSid));
+    console.info('actualMatchedAmount', actualMatchedAmount);
+    console.info('invoiceOutstandingAmount', this.invoiceOutstandingAmount);
+    if (actualMatchedAmount > this.invoiceOutstandingAmount) {
+      this.appSettingService.showWarning(`The invoice amount is greater than the outstanding amount. \nPlease check the invoice amount and try again.`);
+      if (resolve) resolve(false);
+      return;
+    }
+
     const payload = this.preparePayload();
     this.isSaving = true;
     this.spinner.show();

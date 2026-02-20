@@ -247,6 +247,43 @@ export class AccountsService {
     );
   }
 
+
+  getCOAByLedgerType(LedgerType: string, CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/ledger-type', { LedgerType, CompanyMasterSid }).pipe(
+      map((resp: any) => resp.data)
+    );
+  }
+
+  getSubledgersByCOA(payload: any) {
+    return this.http.post<{ data: any }>('subledgermaster/fetch-by-coa', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  searchPostedVouchers(payload: any) {
+    return this.http.post<any>('voucher-matching/search-posted-vouchers', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  getPostedVoucherWithDetails(voucherHeaderSid: number) {
+    return this.http.get<any>(`voucher-matching/posted-voucher/${voucherHeaderSid}`).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  createStandaloneVoucherMatching(payload: any) {
+    return this.http.post<any>('voucher-matching/create', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  searchOutstandingForMatching(payload: any) {
+    return this.http.post<any>('accounts/receipt/search-outstanding', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
   getAllCoaWithLedgerCategory(payload){
     return this.http.post<{ data: any }>('coa/ledger-category', payload).pipe(
       map((resp: any) => {

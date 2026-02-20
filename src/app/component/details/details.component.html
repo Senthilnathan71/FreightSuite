@@ -26,8 +26,8 @@
                                 <div class="text-truncate">{{item.createdBy || item.CreatedBy || ''}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate" *ngIf="item.createdOn">{{item.createdOn | formatDate}}</div>
-                                <div class="text-truncate" *ngIf="item.CreatedOn">{{item.CreatedOn | formatDate}}
+                                <div class="text-truncate" *ngIf="item.createdOn">{{item.createdOn | formatDate : true}}</div>
+                                <div class="text-truncate" *ngIf="item.CreatedOn">{{item.CreatedOn | formatDate : true}}
                                 </div>
                             </td>
                         </tr>
@@ -57,7 +57,7 @@
                                 <div class="text-truncate">{{item.UpdatedBy || 'Not updated yet'}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.UpdatedBy ? (item.UpdatedOn | formatDate) : 'Not updated yet'}}</div>
+                                <div class="text-truncate">{{item.UpdatedBy ? (item.UpdatedOn | formatDate : true) : 'Not updated yet'}}</div>
                             </td>
                         </tr>
                         } @else {

@@ -32,7 +32,7 @@
           </p>
           <p class="info-item">
             <span class="label">Job Date:</span>
-            <span class="value">{{ masterJob.jobDate | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.jobDate | formatDate }}</span>
           </p>
           <p class="info-item">
             <span class="label">MBL No:</span>
@@ -70,8 +70,8 @@
           </p>
           <p class="info-item">
             <span class="label">ETD:</span>
-            <span class="value">{{ masterJob.etd | formatDate:'dd-MMM-yyyy' }}</span>
-            <span class="ms-3"><strong>ETA:</strong> {{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.etd | formatDate }}</span>
+            <span class="ms-3"><strong>ETA:</strong> {{ masterJob.eta | formatDate }}</span>
           </p>
         </div>
       </div>
