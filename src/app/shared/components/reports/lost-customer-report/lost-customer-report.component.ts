@@ -80,7 +80,7 @@ export class LostCustomerReportComponent {
       sheetName: 'LostCustomer',
       reportHeader: {
         companyName: this.currentCompany?.companyName || '',
-        reportTitle: `Lost Customer Report as on ${this.formatDate(this.params?.BookingFromDate)}`,
+        reportTitle: `Lost Customer Report`,
         additionalInfo: [
           { label: 'Booking From Date', value: this.formatDate(this.params?.BookingFromDate) },
           { label: 'Booking To Date', value: this.formatDate(this.params?.BookingToDate) },

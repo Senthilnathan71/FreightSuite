@@ -105,9 +105,7 @@ export class HouseJobLossReportComponent {
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `House Job Loss Report as on ${this.formatDate(
-          this.params?.FromHblDt
-        )}`,
+        reportTitle: `House Job Loss Report`,
 
         additionalInfo: [
           { label: 'HBL From Date', value: this.formatDate(this.params?.FromHblDt) },

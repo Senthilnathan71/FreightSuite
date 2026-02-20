@@ -181,9 +181,7 @@ export class ShipmentSummaryDetailsComponent {
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || '',
-        reportTitle: `House Summary Details (${this.formatDate(
-          this.params?.FromHblDt
-        )} - ${this.formatDate(this.params?.ToHblDt)})`,
+        reportTitle: `House Summary Details`,
 
         additionalInfo: [
           {
