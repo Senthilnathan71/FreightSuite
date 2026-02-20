@@ -2,55 +2,89 @@
     <app-print-header></app-print-header>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Cost & Revenue Not Booked Report
+        {{ fullData?.CalculationType === 'Not Booked Cost'
+        ? 'Cost Not Booked Report'
+        : 'Revenue Not Booked Report' }}
     </h4>
     <div style="margin-top: 1rem;">
-
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.FromJobDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
+                    <p class="ms-1">: {{ params?.ToJobDt | formatDate }}</p>
                 </div>
             </div>
-
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
                     <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
                 </div>
-
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                    <p class="ms-1">: {{ fullData?.resolvedDeptNames }}</p>
                 </div>
             </div>
         </div>
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Booking No</th>
-                        <th class="bg-transparent text-light text-center">Freight Amount (SGD)</th>
-                        <th class="bg-transparent text-light">Report Month</th>
-                        <th class="bg-transparent text-light">Vessel Name</th>
-                        <th class="bg-transparent text-light">MBL</th>
-                        <th class="bg-transparent text-light">HBL</th>
-                        <th class="bg-transparent text-light">Shipment Type</th>
-                        <th class="bg-transparent text-light">Consignee Name</th>
-                        <th class="bg-transparent text-light">Destination of Country</th>
-                        <th class="bg-transparent text-light">Port of Discharge</th>
-                        <th class="bg-transparent text-light">Final Destination</th>
-                    </tr>
+                    <tr class="bg-info" style="white-space: nowrap;">
+                        <th class="bg-transparent text-light text-center" rowspan="2">Booking No</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">Master Job No</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">MBL No</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">HBL No</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">HBL Date</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">Dept</th>
+                        <th class="bg-transparent text-light text-center" rowspan="2">Charge Desc</th>
+                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Not Booked Cost'
+                            ? 'Revenue'
+                            : 'Cost' }} Amt</th>
+                        <th class="bg-transparent text-light text-center"> {{ fullData?.CalculationType === 'Not Booked Cost'
+                            ? 'Revenue'
+                            : 'Cost' }} Local Amt</th>
+                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Not Booked Cost'
+                            ? 'Revenue'
+                            : 'Cost' }} Party</th>
                 </thead>
                 <tbody>
-
+                    <ng-container *ngFor="let job of fullData?.data">
+                        <tr *ngFor="let cr of job.costRevenues" style="white-space: nowrap;">
+                            <td>{{ job.BookingNo }}</td>
+                            <td>{{ job.MasterJobNo }}</td>
+                            <td>{{ job.MBLNo }}</td>
+                            <td>{{ job.HBLNo }}</td>
+                            <td class="text-center">{{ job.HBLDate | formatDate }}</td>
+                            <td class="text-center">{{ job.dept }}</td>
+                            <td>{{ cr.Charge }}</td>
+                            <td class="text-end">
+                                {{
+                                fullData?.CalculationType === 'Not Booked Cost'
+                                ? (cr.RevenueAmt | number:'1.2-2')
+                                : (cr.CostAmt | number:'1.2-2')
+                                }}
+                            </td>
+                            <td class="text-end">
+                                {{
+                                fullData?.CalculationType === 'Not Booked Cost'
+                                ? (cr.RevenueLocalAmount | number:'1.2-2')
+                                : (cr.CostLocalAmount | number:'1.2-2')
+                                }}
+                            </td>
+                            <td>
+                                {{
+                                fullData?.CalculationType === 'Not Booked Cost'
+                                ? cr.revenueCustomer
+                                : cr.costCustomer
+                                }}
+                            </td>
+                        </tr>
+                    </ng-container>
                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
-                        <td colspan="27" class="text-center fw-bold py-1">
+                        <td colspan="15" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>

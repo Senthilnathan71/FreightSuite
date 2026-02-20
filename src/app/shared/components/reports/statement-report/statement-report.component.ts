@@ -89,7 +89,7 @@ export class StatementReportComponent {
   getLocalTotal(transactions: any[]): number {
     if (!transactions || !transactions.length) return 0;
     const ledgerType = this.fullData?.ledgerType?.trim();
-    let total = 0;
+    let total = this.fullData?.openingBalance || 0;
     transactions.forEach((item) => {
       const drCr = item?.drCr;
       const amount = +item?.originalLocalAmount || 0;
@@ -159,8 +159,8 @@ export class StatementReportComponent {
         { value: '' },
         { value: '' },
         { value: '' },
-        { value: this.formatNumber(openingBalance) },
         { value: '' },
+        { value: this.formatNumber(openingBalance) },
         { value: '' },
         { value: '' },
         { value: this.formatNumber(openingBalance) }
@@ -201,7 +201,8 @@ export class StatementReportComponent {
       { value: this.formatNumber(this.getLocalTotal(transactions)) },
       // { value: this.formatNumber(this.getTotal(transactions, 'signedOutstandingCurrency')) },
       { value: '' },
-      { value: this.formatNumber(this.getSignedTotal(transactions)) },
+      { value: '' },
+      // { value: this.formatNumber(this.getSignedTotal(transactions)) },
       {
         value: this.formatNumber(
           transactions.length > 0
@@ -216,7 +217,6 @@ export class StatementReportComponent {
     return {
       fileName: 'Statement-Report',
       sheetName: 'StatementReport',
-
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Statement of Acconuts`,
@@ -228,12 +228,9 @@ export class StatementReportComponent {
           { label: 'Subledger', value: this.fullData?.subledgerName || '' }
         ]
       },
-
       tableHeaders,
       rows,
-
-      columnWidths: [12, 12, 15, 25, 8, 8, 15, 15, 15, 15, 15],
-
+      columnWidths: [20, 12, 3, 30, 3, 3, 15, 15, 15, 15, 15],
       notes: [
         'This Statement of Accounts report includes only posted voucher transactions.'
       ]

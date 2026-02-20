@@ -181,7 +181,7 @@ export class DestinationReportComponent {
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Destination Report (${this.formatDate(this.params?.FromHblDt)} - ${this.formatDate(this.params?.ToHblDt)})`,
+        reportTitle: `Destination Report`,
 
         additionalInfo: [
           { label: 'HBL From Date', value: this.formatDate(this.params?.FromHblDt) },
