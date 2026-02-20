@@ -27,6 +27,8 @@ const DEFAULT_FOOTER_OPTIONS: FooterOptions = {
 /**
  * Build standard footer with Printed By, disclaimer, Printed On
  */
+
+
 export function buildFooter(
   userData: PdfUserInfo,
   currentPage?: number,
@@ -40,9 +42,9 @@ export function buildFooter(
   if (opts.showPrintedBy) {
     columns.push({
       text: `Printed By : ${userData?.userName || ''}`,
-      fontSize: 8,
+      fontSize: 7,
       alignment: 'left',
-      width: '30%'
+      width: '15%'
     });
   }
 
@@ -50,9 +52,8 @@ export function buildFooter(
   if (opts.showDisclaimer) {
     columns.push({
       text: opts.disclaimerText,
-      fontSize: 8,
+      fontSize: 7,
       alignment: 'center',
-      // width: opts.showPageNumbers ? '30%' : '40%'
       width:'*'
     });
   }
@@ -61,7 +62,7 @@ export function buildFooter(
   if (opts.showPageNumbers && currentPage !== undefined && pageCount !== undefined) {
     columns.push({
       text: `Page ${currentPage} of ${pageCount}`,
-      fontSize: 8,
+      fontSize: 7,
       alignment: 'center',
       width: '10%'
     });
@@ -71,7 +72,7 @@ export function buildFooter(
   if (opts.showPrintedOn) {
     columns.push({
       text: `Printed On : ${formatDate(new Date())}`,
-      fontSize: 8,
+      fontSize: 7,
       alignment: 'right',
       width: '30%'
     });
@@ -79,7 +80,8 @@ export function buildFooter(
 
   return {
     columns,
-    margin: opts.pageMargins
+    margin: [40, 30, 38, 40],  // Increased top margin to push content down
+
   };
 }
 

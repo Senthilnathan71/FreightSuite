@@ -244,7 +244,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'Container-Report',
+      fileName: 'Container Type-Report',
       title: companyName
     });
   }

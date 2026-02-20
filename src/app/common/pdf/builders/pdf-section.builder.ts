@@ -17,22 +17,37 @@ export function buildTitle(
     showLine?: boolean;
     lineWidth?: number;
     margin?: [number, number, number, number];
+    linePadding?: number; // 👈 new option
   } = {}
 ): any {
+
   const {
     subtitle,
     alignment = 'center',
     showLine = true,
-    lineWidth = 515,
-    margin = [0, 0, 0, 10]
+    lineWidth = 575,
+    margin = [0, 0, 0, 10],
+    linePadding = 12   // 👈 default left/right spacing
   } = options;
 
   const stack: any[] = [];
 
+  const adjustedWidth = lineWidth - (linePadding * 2);
+
   // Top line
   if (showLine) {
     stack.push({
-      canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 1 }]
+      canvas: [
+        {
+          type: 'line',
+          x1: linePadding,
+          y1: 0,
+          x2: linePadding + adjustedWidth,
+          y2: 0,
+          lineWidth: 1
+        }
+      ],
+      margin: [0, 0, 0, 0]
     });
   }
 
@@ -41,29 +56,39 @@ export function buildTitle(
     text: title,
     style: 'documentTitle',
     alignment,
-    margin: [0, 10, 0, subtitle ? 5 : 10]
+    margin: [0, 8, 0, subtitle ? 4 : 8]
   });
 
-  // Subtitle (optional)
+  // Subtitle
   if (subtitle) {
     stack.push({
       text: subtitle,
       style: 'sectionTitle',
       alignment,
-      margin: [0, 0, 0, 10]
+      margin: [0, 0, 0, 8]
     });
   }
 
-  // Bottom line (optional)
+  // Bottom line
   if (showLine) {
     stack.push({
-      canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 1 }],
-      margin: [0, 0, 0, 10]
+      canvas: [
+        {
+          type: 'line',
+          x1: linePadding,
+          y1: 0,
+          x2: linePadding + adjustedWidth,
+          y2: 0,
+          lineWidth: 1
+        }
+      ],
+      margin: [0, 0, 0, 0]
     });
   }
 
   return { stack, margin };
 }
+
 
 /**
  * Build section title
@@ -74,12 +99,15 @@ export function buildSectionTitle(
     style?: string;
     margin?: [number, number, number, number];
     showUnderline?: boolean;
+    lineWidth?: number;
+    linePadding?: number; // 👈 new option
   } = {}
 ): any {
   const {
     style = 'sectionTitle',
-    margin = [0, 10, 0, 5],
-    showUnderline = false
+    margin = [0, 0, 0, 10],
+    showUnderline = false,
+    
   } = options;
 
   const stack: any[] = [
