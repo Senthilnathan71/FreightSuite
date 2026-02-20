@@ -180,7 +180,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     fontSize: 7,
     color: '#ffffff',
     fillColor: '#116897',
-    alignment: 'left' as const
+    alignment: 'center' as const
   }));
 
   // --- D) Data rows with right-aligned numeric values ---
