@@ -90,7 +90,7 @@ getLocalTotal(transactions: any[]): number {
   if (!transactions || !transactions.length) return 0;
 
   const ledgerType = this.fullData?.ledgerType?.trim();
-  let total = 0;
+  let total = this.fullData?.openingBalance || 0;
 
   transactions.forEach((item) => {
     const drCr = item?.drCr;
@@ -147,8 +147,8 @@ getSignedTotal(transactions: any[]): number {
       { key: 'currency', label: 'Cur' },
       { key: 'amt', label: 'Amt' },
       { key: 'localAmt', label: 'Local Amt' },
-      { key: 'osCurrAmt', label: 'O/S Currency Amt' },
-      { key: 'osLocalAmt', label: 'O/S Local Amt' },
+      // { key: 'osCurrAmt', label: 'O/S Currency Amt' },
+      // { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' }
     ];
 
@@ -165,11 +165,12 @@ getSignedTotal(transactions: any[]): number {
         { value: '' },
         { value: '' },
         { value: '' },
+        { value: '' },
         { value: this.formatNumber(openingBalance) },
-        { value: '' },
-        { value: '' },
-        { value: '' },
-        { value: '' }
+        // { value: '' },
+        // { value: '' },
+        // { value: '' },
+        { value: this.formatNumber(openingBalance) }
       ];
 
       rows.push({ cells: openingCells, style: 'data' });
@@ -185,8 +186,8 @@ getSignedTotal(transactions: any[]): number {
         { value: item?.currencyCode || '' },
         { value: this.formatNumber(item?.signedOriginalCurrency) },
         { value: this.formatNumber(item?.signedLocalAmt) },
-        { value: this.formatNumber(item?.signedOutstandingCurrency) },
-        { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
+        // { value: this.formatNumber(item?.signedOutstandingCurrency) },
+        // { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
         { value: this.formatNumber(item?.cumulativeOutstanding) }
       ];
       rows.push({ cells, style: 'data' });
@@ -196,8 +197,8 @@ getSignedTotal(transactions: any[]): number {
     const totalCells: ExcelCell[] = [
       { value: 'TOTAL', colspan: 7 },
       { value: this.formatNumber(this.getLocalTotal(transactions)) },
-      { value: '' },
-      { value: this.formatNumber(this.getSignedTotal(transactions)) },
+      // { value: '' },
+      // { value: this.formatNumber(this.getSignedTotal(transactions)) },
       {
         value: this.formatNumber(
           transactions.length > 0
@@ -213,7 +214,7 @@ getSignedTotal(transactions: any[]): number {
       sheetName: 'LedgerReport',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Ledger Report on ${this.formatDate(this.params?.FromDate)}`,
+        reportTitle: `Ledger Report`,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
@@ -225,7 +226,7 @@ getSignedTotal(transactions: any[]): number {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 6, 25, 6, 6, 15, 15, 15, 15, 15],
+      columnWidths: [12, 12, 3, 25, 3, 3, 15, 15, 15, 15, 15],
       notes: ['This ledger report includes only posted voucher transactions.']
     };
   }

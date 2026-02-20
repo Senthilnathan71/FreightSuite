@@ -192,18 +192,18 @@ export class OutstandingReportComponent {
     ];
 
     const columnWidths = [
-      10, // Voucher No
-      10, // Voucher Date
-      6,  // Type
-      18, // Narration
-      6,  // Dr/Cr
-      6,  // Cur
+      15, // Voucher No
+      8, // Voucher Date
+      3,  // Type
+      25, // Narration
+      3,  // Dr/Cr
+      3,  // Cur
       10, // Amt
       10, // Local Amt
-      12, // O/S Currency
-      12, // O/S Local
-      12, // Cumulative
-      8   // Ageing
+      10, // O/S Currency
+      10, // O/S Local
+      10, // Cumulative
+      4   // Ageing
     ];
 
 
@@ -253,7 +253,7 @@ export class OutstandingReportComponent {
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Outstanding Report as on ${this.formatDate(this.params?.ToDate)}`,
+        reportTitle: `Outstanding Report`,
         additionalInfo: [
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
