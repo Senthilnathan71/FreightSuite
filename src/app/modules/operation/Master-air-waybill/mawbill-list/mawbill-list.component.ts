@@ -423,7 +423,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'Master-Job-Report',
+      fileName: 'Master-AirwayBill-Report',
       title: companyName
     });
   }

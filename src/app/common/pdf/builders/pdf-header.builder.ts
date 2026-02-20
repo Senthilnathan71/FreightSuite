@@ -58,7 +58,8 @@ export function buildHeader(
     companyInfoStack.push({
       text: company.companyName,
       style: 'companyName',
-      alignment: opts.alignment
+      alignment: opts.alignment,
+      margin: [0, 0, 0, 4]
     });
   }
 

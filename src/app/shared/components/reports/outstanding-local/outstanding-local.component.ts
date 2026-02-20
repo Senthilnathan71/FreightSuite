@@ -266,7 +266,7 @@ export class OutstandingLocalComponent {
       { key: 'ageing', label: 'Ageing' }
     ];
 
-    const columnWidths = [15, 15, 10, 30, 8, 15, 18, 15, 10];
+    const columnWidths = [15, 10,3, 30, 3, 10, 10, 10, 4];
 
     /* ================= LOOP CURRENCY GROUPS ================= */
 
@@ -358,7 +358,7 @@ export class OutstandingLocalComponent {
       // ✅ Header Like HTML
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Outstanding Local Report as on ${this.formatDate(this.params?.ToDate)}`,
+        reportTitle: `Outstanding Local Report`,
         additionalInfo: [
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.brancesInvoled || 'All' },

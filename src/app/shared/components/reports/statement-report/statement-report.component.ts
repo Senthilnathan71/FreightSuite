@@ -163,7 +163,7 @@ export class StatementReportComponent {
         { value: '' },
         { value: '' },
         { value: '' },
-        { value: '' }
+        { value: this.formatNumber(openingBalance) }
       ];
 
       rows.push({ cells: openingCells, style: 'data' });
@@ -219,7 +219,7 @@ export class StatementReportComponent {
 
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Statement of Acconuts as on ${this.formatDate(this.params?.FromDate)}`,
+        reportTitle: `Statement of Acconuts`,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },

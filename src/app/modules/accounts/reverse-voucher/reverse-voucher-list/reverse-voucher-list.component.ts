@@ -442,7 +442,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
                 this.spinner.hide();
                 this.appSettingService.showError('Error deleting Reverse Voucher');
                 console.error('Error deleting Reverse Voucher:', error);
-              }
+              } 
             });
           }
         });
@@ -453,8 +453,10 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
           data: this.allItems,
           headers: [
             { key: 'VoucherNumber', label: 'Reverse Voucher No' },
-            { key: 'VoucherDate', label: 'Invoice Date' },
+            { key: 'reversalVoucherNumber', label: 'Voucher No' },
+            { key: 'VoucherDate', label: 'Voucher Date' },
             { key: 'VendorName', label: 'Vendor Name' },
+            { key: 'PostStatusLabel', label: 'Posted Status' },
             { key: 'Status', label: 'Status' }
           ],
           fileName: 'Reverse_Voucher',

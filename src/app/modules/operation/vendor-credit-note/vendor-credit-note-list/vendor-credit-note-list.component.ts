@@ -517,14 +517,15 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         data: this.allItems,
         headers: [
           { key: 'VoucherNumber', label: 'Vendor CreditNote No' },
-          { key: 'VoucherDate', label: 'Invoice Date' },
+          { key: 'ReversalVoucherDisplay', label: 'Vendor Invo No' },
+          { key: 'VoucherDate', label: 'Date' },
           { key: 'VendorName', label: 'Vendor Name' },
           { key: 'BillNo', label: 'Bill No' },
           { key: 'BillDate', label: 'Bill Date' },
           { key: 'CurrencyCode', label: 'Currency' },
           { key: 'LocalAmount', label: 'Amount' },
           { key: 'MBLNo', label: 'MBL No' },
-          { key: 'HBLNo', label: 'HBL No' },
+          // { key: 'HBLNo', label: 'HBL No' },
           { key: 'Status', label: 'Status' }
         ],
         fileName: 'Vendor_CreditNote',

@@ -546,9 +546,9 @@ export class LedgerMappingComponent implements OnInit {
         reportName = 'Party-Subledger-Mapping';
         headers = [
           { key: 'SubledgerName', label: 'Party Name' },
-          { key: 'AccrualCOA', label: 'Accrual COA' },
           { key: 'DebtorCOA', label: 'Debtor COA' },
           { key: 'CreditorCOA', label: 'Creditor COA' },
+           { key: 'AccrualCOA', label: 'Accrual COA' },
           { key: 'Status', label: 'Status' },
         ];
         break;

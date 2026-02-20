@@ -30,7 +30,7 @@
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
       pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-      pageMargins: data.config?.pageMargins || [20, 180, 20, 60], // Reduced from 200 to 150
+      pageMargins: data.config?.pageMargins || [20, 157, 20, 60], // Reduced from 200 to 150
 
       background: function (currentPage, pageSize) {
         
@@ -70,11 +70,10 @@
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
         ...buildBankDetailsSection(data),
         ...(data.terms && data.terms.length > 0
-          ? [
-              ...(shouldBreakPageForTerms ? [{ text: '', pageBreak: 'before' as const }] : []),
-              buildTermsSectionWithBullets(data.terms)
-            ]
-          : []),
+  ? [
+      buildTermsSectionWithBullets(data.terms)
+    ]
+  : []),
         ...buildAuthorisedSignatory(data)
       ],
       footer: createFooterFunction(data.userData),
@@ -97,7 +96,7 @@
     const PAGE_RIGHT = 565;
 
     const logoColumn = logo
-      ? { image: logo, width: 200, height: 60, alignment: 'left' as const }
+      ? { image: logo, width: 200, height: 55, alignment: 'left' as const }
       : { text: '', width: 200 };
 
     const companyInfoStack: any[] = [];
@@ -158,7 +157,7 @@
         body: [[logoColumn, { stack: companyInfoStack }, { text: '' }]]
       },
       layout: 'noBorders',
-      margin: [0, 5, 0, 6]
+      margin: [0, 5, 0, 3]
     };
 
     const bottomLine = {
@@ -170,7 +169,7 @@
         y2: 0,
         lineWidth: 1.5
       }],
-      margin: [0, 0, 0, 10]
+      margin: [0, 0, 0, 5]
     };
 
     return [headerTable, bottomLine];
@@ -186,11 +185,11 @@
 
     return {
       text: title,
-      style: 'Credit Note Invoice',
+      style: 'Tax Invoice',
       alignment: 'center',
       bold: true,
       fontSize: 12,
-      margin: [0, 5, 0, 8]
+      margin: [0, 2, 0, 7]
     };
   }
 
@@ -198,46 +197,51 @@
    * Build invoice info section - using invoicePrintData
    */
 function buildInvoiceInfo(data: InvoicePdfData): any {
-    const invoice = data.invoice;
-    const printData = (data as any).invoicePrintData;
-    const PAGE_LEFT = -10;
-    const PAGE_RIGHT = 565;
-    const RIGHT_LABEL_WIDTH = 105;  
-    const COLON_WIDTH = 6;         
-    
-    // Left side - Billed To
-    const billedTo = printData?.BilledTo || invoice?.customerName || '';
-    const billingAddress = printData?.BillingAddress || invoice?.customerAddress || '';
-    
-     const leftStack: any[] = [
+  const invoice = data.invoice;
+  const printData = (data as any).invoicePrintData;
+
+  const PAGE_LEFT = -10;
+  const PAGE_RIGHT = 565;
+  const RIGHT_LABEL_WIDTH = 89;
+  const COLON_WIDTH = 6;
+
+  // -----------------------------
+  // Left side - Billed To
+  // -----------------------------
+  const billedTo =
+    printData?.BilledTo || invoice?.customerName || '';
+  const billingAddress =
+    printData?.BillingAddress || invoice?.customerAddress || '';
+
+  const leftStack: any[] = [
     {
       text: 'Billed To',
       style: 'labelBold',
       margin: [0, 0, 0, 3]
-     
     },
     {
       text: billedTo,
-      margin: [0, 0, 0, 3],
+      margin: [0, 0, 0, 3]
     }
   ];
-    
-    if (billingAddress) {
+
+  if (billingAddress) {
     leftStack.push({
       text: billingAddress,
       margin: [0, 0, 0, 3]
     });
   }
 
-  // Right side - Invoice details with spacing
+  // -----------------------------
+  // Right side - Invoice Details
+  // -----------------------------
   const rightStack: any[] = [];
 
-  
-    // Invoice No
+  // Invoice No
   rightStack.push({
     columns: [
       { text: 'Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
+     { text: ':', width: COLON_WIDTH, style: 'labelBold' },
       { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
     ],
     margin: [0, 0, 0, 5]
@@ -247,39 +251,47 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
-      { 
-        text: printData?.InvoiceDate ? formatDate(printData.InvoiceDate) : formatDate(invoice?.invoiceDate), 
-        width: '*' 
+      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      {
+        text: printData?.InvoiceDate
+          ? formatDate(printData.InvoiceDate)
+          : formatDate(invoice?.invoiceDate),
+        width: '*'
       }
     ],
     margin: [0, 0, 0, 5]
   });
 
-  // VAT No.
+  // VAT No
   rightStack.push({
     columns: [
       { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
-      { text: printData?.GST_VAT || invoice.customerGstVat || '', width: '*' }
+      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
     ],
-    margin: [0, 0, 0, 5]
+    margin: [0, 0, 0, 7]
   });
 
-  // IRN Number (if exists)
+  // IRN Number (Optional)
   if (printData?.IRNNumber || invoice?.irnNumber) {
     rightStack.push({
       columns: [
         { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH  },
+        { text: ':', width: COLON_WIDTH, style: 'labelBold' },
         { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
       ],
-      margin: [0, 0, 0, 5]
+      margin: [0, 0, 0, 7]
     });
   }
 
-    
-  // Build two-column layout
+  // 🔥 Remove bottom margin from the LAST row automatically
+  if (rightStack.length > 0) {
+    rightStack[rightStack.length - 1].margin = [0, 0, 0, 0];
+  }
+
+  // -----------------------------
+  // Two Column Layout
+  // -----------------------------
   const twoColumnLayout = {
     columns: [
       {
@@ -292,204 +304,165 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       }
     ],
     columnGap: 0,
-    margin: [0, 0, 0, 0]
-  };
-   const bottomLine = {
-    canvas: [{
-      type: 'line',
-      x1: PAGE_LEFT,
-      y1: 0,
-      x2: PAGE_RIGHT,
-      y2: 0,
-      lineWidth: 1.5
-    }],
-    margin: [0, 10, 0, 10]
+    margin: [15, 0, 0, 0]
   };
 
-      return {
+  // -----------------------------
+  // Bottom Line (No Extra Space)
+  // -----------------------------
+  const bottomLine = {
+    canvas: [
+      {
+        type: 'line',
+        x1: PAGE_LEFT,
+        y1: 0,
+        x2: PAGE_RIGHT,
+        y2: 0,
+        lineWidth: 1.5
+      }
+    ],
+    margin: [0, 5, 0, 5]
+  };
+
+  return {
     stack: [
       twoColumnLayout,
       bottomLine
     ],
     margin: [0, 0, 0, 0]
   };
-
 }
+
 
   /**
    * Build shipment details - using invoicePrintData
    */
-  function buildShipmentDetails(data: InvoicePdfData): any {
-    const invoice = data.invoice;
-    const printData = (data as any).invoicePrintData;
-    const cargo = data.cargoDetails;
-    const isSeaMode = data.isSeaMode !== false;
+ function buildShipmentDetails(data: InvoicePdfData): any {
+  const invoice = data.invoice;
+  const printData = (data as any).invoicePrintData;
+  const cargo = data.cargoDetails;
+  const isSeaMode = data.isSeaMode !== false;
 
-    // Left Column
-    const leftItems: { label: string; value: string }[] = [];
+  const RIGHT_LABEL_WIDTH = 88;
+  const COLON_WIDTH = 5;
 
-    leftItems.push({ 
-      label: 'Shipper', 
-      value: printData?.ShipperName || invoice?.shipperName || '' 
-    });
-    
-    leftItems.push({ 
-      label: 'Consignee / Notify', 
-      value: printData?.ConsigneeName || invoice?.consigneeName || '' 
-    });
+  // -----------------------------
+  // Left Column Data
+  // -----------------------------
+  const leftItems: { label: string; value: string }[] = [
+    { label: 'Shipper', value: printData?.ShipperName || invoice?.shipperName || '' },
+    { label: 'Consignee / Notify', value: printData?.ConsigneeName || invoice?.consigneeName || '' },
+    { label: isSeaMode ? 'Vessel Name' : 'Flight Name', value: printData?.Vessel || invoice?.vesselName || '' },
+    { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' },
+    { label: 'Shipper Ref No.', value: printData?.CustomerRefNo || invoice?.shipperRefNo || '' },
+    { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
+    { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
+    { label: 'ETD', value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') },
+    { label: 'ETA', value: printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '') }
+  ];
 
-    leftItems.push({
-      label: isSeaMode ? 'Vessel Name' : 'Flight Name',
-      value: printData?.Vessel || invoice?.vesselName || ''
-    });
+  // -----------------------------
+  // Right Column Data
+  // -----------------------------
+  const dueDate = printData?.InvoiceDueDate || invoice?.invoiceDueDate || invoice?.dueDate;
 
-    leftItems.push({
-      label: isSeaMode ? 'Voyage No.' : 'Flight No.',
-      value: printData?.VoyageNo || invoice?.voyageNo || ''
-    });
+  const currExRate =
+    printData?.CurrExRate ||
+    (invoice?.currencyCode && invoice?.exchangeRate
+      ? `${invoice.currencyCode} / ${invoice.exchangeRate}`
+      : invoice?.currencyCode || '');
 
-    leftItems.push({
-      label: 'Shipper Ref No.',
-      value: printData?.CustomerRefNo || invoice?.shipperRefNo || ''
-    });
+  const rightItems: { label: string; value: string }[] = [
+    { label: isSeaMode ? 'HBL' : 'HAWB', value: printData?.HBLNo || invoice?.hblNo || '' },
+    { label: isSeaMode ? 'MBL' : 'MAWB', value: printData?.MBLNo || invoice?.mblNo || '' },
+    { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
+    { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
+    { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
+    { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
+    { label: 'Currency / Ex-Rate', value: currExRate }
+  ];
 
-    leftItems.push({
-      label: 'Loading Port',
-      value: printData?.POL || invoice?.loadingPort || invoice?.pol || ''
-    });
+  // -----------------------------
+  // Build Left Stack
+  // -----------------------------
+  const leftStack = leftItems.map(item => ({
+    columns: [
+      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: item.value, width: '*' }
+    ],
+    margin: [10, 2, 0, 3]
+  }));
 
-    leftItems.push({
-      label: 'Final Destination',
-      value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || ''
-    });
+  // -----------------------------
+  // Build Right Stack
+  // -----------------------------
+  const rightStack: any[] = rightItems.map(item => ({
+    columns: [
+      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: item.value, width: '*' }
+    ],
+    margin: [0, 2, 0, 2]
+  }));
 
-    leftItems.push({ 
-      label: 'ETD', 
-      value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') 
-    });
-    
-    leftItems.push({ 
-      label: 'ETA', 
-      value: printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '') 
-    });
-
-    // Right Column
-    const rightItems: { label: string; value: string }[] = [];
-
-    rightItems.push({
-      label: isSeaMode ? 'HBL' : 'HAWB',
-      value: printData?.HBLNo || invoice?.hblNo || ''
-    });
-
-    rightItems.push({
-      label: isSeaMode ? 'MBL' : 'MAWB',
-      value: printData?.MBLNo || invoice?.mblNo || ''
-    });
-
-    rightItems.push({ 
-      label: 'Job No.', 
-      value: printData?.MasterJobNumber || invoice?.jobNo || '' 
-    });
-    
-    rightItems.push({ 
-      label: 'Freight Terms', 
-      value: printData?.FreightTerms || invoice?.freightTerms || '' 
-    });
-    
-    rightItems.push({ 
-      label: 'Booking No.', 
-      value: printData?.BookingNumber || invoice?.bookingNo || '' 
-    });
-
-    const dueDate = printData?.InvoiceDueDate || invoice?.invoiceDueDate || invoice?.dueDate;
-    rightItems.push({
-      label: 'Invoice Due Date',
-      value: dueDate ? formatDate(dueDate) : ''
-    });
-
-    const currExRate = printData?.CurrExRate || 
-      (invoice?.currencyCode && invoice?.exchangeRate
-        ? `${invoice.currencyCode} / ${invoice.exchangeRate}`
-        : invoice?.currencyCode || '');
-    rightItems.push({ label: 'Currency / Ex-Rate', value: currExRate });
-
-    
-    // Build stacks
-    const leftStack = leftItems.map(item => ({
-      columns: [
-        { text: item.label, width: 100, style: 'labelBold' },
-        { text: ':', width: 10 },
-        { text: item.value, width: '*' }
-      ],
-      margin: [0, 4, 0, 4]
-    }));
-
-  
-      const RIGHT_LABEL_WIDTH = 95;  
-      const COLON_WIDTH = 6;         
-
-
-    const rightStack: any[] = rightItems.map(item => ({
-      columns: [
-        { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH  },
-        { text: item.value, width: '*' }
-      ],
-      margin: [0, 4, 0, 4]
-    }));
-
-    // Cargo table
-    if (printData || cargo) {
-      const cargoData = {
-        packages: printData?.pkg || cargo?.packages || '0',
-        desc: printData?.desc || cargo?.commodityDesc || '',
-        grosswt: printData?.grosswt || cargo?.grossWeight || 0,
-        cbm: printData?.cbm || cargo?.cbm || 0,
-        chargeableWeight: printData?.ChargeableWeight || cargo?.chargeableWeight || 0
-      };
-
-      rightStack.push({
-        table: {
-          headerRows: 1,
-          widths: [30, 70, 50, 45],
-          body: [
-            [
-              { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
-              { text: 'Commodity Desc', style: 'tableHeader',alignment: 'center' },
-              { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
-              { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
-            ],
-            [
-              { text: String(cargoData.packages), alignment: 'center' },
-              { text: cargoData.desc },
-              { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right' },
-              { 
-                text: formatNumberWithCommas(
-                  Number(isSeaMode ? cargoData.cbm : cargoData.chargeableWeight) || 0, 
-                  3
-                ), 
-                alignment: 'right' 
-              }
-            ]
-          ]
-        },
-        layout: PDF_TABLE_LAYOUTS.bordered,
-        margin: [0, 6, 0, 0]
-      });
-    }
-
-    return {
-      table: {
-        widths: ['50%', '50%'],
-        body: [[
-          { stack: leftStack, margin: [5, 5, 5, 5] },
-          { stack: rightStack, margin: [5, 5, 5, 5] }
-        ]]
-      },
-      layout: 'noBorders',
-      margin: [0, 5, 0, 10]
+  // -----------------------------
+  // Cargo Table (Optional)
+  // -----------------------------
+  if (printData || cargo) {
+    const cargoData = {
+      packages: printData?.pkg || cargo?.packages || '0',
+      desc: printData?.desc || cargo?.commodityDesc || '',
+      grosswt: printData?.grosswt || cargo?.grossWeight || 0,
+      cbm: printData?.cbm || cargo?.cbm || 0,
+      chargeableWeight: printData?.ChargeableWeight || cargo?.chargeableWeight || 0
     };
+
+    rightStack.push({
+      table: {
+        headerRows: 1,
+        widths: [30, '*', 55, 55],
+        body: [
+          [
+            { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
+            { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' },
+            { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
+            { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
+          ],
+          [
+            { text: String(cargoData.packages), alignment: 'center' },
+            { text: cargoData.desc },
+            { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right' },
+            {
+              text: formatNumberWithCommas(
+                Number(isSeaMode ? cargoData.cbm : cargoData.chargeableWeight) || 0,
+                3
+              ),
+              alignment: 'right'
+            }
+          ]
+        ]
+      },
+      layout: PDF_TABLE_LAYOUTS.bordered,
+      margin: [0, 4, 0, 0]
+    });
   }
+
+  // -----------------------------
+  // Final Layout
+  // -----------------------------
+  return {
+    table: {
+      widths: ['50%', '50%'],
+      body: [[
+        { stack: leftStack, margin: [5, 2, 5, 2] },
+        { stack: rightStack, margin: [5, 2, 5, 2] }
+      ]]
+    },
+    layout: 'noBorders',
+    margin: [0, 0, 0, 0]
+  };
+}
 
   /**
    * Build charges table - using invoicePrintData.voucherDetails
@@ -677,7 +650,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         body: [headerRow, ...dataRows, totalRow]
       },
       layout: PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 0, 0, 10],
+      margin: [0, 0, 0, 2],
       style: { noWrap: false }
     };
   }
@@ -703,22 +676,22 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     }
 
     return {
-      margin: [0, 8, 0, 10],
+      margin: [0, 0, 0, 0],
       columns: [
         {
-          width: 105,
+          width: 88,
           text: 'Amount In Words',
           style: 'labelBold'
         },
         {
-          width: 10,
+          width: 0,
           text: ':',
           style: 'labelBold'
         },
         {
           width: '*',
           text: amountInWords,
-          italics: true
+          // italics: true 
         }
       ],
       columnGap: 5
@@ -729,32 +702,32 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   /**
    * Build remarks
    */
-  function buildRemarks(remarks: string): any {
-    if (!remarks) {
-      return { text: '' };
-    }
-
-    return {
-      margin: [0, 5, 0, 10],
-      columns: [
-        {
-          width: 105,
-          text: 'Remarks',
-          style: 'labelBold'
-        },
-        {
-          width: 10,
-          text: ':',
-          style: 'labelBold'
-        },
-        {
-          width: '*',
-          text: remarks
-        }
-      ],
-      columnGap: 5
-    };
+function buildRemarks(remarks: string): any {
+  if (!remarks) {
+    return { text: '' };
   }
+
+  return {
+    margin: [0, 2, 0, 2],
+    columns: [
+      {
+        width: 90,
+        text: 'Remarks',
+        style: 'labelBold'
+      },
+      {
+        width: 10,
+        text: ':',
+        style: 'labelBold',
+        alignment: 'center'
+      },
+      {
+        width: '*',
+        text: remarks
+      }
+    ]
+  };
+}
 
 
   /**
@@ -817,13 +790,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const beneficiaryRow: any[] = [{ 
     text: 'Beneficiary Name', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8  // Reduced font size
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     beneficiaryRow.push({ 
       text: banksToDisplay[i].beneficiaryName || '', 
       alignment: 'left',
-      noWrap: false
+      noWrap: false,
+      fontSize: 8  // Reduced font size
     });
   }
   rows.push(beneficiaryRow);
@@ -832,13 +807,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const accountRow: any[] = [{ 
     text: 'Account No.', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     accountRow.push({ 
       text: banksToDisplay[i].accountNo || '', 
       alignment: 'left',
-      noWrap: false
+      noWrap: false,
+      fontSize: 8
     });
   }
   rows.push(accountRow);
@@ -847,20 +824,23 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const ibanRow: any[] = [{ 
     text: isVATMode ? 'IBAN' : 'IFSC Code', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     if (isVATMode) {
       ibanRow.push({ 
         text: banksToDisplay[i].iban || '', 
         alignment: 'left',
-        noWrap: false
+        noWrap: false,
+        fontSize: 8
       });
     } else {
       ibanRow.push({ 
         text: banksToDisplay[i].ifscCode || '', 
         alignment: 'left',
-        noWrap: false
+        noWrap: false,
+        fontSize: 8
       });
     }
   }
@@ -870,13 +850,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const swiftRow: any[] = [{ 
     text: 'Swift Code', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     swiftRow.push({ 
       text: banksToDisplay[i].swiftCode || '', 
       alignment: 'left',
-      noWrap: false
+      noWrap: false,
+      fontSize: 8
     });
   }
   rows.push(swiftRow);
@@ -885,13 +867,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const bankNameRow: any[] = [{ 
     text: 'Bank Name', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     bankNameRow.push({ 
       text: banksToDisplay[i].bankName || '', 
       alignment: 'left',
-      noWrap: false
+      noWrap: false,
+      fontSize: 8
     });
   }
   rows.push(bankNameRow);
@@ -900,14 +884,16 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const branchRow: any[] = [{ 
     text: 'Branch', 
     style: 'labelBold', 
-    alignment: 'left' 
+    alignment: 'left',
+    fontSize: 8
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     branchRow.push({ 
       text: banksToDisplay[i].bankAddress || banksToDisplay[i].branchName || '', 
       alignment: 'left',
       noWrap: false,
-      lineHeight: 1.2
+      lineHeight: 1.1,  // Reduced from 1.2
+      fontSize: 8
     });
   }
   rows.push(branchRow);
@@ -916,7 +902,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const TOTAL_WIDTH = 500; // Total available width (accounting for page margins)
   const DETAILS_COLUMN_WIDTH = 110;
   const REMAINING_WIDTH = TOTAL_WIDTH - DETAILS_COLUMN_WIDTH;
-  const BANK_COLUMN_WIDTH = REMAINING_WIDTH / banksToDisplay.length;
+  const BANK_COLUMN_WIDTH = REMAINING_WIDTH / 3;
   
   const widths: (number | string)[] = [DETAILS_COLUMN_WIDTH];
   for (let i = 0; i < banksToDisplay.length; i++) {
@@ -924,7 +910,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }
 
   return [
-    buildSectionTitle('Bank Details', { margin: [0, 15, 0, 5] }),
+    buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
     {
       table: {
         headerRows: 1,
@@ -937,12 +923,12 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         vLineWidth: () => 1,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
-        paddingLeft: () => 6,
-        paddingRight: () => 6,
-        paddingTop: () => 5,
-        paddingBottom: () => 5
+        paddingLeft: () => 3,      // Reduced from 6
+        paddingRight: () => 3,     // Reduced from 6
+        paddingTop: () => 2,       // Reduced from 5
+        paddingBottom: () => 2     // Reduced from 5
       },
-      margin: [0, 0, 0, 10],
+      margin: [0, 0, 0, 5],  // Reduced bottom margin from 10 to 5
       style: { noWrap: false }
     }
   ];
@@ -996,7 +982,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
           style: 'labelBold' 
         }
       ],
-      margin: [0, 2, 0, 0] // Minimal spacing
+      margin: [0, 0, 0, 0] // Minimal spacing
     }];
   }
   /**

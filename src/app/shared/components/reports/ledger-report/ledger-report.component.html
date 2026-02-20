@@ -65,8 +65,8 @@
                         <th class="bg-transparent text-light text-center">Cur</th>
                         <th class="bg-transparent text-light text-center">Amt</th>
                         <th class="bg-transparent text-light text-center">Local Amt</th>
-                        <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
-                        <th class="bg-transparent text-light text-center">O/S Local Amt</th>
+                        <!-- <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
+                        <th class="bg-transparent text-light text-center">O/S Local Amt</th> -->
                         <th class="bg-transparent text-light text-center">Cumultive</th>
                     </tr>
                 </thead>
@@ -87,12 +87,10 @@
                         </td>
                         <td>
                         </td>
+                        <td></td>
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
                         </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
                         </td>
@@ -111,8 +109,8 @@
                         <td>{{item?.currencyCode}}</td>
                         <td style="text-align: right;">{{item?.signedOriginalCurrency | number:'1.2-2'}}</td>
                         <td style="text-align: right;">{{item?.signedLocalAmt | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.signedOutstandingCurrency | number:'1.2-2'}}</td>
-                        <td style="text-align: right;">{{item?.signedoutstandingLocalAmount | number:'1.2-2'}}</td>
+                        <!-- <td style="text-align: right;">{{item?.signedOutstandingCurrency | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{item?.signedoutstandingLocalAmount | number:'1.2-2'}}</td> -->
 
                         <!-- CUMULATIVE -->
                         <td style="text-align: right;">
@@ -130,7 +128,7 @@
                             number:'1.2-2' }}
                         </td> -->
 
-                        <td></td>
+                        <!-- <td></td> -->
 
                         <!-- Total O/S Currency -->
                         <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount')
@@ -142,9 +140,9 @@
                             number:'1.2-2'}}
                         </td> -->
 
-                        <td style="text-align: right;">
+                        <!-- <td style="text-align: right;">
                             {{ getSignedTotal(fullData?.transactions) | number:'1.2-2' }}
-                        </td>
+                        </td> -->
 
                         <!-- Cumulative Total (same as total outstanding local) -->
                         <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length -
