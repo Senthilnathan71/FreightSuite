@@ -236,6 +236,15 @@ export class VendorCreditNoteEntryComponent {
   subledgerListDetail: any[][] = [];
   minVoucherDate: NgbDateStruct = null;
 
+  get effectiveMinDate(): NgbDateStruct | null {
+    if (this.minVoucherDate && this.fyMinDate) {
+      const invDate = new Date(this.minVoucherDate.year, this.minVoucherDate.month - 1, this.minVoucherDate.day);
+      const fyDate = new Date(this.fyMinDate.year, this.fyMinDate.month - 1, this.fyMinDate.day);
+      return invDate > fyDate ? this.minVoucherDate : this.fyMinDate;
+    }
+    return this.fyMinDate;
+  }
+
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null

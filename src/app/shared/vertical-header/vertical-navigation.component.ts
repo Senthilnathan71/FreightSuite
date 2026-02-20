@@ -289,6 +289,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   onBranchChangeFromModal(branchId: number, modalRef: NgbModalRef): void {
   const oldCompany = this.appSettingsService.getCurrentCompanyInfo();
   const oldBranch = this.appSettingsService.getCurrentBranchInfo();
+  const oldYearId = Number(localStorage.getItem('current-year-id'));
   const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === this.selectedCompanyId);
   const selectedBranch = this.branchList.find(b => b.UserBranchMasterSid === branchId);
 
@@ -354,7 +355,8 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   // ✅ Step 5: Refresh logos or reload the page
     if (
         oldCompany?.CompanyMasterSid === updatedBranchCompany?.companyMaster?.CompanyMasterSid &&
-        oldBranch?.BranchMasterSid === updatedBranchCompany?.branchMaster?.BranchMasterSid
+        oldBranch?.BranchMasterSid === updatedBranchCompany?.branchMaster?.BranchMasterSid &&
+        oldYearId === this.selectedYearId
     ) {
       console.info("Switched to same branch and company.");
       this.logoService.refreshBothLogos();

@@ -206,7 +206,7 @@
         placeholder="Search Menu" 
         name="search"
         style="border-radius: 20px; min-width: 200px;height: 28px;" 
-        (click)="$event.stopPropagation(); menuSearchDropdown.open ; getMenusFromSideBar()" 
+        (click)="$event.stopPropagation(); menuSearchDropdown.open() ; getMenusFromSideBar()"
         (input)="searchMenus($event)" 
         (keydown)="onMenuSearchKeyDown($event)"
         (blur)="onMenuSearchBlur($event)" 

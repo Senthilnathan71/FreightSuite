@@ -2412,13 +2412,15 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         this.voucher['ExchangeRate']?.enable();
       }
+
+      const dateSelected = this.voucherForm.get('VoucherDate')?.value;
       // Fetch exchange rate from CurrencyExchange table
       const payload = {
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         fromCurrencyCode: selectedCurrencyCode,
         toCurrencyCode: companyHomeCurrency.code,
-        EffectiveFrom: this.isEditMode ? new Date(this.parentFormValue?.BookingDate) : new Date(),
+        EffectiveFrom: dateSelected ? new Date(dateSelected) : new Date(),
         segment: this.selectedVoucherType === 'Invoice' ? 'revenue' : 'cost' // Use SellRate for revenue charges
       };
 
@@ -2451,6 +2453,19 @@ createRateFormGroup(data?: any): FormGroup {
         ExchangeRate: 0,
       })
       this.onHeaderExchangeRateChange();
+    }
+  }
+
+  onVoucherDateChange() {
+    const voucherDate = this.voucherForm.get('VoucherDate')?.value;
+    if (!voucherDate) return;
+
+    const headerCurrencyId = this.voucherForm.get('CurrencyMasterSid')?.value;
+    if (headerCurrencyId) {
+      const headerCurrency = this.currencyList.find(c => c.CurrencyMasterSid === headerCurrencyId);
+      if (headerCurrency) {
+        this.onHeaderCurrencyChange(headerCurrency);
+      }
     }
   }
 
