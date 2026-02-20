@@ -60,7 +60,7 @@ subledgerList: any[] = [];
 currentCompany: any;
 currentBranch: any;
 	documentSeparators = [
-		{ separator: 'None', value: '~' },
+		{ separator: 'None', value: 'None' },
 		{ separator: 'Slash ( / )', value : '/' },
 		{ separator: 'Hyphen ( - )', value : '-' },
 		{ separator: 'Colon ( : )', value : ':' },
@@ -164,7 +164,7 @@ hasAnyDropdownPermission(): boolean {
 			ReportTitle : [''],
 			ReportFooter : [''],
 			DocumentStartingNo: ['', [Validators.required]],
-			DocumentSeparator: [null, [Validators.required]],
+			DocumentSeparator: [""],
 			DocumentSLNoLength: ['', [Validators.required]],
 			ResetValue: [null, [Validators.required]],
 			CompanyFlag: [false],
@@ -235,6 +235,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 					const data = resp.data;
 					this.documentForm.patchValue({
 						...data,
+						DocumentSeparator: String(data.DocumentSeparator).trim() || 'None',
 						CompanyFlag: data.CompanyFlag === 'Y',
 						BranchFlag: data.BranchFlag === 'Y',
 						DocumentFlag: data.DocumentFlag === 'Y',
@@ -323,6 +324,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
 			COALedger : Number(formValue.COALedger),
 			Subledger : Number(formValue.Subledger),
+			DocumentSeparator: formValue.DocumentSeparator === 'None' ? '' : formValue.DocumentSeparator,
 			CompanyFlag: formValue.CompanyFlag ? 'Y' : 'N',
 			BranchFlag: formValue.BranchFlag ? 'Y' : 'N',
 			DocumentFlag: formValue.DocumentFlag ? 'Y' : 'N',
@@ -494,7 +496,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			serial
 		].filter(Boolean);
 
-		const separator = DocumentSeparator.value === '~' ? '' : DocumentSeparator.value;
+		const separator = (!DocumentSeparator.value || DocumentSeparator.value === 'None') ? '' : DocumentSeparator.value;
 		const voucherNumber = parts.join(separator);
 		return voucherNumber;
 	}
