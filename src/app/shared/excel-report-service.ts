@@ -5,6 +5,8 @@ import * as FileSaver from 'file-saver';
 export interface ExcelHeader {
   key: string;
   label: string;
+  colspan?: number;
+  rowspan?: number;
 }
 
 export interface ExcelExportConfig {

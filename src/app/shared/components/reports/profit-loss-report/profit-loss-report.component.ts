@@ -114,124 +114,153 @@ export class ProfitLossReportComponent {
   }
 
 
-  getExcelData(): ComplexReportExportConfig {
-    const yearKeys: string[] = this.yearKeys || [];
+getExcelData(): ComplexReportExportConfig {
+  const yearKeys: string[] = this.yearKeys || [];
 
-    const tableHeaders: ExcelHeader[] = [
-      { key: 'subgroup', label: 'SubGroup' },
-      { key: 'ledger', label: 'Ledger' },
-      ...yearKeys.map(y => ({ key: y, label: y }))
-    ];
+  // Table headers same as your HTML
+  const tableHeaders: ExcelHeader[] = [
+    { key: 'subgroup', label: 'SubGroup' },
+    { key: 'ledger', label: 'Ledger' },
+    ...yearKeys.map(y => ({ key: y, label: y }))
+  ];
 
-    const rows: ExcelRow[] = [];
+  const rows: ExcelRow[] = [];
 
-    rows.push({
-      cells: [
-        { value: 'REVENUE', colspan: 2 + yearKeys.length }
-      ],
-      style: 'section'
-    });
+  /* =======================
+     REVENUE SECTION
+  ======================== */
+  rows.push({
+    cells: [
+      { value: 'REVENUE' },
+      { value: '' }, // Ledger placeholder
+      ...yearKeys.map(() => ({ value: '' }))
+    ],
+    style: 'section'
+  });
 
-    this.groupedData
-      .filter(g => g.subGroupName.toLowerCase().includes('income'))
-      .forEach(group => {
+  this.groupedData
+    .filter(g => g.subGroupName.toLowerCase().includes('income'))
+    .forEach(group => {
 
-        // Ledger rows
-        group.items.forEach(item => {
-          const cells: ExcelCell[] = [
-            { value: group.subGroupName },
-            { value: item.LedgerName },
-            ...yearKeys.map(y => ({
-              value: this.formatNumber(item.amounts[y] || 0)
-            }))
-          ];
-          rows.push({ cells, style: 'data' });
+      group.items.forEach((item, index) => {
+        const cells: ExcelCell[] = [];
+
+        if (index === 0) {
+          cells.push({ value: group.subGroupName }); // Subgroup
+        } else {
+          cells.push({ value: '' }); // blank for other rows
+        }
+
+        cells.push({ value: item.LedgerName }); // Ledger
+
+        yearKeys.forEach(y => {
+          cells.push({ value: item.amounts[y] ?? 0 });
         });
 
-
-        const totalCells: ExcelCell[] = [
-          { value: `Total ${group.subGroupName}`, colspan: 2 },
-          ...yearKeys.map(y => ({
-            value: this.formatNumber(this.getGroupTotal(group.items, y))
-          }))
-        ];
-        rows.push({ cells: totalCells, style: 'total' });
+        rows.push({ cells, style: 'data' });
       });
 
-
-    rows.push({
-      cells: [
-        { value: 'EXPENSES', colspan: 2 + yearKeys.length }
-      ],
-      style: 'section'
+      // Total row
+      rows.push({
+        cells: [
+          { value: `Total ${group.subGroupName}` },
+          { value: '' }, // blank for ledger
+          ...yearKeys.map(y => ({ value: this.getGroupTotal(group.items, y) }))
+        ],
+        style: 'total'
+      });
     });
 
-    this.groupedData
-      .filter(g => g.subGroupName.toLowerCase().includes('expense'))
-      .forEach(group => {
+  /* =======================
+     EXPENSES SECTION
+  ======================== */
+  rows.push({
+    cells: [
+      { value: 'EXPENSES' },
+      { value: '' }, // Ledger placeholder
+      ...yearKeys.map(() => ({ value: '' }))
+    ],
+    style: 'section'
+  });
 
-        group.items.forEach(item => {
-          const cells: ExcelCell[] = [
-            { value: group.subGroupName },
-            { value: item.LedgerName },
-            ...yearKeys.map(y => ({
-              value: this.formatNumber(item.amounts[y] || 0)
-            }))
-          ];
-          rows.push({ cells, style: 'data' });
+  this.groupedData
+    .filter(g => g.subGroupName.toLowerCase().includes('expense'))
+    .forEach(group => {
+
+      group.items.forEach((item, index) => {
+        const cells: ExcelCell[] = [];
+
+        if (index === 0) {
+          cells.push({ value: group.subGroupName });
+        } else {
+          cells.push({ value: '' });
+        }
+
+        cells.push({ value: item.LedgerName });
+
+        yearKeys.forEach(y => {
+          cells.push({ value: this.formatNumber(item.amounts[y] ?? 0) });
         });
 
-        const totalCells: ExcelCell[] = [
-          { value: `Total ${group.subGroupName}`, colspan: 2 },
-          ...yearKeys.map(y => ({
-            value: this.formatNumber(this.getGroupTotal(group.items, y))
-          }))
-        ];
-        rows.push({ cells: totalCells, style: 'total' });
+        rows.push({ cells, style: 'data' });
       });
 
-
-    rows.push({
-      cells: [
-        { value: 'Gross Profit', colspan: 2 },
-        ...yearKeys.map(y => ({
-          value: this.formatNumber(this.getGrossProfit(y))
-        }))
-      ],
-      style: 'grandTotal'
+      // Total row
+      rows.push({
+        cells: [
+          { value: `Total ${group.subGroupName}` },
+          { value: '' },
+          ...yearKeys.map(y => ({ value: this.formatNumber(this.getGroupTotal(group.items, y)) }))
+        ],
+        style: 'total'
+      });
     });
 
+  /* =======================
+     GROSS PROFIT
+  ======================== */
+  rows.push({
+    cells: [
+      { value: 'Gross Profit' },
+      { value: '' },
+      ...yearKeys.map(y => ({ value: this.formatNumber(this.getGrossProfit(y)) }))
+    ],
+    style: 'grandTotal'
+  });
 
-    rows.push({
-      cells: [
-        { value: 'Net Profit', colspan: 2 },
-        ...yearKeys.map(y => ({
-          value: this.formatNumber(this.getNetProfit(y))
-        }))
-      ],
-      style: 'grandTotal'
-    });
+  /* =======================
+     NET PROFIT
+  ======================== */
+  rows.push({
+    cells: [
+      { value: 'Net Profit' },
+      { value: '' },
+      ...yearKeys.map(y => ({ value: this.formatNumber(this.getNetProfit(y)) }))
+    ],
+    style: 'grandTotal'
+  });
 
-
-    return {
-      fileName: 'Profit-And-Loss-Report',
-      sheetName: 'Profit & Loss',
-      reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Profit and Loss Report`,
-        additionalInfo: [
-          { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
-          { label: 'Branch', value: this.fullData?.branchNames || '' }
-        ]
-      },
-      tableHeaders,
-      rows,
-      columnWidths: [
-        25, 30, ...yearKeys.map(() => 18)
+  return {
+    fileName: 'Profit-And-Loss-Report',
+    sheetName: 'Profit & Loss',
+    reportHeader: {
+      companyName: this.currentCompany?.companyName || 'Company',
+      reportTitle: 'Profit and Loss Report',
+      additionalInfo: [
+        { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
+        { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+        { label: 'Branch', value: this.fullData?.BranchInvolved || '' }
       ]
-    };
-  }
+    },
+    tableHeaders,
+    rows,
+    columnWidths: [
+      20, // SubGroup
+      30, // Ledger
+      ...yearKeys.map(() => 18)
+    ]
+  };
+}
 
 
  private formatNumber(value: any): string {

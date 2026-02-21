@@ -93,7 +93,7 @@ export class DoIssueListComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [15, 15, 15, 15, 25, 25, 15, 15, 15] // adjust widths as needed
+      columnWidths: [20, 10, 20, 15, 25, 25,8,8, 10] // adjust widths as needed
     };
   }
 

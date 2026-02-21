@@ -318,7 +318,7 @@ export class TrailBalanceComponent {
   getExcelData(): ComplexReportExportConfig {
 
     const showSubledger = this.params?.Subledger === true;
-
+    const subTotal = this.params?.SubTotal === true;
     /* ================= TABLE HEADERS ================= */
 
     const tableHeaders: ExcelHeader[] = [
@@ -425,6 +425,7 @@ export class TrailBalanceComponent {
           { label: 'From Date', value: this.formatDate(this.params?.fromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.toDate) },
           { label: 'Branch', value: this.params?.BranchInvolved || '' },
+          { label: 'SubTotal', value: subTotal ? 'Yes' : 'No' },
           { label: 'Group Name', value: this.params?.GroupNameResolved || '' },
           { label: 'SubGroup Name', value: this.params?.SubGroupNameResolved || '' },
           { label: 'Subledger', value: showSubledger ? 'Yes' : 'No' }
