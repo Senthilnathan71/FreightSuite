@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, TemplateRef, input, HostListener } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -63,6 +63,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NumberFormatPipe,
     CustomDatePipe,
     SearchableDropdown,
+    RouterModule,
     NgbDropdownModule,
     DecimalPrecisionDirective,
     PreventMultiClickDirective
@@ -178,6 +179,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
     { value: 'A', name: 'Active' },
     { value: 'S', name: 'Suspended' },
   ];
+
+  hyperLinkInfo = {
+    id: null,
+    number: null,
+    path: null,
+    label: null
+  };
 
   currentDate = new Date();
   isAutoPosting : boolean = false;
@@ -885,6 +893,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   patchValues(data: any) {
+    this.gatherHyperLinkInfo(data);
+
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: data.VoucherDate ? new Date(data.VoucherDate) : null,
@@ -3012,6 +3022,44 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
     return charge?.chargeCode || '-';
   }
+
+  gatherHyperLinkInfo(data: any) {
+    const airDept = String(data?.departmentMaster?.departmentType)?.toUpperCase() === 'AIR';
+    const isHouseJobInvoice = data?.HouseJobSid && data?.MasterJobSid;
+    const isMasterJobInvoice = data?.MasterJobSid && !data?.HouseJobSid;
+    const isBookingInvoice = !!data?.BookingHeaderSid;
+
+    if (isHouseJobInvoice) {
+      this.hyperLinkInfo = {
+        id: data?.HouseJobSid,
+        number: data?.houseJob?.HBLNo,
+        path: `/operation/house-job/entry/${data.HouseJobSid}`,
+        label: airDept ? 'HAWBL No.' : 'HBL No.'
+      };
+    } else if (isMasterJobInvoice) {
+      this.hyperLinkInfo = {
+        id: data?.MasterJobSid,
+        number: data?.masterJob?.MasterJobNumber,
+        path: `/operation/${airDept ? 'mawbill' : 'master-job'}/entry/${data.MasterJobSid}`,
+        label: airDept ? 'MAWB No.' : 'MBL No.'
+      };
+    } else if (isBookingInvoice) {
+      this.hyperLinkInfo = {
+        id: data?.BookingHeaderSid,
+        number: data?.BookingHeader?.BookingNo,
+        path: `/operation/booking/entry/${data.BookingHeaderSid}`,
+        label: 'Booking No.'
+      };
+    } else {
+      this.hyperLinkInfo = {
+        id: null,
+        number: null,
+        path: null,
+        label: null
+      };
+    }
+  }
+
   showInfo() {
     if (!this.vendorInvoiceData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });

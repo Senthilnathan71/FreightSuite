@@ -12,6 +12,12 @@
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
+          @if(hyperLinkInfo.id){
+            <div class="ps-2 fw-bold">
+              {{ hyperLinkInfo.label }} :
+              <a class="px-2 text-decoration-underline" [routerLink]="hyperLinkInfo.path">{{hyperLinkInfo.number}}</a>
+            </div>
+          }
           }
       </div>
 
