@@ -62,7 +62,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   selectedSubledger: any = null;
 
   currencyList: any[] = [];
-  selectedSourceCurrency: string | null = null;
+  exchangeDifference: number = 0;
+  matchingScenario: 'multi-currency' | 'single-foreign' | 'single-local' | null = null;
 
   BATCH_SIZE = 10;
   sourceSkip = 0;
@@ -363,23 +364,11 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     const raw = row.getRawValue();
     if (!checked) {
       row.patchValue({ matchCurrAmt: '', matchLocalAmt: '' });
-      if (formArray === this.sourceItems) this.recalcSelectedSourceCurrency();
+      this.validateMatchingScenario();
       return;
     }
-    if (formArray === this.sourceItems) {
-      if (this.selectedSourceCurrency && this.selectedSourceCurrency !== raw.curr) {
-        event.target.checked = false;
-        this.appSettingService.showWarning(`Only ${this.selectedSourceCurrency} currency vouchers can be selected on Source.`);
-        return;
-      }
-      this.selectedSourceCurrency = raw.curr;
-    }
     row.patchValue({ matchCurrAmt: toNumber(raw.osCurrAmt), matchLocalAmt: toNumber(raw.osLocalAmt) });
-  }
-
-  private recalcSelectedSourceCurrency() {
-    const ticked = this.sourceItems.controls.find(c => toNumber(c.get('matchCurrAmt')?.value) !== 0);
-    this.selectedSourceCurrency = ticked ? ticked.getRawValue().curr : null;
+    this.validateMatchingScenario();
   }
 
   calculateLocalAmountForRow(fa: FormArray, i: number) {
@@ -397,12 +386,73 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     row.get('matchCurrAmt')?.setErrors(match && Math.abs(match) > Math.abs(os) ? { limitExceeded: true } : null);
   }
 
+  onMatchAmountChange(fa: FormArray, i: number) {
+    this.calculateLocalAmountForRow(fa, i);
+    this.validateMatchingScenario();
+  }
+
+  validateMatchingScenario(): { valid: boolean; message?: string } {
+    const srcRows = this.sourceItems.getRawValue().filter((s: any) => toNumber(s.matchCurrAmt) !== 0);
+    const objRows = this.objectItems.getRawValue().filter((o: any) => toNumber(o.matchCurrAmt) !== 0);
+    const allRows = [...srcRows, ...objRows];
+
+    if (allRows.length === 0) {
+      this.matchingScenario = null;
+      this.exchangeDifference = 0;
+      return { valid: false, message: 'No matching amounts entered.' };
+    }
+
+    const currencies = new Set(allRows.map((r: any) => r.curr));
+    const isSingleCurrency = currencies.size === 1;
+
+    const srcTotalLocal = srcRows.reduce((s: number, r: any) => s + toNumber(r.matchLocalAmt), 0);
+    const objTotalLocal = objRows.reduce((s: number, r: any) => s + toNumber(r.matchLocalAmt), 0);
+    const srcTotalCurr = srcRows.reduce((s: number, r: any) => s + toNumber(r.matchCurrAmt), 0);
+    const objTotalCurr = objRows.reduce((s: number, r: any) => s + toNumber(r.matchCurrAmt), 0);
+
+    if (!isSingleCurrency) {
+      // Scenario 1: Multi-currency — local totals must match
+      this.matchingScenario = 'multi-currency';
+      this.exchangeDifference = 0;
+      const localDiff = Math.abs(srcTotalLocal - objTotalLocal);
+      if (localDiff > 0.01) {
+        return { valid: false, message: `Multi-currency matching requires equal local amount totals. Source: ${srcTotalLocal.toFixed(2)}, Object: ${objTotalLocal.toFixed(2)}, Difference: ${localDiff.toFixed(2)}` };
+      }
+      return { valid: true };
+    }
+
+    // Single currency
+    const isLocalCurrency = allRows.every((r: any) => toNumber(r.exRate) === 1);
+
+    if (isLocalCurrency) {
+      // Scenario 3: Single local currency — both totals must match
+      this.matchingScenario = 'single-local';
+      this.exchangeDifference = 0;
+      const currDiff = Math.abs(srcTotalCurr - objTotalCurr);
+      const localDiff = Math.abs(srcTotalLocal - objTotalLocal);
+      if (currDiff > 0.01 || localDiff > 0.01) {
+        return { valid: false, message: `Local currency matching requires both currency and local totals to match. Currency diff: ${currDiff.toFixed(2)}, Local diff: ${localDiff.toFixed(2)}` };
+      }
+      return { valid: true };
+    }
+
+    // Scenario 2: Single foreign currency — currency totals must match, local diff = Exchange JV
+    this.matchingScenario = 'single-foreign';
+    const currDiff = Math.abs(srcTotalCurr - objTotalCurr);
+    if (currDiff > 0.01) {
+      this.exchangeDifference = 0;
+      return { valid: false, message: `Single foreign currency matching requires currency totals to match. Source: ${srcTotalCurr.toFixed(2)}, Object: ${objTotalCurr.toFixed(2)}, Difference: ${currDiff.toFixed(2)}` };
+    }
+    this.exchangeDifference = srcTotalLocal - objTotalLocal;
+    return { valid: true };
+  }
+
   clearCreateDetail() {
     this.sourceItems.clear(); this.objectItems.clear();
     this.sourceSkip = 0; this.objectSkip = 0;
     this.hasMoreSourceData = true; this.hasMoreObjectData = true;
     this.isLoadingSource = false; this.isLoadingObject = false;
-    this.selectedSourceCurrency = null;
+    this.exchangeDifference = 0; this.matchingScenario = null;
   }
 
   getTotal(fa: FormArray, field: string): number {
@@ -436,6 +486,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     if (!this.selectedLedger || !this.selectedSubledger) { this.appSettingService.showWarning('Please select a Ledger and Subledger'); return; }
     if (!this.hasMatchingAmounts) { this.appSettingService.showWarning('Please enter at least one matching amount'); return; }
     if (this.hasErrors) { this.appSettingService.showWarning('Please fix matching amount errors (exceeds outstanding)'); return; }
+
+    const validation = this.validateMatchingScenario();
+    if (!validation.valid) { this.appSettingService.showWarning(validation.message!); return; }
+
     this.isSaving = true;
     const srcRaw = this.sourceItems.getRawValue().filter((s: any) => toNumber(s.matchCurrAmt) !== 0);
     const partyVoucherDetail = srcRaw.map((s: any, i: number) => ({
@@ -455,7 +509,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
         DrCr: m.drCr === 'Cr' ? 'C' : 'D', PartyAmount: toNumber(m.matchCurrAmt),
         LocalAmount: toNumber(m.matchLocalAmt),
       }));
-    this.accountsService.createStandaloneVoucherMatching({
+
+    const payload: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherHeaderSid: srcRaw[0]?.VoucherHeaderSid,
@@ -466,7 +521,18 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       Narration: `Standalone matching for ${this.selectedSubledger?.SubledgerName || ''}`,
       CreatedBy: this.userData?.userEmail || '',
       partyVoucherDetail, matchingInvoices,
-    }).subscribe({
+    };
+
+    // Scenario 2: single foreign currency with exchange difference — backend will create Exchange JV
+    if (this.matchingScenario === 'single-foreign' && Math.abs(this.exchangeDifference) > 0.01) {
+      payload.exchangeJvRequired = true;
+      payload.exchangeDifference = this.exchangeDifference;
+      payload.exchangeCurrencyCode = srcRaw[0]?.curr;
+      payload.partyLedgerSid = srcRaw[0]?.COAMasterSid;
+      payload.partySubledgerSid = srcRaw[0]?.LedgerMasterSid;
+    }
+
+    this.accountsService.createStandaloneVoucherMatching(payload).subscribe({
       next: (resp: any) => {
         this.isSaving = false;
         if (resp?.status) { this.appSettingService.showSuccess('Voucher matching created successfully'); this.router.navigate(['accounts/voucher-matching/list']); }

@@ -28,16 +28,12 @@
       <div class="card-body py-2">
         <form [formGroup]="voucherMatchingForm" novalidate>
           <div class="row g-2 align-items-end">
-
-
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
                 <label class="input-label">Matching No.</label>
               </div>
             </div>
-
-
             <div class="col-md-2">
               <div class="custom-form-group custom-form-group-select-date"
                 [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value">
@@ -51,24 +47,18 @@
                 <label class="input-label">Matching Date</label>
               </div>
             </div>
-
-
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="LedgerName" class="custom-input-field sm" />
                 <label class="input-label">Ledger</label>
               </div>
             </div>
-
-
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="SubledgerName" class="custom-input-field sm" />
                 <label class="input-label">Subledger</label>
               </div>
             </div>
-
-
             <div class="col-md-2">
               <div class="custom-form-group custom-form-group-select-date"
                 [class.filled]="!!voucherMatchingForm.get('PostDate')?.value">
@@ -82,15 +72,12 @@
                 <label class="input-label">Post Date</label>
               </div>
             </div>
-
-
             <div class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="Status" class="custom-input-field sm" />
                 <label class="input-label">Status</label>
               </div>
             </div>
-            
           </div>
         </form>
       </div>
@@ -221,7 +208,7 @@
                   [clearable]="true" placeholder="" (change)="onLedgerChange($event)"
                   class="ng-select">
                 </ng-select>
-                <label class="input-label">Ledger</label>
+                <label class="input-label">Ledger <span class="text-danger">*</span></label>
               </div>
             </div>
             <div class="col-md-3">
@@ -231,7 +218,7 @@
                   [clearable]="true" placeholder="" (change)="onSubledgerChange($event)"
                   class="ng-select">
                 </ng-select>
-                <label class="input-label">Subledger</label>
+                <label class="input-label">Subledger <span class="text-danger">*</span></label>
               </div>
                 <div class="pt-2">
                   <button type="button" class="btn btn-info btn-sm w-100 d-flex align-items-center" (click)="onGet()">
@@ -252,31 +239,58 @@
     </div>
   </div>
 
+  <!-- Matching Status Summary Card -->
+  <div class="col-12 px-0" *ngIf="matchingScenario">
+    <div class="py-1 px-2 d-flex flex-wrap align-items-center gap-3 rounded-bottom shadow-sm"
+      [ngClass]="{
+        'bg-light border border-info border-top-0': matchingScenario !== 'single-foreign' || !exchangeDifference,
+        'bg-warning-subtle border border-warning border-top-0': matchingScenario === 'single-foreign' && exchangeDifference
+      }"
+      style="font-size: 12px;">
+      <span class="badge" [ngClass]="matchingScenario === 'multi-currency' ? 'bg-primary' : 'bg-success'">
+        {{ matchingScenario === 'multi-currency' ? 'Multi-Currency' : 'Single Currency' }}
+      </span>
+      <span class="fw-semibold">
+        Source: {{ matchingScenario === 'multi-currency' ? (sourceTotalMatchLocalAmt | number:'1.2-2') + ' (Local)' : (sourceTotalMatchCurrAmt | number:'1.2-2') }}
+      </span>
+      <span class="fw-semibold">
+        Object: {{ matchingScenario === 'multi-currency' ? (objectTotalMatchLocalAmt | number:'1.2-2') + ' (Local)' : (objectTotalMatchCurrAmt | number:'1.2-2') }}
+      </span>
+      <span *ngIf="matchingScenario === 'single-foreign' && exchangeDifference" class="fw-bold"
+        [ngClass]="exchangeDifference < 0 ? 'text-success' : 'text-danger'">
+        <i class="fas fa-exchange-alt me-1"></i>
+        Ex. JV: {{ (exchangeDifference > 0 ? exchangeDifference : -exchangeDifference) | number:'1.2-2' }}
+        ({{ exchangeDifference > 0 ? 'Loss' : 'Gain' }})
+      </span>
+    </div>
+  </div>
+
   <!-- Source Panel -->
   <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
-    <div class="card mb-0">
-      <div class="card-header py-1 bg-info">
-        <h6 class="mb-0 text-white">Source</h6>
-      </div>
-      <div #sourceScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
+    <div class="card mb-0" style="border-left: 4px solid var(--bs-info);">
+      <div #sourceScrollContainer class="card-body p-0" style="max-height: calc((100vh - 280px) / 2); overflow-y: auto;">
         <form [formGroup]="sourceForm" novalidate>
-          <div class="table-responsive table-borderless p-1">
+          <div class="table-responsive table-borderless">
             <table class="table table-hover align-middle table-sm mb-0">
-              <thead class="bg-info">
+              <thead class="bg-info" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th class="bg-transparent text-light text-center" style="font-size: 14px; width: 18%;">Voucher No.</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
-                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
+                  <th class="bg-transparent text-light text-center" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 7%;">Date</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 12px; width: 2%;">&#10003;</th>
+                  <th class="bg-info text-light text-center" rowspan="999"
+                    style="font-size: 10px; width: 4%; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 2px; padding: 4px 2px;">
+                    SOURCE
+                  </th>
                 </tr>
               </thead>
               <tbody formArrayName="items">
@@ -322,8 +336,8 @@
                       [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)"
-                      (input)="calculateLocalAmountForRow(sourceItems, i)"
-                      (blur)="calculateLocalAmountForRow(sourceItems, i)" />
+                      (input)="onMatchAmountChange(sourceItems, i)"
+                      (blur)="onMatchAmountChange(sourceItems, i)" />
                   </td>
                   <td class="table-warning">
                     <input type="text" formControlName="matchLocalAmt"
@@ -337,27 +351,39 @@
                   </td>
                 </tr>
                 <tr *ngIf="isLoadingSource">
-                  <td colspan="13" class="text-center text-muted py-2">
-                    <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+                  <td colspan="14" class="text-center text-muted py-1" style="font-size: 12px;">
+                    <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div #sourceSentinel style="height: 1px;"></div>
+          <div *ngIf="hasMoreSourceData && !isLoadingSource" class="text-center py-1"
+            style="font-size: 11px; color: #aaa; animation: pulse 1.5s infinite;">
+            <i class="fas fa-chevron-down me-1"></i>Scroll for more
+          </div>
         </form>
       </div>
-      <div class="card-footer p-0 border-top-0" *ngIf="sourceItems.length > 0">
-        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
+      <div class="card-footer py-0 px-1 border-top-0" *ngIf="sourceItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
           <tr class="table-info fw-bold text-end">
-            <td style="width: 40%;" class="text-end">Totals</td>
-            <td style="width: 9%;" class="text-end">{{ sourceTotalCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 37%;" class="text-end">Totals</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '—' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 9%;" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 9%;" class="text-end">{{ sourceTotalOsCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '—' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 9%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 10%;" class="text-end table-warning">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ isMultiCurrency ? '—' : (sourceTotalMatchCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 10%;" class="text-end table-warning">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 4%;"></td>
+            <td style="width: 7%;"></td>
+          </tr>
+          <!-- Exchange gain row in source footer (when gain: source local < object local) -->
+          <tr *ngIf="matchingScenario === 'single-foreign' && exchangeDifference < 0" class="fw-bold text-end" style="background-color: #d1e7dd;">
+            <td style="width: 37%;" class="text-end text-success">Ex. Gain (JV)</td>
+            <td style="width: 9%;"></td><td style="width: 9%;"></td><td style="width: 9%;"></td><td style="width: 9%;"></td>
+            <td style="width: 10%;"></td>
+            <td style="width: 10%;" class="text-end text-success">{{ (-exchangeDifference) | number:'1.2-2' }}</td>
+            <td style="width: 7%;"></td>
           </tr>
         </table>
       </div>
@@ -365,30 +391,31 @@
   </div>
 
   <!-- Object Panel -->
-   <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
-    <div class="card mb-0">
-      <div class="card-header py-1 bg-secondary">
-        <h6 class="mb-0 text-white">Object</h6>
-      </div>
-      <div #objectScrollContainer class="card-body p-0" style="max-height: calc((100vh - 250px) / 2); overflow-y: auto;">
+  <div class="col-12 px-0" *ngIf="sourceItems.length > 0 || objectItems.length > 0">
+    <div class="card mb-0" style="border-left: 4px solid var(--bs-secondary);">
+      <div #objectScrollContainer class="card-body p-0" style="max-height: calc((100vh - 280px) / 2); overflow-y: auto;">
         <form [formGroup]="objectForm" novalidate>
-          <div class="table-responsive table-borderless p-1">
+          <div class="table-responsive table-borderless">
             <table class="table table-hover align-middle table-sm mb-0">
-              <thead class="bg-info">
+              <thead class="bg-info" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 18%;">Voucher No.</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Type</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 3%;">Dr/Cr</th>
-                  <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Curr. Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Curr. Amt.</th>
-                  <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">OS Local Amt.</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Curr. Amt.</th>
-                  <th class="bg-warning text-dark text-end" style="font-size: 14px; width: 10%;">Match Local Amt.</th>
-                  <th class="bg-warning text-dark text-center" style="font-size: 14px; width: 2%;">&#10003;</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 7%;">Date</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 12px; width: 2%;">&#10003;</th>
+                  <th class="bg-secondary text-light text-center" rowspan="999"
+                    style="font-size: 10px; width: 4%; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 2px; padding: 4px 2px;">
+                    OBJECT
+                  </th>
                 </tr>
               </thead>
               <tbody formArrayName="items">
@@ -434,8 +461,8 @@
                       [class.is-invalid]="o.get('matchCurrAmt')?.errors?.['limitExceeded']"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyMasterSid)"
-                      (input)="calculateLocalAmountForRow(objectItems, i)"
-                      (blur)="calculateLocalAmountForRow(objectItems, i)" />
+                      (input)="onMatchAmountChange(objectItems, i)"
+                      (blur)="onMatchAmountChange(objectItems, i)" />
                   </td>
                   <td class="table-warning">
                     <input type="text" formControlName="matchLocalAmt"
@@ -449,32 +476,44 @@
                   </td>
                 </tr>
                 <tr *ngIf="isLoadingObject">
-                  <td colspan="13" class="text-center text-muted py-2">
-                    <i class="fas fa-spinner fa-spin me-2"></i>Fetching vouchers...
+                  <td colspan="14" class="text-center text-muted py-1" style="font-size: 12px;">
+                    <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div #objectSentinel style="height: 1px;"></div>
+          <div *ngIf="hasMoreObjectData && !isLoadingObject" class="text-center py-1"
+            style="font-size: 11px; color: #aaa; animation: pulse 1.5s infinite;">
+            <i class="fas fa-chevron-down me-1"></i>Scroll for more
+          </div>
         </form>
       </div>
-      <div class="card-footer p-0 border-top-0" *ngIf="objectItems.length > 0">
-        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%;">
+      <div class="card-footer py-0 px-1 border-top-0" *ngIf="objectItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
           <tr class="table-info fw-bold text-end">
-            <td style="width: 40%;" class="text-end">Totals</td>
-            <td style="width: 9%;" class="text-end">{{ objectTotalCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 37%;" class="text-end">Totals</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '—' : (objectTotalCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 9%;" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 9%;" class="text-end">{{ objectTotalOsCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '—' : (objectTotalOsCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 9%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 10%;" class="text-end table-warning">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td style="width: 10%;" class="text-end table-warning">{{ isMultiCurrency ? '—' : (objectTotalMatchCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 10%;" class="text-end table-warning">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 4%;"></td>
+            <td style="width: 7%;"></td>
+          </tr>
+          <!-- Exchange loss row in object footer (when loss: source local > object local) -->
+          <tr *ngIf="matchingScenario === 'single-foreign' && exchangeDifference > 0" class="fw-bold text-end" style="background-color: #f8d7da;">
+            <td style="width: 37%;" class="text-end text-danger">Ex. Loss (JV)</td>
+            <td style="width: 9%;"></td><td style="width: 9%;"></td><td style="width: 9%;"></td><td style="width: 9%;"></td>
+            <td style="width: 10%;"></td>
+            <td style="width: 10%;" class="text-end text-danger">{{ exchangeDifference | number:'1.2-2' }}</td>
+            <td style="width: 7%;"></td>
           </tr>
         </table>
       </div>
     </div>
-  </div> 
+  </div>
 
   <!-- Empty state -->
   <div class="col-12 px-0" *ngIf="sourceItems.length === 0 && objectItems.length === 0">
@@ -486,3 +525,10 @@
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+</style>
