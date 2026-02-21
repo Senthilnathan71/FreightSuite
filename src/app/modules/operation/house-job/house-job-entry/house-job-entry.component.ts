@@ -3342,8 +3342,20 @@ resetForm() {
     }
 
   openTandC() {
-        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-        const payload = { MenuMasterSid: this.currentMenuId };
+        const currentMenuId = this.bookingData?.MenuMasterSid;
+        const departmentSid = this.bookingData?.DepartmentMasterSid;
+        const pol = this.bookingData?.POL;
+        const pod = this.bookingData?.POD;
+        const fdc = this.bookingData?.FPD;
+        const carrier = this.bookingData?.CarrierSid || null;
+        const payload = { 
+          MenuMasterSid: currentMenuId,
+          DepartmentMasterSid: departmentSid,
+          POL: pol,
+          POD: pod,
+          FDC: fdc,
+          Carrier: carrier
+        };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {
             if (resp.status) {
@@ -3354,8 +3366,13 @@ resetForm() {
                 centered: true
               });
               modalRef.componentInstance.terms = this.TandCList;
-              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.MenuMasterSid = currentMenuId;
               modalRef.componentInstance.DocumentSid = this.HouseJobSid;
+              modalRef.componentInstance.DepartmentMasterSid = departmentSid;
+              modalRef.componentInstance.POL = pol;
+              modalRef.componentInstance.POD = pod;
+              modalRef.componentInstance.FDC = fdc;
+              modalRef.componentInstance.Carrier = carrier;
     
             } else {
               this.appSettingService.showError('Error loading Terms and Conditions');

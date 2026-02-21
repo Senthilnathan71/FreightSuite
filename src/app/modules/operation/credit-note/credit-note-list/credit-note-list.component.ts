@@ -102,7 +102,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   override ngOnInit() {
     this.getAllCompanies();
     this.loadJobMappings();
-    this.loadInvoices();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -160,7 +159,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
         PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
-        ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
         MasterNumber: item.masterJob?.MasterJobNumber || '-',
         HouseNumber: item.houseJob?.HBLNo || '-'
       }));
@@ -250,7 +248,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         width: '140px',
       },
       {
-        key: 'ReversalVoucherDisplay',
+        key: 'ReversalVoucherNumber',
         label: 'Inv No.',
         sortable: true,
         filterable: true,
@@ -387,7 +385,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   onTableActionClick(event: TableEventData): void {
-    if (event.column?.key === 'ReversalVoucherDisplay') {
+    if (event.column?.key === 'ReversalVoucherNumber') {
     // Clicking VENDOR INVOICE link
     this.navigateToInvoice(event.row.ReversalVoucher);
     return;

@@ -2147,7 +2147,19 @@ handleEdocChange(event: any) {
 
   openTandC() {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-      const payload = { MenuMasterSid: this.currentMenuId };
+      const departmentSid = this.masterJobData?.DepartmentMasterSid;
+      const pol = this.masterJobData?.POL;
+      const pod = this.masterJobData?.POD;
+      const fdc = this.masterJobData?.FPD;
+      const carrier = this.masterJobData?.voyages?.[0]?.CarrierSid || null;
+      const payload = { 
+        MenuMasterSid: this.currentMenuId,
+        DepartmentMasterSid: departmentSid,
+        POL: pol,
+        POD: pod,
+        FDC: fdc,
+        Carrier: carrier
+       };
       this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;
@@ -2159,6 +2171,11 @@ handleEdocChange(event: any) {
           modelRef.componentInstance.terms = this.TandCList;
           modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+          modelRef.componentInstance.DepartmentMasterSid = departmentSid;
+          modelRef.componentInstance.POL = pol;
+          modelRef.componentInstance.POD = pod;
+          modelRef.componentInstance.FDC = fdc;
+          modelRef.componentInstance.Carrier = carrier;
         } else {
           this.appSettingsService.showError('Error loading Terms and Conditions');
         }
