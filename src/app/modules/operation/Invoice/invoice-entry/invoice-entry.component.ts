@@ -1926,8 +1926,12 @@ isSeaDepartment(): boolean {
     for (let i = 0; i < this.details.length; i++) {
       const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
       const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-      // const igstAmt = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
-      total += taxAmt1 + taxAmt2;
+      const drCr = this.details.at(i).get('DrCr')?.value;
+      if(drCr === 'C') {
+        total += taxAmt1 + taxAmt2;
+      } else {
+        total -= taxAmt1 + taxAmt2;
+      }
     }
     return this.getFormattedAmount(
       total,
@@ -2480,6 +2484,10 @@ isSeaDepartment(): boolean {
   get isReadOnly(): boolean {
     if(!this.isEditMode) return false;
     return this.invoiceData?.PostStatus !== 'U' || this.invoiceData?.Status !== 'A';
+  }
+
+  get printButtonStatus() : boolean {
+    return this.invoiceData?.PostStatus !== 'P' || this.invoiceData?.Status !== 'A';
   }
 
   // Check if voucher is draft
