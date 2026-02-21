@@ -273,11 +273,34 @@
           style="width: 22px; min-width: 22px; max-width: 22px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 1px; font-size: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; background: linear-gradient(180deg, #0dcaf0 0%, #0aa8c7 100%);">
           SOURCE
         </div>
-        <div #sourceScrollContainer class="h-100 flex-grow-1" style="position: relative; min-width: 0; overflow-y: auto; overflow-x: hidden;" (scroll)="onPanelScroll('source')">
+       
+        <div #sourceScrollContainer class="h-100" style="position: relative; min-width: 0; overflow-y: auto; overflow-x: hidden;" (scroll)="onPanelScroll('source')">
           <form [formGroup]="sourceForm" novalidate>
+             <div style="position: sticky; top: 0; z-index: 10; background: white;">
+            <!-- Column Headers -->
+            <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%;">
+              <thead class="bg-info">
+                <tr>
+                  <th class="bg-info text-light text-center" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 8%;">Date</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 12px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead>
+            </table>
+            </div>
             <div class="table-borderless">
               <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%;">
-              <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
+              <!-- <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
                 <tr>
                   <th class="bg-transparent text-light text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 15%;">Voucher No.</th>
                   <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Type</th>
@@ -293,45 +316,45 @@
                   <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Local</th>
                   <th class="bg-warning text-dark text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 2%;">&#10003;</th>
                 </tr>
-              </thead>
+              </thead> -->
               <tbody formArrayName="items">
                 <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
-                  <td><input type="text" formControlName="voucherNo" class="custom-input-field sm" /></td>
-                  <td><input type="text" formControlName="voucherType" class="custom-input-field sm" /></td>
-                  <td><input type="text" [value]="(s.getRawValue().voucherDate | formatDate)" class="custom-input-field sm" disabled /></td>
-                  <td><input type="text" formControlName="drCr" class="custom-input-field sm" /></td>
-                  <td><input type="text" formControlName="curr" class="custom-input-field sm" /></td>
-                  <td>
+                  <td style=" width: 15%;"><input type="text" formControlName="voucherNo" class="custom-input-field sm" /></td>
+                  <td style=" width: 4%;"><input type="text" formControlName="voucherType" class="custom-input-field sm" /></td>
+                  <td style=" width: 8%;"><input type="text" [value]="(s.getRawValue().voucherDate | formatDate)" class="custom-input-field sm" disabled /></td>
+                  <td style=" width: 3%;"><input type="text" formControlName="drCr" class="custom-input-field sm" /></td>
+                  <td style=" width: 4%;"><input type="text" formControlName="curr" class="custom-input-field sm" /></td> 
+                  <td style=" width: 5%;">
                     <input type="text" formControlName="exRate"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="4"
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td>
+                  <td width="9%">
                     <input type="text" formControlName="currAmt"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td>
+                  <td  width="9%">  
                     <input type="text" formControlName="localAmt"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td>
+                  <td width="9%">
                     <input type="text" formControlName="osCurrAmt"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td>
+                  <td width="9%">
                     <input type="text" formControlName="osLocalAmt"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td class="table-warning">
+                  <td class="table-warning" width="10%">
                     <input type="text" formControlName="matchCurrAmt"
                       class="custom-input-field sm text-end"
                       [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']"
@@ -340,13 +363,13 @@
                       (input)="onMatchAmountChange(sourceItems, i)"
                       (blur)="onMatchAmountChange(sourceItems, i)" />
                   </td>
-                  <td class="table-warning">
+                  <td class="table-warning" width="10%">
                     <input type="text" formControlName="matchLocalAmt"
                       class="custom-input-field sm text-end"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyMasterSid)" />
                   </td>
-                  <td class="text-center">
+                  <td class="text-center" width="2%">
                     <input type="checkbox" class="form-check-input"
                       (change)="onTickMatch(sourceItems, i, $event)" />
                   </td>
@@ -371,10 +394,10 @@
         <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
           <tr class="table-info fw-bold text-end">
             <td style="width: 37%;" class="text-end">Totals</td>
-            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
-            <td style="width: 9%;" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
-            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
-            <td style="width: 9%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%; " class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
+            <td style="width: 9%; " class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%; " class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
+            <td style="width: 9%; " class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
             <td style="width: 10%;" class="text-end table-warning">{{ isMultiCurrency ? '-' : (sourceTotalMatchCurrAmt | number:'1.2-2') }}</td>
             <td style="width: 10%;" class="text-end table-warning">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
             <td style="width: 7%;"></td>
@@ -402,9 +425,31 @@
         </div>
         <div #objectScrollContainer class="h-100 flex-grow-1" style="position: relative; min-width: 0; overflow-y: auto; overflow-x: hidden;" (scroll)="onPanelScroll('object')">
           <form [formGroup]="objectForm" novalidate>
+                  <div style="position: sticky; top: 0; z-index: 10; background: white;">
+            <!-- Column Headers -->
+            <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%;">
+              <thead class="bg-info">
+                <tr>
+                  <th class="bg-info text-light text-center" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 8%;">Date</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-info text-light" style="font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-info text-light text-end" style="font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="font-size: 12px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead>
+            </table>
+            </div>
             <div class="table-borderless">
               <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%;">
-              <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
+              <!-- <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
                 <tr>
                   <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 15%;">Voucher No.</th>
                   <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Type</th>
@@ -420,7 +465,7 @@
                   <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Local</th>
                   <th class="bg-warning text-dark text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 2%;">&#10003;</th>
                 </tr>
-              </thead>
+              </thead> -->
               <tbody formArrayName="items">
                 <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
                   <td><input type="text" formControlName="voucherNo" class="custom-input-field sm" /></td>
