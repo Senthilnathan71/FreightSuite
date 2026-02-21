@@ -533,16 +533,10 @@ private formatAmount(amount: number | string): string {
   }
 
   deleteVendorInvoice(vendorInvoice: any) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent, {
-      width: '400px',
-      data: {
-        title: 'Delete Vendor Invoice',
-        message: `Are you sure you want to delete Vendor Invoice ${vendorInvoice.VoucherNumber}?`
-      }
-    });
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'confirm') {
+      if (result === true) {
         this.spinner.show();
         this.accountService.deleteVoucher({
           VoucherHeaderSid: vendorInvoice.VoucherHeaderSid,
@@ -560,9 +554,9 @@ private formatAmount(amount: number | string): string {
             }
           },
           error: (error) => {
-            this.spinner.hide();
-            this.appSettingService.showError('Error deleting Vendor Invoice');
             console.error('Error deleting Vendor Invoice:', error);
+            this.appSettingService.showError('Failed to delete Vendor Invoice');
+            this.spinner.hide();
           }
         });
       }

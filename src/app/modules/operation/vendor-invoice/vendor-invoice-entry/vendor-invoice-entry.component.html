@@ -5,17 +5,23 @@
 <div class="row compact-form">
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-      <div class="col-md-4 d-flex pb-1">
+      <div class="col-md-5 d-flex pb-1">
         <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
           'Create Vendor Invoice') }} <span class="fw-bold text-info">{{ isNonJob ? '[Non Job]' : '' }}</span></h5>
           @if(isEditMode){
           <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
+          @if(hyperLinkInfo.id){
+            <div class="ps-2 fw-bold">
+              {{ hyperLinkInfo.label }} :
+              <a class="px-2 text-decoration-underline" [routerLink]="hyperLinkInfo.path">{{hyperLinkInfo.number}}</a>
+            </div>
+          }
           }
       </div>
 
-      <div class="col-md-8 pb-1">
+      <div class="col-md-7 pb-1">
         <div
         class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
         @if(!isEditMode){
@@ -546,6 +552,7 @@
               class="btn btn-info btn-sm" 
               (click)="addDetailRow()" 
               type="button"
+              [disabled]="isReadOnly"
            >
               <i class="fas fa-plus me-1"></i>Add Charge
             </button>
