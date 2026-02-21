@@ -3227,7 +3227,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.housejobData?.masterJob?.MasterJobNumber || this.houseJobForm.get('MBLNo')?.value;
     const MasterJobSid = this.houseJobForm.get("MasterJobSid")?.value || this.housejobData?.MasterJobSid;
-    const MBLNo = this.houseJobForm.get('MBLNo')?.value;
+    const MBLNo = this.houseJobForm.get('MBLNo')?.getRawValue() || this.housejobData?.masterJob?.MBLNo;
     const HBLNo = this.b['HBLNo']?.value;
     const selectedPOO = this.houseJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.houseJobForm.get('POL')?.value; // PortMasterSid

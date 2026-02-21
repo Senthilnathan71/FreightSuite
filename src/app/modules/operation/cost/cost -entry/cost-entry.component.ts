@@ -3236,7 +3236,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   private autoGenerateNarration(): string {
     const segment = this.parentFormValue?.Segment || '';
-    if (this.currentCompany?.CompanyMasterSid === 12) {
+    if (this.currentCompany?.CompanyMasterSid === 12 || this.currentCompany?.CompanyMasterSid === 1) {
       if (this.screenName === 'Booking') {
         const BookingNo = this.parentFormValue?.BookingNumber || '';
         return `Booking No : ${BookingNo}`;
@@ -3245,7 +3245,7 @@ createRateFormGroup(data?: any): FormGroup {
         const MBLNo = this.parentFormValue?.MBLNo || '';
         return `${segment === 'AIR' ? 'MAWBNo' : 'MBLNo'} : ${MBLNo}`;
       }
-      else if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
+      else if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill' || this.screenName === 'Service Job') {
         const MBLNo = this.parentFormValue?.MBLNo || '';
         if(MBLNo){
           return `${segment === 'AIR' ? 'MAWBNo' : 'MBLNo'} : ${MBLNo}`;

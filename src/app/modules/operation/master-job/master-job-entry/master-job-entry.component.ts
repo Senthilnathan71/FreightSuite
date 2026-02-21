@@ -2643,7 +2643,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
-    const MBLNo = this.masterJobForm.get('MBLNo')?.value;
+    const MBLNo = this.masterJobForm.get('MBLNo')?.getRawValue() || this.masterJobData?.MBLNo;
     const PORSid = this.masterJobForm.get('POO')?.value; // PortMasterSid
     const POLSid = this.masterJobForm.get('POL')?.value; // PortMasterSid
     const PODSid = this.masterJobForm.get('POD')?.value; // PortMasterSid
