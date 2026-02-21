@@ -267,7 +267,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     this.clearCreateDetail();
     this.loadSourceData();
     this.loadObjectData();
-    setTimeout(() => this.setupObservers(), 200);
+    setTimeout(() => this.setupObservers(), 0);
   }
 
   loadSourceData() {
@@ -289,7 +289,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
           this.hasMoreSourceData = data.length >= this.BATCH_SIZE;
         } else { this.hasMoreSourceData = false; }
         this.isLoadingSource = false;
-        if (this.hasMoreSourceData) setTimeout(() => this.reobserveSentinel('source'), 100);
+        if (this.hasMoreSourceData) setTimeout(() => this.reobserveSentinel('source'), 0);
+        setTimeout(() => this.fetchMoreIfAtBottom('source'), 0);
       },
       error: () => { this.isLoadingSource = false; },
     });
@@ -314,7 +315,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
           this.hasMoreObjectData = data.length >= this.BATCH_SIZE;
         } else { this.hasMoreObjectData = false; }
         this.isLoadingObject = false;
-        if (this.hasMoreObjectData) setTimeout(() => this.reobserveSentinel('object'), 100);
+        if (this.hasMoreObjectData) setTimeout(() => this.reobserveSentinel('object'), 0);
+        setTimeout(() => this.fetchMoreIfAtBottom('object'), 0);
       },
       error: () => { this.isLoadingObject = false; },
     });
@@ -336,6 +338,28 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   private setupObservers() {
     this.reobserveSentinel('source');
     this.reobserveSentinel('object');
+    this.fetchMoreIfAtBottom('source');
+    this.fetchMoreIfAtBottom('object');
+  }
+
+  onPanelScroll(panel: 'source' | 'object') {
+    this.fetchMoreIfAtBottom(panel);
+  }
+
+  private fetchMoreIfAtBottom(panel: 'source' | 'object') {
+    const container = panel === 'source'
+      ? this.sourceScrollContainer?.nativeElement
+      : this.objectScrollContainer?.nativeElement;
+    if (!container) return;
+
+    const nearBottom = (container.scrollTop + container.clientHeight) >= (container.scrollHeight - 24);
+    if (!nearBottom) return;
+
+    if (panel === 'source') {
+      if (!this.isLoadingSource && this.hasMoreSourceData) this.loadSourceData();
+      return;
+    }
+    if (!this.isLoadingObject && this.hasMoreObjectData) this.loadObjectData();
   }
 
   createMatchingRow(tx: any): FormGroup {
@@ -471,6 +495,12 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   get objectTotalOsLocalAmt() { return this.getTotal(this.objectItems, 'osLocalAmt'); }
   get objectTotalMatchCurrAmt() { return this.getTotal(this.objectItems, 'matchCurrAmt'); }
   get objectTotalMatchLocalAmt() { return this.getTotal(this.objectItems, 'matchLocalAmt'); }
+  get isMultiCurrency(): boolean { return this.matchingScenario === 'multi-currency'; }
+  get loadedIsMultiCurrency(): boolean {
+    const rows = [...this.sourceItems.getRawValue(), ...this.objectItems.getRawValue()];
+    if (!rows.length) return false;
+    return new Set(rows.map((r: any) => r.curr)).size > 1;
+  }
 
   get hasMatchingAmounts(): boolean {
     return this.sourceItems.controls.some(c => toNumber(c.get('matchCurrAmt')?.value) !== 0)
