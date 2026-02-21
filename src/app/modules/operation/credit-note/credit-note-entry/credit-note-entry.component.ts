@@ -2298,7 +2298,12 @@ export class CreditNoteEntryComponent {
     for (let i = 0; i < this.details.length; i++) {
       const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
       const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
-      total += taxAmt1 + taxAmt2;
+      const drCr = this.details.at(i).get('DrCr')?.value;
+      if(drCr === 'C') {
+        total += taxAmt1 + taxAmt2;
+      } else {
+        total -= taxAmt1 + taxAmt2;
+      }
     }
     return this.getFormattedAmount(
       total,

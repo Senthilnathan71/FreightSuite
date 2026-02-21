@@ -653,13 +653,13 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .pipe(catchError((err) => of([]))),
     }).subscribe(
       ({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
-        this.partyList = parties.data;
+        this.partyList = Array.isArray(parties?.data) ? parties.data : [];
         this.currencyList = (currencies || []).map((c) => ({
           ...c,
           countryName: c?.countryMaster?.countryName,
         }));
-        this.bankTypedLedgers = bankTypedLedgers.data;
-        this.cashTypeLedgers = cashTypeLedgers.data;
+        this.bankTypedLedgers = Array.isArray(bankTypedLedgers?.data) ? bankTypedLedgers.data : [];
+        this.cashTypeLedgers = Array.isArray(cashTypeLedgers?.data) ? cashTypeLedgers.data : [];
 
         const companyCurrency = this.r['CurrencyMasterSid']?.value;
         this.setCurrencyCode(companyCurrency);
