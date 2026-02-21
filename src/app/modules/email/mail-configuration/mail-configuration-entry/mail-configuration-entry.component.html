@@ -29,6 +29,7 @@
               <tr class="bg-info">
                 <th class="text-center  bg-transparent text-light" style="width: 60px;"></th>
                 <th class="text-center bg-transparent text-light bg-transparent text-light" style="width: 40px;">Sno</th>
+                <th class=" bg-transparent text-light" style="width: 150px;">Company Name</th>
                 <th class=" bg-transparent text-light" style="width: 150px;">Mail Name</th>
                 <th class=" bg-transparent text-light" style="width: 150px;">Menu/Component</th>
                 <th class=" bg-transparent text-light" style="width: 200px;">Mail Subject</th>
@@ -36,6 +37,8 @@
                 <th class=" bg-transparent text-light" style="width: 130px;">To Email From</th>
                 <th class=" bg-transparent text-light" style="width: 130px;">CC Email From</th>
                 <th class="text-center  bg-transparent text-light" style="width: 90px;">Attachment</th>
+                <th class=" bg-transparent text-light" style="width: 150px;">Action</th>
+                <th class="text-center  bg-transparent text-light" style="width: 100px;">Trigger</th>
                 <th class="text-center  bg-transparent text-light" style="width: 90px;">Auto/Popup</th>
               </tr>
             </thead>
@@ -71,6 +74,11 @@
                     } @else {
                       <span class="d-block text-center">{{ row.Sno }}</span>
                     }
+                  </td>
+
+                  <!-- Company Name -->
+                  <td>
+                    <span>{{ currentCompany?.companyName }}</span>
                   </td>
 
                   <!-- Mail Name -->
@@ -113,13 +121,14 @@
                   </td>
 
                   <!-- Mail Body -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
-                      <textarea class="custom-input-field sm"
-                        [(ngModel)]="row.MailBody" rows="1" maxlength="2000" placeholder="">
-                      </textarea>
+                      <span class="text-primary" style="cursor:pointer; text-decoration:underline;"
+                        (click)="openMailBodyModal(row)">
+                        {{ row.MailBody ? (row.MailBody | slice:0:30) + '...' : 'Click to enter' }}
+                      </span>
                     } @else {
-                      <span class="mail-body-text">{{ row.MailBody }}</span>
+                      <span>{{ row.MailBody | slice:0:50 }}</span>
                     }
                   </td>
 
@@ -161,6 +170,33 @@
                     }
                   </td>
 
+                  <!-- Action -->
+                  <td>
+                    @if (row.isEditing) {
+                      <textarea class="custom-input-field sm" [(ngModel)]="row.Action" rows="1" maxlength="200"></textarea>
+                    } @else {
+                      <span>{{ row.Action }}</span>
+                    }
+                  </td>
+
+                  <!-- Trigger -->
+                  <td class="text-center">
+                    @if (row.isEditing) {
+                      <ng-select
+                        [(ngModel)]="row.Trigger"
+                        [items]="triggerOptions"
+                        bindLabel="label"
+                        bindValue="value"
+                        [clearable]="false"
+                        [searchable]="false"
+                        appendTo="body"
+                        class="ng-select">
+                      </ng-select>
+                    } @else {
+                      <span>{{ row.Trigger === 'A' ? 'Auto' : 'Manual' }}</span>
+                    }
+                  </td>
+
                   <!-- Auto/Popup -->
                   <td class=" text-center">
                     @if (row.isEditing) {
@@ -183,7 +219,7 @@
 
               @if (rows.length === 0) {
                 <tr>
-                  <td colspan="10" class="text-center text-muted py-3">
+                  <td colspan="13" class="text-center text-muted py-3">
                     No mail configurations found. Click "Add Row" to create one.
                   </td>
                 </tr>

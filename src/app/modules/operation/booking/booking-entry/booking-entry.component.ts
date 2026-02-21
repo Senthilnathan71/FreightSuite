@@ -64,6 +64,7 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { ToastrService } from 'ngx-toastr';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { HostListener } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { th } from 'date-fns/locale';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -440,7 +441,8 @@ arapFilter = {
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     private sidebarService : VerticalSidebarService,
     private commonModalService : ModalService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private emailTriggerService: EmailTriggerService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -2214,10 +2216,17 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.bookingForm.markAsPristine();
             this.cargoForm.markAsPristine();
             this.otherForm.markAsPristine();
-            this.croForm.markAsPristine(); 
+            this.croForm.markAsPristine();
             if (resolve) resolve(true);
             // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid,true);
+            this.emailTriggerService.triggerEmails({
+              companyId: this.currentCompany.CompanyMasterSid,
+              branchId: this.currentBranch.BranchMasterSid,
+              menuMasterSid: this.MenuMasterSid,
+              action: 'UPDATE',
+              context: { BookingNo: this.bookingData?.BookingNo }
+            });
           } else {
             this.appSettingService.showError('Error updating booking.');
             this.isSaving = false;
@@ -2241,6 +2250,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             const bookingId = resp.data?.bookingHeader?.BookingHeaderSid;
             if (resolve) resolve(true);
             this.router.navigate(['operation/booking/entry', bookingId]);
+            this.emailTriggerService.triggerEmails({
+              companyId: this.currentCompany.CompanyMasterSid,
+              branchId: this.currentBranch.BranchMasterSid,
+              menuMasterSid: this.MenuMasterSid,
+              action: 'CREATE',
+              context: { BookingNo: resp.data?.bookingHeader?.BookingNo }
+            });
           } else {
             this.appSettingService.showError('Error creating booking.');
             this.isSaving = false;
