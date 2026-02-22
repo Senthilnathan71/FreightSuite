@@ -79,6 +79,91 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const reportTitle = exportConfig.reportHeader.reportTitle || '';
   const lineWidth = isLandscape ? 782 : 535;
 
+  function portraitHeader(data: GenericReportPdfData): any {
+    const { company, branch, logo, exportConfig } = data;
+    const stack: any[] = [];
+
+    // Company info stack
+    const companyStack: any[] = [];
+    if (company?.companyName)
+      companyStack.push({
+        text: company.companyName,
+        bold: true,
+        fontSize: 12,
+        alignment: 'center',
+      });
+    if (branch?.branchName)
+      companyStack.push({
+        text: branch.branchName,
+        fontSize: 9,
+        alignment: 'center',
+        color: '#666666',
+      });
+    const addressLine = branch?.addressLine1 || company?.addressLine1 || '';
+    if (addressLine)
+      companyStack.push({
+        text: addressLine,
+        fontSize: 8,
+        alignment: 'center',
+        color: '#666666',
+      });
+
+    const addressParts: string[] = [];
+    if (branch?.addressLine2) addressParts.push(branch.addressLine2);
+    if (branch?.cityMaster?.cityName)
+      addressParts.push(branch.cityMaster.cityName);
+    if (branch?.postalCode) addressParts.push(branch.postalCode);
+    if (branch?.phoneNumber) addressParts.push(branch.phoneNumber);
+    if (addressParts.length)
+      companyStack.push({
+        text: addressParts.join(', '),
+        fontSize: 8,
+        alignment: 'center',
+        color: '#666666',
+      });
+
+    // Logo on top in portrait
+    if (logo)
+      stack.push({
+        image: logo,
+        width: 120,
+        alignment: 'center',
+        margin: [0, 0, 0, 4],
+      });
+
+    stack.push(...companyStack);
+
+    // Report title
+    if (exportConfig.reportHeader.reportTitle) {
+      stack.push({
+        text: exportConfig.reportHeader.reportTitle,
+        bold: true,
+        fontSize: 11,
+        alignment: 'center',
+        margin: [0, 6, 0, 4],
+      });
+    }
+
+    // Additional info (parameters)
+    if (exportConfig.reportHeader.additionalInfo?.length) {
+      const items = exportConfig.reportHeader.additionalInfo;
+      const tableBody: any[][] = [];
+      items.forEach((item) =>
+        tableBody.push([
+          { text: item.label, bold: true, fontSize: 8 },
+          { text: `: ${item.value || ''}`, fontSize: 8 },
+        ]),
+      );
+
+      stack.push({
+        table: { widths: ['auto', '*'], body: tableBody },
+        layout: 'noBorders',
+        margin: [0, 4, 0, 4],
+      });
+    }
+
+    return { margin: [30, 15, 30, 0], stack };
+  }
   const headerFunction = (_currentPage: number, _pageCount: number, _pageSize: any) => {
     const stack: any[] = [];
 
@@ -293,7 +378,11 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         lineColor: '#000000'
       }]
     }),
-    header: headerFunction,
+      header: (_currentPage: number, _pageCount: number, _pageSize: any) => {
+      return isLandscape
+        ? headerFunction(_currentPage, _pageCount, _pageSize)
+        : portraitHeader(data); 
+    },
     content,
     footer: createFooterFunction(userData, {showPageNumbers: true}),
     styles: getPdfStyles(),

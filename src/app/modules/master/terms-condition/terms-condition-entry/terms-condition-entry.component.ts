@@ -3,7 +3,7 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, forkJoin, of } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -18,6 +18,9 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -32,7 +35,9 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
         OnlyTextDirective,
         TextWithNumbersDirective,
         DatePipe,
-        PreventMultiClickDirective
+        PreventMultiClickDirective,
+        SearchableDropdown,
+        NgbDropdownModule
     ],
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
@@ -72,9 +77,11 @@ export class TermsConditionEntryComponent implements OnInit{
     TandCList: any[] = [];
     currentCompany: any;
     currentBranch: any;
+    showDetailSection: boolean = false;
     pendingDetailEditIndex: number | null = null;
     pendingDepartmentSid: number | null = null;
 
+    portLookupConfig = DROPDOWN_CONFIGS.PORT
     constructor(
         private masterService : MasterService,
         private operationService: OperationService,
@@ -259,26 +266,25 @@ export class TermsConditionEntryComponent implements OnInit{
     }
 
     onPortSelectionChange(): void {
-        const pol = this.asArray(this.termsAndConditionForm.get('POL')?.value);
-        const pod = this.asArray(this.termsAndConditionForm.get('POD')?.value);
+    const pol = this.termsAndConditionForm.get('POL')?.value;
+    const pod = this.termsAndConditionForm.get('POD')?.value;
 
-        const polExclude = new Set([...pod]);
-        const podExclude = new Set([...pol]);
+    this.filteredPOL = this.filteredPorts.filter(
+        (port: any) => port.PortCode !== pod
+    );
 
-        this.filteredPOL = this.filteredPorts.filter((port: any) => !polExclude.has(port.PortCode));
-        this.filteredPOD = this.filteredPorts.filter((port: any) => !podExclude.has(port.PortCode));
+    this.filteredPOD = this.filteredPorts.filter(
+        (port: any) => port.PortCode !== pol
+    );
 
-        const allowedPOL = new Set(this.filteredPOL.map((p: any) => p.PortCode));
-        const allowedPOD = new Set(this.filteredPOD.map((p: any) => p.PortCode));
-
-        const validPOL = pol.filter((code: string) => allowedPOL.has(code));
-        const validPOD = pod.filter((code: string) => allowedPOD.has(code));
-
+    // If same selected in both, clear one
+    if (pol && pod && pol === pod) {
         this.termsAndConditionForm.patchValue({
-            POL: validPOL,
-            POD: validPOD,
+            POD: null
         }, { emitEvent: false });
     }
+}
+
 
     private asArray(value: any): any[] {
         if (Array.isArray(value)) return value;
@@ -298,7 +304,13 @@ export class TermsConditionEntryComponent implements OnInit{
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.termsAndConditionForm.value;
-        const { departmentId, ...masterFormValue } = formValue;
+        const { departmentId, ...rest } = formValue;
+        const masterFormValue = {
+        ...rest,
+        POL: this.wrapAsArray(rest.POL),
+        POD: this.wrapAsArray(rest.POD),
+        FDC: this.wrapAsArray(rest.FDC)
+        };
         const termsAndConditionsDetail = this.buildTermsDetailPayload();
         const departmentPayload = departmentId
     ? [{
@@ -321,7 +333,8 @@ export class TermsConditionEntryComponent implements OnInit{
                         this.appSettingService.showSuccess('Terms and Conditions updated successfully');
                         this.loadTermsAndConditions();
                     } else {
-                        this.appSettingService.showError('Error updating Terms and Conditions');
+                        const backendMessage = resp?.message;
+                        this.appSettingService.showError(backendMessage)
                     }
                     this.isSaving = false;
                 },
@@ -345,17 +358,25 @@ export class TermsConditionEntryComponent implements OnInit{
                             this.route.navigate(['master/terms-condition/list']);
                         }
                     } else {
-                        this.appSettingService.showError('Error creating Terms and Conditions');
+                        const backendMessage = resp?.message;
+                        this.appSettingService.showError(backendMessage)
                     }
                     this.isSaving = false;
                 },
                 (error)=>{
                     this.isSaving = false;
+                    const backendMessage = error?.error?.message || error?.error?.response?.message || error?.message;
+                    this.appSettingService.showError(backendMessage)
                     console.error('Error Creating Terms and Conditions',error)
                 }
             )
         }
     }
+    private wrapAsArray(value: any): string[] {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+}
+
 
     upsertDetailRow(){
         if (this.isDetailSaving) return;
@@ -465,6 +486,9 @@ export class TermsConditionEntryComponent implements OnInit{
                     this.tandCHeaderData = response;
                     this.termsAndConditionForm.patchValue({
                         ...response,
+                        POL: response.POL?.[0] || null,
+                        POD: response.POD?.[0] || null,
+                        FDC: response.FDC?.[0] || null,
                         departmentId : response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid || '',
                         status : response.status === 'A' ? 'Active':'Suspended'    
                     })
@@ -552,6 +576,14 @@ export class TermsConditionEntryComponent implements OnInit{
         modalRef.componentInstance.idValue = this.tandCDetailData?.TermsAndConditionsDetailSid;
     }
 
-    
+    openDetailSection() {
+    this.showDetailSection = true;
+    this.startNewDetail();
+}
+
+closeDetailSection() {
+    this.showDetailSection = false;
+    this.closeDetailForm();
+}
 
 }

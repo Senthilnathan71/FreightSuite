@@ -471,13 +471,28 @@
             </div>
           </aside>
           }
+          <aside class="col-md-4 mt-1 mt-md-2">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                id="text-input"
+                placeholder=""
+                class="form-check-input focus-ring"
+                formControlName="isLoginUser"
+                (keydown.enter)="toggleCheckbox($event)"
+              />
+              <label for="text-input" class="form-check-label"
+                >Is Login User <span class="text-danger"></span
+              ></label>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="mt-1">
+<div class="mt-1" *ngIf="userForm.get('isLoginUser')?.value">
   <div class="card mb-0 border border-info position-relative">
     <!-- Card Header -->
     <div
@@ -508,7 +523,7 @@
   </div>
 </div>
 
-<ng-container [formGroup]="userForm">
+<ng-container [formGroup]="userForm" *ngIf="userForm.get('isLoginUser')?.value">
   <div class="compact-form" formArrayName="userCompanyMaster">
     <ng-container
       *ngFor="

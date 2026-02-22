@@ -3227,7 +3227,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.housejobData?.masterJob?.MasterJobNumber || this.houseJobForm.get('MBLNo')?.value;
     const MasterJobSid = this.houseJobForm.get("MasterJobSid")?.value || this.housejobData?.MasterJobSid;
-    const MBLNo = this.houseJobForm.get('MBLNo')?.value;
+    const MBLNo = this.houseJobForm.get('MBLNo')?.getRawValue() || this.housejobData?.masterJob?.MBLNo;
     const HBLNo = this.b['HBLNo']?.value;
     const selectedPOO = this.houseJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.houseJobForm.get('POL')?.value; // PortMasterSid
@@ -3342,8 +3342,20 @@ resetForm() {
     }
 
   openTandC() {
-        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-        const payload = { MenuMasterSid: this.currentMenuId };
+        const currentMenuId = this.bookingData?.MenuMasterSid;
+        const departmentSid = this.bookingData?.DepartmentMasterSid;
+        const pol = this.bookingData?.POL;
+        const pod = this.bookingData?.POD;
+        const fdc = this.bookingData?.FPD;
+        const carrier = this.bookingData?.CarrierSid || null;
+        const payload = { 
+          MenuMasterSid: currentMenuId,
+          DepartmentMasterSid: departmentSid,
+          POL: pol,
+          POD: pod,
+          FDC: fdc,
+          Carrier: carrier
+        };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {
             if (resp.status) {
@@ -3354,8 +3366,13 @@ resetForm() {
                 centered: true
               });
               modalRef.componentInstance.terms = this.TandCList;
-              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.MenuMasterSid = currentMenuId;
               modalRef.componentInstance.DocumentSid = this.HouseJobSid;
+              modalRef.componentInstance.DepartmentMasterSid = departmentSid;
+              modalRef.componentInstance.POL = pol;
+              modalRef.componentInstance.POD = pod;
+              modalRef.componentInstance.FDC = fdc;
+              modalRef.componentInstance.Carrier = carrier;
     
             } else {
               this.appSettingService.showError('Error loading Terms and Conditions');

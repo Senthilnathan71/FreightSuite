@@ -2835,7 +2835,7 @@ isSeaDepartment(): boolean {
       centered: true,
     });
     modalRef.componentInstance.terms = staticTerms;
-    modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+    modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
     modalRef.componentInstance.DocumentSid = this.headerId;
     return;
   }
@@ -2848,7 +2848,7 @@ isSeaDepartment(): boolean {
         centered: true,
       });
       modalRef.componentInstance.terms = this.TandCList;
-      modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+      modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
       modalRef.componentInstance.DocumentSid = this.headerId;
       return;
     }
@@ -2865,7 +2865,7 @@ isSeaDepartment(): boolean {
             centered: true,
           });
           modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
           modalRef.componentInstance.DocumentSid = this.headerId;
         } else {
           this.appSettingService.showError(
@@ -2908,7 +2908,7 @@ isSeaDepartment(): boolean {
     return this.masterService.getTandCByCondition({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid: this.currentMenuId,
+      MenuMasterSid: this.invoiceData?.voucherTypeMaster?.MenuMasterSid,
       DocumentSid: this.invoiceData?.VoucherHeaderSid,
     });
   }

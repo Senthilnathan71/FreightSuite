@@ -84,7 +84,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           width: "170px"
         },
         {
-        key: 'ReversalVoucherDisplay',
+        key: 'ReversalVoucherNumber',
         label: 'Vendor Invo No',
         sortable: true,
         filterable: true,
@@ -244,7 +244,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       this.initializeTableConfig();
       this.initializeModalDropdownItems();
       super.ngOnInit();
-      this.loadVendorInvoices();
+      // this.loadVendorInvoices();
     }
   
  
@@ -292,7 +292,6 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           CurrencyCode: item.currencyMaster.currencyCode,
           Status: item.Status === 'A' ? 'Active' : 'Suspended',
           PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
-          ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
           AmountFormatted: this.formatAmount(item.Amount)
 
         }));
@@ -435,7 +434,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     }
   
     onTableAction(event: TableEventData): void {
-      if (event.column?.key === 'ReversalVoucherDisplay') {
+      if (event.column?.key === 'ReversalVoucherNumber') {
     // Clicking VENDOR INVOICE link
     this.navigateToVendorInvoice(event.row.ReversalVoucher);
     return;
@@ -517,7 +516,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         data: this.allItems,
         headers: [
           { key: 'VoucherNumber', label: 'Vendor CreditNote No' },
-          { key: 'ReversalVoucherDisplay', label: 'Vendor Invo No' },
+          { key: 'ReversalVoucherNumber', label: 'Vendor Invo No' },
           { key: 'VoucherDate', label: 'Date' },
           { key: 'VendorName', label: 'Vendor Name' },
           { key: 'BillNo', label: 'Bill No' },

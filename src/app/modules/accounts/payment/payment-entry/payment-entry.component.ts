@@ -3421,7 +3421,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const payload = { MenuMasterSid: this.currentMenuId };
 
     const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
-      if (termsData && termsData.length > 0) {
+      if (termsData) {
         this.TandCList = termsData;
         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
           size: 'lg',
