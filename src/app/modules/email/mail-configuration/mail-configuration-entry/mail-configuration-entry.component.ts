@@ -145,7 +145,7 @@ export class MailConfigurationEntryComponent implements OnInit {
       AttachmentRequire: 'Y',
       Action: '',
       Trigger: 'A',
-      AutoPopup: 'P',
+      AutoPopup: 'A',
       Status: 'A',
       isEditing: true,
       isNew: true

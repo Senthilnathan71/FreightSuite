@@ -48,17 +48,30 @@ export class EmailTriggerService {
 
   triggerEmails(params: EmailTriggerParams): void {
     const { companyId, branchId, menuMasterSid, action, context } = params;
+    const menuSid = Number(menuMasterSid);
+
+    console.log('EmailTriggerService: triggerEmails called', { companyId, menuSid, action });
 
     this.emailService.getAllByCompany(companyId).subscribe({
       next: (resp: any) => {
-        if (!resp.status || !resp.data) return;
+        if (!resp.status || !resp.data) {
+          console.log('EmailTriggerService: No mail configs found for company', companyId);
+          return;
+        }
+
+        console.log('EmailTriggerService: Total configs fetched:', resp.data.length);
+        console.log('EmailTriggerService: Configs:', resp.data.map((c: any) => ({
+          MenuMasterSid: c.MenuMasterSid, Trigger: c.Trigger, Status: c.Status, Action: c.Action, AutoPopup: c.AutoPopup
+        })));
 
         const configs = resp.data.filter((config: any) =>
-          config.MenuMasterSid === menuMasterSid &&
+          Number(config.MenuMasterSid) === menuSid &&
           config.Trigger === 'A' &&
           config.Status === 'A' &&
           this.matchesAction(config.Action, action)
         );
+
+        console.log('EmailTriggerService: Matching configs after filter:', configs.length);
 
         for (const config of configs) {
           if (config.AutoPopup === 'A') {

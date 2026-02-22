@@ -411,7 +411,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     console.log(this.currentBranchCityId, "CITY")
     this.loadCityName();
-    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
+    this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
       // Check for voice enquiry data first
