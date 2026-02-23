@@ -2225,7 +2225,19 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               branchId: this.currentBranch.BranchMasterSid,
               menuMasterSid: this.MenuMasterSid,
               action: 'UPDATE',
-              context: { BookingNo: this.bookingData?.BookingNo }
+              context: {
+                BookingNo: this.bookingData?.BookingNo,
+                date: this.datePipe.transform(this.bookingData?.BookingDateTime),
+                POO: this.getFormattedPort(this.bookingData?.POO),
+                POL: this.getFormattedPort(this.bookingData?.POL),
+                POD: this.getFormattedPort(this.bookingData?.POD),
+                FPD: this.getFormattedPort(this.bookingData?.FPD),
+                customerName: this.bookingData?.CustomerName,
+                shipperName: this.bookingData?.ShipperName,
+                consigneeName: this.bookingData?.ConsigneeName,
+                userName: this.userData?.userName,
+                ShipmentNo: this.bookingData?.ShipmentNo
+              }
             });
           } else {
             this.appSettingService.showError('Error updating booking.');
@@ -2255,7 +2267,19 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               branchId: this.currentBranch.BranchMasterSid,
               menuMasterSid: this.MenuMasterSid,
               action: 'CREATE',
-              context: { BookingNo: resp.data?.bookingHeader?.BookingNo }
+              context: {
+                BookingNo: resp.data?.bookingHeader?.BookingNo,
+                date: this.datePipe.transform(new Date()),
+                POO: this.getFormattedPort(this.b['POO']?.value),
+                POL: this.getFormattedPort(this.b['POL']?.value),
+                POD: this.getFormattedPort(this.b['POD']?.value),
+                FPD: this.getFormattedPort(this.b['FPD']?.value),
+                customerName: this.b['CustomerName']?.value,
+                shipperName: this.b['ShipperName']?.value,
+                consigneeName: this.b['ConsigneeName']?.value,
+                userName: this.userData?.userName,
+                ShipmentNo: resp.data?.bookingHeader?.ShipmentNo
+              }
             });
           } else {
             this.appSettingService.showError('Error creating booking.');

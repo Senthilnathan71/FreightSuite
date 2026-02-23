@@ -55,6 +55,7 @@ import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -326,7 +327,8 @@ dataFromEnqPage:any;
     public logoService : LogoService,
     private sideBarService : VerticalSidebarService,
     private operationService: OperationService,
-  ) { 
+    private emailTriggerService: EmailTriggerService,
+  ) {
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
       this.carriers = carrierData;
@@ -349,7 +351,7 @@ dataFromEnqPage:any;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
+    this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
@@ -1947,6 +1949,22 @@ isRateLockDisabled(): boolean {
             });
           }, 100);
             this.appSettingService.showSuccess('Quotation is successfully updated');
+            this.emailTriggerService.triggerEmails({
+              companyId: this.currentCompany?.CompanyMasterSid,
+              branchId: this.currentBranch?.BranchMasterSid,
+              menuMasterSid: this.MenuMasterSid,
+              action: 'UPDATE',
+              context: {
+                quotationNumber: this.quotationData?.QuoteNumber,
+                date: this.datePipe.transform(this.quotationData?.QuoteDate),
+                POO: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PORSid),
+                POL: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.POLSid),
+                POD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PODSid),
+                FPD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.FPODSid),
+                customerName: this.quotationData?.CustomerName,
+                userName: this.userData?.userName
+              }
+            });
              this.loadQuotation(this.QuoteHeaderSid);
             const customerId = resp.data?.createdCustomer?.CustomerMasterSid;
             if(customerId){
@@ -1973,6 +1991,22 @@ isRateLockDisabled(): boolean {
           this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess("Quotation Created Successfully");
+            this.emailTriggerService.triggerEmails({
+              companyId: this.currentCompany?.CompanyMasterSid,
+              branchId: this.currentBranch?.BranchMasterSid,
+              menuMasterSid: this.MenuMasterSid,
+              action: 'CREATE',
+              context: {
+                quotationNumber: resp.data?.quoteHeader?.QuoteNumber,
+                date: this.datePipe.transform(new Date()),
+                POO: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('PORSid')?.value),
+                POL: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('POLSid')?.value),
+                POD: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('PODSid')?.value),
+                FPD: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('FPODSid')?.value),
+                customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
+                userName: this.userData?.userName
+              }
+            });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
             if(id){
               this.router.navigate(['crm/quotation/entry',id])
