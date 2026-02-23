@@ -24,6 +24,10 @@
                     <strong style="margin-bottom: 4px;width: 150px;">Branch </strong>
                     <p class="ms-1">: {{ params?.BranchInvolved}}</p>
                 </div>
+                 <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
+                    <p class="ms-1">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
+                </div>
             </div>
             <div>
                 <div class="d-flex align-items-center">
@@ -34,10 +38,7 @@
                     <strong style="margin-bottom: 4px;width: 150px;">SubGroup Name </strong>
                     <p class="ms-1">: {{ params?.SubGroupNameResolved }}</p>
                 </div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
-                    <p class="ms-1">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
-                </div>
+               
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
                     <p class="ms-1">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</p>

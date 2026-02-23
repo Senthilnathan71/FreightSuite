@@ -143,6 +143,7 @@ export class UserEntryComponent implements OnInit {
       department: [[], [Validators.required]],
       DefaultDept: [''],
       isSalesperson: [false],
+      isLoginUser: [true],
       userTypeId: [, [Validators.required]],
       contactNumber: [],
       status: ['Active'],
@@ -155,7 +156,35 @@ export class UserEntryComponent implements OnInit {
       ),
     });
     this.userForm.get('DefaultDept').disable();
+    this.handleLoginUserToggle();
   }
+
+  handleLoginUserToggle() {
+  this.userForm.get('isLoginUser')?.valueChanges.subscribe((value) => {
+
+    if (!value) {
+      //  Not Login User → remove company/branch/role validation
+
+      this.userForm.get('companies')?.clearValidators();
+      this.userForm.get('companies')?.setValue([]);
+
+      this.userCompanyMaster.clear();
+      this.userCompanyMaster.clearValidators();
+
+    } else {
+      //  Login User → make company mandatory again
+
+      this.userForm.get('companies')?.setValidators([Validators.required]);
+      this.userCompanyMaster.setValidators([
+        this.atLeastOneDefaultValidator()
+      ]);
+    }
+
+    this.userForm.get('companies')?.updateValueAndValidity();
+    this.userCompanyMaster.updateValueAndValidity();
+  });
+}
+
 
   get userCompanyMaster(): FormArray {
     return this.userForm.get('userCompanyMaster') as FormArray;
@@ -457,6 +486,7 @@ export class UserEntryComponent implements OnInit {
             userEmail: d.userEmail,
             contactNumber: d.contactNumber,
             designation: d.designation,
+            isLoginUser: d.isLoginUser === 'Y',
             isSalesperson: d.isSalesperson === '1' || d.isSalesperson === 'Y',
             userTypeId: d.userTypeId,
             companies: allCompanyIds,
@@ -567,7 +597,9 @@ export class UserEntryComponent implements OnInit {
     const currentUserEmail =
       this.appSettingService.userSettingSource.value['userEmail'];
     const formValue = this.userForm.getRawValue();
-    const companyPayload = this.userCompanyMaster.controls.map(
+    let companyPayload = [];
+    if (this.userForm.value.isLoginUser) {
+    companyPayload = this.userCompanyMaster.controls.map(
       (companyFormGroup, companyIndex) => {
         const companyFormValue = companyFormGroup.value;
 
@@ -602,6 +634,7 @@ export class UserEntryComponent implements OnInit {
         };
       }
     );
+  }
 
     const payload = {
       userName: formValue.userName,
@@ -616,6 +649,7 @@ export class UserEntryComponent implements OnInit {
       status:
         formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       userCode: this.getUserCode(formValue.userName),
+      isLoginUser: formValue.isLoginUser ? 'Y' : 'N',
       userCompanyMaster: companyPayload,
       ...(this.isEditMode
         ? { updatedBy: currentUserEmail }

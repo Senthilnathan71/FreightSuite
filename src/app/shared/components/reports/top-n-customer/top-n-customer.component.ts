@@ -53,6 +53,7 @@ export class TopNCustomerComponent {
   getExcelData(): ComplexReportExportConfig {
 
     const tableHeaders: ExcelHeader[] = [
+      {key:'Rank', label:'Rank'},
       { key: 'customer', label: 'Customer' },
       { key: 'gp', label: 'GP' },
       { key: 'revenue', label: 'Revenue' },
@@ -66,9 +67,10 @@ export class TopNCustomerComponent {
     const rows: ExcelRow[] = [];
     const data = this.fullData?.data || [];
 
-    data.forEach(item => {
+    data.forEach((item,index) => {
       rows.push({
         cells: [
+          {value: index + 1},
           { value: item.customerName || '' },
           { value: this.formatNumber(item.GP) },
           { value: this.formatNumber(item.totalRevenue) },
@@ -98,7 +100,7 @@ export class TopNCustomerComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [30, 15, 15, 15, 15, 18, 18, 15]
+      columnWidths: [5,30, 15, 15, 15, 15, 18, 18, 10]
     };
   }
 

@@ -241,7 +241,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-     { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+     { text: ':', width: COLON_WIDTH },
       { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
     ],
     margin: [0, 0, 0, 5]
@@ -251,7 +251,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH  },
       {
         text: printData?.InvoiceDate
           ? formatDate(printData.InvoiceDate)
@@ -266,7 +266,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH },
       { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
     ],
     margin: [0, 0, 0, 7]
@@ -277,7 +277,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     rightStack.push({
       columns: [
         { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
         { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
       ],
       margin: [0, 0, 0, 7]
@@ -388,7 +388,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const leftStack = leftItems.map(item => ({
     columns: [
       { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
     margin: [10, 2, 0, 3]
@@ -400,7 +400,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const rightStack: any[] = rightItems.map(item => ({
     columns: [
       { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
     margin: [0, 2, 0, 2]
@@ -686,7 +686,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         {
           width: 0,
           text: ':',
-          style: 'labelBold'
+         
         },
         {
           width: '*',
@@ -718,7 +718,6 @@ function buildRemarks(remarks: string): any {
       {
         width: 10,
         text: ':',
-        style: 'labelBold',
         alignment: 'center'
       },
       {

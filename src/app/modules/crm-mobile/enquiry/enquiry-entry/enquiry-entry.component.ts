@@ -60,6 +60,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -373,7 +374,7 @@ export class EnquiryEntryComponent implements OnInit {
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     public logoService: LogoService,
     private sidebarService : VerticalSidebarService,
-
+    private emailTriggerService: EmailTriggerService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -410,7 +411,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     console.log(this.currentBranchCityId, "CITY")
     this.loadCityName();
-    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
+    this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
       // Check for voice enquiry data first
@@ -1706,6 +1707,13 @@ private parseFloatSafe(value: any): number {
             this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
             this.loadEnquiry(this.EnquiryHeaderSid);
+            this.emailTriggerService.triggerEmails({
+              companyId: this.currentCompany?.CompanyMasterSid,
+              branchId: this.currentBranch?.BranchMasterSid,
+              menuMasterSid: this.MenuMasterSid,
+              action: 'UPDATE',
+              context: { EnquiryNo: this.EnquiryHeaderSid }
+            });
           } else {
             this.modalService.openErrorModal('Enquiry Update Failed');
           }
@@ -1740,6 +1748,13 @@ private parseFloatSafe(value: any): number {
           if (this.EnquiryHeaderSid) {
             this.router.navigate(['crm/enquiry/entry', this.EnquiryHeaderSid]);
           }
+          this.emailTriggerService.triggerEmails({
+            companyId: this.currentCompany?.CompanyMasterSid,
+            branchId: this.currentBranch?.BranchMasterSid,
+            menuMasterSid: this.MenuMasterSid,
+            action: 'CREATE',
+            context: { EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNo }
+          });
         } else {
           this.modalService.openErrorModal('Enquiry Creation Failed');
         }

@@ -93,7 +93,7 @@ export class BlIssueReportComponent {
     },
     tableHeaders,
     rows,
-    columnWidths: [15, 15, 15, 15, 25, 25, 15, 15, 15] // adjust widths as needed
+    columnWidths: [20, 10, 20, 20, 25, 25, 6, 6, 10] // adjust widths as needed
   };
 }
 

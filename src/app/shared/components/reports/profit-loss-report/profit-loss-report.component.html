@@ -1,13 +1,9 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-<app-print-header></app-print-header>
-
-
+    <app-print-header></app-print-header>
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Profit and Loss Report 
+        Profit and Loss Report
     </h4>
-
     <div style="margin-top: 1rem;">
-
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
@@ -28,24 +24,24 @@
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info text-light text-center">
-                        <th class="bg-transparent text-light"></th>
-                        <th class="bg-transparent text-light">SubGroup</th>
-                        <th class="bg-transparent text-light">Ledger</th>
+                    <tr class="bg-info text-light ">
+                        <th class="bg-transparent text-light text-center" colspan="2"> SubGroup</th>
+                        <th class="bg-transparent text-light text-center">Ledger</th>
                         <th *ngFor="let year of yearKeys" class="bg-transparent text-light text-center">{{ year }}</th>
                     </tr>
                 </thead>
                 <tbody>
 
                     <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #e0f7fa;">
-                        Revenue
+                        REVENUE
                     </td>
                     <ng-container *ngFor="let group of groupedData">
                         <ng-container *ngIf="group.subGroupName.toLowerCase().includes('income')">
 
                             <tr *ngFor="let item of group.items; let i = index">
-                                <td></td>
-                                <td *ngIf="i === 0" [attr.rowspan]="group.items.length + 1" style="font-weight: 700;">
+
+                                <td *ngIf="i === 0" [attr.rowspan]="group.items.length + 1" style="font-weight: 700;"
+                                    colspan="2">    
                                     {{ group.subGroupName }}
                                 </td>
 
@@ -56,7 +52,6 @@
                                 </td>
                             </tr>
                             <tr style="font-weight: 700; background-color: #f1f1f1;">
-                                <td></td>
 
                                 <td class="text-end">Total {{ group.subGroupName }}</td>
                                 <td *ngFor="let year of yearKeys" class="text-end">
@@ -66,13 +61,14 @@
                         </ng-container>
                     </ng-container>
                     <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #ffe0e0;">
-                        Expenses
+                        EXPENSES
                     </td>
                     <ng-container *ngFor="let group of groupedData">
                         <ng-container *ngIf="group.subGroupName.toLowerCase().includes('expense')">
                             <tr *ngFor="let item of group.items; let i = index">
-                                <td></td>
-                                <td *ngIf="i === 0" [attr.rowspan]="group.items.length + 1" style="font-weight: 700;">
+
+                                <td *ngIf="i === 0" [attr.rowspan]="group.items.length + 1" style="font-weight: 700;"
+                                    colspan="2">
                                     {{ group.subGroupName }}
                                 </td>
                                 <td>{{ item.LedgerName }}</td>
@@ -82,7 +78,7 @@
                             </tr>
 
                             <tr style="font-weight: 700; background-color: #f1f1f1;">
-                                <td></td>
+
                                 <td class="text-end">Total {{ group.subGroupName }}</td>
                                 <td *ngFor="let year of yearKeys" class="text-end">
                                     {{ getGroupTotal(group.items, year) | number:'1.2-2' }}

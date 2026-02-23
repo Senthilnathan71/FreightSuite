@@ -9,6 +9,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { EmailModuleService } from '../../email.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { MailBodyModalComponent } from '../mail-body-modal/mail-body-modal.component';
 
 interface MailConfigRow {
   MailConfigurationMasterSid?: number;
@@ -20,6 +22,8 @@ interface MailConfigRow {
   ToEmailidFrom: string;
   CcEmailidFrom: string;
   AttachmentRequire: string;
+  Action: string;
+  Trigger: string;
   AutoPopup: string;
   Status: string;
   isEditing: boolean;
@@ -53,6 +57,11 @@ export class MailConfigurationEntryComponent implements OnInit {
     { value: 'N', label: 'No' }
   ];
 
+  triggerOptions = [
+    { value: 'A', label: 'Auto' },
+    { value: 'M', label: 'Manual' }
+  ];
+
   autoPopupOptions = [
     { value: 'A', label: 'Auto' },
     { value: 'P', label: 'Popup' }
@@ -64,7 +73,8 @@ export class MailConfigurationEntryComponent implements OnInit {
     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private router: Router,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private ngbModal: NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -105,6 +115,8 @@ export class MailConfigurationEntryComponent implements OnInit {
             ToEmailidFrom: item.ToEmailidFrom || '',
             CcEmailidFrom: item.CcEmailidFrom || '',
             AttachmentRequire: item.AttachmentRequire,
+            Action: item.Action || '',
+            Trigger: item.Trigger || 'A',
             AutoPopup: item.AutoPopup,
             Status: item.Status,
             isEditing: false,
@@ -131,7 +143,9 @@ export class MailConfigurationEntryComponent implements OnInit {
       ToEmailidFrom: '',
       CcEmailidFrom: '',
       AttachmentRequire: 'Y',
-      AutoPopup: 'P',
+      Action: '',
+      Trigger: 'A',
+      AutoPopup: 'A',
       Status: 'A',
       isEditing: true,
       isNew: true
@@ -170,6 +184,8 @@ export class MailConfigurationEntryComponent implements OnInit {
       ToEmailidFrom: row.ToEmailidFrom || '',
       CcEmailidFrom: row.CcEmailidFrom || '',
       AttachmentRequire: row.AttachmentRequire,
+      Action: row.Action,
+      Trigger: row.Trigger,
       AutoPopup: row.AutoPopup,
       Status: row.Status
     };
@@ -250,6 +266,18 @@ export class MailConfigurationEntryComponent implements OnInit {
     if (!menuMasterSid) return '';
     const menu = this.menuList.find(m => m.MenuMasterSid === menuMasterSid);
     return menu?.MenuName || '';
+  }
+
+  openMailBodyModal(row: MailConfigRow): void {
+    const modalRef = this.ngbModal.open(MailBodyModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.mailBody = row.MailBody;
+    modalRef.result.then((result: string) => {
+      row.MailBody = result;
+    }).catch(() => {});
   }
 
   navigateBack(): void {

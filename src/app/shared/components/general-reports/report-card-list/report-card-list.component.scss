@@ -10,7 +10,7 @@
   position: relative;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
   animation: cardSlideUp 0.9s 0.1s ease-out both;
 
   // Subtle gradient border effect based on report type
@@ -101,6 +101,9 @@
   }
 
   .report-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.75rem;
     color: #718096;
 

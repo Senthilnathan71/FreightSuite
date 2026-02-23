@@ -90,7 +90,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('POL')?.value">
-                            <ng-select class="ng-select" [items]="filteredPOL" bindValue="PortCode" bindLabel="PortCode" formControlName="POL" [multiple]="true" [closeOnSelect]="false" placeholder="" (change)="onPortSelectionChange()">
+                            <ng-select class="ng-select" [items]="filteredPOL" bindValue="PortCode" bindLabel="PortCode" formControlName="POL"  placeholder="" (change)="onPortSelectionChange()">
                                 <ng-template ng-option-tmp let-item="item">
                                     {{ item.PortName }} - {{ item.PortCode }}
                                 </ng-template>
@@ -100,7 +100,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('POD')?.value">
-                            <ng-select class="ng-select" [items]="filteredPOD" bindValue="PortCode" bindLabel="PortCode" formControlName="POD" [multiple]="true" [closeOnSelect]="false" placeholder="" (change)="onPortSelectionChange()">
+                            <ng-select class="ng-select" [items]="filteredPOD" bindValue="PortCode" bindLabel="PortCode" formControlName="POD"  placeholder="" (change)="onPortSelectionChange()">
                                 <ng-template ng-option-tmp let-item="item">
                                     {{ item.PortName }} - {{ item.PortCode }}
                                 </ng-template>
@@ -111,7 +111,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('FDC')?.value">
-                            <ng-select class="ng-select" [items]="filteredFDC" bindValue="PortCode" bindLabel="PortCode" formControlName="FDC" [multiple]="true" [closeOnSelect]="false" placeholder="" (change)="onPortSelectionChange()">
+                            <ng-select class="ng-select" [items]="filteredFDC" bindValue="PortCode" bindLabel="PortCode" formControlName="FDC" placeholder="" (change)="onPortSelectionChange()">
                                 <ng-template ng-option-tmp let-item="item">
                                     {{ item.PortName }} - {{ item.PortCode }}
                                 </ng-template>
@@ -145,7 +145,13 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="mb-0 text-info">Terms and Conditions Detail</h6>
-                    
+                    @if(!showDetailSection){
+    <button type="button"
+        class="btn btn-info btn-sm"
+        (click)="openDetailSection()">
+        <i class="fas fa-plus me-1"></i> Add Detail
+    </button>
+    }
                 </div>
                 <!-- @if(!isEditMode){
                 <div class="row mt-2">
@@ -154,6 +160,7 @@
                     </div>
                 </div>
                 } -->
+                @if(showDetailSection){
                 <div class="row mb-2" [formGroup]="termsAndConditionDetailForm">
                     <aside class="col-md-2 d-flex align-items-center">
                         <div class="form-check ms-2">
@@ -199,17 +206,18 @@
                     </aside>
                     <div class="col-12 d-flex justify-content-end gap-2 mt-1">
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="closeDetailForm()">
+                            (click)="closeDetailSection()">
                             <i class="fas fa-sync-alt me-1"></i> Reset
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
                             (click)="upsertDetailRow()"
-                            [disabled]="termsAndConditionDetailForm.invalid || isDetailSaving">
+                            [disabled]="isDetailSaving">
                             <i class="fas fa-save me-1"></i>
                             {{isDetailSaving ? 'Saving...' : (isModalEditMode ? 'Update Detail' : 'Add Detail')}}
                         </button>
                     </div>
                 </div>
+            }
                 <div class="row">
                     <ng-container *ngTemplateOutlet="TandCListTemplate"></ng-container>
                 </div>

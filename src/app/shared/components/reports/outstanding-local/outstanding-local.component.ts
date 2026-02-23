@@ -289,7 +289,6 @@ export class OutstandingLocalComponent {
             { value: item?.voucherType || '' },
             { value: item?.naration || '' },
             { value: item?.drCr || '' },
-
             { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
             { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
             { value: this.formatNumber(item?.currencyWiseCumulative || 0) },
@@ -326,12 +325,6 @@ export class OutstandingLocalComponent {
           { value: '', colspan: 2 }
         ],
         style: 'total'
-      });
-
-      // ✅ Blank Row Space Between Groups
-      rows.push({
-        cells: [{ value: '', colspan: 9 }],
-        style: 'section'
       });
     });
 
