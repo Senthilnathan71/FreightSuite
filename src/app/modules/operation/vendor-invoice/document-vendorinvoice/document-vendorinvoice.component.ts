@@ -9,7 +9,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
   standalone: true,
   imports: [CommonModule, FormsModule, NgxSpinnerModule],
   templateUrl: './document-vendorinvoice.component.html',
-  styleUrl: './document-vendorinvoice.component.scss',
+  styleUrls: ['./document-vendorinvoice.component.scss'],
 })
 export class DocumentVendorInvoiceEntryComponent {
   @Output() documentProcessed = new EventEmitter<ExtractedInvoice>();
@@ -74,7 +74,21 @@ export class DocumentVendorInvoiceEntryComponent {
         this.response = res;
 
         if (res.success && res.extractedData) {
-          this.extractedData = res.extractedData;
+          const lineItems = (res.extractedData.line_items || [])
+            .filter(item =>
+              !!item &&
+              (
+                !!item.description ||
+                Number(item.taxable_value || 0) > 0 ||
+                Number(item.total || 0) > 0 ||
+                Number(item.vat_amount || 0) > 0
+              )
+            );
+
+          this.extractedData = {
+            ...res.extractedData,
+            line_items: lineItems
+          };
         } else {
           this.errorMessage = res.error || 'Extraction failed. Please try again.';
         }
@@ -90,7 +104,10 @@ export class DocumentVendorInvoiceEntryComponent {
   // ── Apply to parent form ────────────────────────
   applyData(): void {
     if (this.extractedData) {
-      this.documentProcessed.emit(this.extractedData);
+      this.documentProcessed.emit({
+        ...this.extractedData,
+        line_items: this.extractedData.line_items || [],
+      });
     }
   }
 
@@ -115,5 +132,21 @@ export class DocumentVendorInvoiceEntryComponent {
   getTotalFromLineItems(): number {
     if (!this.extractedData?.line_items) return 0;
     return this.extractedData.line_items.reduce((sum, item) => sum + (item.total || 0), 0);
+  }
+
+  getTaxableValue(item: any): number {
+    const taxable = Number(item?.taxable_value || 0);
+    if (taxable > 0) return taxable;
+    const total = Number(item?.total || 0);
+    const tax = Number(item?.vat_amount || 0);
+    return Math.max(total - tax, 0);
+  }
+
+  getRatePerQty(item: any): number {
+    const rate = Number(item?.rate || 0);
+    if (rate > 0) return rate;
+    const qty = Number(item?.qty || 0);
+    const taxable = this.getTaxableValue(item);
+    return qty > 0 ? taxable / qty : taxable;
   }
 }

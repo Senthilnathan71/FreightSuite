@@ -1,37 +1,177 @@
 .document-vendorinvoice-container {
-  padding: 0.5rem;
+  --brand: #0d5f8f;
+  --brand-2: #0a7bb2;
+  --soft-bg: #f4f8fb;
+  --line: #d9e3ec;
+  --text: #183247;
 
-  .card-header {
-    padding: 0.5rem 0.75rem;
+  padding: 0.5rem;
+  background: linear-gradient(180deg, #f7fbff 0%, #f2f6fa 100%);
+  border-radius: 12px;
+
+  .extract-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: linear-gradient(120deg, #e9f4fb 0%, #f9fcff 100%);
+  }
+
+  .extract-hero__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+
+    i {
+      color: var(--brand);
+      font-size: 1rem;
+    }
+  }
+
+  .extract-hero__subtitle {
+    color: #527089;
+  }
+
+  .panel-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 5px 14px rgba(18, 56, 82, 0.07);
+    overflow: hidden;
+  }
+
+  .section-head {
+    padding: 0.45rem 0.65rem;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: #fff;
+
+    h6 {
+      color: #fff;
+      font-size: 0.84rem;
+      letter-spacing: 0.15px;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      font-weight: 600;
+    }
+  }
+
+  .upload-panel {
+    background: #fff;
+  }
+
+  .upload-panel__hint {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .upload-input {
+    border-color: #c9d8e6;
+    background: var(--soft-bg);
+  }
+
+  .upload-btn {
+    min-width: 150px;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
+    border: none;
+  }
+
+  .upload-progress {
+    height: 4px;
+    background: #e5edf5;
+  }
+
+  .model-meta {
+    padding: 0.25rem 0.4rem;
+    border: 1px dashed #c8d7e5;
+    border-radius: 8px;
+    background: #f9fcff;
   }
 
   .card-body {
-    padding: 0.75rem;
+    padding: 0.55rem;
   }
 
-  .table {
+  .form-control,
+  .form-select {
+    border-color: #c9d8e6;
+    min-height: 30px;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    font-size: 0.82rem;
+
+    &:focus {
+      border-color: #79abd0;
+      box-shadow: 0 0 0 0.16rem rgba(13, 95, 143, 0.15);
+    }
+  }
+
+  .charges-table {
+    font-size: 0.78rem;
     margin-bottom: 0;
 
-    th {
+    thead th {
       font-weight: 600;
-      font-size: 0.78rem;
       white-space: nowrap;
-      padding: 0.35rem 0.5rem;
+      padding: 0.34rem 0.42rem;
+      color: #1f3f57;
+      background: #eef5fb;
+      border-color: #d3e0ec;
     }
 
     td {
-      padding: 0.25rem 0.4rem;
+      padding: 0.28rem 0.36rem;
       vertical-align: middle;
+      border-color: #dce6ef;
     }
 
-    input.border-0 {
-      background: transparent;
+    tbody tr:hover {
+      background-color: #f4f9fd;
+    }
 
-      &:focus {
-        background: #f8f9fa;
-        outline: 1px solid #86b7fe;
-        border-radius: 2px;
-      }
+    tfoot td {
+      background: #eef5fb;
+      border-color: #d3e0ec;
+    }
+  }
+
+  .amount-words {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #f9fcff;
+  }
+}
+
+@media (max-width: 768px) {
+  .document-vendorinvoice-container {
+    padding: 0.5rem;
+
+    .extract-hero {
+      padding: 0.55rem 0.6rem;
+    }
+
+    .extract-hero__title h5 {
+      font-size: 1rem;
+    }
+
+    .section-head h6 {
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .upload-btn {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .charges-table {
+      font-size: 0.78rem;
     }
   }
 }
