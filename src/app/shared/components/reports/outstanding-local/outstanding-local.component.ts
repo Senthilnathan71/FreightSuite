@@ -351,7 +351,7 @@ export class OutstandingLocalComponent {
       // ✅ Header Like HTML
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Outstanding Local Report`,
+        reportTitle: `Outstanding Report`,
         additionalInfo: [
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.brancesInvoled || 'All' },

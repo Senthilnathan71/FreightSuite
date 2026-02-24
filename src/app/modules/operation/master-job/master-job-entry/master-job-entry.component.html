@@ -525,6 +525,7 @@
 
     <!-- Dropdown Mode -->
     <div class="d-flex align-items-center" *ngIf="!this.f['isVesselFreeText']?.value">
+        <div style="flex:1; min-width:0; overflow:hidden;">
       <dofi-searchable-dropdown 
         [items]="headerVesselList" 
         formControlName="VesselName" 
@@ -534,11 +535,11 @@
         [labelFields]="vesselVoyageLookupConfig.labelFields"
         bindValue="VesselName"
         (itemSelected)="onVesselChange($event)"
-        style="width: 85%">
+        style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
-      
-      <button class="btn bi bi-calendar3 pe-0 ps-3" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+    </div>
+      <button class="btn bi bi-calendar3 px-0" type="button"
+        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
