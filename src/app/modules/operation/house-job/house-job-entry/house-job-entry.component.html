@@ -252,7 +252,7 @@
       <div class="custom-form-group">
         <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="ShipmentNo">
-        <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger">*</span></label>
+        <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger"></span></label>
       </div>
     </div>
 
@@ -1382,6 +1382,8 @@
                 <span>Gross Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                } @else if (cargoForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+                <span>Gross Weight cannot be less than Net Weight</span>
                 }
                 @else if (cargoForm.get('GrossWeight')?.errors?.['required']) {
                 <span>Required</span>
@@ -1407,6 +1409,8 @@
                 <span>Net Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+                <span>Net Weight cannot be greater than Gross Weight</span>
                 }
               </div>
               }
@@ -2958,6 +2962,8 @@
       <span>Gross Weight cannot exceed 9,999,999.999</span>
       } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
       <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      } @else if (productForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+      <span>Gross Weight cannot be less than Net Weight</span>
       }
     </div>
     }
@@ -2977,6 +2983,8 @@
       <span>Net Wt cannot exceed 9,999,999.999</span>
       } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
       <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      } @else if (productForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+      <span>Net Weight cannot be greater than Gross Weight</span>
       }
     </div>
     }

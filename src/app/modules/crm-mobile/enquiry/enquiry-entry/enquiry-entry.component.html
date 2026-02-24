@@ -144,7 +144,7 @@
                     Details
                 </button> -->
                         <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"
-                            [disabled]="!(selectedDepartment) || isEnquiryAuthActionTaken">
+                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry">
                             <i class="fas fa-plus me-1"></i> New
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
@@ -152,7 +152,7 @@
                         }
                         @if (!isMobile) {
                         <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
-                            [disabled]="!(selectedDepartment) || isEnquiryAuthActionTaken">
+                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry">
                             <i class="fas fa-plus me-1"></i>Add
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
@@ -163,7 +163,7 @@
                         }
                     </div>
                 </div>
-                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid && quotationCreatedAgainstThisEnquiry "
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid && !quotationCreatedAgainstThisEnquiry "
                  [disabled]="rateRequestForm.get('status')?.getRawValue() === 'Suspended'" 
                     (click)="navigateQuotation()" type="button" >
                     <i class="fas fa-plus me-1"></i>
