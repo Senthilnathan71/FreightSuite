@@ -118,7 +118,7 @@ export class JobCloseComponent implements OnInit {
   }
 
   get allJobMilestonesPassed(): boolean {
-    return this.milestoneChecks.jobClose?.every((m: any) => m.passed) ?? false;
+    return this.milestoneChecks.jobClose?.filter((m: any) => !m.nonBlocking).every((m: any) => m.passed) ?? false;
   }
 
   private tryClose(
