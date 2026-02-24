@@ -29,9 +29,7 @@ export class MatchingListReceiptPayemntComponent {
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService,
-  ) {
-    console.log('Outstanding Report Data:', this.data);
-  }
+  ) {}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
@@ -96,13 +94,12 @@ export class MatchingListReceiptPayemntComponent {
   }
 
   get grandTotalAmt(): number {
-  return this.groupedData.reduce((sum, v) => sum + v.totalAmt, 0);
-}
+    return this.groupedData.reduce((sum, v) => sum + v.totalAmt, 0);
+  }
 
-get grandTotalLocalAmt(): number {
-  return this.groupedData.reduce((sum, v) => sum + v.totalLocalAmt, 0);
-}
-
+  get grandTotalLocalAmt(): number {
+    return this.groupedData.reduce((sum, v) => sum + v.totalLocalAmt, 0);
+  }
 
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
@@ -118,25 +115,31 @@ get grandTotalLocalAmt(): number {
       { key: 'LocalAmount', label: 'Local Amt' },
     ];
 
-    const rows: ExcelRow[] = (this.groupedData || []).flatMap((v) => {
-      const childRows = (v.children || []).map((c, i) => ({
-        cells: [
-          { value: i === 0 ? v.VoucherNumber : '' },
-          { value: i === 0 ? v.voucherName : '' },
-          { value: i === 0 ? this.formatDate(v.VoucherDate) : '' },
-          { value: c.vouchermactingNo || '' },
-          { value: this.formatDate(c.VoucherMatchingDate) },
-          { value: c.CurrencyCode || '' },
-          { value: this.formatNumber(c.ExRate) ?? 0 },
-          { value: c.DrCr || '' },
-          { value: this.formatNumber(c.Amount) ?? 0 },
-          { value: this.formatNumber(c.LocalAmount) ?? 0 },
-        ],
-        style: 'data',
-      }));
+    const rows: ExcelRow[] = [];
 
-      // Add TOTAL row for this group
-      const totalRow: ExcelRow = {
+    (this.groupedData || []).forEach((v) => {
+      (v.children || []).forEach((c, i) => {
+        rows.push({
+          cells: [
+            { value: i === 0 ? v.VoucherNumber : '' },
+            { value: i === 0 ? v.voucherName : '' },
+            { value: i === 0 ? this.formatDate(v.VoucherDate) : '' },
+            { value: c.vouchermactingNo || '' },
+            { value: this.formatDate(c.VoucherMatchingDate) },
+            { value: c.CurrencyCode || '' },
+            { value: this.formatNumber(c.ExRate) ?? 0 },
+            { value: c.DrCr || '' },
+            { value: this.formatNumber(c.Amount) ?? 0 },
+            { value: this.formatNumber(c.LocalAmount) ?? 0 },
+          ],
+          style: 'data',
+        });
+      });
+    });
+
+    // 🔥 Grand Total Row (matches your HTML)
+    if ((this.groupedData || []).length > 0) {
+      rows.push({
         cells: [
           { value: '' },
           { value: '' },
@@ -146,14 +149,12 @@ get grandTotalLocalAmt(): number {
           { value: '' },
           { value: '' },
           { value: 'TOTAL' },
-          { value: this.formatNumber(v.totalAmt) ?? 0 },
-          { value: this.formatNumber(v.totalLocalAmt) ?? 0 },
+          { value: this.formatNumber(this.grandTotalAmt) ?? 0 },
+          { value: this.formatNumber(this.grandTotalLocalAmt) ?? 0 },
         ],
-        style: 'total',
-      };
-
-      return [...childRows, totalRow];
-    });
+        style: 'grandTotal',
+      });
+    }
 
     return {
       fileName: 'Matching-Receipt-Payment-Report',
@@ -183,15 +184,15 @@ get grandTotalLocalAmt(): number {
     }
   }
 
- private formatNumber(value: any): string {
-  if (value === null || value === undefined) return '';
+  private formatNumber(value: any): string {
+    if (value === null || value === undefined) return '';
 
-  const num = Number(value);
-  if (isNaN(num)) return '';
+    const num = Number(value);
+    if (isNaN(num)) return '';
 
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
 }

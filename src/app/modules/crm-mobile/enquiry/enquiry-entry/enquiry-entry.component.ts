@@ -1712,7 +1712,16 @@ private parseFloatSafe(value: any): number {
               branchId: this.currentBranch?.BranchMasterSid,
               menuMasterSid: this.MenuMasterSid,
               action: 'UPDATE',
-              context: { EnquiryNo: this.EnquiryHeaderSid }
+              context: {
+                EnquiryNo: this.enquiryData?.EnquiryNumber,
+                date: this.enquiryData?.EnquiryDate ? new Date(this.enquiryData.EnquiryDate).toLocaleDateString() : '',
+                POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
+                POL: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.POLSid),
+                POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),
+                FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
+                customerName: this.enquiryData?.CustomerName,
+                userName: this.userData?.userName
+              }
             });
           } else {
             this.modalService.openErrorModal('Enquiry Update Failed');
@@ -1753,7 +1762,16 @@ private parseFloatSafe(value: any): number {
             branchId: this.currentBranch?.BranchMasterSid,
             menuMasterSid: this.MenuMasterSid,
             action: 'CREATE',
-            context: { EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNo }
+            context: {
+              EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNo,
+              date: new Date().toLocaleDateString(),
+              POO: getFormattedPort(this.ports, this.routes?.at(0)?.get('POO')?.value),
+              POL: getFormattedPort(this.ports, this.routes?.at(0)?.get('POL')?.value),
+              POD: getFormattedPort(this.ports, this.routes?.at(0)?.get('POD')?.value),
+              FPD: getFormattedPort(this.ports, this.routes?.at(0)?.get('FDC')?.value),
+              customerName: this.rateRequestForm.get('customerName')?.value,
+              userName: this.userData?.userName
+            }
           });
         } else {
           this.modalService.openErrorModal('Enquiry Creation Failed');

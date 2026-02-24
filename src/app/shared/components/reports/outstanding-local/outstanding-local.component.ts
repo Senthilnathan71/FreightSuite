@@ -216,7 +216,7 @@ export class OutstandingLocalComponent {
     if (!transactions || !transactions.length) return '';
 
     // Get the cumulativeOutstanding of the last transaction in the group
-    let totalAmount = this.getSubtotal(transactions, 'outstandingCurrencyAmount');
+    let totalAmount = this.getSubtotal(transactions, 'signedOutstandingCurrency');
     if (!totalAmount) return '';
 
     totalAmount = Math.abs(totalAmount);
