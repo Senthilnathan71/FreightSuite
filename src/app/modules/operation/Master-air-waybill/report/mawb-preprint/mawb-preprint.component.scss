@@ -86,22 +86,22 @@
 
 /* Agent Information */
 .carrier-agent-name {
-    top: 86mm;
+    top: 100mm;
     left: 12mm;
     width: 95mm;
     max-height: 8mm;
 }
 
 .carrier-agent-city {
-    top: 91mm;
+    top: 100mm;
     left: 12mm;
     width: 95mm;
     max-height: 8mm;
 }
 
 .agent-iata-code {
-    top: 103mm;
-    left: 12mm;
+    top: 113mm;
+    left: 0mm;
     width: 60mm;
     height: 5mm;
     text-align: center;
@@ -119,7 +119,7 @@
 
 /* Airport Departure */
 .airport-departure {
-    top: 110mm;
+    top: 125mm;
     left: 0mm;
     width: 125mm;
     height: 8mm;
@@ -195,8 +195,8 @@
 
 /* Account Information */
 .account-info {
-    top: 100mm;
-    left: 195mm;
+    top: 93mm;
+    left: 138mm;
     width: 35mm;
     height: 5mm;
    
@@ -221,8 +221,8 @@
 
 /* Routing Information */
 .routing-to1 {
-    top: 135mm;
-    left: 12mm;
+    top: 138mm;
+    left: 4mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -230,8 +230,8 @@
 }
 
 .routing-carrier1 {
-    top: 135mm;
-    left: 20mm;
+    top: 138mm;
+    left: 13mm;
     width: 60mm;
     height: 5mm;
     text-align: center;
@@ -272,8 +272,8 @@
 
 /* Currency and Charges */
 .currency {
-    top: 135mm;
-    left: 150mm;
+    top: 136mm;
+    left: 133mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -282,7 +282,7 @@
 
 .charges-code {
     top: 135mm;
-    left: 168mm;
+    left: 138mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -292,7 +292,7 @@
 /* PP/CC Checkboxes */
 .wt-pp {
     top: 135mm;
-    left: 190mm;
+    left: 150mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -302,7 +302,7 @@
 
 .wt-col {
     top: 135mm;
-    left: 202mm;
+    left: 192mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -312,7 +312,7 @@
 
 .other-pp {
     top: 135mm;
-    left: 215mm;
+    left: 205mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -322,7 +322,7 @@
 
 .other-col {
     top: 135mm;
-    left: 227mm;
+    left: 217mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -350,7 +350,7 @@
 /* Airport Destination */
 .airport-destination {
     top: 150mm;
-    left: 20mm;
+    left: 13mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
@@ -397,8 +397,8 @@
 
 /* Package Details - Main Table */
 .no-of-pieces {
-    top: 175mm;
-    left: 12mm;
+    top: 185mm;
+    left: 1mm;
     width: 20mm;
     height: 10mm;
     text-align: center;
@@ -406,8 +406,8 @@
 }
 
 .gross-weight {
-    top: 175mm;
-    left: 35mm;
+    top: 185mm;
+    left: 30mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
@@ -415,7 +415,7 @@
 }
 
 .weight-unit {
-    top: 175mm;
+    top: 185mm;
     left: 63mm;
     width: 15mm;
     height: 10mm;
@@ -432,8 +432,8 @@
 }
 
 .chargeable-weight {
-    top: 175mm;
-    left: 104mm;
+    top: 185mm;
+    left: 95mm;
     width: 30mm;
     height: 10mm;
     text-align: center;
@@ -441,8 +441,8 @@
 }
 
 .rate-charge {
-    top: 175mm;
-    left: 137mm;
+    top: 185mm;
+    left: 125mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
@@ -450,8 +450,8 @@
 }
 
 .total-charge {
-    top: 175mm;
-    left: 165mm;
+    top: 185mm;
+    left: 150mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
@@ -631,24 +631,24 @@
 
 /* Execution Information */
 .execution-date {
-    top: 320mm;
-    left: 150mm;
+    top: 355mm;
+    left: 105mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
 }
 
 .execution-place {
-    top: 320mm;
-    left: 195mm;
+    top: 355mm;
+    left: 148mm;
     // width: 40mm;
     height: 5mm;
     text-align: center;
 }
 
 .execution-signature {
-    top: 320mm;
-    left: 240mm;
+    top: 355mm;
+    left: 200mm;
     width: 60mm;
     height: 5mm;
     text-align: center;

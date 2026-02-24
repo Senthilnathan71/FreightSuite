@@ -19,6 +19,10 @@
   import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
   import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
   import { Bold } from 'angular-feather/icons';
+
+  // HTML print logo uses 110px. pdfMake works in pt, so convert px -> pt (72/96).
+  const INVOICE_LOGO_HEIGHT_PX = 110;
+  const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
   /**
    * Generate invoice PDF document definition
    */
@@ -26,11 +30,24 @@
     console.log(data, 'generateInvoiceDocument');
     const chargesCount = data.charges?.length || 0;
     const shouldBreakPageForTerms = chargesCount > 20;
+    const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
+    const baseTopMargin = 150;
+    const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo;
+    const configuredMargins = data.config?.pageMargins as number[] | undefined;
+    const resolvedPageMargins = configuredMargins
+      ? [
+          configuredMargins[0] ?? 20,
+          Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
+          configuredMargins[2] ?? 20,
+          configuredMargins[3] ?? 60
+        ]
+      : [20, dynamicTopMargin, 20, 60];
 
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
       pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-      pageMargins: data.config?.pageMargins || [20, 157, 20, 60], // Reduced from 200 to 150
+      pageMargins: resolvedPageMargins,
 
       background: function (currentPage, pageSize) {
         
@@ -95,9 +112,11 @@
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
 
+    const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
+
     const logoColumn = logo
-      ? { image: logo, width: 130, height: 80, alignment: 'left' as const }
-      : { text: '', width: 130 };
+      ? { image: logo, height: LOGO_HEIGHT, alignment: 'left' as const }
+      : { text: '', width: 1 };
 
     const companyInfoStack: any[] = [];
 
@@ -106,7 +125,7 @@
         text: company.companyName,
         style: 'companyName',
         alignment: 'right',
-        margin: [0, 0, 0, 4]
+        margin: [0, 0, 0, 6]
       });
     }
 
@@ -116,7 +135,7 @@
         text: addressLine1,
         style: 'addressText',
         alignment: 'right',
-        margin: [0, 0, 0, 3]
+        margin: [0, 0, 0, 6]
       });
     }
 
@@ -128,7 +147,7 @@
         text: cityCountry,
         style: 'addressText',
         alignment: 'right',
-        margin: [0, 0, 0, 3]
+        margin: [0, 0, 0, 6]
       });
     }
 
@@ -138,7 +157,7 @@
         text: `Phone No : ${phone}`,
         style: 'addressText',
         alignment: 'right',
-        margin: [0, 0, 0, 3]
+        margin: [0, 0, 0, 6]
       });
     }
 
@@ -169,7 +188,7 @@
         y2: 0,
         lineWidth: 1.5
       }],
-      margin: [0, 0, 0, 5]
+      margin: [0, 0, 0, 6]
     };
 
     return [headerTable, bottomLine];
