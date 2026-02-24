@@ -964,7 +964,33 @@ ${this.userData.userName}`;
 
   // Remove a Route
   removeRoute(index: number) {
+    const routeGroup = this.routes.at(index) as FormGroup;
+    const enquiryRouteSid = Number(routeGroup?.get('EnquiryRouteSid')?.value) || 0;
+
+    if (enquiryRouteSid > 0) {
+      this.leadService.deleteEnquiryRoute(enquiryRouteSid).subscribe({
+        next: (resp: any) => {
+          if (resp?.status !== false) {
+            this.removeRouteAt(index);
+          } else {
+            this.appSettingsService.showError('Error deleting route');
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting enquiry route:', error);
+          this.appSettingsService.showError('Error deleting route');
+        }
+      });
+      return;
+    }
+
+    this.removeRouteAt(index);
+  }
+
+  private removeRouteAt(index: number): void {
     this.routes.removeAt(index);
+    this.filteredPOLPorts.splice(index, 1);
+    this.filteredPODPorts.splice(index, 1);
   }
 
 
@@ -1008,7 +1034,7 @@ ${this.userData.userName}`;
       ProductName: [null],
       CargoDescription: [''],
       PackageType: [null],
-      PackageQty: [''],
+      PackageQty: [1],
       Qty: ['1'],
       WeightUnitSid: [2],
       GrossWeight: ['', [this.weightValidator]],
@@ -1041,10 +1067,17 @@ ${this.userData.userName}`;
   private setupCargoCalculations(cargoIndex: number, routeIndex: number): void {
   const cargoForm = this.routeCargo(routeIndex).at(cargoIndex) as FormGroup;
   const dimensionFields = ['PackageQty', 'length', 'width', 'height', 'WeightUnitSid'];
-  
+  const manualWeightFields = ['GrossWeight', 'cbm', 'volumetric'];
+
   dimensionFields.forEach(field => {
     cargoForm.get(field)?.valueChanges.subscribe(() => {
       this.calculateCargoValues(cargoForm);
+    });
+  });
+
+  manualWeightFields.forEach(field => {
+    cargoForm.get(field)?.valueChanges.subscribe(() => {
+      this.setChargeableWeightByGreatest(cargoForm);
     });
   });
 }
@@ -1068,27 +1101,31 @@ private calculateCargoValues(cargoForm: FormGroup): void {
       // Update CBM field
       cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
       cargoForm.get('volumetric')?.setValue(volumetric > 0 ? volumetric: '', { emitEvent: false});
-      // Calculate chargeable weight
-      const chargeableWeight = this.volumetricAndCbmCalculationService.calculateChargeableWeight(
-        volumetric, cbm, this.digitsAfterDecimal
-      );
-      
-      cargoForm.get('ChargeableWeight')?.setValue(
-        chargeableWeight > 0 ? chargeableWeight : '', 
-        { emitEvent: false }
-      );
+      this.setChargeableWeightByGreatest(cargoForm);
     } else {
       // For FCL: Calculate only CBM
       const cbm = this.volumetricAndCbmCalculationService.calculateCBM(
         packageQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
       );
       cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+      this.setChargeableWeightByGreatest(cargoForm);
     }
   } else {
-    cargoForm.get('cbm')?.setValue('', { emitEvent: false });
-    cargoForm.get('volumetric')?.setValue('', {emitEvent: false});
-    cargoForm.get('ChargeableWeight')?.setValue('', { emitEvent: false });
+    // Keep manually entered CBM/Volumetric when dimensions are not provided.
+    this.setChargeableWeightByGreatest(cargoForm);
   }
+}
+
+private setChargeableWeightByGreatest(cargoForm: FormGroup): void {
+  const cbm = this.parseFloatSafe(cargoForm.get('cbm')?.value);
+  const volumetric = this.parseFloatSafe(cargoForm.get('volumetric')?.value);
+  const grossWeight = this.parseFloatSafe(cargoForm.get('GrossWeight')?.value);
+  const chargeableWeight = Math.max(cbm, volumetric, grossWeight);
+
+  cargoForm.get('ChargeableWeight')?.setValue(
+    chargeableWeight > 0 ? Number(chargeableWeight.toFixed(this.digitsAfterDecimal)) : '',
+    { emitEvent: false }
+  );
 }
 
 private parseFloatSafe(value: any): number {
@@ -1476,11 +1513,8 @@ private parseFloatSafe(value: any): number {
         ContactPerson: response.ContactPerson,
         ContactNumber: response.ContactNumber
       });
-    const disableFields = ['Segment', 'enquiryNo', 'EnquiryDate', 'customerName', 'CustomerMasterSid', 'PreCustomerMasterSid'];
+    const disableFields = ['enquiryNo', 'LeadOrCustomer'];
     disableFields.forEach(f => disableFormControl(this.rateRequestForm, f));
-    if (response.authorizerStatus !== "Pending") {
-      ['authorizerStatus', 'AuthorizerRemarks'].forEach(f => disableFormControl(this.rateRequestForm, f));
-    }
 
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
@@ -1551,6 +1585,11 @@ private parseFloatSafe(value: any): number {
       // Push the route to the FormArray
       this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
+      const addedRouteIndex = routesArray.length - 1;
+      const addedCargoArray = this.routeCargo(addedRouteIndex);
+      addedCargoArray.controls.forEach((_, cargoIndex: number) => {
+        this.setupCargoCalculations(cargoIndex, addedRouteIndex);
+      });
       routeFormGroup.updateValueAndValidity();
       this.onRouteChange(index);
     });
@@ -1558,16 +1597,20 @@ private parseFloatSafe(value: any): number {
 
 
     this.isEnquiryAuthActionTaken = response.authorizerStatus === "Approved" || response.authorizerStatus === "Rejected";
-
-    if (this.isEnquiryAuthActionTaken) {
-      this.rateRequestForm.disable();
-      this.enquiryOtherForm.disable();
-    }
     this.isEnquiryApproved = response.authorizerStatus === "Approved";
     if (this.isEnquiryApproved) {
       // Filter route that is approved
     }
-    this.quotationCreatedAgainstThisEnquiry = response.QuoteHeaderSid === null;
+    this.quotationCreatedAgainstThisEnquiry = response.QuoteHeaderSid !== null;
+    if (this.quotationCreatedAgainstThisEnquiry) {
+      this.rateRequestForm.disable();
+      this.enquiryOtherForm.disable();
+    } else {
+      this.rateRequestForm.enable();
+      this.enquiryOtherForm.enable();
+      disableFormControl(this.rateRequestForm, 'enquiryNo');
+      disableFormControl(this.rateRequestForm, 'LeadOrCustomer');
+    }
   }
 
   restrictDecimal(event: KeyboardEvent) {
@@ -4253,3 +4296,4 @@ private getRequiredCargoFields(): string[] {
   }
 
 }
+

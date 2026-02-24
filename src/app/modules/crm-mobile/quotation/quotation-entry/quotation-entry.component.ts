@@ -426,6 +426,9 @@ patchEnqPageValues(enqData: any) {
       {}
     )
   );
+  if (!this.quotationForm.get('FreightPPCC')?.value) {
+    this.quotationForm.get('FreightPPCC')?.setValue('Prepaid');
+  }
 
 
   headerFields.forEach(field => {
@@ -480,6 +483,7 @@ patchEnqPageValues(enqData: any) {
       ServiceLevel: route?.ServiceLevel || null,
       POLFreeDays: route?.POLFreeDays || 0,
       PODFreeDays: route?.PODFreeDays || 0,
+      FreightPPCC: enqData?.FreightPPCC || 'Prepaid',
       authorizerStatus: route?.authorizerStatus || 'Pending',
       segmentType: segment
     };
@@ -966,10 +970,8 @@ private extractCargoData(enquiryCargo: any[]): any {
   
   if (status === 'Counter') {
     remarksControl?.setValidators([Validators.required]);
-    remarksControl?.enable();
-  } else {
-    remarksControl?.disable();
   }
+  remarksControl?.enable();
   
   approvedByControl?.updateValueAndValidity();
   remarksControl?.updateValueAndValidity();
@@ -1033,6 +1035,11 @@ private extractCargoData(enquiryCargo: any[]): any {
 }
 
   addQuoteCharge(routeIndex: number,carrierIndex:number, data?: any) {
+    const defaultRevenueCustomerMasterSid =
+      data?.RevenueCustomerMasterSid ?? this.quotationForm.get('CustomerMasterSid')?.value ?? null;
+    const defaultRevenueCustomerBranchSid =
+      data?.RevenueCustomerBranchSid ?? this.quotationForm.get('CustomerBranchSid')?.value ?? null;
+
     const chargeForm = this.fb.group({
       QuoteChargeSid : [data?.QuoteChargeSid || null],
       QuoteRouteSid : [data?.QuoteRouteSid || null],
@@ -1069,8 +1076,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         Number(data?.RevenueLocalAmount).toFixed(this.digitsAfterDecimal) : 
         0 || 0
       ],
-      RevenueCustomerMasterSid: [data?.RevenueCustomerMasterSid || null], // Revenue Vendor
-      RevenueCustomerBranchSid: [data?.RevenueCustomerBranchSid || null],
+      RevenueCustomerMasterSid: [defaultRevenueCustomerMasterSid], // Revenue Vendor
+      RevenueCustomerBranchSid: [defaultRevenueCustomerBranchSid],
 
       CostChargeUomSid : [data?.CostChargeUomSid || null, [Validators.required]],  // Cost Unit
       CostPrepaidCollect : [data?.CostPrepaidCollect || "Prepaid"],
@@ -1234,7 +1241,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       PackageType : [data?.PackageType || null ],
       CargoDescription : [data?.CargoDescription || ''],
       ExternalPkg : [data?.ExternalPkg || null ],
-      ExternalQty : [data?.ExternalQty || '' ],
+      ExternalQty : [data?.ExternalQty ?? '' ],
       GrossWeight : [
         data?.GrossWeight ? 
         Number(data?.GrossWeight).toFixed(this.digitsAfterDecimal) : 
@@ -1250,11 +1257,11 @@ private extractCargoData(enquiryCargo: any[]): any {
         Number(data?.Volume).toFixed(this.digitsAfterDecimal) : 
         0
       ],
-      Length : [data?.Length || ''],
+      Length : [data?.Length ?? ''],
       Volumetric: [data?.Volumetric || ''],
-      Width : [data?.Width || ''],
-      Height : [data?.Height || ''],
-      ProductUnit : [data?.ProductUnit || null],
+      Width : [data?.Width ?? ''],
+      Height : [data?.Height ?? ''],
+      ProductUnit : [data?.ProductUnit ?? null],
       ChargeableWeight : [
         data?.ChargeableWeight ? 
         Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
@@ -3083,7 +3090,17 @@ ${this.userData.userName}`;
       totalGrossWeight += Number(productForm.get('GrossWeight')?.value) || 0;
       totalNetWeight += Number(productForm.get('NetWeight')?.value) || 0;
       totalVolume += Number(productForm.get('Volume')?.value) || 0;
-      totalChargeableWeight += ((Number(productForm.get('Length')?.value) || 0 ) * (Number(productForm.get('Width')?.value) || 0) * (Number(productForm.get('Height')?.value) || 0)/6000) * Number(productForm.get('ExternalQty')?.value) || 0;
+
+      const length = Number(productForm.get('Length')?.value) || 0;
+      const width = Number(productForm.get('Width')?.value) || 0;
+      const height = Number(productForm.get('Height')?.value) || 0;
+      const qty = Number(productForm.get('ExternalQty')?.value) || 0;
+      const mappedChargeable = Number(productForm.get('ChargeableWeight')?.value) || 0;
+      const volumetricChargeable = length > 0 && width > 0 && height > 0 && qty > 0
+        ? ((length * width * height) / 6000) * qty
+        : 0;
+
+      totalChargeableWeight += Math.max(volumetricChargeable, mappedChargeable);
     });
     routeCtrl.get('GrossWeight')?.setValue(totalGrossWeight);
     routeCtrl.get('NetWeight')?.setValue(totalNetWeight);
@@ -4195,19 +4212,18 @@ toggleLock() {
   handlePartyOnChargePPCC() {
     const CustomerMasterSid = this.quotationForm.get('CustomerMasterSid')?.value;
     const CustomerBranchSid = this.quotationForm.get('CustomerBranchSid')?.value;
-    const ppcc = this.quotationForm.get('FreightPPCC')?.value;
-    if (ppcc === 'Prepaid') {
-      this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
-        this.quoteCarriers(routeIndex).controls.forEach((carrier: FormGroup, carrierIndex: number) => {
-          this.quoteCharges(routeIndex, carrierIndex).controls.forEach((charge: FormGroup, chargeIndex: number) => {
-            if (!charge.get('RevenueCustomerMasterSid')?.value) {
-              charge.get('RevenueCustomerMasterSid')?.setValue(CustomerMasterSid)
-              charge.get('RevenueCustomerBranchSid')?.setValue(CustomerBranchSid)
-            }
-          })
+    this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+      this.quoteCarriers(routeIndex).controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+        this.quoteCharges(routeIndex, carrierIndex).controls.forEach((charge: FormGroup, chargeIndex: number) => {
+          if (!charge.get('RevenueCustomerMasterSid')?.value) {
+            charge.get('RevenueCustomerMasterSid')?.setValue(CustomerMasterSid);
+          }
+          if (!charge.get('RevenueCustomerBranchSid')?.value) {
+            charge.get('RevenueCustomerBranchSid')?.setValue(CustomerBranchSid);
+          }
         })
       })
-    }
+    })
   }
 
   handleFreightPPCCForDetail(inco:any,index:number) {
@@ -4968,3 +4984,4 @@ openStandardCharges(routeIndex: number, carrierIndex: number) {
 
 
 }
+
