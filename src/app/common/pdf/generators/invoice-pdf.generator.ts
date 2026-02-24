@@ -96,8 +96,8 @@
     const PAGE_RIGHT = 565;
 
     const logoColumn = logo
-      ? { image: logo, width: 200, height: 55, alignment: 'left' as const }
-      : { text: '', width: 200 };
+      ? { image: logo, width: 130, height: 80, alignment: 'left' as const }
+      : { text: '', width: 130 };
 
     const companyInfoStack: any[] = [];
 

@@ -1,32 +1,45 @@
 <div class="document-vendorinvoice-container">
-
-  <!-- ── Header ─────────────────────────────────── -->
-  <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+  <div class="extract-hero mb-2">
     <div>
-      <h5 class="mb-0 fw-semibold">Extract Vendor Invoice</h5>
-      <small class="text-muted">Upload a PDF to auto-extract invoice data using AI</small>
+      <div class="extract-hero__title">
+        <i class="fas fa-file-invoice"></i>
+        <h5 class="mb-0 fw-semibold">Extract Vendor Invoice</h5>
+      </div>
+      <small class="extract-hero__subtitle">Upload a PDF to auto-extract invoice data using AI</small>
     </div>
-    <button type="button" class="btn-close" (click)="clearForm()"></button>
+    <button type="button" class="btn-close" (click)="clearForm()" aria-label="Close"></button>
   </div>
 
-  <!-- ── Upload Section ─────────────────────────── -->
-  <div class="card border-0 shadow-sm mb-3" *ngIf="!extractedData">
-    <div class="card-body">
+  <div class="card panel-card mb-2" *ngIf="!extractedData">
+    <div class="card-body upload-panel">
+      <div class="upload-panel__hint mb-2">
+        <span class="badge text-bg-light border">PDF only</span>
+        <span class="badge text-bg-light border">Max 20MB</span>
+      </div>
+
       <div class="d-flex flex-wrap align-items-end gap-3">
-        <!-- File Input -->
         <div class="flex-grow-1">
-          <label for="vendorInvoiceFile" class="form-label small fw-medium mb-1">Select PDF</label>
-          <input type="file" class="form-control form-control-sm" id="vendorInvoiceFile"
-                 accept=".pdf" (change)="onFileSelected($event)" [disabled]="isProcessing">
-          <small class="text-muted" *ngIf="selectedFile">
-            {{ selectedFile.name }} ({{ getFileSizeMB() }} MB)
+          <label for="vendorInvoiceFile" class="form-label small fw-medium mb-1 text-secondary">Select PDF</label>
+          <input
+            type="file"
+            class="form-control form-control-sm upload-input"
+            id="vendorInvoiceFile"
+            accept=".pdf"
+            (change)="onFileSelected($event)"
+            [disabled]="isProcessing"
+          />
+          <small class="text-muted d-inline-block mt-1" *ngIf="selectedFile">
+            <i class="far fa-file-pdf me-1"></i>{{ selectedFile.name }} ({{ getFileSizeMB() }} MB)
           </small>
         </div>
 
-        <!-- Process Button -->
         <div>
-          <button type="button" class="btn btn-primary btn-sm px-4" style="min-width:170px"
-                  [disabled]="!selectedFile || isProcessing" (click)="processFile()">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm px-4 upload-btn"
+            [disabled]="!selectedFile || isProcessing"
+            (click)="processFile()"
+          >
             <span *ngIf="!isProcessing">
               <i class="fas fa-magic me-1"></i> Extract Data
             </span>
@@ -38,222 +51,176 @@
         </div>
       </div>
 
-      <!-- Processing indicator -->
       <div *ngIf="isProcessing" class="mt-3">
-        <div class="progress" style="height: 4px;">
+        <div class="progress upload-progress">
           <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 100%"></div>
         </div>
         <small class="text-muted mt-1 d-block">
           <i class="fas fa-robot me-1"></i>
-          AI is reading and extracting data from your invoice... This may take 15–40 seconds.
+          AI is reading and extracting data from your invoice... This may take 15-40 seconds.
         </small>
       </div>
 
-      <!-- Error -->
       <div *ngIf="errorMessage" class="alert alert-danger mt-3 mb-0 py-2 small">
         <i class="fas fa-exclamation-circle me-1"></i> {{ errorMessage }}
       </div>
     </div>
   </div>
 
-  <!-- ── Extracted Data Review ──────────────────── -->
   <div *ngIf="extractedData">
-
-    <!-- Timing Info -->
-    <div class="d-flex align-items-center gap-3 mb-3 small text-muted px-1" *ngIf="response">
+    <div class="d-flex align-items-center gap-3 mb-2 small text-muted px-1 model-meta" *ngIf="response">
       <span><i class="fas fa-brain me-1"></i> Model: <strong>{{ response.model }}</strong></span>
       <span><i class="fas fa-clock me-1"></i> Total: <strong>{{ (response.processingTime.totalMs / 1000).toFixed(1) }}s</strong></span>
       <span *ngIf="response.ocrUsed" class="badge bg-warning text-dark">OCR Used</span>
       <span *ngIf="!response.ocrUsed" class="badge bg-success">Digital PDF</span>
     </div>
 
-    <!-- Invoice Header -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-header py-2 bg-light">
+    <div class="card panel-card mb-2">
+      <div class="card-header section-head">
         <h6 class="mb-0 fw-semibold"><i class="fas fa-file-invoice me-1"></i> Invoice Header</h6>
       </div>
       <div class="card-body py-2">
         <div class="row g-2">
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Invoice Number</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.invoice_number">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.invoice_number" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Invoice Date</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.invoice_date">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.invoice_date" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Due Date</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.due_date">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.due_date" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Currency</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.currency">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.currency" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Seller / Buyer -->
-    <div class="row g-3 mb-3">
+    <div class="row g-2 mb-2">
       <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header py-2 bg-light">
+        <div class="card panel-card h-100">
+          <div class="card-header section-head">
             <h6 class="mb-0 fw-semibold"><i class="fas fa-building me-1"></i> Seller (Invoice Issuer)</h6>
           </div>
           <div class="card-body py-2">
             <div class="mb-2">
               <label class="form-label small text-muted mb-0">Name</label>
-              <input type="text" class="form-control form-control-sm"
-                     [(ngModel)]="extractedData.seller.name">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.seller.name" />
             </div>
             <div>
               <label class="form-label small text-muted mb-0">Address</label>
-              <textarea class="form-control form-control-sm" rows="2"
-                        [(ngModel)]="extractedData.seller.address"></textarea>
+              <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="extractedData.seller.address"></textarea>
             </div>
           </div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header py-2 bg-light">
+        <div class="card panel-card h-100">
+          <div class="card-header section-head">
             <h6 class="mb-0 fw-semibold"><i class="fas fa-user me-1"></i> Buyer (Billed To)</h6>
           </div>
           <div class="card-body py-2">
             <div class="mb-2">
               <label class="form-label small text-muted mb-0">Name</label>
-              <input type="text" class="form-control form-control-sm"
-                     [(ngModel)]="extractedData.buyer.name">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.buyer.name" />
             </div>
             <div class="mb-2">
               <label class="form-label small text-muted mb-0">Address</label>
-              <textarea class="form-control form-control-sm" rows="2"
-                        [(ngModel)]="extractedData.buyer.address"></textarea>
+              <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="extractedData.buyer.address"></textarea>
             </div>
             <div>
               <label class="form-label small text-muted mb-0">VAT / GST No</label>
-              <input type="text" class="form-control form-control-sm"
-                     [(ngModel)]="extractedData.buyer.vat_no">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.buyer.vat_no" />
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Shipping -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-header py-2 bg-light">
+    <div class="card panel-card mb-2">
+      <div class="card-header section-head">
         <h6 class="mb-0 fw-semibold"><i class="fas fa-ship me-1"></i> Shipping Details</h6>
       </div>
       <div class="card-body py-2">
         <div class="row g-2">
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">MBL</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.mbl">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.mbl" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">HBL</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.hbl">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.hbl" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Vessel</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.vessel">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.vessel" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Voyage</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.voyage">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.voyage" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Loading Port</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.loading_port">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.loading_port" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Destination</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.destination">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.destination" />
           </div>
           <div class="col-md-3">
             <label class="form-label small text-muted mb-0">Job Number</label>
-            <input type="text" class="form-control form-control-sm"
-                   [(ngModel)]="extractedData.shipping.job_number">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="extractedData.shipping.job_number" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Line Items -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-1"></i> Line Items</h6>
+    <div class="card panel-card mb-2">
+      <div class="card-header section-head d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold"><i class="fas fa-list me-1"></i> Charges Unit Qty Amount / Qty Currency Ex.Rate FCY Amount Taxable Amount Non Taxable Amount Tax % Tax Amount Total Amount (AED)</h6>
         <span class="badge bg-secondary">{{ extractedData.line_items?.length || 0 }} items</span>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-bordered table-hover mb-0" style="font-size: 0.82rem;">
+          <table class="table table-sm table-bordered table-hover mb-0 charges-table">
             <thead class="table-light">
               <tr>
                 <th class="text-center" width="40">#</th>
-                <th>Description</th>
-                <th width="90">HSN/SAC</th>
+                <th>Charges</th>
                 <th width="60" class="text-center">Qty</th>
-                <th width="90" class="text-end">Rate</th>
-                <th width="100" class="text-end">Taxable</th>
-                <th width="70" class="text-end">VAT%</th>
-                <th width="90" class="text-end">VAT Amt</th>
-                <th width="100" class="text-end">Total</th>
+                <th width="90" class="text-end">Amount / Qty</th>
+                <th width="80">Currency</th>
+                <th width="70" class="text-end">Ex.Rate</th>
+                <th width="95" class="text-end">FCY Amount</th>
+                <th width="100" class="text-end">Taxable Amount</th>
+                <th width="70" class="text-end">Tax %</th>
+                <th width="90" class="text-end">Tax Amount</th>
+                <th width="100" class="text-end">Total Amount (AED)</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of extractedData.line_items; let i = index">
                 <td class="text-center">{{ item.sno || (i + 1) }}</td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0 p-0"
-                         [(ngModel)]="item.description">
-                </td>
-                <td>
-                  <input type="text" class="form-control form-control-sm border-0 p-0"
-                         [(ngModel)]="item.hsn_sac">
-                </td>
-                <td class="text-center">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-center"
-                         [(ngModel)]="item.qty" style="width:50px">
-                </td>
-                <td class="text-end">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
-                         [(ngModel)]="item.rate">
-                </td>
-                <td class="text-end">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
-                         [(ngModel)]="item.taxable_value">
-                </td>
-                <td class="text-end">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
-                         [(ngModel)]="item.vat_percent" style="width:55px">
-                </td>
-                <td class="text-end">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
-                         [(ngModel)]="item.vat_amount">
-                </td>
-                <td class="text-end">
-                  <input type="number" class="form-control form-control-sm border-0 p-0 text-end"
-                         [(ngModel)]="item.total">
-                </td>
+                <td>{{ item.description || '-' }}</td>
+                <td class="text-center">{{ item.qty || 1 }}</td>
+                <td class="text-end">{{ getRatePerQty(item) | number:'1.2-2' }}</td>
+                <td>{{ item.currency || extractedData.currency || '-' }}</td>
+                <td class="text-end">1.00</td>
+                <td class="text-end">{{ getTaxableValue(item) | number:'1.2-2' }}</td>
+                <td class="text-end">{{ getTaxableValue(item) | number:'1.2-2' }}</td>
+                <td class="text-end">{{ item.vat_percent || 0 }}</td>
+                <td class="text-end">{{ item.vat_amount || 0 }}</td>
+                <td class="text-end">{{ item.total || (getTaxableValue(item) + (item.vat_amount || 0)) }}</td>
               </tr>
             </tbody>
             <tfoot class="table-light fw-semibold">
               <tr>
-                <td colspan="5" class="text-end">Totals:</td>
-                <td class="text-end">{{ extractedData.subtotal || 0 }}</td>
+                <td colspan="8" class="text-end">Totals:</td>
                 <td></td>
                 <td class="text-end">{{ extractedData.total_vat || 0 }}</td>
                 <td class="text-end">{{ extractedData.grand_total || 0 }}</td>
@@ -264,13 +231,11 @@
       </div>
     </div>
 
-    <!-- Amount in Words -->
-    <div class="mb-3 px-1" *ngIf="extractedData.amount_in_words">
-      <small class="text-muted">Amount in Words:</small>
+    <div class="amount-words mb-2" *ngIf="extractedData.amount_in_words">
+      <small class="text-muted fw-semibold">Amount in Words</small>
       <div class="fst-italic">{{ extractedData.amount_in_words }}</div>
     </div>
 
-    <!-- Action Buttons -->
     <div class="d-flex justify-content-end gap-2 pt-2 border-top">
       <button type="button" class="btn btn-outline-secondary btn-sm px-4" (click)="clearForm()">
         <i class="fas fa-times me-1"></i> Cancel
@@ -284,8 +249,6 @@
     </div>
   </div>
 
-  <!-- Spinner overlay -->
-  <ngx-spinner name="ocrSpinner" type="ball-clip-rotate" size="medium" color="#0d6efd"
-               [fullScreen]="false">
+  <ngx-spinner name="ocrSpinner" type="ball-clip-rotate" size="medium" color="#0d6efd" [fullScreen]="false">
   </ngx-spinner>
 </div>

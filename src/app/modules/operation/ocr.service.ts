@@ -51,6 +51,11 @@ export interface ExtractedInvoice {
     description: string | null;
     hsn_sac: string | null;
     currency: string | null;
+    unit?: string | null;
+    amount_per_qty?: number | null;
+    exchange_rate?: number | null;
+    fcy_amount?: number | null;
+    non_taxable_amount?: number | null;
     qty: number | null;
     rate: number | null;
     taxable_value: number | null;

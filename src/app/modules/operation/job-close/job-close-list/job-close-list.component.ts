@@ -166,6 +166,14 @@ export class JobCloseListComponent extends BaseListComponent implements OnInit {
           dataType: 'string'
         },
         {
+          key: 'DepartmentName',
+          label: 'Dept',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
           key: 'Status',
           label: 'Status',
           sortable: true,
