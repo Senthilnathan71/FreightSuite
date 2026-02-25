@@ -811,6 +811,7 @@
                <button 
         type="button"
         class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
+        *ngIf="isEditMode"
         (click)="openAttachModal()">
         <i class="fas fa-save me-1"></i> Attach Booking
       </button>

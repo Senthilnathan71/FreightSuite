@@ -438,7 +438,7 @@
                             <tr class="bg-info">
                                 <th class="bg-transparent text-light" scope="col" width="2%"></th>
                                 <th class="bg-transparent text-light" scope="col">Booking No</th>
-                                <th class="bg-transparent text-light" scope="col">Sales Person</th>
+                                <th class="bg-transparent text-light" scope="col">HouseJob No</th>
                                 <th class="bg-transparent text-light" scope="col">Customer</th>
                                 <!-- <th class="bg-transparent text-light" scope="col">Shipper</th> -->
                                 <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
@@ -459,7 +459,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="d-flex align-items-center justify-content-center">
                                         <a class="text-info mx-2" target="_blank" class="link mx-2 "
-                                            [routerLink]="['/operation/booking/entry',item.BookingHeaderSid]">
+                                            (click)="navigateToRecord(item)">
                                             <i-feather class="feather-sm text-info cursor-pointer"
                                                 name="eye"></i-feather>
                                         </a>
@@ -469,7 +469,7 @@
                                     <div class="text-truncate">{{item.BookingNo}}</div>
                                 </td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{item.SalesmanName}}</div>
+                                    <div class="text-truncate">{{item.HBLNo}}</div>
                                 </td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.CustomerName}}</div>

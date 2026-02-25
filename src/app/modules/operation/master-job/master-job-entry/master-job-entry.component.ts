@@ -2270,7 +2270,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       .map(shipment => {
         return {
           BookingHeaderSid: shipment.BookingHeaderSid,
+          HouseJobSid: shipment.HouseJobSid || null,  
           HBLNo: shipment.HBLNo,
+          MasterJobSid: shipment.MasterJobSid || null,
         }
       });
     formData['shipmentList'] = [...allShipments];
@@ -3180,6 +3182,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
       this.modalService.dismissAll();
+      this.onSubmit();
     });
   }
 

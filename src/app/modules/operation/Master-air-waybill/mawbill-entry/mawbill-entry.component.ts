@@ -1584,7 +1584,9 @@ if (polSid && !podSid) {
       .map(shipment => {
         return {
           BookingHeaderSid: shipment.BookingHeaderSid,
-          HouseJobSid: shipment.HouseJobSid,
+          HouseJobSid: shipment.HouseJobSid || null,  
+          HBLNo: shipment.HBLNo,
+          MasterJobSid: shipment.MasterJobSid || null,
         }
     });
     formData['shipmentList'] = [...allShipments];
@@ -2413,6 +2415,7 @@ handleEdocChange(event: any) {
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
       this.modalService.dismissAll();
+      this.onSubmit();
     });
   }
 

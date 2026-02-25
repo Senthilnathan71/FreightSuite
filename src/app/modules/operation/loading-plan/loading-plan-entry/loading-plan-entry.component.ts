@@ -1175,6 +1175,14 @@ formatContainerNumber(): void {
     this.closeModal.emit(true);
   }
 
+  navigateToRecord(item: any) {
+  if (item.BookingHeaderSid) {
+    this.router.navigate(['/operation/booking/entry', item.BookingHeaderSid]);
+  } else {
+    this.router.navigate(['/operation/house-job/entry', item.HouseJobSid]);
+  }
+}
+
   getParseInteger(value: any): string {
   if (!value && value !== 0) return '0.000';
   const num = parseFloat(value);
