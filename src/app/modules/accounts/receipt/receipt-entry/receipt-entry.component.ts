@@ -3492,6 +3492,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+    modalRef.componentInstance.coaList = this.coaList || [];
   }
 
   reportCash() {
@@ -3500,6 +3501,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       scrollable: true,
     });
     modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
+    modalRef.componentInstance.coaList = this.coaList || [];
   }
 
   ngOnDestroy(): void {

@@ -10,28 +10,28 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL From Date </strong>
-                    <p class="ms-1">: {{ params?.FromHblDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL To Date </strong>
-                    <p class="ms-1">: {{ params?.ToHblDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                    <p class="ms-1 my-0">: {{ fullData?.departmentNames }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
                     <strong style="width: 130px;">BLIssue </strong>
-                    <p class="ms-1">: {{ params?.BLIssue }}</p>
+                    <p class="ms-1 my-0">: {{ params?.BLIssue }}</p>
                 </div>
             </div>
         </div>
@@ -39,15 +39,15 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light">HBL No</th>
+                        <th class="bg-transparent text-light text-center">HBL No</th>
                         <th class="bg-transparent text-light text-center">HBL Date</th>
-                        <th class="bg-transparent text-light">MBL No</th>
-                        <th class="bg-transparent text-light">Booking No</th>
-                        <th class="bg-transparent text-light">Shipper</th>
-                        <th class="bg-transparent text-light">Consignee</th>
-                        <th class="bg-transparent text-light">POL</th>
-                        <th class="bg-transparent text-light">POD</th>
-                        <th class="bg-transparent text-light">Job Status</th>
+                        <th class="bg-transparent text-light text-center">MBL No</th>
+                        <th class="bg-transparent text-light text-center">Booking No</th>
+                        <th class="bg-transparent text-light text-center">Shipper</th>
+                        <th class="bg-transparent text-light text-center">Consignee</th>
+                        <th class="bg-transparent text-light text-center">POL</th>
+                        <th class="bg-transparent text-light text-center">POD</th>
+                        <th class="bg-transparent text-light text-center">Job Status</th>
                     </tr>
                 </thead>
                 <tbody>

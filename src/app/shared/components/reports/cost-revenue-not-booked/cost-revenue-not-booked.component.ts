@@ -136,8 +136,8 @@ getExcelData(): ComplexReportExportConfig {
       companyName: this.currentCompany?.companyName || 'Company',
       reportTitle: isNotBookedCost ? 'Cost Not Booked Report' : 'Revenue Not Booked Report',
       additionalInfo: [
-        { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
-        { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) },
+        { label: 'HBL From Date', value: this.formatDate(this.params?.FromJobDt) },
+        { label: 'HBL To Date', value: this.formatDate(this.params?.ToJobDt) },
         { label: 'Branch', value: this.fullData?.branchInvolved || '' },
         { label: 'Dept', value: this.fullData?.resolvedDeptNames || '' },
       ],

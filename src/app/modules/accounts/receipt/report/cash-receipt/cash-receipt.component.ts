@@ -41,7 +41,7 @@ export class CashReceiptComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
-
+  @Input() coaList : any[] = [];
     
  showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -129,12 +129,38 @@ export class CashReceiptComponent {
   }
 
 
+getTotalAmt() {
+  return this.receiptPrintData?.VoucherDetail
+    ?.filter((item: any) => item?.DrCr === 'D')   
+    ?.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item?.Amount) || 0);
+    }, 0);
+}
+
+
 getAmountInWords(): string {
-  const total = this.receiptPrintData?.VoucherDetail?.[0]?.Amount
+  const total = this.getTotalAmt();
   if (!total) return '';
 
-  const currencySid = this.receiptPrintData?.CurrencyMasterSid;
+  const currencySid = this.receiptPrintData?.CurrencyMasterSid; this.receiptPrintData?.CurrencyMasterSid;
   return this.numberToWords.convert(total, currencySid);
+}
+  
+
+ getDrDetails() {
+  return this.receiptPrintData?.VoucherDetail?.filter(
+    (item: any) => item?.DrCr === 'D'
+  );
+}
+
+
+  getLedgerName(COAMasterSid: number): string {
+  if (!COAMasterSid || this.coaList.length===0) return '';
+  const ledger = this.coaList.find(
+    v => v.COAMasterSid === COAMasterSid
+  );
+
+  return ledger.LedgerName || '';
 }
 
 
@@ -293,4 +319,5 @@ printDiv(divId: string): void {
   modalClose() {
     this.activeModal.close();
   }
+  
 }

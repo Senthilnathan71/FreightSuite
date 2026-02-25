@@ -10,37 +10,37 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">From Date </strong>
-                    <p class="ms-1">: {{ params?.FromDate | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.FromDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">To Date </strong>
-                    <p class="ms-1">: {{ params?.ToDate | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
-                    <p class="ms-1">: {{ fullData?.departmentInvoled }}</p>
+                    <p class="ms-1 my-0">: {{ fullData?.departmentInvoled }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Top N </strong>
-                    <p class="ms-1">: {{ params?.TopN }}</p>
+                    <p class="ms-1 my-0">: {{ params?.TopN }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
                     <strong style="width: 130px;">Volume</strong>
-                    <p class="ms-1">: {{ params?.Volume }}</p>
+                    <p class="ms-1 my-0">: {{ params?.Volume }}</p>
                 </div>
 
                 <div class="d-flex align-items-center d-none">
                     <strong style="width: 130px;">GP </strong>
-                    <p class="ms-1">: {{ params?.Gp }}</p>
+                    <p class="ms-1 my-0">: {{ params?.Gp }}</p>
                 </div>
             </div>
         </div>
@@ -50,15 +50,15 @@
                     <tr class="bg-info">
                         <!-- <th class="bg-transparent text-light">MBL No</th>
                         <th class="bg-transparent text-light">HBL No</th> -->
-                        <th class="bg-transparent text-light">Rank</th> 
-                        <th class="bg-transparent text-light">Customer</th>
+                        <th class="bg-transparent text-light text-center">Rank</th> 
+                        <th class="bg-transparent text-light text-center">Customer</th>
                         <th class="bg-transparent text-light text-center">GP</th>
-                        <th class="bg-transparent text-light">Revenue</th>
-                        <th class="bg-transparent text-light">Volume</th>
-                        <th class="bg-transparent text-light">Weight</th>
-                        <th class="bg-transparent text-light">Volume Wt</th>
-                        <th class="bg-transparent text-light">Chargeable Wt</th>
-                        <th class="bg-transparent text-light">No of House</th>
+                        <th class="bg-transparent text-light text-center">Revenue</th>
+                        <th class="bg-transparent text-light text-center">Volume</th>
+                        <th class="bg-transparent text-light text-center">Weight</th>
+                        <th class="bg-transparent text-light text-center">Volume Wt</th>
+                        <th class="bg-transparent text-light text-center">Chargeable Wt</th>
+                        <th class="bg-transparent text-light text-center">No of House</th>
                     </tr>
                 </thead>
                 <tbody>
