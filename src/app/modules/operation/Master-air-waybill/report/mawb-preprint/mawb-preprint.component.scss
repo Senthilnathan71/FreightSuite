@@ -281,8 +281,8 @@
 }
 
 .charges-code {
-    top: 135mm;
-    left: 138mm;
+    top: 140mm;
+    left: 148mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -291,8 +291,8 @@
 
 /* PP/CC Checkboxes */
 .wt-pp {
-    top: 135mm;
-    left: 150mm;
+    top: 140mm;
+    left: 160mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -302,7 +302,7 @@
 
 .wt-col {
     top: 135mm;
-    left: 192mm;
+    left: 185mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -311,8 +311,8 @@
 }
 
 .other-pp {
-    top: 135mm;
-    left: 205mm;
+    top: 140mm;
+    left: 180mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -322,7 +322,7 @@
 
 .other-col {
     top: 135mm;
-    left: 217mm;
+    left: 200mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
@@ -397,8 +397,8 @@
 
 /* Package Details - Main Table */
 .no-of-pieces {
-    top: 185mm;
-    left: 1mm;
+    top: 200mm;
+    left: 2mm;
     width: 20mm;
     height: 10mm;
     text-align: center;
@@ -406,8 +406,8 @@
 }
 
 .gross-weight {
-    top: 185mm;
-    left: 30mm;
+    top: 200mm;
+    left: 27mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
@@ -415,7 +415,7 @@
 }
 
 .weight-unit {
-    top: 185mm;
+    top: 200mm;
     left: 63mm;
     width: 15mm;
     height: 10mm;
@@ -432,8 +432,8 @@
 }
 
 .chargeable-weight {
-    top: 185mm;
-    left: 95mm;
+    top: 200mm;
+    left: 85mm;
     width: 30mm;
     height: 10mm;
     text-align: center;
@@ -441,8 +441,8 @@
 }
 
 .rate-charge {
-    top: 185mm;
-    left: 125mm;
+    top: 200mm;
+    left: 120mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
@@ -450,7 +450,7 @@
 }
 
 .total-charge {
-    top: 185mm;
+    top: 200mm;
     left: 150mm;
     width: 25mm;
     height: 10mm;
@@ -471,8 +471,8 @@
 
 /* Totals Row */
 .total-no-pieces {
-    top: 250mm;
-    left: 12mm;
+    top: 265mm;
+    left: 2mm;
     width: 20mm;
     height: 5mm;
     text-align: center;
@@ -480,8 +480,8 @@
 }
 
 .total-gross-weight {
-    top: 250mm;
-    left: 39mm;
+    top: 265mm;
+    left: 30mm;
     width: 20mm;
     height: 5mm;
     text-align: center;
@@ -489,8 +489,8 @@
 }
 
 .total-chargeable-weight {
-    top: 250mm;
-    left: 104mm;
+    top: 265mm;
+    left: 85mm;
     width: 30mm;
     height: 5mm;
     text-align: center;
@@ -498,8 +498,8 @@
 }
 
 .total-rate {
-    top: 250mm;
-    left: 137mm;
+    top: 265mm;
+    left: 122mm;
     width: 25mm;
     height: 5mm;
     text-align: center;
@@ -507,8 +507,8 @@
 }
 
 .total-amount {
-    top: 250mm;
-    left: 165mm;
+    top: 265mm;
+    left: 150mm;
     width: 25mm;
     height: 5mm;
     text-align: center;
@@ -517,8 +517,8 @@
 
 /* Charges Section */
 .prepaid-weight {
-    top: 260mm;
-    left: 12mm;
+    top: 280mm;
+    left: 10mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
@@ -526,8 +526,8 @@
 }
 
 .collect-weight {
-    top: 260mm;
-    left: 75mm;
+    top: 280mm;
+    left: 78mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
@@ -536,8 +536,8 @@
 
 /* Other Charges */
 .other-charges {
-    top: 260mm;
-    left: 140mm;
+    top: 280mm;
+    left: 130mm;
     width: 140mm;
     height: 15mm;
     
@@ -546,7 +546,7 @@
 
 /* Total Other Charges */
 .total-other-carrier {
-    top: 300mm;
+    top: 320mm;
     left: 10mm;
     width: 35mm;
     height: 5mm;
@@ -556,8 +556,8 @@
 
 /* Shipper Certificate */
 .agent-name-cert {
-    top: 300mm;
-    left: 180mm;
+    top: 330mm;
+    left: 160mm;
     width: 80mm;
     height: 10mm;
     text-align: center;
@@ -567,7 +567,7 @@
 
 /* Totals Section */
 .total-prepaid {
-    top: 320mm;
+    top: 350mm;
     left: 12mm;
     width: 35mm;
     height: 5mm;
@@ -640,7 +640,7 @@
 
 .execution-place {
     top: 355mm;
-    left: 148mm;
+    left: 150mm;
     // width: 40mm;
     height: 5mm;
     text-align: center;
