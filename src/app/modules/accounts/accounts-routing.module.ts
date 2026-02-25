@@ -18,6 +18,7 @@ import { PaymentViewComponent } from './payment/payment-view/payment-view.compon
 import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
 
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
+import { VoucherMatchingViewComponent } from './voucher-matching/voucher-matching-view/voucher-matching-view.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
 import { AccountsReportsComponent } from '../../accounts/components/accounts-reports/accounts-reports.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
@@ -398,6 +399,19 @@ export const AccountRoutes: Routes = [
             { title: "Accounts", url: "/accounts" },
             { title: "Voucher-Matching", url: "/accounts/voucher-matching/list" },
             { title: "Voucher-Matching" },
+          ],
+        },
+      },
+
+      {
+        path: "voucher-matching/view/:VoucherMatchingHeaderSid",
+        component: VoucherMatchingViewComponent,
+        data: {
+          title: "View Voucher Matching",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher Matching", url: "/accounts/voucher-matching/list" },
+            { title: "View Voucher Matching" },
           ],
         },
       },

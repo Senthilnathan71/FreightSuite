@@ -17,7 +17,7 @@
         <p class="job-number">Job No: <span>{{ masterJob.jobNumber }}</span></p>
       </div>
       <div class="col-4 text-center">
-        <p class="job-date">Date: <span>{{ masterJob.jobDate | formatDate:'dd-MMM-yyyy' }}</span></p>
+        <p class="job-date">Date: <span>{{ masterJob.jobDate | formatDate }}</span></p>
       </div>
       <div class="col-4 text-end">
         <p class="job-status"><span class="badge bg-info">Active</span></p>
@@ -60,11 +60,11 @@
           </p>
           <p class="info-item">
             <span class="label">ETD:</span>
-            <span class="value">{{ masterJob.etd | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.etd | formatDate }}</span>
           </p>
           <p class="info-item">
             <span class="label">ETA:</span>
-            <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.eta | formatDate }}</span>
           </p>
         </div>
       </div>

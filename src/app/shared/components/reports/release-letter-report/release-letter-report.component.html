@@ -21,7 +21,7 @@
 
   <!-- Letter Date and Reference -->
   <div class="letter-meta">
-    <p class="mb-2"><strong>Date:</strong> {{ todayDate | formatDate:'dd-MMM-yyyy' }}</p>
+    <p class="mb-2"><strong>Date:</strong> {{ todayDate | formatDate }}</p>
     <p class="mb-2"><strong>Ref:</strong> {{ company.name }}/REL/{{ masterJob.jobNumber }}</p>
   </div>
 
@@ -79,7 +79,7 @@
             </p>
             <p class="info-item">
               <span class="label">Arrival Date (ETA):</span>
-              <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+              <span class="value">{{ masterJob.eta | formatDate }}</span>
             </p>
             <p class="info-item">
               <span class="label">Commodity:</span>

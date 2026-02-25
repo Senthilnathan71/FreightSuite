@@ -1,282 +1,778 @@
-<div class="row compact-form">
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="brand-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
-                </div>
-            </div>
-            <div class="col-md-8 pb-1">
-                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="navigateToBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                </div>
-            </div>
+<!-- ==================== VIEW MODE ==================== -->
+<!-- <div class="row compact-form" *ngIf="isEditMode">
+
+<div class="col-12 px-0">
+  <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+    <div class="col-md-4 d-flex pb-1">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-icon">
+          <i class="fas fa-file-invoice"></i>
         </div>
+        <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
+      </div>
     </div>
-
-    <div class="col-12 px-0">
-        <div class="card mb-1">
-            <div class="card-body">
-                <form [formGroup]="voucherMatchingForm" novalidate>
-                    <div class="row g-2 align-items-end">
-
-  <!-- Matching No -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="VoucherMatchingNo"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Matching No.</label>
-    </div>
-  </div>
-
-  <!-- Matching Date -->
-  <div class="col-md-2">
-    <div
-      class="custom-form-group custom-form-group-select-date"
-      [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value"
-    >
-      <div class="input-group">
-        <input
-          class="form-control"
-          formControlName="VoucherMatchingDate"
-          placeholder="dd-mm-yyyy"
-          ngbDatepicker
-          #d1="ngbDatepicker"
-          (click)="d1.toggle()"
-          readonly
-        />
-        <button class="btn" type="button" (click)="d1.toggle()">
-          <i-feather name="calendar" class="feather-sm"></i-feather>
+    <div class="col-md-8 pb-1">
+      <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mx-0">
+        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="navigateToBack()">
+          <i class="fas fa-chevron-left me-1"></i> Back
         </button>
       </div>
-      <label class="input-label">Matching Date</label>
     </div>
   </div>
-
-  <!-- Post Date -->
-  <div class="col-md-2">
-    <div
-      class="custom-form-group custom-form-group-select-date"
-      [class.filled]="!!voucherMatchingForm.get('PostDate')?.value"
-    >
-      <div class="input-group">
-        <input
-          class="form-control"
-          formControlName="PostDate"
-          placeholder="dd-mm-yyyy"
-          ngbDatepicker
-          #d2="ngbDatepicker"
-          (click)="d2.toggle()"
-          readonly
-        />
-        <button class="btn" type="button" (click)="d2.toggle()">
-          <i-feather name="calendar" class="feather-sm"></i-feather>
-        </button>
-      </div>
-      <label class="input-label">Post Date</label>
-    </div>
-  </div>
-
-  <!-- Ledger -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="LedgerName"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Ledger</label>
-    </div>
-  </div>
-
-  <!-- Subledger -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="SubledgerName"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Subledger</label>
-    </div>
-  </div>
-
-  <!-- Status -->
-  <div class="col-md-2">
-    <div class="custom-form-group">
-      <input
-        type="text"
-        formControlName="Status"
-        class="custom-input-field sm"
-      />
-      <label class="input-label">Status</label>
-    </div>
-  </div>
-
 </div>
 
-                </form>
+<div class="col-12 px-0">
+  <div class="card mb-1">
+    <div class="card-body py-2">
+      <form [formGroup]="voucherMatchingForm" novalidate>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
+              <label class="input-label">Matching No.</label>
             </div>
+          </div>
+          <div class="col-md-2">
+            <div class="custom-form-group custom-form-group-select-date"
+              [class.filled]="!!voucherMatchingForm.get('VoucherMatchingDate')?.value">
+              <div class="input-group">
+                <input class="form-control" formControlName="VoucherMatchingDate" placeholder="dd-mm-yyyy" ngbDatepicker
+                  #dv1="ngbDatepicker" readonly />
+                <button class="btn" type="button" disabled>
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">Matching Date</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" formControlName="LedgerName" class="custom-input-field sm" />
+              <label class="input-label">Ledger</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" formControlName="SubledgerName" class="custom-input-field sm" />
+              <label class="input-label">Subledger</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="custom-form-group custom-form-group-select-date"
+              [class.filled]="!!voucherMatchingForm.get('PostDate')?.value">
+              <div class="input-group">
+                <input class="form-control" formControlName="PostDate" placeholder="dd-mm-yyyy" ngbDatepicker
+                  #dv2="ngbDatepicker" readonly />
+                <button class="btn" type="button" disabled>
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">Post Date</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" formControlName="Status" class="custom-input-field sm" />
+              <label class="input-label">Status</label>
+            </div>
+          </div>
         </div>
+      </form>
     </div>
+  </div>
+</div>
 
-    <!-- Table Section with FormArray -->
-    <div class="col-12 mt-1 px-0">
-        <form [formGroup]="voucherMatchingForm" novalidate>
-            <div class="table-wrapper">
-                <div class="table-responsive table-borderless">
-                    <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                        <thead class="bg-info">
-                            <tr>
-                                <th class="bg-transparent text-light">Branch</th>
-                                <th class="bg-transparent text-light">Ledger</th>
-                                <th class="bg-transparent text-light">Subledger</th>
-                                <th class="bg-transparent text-light">Voucher No.</th>
-                                <th class="bg-transparent text-light">Voucher Type</th>
-                                <th class="bg-transparent text-light">Voucher Date</th>
-                                <th class="bg-transparent text-light">Dr/Cr</th>
-                                <th class="bg-transparent text-light">Curr.</th>
-                                <th class="bg-transparent text-light">Ex.Rate</th>
-                                <th class="bg-transparent text-light">Curr.Amt</th>
-                                <th class="bg-transparent text-light">Local Amt</th>
-                                <th class="bg-transparent text-light">Matching Type</th>
-                            </tr>
-                        </thead>
+<div class="col-12 px-0" *ngIf="detail.length > 0">
+  <div class="card mb-1">
+    <div class="card-body p-0">
+      <form [formGroup]="voucherMatchingForm" novalidate>
+        <div class="table-responsive table-borderless">
+          <table class="table table-hover align-middle table-sm mb-0">
+            <thead class="bg-info">
+              <tr>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 10%;">Branch</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Ledger</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Subledger</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 12%;">Voucher No.</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 6%;">Type</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Date</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Dr/Cr</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 4%;">Curr.</th>
+                <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 6%;">Ex.Rate</th>
+                <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Amount</th>
+                <th class="bg-transparent text-light text-end" style="font-size: 14px; width: 9%;">Local Amt</th>
+                <th class="bg-transparent text-light" style="font-size: 14px; width: 8%;">Match Type</th>
+              </tr>
+            </thead>
+            <tbody formArrayName="voucherMatching">
+              <tr *ngFor="let d of detail.controls; let i = index" [formGroupName]="i">
+                <td><input type="text" formControlName="BranchName" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="LedgerName" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="SubledgerName" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
+                <td><input type="text" [value]="(d.getRawValue().VoucherDate | formatDate)"
+                    class="custom-input-field sm" disabled /></td>
+                <td><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="CurrencyCode" class="custom-input-field sm" /></td>
+                <td><input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end" /></td>
+                <td><input type="text" formControlName="Amount" class="custom-input-field sm text-end" /></td>
+                <td><input type="text" formControlName="LocalAmount" class="custom-input-field sm text-end" /></td>
+                <td><input type="text" formControlName="MatchingType" class="custom-input-field sm" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div> -->
 
-                        <tbody formArrayName="voucherMatching">
-                            <!-- Use *ngFor to iterate over the FormArray -->
-                            <tr *ngFor="let detail of detail.controls; let i = index" [formGroupName]="i">
-                                <td>
-                                    <input 
-                                        type="text"
-                                        formControlName="BranchName"
-                                        class="custom-input-field sm" 
-                                        style="min-width: 250px;" 
-                                    />
-                                </td>
+<!-- ==================== CREATE MODE ==================== -->
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
 
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="LedgerName"
-                                        class="custom-input-field sm"
-                                        style="min-width: 100px;" 
-                                    />
-                                </td>
+<div class="row compact-form">
+  <!-- Toolbar -->
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+      <div class="col-md-5 pb-0">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-invoice"></i>
+          </div>
+          <h5 class="page-title my-0 text-info">Voucher Matching</h5>
+          @if(isEditMode) {
+            <a class="text-info d-flex align-items-center cursor-pointer" (click)="showInfo()" title="Record Info">
+              <i class="fas fs-6 fa-info-circle"></i>
+            </a>
+          }
+        </div>
+      </div>
+      <div class="col-md-7 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateToBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onReset()" [disabled]="isSaving || isPosting || isPosted">
+            <i class="fas fa-undo me-1"></i> Reset
+          </button>
+          @if(isAutoPosting){
+          <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }" (click)="onSubmit(undefined)" [disabled]="
+              (!mps.can('update') && isEditMode) || isSaving || isPosting || isPosted
+            ">
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+            <span *ngIf="isDirty"
+              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+              title="You have unsaved changes">
+              <span class="visually-hidden">unsaved changes</span>
+            </span>
+          </button>
+          <button *ngIf="isEditMode" type="button" appPreventMultiClick
+            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled="true">
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosted ? "Posted" : "Post" }}
+          </button>
+          } @else {
+          <!-- Draft Save Button -->
+          <button type="button" appPreventMultiClick class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }" (click)="onSubmit()" [disabled]="
+             (!mps.can('update') && isEditMode) || isSaving || isPosting || isPosted
+            ">
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+            <span *ngIf="isDirty"
+              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+              title="You have unsaved changes">
+              <span class="visually-hidden">unsaved changes</span>
+            </span>
+          </button>
 
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="SubledgerName"
-                                        class="custom-input-field sm"
-                                        style="min-width: 100px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="VoucherNumber"
-                                        class="custom-input-field sm"
-                                        style="min-width: 200px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="VoucherType"
-                                        class="custom-input-field sm"
-                                        style="min-width: 75px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        ngbDatepicker 
-                                        #d5="ngbDatepicker"
-                                        type="text" 
-                                        formControlName="VoucherDate"
-                                        class="custom-input-field sm"
-                                        style="min-width: 170px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="DrCr"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="CurrencyCode"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="ExchangeRate"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="Amount"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="LocalAmount"
-                                        class="custom-input-field sm"
-                                        style="min-width: 30px;" 
-                                    />
-                                </td>
-
-                                <td>
-                                    <input 
-                                        type="text" 
-                                        formControlName="MatchingType"
-                                        class="custom-input-field sm"
-                                        style="min-width: 75px;" 
-                                    />
-                                </td>
-                            </tr>
-                            
-                            <!-- If no rows exist, show empty state -->
-                            <tr *ngIf="detail.length === 0">
-                                <td colspan="12" class="text-center py-3">
-                                    No voucher matching details available
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+          <!-- Final Save/Post Button -->
+          <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="postVoucher()" [disabled]="
+              voucherMatchingForm.invalid ||
+              (!mps.can('update') && isEditMode) ||
+              isDirty ||
+              isSaving ||
+              isPosting ||
+              isPosted
+            " [title]="
+              isDirty ? 'Please save the draft first before posting' : ''
+            ">
+            <i class="fas fa-check-circle me-1"></i>
+            {{ isPosting ? 'Posting...' : isPosted ? 'Posted' : 'Post' }}
+          </button>
+          }
+          <div *ngIf="isEditMode" ngbDropdown class="d-inline-block">
+            <div ngbDropdownMenu>
+              <button type="button" class="btn btn-light-secondary btn-sm" ngbDropdownToggle title="More Actions">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem (click)="openEDoc()">
+                <i class="fas fa-file-alt me-1"></i> Edoc
+              </button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem (click)="openTandC()">
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+              </button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem (click)="openAuthority()">
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+              </button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem (click)="openEmail()">
+                <i class="fas fa-envelope me-1"></i> Email
+              </button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem (click)="openFollowup()">
+                <i class="fas fa-paperclip me-1"></i> Followup
+              </button>
             </div>
-        </form>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Header Section -->
+  <div class="col-md-12 px-0">
+    <div class="card h-100 mb-0">
+      <div class="card-body pb-1">
+        <form [formGroup]="voucherMatchingForm" novalidate>
+          <!-- Row 1: Reference & Status fields -->
+          <div class="row g-2">
+            <div class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
+                <label class="input-label">Matching No.</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!vm['VoucherMatchingDate']?.getRawValue()">
+                <div class="input-group">
+                  <input class="form-control" formControlName="VoucherMatchingDate" placeholder="dd-mm-yyyy"
+                    ngbDatepicker #d1="ngbDatepicker"
+                    (click)="previousMatchingDate = vm['VoucherMatchingDate'].value; d1.toggle()"
+                    (dateSelect)="onMatchingDateChange()" />
+                  <button class="btn" type="button" (click)="d1.toggle()">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Matching Date</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!vm['PostDate']?.getRawValue()">
+                <div class="input-group">
+                  <input class="form-control" formControlName="PostDate" placeholder="dd-mm-yyyy" ngbDatepicker
+                    #d2="ngbDatepicker" readonly />
+                  <button class="btn" type="button" (click)="d2.toggle()">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Post Date</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" formControlName="PostStatus" class="custom-input-field sm"
+                  [class.text-success]="isPosted" [class.fw-semibold]="isPosted" />
+                <label class="input-label">Post Status</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!vm['LedgerName']?.getRawValue">
+                <ng-select formControlName="LedgerName" [items]="ledgerList" bindLabel="LedgerName" [clearable]="true"
+                placeholder="" (change)="onLedgerChange($event)" class="ng-select">
+              </ng-select>
+              <label class="input-label">Ledger <span class="text-danger">*</span></label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="d-flex">
+                <div class="custom-form-group custom-form-group-select w-100 filled">
+                <ng-select formControlName="SubledgerName" [items]="subledgerList" bindLabel="SubledgerName"
+                [clearable]="true" placeholder="" (change)="onSubledgerChange($event)" class="ng-select">
+              </ng-select>
+              <label class="input-label">Subledger <span class="text-danger">*</span></label>
+            </div>
+            <div class="pt-2">
+              <button type="button" class="btn btn-info btn-sm w-100 d-flex align-items-center"
+              (click)="onGet()" [disabled]="isPosted">
+              Get
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="Narration" class="custom-input-field sm" [readOnly]="isPosted" />
+          <label class="input-label">Narration <span class="text-danger">*</span></label>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="custom-form-group">
+          <input type="text" formControlName="Status" class="custom-input-field sm" />
+          <label class="input-label">Status</label>
+        </div>
+      </div>
+    </div>
+  </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matching Status Summary Card -->
+  <div class="col-12 px-0">
+    <div class="py-1 px-2 d-flex flex-wrap align-items-center gap-3 rounded-bottom shadow-sm" [ngClass]="{
+        'bg-light border border-info border-top-0': matchingScenario !== 'single-foreign' || !exchangeDifference,
+        'bg-warning-subtle border border-warning border-top-0': matchingScenario === 'single-foreign' && exchangeDifference
+      }" style="font-size: 12px;">
+      <span class="badge" [ngClass]="isMultiCurrency ? 'bg-primary' : 'bg-success'">
+        {{ isMultiCurrency ? 'Multi-Currency' : 'Single Currency' }}
+      </span>
+      <span class="fw-semibold">
+        Source: {{ isMultiCurrency ? (sourceTotalMatchLocalAmt | number:'1.2-2') + ' (Local)' :
+        (sourceTotalMatchCurrAmt |
+        number:'1.2-2') }}
+      </span>
+      <span class="fw-semibold">
+        Object: {{ isMultiCurrency ? (objectTotalMatchLocalAmt | number:'1.2-2') + ' (Local)' :
+        (objectTotalMatchCurrAmt |
+        number:'1.2-2') }}
+      </span>
+      <span *ngIf="matchingScenario === 'single-foreign' && exchangeDifference" class="fw-bold"
+        [ngClass]="exchangeDifference < 0 ? 'text-success' : 'text-danger'">
+        <i class="fas fa-exchange-alt me-1"></i>
+        Ex. JV: {{ (exchangeDifference > 0 ? exchangeDifference : -exchangeDifference) | number:'1.2-2' }}
+        ({{ exchangeDifference > 0 ? 'Loss' : 'Gain' }})
+      </span>
+    </div>
+  </div>
+
+  <!-- Source Panel (unposted only) -->
+  <div class="col-12 px-0" *ngIf="!isPosted && panelsVisible">
+    <div class="card mb-0" style="position: relative;">
+      <div class="card-body p-0 d-flex" style="overflow: hidden;"
+        [style.height]="sourceItems.length >= BATCH_SIZE ? 'calc((100vh - 150px) / 2)' : 'auto'">
+        <div class="text-light d-flex align-items-center justify-content-center fw-bold border-end"
+          style="width: 22px; min-width: 22px; max-width: 22px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 1px; font-size: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; background: linear-gradient(180deg, #e91e63 0%, #c2185b 100%);">
+          SOURCE
+        </div>
+
+        <div #sourceScrollContainer class="flex-grow-1" [class.h-100]="sourceItems.length >= BATCH_SIZE"
+          style="position: relative; min-width: 0; overflow-x: auto;"
+          [style.overflow-y]="sourceItems.length >= BATCH_SIZE ? 'auto' : 'visible'"
+          (scroll)="onPanelScroll('source')">
+          <form [formGroup]="voucherMatchingForm" novalidate>
+            <div style="position: sticky; top: 0; z-index: 10; background: white;">
+              <!-- Column Headers -->
+              <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <thead class="bg-info">
+                  <tr>
+                    <th class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Type</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 8%;">Date</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Curr.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Local</th>
+                    <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                    <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Local</th>
+                    <th class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 2%;">&#10003;</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="table-borderless">
+              <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <!-- <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
+                <tr>
+                  <th class="bg-transparent text-light text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 7%;">Date</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead> -->
+                <tbody formArrayName="sourceItems">
+                  <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
+                    <td style=" width: 15%;"><input type="text" formControlName="VoucherNumber"
+                        class="custom-input-field sm" /></td>
+                    <td style=" width: 4%;"><input type="text" formControlName="VoucherType"
+                        class="custom-input-field sm" /></td>
+                    <td style=" width: 8%;"><input type="text" [value]="(s.getRawValue().VoucherDate | formatDate)"
+                        class="custom-input-field sm" disabled /></td>
+                    <td style=" width: 3%;"><input type="text" formControlName="DrCr" class="custom-input-field sm" />
+                    </td>
+                    <td style=" width: 4%;"><input type="text" formControlName="CurrencyCode"
+                        class="custom-input-field sm" />
+                    </td>
+                    <td style=" width: 5%;">
+                      <input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="4"
+                        [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td width="9%">
+                      <input type="text" formControlName="OriginalCurrencyAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td width="9%">
+                      <input type="text" formControlName="OriginalLocalAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td width="9%">
+                      <input type="text" formControlName="OutstandingCurrencyAmount"
+                        class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td width="9%">
+                      <input type="text" formControlName="OutstandingLocalAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td class="table-warning" width="10%">
+                      <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
+                        [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']" DecimalPrecision
+                        [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)"
+                        (input)="onMatchAmountChange(sourceItems, i)" (blur)="onMatchAmountChange(sourceItems, i)" />
+                    </td>
+                    <td class="table-warning" width="10%">
+                      <input type="text" formControlName="MatchedLocalAmount" class="custom-input-field sm text-end"
+                        readonly [style.background-color]="'#f5f5f5'" [style.cursor]="'not-allowed'"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td class="text-center" width="2%">
+                      <input type="checkbox" class="form-check-input" [checked]="s.getRawValue().isTicked"
+                        [disabled]="s.get('isTicked')?.disabled"
+                        (change)="onTickMatch(sourceItems, i, $event)" />
+                    </td>
+                  </tr>
+                  <tr *ngIf="sourceItems.length === 0 && !isLoadingSource">
+                    <td colspan="13" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
+                      <i class="fas fa-inbox me-1"></i>No source vouchers found for this subledger.
+                    </td>
+                  </tr>
+                  <tr *ngIf="isLoadingSource">
+                    <td colspan="13" class="text-center text-muted py-1" style="font-size: 12px;">
+                      <i class="fas fa-spinner fa-spin me-1"></i>Loading...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div #sourceSentinel style="height: 1px;"></div>
+            <div *ngIf="hasMoreSourceData && !isLoadingSource" class="text-center py-1"
+              style="font-size: 11px; color: #aaa;">
+              <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="card-footer py-0 border-top-0" *ngIf="sourceItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
+          <tr class="fw-bold text-end" style="background-color: #fce4ec; color: #880e4f; ">
+            <td style="width: 39%;" class="text-end">Totals</td>
+            <td style="width: 9%; " class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}
+            </td>
+            <td style="width: 9%; " class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%; " class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2')
+              }}</td>
+            <td style="width: 9%; " class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
+            <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 1%;"></td>
+          </tr>
+          <!-- Exchange gain row in source footer (when gain: source local < object local) -->
+          <tr *ngIf="matchingScenario === 'single-foreign' && exchangeDifference < 0" class="fw-bold text-end"
+            style="background-color: #d1e7dd;">
+            <td style="width: 39%;" class="text-end text-success">Ex. Gain (JV)</td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 10%;"></td>
+            <td style="width: 10%;" class="text-end text-success">{{ (-exchangeDifference) | number:'1.2-2' }}</td>
+            <td style="width: 2%;"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Object Panel (unposted only) -->
+  <div class="col-12 px-0" *ngIf="!isPosted && panelsVisible">
+    <div class="card mb-0">
+      <div class="card-body p-0 d-flex" style="overflow: hidden;"
+        [style.height]="objectItems.length >= BATCH_SIZE ? 'calc((100vh - 150px) / 2)' : 'auto'">
+        <div class="text-light d-flex align-items-center justify-content-center fw-bold border-end"
+          style="width: 22px; min-width: 22px; max-width: 22px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 1px; font-size: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; background: linear-gradient(180deg, #e91e63 0%, #c2185b 100%);">
+          OBJECT
+        </div>
+        <div #objectScrollContainer class="flex-grow-1" [class.h-100]="hasMoreObjectData"
+          style="position: relative; min-width: 0; overflow-x: auto;"
+          [style.overflow-y]="objectItems.length >= BATCH_SIZE ? 'auto' : 'visible'"
+          (scroll)="onPanelScroll('object')">
+          <form [formGroup]="voucherMatchingForm" novalidate>
+            <div style="position: sticky; top: 0; z-index: 10; background: white;">
+              <!-- Column Headers -->
+              <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <thead class="bg-info">
+                  <tr>
+                    <th class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 15%;">Voucher No.</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Type</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 8%;">Date</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 3%;">Dr/Cr</th>
+                    <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Curr.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 5%;">Ex.Rate</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Local Amt.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Curr.</th>
+                    <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Local</th>
+                    <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Curr.</th>
+                    <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Local</th>
+                    <th class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 2%;">&#10003;</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="table-borderless">
+              <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <!-- <thead class="bg-info" style="position: sticky; top: 0; z-index: 4;">
+                <tr>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 15%;">Voucher No.</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Type</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 7%;">Date</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 3%;">Dr/Cr</th>
+                  <th class="bg-transparent text-light" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 4%;">Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 5%;">Ex.Rate</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">Curr. Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">Local Amt.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">OS Curr.</th>
+                  <th class="bg-transparent text-light text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 9%;">OS Local</th>
+                  <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Curr.</th>
+                  <th class="bg-warning text-dark text-end" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 10%;">Match Local</th>
+                  <th class="bg-warning text-dark text-center" style="position: sticky; top: 0; z-index: 4; font-size: 12px; width: 2%;">&#10003;</th>
+                </tr>
+              </thead> -->
+                <tbody formArrayName="objectItems">
+                  <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
+                    <td style="width: 15%;"><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                    <td style="width: 4%;"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
+                    <td style="width: 8%;"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"
+                        class="custom-input-field sm" disabled /></td>
+                    <td style="width: 3%;"><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
+                    <td style="width: 4%;"><input type="text" formControlName="CurrencyCode" class="custom-input-field sm" /></td>
+                    <td style="width: 5%;">
+                      <input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="4"
+                        [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td style="width: 9%;">
+                      <input type="text" formControlName="OriginalCurrencyAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td style="width: 9%;">
+                      <input type="text" formControlName="OriginalLocalAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td style="width: 9%;">
+                      <input type="text" formControlName="OutstandingCurrencyAmount"
+                        class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td style="width: 9%;">
+                      <input type="text" formControlName="OutstandingLocalAmount" class="custom-input-field sm text-end"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td class="table-warning" style="width: 10%;">
+                      <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
+                        [class.is-invalid]="o.get('MatchedCurrencyAmount')?.errors?.['limitExceeded']" DecimalPrecision
+                        [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)"
+                        (input)="onMatchAmountChange(objectItems, i)" (blur)="onMatchAmountChange(objectItems, i)" />
+                    </td>
+                    <td class="table-warning" style="width: 10%;">
+                      <input type="text" formControlName="MatchedLocalAmount" class="custom-input-field sm text-end"
+                        readonly [style.background-color]="'#f5f5f5'" [style.cursor]="'not-allowed'"
+                        DecimalPrecision [DecimalPrecisionBefore]="9"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
+                    </td>
+                    <td class="text-center" style="width: 2%;">
+                      <input type="checkbox" class="form-check-input" [checked]="o.getRawValue().isTicked"
+                        [disabled]="o.get('isTicked')?.disabled"
+                        (change)="onTickMatch(objectItems, i, $event)" />
+                    </td>
+                  </tr>
+                  <tr *ngIf="objectItems.length === 0 && !isLoadingObject">
+                    <td colspan="13" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
+                      <i class="fas fa-inbox me-1"></i>No object vouchers found for this subledger.
+                    </td>
+                  </tr>
+                  <tr *ngIf="isLoadingObject">
+                    <td colspan="13" class="text-center text-muted py-1" style="font-size: 12px;">
+                      <i class="fas fa-spinner fa-spin me-1"></i>Loading...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div #objectSentinel style="height: 1px;"></div>
+            <div *ngIf="hasMoreObjectData && !isLoadingObject" class="text-center py-1"
+              style="font-size: 11px; color: #aaa;">
+              <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="card-footer py-0 border-top-0" *ngIf="objectItems.length > 0">
+        <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
+          <tr class="fw-bold text-end" style="background-color: #e3f2fd; color: #0d47a1;">
+            <td style="width: 39%;" class="text-end">Totals</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalCurrAmt | number:'1.2-2') }}
+            </td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalOsCurrAmt | number:'1.2-2')
+              }}</td>
+            <td style="width: 9%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
+            <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
+            <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
+            <td style="width: 1%;"></td>
+          </tr>
+          <!-- Exchange loss row in object footer (when loss: source local > object local) -->
+          <tr *ngIf="matchingScenario === 'single-foreign' && exchangeDifference > 0" class="fw-bold text-end"
+            style="background-color: #f8d7da;">
+            <td style="width: 39%;" class="text-end text-danger">Ex. Loss (JV)</td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 9%;"></td>
+            <td style="width: 10%;"></td>
+            <td style="width: 10%;" class="text-end text-danger">{{ exchangeDifference | number:'1.2-2' }}</td>
+            <td style="width: 2%;"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posted Pair-by-Pair View -->
+  <div class="col-12 px-0" *ngIf="isPosted && panelsVisible">
+    <div class="card mb-0">
+      <div class="card-body p-0" style="max-height: calc(100vh - 260px); overflow-y: auto;">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="bg-info" style="position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th class="bg-transparent text-light fw-bold" style="width: 7%;">Match Type</th>
+              <th class="bg-transparent text-light fw-bold" style="width: 17%;">Voucher No.</th>
+              <th class="bg-transparent text-light fw-bold" style="width: 7%;">Type</th>
+              <th class="bg-transparent text-light fw-bold" style="width: 9%;">Date</th>
+              <th class="bg-transparent text-light fw-bold" style="width: 4%;">Dr/Cr</th>
+              <th class="bg-transparent text-light fw-bold" style="width: 5%;">Curr.</th>
+              <th class="bg-transparent text-light text-end fw-bold" style="width: 7%;">Ex.Rate</th>
+              <th class="bg-transparent text-light text-end fw-bold" style="width: 10%;">Orig. Curr.</th>
+              <th class="bg-transparent text-light text-end fw-bold" style="width: 10%;">Orig. Local</th>
+              <th class="bg-warning text-dark text-end fw-bold" style="width: 10%;">Match Curr.</th>
+              <th class="bg-warning text-dark text-end fw-bold" style="width: 10%;">Match Local</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let pair of matchedPairs; let pi = index">
+              <!-- Source row -->
+              <tr *ngIf="pair.source" [style.border-top]="pi > 0 ? '3px solid #adb5bd' : ''"
+                style="background-color: #fff3f5;">
+                <td class="fw-semibold" [style.border-left]="'4px solid ' + pair.color">Source</td>
+                <td class="fw-semibold">{{ pair.source.VoucherNumber }}</td>
+                <td>{{ pair.source.VoucherType }}</td>
+                <td>{{ pair.source.VoucherDate | formatDate }}</td>
+                <td>{{ pair.source.DrCr }}</td>
+                <td>{{ pair.source.CurrencyCode }}</td>
+                <td class="text-end">{{ pair.source.ExchangeRate }}</td>
+                <td class="text-end">{{ pair.source.OriginalCurrencyAmount }}</td>
+                <td class="text-end">{{ pair.source.OriginalLocalAmount }}</td>
+                <td class="text-end fw-semibold table-warning">{{ pair.source.MatchedCurrencyAmount }}</td>
+                <td class="text-end fw-semibold table-warning">{{ pair.source.MatchedLocalAmount }}</td>
+              </tr>
+              <!-- Object row -->
+              <tr *ngIf="pair.object" style="background-color: #e3f2fd;">
+                <td class="fw-semibold" [style.border-left]="'4px solid ' + pair.color">Object</td>
+                <td class="fw-semibold">{{ pair.object.VoucherNumber }}</td>
+                <td>{{ pair.object.VoucherType }}</td>
+                <td>{{ pair.object.VoucherDate | formatDate }}</td>
+                <td>{{ pair.object.DrCr }}</td>
+                <td>{{ pair.object.CurrencyCode }}</td>
+                <td class="text-end">{{ pair.object.ExchangeRate }}</td>
+                <td class="text-end">{{ pair.object.OriginalCurrencyAmount }}</td>
+                <td class="text-end">{{ pair.object.OriginalLocalAmount }}</td>
+                <td class="text-end fw-semibold table-warning">{{ pair.object.MatchedCurrencyAmount }}</td>
+                <td class="text-end fw-semibold table-warning">{{ pair.object.MatchedLocalAmount }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer py-2 px-3 border-top" style="background: #f3e5f5;">
+        <div class="d-flex justify-content-end align-items-center gap-4 flex-wrap">
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted">Src Currency:</span>
+            <span class="fw-bold">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</span>
+          </div>
+          <span class="vr" style="height: 20px;"></span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted">Obj Currency:</span>
+            <span class="fw-bold">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</span>
+          </div>
+          <span class="vr" style="height: 20px;"></span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted">Src Local:</span>
+            <span class="fw-bold">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</span>
+          </div>
+          <span class="vr" style="height: 20px;"></span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted">Obj Local:</span>
+            <span class="fw-bold">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</span>
+          </div>
+          <span class="vr" style="height: 20px;"></span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted">Local Total:</span>
+            <span class="fw-bold">{{ (sourceTotalMatchLocalAmt + objectTotalMatchLocalAmt) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="col-12 px-0" *ngIf="!panelsVisible">
+    <div class="card">
+      <div class="card-body text-center py-4 text-muted">
+        <i class="fas fa-search fa-2x mb-2"></i>
+        <p class="mb-0">Select a Ledger and Subledger, then click Get to load outstanding vouchers for matching.</p>
+      </div>
+    </div>
+  </div>
 </div>

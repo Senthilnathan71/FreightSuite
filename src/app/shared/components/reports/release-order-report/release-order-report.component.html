@@ -15,7 +15,7 @@
     <div class="row">
       <div class="col-6">
         <p><strong>Release Order No:</strong> {{ company.name }}/DO/{{ masterJob.jobNumber }}</p>
-        <p><strong>Date:</strong> {{ todayDate | formatDate:'dd-MMM-yyyy' }}</p>
+        <p><strong>Date:</strong> {{ todayDate | formatDate }}</p>
       </div>
       <div class="col-6 text-end">
         <p><strong>Job No:</strong> {{ masterJob.jobNumber }}</p>
@@ -55,7 +55,7 @@
           </p>
           <p class="info-item">
             <span class="label">ETA:</span>
-            <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.eta | formatDate }}</span>
           </p>
         </div>
       </div>

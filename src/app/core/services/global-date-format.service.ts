@@ -1,3 +1,4 @@
+// global-date-format.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CompanyConfigService } from '../../modules/master/company/services/company-config.service';
@@ -51,49 +52,80 @@ export class GlobalDateFormatService {
     });
   }
 
-  formatDate(date: Date | string | null, customFormat?: string): string {
-    if (!date) return '';
+/**
+ * Formats a date or datetime value.
+ * The date portion uses the global application format.
+ * Time (with 12-hour + AM/PM) is appended only when requested.
+ */
+formatDate(
+  dateInput: Date | string | number | null | undefined,
+  options: {
+    includeTime?: boolean;
+    includeSeconds?: boolean;
+    use24Hour?: boolean;           // optional: force 24-hour instead of 12-hour + tt
+    customFormat?: string;         // optional: fully override (rare use)
+  } = {}
+): string {
+  if (!dateInput) return '';
 
-    const dateObj = new Date(date);
-    if (isNaN(dateObj.getTime())) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
 
-    const format = customFormat || this.getCurrentDateFormat();
+  // ─────────────────────────────────────────────
+  // 1. Get base date format from global config
+  // ─────────────────────────────────────────────
+  let dateFormat = options.customFormat || this.getCurrentDateFormat();
 
-    const day = this.padZero(dateObj.getDate());
-    const month = this.padZero(dateObj.getMonth() + 1);
-    const year = dateObj.getFullYear();
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                           'July', 'August', 'September', 'October', 'November', 'December'];
+  // ─────────────────────────────────────────────
+  // 2. Format date part using global format
+  // ─────────────────────────────────────────────
+  const pad = (n: number) => n.toString().padStart(2, '0');
 
-    switch (format) {
-      case 'DD/MM/YYYY':
-        return `${day}/${month}/${year}`;
-      case 'MM/DD/YYYY':
-        return `${month}/${day}/${year}`;
-      case 'YYYY-MM-DD':
-        return `${year}-${month}-${day}`;
-      case 'DD-MM-YYYY':
-        return `${day}-${month}-${year}`;
-      case 'MM-DD-YYYY':
-        return `${month}-${day}-${year}`;
-      case 'DD.MM.YYYY':
-        return `${day}.${month}.${year}`;
-      case 'MM.DD.YYYY':
-        return `${month}.${day}.${year}`;
-      case 'DD MMM YYYY':
-        return `${day} ${monthNames[dateObj.getMonth()]} ${year}`;
-      case 'DD-MMM-YYYY':
-        return `${day}-${monthNames[dateObj.getMonth()]}-${year}`;
-      case 'MMM DD, YYYY':
-        return `${monthNames[dateObj.getMonth()]} ${day}, ${year}`;
-      case 'MMMM DD, YYYY':
-        return `${fullMonthNames[dateObj.getMonth()]} ${day}, ${year}`;
-      default:
-        return `${day}/${month}/${year}`;
-    }
+  const replacements: Record<string, string> = {
+    DD: pad(date.getDate()),
+    MM: pad(date.getMonth() + 1),
+    YYYY: date.getFullYear().toString(),
+    YY: date.getFullYear().toString().slice(-2),
+    MMM: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][date.getMonth()],
+    MMMM: [
+      'January','February','March','April','May','June',
+      'July','August','September','October','November','December'
+    ][date.getMonth()],
+  };
+
+  let datePart = dateFormat;
+  for (const [token, value] of Object.entries(replacements)) {
+    datePart = datePart.replace(new RegExp(`\\b${token}\\b`, 'g'), value);
   }
+
+  // ─────────────────────────────────────────────
+  // 3. Add time if requested
+  // ─────────────────────────────────────────────
+  if (options.includeTime) {
+    let timeFormat = options.use24Hour ? 'HH:mm' : 'hh:mm tt';
+
+    if (options.includeSeconds) {
+      timeFormat += ':ss';
+    }
+
+    const hours24 = date.getHours();
+    const hours12 = hours24 % 12 || 12;
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+    const meridian = hours24 >= 12 ? 'PM' : 'AM';
+
+    const timePart = timeFormat
+      .replace('HH', pad(hours24))
+      .replace('hh', pad(hours12))
+      .replace('mm', minutes)
+      .replace('ss', seconds)
+      .replace('tt', meridian);
+
+    return `${datePart} ${timePart}`;
+  }
+
+  return datePart;
+}
 
   private padZero(value: number): string {
     return value < 10 ? `0${value}` : `${value}`;

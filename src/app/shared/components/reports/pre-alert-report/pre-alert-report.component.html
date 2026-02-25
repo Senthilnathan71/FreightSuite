@@ -32,7 +32,7 @@
           </p>
           <p class="info-item">
             <span class="label">Job Date:</span>
-            <span class="value">{{ masterJob.jobDate | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value">{{ masterJob.jobDate | formatDate }}</span>
           </p>
           <p class="info-item">
             <span class="label">Customer:</span>
@@ -80,11 +80,11 @@
         <div class="info-group">
           <p class="info-item">
             <span class="label">ETD:</span>
-            <span class="value text-primary fw-bold">{{ masterJob.etd | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value text-primary fw-bold">{{ masterJob.etd | formatDate }}</span>
           </p>
           <p class="info-item">
             <span class="label">ETA:</span>
-            <span class="value text-success fw-bold">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+            <span class="value text-success fw-bold">{{ masterJob.eta | formatDate }}</span>
           </p>
         </div>
       </div>

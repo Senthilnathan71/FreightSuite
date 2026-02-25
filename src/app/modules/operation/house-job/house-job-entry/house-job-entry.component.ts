@@ -4206,13 +4206,17 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.chargeList = this.chargeList || [];
     modalRef.componentInstance.selectedReportAir = type;
-    modalRef.componentInstance.hblCountUpdated.subscribe(() => {
-      const prev = toNumber(this.houseJobForm.get('HBLCount')?.value);
-      this.houseJobForm.patchValue({
-        HBLCount: prev + 1
-      });
-      this.housejobData.HBLCount = prev + 1;
-    });
+     modalRef.result.then((result) => {
+           if (result === 'UPDATED') {
+             const prev = Number(this.houseJobForm.get('HBLCount')?.value);
+
+             this.houseJobForm.patchValue({
+               HBLCount: prev + 1,
+             });
+
+             this.housejobData.HBLCount = prev + 1; 
+           }
+         });
   }
 
 // Helper Funstion 
