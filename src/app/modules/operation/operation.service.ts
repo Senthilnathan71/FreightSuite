@@ -1701,6 +1701,16 @@ createReverseVoucher(payload: any) {
       })
     );
   }
+
+  searchVoucher(payload: any) {
+    return this.http.post<{ data: any }>('voucher-correction/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   postVoucherSid(payload: any) {
     return this.http.post<{ data: any }>('reverse-voucher/post', payload).pipe(
       map((resp: any) => {

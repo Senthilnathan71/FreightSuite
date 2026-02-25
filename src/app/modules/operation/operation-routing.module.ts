@@ -39,6 +39,8 @@ import { HouseJobListComponent } from './house-job/house-job-list/house-job-list
 import { HawbBillListComponent } from './house-job/hawb-bill-list/hawb-bill-list.component';
 import { JobCloseListComponent } from './job-close/job-close-list/job-close-list.component';
 import { JobCloseComponent } from './job-close/job-close.component';
+import { VoucherCorrectionListComponent } from './voucher-correction/voucher-correction-list/voucher-correction-list.component';
+import { title } from 'process';
 
 
 export const OperationRoutes: Routes = [
@@ -484,7 +486,18 @@ export const OperationRoutes: Routes = [
           title: 'Document Reference',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Document Reference' }],
         },
-      }
+      },
+      {
+        path: "voucher-correction/list",
+        component: VoucherCorrectionListComponent,
+        data: {
+          title: "Voucher-Correction",
+          urls: [
+            { title: 'Operation', url: '/operation'},
+            { title: 'Voucher-Correction'},
+          ],
+        },
+      },
     ],
   },
 
