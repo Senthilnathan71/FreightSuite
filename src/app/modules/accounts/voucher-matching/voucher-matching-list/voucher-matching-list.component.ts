@@ -325,7 +325,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   viewVoucherMatching(row: any) {
-    this.router.navigate(['accounts/voucher-matching/view/', row.VoucherMatchingHeaderSid]);
+    this.router.navigate(['accounts/voucher-matching/entry/', row.VoucherMatchingHeaderSid]);
   }
 
 

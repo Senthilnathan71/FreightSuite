@@ -260,7 +260,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       },
        {
         key: 'CurrencyCode',
-        label: 'Curr Code ',
+        label: 'Currency ',
         sortable: true,
         filterable: true,
         visible: true,
