@@ -2,7 +2,6 @@ import { CreditBankDetail, CreditChargeData, CreditNotePdfData } from "../interf
 import { PdfTermItem } from '../interfaces/pdf-base.interface';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
-import { buildTitle,buildSectionTitle,buildDivider,} from '../builders/pdf-section.builder';
 import { buildTitle, buildSectionTitle, buildDivider, } from '../builders/pdf-section.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
