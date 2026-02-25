@@ -698,7 +698,7 @@ private setupMBLDateListener(): void {
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-      ShipmentNo: ['',[Validators.required]]
+      ShipmentNo: [null]
     })
     this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
@@ -766,41 +766,34 @@ private setupCargoCalculationSubscriptions(): void {
   }
 
  private calculateChargeableWeight(): void {
-  
   // Skip if patching or manual override
   if (this.isPatching || this.chargeableWeightManualOverride) {
     return;
   }
-  
-  console.log('✅ Calculating chargeable weight');
-  const volumetric = Number(this.c['Volumetric']?.value) || 0;
-  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
-  
-  let chargeableWeight = 0;
-  
-  if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
-    if (volumetric > grossWeight) {
-      chargeableWeight = volumetric;
-    } else {
-      chargeableWeight = grossWeight;
-    }
-  } else {
-    const volume = Number(this.c['Volume']?.value) || 0;
-    if (volume > grossWeight) {
-      chargeableWeight = volume;
-    } else {
-      chargeableWeight = grossWeight;
-    }
-  }
-  
-  if (chargeableWeight > 0) {
-    this.c['ChargeableWeight']?.setValue(
-      Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
-      { emitEvent: false }
-    );
-  }
-}
 
+  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
+  const volume = Number(this.c['Volume']?.value) || 0;
+  const volumetric = Number(this.c['Volumetric']?.value) || 0;
+
+  let chargeableWeight = 0;
+
+  if (this.selectedFCLLCL === 'AIR') {
+    // AIR: max(actual gross kg, volumetric kg)
+    chargeableWeight = Math.max(grossWeight, volumetric);
+  } else if (this.selectedFCLLCL === 'LCL') {
+    // LCL W/M: max(CBM, gross weight in metric tons)
+    const grossWeightInTon = grossWeight / 1000;
+    chargeableWeight = Math.max(volume, grossWeightInTon);
+  } else {
+    // Existing behavior for non-AIR/LCL segments
+    chargeableWeight = Math.max(volume, grossWeight);
+  }
+
+  this.c['ChargeableWeight']?.setValue(
+    Number(chargeableWeight.toFixed(this.decimalAfterPrecision)),
+    { emitEvent: false }
+  );
+}
 toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
   const value = this.b[flagCtrl]?.value;
@@ -947,6 +940,12 @@ shouldCalculateVolume(): boolean {
       MarksAndNumbers : [''],
       DeliveredQty: [null],
       DeliveryDate: [null]
+    });
+    this.productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.productForm);
+    });
+    this.productForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.productForm);
     });
       this.productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onContainerSelectionChange(containerSid);
@@ -1186,6 +1185,12 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
       DeliveredQty: [data?.DeliveredQty || null]
 
+    });
+    productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
+    });
+    productForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
     });
      productForm.get('MasterJobContainerSid')?.valueChanges.subscribe((containerSid) => {
     this.onFormArrayContainerChange(containerSid, productForm);
@@ -1943,9 +1948,10 @@ private loadMasterJobDetails(masterJobSid: number): void {
   onProductSubmit() {
     const grossWeight = this.productForm.get('GrossWeight')?.value;
   const netWeight = this.productForm.get('NetWeight')?.value;
+  this.setOrResetWeightError(this.productForm);
   
   if (grossWeight && netWeight && parseFloat(grossWeight) < parseFloat(netWeight)) {
-    this.appSettingService.showWarning('Gross Weight cannot be less than Net Weight');
+    this.appSettingService.showWarning('Net Weight cannot be greater than Gross Weight');
     return;
   }
 
@@ -2057,6 +2063,9 @@ onCurrencyChange(event: any) {
   }
   // In onSubmit() - Added this check:
 if (this.bookingProducts.length > 0) {
+  this.bookingProducts.controls.forEach(control => {
+    this.setOrResetWeightError(control as FormGroup);
+  });
   const hasInvalidProduct = this.bookingProducts.controls.some(control => control.invalid);
   
   if (hasInvalidProduct) {
@@ -2200,7 +2209,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
     NominatedBy: houseJobFormValue.NominatedBy || 'Self',
     FreightTerms: houseJobFormValue.FreightTerms || '',
     JobType: houseJobFormValue.JobType || '',
-    ShipmentNo: houseJobFormValue.ShipmentNo || '',
+    ShipmentNo: houseJobFormValue.ShipmentNo || null,
     
     houseJobCargo: {
       HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
@@ -4951,20 +4960,27 @@ volumeAmount(): number {
 
   setOrResetWeightError(formGroup: FormGroup) {
     const grossCtrl = formGroup.get('GrossWeight');
+    const netCtrl = formGroup.get('NetWeight');
     const grossValue = formGroup.get('GrossWeight')?.value;
     const netValue = formGroup.get('NetWeight')?.value;
 
-    if (!grossValue || !netValue) {
-      grossCtrl.setErrors(null);
+    if (!grossCtrl || !netCtrl) {
       return;
     }
-    if (grossCtrl) {
-      if (Number(grossValue) <= Number(netValue)) {
-        grossCtrl.setErrors({ grossNotGreater: true });
-      } else {
-        grossCtrl.setErrors(null);
-      }
+
+    const grossErrors = { ...(grossCtrl.errors || {}) };
+    const netErrors = { ...(netCtrl.errors || {}) };
+
+    delete grossErrors['grossLessThanNet'];
+    delete netErrors['netGreaterThanGross'];
+
+    if (grossValue && netValue && Number(grossValue) < Number(netValue)) {
+      grossErrors['grossLessThanNet'] = true;
+      netErrors['netGreaterThanGross'] = true;
     }
+
+    grossCtrl.setErrors(Object.keys(grossErrors).length ? grossErrors : null);
+    netCtrl.setErrors(Object.keys(netErrors).length ? netErrors : null);
   }
  toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();

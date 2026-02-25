@@ -252,7 +252,7 @@
       <div class="custom-form-group">
         <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="ShipmentNo">
-        <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger">*</span></label>
+        <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger"></span></label>
       </div>
     </div>
 
@@ -436,18 +436,21 @@
     [class.filled]="!!houseJobForm.get('ShipperName')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
-      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
-        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-        [displayLabels]="customerLookupConfig.displayLabels"
-        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-        bindValue="CustomerName"
-        (itemSelected)="setAddress('ShipperAddress',$event); onShipperChange($event)"
-        style="width : 85%;">
-      </dofi-searchable-dropdown>
+      <div style="flex:1; min-width:0; overflow:hidden;">
+        
+        <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
+          placeholder="" [displayFields]="customerLookupConfig.displayFields"
+          [displayLabels]="customerLookupConfig.displayLabels"
+          [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+          bindValue="CustomerName"
+          (itemSelected)="setAddress('ShipperAddress',$event); onShipperChange($event)"
+          style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+        </dofi-searchable-dropdown>
+      </div>
 
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+      <button class="btn bi bi-calendar3 ps-0" type="button"
+        (click)="toggleInputType('ShipperName','isShipperFreeText',$event)"  style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
@@ -494,18 +497,19 @@
     [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
+      <div style="flex:1; min-width:0; overflow:hidden;">
       <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName"
         placeholder="" [displayFields]="customerLookupConfig.displayFields"
         [displayLabels]="customerLookupConfig.displayLabels"
         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
         bindValue="CustomerName"
         (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
-        style="width : 100%;">
+         style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
-
+      </div>
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+      <button class="btn bi bi-calendar3 ps-0" type="button"
+        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)" style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
@@ -552,6 +556,7 @@
     [class.filled]="!!houseJobForm.get('Notify')?.value">
     <!-- Dropdown mode -->
     <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
+      <div style="flex:1; min-width:0; overflow:hidden;">
       <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify" placeholder=""
         [displayFields]="customerLookupConfig.displayFields"
         [displayLabels]="customerLookupConfig.displayLabels"
@@ -559,12 +564,12 @@
         bindValue="CustomerName"
        (itemSelected)="setAddress('NotifyAddress', $event); notifyManuallyChanged = true" 
        (clear)="notifyManuallyChanged = false"  
-        style="width : 100%;">
+         style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
-      
+      </div>
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3" type="button"
-         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true">
+      <button class="btn bi bi-calendar3 ps-0" type="button"
+         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true" style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
@@ -640,7 +645,7 @@
       </dofi-searchable-dropdown>
 
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 pe-0" type="button"
+      <button class="btn bi bi-calendar3 px-0" type="button"
         (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
@@ -946,6 +951,7 @@
                         }@else {
                         <!-- Dropdown Mode -->
                         <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                          <div style="flex:1; min-width:0; overflow:hidden;">
                           <dofi-searchable-dropdown
                             [items]="headerVesselList"
                             formControlName="VesselName"
@@ -955,11 +961,11 @@
                             [labelFields]="vesselVoyageConfig.labelFields"
                             bindValue="VesselName"
                             (itemSelected)="onVesselChange($event)"
-                            style="width: 85%">
+                           style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                           </dofi-searchable-dropdown>
-
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
-                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                          </div>
+                          <button class="btn bi bi-calendar3 px-0" type="button"
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
                             <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
                           </button>
                         </div>
@@ -1376,6 +1382,8 @@
                 <span>Gross Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                } @else if (cargoForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+                <span>Gross Weight cannot be less than Net Weight</span>
                 }
                 @else if (cargoForm.get('GrossWeight')?.errors?.['required']) {
                 <span>Required</span>
@@ -1401,6 +1409,8 @@
                 <span>Net Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+                <span>Net Weight cannot be greater than Gross Weight</span>
                 }
               </div>
               }
@@ -2952,6 +2962,8 @@
       <span>Gross Weight cannot exceed 9,999,999.999</span>
       } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
       <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      } @else if (productForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+      <span>Gross Weight cannot be less than Net Weight</span>
       }
     </div>
     }
@@ -2971,6 +2983,8 @@
       <span>Net Wt cannot exceed 9,999,999.999</span>
       } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
       <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+      } @else if (productForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+      <span>Net Weight cannot be greater than Gross Weight</span>
       }
     </div>
     }

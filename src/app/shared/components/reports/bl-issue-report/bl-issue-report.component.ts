@@ -85,10 +85,10 @@ export class BlIssueReportComponent {
       companyName: this.currentCompany?.companyName || 'Company',
       reportTitle: `${this.params?.BLIssue ? 'BL Issue List' : 'BL Not Issue List'}`,
       additionalInfo: [
+        { label: 'HBL From Date', value: this.formatDate(this.params?.FromHblDt) },
+        { label: 'HBL To Date', value: this.formatDate(this.params?.ToHblDt) },
         { label: 'Branch', value: this.fullData?.branchInvolved || '' },
         { label: 'Dept', value: this.fullData?.departmentNames || '' },
-        { label: 'From Date', value: this.formatDate(this.params?.FromHblDt) },
-        { label: 'To Date', value: this.formatDate(this.params?.ToHblDt) }
       ]
     },
     tableHeaders,

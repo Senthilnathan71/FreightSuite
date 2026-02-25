@@ -33,6 +33,7 @@ const COMPACT_TABLE_LAYOUT = {
 export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
   const isLandscape = orientation === 'landscape';
+  const logoHeight = 80;
   const colCount = exportConfig.tableHeaders.length;
 
   // --- A) Fix column widths: scale proportionally, accounting for border+padding overhead ---
@@ -126,7 +127,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     if (logo)
       stack.push({
         image: logo,
-        width: 120,
+        height: logoHeight,
         alignment: 'center',
         margin: [0, 0, 0, 4],
       });
@@ -166,6 +167,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   }
   const headerFunction = (_currentPage: number, _pageCount: number, _pageSize: any) => {
     const stack: any[] = [];
+    const printableWidth = (_pageSize?.width || pageWidth) - 60; // page width - left/right margins
+    const sideColumnWidth = isLandscape
+      ? 170
+      : Math.min(120, Math.max(90, Math.floor(printableWidth * 0.22)));
 
     // Build company info stack (center column)
     const companyStack: any[] = [];
@@ -218,14 +223,16 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }
 
     // Header with logo | company info | spacer
-    const logoWidth = 300;
     stack.push({
       columns: [
         logo
-          ? { image: logo, fit: [150, 85], width: logoWidth }
-          : { text: '', width: logoWidth },
+          ? {
+              width: sideColumnWidth,
+              stack: [{ image: logo, height: logoHeight, alignment: 'left' }]
+            }
+          : { text: '', width: sideColumnWidth },
         { stack: companyStack, width: '*' },
-        { text: '', width: logoWidth } // spacer for balance
+        { text: '', width: sideColumnWidth } // spacer for balance
       ],
       margin: [0, 2, 0, 2]
     });
@@ -378,11 +385,8 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         lineColor: '#000000'
       }]
     }),
-      header: (_currentPage: number, _pageCount: number, _pageSize: any) => {
-      return isLandscape
-        ? headerFunction(_currentPage, _pageCount, _pageSize)
-        : portraitHeader(data); 
-    },
+    header: (_currentPage: number, _pageCount: number, _pageSize: any) =>
+      headerFunction(_currentPage, _pageCount, _pageSize),
     content,
     footer: createFooterFunction(userData, {showPageNumbers: true}),
     styles: getPdfStyles(),

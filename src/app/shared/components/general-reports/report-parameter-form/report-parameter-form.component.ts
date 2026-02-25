@@ -12,6 +12,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 export interface ReportParameter {
   ReportMasterDetailSid: number;
@@ -32,6 +33,7 @@ export interface ReportParameter {
     CommonModule, 
     ReactiveFormsModule, 
     NgSelectModule,
+    SearchableDropdown,
     MultiSelectComponent, 
     NgbDatepickerModule,
     FeatherModule
@@ -71,6 +73,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     TEXTAREA: 'TEXTAREA',
     DROPDOWN: 'DROPDOWN',
     DROPDOWN_M: 'DROPDOWN M',
+    DROPDOWN_D: 'DROPDOWN D',
     CHECKBOX: 'CHECKBOX',
     RADIO: 'RADIO',
     FILE: 'FILE',
@@ -130,7 +133,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
       ];
 
       if (param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN ||
-          param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M) {
+          param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M ||
+          param.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_D) {
 
         // Check if this is a dependent dropdown
         if (param.DependsOnParameter) {
@@ -442,6 +446,80 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     return this.dropdownData.get(paramName) || [];
   }
 
+  private getDropdownSample(paramName: string): any {
+    const options = this.getDropdownOptions(paramName);
+    return options.length ? options[0] : {};
+  }
+
+  private getDropdownKeys(paramName: string): string[] {
+    const sample = this.getDropdownSample(paramName);
+    return Object.keys(sample || {});
+  }
+
+  private findFieldByPattern(keys: string[], pattern: RegExp): string | null {
+    return keys.find(k => pattern.test(k)) || null;
+  }
+
+  private toTitleCaseFromKey(key: string): string {
+    return key
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_\-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/^./, s => s.toUpperCase())
+      .trim();
+  }
+
+  getDropdownBindValue(paramName: string): string {
+    const keys = this.getDropdownKeys(paramName);
+    if (!keys.length) return 'value';
+
+    return this.findFieldByPattern(keys, /^value$/i)
+      || this.findFieldByPattern(keys, /(sid|id)$/i)
+      || this.findFieldByPattern(keys, /code/i)
+      || keys[0];
+  }
+
+  getDropdownBindLabel(paramName: string): string {
+    const keys = this.getDropdownKeys(paramName);
+    if (!keys.length) return 'label';
+
+    return this.findFieldByPattern(keys, /^label$/i)
+      || this.findFieldByPattern(keys, /name/i)
+      || this.findFieldByPattern(keys, /code/i)
+      || keys[0];
+  }
+
+  getDropdownDisplayFields(paramName: string): string[] {
+    const keys = this.getDropdownKeys(paramName);
+    if (!keys.length) return ['value', 'label'];
+
+    const codeKey = this.findFieldByPattern(keys, /code/i);
+    const nameKey = this.findFieldByPattern(keys, /(name|label)/i);
+
+    if (codeKey && nameKey && codeKey !== nameKey) {
+      return [codeKey, nameKey];
+    }
+
+    if (keys.length >= 2) {
+      return [keys[0], keys[1]];
+    }
+
+    return [keys[0]];
+  }
+
+  getDropdownDisplayLabels(paramName: string): string[] {
+    const fields = this.getDropdownDisplayFields(paramName);
+    return fields.map(field => {
+      if (/code/i.test(field)) return 'Code';
+      if (/(name|label)/i.test(field)) return 'Name';
+      return this.toTitleCaseFromKey(field);
+    });
+  }
+
+  getDropdownLabelFields(paramName: string): string[] {
+    return this.getDropdownDisplayFields(paramName);
+  }
+
   isFieldRequired(paramName: string): boolean {
     const control = this.parameterForm.get(paramName);
     return control?.hasValidator(Validators.required) || false;
@@ -449,6 +527,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
   onSubmit(): void {
     if (this.parameterForm.valid) {
+      if (!this.validateFromToDatePairs()) {
+        return;
+      }
+
       const formValue = this.parameterForm.value;
 
       // Format dates to ISO string if they're date objects
@@ -466,6 +548,56 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
         this.parameterForm.get(key)?.markAsTouched();
       });
     }
+  }
+
+  private validateFromToDatePairs(): boolean {
+    const dateParamNames = new Set(
+      this.parameters
+        .filter(p => p.ParameterFieldType === this.FIELD_TYPES.DATE)
+        .map(p => p.ParameterName)
+    );
+
+    for (const fromName of dateParamNames) {
+      if (!/^From/i.test(fromName)) continue;
+
+      const suffix = fromName.replace(/^From/i, '');
+      const toName = `To${suffix}`;
+      if (!dateParamNames.has(toName)) continue;
+
+      const fromControl = this.parameterForm.get(fromName);
+      const toControl = this.parameterForm.get(toName);
+      const fromDate = this.toComparableDate(fromControl?.value);
+      const toDate = this.toComparableDate(toControl?.value);
+
+      if (!fromDate || !toDate) continue;
+
+      if (fromDate.getTime() > toDate.getTime()) {
+        fromControl?.markAsTouched();
+        toControl?.markAsTouched();
+        this.appSettingsService.showWarning(
+          `${this.getParameterLabel(fromName)} cannot be after ${this.getParameterLabel(toName)}`
+        );
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private toComparableDate(value: any): Date | null {
+    if (!value) return null;
+
+    if (
+      typeof value === 'object' &&
+      value.year != null &&
+      value.month != null &&
+      value.day != null
+    ) {
+      return new Date(value.year, value.month - 1, value.day);
+    }
+
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? null : parsed;
   }
 
   resetForm(): void {

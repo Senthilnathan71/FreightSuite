@@ -15,6 +15,7 @@
             [class.custom-form-group-select]="
               param.ParameterFieldType === 'DROPDOWN' || 
               param.ParameterFieldType === 'DROPDOWN M' ||
+              param.ParameterFieldType === 'DROPDOWN D' ||
               param.ParameterFieldType === 'NUMBER'
             "
             [class.custom-form-group-select-date]="
@@ -189,6 +190,22 @@
             [clearable]="!isFieldRequired(param.ParameterName)"
             [class.is-invalid]="hasError(param.ParameterName)"
           ></ng-select>
+
+          <!-- SearchDropdown -->
+          <dofi-searchable-dropdown
+            *ngIf="param.ParameterFieldType === 'DROPDOWN D'"
+            [items]="getDropdownOptions(param.ParameterName)"
+            [formControlName]="param.ParameterName"
+            [displayFields]="getDropdownDisplayFields(param.ParameterName)"
+            [displayLabels]="getDropdownDisplayLabels(param.ParameterName)"
+            [labelFields]="getDropdownLabelFields(param.ParameterName)"
+            [bindLabel]="getDropdownBindLabel(param.ParameterName)"
+            [bindValue]="getDropdownBindValue(param.ParameterName)"
+            [isLoading]="isDropdownLoading(param.ParameterName)"
+            [readonly]="isDropdownDisabled(param.ParameterName)"
+            [clearable]="!isFieldRequired(param.ParameterName)"
+          >
+          </dofi-searchable-dropdown>
 
           <!-- LABEL -->
           <label [for]="param.ParameterName" class="input-label" *ngIf="param.ParameterFieldType !== 'CHECKBOX' && param.ParameterFieldType !== 'RADIO'">
