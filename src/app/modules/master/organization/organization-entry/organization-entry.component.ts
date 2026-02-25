@@ -159,6 +159,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
 isLoadingCities = false;
   selectedTab = 'Party';
   MenuMasterSid: any;
+  isLogLoading: boolean = false;
   tabs = [
     { name: 'Party', icon: 'fas fa-user-tie' },
     { name: 'Branch', icon: 'fas fa-boxes' },
@@ -2054,6 +2055,11 @@ loadCustomerData(customerId: number) {
         AirlineCode: customerData.AirlineCode || '',
         PanName: customerData.PanName || ''
       });
+       if (this.isEditMode) {
+        this.customerForm.get('CountryMasterSid')?.disable();
+        this.customerForm.get('CurrencyMasterSid')?.disable();
+        this.customerForm.get('CustomerName')?.disable();
+      }
       this.updateTaxIdLabel();
 
       // Handle customer types
@@ -2067,13 +2073,6 @@ loadCustomerData(customerId: number) {
       // FIX: Set isAirlineSelected based on loaded data
       this.isAirlineSelected = this.selectedStatus.includes('Air Line');
       
-      console.log('Customer data loaded:', {
-        PanAvailable: panAvailable,
-        PanType: customerData.PanType,
-        PanName: customerData.PanName,
-        Country: customerData.countryMaster?.countryName,
-        isAirlineSelected: this.isAirlineSelected
-      });
       // Load all data from the single API response
       this.loadAllCustomerDataFromResponse(customerData);
     },
@@ -3390,6 +3389,9 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     });
      if (!this.isEditMode) {
     this.customerForm.get('status')?.disable();
+     this.customerForm.get('CountryMasterSid')?.enable();
+    this.customerForm.get('CurrencyMasterSid')?.enable();
+    this.customerForm.get('CustomerName')?.enable();
   }
 
     // Reset selected statuses and customer types
@@ -3414,12 +3416,15 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.CustomerMasterSid) return;
+     if (this.isLogLoading) return; 
+     this.isLogLoading = true;
 
     this.masterService.getAuditLogsCustomer(
       'CustomerMaster',
       this.CustomerMasterSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
+        this.isLogLoading = false;
         const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
         const formatFields = (val: any) => {
@@ -3445,7 +3450,9 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: err => {
+        this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err)}
     });
   }
 
