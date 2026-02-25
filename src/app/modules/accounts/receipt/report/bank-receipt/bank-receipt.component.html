@@ -36,16 +36,15 @@
  <!-- Company Info -->
        <app-print-header></app-print-header>
 
-<h3 style="
+<h4 style="
     text-align:center;
-    font-size:25px;
     line-height:1.2;
     border-top:1px solid black;
     padding-top:10px;
     font-weight:bolder;
 ">
   <strong>Bank Receipt</strong>
-</h3>
+</h4>
 
 
       <!-- DETAILS -->
@@ -101,26 +100,32 @@
    <!-- Table -->
 <table style="width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; font-size:17px;">
     <tr>
-        <th style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:25%;"><strong style="font-weight: bolder;">Description</strong></th>
+         <th style="width:25%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>Ledger</strong></th>
+        <th style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:30%;"><strong style="font-weight: bolder;">Description</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; width:3%;"><strong style="font-weight: bolder;">Curr.</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; width:7%;"><strong style="font-weight: bolder;">Ex.Rate</strong></th>
         <th style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:8%;"><strong style="font-weight: bolder;">Amount</strong></th>
     </tr>
 
-    <tr>
+    <tr *ngFor="let item of getDrDetails()">
+         <td style="border:1px solid black; padding:4px;text-align:start;border-left: none;">{{getLedgerName(item?.COAMasterSid)}}</td>
         <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">
-            {{receiptPrintData?.VoucherDetail?.[0]?.Narration}}
+            {{item?.Narration}}
         </td>
         <td style="border:1px solid black; padding:4px; text-align:start;">
-            {{receiptPrintData?.CurrencyCode}}
+            {{item?.CurrencyCode}}
         </td>
         <td style="border:1px solid black; padding:4px; text-align:right;">
-            {{receiptPrintData?.ExchangeRate | number:'1.3-3'}}
+            {{item?.ExchangeRate | number:'1.3-3'}}
         </td>
         <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
-            {{receiptPrintData?.VoucherDetail?.[0]?.Amount | number:'1.2-2'}}
+            {{item?.Amount | number:'1.2-2'}}
         </td>
     </tr>
+       <tr>
+                    <td colspan="4" style="border:1px solid black; padding:4px;text-align: end;border-left: none;font-weight: bold;">Total</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">{{getTotalAmt() | number:'1.2-2'}}</td>
+                </tr>
 </table>
 
 <!-- Amount in Words -->
@@ -152,7 +157,6 @@
   <div style="
     flex: 1;
     line-height: 1.4;
-    font-weight: bolder;
   ">
     {{ getAmountInWords() }}
   </div>
@@ -210,10 +214,12 @@
 </div>
 
 <!-- Checked By -->
-<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 17px;font-weight: bolder;">
-    <strong>Checked By</strong>
-    <strong>Approved By</strong>
-</div>
+ <div style="position: absolute;bottom:160px;width:100%">
+         <div style="display:flex; justify-content:space-between; padding:0 20px;font-weight: bolder;">
+        <strong>Checked By </strong>
+        <strong>Approved By </strong>
+    </div>
+    </div>
 
     </div>
 

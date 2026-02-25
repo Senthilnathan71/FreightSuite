@@ -10,23 +10,23 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">From Date </strong>
-                    <p class="ms-1">: {{ params?.FromJobDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.FromJobDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">To Date </strong>
-                    <p class="ms-1">: {{ params?.ToJobDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.ToJobDt | formatDate }}</p>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
-                    <p class="ms-1">: {{ fullData?.branchInvolved }}</p>
+                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
-                   <p class="ms-1">: {{ fullData?.departmentNames }}</p>
+                   <p class="ms-1 my-0 text-center">: {{ fullData?.departmentNames }}</p>
                 </div>
             </div>
         </div>
@@ -34,25 +34,25 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info" style="white-space: nowrap;">
-                        <th class="bg-transparent text-light">Job Number</th>
+                        <th class="bg-transparent text-light text-center">Job Number</th>
                         <th class="bg-transparent text-light text-center">MBL</th>
-                        <th class="bg-transparent text-light">POL</th>
-                        <th class="bg-transparent text-light">POD</th>
-                        <th class="bg-transparent text-light">Prov.Revenue</th>
-                        <th class="bg-transparent text-light">Prov.Cost</th>
-                        <th class="bg-transparent text-light">Prov.GP</th>
-                        <th class="bg-transparent text-light">Prov.Profit %</th>
-                        <th class="bg-transparent text-light">Actual Revenue</th>
-                        <th class="bg-transparent text-light">Actual Cost</th>
-                        <th class="bg-transparent text-light">Actual GP</th>
-                        <th class="bg-transparent text-light">Act.Profit %</th>
-                        <th class="bg-transparent text-light">No.of Shipment</th>
-                        <th class="bg-transparent text-light">No.of 20ft</th>
-                        <th class="bg-transparent text-light">No.of 40ft</th>
-                        <th class="bg-transparent text-light">Container No.</th>
-                        <th class="bg-transparent text-light">Total Chargeable Wt</th>
-                        <th class="bg-transparent text-light">Total CBM/Volume</th>
-                        <th class="bg-transparent text-light">Unutilized Space in CBM</th>
+                        <th class="bg-transparent text-light text-center">POL</th>
+                        <th class="bg-transparent text-light text-center">POD</th>
+                        <th class="bg-transparent text-light text-center">Prov.Revenue</th>
+                        <th class="bg-transparent text-light text-center">Prov.Cost</th>
+                        <th class="bg-transparent text-light text-center">Prov.GP</th>
+                        <th class="bg-transparent text-light text-center">Prov.Profit %</th>
+                        <th class="bg-transparent text-light text-center">Actual Revenue</th>
+                        <th class="bg-transparent text-light text-center">Actual Cost</th>
+                        <th class="bg-transparent text-light text-center">Actual GP</th>
+                        <th class="bg-transparent text-light text-center">Act.Profit %</th>
+                        <th class="bg-transparent text-light text-center">No.of Shipment</th>
+                        <th class="bg-transparent text-light text-center">No.of 20ft</th>
+                        <th class="bg-transparent text-light text-center">No.of 40ft</th>
+                        <th class="bg-transparent text-light text-center">Container No.</th>
+                        <th class="bg-transparent text-light text-center">Total Chargeable Wt</th>
+                        <th class="bg-transparent text-light text-center">Total CBM/Volume</th>
+                        <th class="bg-transparent text-light text-center">Unutilized Space in CBM</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -3492,6 +3492,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+    modalRef.componentInstance.coaList = this.coaList || [];
   }
 
   reportPayment() {
@@ -3500,6 +3501,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       scrollable: true,
     });
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
+    modalRef.componentInstance.coaList = this.coaList || [];
   }
 
   ngOnDestroy(): void {

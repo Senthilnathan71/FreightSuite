@@ -41,7 +41,7 @@ export class BankPaymentPrintComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
-
+  @Input() coaList : any[] = [];
 
   constructor(
     private activeModal: NgbActiveModal,
@@ -180,14 +180,35 @@ export class BankPaymentPrintComponent {
 //   return mainWords;
 // }
 
+  getLedgerName(COAMasterSid: number): string {
+  if (!COAMasterSid || this.coaList.length===0) return '';
+  const ledger = this.coaList.find(
+    v => v.COAMasterSid === COAMasterSid
+  );
+
+  return ledger.LedgerName || '';
+}
+
+getTotalAmt() {
+  return this.paymentDataPrint?.VoucherDetail
+    ?.filter((item: any) => item?.DrCr === 'D')   
+    ?.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item?.Amount) || 0);
+    }, 0);
+}
+
+getDrDetails() {
+  return this.paymentDataPrint?.VoucherDetail?.filter(
+    (item: any) => item?.DrCr === 'D'
+  );
+}
 
 
-
-getAmountInWords(): string {
-  const total = this.paymentDataPrint?.VoucherDetail?.[0]?.Amount
+ getAmountInWords(): string {
+  const total = this.getTotalAmt();
   if (!total) return '';
 
-  const currencySid = this.paymentDataPrint?.CurrencyMasterSid;
+  const currencySid = this.currentCompany?.CurrencyMasterSid;
   return this.numberToWords.convert(total, currencySid);
 }
 

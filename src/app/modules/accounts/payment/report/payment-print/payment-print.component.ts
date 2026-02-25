@@ -39,7 +39,7 @@ export class PaymentPrintComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
-
+  @Input() coaList : any[] = [];
   
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -105,7 +105,28 @@ export class PaymentPrintComponent {
     });
   }
 
+  getLedgerName(COAMasterSid: number): string {
+  if (!COAMasterSid || this.coaList.length===0) return '';
+  const ledger = this.coaList.find(
+    v => v.COAMasterSid === COAMasterSid
+  );
 
+  return ledger.LedgerName || '';
+}
+
+getDrDetails() {
+  return this.paymentDataPrint?.VoucherDetail?.filter(
+    (item: any) => item?.DrCr === 'D'
+  );
+}
+
+getTotalAmt() {
+  return this.paymentDataPrint?.VoucherDetail
+    ?.filter((item: any) => item?.DrCr === 'D')   
+    ?.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item?.Amount) || 0);
+    }, 0);
+}
 
   modalClose() {
     this.activeModal.close()
@@ -148,7 +169,7 @@ getTotalMatchingLocalAmount(): number {
       
            
  getAmountInWords(): string {
-  const total = this.paymentDataPrint?.VoucherDetail?.[0]?.Amount
+  const total = this.getTotalAmt();
   if (!total) return '';
 
   const currencySid = this.currentCompany?.CurrencyMasterSid;

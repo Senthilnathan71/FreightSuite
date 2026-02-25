@@ -14,34 +14,34 @@
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">From Date </strong>
-                    <p class="ms-1">: {{ params?.fromDate | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.fromDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">To Date </strong>
-                    <p class="ms-1">: {{ params?.toDate | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.toDate | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Branch </strong>
-                    <p class="ms-1">: {{ params?.BranchInvolved}}</p>
+                    <p class="ms-1 my-0">: {{ params?.BranchInvolved}}</p>
                 </div>
                  <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
-                    <p class="ms-1">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
+                    <p class="ms-1 my-0">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</p>
                 </div>
             </div>
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Group Name </strong>
-                    <p class="ms-1">: {{ params?.GroupNameResolved }}</p>
+                    <p class="ms-1 my-0">: {{ params?.GroupNameResolved }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">SubGroup Name </strong>
-                    <p class="ms-1">: {{ params?.SubGroupNameResolved }}</p>
+                    <p class="ms-1 my-0">: {{ params?.SubGroupNameResolved }}</p>
                 </div>
                
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
-                    <p class="ms-1">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</p>
+                    <p class="ms-1 my-0">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</p>
                 </div>
             </div>
         </div>
@@ -51,18 +51,18 @@
                 <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light">Type</th>
+                            <th class="bg-transparent text-light text-center">Type</th>
                             <th class="bg-transparent text-light text-center">Group</th>
                             <th class="bg-transparent text-light text-center">Sub Group</th>
-                            <th class="bg-transparent text-light">Ledger</th>
-                            <th class="bg-transparent text-light" *ngIf="params?.Subledger">Subledger</th>
-                            <th class="bg-transparent text-light">Opening Debit</th>
-                            <th class="bg-transparent text-light">Opening Credit</th>
-                            <th class="bg-transparent text-light">Current Debit</th>
-                            <th class="bg-transparent text-light">Current Credit</th>
-                            <th class="bg-transparent text-light">Closing Debit</th>
-                            <th class="bg-transparent text-light">Closing Credit</th>
-                            <th class="bg-transparent text-light">Closing Net Amount</th>
+                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center" *ngIf="params?.Subledger">Subledger</th>
+                            <th class="bg-transparent text-light text-center">Opening Debit</th>
+                            <th class="bg-transparent text-light text-center">Opening Credit</th>
+                            <th class="bg-transparent text-light text-center">Current Debit</th>
+                            <th class="bg-transparent text-light text-center">Current Credit</th>
+                            <th class="bg-transparent text-light text-center">Closing Debit</th>
+                            <th class="bg-transparent text-light text-center">Closing Credit</th>
+                            <th class="bg-transparent text-light text-center">Closing Net Amount</th>
                         </tr>
                     </thead>
 
