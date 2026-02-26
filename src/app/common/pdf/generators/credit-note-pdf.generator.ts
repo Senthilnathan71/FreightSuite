@@ -716,12 +716,11 @@ function buildAmountInWords(data: CreditNotePdfData): any {
       {
         width: 0,
         text: ':',
-        style: 'labelBold'
       },
       {
         width: '*',
         text: amountInWords,
-        italics: true
+        // italics: true
       }
     ],
     columnGap: 5
@@ -747,6 +746,7 @@ function buildRemarks(remarks: string): any {
       {
         width: 10,
         text: ':',
+        alignment: 'center'
       },
       {
         width: '*',

@@ -123,19 +123,21 @@
 
 
 
-            <div class="action-group">
+            <!-- <div class="action-group">
                 <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
                         [ngClass]="{'btn-info': !isDirty, 'btn-warning': isDirty}"
-                        (click)="onSubmit()">
+                        (click)="onSubmit()" appPreventMultiClick 
+                        [disabled]="isLoading || isSaving">
+                        
                     <i class="fas fa-save me-1"></i>
-                    <span>Save</span>
+                    <span>{{ isSaving ? "Saving..." : "Save" }}</span>
                     <span *ngIf="isDirty"
                           class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
                           title="You have unsaved changes">
                         <span class="visually-hidden">unsaved changes</span>
                     </span>
                 </button>
-            </div>
+            </div> -->
             <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
@@ -1051,11 +1053,35 @@
                     <div class="table-toolbar">
                         <div class="toolbar-left">
                             <div class="d-flex align-items-center gap-5">
-                                                      <div class="d-flex align-items-center gap-2">
+       
+
+    <!-- master-job-entry.component.html - Add this in Container tab -->
+
+
+
+                            </div>
+      
+
+
+                        </div>
+                        <div class="toolbar-right">
+     <div class="d-flex align-items-center gap-2">
+          <!-- Process Upload Button (shown when preview is available) -->
+        <button *ngIf="showContainerPreview" class="table-action-btn info" 
+                (click)="processContainerUpload()"
+                [disabled]="isProcessingContainerUpload || containerValidationErrors.length > 0">
+            <i class="fas fa-check me-1"></i> Add Containers
+        </button>
+        
+        <!-- Cancel Upload Button -->
+        <button *ngIf="showContainerPreview" class="table-action-btn danger" 
+                (click)="resetContainerUpload()">
+            <i class="fas fa-times me-1"></i> Cancel
+        </button>
         <!-- Download Template Button -->
         <button class="table-action-btn success" (click)="downloadContainerTemplate()"
                 [disabled]="isProcessingContainerUpload">
-            <i class="fas fa-download me-1"></i> Container Excel  
+            <i class="fas fa-download me-1"></i> Container Download  
         </button>
         
         <!-- Upload Excel Button -->
@@ -1075,31 +1101,17 @@
             </small>
         </div>
         
-        <!-- Process Upload Button (shown when preview is available) -->
-        <button *ngIf="showContainerPreview" class="table-action-btn info" 
-                (click)="processContainerUpload()"
-                [disabled]="isProcessingContainerUpload || containerValidationErrors.length > 0">
-            <i class="fas fa-check me-1"></i> Add Containers
-        </button>
-        
-        <!-- Cancel Upload Button -->
-        <button *ngIf="showContainerPreview" class="table-action-btn danger" 
-                (click)="resetContainerUpload()">
-            <i class="fas fa-times me-1"></i> Cancel
-        </button>
+      
     </div>
-
-    <!-- master-job-entry.component.html - Add this in Container tab -->
-
-<div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2">
     <!-- Download Template Button -->
     <button class="table-action-btn success" (click)="downloadProductTemplate()"
             [disabled]="isProcessingProductUpload">
-        <i class="fas fa-download me-1"></i>Product Excel
+        <i class="fas fa-download me-1"></i>Product Download
     </button>
     
     <!-- Upload Excel Button -->
-    <div class="file-upload-wrapper">
+    <div  class="file-upload-wrapper">
         <input type="file" id="productFileInput" #productFileInput 
                accept=".xlsx,.xls" (change)="onProductFileSelected($event)"
                style="display: none" [disabled]="isProcessingProductUpload">
@@ -1128,13 +1140,6 @@
         <i class="fas fa-times me-1"></i> Cancel
     </button>
 </div>
-
-                            </div>
-      
-
-
-                        </div>
-                        <div class="toolbar-right">
                             <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
                              [disabled]="selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers()">
                                 <i class="fas fa-plus"></i> Add
