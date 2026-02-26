@@ -71,10 +71,10 @@
         , {{ currentBranch.cityMaster.cityName }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.postalCode">
-        , {{ currentBranch.postalCode }}
+        , <strong>Postal Code :</strong> {{ currentBranch.postalCode }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.phoneNumber">
-        , {{ currentBranch.phoneNumber }}
+        , <strong>Ph.no :</strong> {{ currentBranch.phoneNumber }}
       </ng-container>
     </div>
   </div>

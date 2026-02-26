@@ -3519,6 +3519,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
     modalRef.componentInstance.coaList = this.coaList || [];
+    modalRef.componentInstance.ledgerList = this.ledgerList || [];
   }
 
   reportPayment() {
