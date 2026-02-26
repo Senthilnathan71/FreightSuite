@@ -150,6 +150,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   matchedPairs: Array<{ source: any | null, object: any | null, color: string }> = [];
   private readonly PAIR_COLORS = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#e91e63', '#00bcd4'];
   previousMatchingDate: any = null;
+  isFullScreen = false;
 
   BATCH_SIZE = 10;
   sourceSkip = 0;
@@ -748,32 +749,28 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   computeMatchedPairs() {
     const sources = this.sourceItems.getRawValue();
     const objects = this.objectItems.getRawValue();
-    const hasPairingData = sources.some((s: any) => s.MatchingTransactionSid);
-    if (hasPairingData) {
-      const result: Array<{ source: any | null, object: any | null, color: string }> = [];
-      const pairedObjectSids = new Set<number>();
-      for (const src of sources) {
-        const obj = objects.find((o: any) =>
-          src.MatchingTransactionSid && o.VoucherTransactionSid === src.MatchingTransactionSid
-        ) ?? null;
-        result.push({ source: src, object: obj, color: this.PAIR_COLORS[result.length % this.PAIR_COLORS.length] });
-        if (obj) pairedObjectSids.add(obj.VoucherTransactionSid);
-      }
-      for (const obj of objects) {
-        if (!pairedObjectSids.has(obj.VoucherTransactionSid)) {
-          result.push({ source: null, object: obj, color: this.PAIR_COLORS[result.length % this.PAIR_COLORS.length] });
-        }
-      }
-      this.matchedPairs = result;
-      return;
-    }
-    // Fallback: pair by index
-    const count = Math.max(sources.length, objects.length);
-    this.matchedPairs = Array.from({ length: count }, (_, i) => ({
-      source: sources[i] ?? null,
-      object: objects[i] ?? null,
-      color: this.PAIR_COLORS[i % this.PAIR_COLORS.length],
-    }));
+
+    const result: Array<{ source: any | null, object: any | null, color: string }> = [];
+
+    const allSnos = new Set<number>([
+      ...sources.map((s: any) => s.Sno),
+      ...objects.map((o: any) => o.Sno)
+    ]);
+
+    const sortedSnos = Array.from(allSnos).sort((a, b) => a - b);
+
+    sortedSnos.forEach((sno, index) => {
+      const source = sources.find((s: any) => s.Sno === sno) ?? null;
+      const object = objects.find((o: any) => o.Sno === sno) ?? null;
+
+      result.push({
+        source,
+        object,
+        color: this.PAIR_COLORS[index % this.PAIR_COLORS.length]
+      });
+    });
+
+    this.matchedPairs = result;
   }
 
   clearCreateDetail() {
@@ -808,6 +805,21 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   get objectTotalMatchCurrAmt() { return this.getTotal(this.objectItems, 'MatchedCurrencyAmount'); }
   get objectTotalMatchLocalAmt() { return this.getTotal(this.objectItems, 'MatchedLocalAmount'); }
   get isMultiCurrency(): boolean { return this.matchingScenario === 'multi-currency'; }
+  get singleCurrencyCode(): string {
+    const allRows = [...this.sourceItems.getRawValue(), ...this.objectItems.getRawValue()];
+    const matched = allRows.filter((r: any) => toNumber(r.MatchedCurrencyAmount) !== 0);
+    return matched.length > 0 ? matched[0].CurrencyCode : '';
+  }
+  get currencyAmountsMatch(): boolean {
+    return Math.abs(this.sourceTotalMatchCurrAmt - this.objectTotalMatchCurrAmt) < 0.005;
+  }
+  get localAmountsMatch(): boolean {
+    return Math.abs(this.sourceTotalMatchLocalAmt - this.objectTotalMatchLocalAmt) < 0.005;
+  }
+
+  toggleFullScreen() {
+    this.isFullScreen = !this.isFullScreen;
+  }
   get loadedIsMultiCurrency(): boolean {
     const rows = [
       ...this.sourceItems.getRawValue(),
