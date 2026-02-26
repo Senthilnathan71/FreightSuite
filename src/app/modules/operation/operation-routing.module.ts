@@ -41,6 +41,8 @@ import { JobCloseListComponent } from './job-close/job-close-list/job-close-list
 import { JobCloseComponent } from './job-close/job-close.component';
 import { VoucherCorrectionListComponent } from './voucher-correction/voucher-correction-list/voucher-correction-list.component';
 import { title } from 'process';
+import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
+import { AgentMasterAirWaybillEntryComponent } from './agent-master-air-waybill/agent-master-air-waybill-entry/agent-master-air-waybill-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -496,6 +498,30 @@ export const OperationRoutes: Routes = [
             { title: 'Operation', url: '/operation'},
             { title: 'Voucher-Correction'},
           ],
+        },
+      },
+      {
+        path: 'agent-master-air-waybill/entry',
+        component: AgentMasterAirWaybillEntryComponent,
+        data: {
+          title: 'Agent Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],
+        },
+      },
+      {
+         path: 'agent-master-air-waybill/entry/:id',
+         component: AgentMasterAirWaybillEntryComponent,
+         data: {
+           title: 'Agent Master Air Waybill',
+           urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],
+         },
+      },
+      {
+        path: 'agent-master-air-waybill/list',
+        component: AgentMasterAirWaybillListComponent,
+        data: {
+          title: 'Agent Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],
         },
       },
     ],

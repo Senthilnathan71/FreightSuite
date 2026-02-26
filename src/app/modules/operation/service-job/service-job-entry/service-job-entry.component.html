@@ -26,6 +26,13 @@
           <span>Logs</span>
         </button>
       </div>
+      <div class="action-group"  *ngIf="isEditMode">  
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToServiceJobEntry()">    
+                    <i class="fas fa-plus me-1"></i>
+                    <span>Create </span>    
+                    </button>
+            </div>
+      <div class="action-group" *ngIf="isEditMode"> </div>
       <div class="action-group">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
           <i class="fas fa-chevron-left me-1"></i>
@@ -39,7 +46,9 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" appPreventMultiClick>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" appPreventMultiClick
+        appPreventMultiClick
+        [disabled]="(!mps.can('update') && isEditMode) || isSaving">
           <i class="fas fa-save me-1"></i>
           <span>Save</span>
         </button>

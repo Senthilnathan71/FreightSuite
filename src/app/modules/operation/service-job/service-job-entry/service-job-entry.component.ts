@@ -696,6 +696,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
         return; // STOP submission
       }
     }
+    this.isSaving = true;
+    this.spinner.show();
 
     if (this.isEditMode && this.HouseJobSid) {
       this.operationService.updateServiceJobById(this.HouseJobSid, payload).subscribe({
@@ -905,7 +907,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
   navigateBack() {
-    history.back();
+    this.router.navigate(['operation/service-job/list']);
   }
   
   selectedTab = 'Rate';
