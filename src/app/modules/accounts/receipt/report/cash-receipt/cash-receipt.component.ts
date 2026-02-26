@@ -133,7 +133,7 @@ getTotalAmt() {
   return this.receiptPrintData?.VoucherDetail
     ?.filter((item: any) => item?.DrCr === 'D')   
     ?.reduce((sum: number, item: any) => {
-      return sum + (parseFloat(item?.Amount) || 0);
+      return sum + (parseFloat(item?.PartyAmount) || 0);
     }, 0);
 }
 
