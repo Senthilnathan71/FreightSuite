@@ -762,6 +762,7 @@
                       >
                         SACCode
                       </th>
+                      @if(!isNonJob) {
                       <th
                         rowspan="2"
                         class="text-center bg-transparent text-light"
@@ -776,6 +777,7 @@
                       >
                         No of Unit
                       </th>
+                      }
                       <th
                         rowspan="2"
                         class="text-center bg-transparent text-light"
@@ -916,6 +918,7 @@
                       >
                         Party Amount
                       </th>
+                      @if(!isNonJob) {
                       <th
                         rowspan="2"
                         class="text-center bg-transparent text-light"
@@ -937,6 +940,7 @@
                       >
                         Dept.
                       </th>
+                      }
                     </tr>
 
                     <!-- Second Header Row for Tax Sub-headers -->
@@ -1149,6 +1153,7 @@
                           </td>
                         }
 
+                        @if(!isNonJob) {
                         <!-- Unit -->
                         <td>
                           <ng-select
@@ -1174,6 +1179,7 @@
                             [DecimalPrecisionAfter]="3"
                           />
                         </td>
+                        }
 
                         <!-- Dr/Cr -->
                         <td>
@@ -1512,6 +1518,7 @@
                           </span>
                         </td>
 
+                        @if(!isNonJob) {
                         <!-- MasterJobSid column -->
                         <td style="min-width: 200px">
                           <dofi-searchable-dropdown
@@ -1577,6 +1584,7 @@
                           >
                           </dofi-searchable-dropdown>
                         </td>
+                        }
                       </tr>
                     </ng-container>
                   </tbody>

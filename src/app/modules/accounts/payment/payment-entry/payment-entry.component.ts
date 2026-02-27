@@ -700,6 +700,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getAllCoaWithLedgerCategory({
           LedgerCategory: 'Ledger',
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          filterNonJob: true,
         })
         .pipe(catchError((err) => of([]))),
       costCenters: this.accountService
@@ -1549,7 +1550,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Navigate back to list
    */
   goBack(): void {
-    history.back();
+    this.router.navigate(['/accounts/payment/list']);
   }
 
   // Section-2 VoucherDetail Related
@@ -3051,6 +3052,13 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
+    }
+
+    const taxNoCtrl = this.paymentForm.get('GST_VAT');
+    if(taxNoCtrl.getRawValue()){
+      taxNoCtrl.disable({ emitEvent: false });
+    } else {
+      taxNoCtrl.enable({ emitEvent: false });
     }
   }
 

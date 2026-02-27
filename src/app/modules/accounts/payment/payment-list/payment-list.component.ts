@@ -223,7 +223,16 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           cellClass: 'text-truncate'
         },
         {
-          key: 'LocalAmount',
+          key: 'CurrencyCode',
+          label: 'Currency',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '120px',
+        },
+        {
+          key: 'ListAmount',
           label: 'Amount',
           sortable: true,
           filterable: true,
@@ -321,7 +330,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       this.allItems = response.data.items.map(item => ({
         ...item,
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
-        LocalAmount : Number(item.VoucherDetail[0]?.LocalAmount || 0).toFixed(2),
+        ListAmount : Number(item.VoucherDetail[0]?.PartyAmount || 0).toFixed(2),
         VoucherDate : this.datePipe.transform(item.VoucherDate),
         PostDate: this.datePipe.transform(item.PostDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',

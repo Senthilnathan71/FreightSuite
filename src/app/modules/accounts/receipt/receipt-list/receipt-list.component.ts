@@ -152,7 +152,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     if(response && response.status){
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
-        ListAmount : this.formatAmount(item.VoucherDetail[0]?.LocalAmount || 0),
+        ListAmount : this.formatAmount(item.VoucherDetail[0]?.PartyAmount || 0),
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -271,15 +271,6 @@ private formatAmount(amount: number | string): string {
           width: '200px',
         },
         {
-          key: 'ListAmount',
-          label: 'Amount',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'number',
-          width: '130px',
-        },
-        {
           key: 'CurrencyCode',
           label: 'Currency',
           sortable: true,
@@ -288,6 +279,16 @@ private formatAmount(amount: number | string): string {
           dataType: 'number',
           width: '120px',
         },
+        {
+          key: 'ListAmount',
+          label: 'Amount',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'number',
+          width: '130px',
+        },
+        
         {
           key: 'PostStatus',
           label: 'Post Status',

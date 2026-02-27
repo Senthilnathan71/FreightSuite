@@ -315,6 +315,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       Narration: ['',[Validators.required]],
       Remarks: [''],
       LedgerName: [null, [Validators.required]],
+      SubledgerMasterSid : [null, [Validators.required]],
       SubledgerName: [null, [Validators.required]],
       PostStatus: [{ value: 'Unposted', disabled: true }],
       Status: [{ value: 'Active', disabled: true }],
@@ -563,7 +564,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     });
   }
 
-  onSubledgerChange(sub: any) { this.selectedSubledger = sub; }
+  onSubledgerChange(sub: any) { 
+    this.voucherMatchingForm.get('SubledgerMasterSid')?.setValue(sub.SubledgerMasterSid);
+    this.selectedSubledger = sub; 
+  }
 
   onGet() {
     if (!this.selectedLedger) { this.appSettingService.showWarning('Please select a Ledger'); return; }
@@ -837,6 +841,25 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     );
     return currencySet.size > 1; // multi currency means more than 1
   }
+
+  // Per-row balance: Outstanding - Matched
+  getRowBalance(row: AbstractControl, field: 'currency' | 'local'): number {
+    const raw = (row as FormGroup).getRawValue();
+    if (field === 'currency') {
+      return toNumber(raw.OutstandingCurrencyAmount) - toNumber(raw.MatchedCurrencyAmount ?? 0);
+    }
+    return toNumber(raw.OutstandingLocalAmount) - toNumber(raw.MatchedLocalAmount ?? 0);
+  }
+
+  // Difference between source and object matched totals
+  get diffMatchCurrAmt(): number { return this.sourceTotalMatchCurrAmt - this.objectTotalMatchCurrAmt; }
+  get diffMatchLocalAmt(): number { return this.sourceTotalMatchLocalAmt - this.objectTotalMatchLocalAmt; }
+
+  // Remaining balance totals (Outstanding - Matched)
+  get sourceTotalBalCurrAmt(): number { return this.sourceTotalOsCurrAmt - this.sourceTotalMatchCurrAmt; }
+  get sourceTotalBalLocalAmt(): number { return this.sourceTotalOsLocalAmt - this.sourceTotalMatchLocalAmt; }
+  get objectTotalBalCurrAmt(): number { return this.objectTotalOsCurrAmt - this.objectTotalMatchCurrAmt; }
+  get objectTotalBalLocalAmt(): number { return this.objectTotalOsLocalAmt - this.objectTotalMatchLocalAmt; }
 
   get hasAtLeaseOneValidSourceItem(): boolean {
     return this.sourceItems.controls.some(c => toNumber(c.get('MatchedCurrencyAmount')?.value) !== 0 || toNumber(c.get('MatchedLocalAmount')?.value) !== 0);

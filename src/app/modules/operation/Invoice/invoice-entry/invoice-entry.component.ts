@@ -156,6 +156,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   customerBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
+  filteredChargeList : any[] = [];
   hssacList: any[][] = [];
   subledgerList: any[] = [];
   uomList: any[] = [];
@@ -955,6 +956,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   patchValues(data: any) {
     this.gatherHyperLinkInfo(data);
 
+    if(data.departmentMaster){
+      this.filterChargeBasedOnDept(data.departmentMaster);
+    }
+
     this.invoiceForm.patchValue(
       {
         VoucherNumber: data.VoucherNumber,
@@ -1091,6 +1096,16 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       });
     }
     this.spinner.hide();
+  }
+
+  
+  filterChargeBasedOnDept(dept: any) {
+    if (!dept || !dept.departmentName) return;
+
+    this.filteredChargeList = this.chargeList.filter(charge => {
+      const allowedDepts: any[] = (charge.Departments || []);
+      return allowedDepts.includes(dept.departmentName);
+    })
   }
 
   async preparePrintData() {

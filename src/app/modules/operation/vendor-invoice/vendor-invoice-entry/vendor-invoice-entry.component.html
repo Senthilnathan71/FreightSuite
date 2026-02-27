@@ -583,9 +583,11 @@
                       }
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode
                       </th>
+                      @if(!isNonJob) {
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Unit</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">No of Unit
                       </th>
+                      }
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Dr/Cr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px;">Curr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate
@@ -627,13 +629,16 @@
                         Amount</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party
                         Amount</th>
+                      @if(!isNonJob) {
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.
                       </th>
                       <th rowspan="2" class="text-center bg-transparent text-light"
                         style="min-width: 180px; border-top-right-radius: 10px;">Dept.</th>
+                      }
                     </tr>
+                    
 
                     <!-- Second Header Row for Tax Sub-headers -->
                     <tr class="align-middle bg-info">
@@ -714,7 +719,7 @@
                         <!-- Charge -->
                         <td class="text-center">
                           <dofi-searchable-dropdown 
-                            [items]="chargeList" 
+                            [items]="filteredChargeList" 
                             formControlName="ChargeMasterSid"
                             [placeholder]="''" 
                             [displayFields]="chargeLookupConfig.displayFields"
@@ -769,6 +774,7 @@
                         </td>
                         }
 
+                        @if(!isNonJob) {
                         <!-- Unit -->
                         <td>
                           <ng-select 
@@ -794,6 +800,7 @@
                             [DecimalPrecisionAfter]="3"
                           >
                         </td>
+                        }
 
                         <!-- Dr/Cr -->
                         <td>
@@ -1022,7 +1029,7 @@
                           </span>
                         </td>
 
-
+                        @if(!isNonJob) {
                         <!-- MasterJobSid column -->
                         <td style="min-width:200px;">
                           <dofi-searchable-dropdown 
@@ -1075,6 +1082,7 @@
                             >
                           </dofi-searchable-dropdown>
                         </td>
+                        }
                       </tr>
                     </ng-container>
                   </tbody>
