@@ -448,6 +448,110 @@ export interface CreditChargeData extends PdfChargeItem {
   roe?: number;
 }
 
+// =====================
+// RECEIPT PDF DATA
+// =====================
+export interface ReceiptPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
+  receiptType: 'bank' | 'cash';
+  receipt: {
+    voucherNumber?: string;
+    voucherDate?: Date | string;
+    partyName?: string;
+    currencyCode?: string;
+    exchangeRate?: number;
+    bankName?: string;
+    instrumentMode?: string;
+    instrumentNumber?: string;
+    instrumentDate?: Date | string;
+  };
+  details: ReceiptLineData[];
+  voucherMatchings?: ReceiptMatchingData[];
+  totals: {
+    totalAmount: number;
+    totalMatchingAmount: number;
+    totalMatchingLocalAmount: number;
+  };
+  amountInWords?: string;
+  currentUserCountry?: string;
+}
+
+export interface ReceiptLineData {
+  ledgerName?: string;
+  narration?: string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  amount?: number;
+  partyAmount?: number;
+}
+
+export interface ReceiptMatchingData {
+  voucherNumber?: string;
+  voucherType?: string;
+  voucherDate?: Date | string;
+  currencyCode?: string;
+  matchingAmount?: number;
+  matchingLocalAmount?: number;
+  tdsAmount?: number;
+}
+
+// =====================
+// PAYMENT PDF DATA
+// =====================
+export interface PaymentPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
+  paymentType: 'bank' | 'cash';
+  payment: {
+    voucherNumber?: string;
+    voucherDate?: Date | string;
+    paidTo?: string;
+    paidFrom?: string;
+    currencyCode?: string;
+    exchangeRate?: number;
+    bankName?: string;
+    instrumentMode?: string;
+    instrumentNumber?: string;
+    instrumentDate?: Date | string;
+  };
+  details: PaymentLineData[];
+  voucherMatchings?: PaymentMatchingData[];
+  totals: {
+    totalAmount: number;
+    totalMatchingAmount: number;
+    totalMatchingLocalAmount: number;
+  };
+  amountInWords?: string;
+}
+
+export interface PaymentLineData {
+  ledgerName?: string;
+  narration?: string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  amount?: number;
+  partyAmount?: number;
+}
+
+export interface PaymentMatchingData {
+  voucherNumber?: string;
+  voucherType?: string;
+  voucherDate?: Date | string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  matchingAmount?: number;
+  matchingLocalAmount?: number;
+  BillNo?: string;
+  BillDate?: Date | string;
+}
+
 
 // =====================
 // DOCUMENT TYPE ENUMS

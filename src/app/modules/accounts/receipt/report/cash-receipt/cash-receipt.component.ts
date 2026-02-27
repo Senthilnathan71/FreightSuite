@@ -1,15 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
-import { toNumber } from 'src/app/common/helper';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
@@ -65,10 +63,11 @@ export class CashReceiptComponent {
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
     private numberToWords: NumberToWordsService,
+    private companySettings: CompanySettingsManagerService,
     public logoService : LogoService
   ) { }
 
@@ -225,64 +224,55 @@ getDrDetails() {
   // pdf download
 
 
-      async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
-
-  setTimeout(async () => {
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
     this.spinner.show();
-     try {
-
-    const BankReceiptNo = this.receiptPrintData?.VoucherNumber || 'Receipt';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-         `Cash_Receipt_${BankReceiptNo}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      this.pdfMakeService.generateReceiptFromApi(
+        this.receiptPrintData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          receiptType: 'cash',
+          coaList: this.coaList || [],
+          bankTypedLedgers: this.bankTypedLedgers || [],
+          amountInWords: this.getAmountInWords(),
+          currentUserCountry: this.currentUserCountry,
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
-    }finally {
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
       this.spinner.hide();
     }
-  }, 50);
-}
-
-
-
+  }
 
   async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      const logo = this.pdfMakeService.getReportLogo();
+      const blob = await this.pdfMakeService.generateReceiptBlobFromApi(
+        this.receiptPrintData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          receiptType: 'cash',
+          coaList: this.coaList || [],
+          bankTypedLedgers: this.bankTypedLedgers || [],
+          amountInWords: this.getAmountInWords(),
+          currentUserCountry: this.currentUserCountry,
+          printSettings: this.companySettings.getPrintSettings()
+        }
+      );
+      return blob;
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;

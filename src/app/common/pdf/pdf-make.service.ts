@@ -21,7 +21,9 @@ import {
   MasterJobDocumentType,
   QuotationDocumentType,
   InvoicePdfData,
-  CreditNotePdfData
+  CreditNotePdfData,
+  ReceiptPdfData,
+  PaymentPdfData
 } from './interfaces/pdf-document.interfaces';
 
 // Import generators
@@ -33,6 +35,8 @@ import { generateGenericReportDocument, GenericReportPdfData } from './generator
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
 import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
+import { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
+import { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -571,6 +575,136 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformCreditNoteApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateCreditNoteBlob(pdfData);
+  }
+
+  // ==================== Receipt ====================
+
+  generateReceipt(data: ReceiptPdfData): void {
+    const docDefinition = generateReceiptDocument(data);
+    const prefix = data.receiptType === 'bank' ? 'Bank_Receipt' : 'Cash_Receipt';
+    const filename = `${prefix}_${data.receipt?.voucherNumber || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateReceiptBlob(data: ReceiptPdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateReceiptDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Receipt PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  generateReceiptFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      receiptType?: 'bank' | 'cash';
+      coaList?: any[];
+      bankTypedLedgers?: any[];
+      amountInWords?: string;
+      currentUserCountry?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): void {
+    const pdfData = transformReceiptApiData(apiData, company, branch, userData, logo, options);
+    this.generateReceipt(pdfData);
+  }
+
+  async generateReceiptBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      receiptType?: 'bank' | 'cash';
+      coaList?: any[];
+      bankTypedLedgers?: any[];
+      amountInWords?: string;
+      currentUserCountry?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): Promise<Blob> {
+    const pdfData = transformReceiptApiData(apiData, company, branch, userData, logo, options);
+    return this.generateReceiptBlob(pdfData);
+  }
+
+  // ==================== Payment ====================
+
+  generatePayment(data: PaymentPdfData): void {
+    const docDefinition = generatePaymentDocument(data);
+    const prefix = data.paymentType === 'bank' ? 'Bank_Payment' : 'Cash_Payment';
+    const filename = `${prefix}_${data.payment?.voucherNumber || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generatePaymentBlob(data: PaymentPdfData): Promise<Blob> {
+    try {
+      const docDefinition = generatePaymentDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Payment PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  generatePaymentFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      paymentType?: 'bank' | 'cash';
+      coaList?: any[];
+      ledgerList?: any[];
+      bankTypedLedgers?: any[];
+      amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): void {
+    const pdfData = transformPaymentApiData(apiData, company, branch, userData, logo, options);
+    this.generatePayment(pdfData);
+  }
+
+  async generatePaymentBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      paymentType?: 'bank' | 'cash';
+      coaList?: any[];
+      ledgerList?: any[];
+      bankTypedLedgers?: any[];
+      amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): Promise<Blob> {
+    const pdfData = transformPaymentApiData(apiData, company, branch, userData, logo, options);
+    return this.generatePaymentBlob(pdfData);
   }
 
 

@@ -16,6 +16,8 @@ export { generateEnquiryDocument, transformEnquiryApiData } from './generators/e
 export { generateBookingDocument, transformBookingApiData, transformCroApiData } from './generators/booking-pdf.generator';
 export { generateMasterJobDocument, transformMasterJobApiData } from './generators/master-job-pdf.generator';
 export { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
+export { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
+export { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
 
 // Builders (for custom PDF creation)
 export * from './builders/pdf-header.builder';

@@ -166,6 +166,8 @@
     <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse;font-size: 15px;" >
         <tr>
             <th style="border:1px solid black;  text-align:center;font-weight:bolder;border-left: none;"><strong>Voucher No.</strong></th>
+             <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill No.</strong></th>
+                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill Date.</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:bolder;"><strong>INV Type</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:bolder;"><strong>Voucher Date</strong></th>
             <th style="border:1px solid black;  text-align:center;font-weight:bolder;"><strong>Curr.</strong></th>
@@ -176,6 +178,8 @@
 
         <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
             <td style="border:1px solid black; text-align:start;border-left: none;">{{voucher?.VoucherNumber}}</td>
+             <td style="border:1px solid black; padding:4px;text-align: start;border-left: none;">{{voucher?.BillNo}}</td>
+            <td style="border:1px solid black; padding:4px;text-align: center;border-left: none;">{{voucher?.BillDate | formatDate}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.VoucherType}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.VoucherDate | formatDate}}</td>
             <td style="border:1px solid black; text-align:center;">{{voucher?.CurrencyCode}}</td>
@@ -185,7 +189,7 @@
         </tr>
 
         <tr style="font-weight: bolder;">
-            <td colspan="5" style="border:1px solid black; text-align:right;border-left: none;"><strong>Total</strong></td>
+            <td colspan="7" style="border:1px solid black; text-align:right;border-left: none;"><strong>Total</strong></td>
             <td style="border:1px solid black; text-align:right;"><strong>{{getTotalMatchingAmount() | number:'1.2-2'}}</strong></td>
             <td style="border:1px solid black; text-align:right;border-right: none;"><strong>{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</strong></td>
         </tr>

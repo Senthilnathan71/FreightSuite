@@ -45,6 +45,7 @@
           <div ngbDropdownMenu aria-labelledby="dropdownManual">
             <button ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="fw-bold">Booking Confirmation</button>
             <button ngbDropdownItem (click)="barCode(BarModal)" class="fw-bold">BarCode</button>
+             <button ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode Without Company</button>
           </div>
         </div>
       </div>
@@ -3854,6 +3855,159 @@
             {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}
           </p>
             <p style="font-size: 12px;">{{website}}</p>
+          </div>
+
+        </div>
+      </div>
+      
+
+    </div>
+
+
+  </div>
+</ng-template>
+
+<ng-template #BarModalWithoutCompany let-modal>
+
+  <div *ngIf="isEditMode">
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 50px;">
+      <h5 class="modal-title text-white mb-0">Bar Code </h5>
+      <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="openPrintQtyModal(printQtyModal)">
+          <i class="fas fa-download me-1"></i> Print
+        </button>
+
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDFBarCode()">
+          <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
+          <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-body p-0">
+    <div id="printContent" class="p-1">
+
+      <div style="
+        width:380px;
+        height:400px;
+        margin:0 auto;
+        padding:8px;
+        background:#fff;
+        border-radius:16px;
+        border:1px solid black;
+        box-sizing:border-box;
+        color:#000;
+        overflow:hidden;
+      ">
+
+        <div style="height:100%;">
+
+          <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            <ngx-barcode6 *ngIf="barcodeBookingNo" [bc-value]="barcodeBookingNo" [bc-format]="barcodeConfig1.format"
+              [bc-height]="barcodeConfig1.height" [bc-width]="barcodeConfig1.width"
+              [bc-font-size]="barcodeConfig1.fontSize" [bc-display-value]="barcodeConfig1.displayValue">
+            </ngx-barcode6>
+          </div>
+
+
+          
+
+          <!-- Details Table -->
+          <div style="
+        margin:30px 0;
+        padding:0;
+        border-top:1px solid #000;
+        border-bottom:1px solid #000;
+        font-size:12px;
+      ">
+
+            <!-- Row -->
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Shipper
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.ShipperName}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Consignee
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.ConsigneeName}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Accepted On
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.ETD | date:'yyyy-MM-dd HH:mm:ss'}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Origin
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.POO}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Destination
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.FPD}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Total Pkgs
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.bookingCargo?.[0]?.NoOfPackage}}
+              </div>
+            </div>
+
+            <div style="display:flex; border-bottom:1px solid #000;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Weight
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.bookingCargo?.[0]?.GrossWeight}}
+              </div>
+            </div>
+
+            <div style="display:flex;">
+              <div style="width:150px; padding:2px 8px; font-weight:bold; border-right:1px solid #000;">
+                Booking No
+              </div>
+              <div style="flex:1; padding:2px 8px;">
+                {{bookingHeader?.BookingNo}}
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            <ngx-barcode6 *ngIf="barcodeBookingNo" [bc-value]="barcodeBookingNo" [bc-format]="barcodeConfig.format"
+              [bc-height]="barcodeConfig.height" [bc-width]="barcodeConfig.width"
+              [bc-font-size]="barcodeConfig.fontSize" [bc-display-value]="barcodeConfig.displayValue">
+            </ngx-barcode6>
           </div>
 
         </div>
