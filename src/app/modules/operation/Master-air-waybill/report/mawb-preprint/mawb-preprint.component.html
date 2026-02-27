@@ -69,7 +69,7 @@
 
                     <!-- Airport Departure -->
                     <div class="data-field airport-departure">
-                        {{ masterAirWayData?.POL }}
+                        {{getPortName (masterAirWayData?.POL) }}
                     </div>
 
                     <!-- RIGHT COLUMN DATA -->
@@ -146,7 +146,12 @@
 
                     <!-- Airport Destination -->
                     <div class="data-field airport-destination">
-                        {{ masterAirWayData?.FPD }}
+                        {{ getPortName(masterAirWayData?.FPD) }}
+                    </div>
+
+                    <!-- Flight Name -->    
+                    <div class="data-field flight-name">
+                        {{masterAirWayData?.voyages?.[0]?.VesselName}}
                     </div>
 
                     <!-- Flight Date -->
@@ -157,6 +162,7 @@
                     <!-- Insurance -->
                     <div class="data-field insurance-amount">
                         <!-- Amount of Insurance -->
+                          {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValueForInsurance }}
                     </div>
                    
 
@@ -226,6 +232,9 @@
                         </span>
                     </div>
 
+                    <div class="data-field valuation-charge">
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValuationCharge }}
+                    </div>
                     <!-- Total Other Charges -->
                     <div class="data-field total-other-carrier">
                         {{ getTotalExchangeRate() }}
