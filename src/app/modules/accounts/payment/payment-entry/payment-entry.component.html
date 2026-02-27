@@ -475,6 +475,26 @@
                 </div>
               </aside>
 
+                 <!-- Received From -->
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="text-input"
+                    placeholder=""
+                    class="custom-input-field sm"
+                    formControlName="BankPartyName"
+                  />
+                  <label
+                    for="text-input"
+                    class="input-label"
+                    style="font-size: 14px"
+                    >Pay To</label
+                  >
+                </div>
+              </aside>
+
               <!-- Currency -->
 
               <aside class="col-md-3">
@@ -529,25 +549,7 @@
                 </div>
               </aside>
 
-              <!-- Received From -->
-
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="text-input"
-                    placeholder=""
-                    class="custom-input-field sm"
-                    formControlName="BankPartyName"
-                  />
-                  <label
-                    for="text-input"
-                    class="input-label"
-                    style="font-size: 14px"
-                    >Pay To</label
-                  >
-                </div>
-              </aside>
+           
 
               <!-- Address -->
 
@@ -940,7 +942,7 @@
                     [displayLabels]="CurrencyLookupConfig.displayLabels"
                     [labelFields]="CurrencyLookupConfig.labelFields"
                     [bindValue]="'CurrencyMasterSid'"
-                    [readonly]="isAutoPartyRow(i) || isAutoBankRow(i)"
+                    [readonly]="isAutoPartyRow(i) || isAutoBankRow(i) || isSyTypeRow(i)"
                     (itemSelected)="onCurrencyChangeForEachRow($event, i)"
                   >
                   </dofi-searchable-dropdown>

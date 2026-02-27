@@ -226,7 +226,7 @@ getSignedTotal(transactions: any[]): number {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 3, 25, 3, 3, 15, 15, 15, 15, 15],
+      columnWidths: [12, 12, 3, 25, 3, 3, 15, 15, 15],
       notes: ['This ledger report includes only posted voucher transactions.']
     };
   }

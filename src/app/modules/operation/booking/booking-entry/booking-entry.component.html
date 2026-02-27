@@ -3839,16 +3839,26 @@
           </div>
           <div style="text-align: center;">
             <p style="margin:0; font-size: 12px;">{{ currentBranch?.addressLine1 || '' }}</p>
-            <p style="margin:0; font-size: 12px;">{{ currentBranch?.addressLine2 || '' }}, {{
-              currentBranch?.cityMaster?.cityName || currentCompany?.City || ''
-              }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-              currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+          <p style="margin:0; font-size: 12px;">
+            {{ currentBranch?.addressLine2 || '' }}
+            <span *ngIf="currentBranch?.addressLine2">, </span>
+          
+            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+            <span *ngIf="currentBranch?.cityMaster?.cityName || currentCompany?.City">
+              {{ currentBranch?.postalCode || currentBranch?.ZipCode ? ' ' : '' }}
+            </span>
+          
+            {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}
+            <span *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode">, </span>
+          
+            {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}
+          </p>
             <p style="font-size: 12px;">{{website}}</p>
           </div>
 
         </div>
       </div>
-
+      
 
     </div>
 

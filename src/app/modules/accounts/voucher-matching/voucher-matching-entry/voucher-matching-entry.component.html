@@ -554,14 +554,14 @@
         <div *ngIf="sourceItems.length > 0" class="py-0 border-top">
           <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
             <tr class="fw-bold text-end" style="background-color: #fce4ec; color: #880e4f;">
-              <td style="width: 39%;" class="text-end">Totals</td>
+              <td style="width: 40%;" class="text-end">Totals</td>
               <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
               <td style="width: 9%;" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
               <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
               <td style="width: 9%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
               <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
               <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 1%;"></td>
+              <td style="width: 2%;"></td>
             </tr>
           </table>
         </div>
@@ -687,7 +687,7 @@
               <td style="width: 9%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
               <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
               <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 1%;"></td>
+              <td style="width: 3%;"></td>
             </tr>
           </table>
         </div>

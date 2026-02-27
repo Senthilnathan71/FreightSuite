@@ -73,7 +73,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     infoContent.push({
       table: { widths: ['auto', '*', 'auto', 'auto'], body: tableBody },
       layout: 'noBorders',
-      margin: [0, 0, 0, 0]
+      margin: [0, 0, 0, 20]
     });
   }
 
@@ -370,10 +370,15 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     content.push({ stack: summaryStack, unbreakable: true });
   }
 
+  // Keep a visible gap between header parameter info and table content.
+  const paramCount = exportConfig.reportHeader.additionalInfo?.length || 0;
+  const paramRows = Math.ceil(paramCount / 2);
+  const topMargin = 155 + (paramRows * 10) + 10;
+
   return {
     pageSize: 'A4',
     pageOrientation: orientation || 'portrait',
-    pageMargins: [30, 155, 30, 60] as [number, number, number, number],
+    pageMargins: [30, topMargin, 30, 60] as [number, number, number, number],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',

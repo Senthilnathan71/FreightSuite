@@ -343,6 +343,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   constructor(
     public mps: MenuPermissionService,
     private commonService: CommonService,
+    private datePipe : CustomDatePipe,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
@@ -561,6 +562,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     [
       'CashOrBank',
       'InstrumentMode',
+      'InstrumentDate',
       'InstrumentNumber',
       'BankPartyName',
     ].forEach((ctrl) => {
@@ -2054,6 +2056,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // if (bankDetailIndex === -1) bankCtrl?.setValue(null);
 
     const cashOrBank = this.r['CashOrBank']?.value === 'C' ? 'Cash' : 'Bank';
+    const intrumentDate = this.datePipe.transform(this.r['InstrumentDate']?.value ? new Date(this.r['InstrumentDate']?.value) : null);
     const instrumentMode = this.r['InstrumentMode']?.value;
     const instrumentNumber = this.r['InstrumentNumber']?.value;
     const bankPartyName = this.r['BankPartyName']?.value;
@@ -2061,14 +2064,14 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     partyCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
-          ? `Being Bank Transfer Recd. ${instrumentMode} ${instrumentNumber}`
+          ? `Being Bank Transfer Recd. ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${intrumentDate ? intrumentDate + ' ' : ''}`
           : `Being Cash Transfer Recd.`,
     });
 
     bankCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
-          ? `Being ${instrumentMode} ${instrumentNumber} from ${bankPartyName}`
+          ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${intrumentDate ? intrumentDate + ' ' : ''}from ${bankPartyName ? bankPartyName + '' : ''}`
           : `Being Cash Transfer Recd.`,
     });
   }

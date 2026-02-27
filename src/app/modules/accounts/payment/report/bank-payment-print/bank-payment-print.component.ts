@@ -42,6 +42,7 @@ export class BankPaymentPrintComponent {
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
   @Input() coaList : any[] = [];
+  @Input() ledgerList : any[] = [];
 
   constructor(
     private activeModal: NgbActiveModal,
@@ -189,11 +190,29 @@ export class BankPaymentPrintComponent {
   return ledger.LedgerName || '';
 }
 
+getSubledgerName(item: any): string {
+  const index = (this.paymentDataPrint?.VoucherDetail || []).findIndex(vd => vd.VoucherDetailSid === item.VoucherDetailSid);
+  console.log(index,"Vd index");
+  if (index === -1 || !item.LedgerMasterSid || !this.ledgerList[index]?.length) return '';
+  console.log(this.ledgerList[index],"this.ledgerList");
+  const ledger = this.ledgerList[index].find(
+    v => v?.SubledgerMasterSid === item.LedgerMasterSid
+  );
+console.log(ledger,"SubledgerName");
+  return ledger?.SubledgerName || '';
+}
+
+getDisplayLedgerName(item: any): string {
+  const subLedger = this.getSubledgerName(item);
+  const ledger = this.getLedgerName(item?.COAMasterSid);
+
+  return subLedger ? subLedger : ledger;
+}
 getTotalAmt() {
   return this.paymentDataPrint?.VoucherDetail
     ?.filter((item: any) => item?.DrCr === 'D')   
     ?.reduce((sum: number, item: any) => {
-      return sum + (parseFloat(item?.Amount) || 0);
+      return sum + (parseFloat(item?.PartyAmount) || 0);
     }, 0);
 }
 
@@ -208,7 +227,13 @@ getDrDetails() {
   const total = this.getTotalAmt();
   if (!total) return '';
 
-  const currencySid = this.currentCompany?.CurrencyMasterSid;
+  const voucherCurrencySid = Number(this.paymentDataPrint?.CurrencyMasterSid);
+  const currencySid = Number.isFinite(voucherCurrencySid) && voucherCurrencySid > 0
+    ? voucherCurrencySid
+    : this.currency.find(
+        c => c?.currencyCode === this.paymentDataPrint?.CurrencyCode || c?.CurrencyCode === this.paymentDataPrint?.CurrencyCode
+      )?.CurrencyMasterSid;
+
   return this.numberToWords.convert(total, currencySid);
 }
 

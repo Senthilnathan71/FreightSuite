@@ -1649,12 +1649,28 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const detail = this.detailItems.at(detailIndex) as FormGroup;
     const headerPartyValue = this.paymentForm.get('PartyMasterSid')?.getRawValue();
     const detailLedgerValue = detail.get('LedgerMasterSid')?.getRawValue();
+    const isSyTypeDetail = this.isSyTypeRow(detailIndex);
 
     // Only sync currency when both values are non-null and match (actual party row)
     if (headerPartyValue && detailLedgerValue && headerPartyValue === detailLedgerValue) {
       if (patch) {
         // Use emitEvent: false to prevent valueChanges subscriber from
         // wiping CurrencyCode when currencyList hasn't loaded yet
+        detail
+          .get('CurrencyMasterSid')
+          ?.setValue(this.r['CurrencyMasterSid']?.getRawValue(), { emitEvent: false });
+        detail
+          .get('CurrencyCode')
+          ?.setValue(this.r['CurrencyCode']?.getRawValue());
+        detail
+          .get('ExchangeRate')
+          ?.setValue(this.r['ExchangeRate']?.getRawValue());
+      }
+      detail.get('CurrencyMasterSid')?.disable();
+      detail.get('CurrencyCode')?.disable();
+      detail.get('ExchangeRate')?.disable();
+    } else if (isSyTypeDetail) {
+      if (patch) {
         detail
           .get('CurrencyMasterSid')
           ?.setValue(this.r['CurrencyMasterSid']?.getRawValue(), { emitEvent: false });
@@ -2010,6 +2026,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.handleDetailExchangeRate(coa.LedgerCurrency, detailIndex);
       }
     }
+    this.checkAndUpdateForPartyDetail(detailIndex, true);
   }
 
   /**
@@ -2767,6 +2784,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.isAutoPartyRow(index) || this.isAutoBankRow(index);
   }
 
+  isSyTypeRow(index: number): boolean {
+    const row = this.detailItems.at(index);
+    if (!row || !this.coaList?.length) return false;
+    const coaSid = row.get('COAMasterSid')?.getRawValue();
+    const rowCoa = this.coaList.find((c) => c.COAMasterSid === coaSid);
+    const ledgerType = String(rowCoa?.LedgerType || '').trim();
+    return ledgerType === 'Sy Cr' || ledgerType === 'Sy Dr';
+  }
+
   /**
    * Get tooltip text for the delete button.
    */
@@ -3493,6 +3519,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
     modalRef.componentInstance.coaList = this.coaList || [];
+    modalRef.componentInstance.ledgerList = this.ledgerList || [];
   }
 
   reportPayment() {

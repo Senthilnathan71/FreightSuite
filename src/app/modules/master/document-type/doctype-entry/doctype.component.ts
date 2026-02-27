@@ -467,7 +467,13 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			autoPostCtrl?.setValue('Y', { emitEvent: false });
 			autoPostCtrl?.disable({ emitEvent: false });
 		} else {
-			autoPostCtrl?.enable({ emitEvent: false });
+			if(code === 'VM') {
+				autoPostCtrl?.setValue('N', { emitEvent: false });
+				autoPostCtrl?.disable({ emitEvent: false });
+			} else {
+				autoPostCtrl?.enable({ emitEvent: false });
+			}
+
 
 			// optional: reset to default if you want
 			// autoPostCtrl?.setValue('N', { emitEvent: false });
