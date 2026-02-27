@@ -147,9 +147,11 @@ getAmountInWords(): string {
 }
   
 
- getDrDetails() {
+getDrDetails() {
   return this.receiptPrintData?.VoucherDetail?.filter(
-    (item: any) => item?.DrCr === 'D'
+    (item: any) =>
+      item?.DrCr === 'D' &&
+      parseFloat(item?.LocalAmount || 0) !== 0
   );
 }
 

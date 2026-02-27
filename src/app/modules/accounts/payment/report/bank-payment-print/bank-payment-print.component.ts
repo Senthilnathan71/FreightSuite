@@ -219,9 +219,12 @@ getTotalAmt() {
 
 getDrDetails() {
   return this.paymentDataPrint?.VoucherDetail?.filter(
-    (item: any) => item?.DrCr === 'D'
+    (item: any) =>
+      item?.DrCr === 'D' &&
+      parseFloat(item?.LocalAmount || 0) !== 0
   );
 }
+
 
 
  getAmountInWords(): string {

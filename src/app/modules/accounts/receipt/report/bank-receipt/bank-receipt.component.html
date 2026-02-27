@@ -54,7 +54,7 @@
     width:100%;
     padding:0 80px;
     margin-top:10px;
-    font-size:17px;
+    font-size:15px;
     align-items:flex-start;
     justify-content:space-between;
 ">
@@ -196,7 +196,7 @@
                         style="padding-top: 20px;padding-left: 20px; margin:0;text-align:start;font-weight: bolder;font-size: 20px;">
                         <strong>Remittance Details</strong></h3>
 
-                    <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;">
+                    <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:5px;font-size: 15px;">
                         <tbody>
 
                             <tr style="font-weight: bolder;">
@@ -219,11 +219,11 @@
                             <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
                                 <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">{{
                                     voucher?.VoucherNumber }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:start;">{{
+                                <td style="border:1px solid black; padding:4px; text-align:center;">{{
                                     voucher?.VoucherType }}</td>
                                 <td style="border:1px solid black; padding:4px; text-align:center;">{{
                                     voucher?.VoucherDate | formatDate }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:start;">{{
+                                <td style="border:1px solid black; padding:4px; text-align:center;">{{
                                     voucher?.CurrencyCode }}</td>
                                 <td style="border:1px solid black; padding:4px; text-align:right;">{{
                                     voucher?.MatchingAmount | number:'1.2-2' }}</td>

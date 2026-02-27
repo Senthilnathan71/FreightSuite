@@ -285,9 +285,11 @@ printDiv(divId: string): void {
   }, 50); // small timeout so Angular updates DOM
 }
 
- getDrDetails() {
+getDrDetails() {
   return this.receiptPrintData?.VoucherDetail?.filter(
-    (item: any) => item?.DrCr === 'D'
+    (item: any) =>
+      item?.DrCr === 'D' &&
+      parseFloat(item?.LocalAmount || 0) !== 0
   );
 }
 
