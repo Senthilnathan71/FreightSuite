@@ -1711,6 +1711,22 @@ createReverseVoucher(payload: any) {
     );
   }
 
+  findVoucherById(VoucherHeaderSid: number) {
+    return this.http.get<{ data: any }>(`voucher-correction/fetch/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateVoucherById(VoucherHeaderSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`voucher-correction/update/${VoucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   postVoucherSid(payload: any) {
     return this.http.post<{ data: any }>('reverse-voucher/post', payload).pipe(
       map((resp: any) => {

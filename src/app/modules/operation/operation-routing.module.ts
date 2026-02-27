@@ -43,6 +43,7 @@ import { VoucherCorrectionListComponent } from './voucher-correction/voucher-cor
 import { title } from 'process';
 import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
 import { AgentMasterAirWaybillEntryComponent } from './agent-master-air-waybill/agent-master-air-waybill-entry/agent-master-air-waybill-entry.component';
+import { VoucherCorrectionEntryComponent } from './voucher-correction/voucher-correction-entry/voucher-correction-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -492,6 +493,28 @@ export const OperationRoutes: Routes = [
       {
         path: "voucher-correction/list",
         component: VoucherCorrectionListComponent,
+        data: {
+          title: "Voucher-Correction",
+          urls: [
+            { title: 'Operation', url: '/operation'},
+            { title: 'Voucher-Correction'},
+          ],
+        },
+      },
+      {
+        path: "voucher-correction/entry",
+        component: VoucherCorrectionEntryComponent,
+        data: {
+          title: "Voucher-Correction",
+          urls: [
+            { title: 'Operation', url: '/operation'},
+            { title: 'Voucher-Correction'},
+          ],
+        },
+      },
+      {
+        path: "voucher-correction/entry/:id",
+        component: VoucherCorrectionEntryComponent,
         data: {
           title: "Voucher-Correction",
           urls: [
