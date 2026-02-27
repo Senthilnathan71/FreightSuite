@@ -117,4 +117,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Active Session Warning Dialog -->
+    @if (activeSessionInfo) {
+    <div class="session-overlay">
+        <div class="session-dialog card p-4 shadow-lg">
+            <div class="text-center mb-3">
+                <i-feather name="alert-triangle" class="text-warning" style="width: 48px; height: 48px;"></i-feather>
+                <h5 class="mt-2 font-medium">Already Logged In</h5>
+            </div>
+            <p class="text-center text-muted mb-3">
+                This account is currently logged in from another device.
+            </p>
+            <div class="bg-light rounded p-3 mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">IP Address:</small>
+                    <small class="fw-bold">{{ activeSessionInfo.ipAddress || 'Unknown' }}</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">Location:</small>
+                    <small class="fw-bold">{{ activeSessionInfo.location || 'Unknown' }}</small>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">Login Time:</small>
+                    <small class="fw-bold">{{ activeSessionInfo.loginTime | date:'medium' }}</small>
+                </div>
+            </div>
+            <p class="text-center text-muted small mb-3">
+                Would you like to end the other session and log in here?
+            </p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary flex-fill" (click)="cancelForceLogin()">Cancel</button>
+                <button class="btn btn-warning flex-fill" (click)="forceLogin()">
+                    <i-feather name="log-in" class="feather-sm me-1"></i-feather>
+                    Force Login
+                </button>
+            </div>
+        </div>
+    </div>
+    }
 </div>

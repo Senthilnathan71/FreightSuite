@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -17,8 +17,27 @@ import { toNumber } from 'src/app/common/helper';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, CommonModule,NgxSpinnerModule, ReactiveFormsModule, FeatherModule],
+  imports: [RouterModule, CommonModule, NgxSpinnerModule, ReactiveFormsModule, FeatherModule, DatePipe],
   templateUrl: './login.component.html',
+  styles: [`
+    .session-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .session-dialog {
+      max-width: 420px;
+      width: 90%;
+      border-radius: 12px;
+    }
+  `]
 })
 export class LoginComponent implements OnInit {
   loginform!: FormGroup;
@@ -32,6 +51,8 @@ export class LoginComponent implements OnInit {
   passwordView: boolean;
   successMessage: any;
   financialYears: any[] = [];
+  activeSessionInfo: any = null;
+  private pendingLoginParams: any = null;
   private unsubscribe$ = new Subject<void>();
   constructor(
     private appService: AppService,
@@ -172,6 +193,14 @@ export class LoginComponent implements OnInit {
     this.authService.login(param).subscribe((resp: any) => {
       this.isLoading = false;
 
+      // Handle session-active-elsewhere
+      if (!resp.status && resp.message === 'SESSION_ACTIVE_ELSEWHERE') {
+        this.spinner.hide();
+        this.activeSessionInfo = resp.data?.activeSessionInfo;
+        this.pendingLoginParams = { ...param, forceLogin: true };
+        return;
+      }
+
       if (!resp.status) {
         this.spinner.hide();
         this.errorMessage = resp.message || "Login failed";
@@ -179,32 +208,70 @@ export class LoginComponent implements OnInit {
         return;
       }
 
-      const selectedYearId = this.loginform.get('yearMasterSid')?.value;
-      const selectedYr = this.financialYears.find(fy => fy.YearMasterSid === toNumber(selectedYearId));
-      localStorage.setItem('current-year-id', selectedYearId)
-      const encryptedYearObj = this.appSettingService.encrypt(selectedYr);
-      if (encryptedYearObj) {
-        localStorage.setItem('current-financial-year', encryptedYearObj);
-      }
-
-      if (this.loginform.get('rememberMe')?.value) {
-        localStorage.setItem('rememberedEmail', param.email);
-        const encryptedPass = this.appSettingService.encrypt(param.password);
-        localStorage.setItem('rememberedPassword', encryptedPass);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-        localStorage.removeItem('rememberedPassword');
-      }
-
-      this.router.navigate(['dashboard']).then(() => {
-        this.spinner.hide();
-      });
+      this.handleLoginSuccess(param);
     },(error) => {
-      this.spinner.hide(); // Hide spinner on error
+      this.spinner.hide();
       this.isLoading = false;
       this.appSettingService.showError('An error occurred during login');
     });
    }
+
+  forceLogin() {
+    if (!this.pendingLoginParams) return;
+
+    this.activeSessionInfo = null;
+    this.isLoading = true;
+    this.spinner.show();
+
+    this.authService.login(this.pendingLoginParams).subscribe((resp: any) => {
+      this.isLoading = false;
+
+      if (!resp.status) {
+        this.spinner.hide();
+        this.pendingLoginParams = null;
+        this.errorMessage = resp.message || "Force login failed";
+        this.appSettingService.showError(this.errorMessage);
+        return;
+      }
+
+      const params = this.pendingLoginParams;
+      this.pendingLoginParams = null;
+      this.handleLoginSuccess(params);
+    }, (error) => {
+      this.spinner.hide();
+      this.isLoading = false;
+      this.pendingLoginParams = null;
+      this.appSettingService.showError('An error occurred during force login');
+    });
+  }
+
+  cancelForceLogin() {
+    this.activeSessionInfo = null;
+    this.pendingLoginParams = null;
+  }
+
+  private handleLoginSuccess(param: any) {
+    const selectedYearId = this.loginform.get('yearMasterSid')?.value;
+    const selectedYr = this.financialYears.find(fy => fy.YearMasterSid === toNumber(selectedYearId));
+    localStorage.setItem('current-year-id', selectedYearId)
+    const encryptedYearObj = this.appSettingService.encrypt(selectedYr);
+    if (encryptedYearObj) {
+      localStorage.setItem('current-financial-year', encryptedYearObj);
+    }
+
+    if (this.loginform.get('rememberMe')?.value) {
+      localStorage.setItem('rememberedEmail', param.email);
+      const encryptedPass = this.appSettingService.encrypt(param.password);
+      localStorage.setItem('rememberedPassword', encryptedPass);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+      localStorage.removeItem('rememberedPassword');
+    }
+
+    this.router.navigate(['dashboard']).then(() => {
+      this.spinner.hide();
+    });
+  }
 
 
 

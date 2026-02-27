@@ -17,6 +17,7 @@ import { DocumentSearchResult } from './document-search.interface';
 import { VerticalSidebarService } from '../vertical-sidebar/vertical-sidebar.service';
 import { RouteInfo } from '../vertical-sidebar/vertical-sidebar.metadata';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { SessionService } from 'src/app/core/services/session.service';
 
 declare var $: any;
 
@@ -95,7 +96,8 @@ branchList: any[] = [];
     private companySettingsManager: CompanySettingsManagerService,
     private logoService : LogoService,
     private masterService : MasterService,
-    private verticalSidebarService : VerticalSidebarService
+    private verticalSidebarService : VerticalSidebarService,
+    private sessionService: SessionService
   ) {
     // translate.setDefaultLang('en');
   }
@@ -903,6 +905,17 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   }
 
   logout() {
+    // Stop heartbeat polling
+    this.sessionService.stopHeartbeat();
+
+    // Notify backend to invalidate the session
+    this.sessionService.logoutFromServer().subscribe({
+      next: () => this.performLocalLogout(),
+      error: () => this.performLocalLogout()
+    });
+  }
+
+  private performLocalLogout() {
     // Clear company settings to prevent API loops during logout
     this.companySettingsManager.clearCompanySettings();
     // Preserve remembered credentials
@@ -923,7 +936,6 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     if (lastUsedFinancialYear) {
       localStorage.setItem('current-year-id', lastUsedFinancialYear);
     }
-
 
     this.appSettingsService.sessionExpire().then(() => {
       location.href = location.protocol + '//' + location.host + '/auth'
