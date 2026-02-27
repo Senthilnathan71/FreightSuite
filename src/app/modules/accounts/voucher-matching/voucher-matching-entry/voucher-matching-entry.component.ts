@@ -494,6 +494,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       Skip: this.sourceSkip,
       Take: this.BATCH_SIZE,
       VoucherMatchingDate: this.voucherMatchingForm.get('VoucherMatchingDate')?.value ?? undefined,
+      COAMasterSid: this.selectedLedger?.COAMasterSid ?? undefined,
     }).subscribe({
       next: (resp: any) => {
         const data = resp?.status ? resp.data : resp;
@@ -524,6 +525,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       Skip: this.objectSkip,
       Take: this.BATCH_SIZE,
       VoucherMatchingDate: this.voucherMatchingForm.get('VoucherMatchingDate')?.value ?? undefined,
+      COAMasterSid: this.selectedLedger?.COAMasterSid ?? undefined,
     }).subscribe({
       next: (resp: any) => {
         const data = resp?.status ? resp.data : resp;

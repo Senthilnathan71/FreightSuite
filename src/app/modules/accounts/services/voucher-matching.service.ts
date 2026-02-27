@@ -12,6 +12,7 @@ export interface FetchOutstandingVouchers {
   Skip?: number;
   Take?: number;
   VoucherMatchingDate?: string;
+  COAMasterSid?: number;
 }
 
 export interface FetchVoucherMatchingByIdDto {

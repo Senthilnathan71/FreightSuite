@@ -336,6 +336,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isDirty = false;
   private initialFormValue : any = null;
   private previousPartyBranchSid: number | null = null;
+  private previousBankCoaSid: number | null = null;
 
   get hasMatchingDetails(): boolean {
     return this.voucherMatchings?.length > 0;
@@ -358,7 +359,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private spinner: NgxSpinnerService,
     private companySettings: CompanySettingsManagerService,
     private voucherPeriodService: VoucherPeriodValidationService,
-    private confirmService: ModalService
+    private confirmService: ModalService,
+    private datePipe: CustomDatePipe
   ) {}
 
   ngOnInit(): void {
@@ -562,6 +564,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     [
       'CashOrBank',
       'InstrumentMode',
+      'InstrumentDate',
       'InstrumentNumber',
       'BankPartyName',
     ].forEach((ctrl) => {
@@ -988,6 +991,13 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    if (this.paymentForm.invalid) {
+      errorLoggerWithToastr(this.paymentForm, this.toastr, this.paymentValidationConfig);
+      this.paymentForm.markAllAsTouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     const raw = this.paymentForm.getRawValue();
     if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
       this.appSettingService.showWarning('No changes to save');
@@ -1026,6 +1036,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.isSaving = false;
         return;
       }
+    }
+
+    const zeroLocalAmountIndex = detailItems.findIndex(
+      (d) => isNaN(Number(d.LocalAmount)) || Number(d.LocalAmount) <= 0
+    );
+    if (zeroLocalAmountIndex !== -1) {
+      this.appSettingService.showError(
+        `Row ${zeroLocalAmountIndex + 1}: Local Amount must be greater than zero.`
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
     }
 
     const partyDetail = detailItems.find(
@@ -1111,14 +1133,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     if (this.matchingError) {
       this.appSettingService.showError(this.matchingError);
-      if (resolve) resolve(false);
-      this.isSaving = false;
-      return;
-    }
-
-    if (this.paymentForm.invalid) {
-      errorLoggerWithToastr(this.paymentForm,this.toastr,this.paymentValidationConfig);
-      this.paymentForm.markAllAsTouched();
       if (resolve) resolve(false);
       this.isSaving = false;
       return;
@@ -1515,6 +1529,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.isDirty = false;
       this.isLoading = false;
       this.subscribeToFormChanges();
+      this.subscribeToPartyAndBankChanges();
     }, 1000);
   }
 
@@ -1734,13 +1749,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
       });
 
+    // Capture initial BankCOA value so we can track the previous one on changes
+    this.previousBankCoaSid = Number(this.r['BankCOA']?.getRawValue()) || null;
+
     // Listen to bank/cash changes independently
     this.paymentForm.get('BankCOA').valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((bankCoaSid) => {
         if (this.isLoading) return;
+        const prevSid = this.previousBankCoaSid;
+        this.previousBankCoaSid = bankCoaSid ? Number(bankCoaSid) : null;
         if (bankCoaSid) {
-          this.insertBankCashRow(bankCoaSid);
+          this.insertBankCashRow(bankCoaSid, prevSid);
         } else {
           this.removeAutoBankRow();
         }
@@ -1827,37 +1847,40 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Insert a bank/cash row when bank/cash is selected.
    * After insertion, filter COA list to exclude the selected bank/cash.
    */
-  private async insertBankCashRow(bankCoaSid: number): Promise<void> {
+  private async insertBankCashRow(bankCoaSid: number, prevBankCoaSid?: number | null): Promise<void> {
     const isCashMode = this.paymentForm.get('CashOrBank')?.value === 'C';
     const bankLedgerSource = isCashMode
       ? this.cashTypeLedgers
       : this.bankTypedLedgers;
+    const bankCoaSidNum = Number(bankCoaSid);
     const bankLedger = bankLedgerSource.find(
-      (ledger) => ledger.COAMasterSid === bankCoaSid
+      (ledger) => Number(ledger.COAMasterSid) === bankCoaSidNum
     );
     if (!bankLedger) {
       console.error('Could not find the selected bank/cash ledger details.');
       return;
     }
 
-    // Find ALL bank/cash-type rows
+    // Find ALL bank/cash-type rows — use Number() coercion for safe comparison
     const cashBankIndexes: number[] = [];
-    const allBankCashCoaSids = [
-      ...this.bankTypedLedgers.map((l) => l.COAMasterSid),
-      ...this.cashTypeLedgers.map((l) => l.COAMasterSid),
-    ];
+    const allBankCashCoaSidNums = new Set([
+      ...this.bankTypedLedgers.map((l) => Number(l.COAMasterSid)),
+      ...this.cashTypeLedgers.map((l) => Number(l.COAMasterSid)),
+    ]);
+    const prevSidNum = prevBankCoaSid ? Number(prevBankCoaSid) : null;
 
     (this.detailItems.getRawValue() || []).forEach((d, index) => {
+      const dCoaSidNum = Number(d.COAMasterSid);
       const ledgerObj = this.coaList.find(
-        l => l.COAMasterSid === d.COAMasterSid
+        l => Number(l.COAMasterSid) === dCoaSidNum
       );
 
-      // Check if it's a Bank or Cash type OR matches any bank/cash COA
+      // Check if it's a Bank or Cash type, matches any bank/cash COA, or is the previous bank row
       if (
         ledgerObj?.LedgerType === 'Bank' ||
         ledgerObj?.LedgerType === 'Cash' ||
-        allBankCashCoaSids.includes(d.COAMasterSid) ||
-        (d.DrCr === 'C' && allBankCashCoaSids.includes(d.COAMasterSid))
+        allBankCashCoaSidNums.has(dCoaSidNum) ||
+        (prevSidNum && dCoaSidNum === prevSidNum)
       ) {
         cashBankIndexes.push(index);
       }
@@ -2073,6 +2096,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // if (bankDetailIndex === -1) bankCtrl?.setValue(null);
 
     const cashOrBank = this.r['CashOrBank']?.value === 'C' ? 'Cash' : 'Bank';
+    const instrumentDate = this.datePipe.transform(this.r['InstrumentDate']?.value ? new Date(this.r['InstrumentDate']?.value) : null);
     const instrumentMode = this.r['InstrumentMode']?.value;
     const instrumentNumber = this.r['InstrumentNumber']?.value;
     const bankPartyName = this.r['BankPartyName']?.value;
@@ -2080,14 +2104,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     partyCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
-          ? `Being Bank Transfer  ${instrumentMode} ${instrumentNumber}`
+          ? `Being Bank Transfer  ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}`
           : `Being Cash Transfer .`,
     });
 
     bankCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
-          ? `Being ${instrumentMode} ${instrumentNumber} from ${bankPartyName}`
+          ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}from ${bankPartyName ? bankPartyName + '' : ''}`
           : `Being Cash Transfer.`,
     });
   }
