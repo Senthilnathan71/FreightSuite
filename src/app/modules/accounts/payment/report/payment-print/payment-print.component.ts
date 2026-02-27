@@ -111,12 +111,13 @@ export class PaymentPrintComponent {
     v => v.COAMasterSid === COAMasterSid
   );
 
-  return ledger.LedgerName || '';
+  return ledger?.LedgerName || '';
 }
 
 getSubledgerName(item: any): string {
+  console.log(item,"item");
   const index = (this.paymentDataPrint?.VoucherDetail || []).findIndex(vd => vd.VoucherDetailSid === item.VoucherDetailSid);
-  console.log(index,"Vd index");
+
   if (index === -1 || !item.LedgerMasterSid || !this.ledgerList[index]?.length) return '';
   console.log(this.ledgerList[index],"this.ledgerList");
   const ledger = this.ledgerList[index].find(
@@ -125,7 +126,6 @@ getSubledgerName(item: any): string {
 console.log(ledger,"SubledgerName");
   return ledger?.SubledgerName || '';
 }
-
 getDisplayLedgerName(item: any): string {
   const subLedger = this.getSubledgerName(item);
   const ledger = this.getLedgerName(item?.COAMasterSid);

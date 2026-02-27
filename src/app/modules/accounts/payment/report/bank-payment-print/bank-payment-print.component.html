@@ -35,20 +35,20 @@
     <h4 style="text-align:center; padding:10px 0; font-weight:bolder; border-top: 1px solid black;line-height:1.2;"><strong>Bank Payment</strong></h4>
 
     <!-- Details Row -->
-    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:100px;"  >
+    <div style="display:flex; width:100%; margin-bottom:10px;padding-left:100px;font-size: 15px;"  >
         
         <!-- Left -->
         <div style="width:50%;">
             <div style="display:flex; ">
-                <div style="width:150px; font-weight:bolder;"><strong>Payment No.</strong></div>
+                <div style="width:120px; font-weight:bolder;"><strong>Payment No.</strong></div>
                 <div>: {{paymentDataPrint?.VoucherNumber}}</div>
             </div>
             <div style="display:flex; ">
-                <div style="width:150px; font-weight:bolder;"><strong>Payment Date</strong></div>
+                <div style="width:120px; font-weight:bolder;"><strong>Payment Date</strong></div>
                 <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
             </div>
             <div style="display:flex; ">
-                <div style="width:150px; font-weight:bolder;"><strong>Paid To</strong></div>
+                <div style="width:120px; font-weight:bolder;"><strong>Paid To</strong></div>
                 <div>: {{paymentDataPrint?.BankPartyName}}</div>
             </div>
         </div>
