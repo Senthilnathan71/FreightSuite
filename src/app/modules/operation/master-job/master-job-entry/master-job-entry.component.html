@@ -648,6 +648,7 @@
     <div class="input-group" *ngIf="!isETAFreeText">
       <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETA" 
         ngbDatepicker #etaPicker="ngbDatepicker"
+        [minDate]="toNgbDateStruct(f['ETD']?.value)"
         (click)="etaPicker.toggle()" container="body" readonly />
       <button class="btn bi bi-calendar3 px-0" (click)="etaPicker.toggle()"
         type="button">
@@ -662,6 +663,7 @@
     <!-- Manual Date Input -->
     <div class="input-group" *ngIf="isETAFreeText">
       <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETA" 
+        [minDate]="toNgbDateStruct(f['ETD']?.value)"
         ngbDatepicker #etaPickerManual="ngbDatepicker"
         (click)="etaPickerManual.toggle()" container="body" />
       <button class="btn bi bi-calendar3 px-0" (click)="etaPickerManual.toggle()"

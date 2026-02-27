@@ -133,9 +133,12 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
-          <i class="fas fa-save  me-1"></i>
-          <span>Save</span>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+        appPreventMultiClick
+        (click)="onSubmit()"
+        [disabled]="isSaving">
+          <i class="fas me-1" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+          <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
         </button>
       </div>
        <!-- *ngIf="mps.hasAtLeastOne() && isEditMode" -->
@@ -400,6 +403,7 @@
                         placeholder="" [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
+                        [readonly]="isEditMode"
                         (itemSelected)="onCustomerChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
@@ -933,19 +937,19 @@
                         @if(selectedDepartmentType === "AIR"){
                           <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
                             <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="VesselName" placeholder="" appendTo="body" style="width: 85%">
+                formControlName="VesselName" placeholder="" appendTo="body" [readonly]="true" style="width: 85%">
               </ng-select>
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                          <!-- <button class="btn bi bi-calendar3 pe-0" type="button"
                             (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
                             <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-                          </button>
+                          </button> -->
                           </div>
                           <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
-                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control"   readonly />
+                          <!-- <button class="btn bi bi-calendar3 pe-0" type="button"
                             (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
                             <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-                          </button>
+                          </button> -->
                         </div>
       <label for="text-input" class="input-label">Flight Name <span class="text-danger"></span></label>
                         }@else {
@@ -961,22 +965,23 @@
                             [labelFields]="vesselVoyageConfig.labelFields"
                             bindValue="VesselName"
                             (itemSelected)="onVesselChange($event)"
+                            [readonly]="true"
                            style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                           </dofi-searchable-dropdown>
                           </div>
-                          <button class="btn bi bi-calendar3 px-0" type="button"
+                          <!-- <button class="btn bi bi-calendar3 px-0" type="button"
                             (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
                             <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
-                          </button>
+                          </button> -->
                         </div>
 
                         <!-- Manual Text Input -->
                         <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
-                          <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
-                          <button class="btn bi bi-calendar3 pe-0" type="button"
+                          <input type="text" formControlName="VesselName" placeholder="" class="form-control"  readonly/>
+                          <!-- <button class="btn bi bi-calendar3 pe-0" type="button"
                             (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
                             <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
-                          </button>
+                          </button> -->
                         </div>
 
                         <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
@@ -989,7 +994,7 @@
                         <div class="custom-form-group">
                           @if(selectedDepartmentType === "AIR"){
       <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
-        formControlName="VoyageNo">
+        formControlName="VoyageNo" readonly>
       <label for="text-input" class="input-label">Flight Number<span class="text-danger"></span></label>
     } @else {
                           <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
@@ -2793,8 +2798,8 @@
 
   <!-- Floating Action Button -->
   <div class="floating-actions">
-    <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()">
-      <i class="fas fa-save"></i>
+    <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()" [disabled]="isSaving">
+      <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
     </button>
   </div>
 

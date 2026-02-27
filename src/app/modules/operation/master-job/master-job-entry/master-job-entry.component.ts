@@ -897,7 +897,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.syncFormValueWithRateComponent();
     });
   }
-
+onETDDateSelect(): void {
+    const etaControl = this.masterJobForm.get('ETA');
+    if (etaControl?.value) {
+      etaControl.setValue(null);
+    }
+  }
   initContainerForm(): void {
     this.containerFormGroup = this.fb.group({
       MasterJobContainerSid: [null],
@@ -2412,6 +2417,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     if (!date) return null;
     const dateObj = date instanceof Date ? date : new Date(date);
     return dateObj.toISOString().split('T')[0];
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
   }
 
   formatArrayDates(array: any[], dateFields: string[]): void {

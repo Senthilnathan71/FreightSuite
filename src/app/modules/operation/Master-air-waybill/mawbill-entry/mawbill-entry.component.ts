@@ -125,6 +125,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   masterJobForm: FormGroup;
   isEditMode = false;
   masterJobSid: number | null = null;
+  isSaving = false;
   isLoading = false;
   currentCompany: any;
   currentBranch: any;
@@ -150,6 +151,11 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   displayLabels: ['MAWB', 'AirLine'],
   labelFields: ['MasterBillNumber']
 };
+ customerAirlineLookupConfig={
+    displayFields: ['CustomerName','AirlineCode'],
+    displayLabels: ['Customer','AirlineCode'],
+    labelFields: ['AirlineCode']
+  }
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
@@ -371,9 +377,45 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
         // this.syncFormValueWithEmailComponent();
         // this.syncFormValueWithContainerActivityComponent();
       });
-
+  this.masterJobForm.get('CarrierName')?.valueChanges.subscribe((carrierName) => {
+    if(this.selectedDepartmentType === "AIR"){
+      const selectedCarrier = this.carrierList.find(carrier => carrier.CustomerName === carrierName);
+      this.onCarrierChangeForAir(selectedCarrier);
+    }
+  });
+  }
+onCarrierChangeForAir(carrier: any): void {
+  // Only apply for Air department
+  if (this.selectedDepartmentType !== "AIR") {
+    return;
   }
 
+  if (!carrier) {
+    // If carrier is cleared, clear the airline selection
+    this.masterJobForm.get('VesselName')?.setValue(null);
+    return;
+  }
+
+  // Check if the selected carrier has an AirlineCode
+  if (carrier.AirlineCode) {
+    // Find the airline in airlineList that matches this AirlineCode
+    const matchingAirline = this.airlineList.find(
+      airline => airline.AirlineCode === carrier.AirlineCode
+    );
+
+    if (matchingAirline) {
+      // Set the VesselName to the matching airline's CustomerName
+      this.masterJobForm.get('VesselName')?.setValue(matchingAirline.CustomerName);
+    } else {
+      // If no exact match found, you might want to clear or show a message
+      console.log('No matching airline found for AirlineCode:', carrier.AirlineCode);
+      this.masterJobForm.get('VesselName')?.setValue(null);
+    }
+  } else {
+    // Carrier doesn't have an AirlineCode
+    this.masterJobForm.get('VesselName')?.setValue(null);
+  }
+}
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -844,6 +886,7 @@ loadMawbStock(data: any): void {
   });
 }
   loadMasterJobData(masterJobSid: number): void {
+      this.isSaving = true;
       this.spinner.show();
       const payload = {
         screenName : 'Master Air Waybill',
@@ -909,13 +952,16 @@ loadMawbStock(data: any): void {
         } else {
           this.arapData = [];
         }
+        this.isSaving = false;
         this.isLoading = false;
         this.spinner.hide();
       },
       error: (error) => {
-        this.toastr.error('Failed to load master job data');
-        console.error('Error loading master job:', error);
+        this.toastr.error('Failed to load master Air Waybill data');
+        console.error('Error loading master Air Waybill:', error);
+        this.isSaving = false;
         this.isLoading = false;
+        this.spinner.hide();
       }
     });
   }
@@ -1165,6 +1211,8 @@ loadMawbStock(data: any): void {
   if(data.allShipments.length > 0) {
     this.patchShipments(allShipments);
   }
+
+  this.isSaving = false;
 }
 
   onDestinationAgentChange(selectedAgent: any) {
@@ -1484,7 +1532,9 @@ if (polSid && !podSid) {
       return;
     }
 
+    this.isSaving = true;
     this.isLoading = true;
+    this.spinner.show();
     
     const getPortCode = (portSid: any): string => {
         if (!portSid && portSid !== 0) return '';
@@ -1599,44 +1649,58 @@ if (polSid && !podSid) {
         formData.MasterJobSid = this.masterJobSid;
         this.operationService.updateMasterJob(formData).subscribe({
             next: (response: any) => {
+                this.isSaving = false;
                 this.isLoading = false;
+                this.spinner.hide();
                 if (response.status) {
+                    const masterJobSid =
+                        response.data?.newMasterJob?.MasterJobSid ||
+                        response.newMasterJob?.MasterJobSid ||
+                        this.masterJobSid;
                     if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
                         this.toastr.success(
-                            `Master Job updated successfully. MAWB: ${response.newMasterJob.MBLNo}`
+                            `Master Air Waybill updated successfully. MAWB: ${response.newMasterJob.MBLNo}`
                         );
                     } else {
-                        this.toastr.success('Master Job updated successfully');
+                        this.toastr.success('Master Air Waybill updated successfully');
                     }
-                    this.loadMasterJobData(this.masterJobSid);
+                    if (masterJobSid) {
+                        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+                    }
                 } else {
                     this.toastr.error(response.message || 'Failed to update Master Job');
                 }
             },
             error: (error) => {
+                this.isSaving = false;
                 this.isLoading = false;
+                this.spinner.hide();
                 if (error.error?.message?.includes('No free MAWB stock available')) {
                     this.toastr.warning(
                         'No free MAWB stock available for Air department.'
                     );
                 } else {
-                    this.toastr.error('Failed to update Master Job');
+                    this.toastr.error('Failed to update Master Air Waybill');
                 }
-                console.error('Error updating master job:', error);
+                console.error('Error updating master Air Waybill:', error);
             }
         });
     } else {
     this.operationService.createMasterJob(formData).subscribe({
   next: (response: any) => {
+    this.isSaving = false;
     this.isLoading = false;
+    this.spinner.hide();
 
     if (response.status) {
 
-      const masterJobSid = response.data?.newMasterJob?.MasterJobSid;
+      const masterJobSid =
+        response.data?.newMasterJob?.MasterJobSid ||
+        response.newMasterJob?.MasterJobSid;
 
       if (this.isAirDepartment && response.data?.newMasterJob?.MBLNo) {
 
-        let successMessage = 'Master Job created successfully';
+        let successMessage = 'Master Air Waybill created successfully';
 
         if (masterJobSid) {
           this.toastr.success(successMessage);
@@ -1645,16 +1709,22 @@ if (polSid && !podSid) {
         }
       }
 
-      this.toastr.success('Master Job created successfully');
-      this.router.navigate(['/operation/mawbill/list']);
+      this.toastr.success('Master  Air Waybill created successfully');
+      if (masterJobSid) {
+        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      } else {
+        this.router.navigate(['/operation/mawbill/list']);
+      }
 
     } else {
-      this.toastr.error(response.message || 'Failed to create Master Job');
+      this.toastr.error(response.message || 'Failed to create Master Air Waybill');
     }
   },
 
             error: (error) => {
+                this.isSaving = false;
                 this.isLoading = false;
+                this.spinner.hide();
                 if (error.error?.message?.includes('No free MAWB stock available')) {
                     // Check if this is Air Export or Air Import
                     const isAirExport = (
@@ -1672,9 +1742,9 @@ if (polSid && !podSid) {
                         this.toastr.warning('No free MAWB available');
                     }
                 } else {
-                    this.toastr.error('Failed to create Master Job');
+                    this.toastr.error('Failed to create Master Air Waybill');
                 }
-                console.error('Error creating master job:', error);
+                console.error('Error creating master Air Waybill:', error);
             }
         });
     }
@@ -2242,6 +2312,21 @@ handleEdocChange(event: any) {
     return this.masterJobForm.controls || {};
   }
 
+  onETDDateSelect(): void {
+    if (this.selectedDepartmentType !== 'AIR') {
+      return;
+    }
+
+    const etaControl = this.masterJobForm.get('ETA');
+    if (etaControl?.value) {
+      etaControl.setValue(null);
+    }
+  }
+
+  toNgbDateStruct(date: Date | string | null): NgbDateStruct | null {
+    return toNgbDateStruct(date);
+  }
+
   // Shipment Related Works
   
   createShipmentGroup(data?: any): FormGroup {
@@ -2393,7 +2478,7 @@ handleEdocChange(event: any) {
       centered: true,
       windowClass: 'custom-modal-size'
     });
-    modalRef.componentInstance.screenName = 'Master Job';
+    modalRef.componentInstance.screenName = 'Master Air Waybill';
     const value = this.masterJobForm.value;
     modalRef.componentInstance.masterJobFormValue = {
       DepartmentMasterSid : value.DepartmentMasterSid,

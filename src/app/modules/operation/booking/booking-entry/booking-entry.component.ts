@@ -182,6 +182,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     labelFields: ['currencyCode'],
   };
 
+  customerAirlineLookupConfig={
+    displayFields: ['CustomerName','AirlineCode'],
+    displayLabels: ['Customer','AirlineCode'],
+    labelFields: ['AirlineCode']
+  }
+
   modeOfStatus = [
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
@@ -629,9 +635,18 @@ arapFilter = {
 
       this.spinner.hide();
     });
+    this.bookingForm.get('CarrierName')?.valueChanges.subscribe((carrierName) => {
+  if (this.selectedDepartmentType === "AIR") {
+    // Find the full carrier object from carrierList
+    const selectedCarrier = this.carrierList.find(c => c.CustomerName === carrierName);
+    this.onCarrierChangeForAir(selectedCarrier);
+  }
+});
+
 
     
   }
+  
 
   private updateGenerateJobButtonVisibility(): void {
   const isFCLDepartment = this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "AIR";
@@ -826,6 +841,13 @@ subscribeToFormChanges() {
     this.bookingForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
+  }
+
+  onETDDateSelect(): void {
+    const etaControl = this.bookingForm.get('ETA');
+    if (etaControl?.value) {
+      etaControl.setValue(null);
+    }
   }
 
   toggleInputType(mainCtrl: string, flagCtrl, event: MouseEvent): void {
@@ -2206,7 +2228,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         return; // STOP submission
       }
     }
-    
+    this.isSaving = true;
+    this.spinner.show();
     if (this.isEditMode && this.BookingHeaderSid) {
       this.operationService.updateBookingById(this.BookingHeaderSid, payload).subscribe({
         next: (resp: any) => {
@@ -2409,6 +2432,40 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   return isValid;
+}
+
+// Add this method to your BookingEntryComponent
+onCarrierChangeForAir(carrier: any): void {
+  // Only apply for Air department
+  if (this.selectedDepartmentType !== "AIR") {
+    return;
+  }
+
+  if (!carrier) {
+    // If carrier is cleared, clear the airline selection
+    this.bookingForm.get('VesselName')?.setValue(null);
+    return;
+  }
+
+  // Check if the selected carrier has an AirlineCode
+  if (carrier.AirlineCode) {
+    // Find the airline in airlineList that matches this AirlineCode
+    const matchingAirline = this.airlineList.find(
+      airline => airline.AirlineCode === carrier.AirlineCode
+    );
+
+    if (matchingAirline) {
+      // Set the VesselName to the matching airline's CustomerName
+      this.bookingForm.get('VesselName')?.setValue(matchingAirline.CustomerName);
+    } else {
+      // If no exact match found, you might want to clear or show a message
+      console.log('No matching airline found for AirlineCode:', carrier.AirlineCode);
+      this.bookingForm.get('VesselName')?.setValue(null);
+    }
+  } else {
+    // Carrier doesn't have an AirlineCode
+    this.bookingForm.get('VesselName')?.setValue(null);
+  }
 }
   /**
     |--------------------------------------------------
@@ -2714,7 +2771,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   handlePOLChange(selectedPort: any) {
-    this.b['VesselName']?.setValue(null);
+    if (this.selectedDepartmentType !== 'AIR') {
+      this.b['VesselName']?.setValue(null);
+    }
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
@@ -2729,7 +2788,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   handlePODChange(selectedPort: any) {
-    this.b['VesselName']?.setValue(null);
+    if (this.selectedDepartmentType !== 'AIR') {
+      this.b['VesselName']?.setValue(null);
+    }
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
@@ -4361,7 +4422,8 @@ deepEqual(obj1: any, obj2: any): boolean {
   };
 
   console.log('Generate Job Payload:', payload);
-
+  this.isSaving = true;
+  this.spinner.show();
   this.operationService.createMasterJob(payload).subscribe({
     next: (resp: any) => {
       if (resp.status) {

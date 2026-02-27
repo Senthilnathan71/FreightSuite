@@ -247,6 +247,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   TandCList: any[]=[];
   bookingHeader: any;
   isSubmitting = false; 
+  isSaving: boolean = false;
   selectedCustomerBranch : any;
   edocData : any;
   edocResetTrigger : any;
@@ -2034,10 +2035,16 @@ onCurrencyChange(event: any) {
   
 }
 
+  private resetSaveState(): void {
+    this.isSubmitting = false;
+    this.isSaving = false;
+    this.spinner.hide();
+  }
+
 
   onSubmit() {
-    if (this.isSubmitting) {
-   
+    if (this.isSubmitting || this.isSaving) {
+    
     return;
   }
     if (!this.validateHBLNo()) {
@@ -2106,13 +2113,8 @@ if (this.bookingProducts.length > 0) {
     return;
   }
   this.isSubmitting = true;
-  
-  // Disable save button during submission
-  const saveButton = document.querySelector('button[class*="btn-save"]') as HTMLButtonElement;
-  if (saveButton) {
-    saveButton.disabled = true;
-    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i><span>Saving...</span>';
-  }
+  this.isSaving = true;
+  this.spinner.show();
   const cargoFormValue = this.cargoForm.getRawValue();
   const otherFormValue = this.otherForm.getRawValue();
   const detailFormValue = this.detailForm.getRawValue();
@@ -2128,13 +2130,7 @@ if (this.bookingProducts.length > 0) {
     if (customsErrors.length > 0) {
       this.customsValidationErrors = customsErrors;
       this.showCustomsValidationModal = true;
-      this.isSubmitting = false;
-      // Re-enable save button
-      const saveButton2 = document.querySelector('button[class*="btn-save"]') as HTMLButtonElement;
-      if (saveButton2) {
-        saveButton2.disabled = false;
-        saveButton2.innerHTML = '<i class="fas fa-save me-1"></i><span>Save</span>';
-      }
+      this.resetSaveState();
       return;
     }
   }
@@ -2326,6 +2322,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
  if (!this.isEditMode) {
     this.operationService.createHouseJob(payload).subscribe({
       next: (resp: any) => {
+        this.resetSaveState();
         if (resp.status) {
           this.appSettingService.showSuccess('House Job created successfully!');
           this.HouseJobSid = resp.data.HouseJobSid;
@@ -2346,15 +2343,18 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
         }
       },
       error: (err) => {
+        this.resetSaveState();
         this.appSettingService.showError('Failed to create house job. Please try again.');
         console.error('Create API error:', err);
       }
     });
+    return;
   } 
   // Rest of your API call code remains the same...
   if (this.isEditMode && this.HouseJobSid) {
     this.operationService.updateHouseById(this.HouseJobSid, payload).subscribe({
       next: (resp: any) => {
+        this.resetSaveState();
         if (resp.status) {
           this.appSettingService.showSuccess('House Job successfully updated.');
             this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
@@ -2366,11 +2366,16 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
         }
       },
       error: (err) => {
+        this.resetSaveState();
         this.appSettingService.showError('Failed to update booking.');
         console.error(err);
       }
     });
+    return;
   }
+
+  this.resetSaveState();
+  this.appSettingService.showError('Unable to save House Job. Missing record reference.');
 }
 
   /**

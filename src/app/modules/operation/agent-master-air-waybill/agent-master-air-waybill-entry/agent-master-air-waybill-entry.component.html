@@ -318,7 +318,7 @@
               formControlName="HouseStatus"> -->
             <ng-select [items]="jobStatusOptions" bindLabel="name" bindValue="id" formControlName="HouseStatus"
               placeholder="" class="ng-select" appendTo="body"></ng-select>
-            <label class="input-label"> House Status <span class="text-danger">*</span></label>
+            <label class="input-label">Job Status <span class="text-danger">*</span></label>
           </div>
         </div>
 
@@ -533,13 +533,14 @@
                                 placeholder="" [displayFields]="customerLookupConfig.displayFields"
                                 [displayLabels]="customerLookupConfig.displayLabels"
                                 [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                                bindValue="CustomerName"
+                                bindValue="CustomerName" [readonly]="isEditMode"
                                 (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
                                 style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                               </dofi-searchable-dropdown>
                             </div>
                             <!-- Swap icon -->
                             <button class="btn bi bi-calendar3 ps-0" type="button"
+                            
                               (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)"
                               style="flex-shrink:0;">
                               <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
@@ -974,12 +975,18 @@
                       <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                           [class.filled]="!!houseJobForm.get('VesselName')?.value">
-                          @if(selectedDepartmentType === "AIR"){
+                         
                           <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
-                            <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName"
+                            <!-- <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName"
                               class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                               style="width: 85%">
-                            </ng-select>
+                            </ng-select> -->
+
+                              <dofi-searchable-dropdown [items]="airlineList" formControlName="VesselName" placeholder=""
+                                [displayFields]="customerAirlineLookupConfig.displayFields"
+                                [displayLabels]="customerAirlineLookupConfig.displayLabels" [labelFields]="customerAirlineLookupConfig.labelFields"
+                                bindLabel="CustomerName" bindValue="CustomerName" style="width : 100%;" (change)="onCarrierChangeForAir($event)">
+                              </dofi-searchable-dropdown>
                             <button class="btn bi bi-calendar3 pe-0" type="button"
                               (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
                               <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
@@ -994,8 +1001,9 @@
                           </div>
                           <label for="text-input" class="input-label">Flight Name <span
                               class="text-danger"></span></label>
-                          }@else {
-                          <!-- Dropdown Mode -->
+                          
+                          <!-- @else {
+                        
                           <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
                             <div style="flex:1; min-width:0; overflow:hidden;">
                               <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName"
@@ -1012,7 +1020,7 @@
                             </button>
                           </div>
 
-                          <!-- Manual Text Input -->
+                          
                           <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
                             <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
                             <button class="btn bi bi-calendar3 pe-0" type="button"
@@ -1022,22 +1030,23 @@
                           </div>
 
                           <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-                          }
+                          } -->
                         </div>
                       </aside>
 
                       <!-- Voyage No -->
                       <aside class="col-md-6">
                         <div class="custom-form-group">
-                          @if(selectedDepartmentType === "AIR"){
+                          <!-- @if(selectedDepartmentType === "AIR"){ -->
                           <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
                             formControlName="VoyageNo">
                           <label for="text-input" class="input-label">Flight Number<span
                               class="text-danger"></span></label>
-                          } @else {
+                          
+                           <!-- @else {
                           <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
                           <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                          }
+                          } -->
                         </div>
                       </aside>
 
@@ -1067,7 +1076,7 @@
                           <!-- Dropdown Mode (Readonly) -->
                           <div class="input-group">
                             <input class="form-control" placeholder="" name="dp" formControlName="ETA" container="body"
-                              ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d4.open()"
+                              ngbDatepicker #d4="ngbDatepicker" [minDate]="toNgbDateStruct(b['ETD']?.value)" (keydown.arrowDown)="d4.open()"
                               (click)="d4.toggle()" readonly />
                             <button class="btn bi bi-calendar3 px-0" (click)="d4.toggle()" type="button">
                               <i-feather name="calendar" class="feather-sm"></i-feather>

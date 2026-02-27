@@ -448,6 +448,12 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     { id: 8, name: 'CY-FO' },
   ];
 
+  customerAirlineLookupConfig={
+    displayFields: ['CustomerName','AirlineCode'],
+    displayLabels: ['Customer','AirlineCode'],
+    labelFields: ['AirlineCode']
+  }
+
   modeoftransport=[
     {id:1,name:"Railway"},
     {id:2,name:"Flight"},
@@ -602,6 +608,48 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     
   });
   this.loadHSSACLookups();
+
+   this.houseJobForm.get('CarrierName')?.valueChanges.subscribe((carrierName) => {
+  if (this.selectedDepartmentType === "AIR") {
+    // Find the full carrier object from carrierList
+    const selectedCarrier = this.carrierList.find(c => c.CustomerName === carrierName);
+    this.onCarrierChangeForAir(selectedCarrier);
+  }
+});
+
+}
+
+onCarrierChangeForAir(carrier: any): void {
+  // Only apply for Air department
+  if (this.selectedDepartmentType !== "AIR") {
+    return;
+  }
+
+  if (!carrier) {
+    // If carrier is cleared, clear the airline selection
+    this.houseJobForm.get('VesselName')?.setValue(null);
+    return;
+  }
+
+  // Check if the selected carrier has an AirlineCode
+  if (carrier.AirlineCode) {
+    // Find the airline in airlineList that matches this AirlineCode
+    const matchingAirline = this.airlineList.find(
+      airline => airline.AirlineCode === carrier.AirlineCode
+    );
+
+    if (matchingAirline) {
+      // Set the VesselName to the matching airline's CustomerName
+      this.houseJobForm.get('VesselName')?.setValue(matchingAirline.CustomerName);
+    } else {
+      // If no exact match found, you might want to clear or show a message
+      console.log('No matching airline found for AirlineCode:', carrier.AirlineCode);
+      this.houseJobForm.get('VesselName')?.setValue(null);
+    }
+  } else {
+    // Carrier doesn't have an AirlineCode
+    this.houseJobForm.get('VesselName')?.setValue(null);
+  }
 }
 
 setMinMaxDateConditions(){
@@ -685,11 +733,11 @@ private setupMBLDateListener(): void {
     isVesselFreeText: [false],
     isVoyageFreeText: [false],
   MasterJobNumber: [{ value: '', disabled: true }],
-      VesselName: [{ value: null, disabled: true }],
-      VoyageMasterSid: [{ value: null, disabled: true }],
-      VoyageNo: [{ value: null, disabled: true }],
-      ETA: [{ value: null, disabled: true }],
-      ETD: [{ value: null, disabled: true }],
+      VesselName: [null],
+      VoyageMasterSid: [null],
+      VoyageNo: [null],
+      ETA: [null],
+      ETD: [null],
       POO: [""],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -714,6 +762,13 @@ private setupMBLDateListener(): void {
     this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
     })
+  }
+
+   onETDDateSelect(): void {
+    const etaControl = this.houseJobForm.get('ETA');
+    if (etaControl?.value) {
+      etaControl.setValue(null);
+    }
   }
 
   // Cargo Form Initiation
@@ -2931,10 +2986,12 @@ validateImportMAWBLNo(): boolean {
 
   handlePOLChange(selectedPort: any,resetTrigger:boolean = true) {
     if (resetTrigger) {
+       if (this.selectedDepartmentType !== 'AIR') {
       this.b['VesselName']?.setValue(null);
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA']?.setValue('');
-      this.b['ETD']?.setValue('');
+    }
+    this.b['VoyageNo']?.setValue(null);
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
     }
   if (!selectedPort) {
     this.filteredPOD = [...this.filteredPorts];
@@ -2946,10 +3003,12 @@ validateImportMAWBLNo(): boolean {
 
   handlePODChange(selectedPort: any,resetTrigger:boolean = true) {
     if (resetTrigger) {
+    if (this.selectedDepartmentType !== 'AIR') {
       this.b['VesselName']?.setValue(null);
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA']?.setValue('');
-      this.b['ETD']?.setValue('');
+    }
+    this.b['VoyageNo']?.setValue(null);
+    this.b['ETA']?.setValue(null);
+    this.b['ETD']?.setValue(null);
     }
   if (!selectedPort) {
     this.filteredPOL = [...this.filteredPorts];
