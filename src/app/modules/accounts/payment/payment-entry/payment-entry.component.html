@@ -857,16 +857,7 @@
                 Profit Center
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
-                Dept
-              </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
-              </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">
-                Master
-              </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">
-                House
               </th>
             </tr>
           </thead>
@@ -1034,49 +1025,11 @@
                 <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
-                    [items]="deptList"
-                    bindLabel="departmentName"
-                    bindValue="DepartmentMasterSid"
-                    formControlName="DepartmentMasterSid"
-                    (change)="filterDetailsWithDept($event, i)"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
                     [items]="filteredChargeList[i]"
                     bindLabel="chargeCode"
                     bindValue="ChargeMasterSid"
                     formControlName="ChargeMasterSid"
                     (change)="onChargeChange(i, $event)"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
-                    [items]="masterJobList[i]"
-                    bindLabel="MasterJobNumber"
-                    bindValue="MasterJobSid"
-                    formControlName="MasterJobSid"
-                    (change)="onMasterJobChange(i, $event)"
-                    (scrollToEnd)="onMasterJobScrollToEnd(i)"
-                    [typeahead]="masterJobTypeahead$[i]"
-                    [loading]="masterJobLoading[i]"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
-                    [items]="houseJobList[i]"
-                    bindLabel="HBLNo"
-                    bindValue="HouseJobSid"
-                    formControlName="HouseJobSid"
-                    (scrollToEnd)="onHouseJobScrollToEnd(i)"
-                    [typeahead]="houseJobTypeahead$[i]"
-                    [loading]="houseJobLoading[i]"
                     appendTo="body"
                   ></ng-select>
                 </td>

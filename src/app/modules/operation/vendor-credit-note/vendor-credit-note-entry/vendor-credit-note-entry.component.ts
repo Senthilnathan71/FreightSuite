@@ -699,6 +699,7 @@ export class VendorCreditNoteEntryComponent {
           .getAllCoaWithLedgerCategory({
             LedgerCategory: 'Ledger',
             CompanyMasterSid,
+            filterNonJob: true,
           })
           .pipe(catchError(() => of({ data: [] }))),
 

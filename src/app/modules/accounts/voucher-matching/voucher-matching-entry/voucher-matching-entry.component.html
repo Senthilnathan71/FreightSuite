@@ -329,7 +329,7 @@
   </div>
 
   <!-- ===== Unified Matching Card (Total + Source + Object) ===== -->
-  <div class="col-12 px-0" *ngIf="!isPosted && panelsVisible"
+  <div class="col-12 px-0" *ngIf="panelsVisible"
     [class.position-fixed]="isFullScreen"
     [style.top]="isFullScreen ? '0' : ''"
     [style.left]="isFullScreen ? '0' : ''"
@@ -369,6 +369,16 @@
                 <span class="fw-bold" style="color: #0d47a1;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</span>
               </div>
               <span class="vr" style="height: 16px;"></span>
+              <!-- Currency Difference -->
+              @if(matchingScenario) {
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-muted">Curr Diff:</span>
+                  <span class="fw-bold" [class.text-success]="currencyAmountsMatch" [class.text-danger]="!currencyAmountsMatch">
+                    {{ diffMatchCurrAmt | number:'1.2-2' }}
+                  </span>
+                </div>
+                <span class="vr" style="height: 16px;"></span>
+              }
             }
 
             <!-- Local amounts (always visible) -->
@@ -381,6 +391,16 @@
               <span class="text-muted">Object Local:</span>
               <span class="fw-bold" style="color: #0d47a1;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</span>
             </div>
+            <!-- Local Difference -->
+            @if(matchingScenario) {
+              <span class="vr" style="height: 16px;"></span>
+              <div class="d-flex align-items-center gap-1">
+                <span class="text-muted">Local Diff:</span>
+                <span class="fw-bold" [class.text-success]="localAmountsMatch" [class.text-danger]="!localAmountsMatch">
+                  {{ diffMatchLocalAmt | number:'1.2-2' }}
+                </span>
+              </div>
+            }
 
             <!-- Rule / Status indicator -->
             <span class="vr" style="height: 16px;"></span>
@@ -445,105 +465,143 @@
           </div>
 
           <div #sourceScrollContainer class="flex-grow-1" [class.h-100]="sourceItems.length >= BATCH_SIZE || isFullScreen"
-            style="position: relative; min-width: 0; overflow-x: auto;"
+            style="position: relative; min-width: 0; overflow-x: auto; scrollbar-gutter: stable;"
             [style.overflow-y]="(sourceItems.length >= BATCH_SIZE || isFullScreen) ? 'auto' : 'visible'"
             (scroll)="onPanelScroll('source')">
             <form [formGroup]="voucherMatchingForm" novalidate>
               <div style="position: sticky; top: 0; z-index: 10; background: white;">
-                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 15%;">Voucher No.</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Type</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 8%;">Date</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 3%;">Dr/Cr</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 5%;">Ex.Rate</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Local Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Local</th>
-                      <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Curr.</th>
-                      <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Local</th>
-                      <th class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 2%;">&#10003;</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '11%'" style="font-size: 12px;">Voucher No.</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
+                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
+                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;">Match Local</th>
+                      <!-- <th *ngIf="!isPosted" class="bg-success text-light text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Curr.</th> -->
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 3%;">&#10003;</th>
                     </tr>
                   </thead>
                 </table>
               </div>
               <div class="table-borderless">
-                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <tbody formArrayName="sourceItems">
+                    <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
+                    <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
+                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '7%' : '5%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '14%' : '8%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '14%' : '8%'" style="padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '15%' : '9%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '15%' : '8%'" style="padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
+                    </tr>
                     <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
-                      <td style=" width: 15%;"><input type="text" formControlName="VoucherNumber"
+                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber"
                           class="custom-input-field sm" /></td>
-                      <td style=" width: 4%;"><input type="text" formControlName="VoucherType"
+                      <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType"
                           class="custom-input-field sm" /></td>
-                      <td style=" width: 8%;"><input type="text" [value]="(s.getRawValue().VoucherDate | formatDate)"
+                      <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(s.getRawValue().VoucherDate | formatDate)"
                           class="custom-input-field sm" disabled /></td>
-                      <td style=" width: 3%;"><input type="text" formControlName="DrCr" class="custom-input-field sm" />
-                      </td>
-                      <td style=" width: 4%;"><input type="text" formControlName="CurrencyCode"
-                          class="custom-input-field sm" />
-                      </td>
-                      <td style=" width: 5%;">
+                      <td [style.width]="isPosted ? '4%' : '3%'"><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'"><input type="text" formControlName="CurrencyCode"
+                          class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '7%' : '5%'">
                         <input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="4"
                           [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td width="9%">
+                      <td [style.width]="isPosted ? '14%' : '8%'">
                         <input type="text" formControlName="OriginalCurrencyAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td width="9%">
+                      <td [style.width]="isPosted ? '14%' : '8%'">
                         <input type="text" formControlName="OriginalLocalAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td width="9%">
+                      <td *ngIf="!isPosted" style="width: 8%;">
                         <input type="text" formControlName="OutstandingCurrencyAmount"
                           class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td width="9%">
+                      <td *ngIf="!isPosted" style="width: 8%;">
                         <input type="text" formControlName="OutstandingLocalAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td class="table-warning" width="10%">
+                      <td class="table-warning" [style.width]="isPosted ? '15%' : '9%'">
                         <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
                           [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']" DecimalPrecision
                           [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)"
                           (input)="onMatchAmountChange(sourceItems, i)" (blur)="onMatchAmountChange(sourceItems, i)" />
                       </td>
-                      <td class="table-warning" width="10%">
+                      <td class="table-warning" [style.width]="isPosted ? '15%' : '8%'">
                         <input type="text" formControlName="MatchedLocalAmount" class="custom-input-field sm text-end"
                           readonly [style.background-color]="'#f5f5f5'" [style.cursor]="'not-allowed'"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)" />
                       </td>
-                      <td class="text-center" width="2%">
+                      <!-- <td *ngIf="!isPosted" class="text-end"
+                        style="width: 8%; background-color: #e8f5e9; font-size: 11px; font-weight: 600;"
+                        [class.text-success]="getRowBalance(s, 'currency') >= 0"
+                        [class.text-danger]="getRowBalance(s, 'currency') < 0">
+                        {{ getRowBalance(s, 'currency') | number:'1.2-2' }}
+                      </td> -->
+                      <td 
+                        *ngIf="!isPosted" 
+                        class="text-end"
+                        style="width: 8%; background-color: #e8f5e9; font-size: 11px; font-weight: 600;"
+                        >
+                        <input 
+                          type="text" 
+                          [value]="getRowBalance(s, 'local') | number:'1.2-2'" 
+                          class="custom-input-field sm text-end"
+                          [style.background-color]="'#f5f5f5'" 
+                          [style.text-success] = "getRowBalance(s, 'local') >= 0"
+                          [style.text-danger] = "getRowBalance(s, 'local') < 0"
+                          [style.cursor]="'not-allowed'"
+                          readonly 
+                        />
+                        <!-- {{ getRowBalance(s, 'local') | number:'1.2-2' }} -->
+                      </td>
+                      <td *ngIf="!isPosted" class="text-center" style="width: 3%;">
                         <input type="checkbox" class="form-check-input" [checked]="s.getRawValue().isTicked"
                           [disabled]="s.get('isTicked')?.disabled"
                           (change)="onTickMatch(sourceItems, i, $event)" />
                       </td>
                     </tr>
                     <tr *ngIf="sourceItems.length === 0 && !isLoadingSource">
-                      <td colspan="13" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
+                      <td [attr.colspan]="isPosted ? 10 : 14" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
                         <i class="fas fa-inbox me-1"></i>No source vouchers found for this subledger.
-                      </td>
-                    </tr>
-                    <tr *ngIf="isLoadingSource">
-                      <td colspan="13" class="text-center text-muted py-1" style="font-size: 12px;">
-                        <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                       </td>
                     </tr>
                   </tbody>
                 </table>
+                <div *ngIf="isLoadingSource" class="text-center text-muted py-1" style="font-size: 12px;">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Loading...
+                </div>
               </div>
               <div #sourceSentinel style="height: 1px;"></div>
-              <div *ngIf="hasMoreSourceData && !isLoadingSource" class="text-center py-1"
+              <div *ngIf="hasMoreSourceData && !isLoadingSource && !isPosted" class="text-center py-1"
                 style="font-size: 11px; color: #aaa;">
                 <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more
               </div>
@@ -552,16 +610,18 @@
         </div>
         <!-- Source Footer Totals -->
         <div *ngIf="sourceItems.length > 0" class="py-0 border-top">
-          <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
+          <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px; font-size: 12px;">
             <tr class="fw-bold text-end" style="background-color: #fce4ec; color: #880e4f;">
-              <td style="width: 40%;" class="text-end">Totals</td>
-              <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
-              <td style="width: 9%;" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
-              <td style="width: 9%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
-              <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
-              <td class="text-end" style="background-color: #f8bbd0; width: 10%;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 2%;"></td>
+              <td [style.width]="isPosted ? '42%' : '32%'" class="text-end">Totals</td>
+              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
+              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
+              <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" style="background-color: #f8bbd0;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #f8bbd0;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
+              <!-- <td *ngIf="!isPosted" class="text-end" style="background-color: #c8e6c9; color: #1b5e20; width: 8%;">{{ sourceTotalBalCurrAmt | number:'1.2-2' }}</td> -->
+              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #f8bbd0;">{{ sourceTotalBalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" style="width: 3%;"></td>
             </tr>
           </table>
         </div>
@@ -576,100 +636,139 @@
             OBJECT
           </div>
           <div #objectScrollContainer class="flex-grow-1" [class.h-100]="hasMoreObjectData || isFullScreen"
-            style="position: relative; min-width: 0; overflow-x: auto;"
+            style="position: relative; min-width: 0; overflow-x: auto; scrollbar-gutter: stable;"
             [style.overflow-y]="(objectItems.length >= BATCH_SIZE || isFullScreen) ? 'auto' : 'visible'"
             (scroll)="onPanelScroll('object')">
             <form [formGroup]="voucherMatchingForm" novalidate>
               <div style="position: sticky; top: 0; z-index: 10; background: white;">
-                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 15%;">Voucher No.</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Type</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 8%;">Date</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 3%;">Dr/Cr</th>
-                      <th class="bg-info text-light fw-bold" style="font-size: 12px; width: 4%;">Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 5%;">Ex.Rate</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Curr. Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">Local Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 9%;">OS Local</th>
-                      <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Curr.</th>
-                      <th class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 10%;">Match Local</th>
-                      <th class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 2%;">&#10003;</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '11%'" style="font-size: 12px;">Voucher No.</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
+                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
+                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
+                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
+                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;">Match Local</th>
+                      <!-- <th *ngIf="!isPosted" class="bg-success text-light text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Curr.</th> -->
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 3%;">&#10003;</th>
                     </tr>
                   </thead>
                 </table>
               </div>
               <div class="table-borderless">
-                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 900px;">
+                <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <tbody formArrayName="objectItems">
+                    <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
+                    <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
+                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '7%' : '5%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '14%' : '8%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '14%' : '8%'" style="padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '15%' : '9%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '15%' : '8%'" style="padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
+                      <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
+                    </tr>
                     <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
-                      <td style="width: 15%;"><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
-                      <td style="width: 4%;"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
-                      <td style="width: 8%;"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"
+                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"
                           class="custom-input-field sm" disabled /></td>
-                      <td style="width: 3%;"><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
-                      <td style="width: 4%;"><input type="text" formControlName="CurrencyCode" class="custom-input-field sm" /></td>
-                      <td style="width: 5%;">
+                      <td [style.width]="isPosted ? '4%' : '3%'"><input type="text" formControlName="DrCr" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '4%' : '3%'"><input type="text" formControlName="CurrencyCode" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '7%' : '5%'">
                         <input type="text" formControlName="ExchangeRate" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="4"
                           [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td style="width: 9%;">
+                      <td [style.width]="isPosted ? '14%' : '8%'">
                         <input type="text" formControlName="OriginalCurrencyAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td style="width: 9%;">
+                      <td [style.width]="isPosted ? '14%' : '8%'">
                         <input type="text" formControlName="OriginalLocalAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td style="width: 9%;">
+                      <td *ngIf="!isPosted" style="width: 8%;">
                         <input type="text" formControlName="OutstandingCurrencyAmount"
                           class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td style="width: 9%;">
+                      <td *ngIf="!isPosted" style="width: 8%;">
                         <input type="text" formControlName="OutstandingLocalAmount" class="custom-input-field sm text-end"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td class="table-warning" style="width: 10%;">
+                      <td class="table-warning" [style.width]="isPosted ? '15%' : '9%'">
                         <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
                           [class.is-invalid]="o.get('MatchedCurrencyAmount')?.errors?.['limitExceeded']" DecimalPrecision
                           [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)"
                           (input)="onMatchAmountChange(objectItems, i)" (blur)="onMatchAmountChange(objectItems, i)" />
                       </td>
-                      <td class="table-warning" style="width: 10%;">
+                      <td class="table-warning" [style.width]="isPosted ? '15%' : '8%'">
                         <input type="text" formControlName="MatchedLocalAmount" class="custom-input-field sm text-end"
                           readonly [style.background-color]="'#f5f5f5'" [style.cursor]="'not-allowed'"
                           DecimalPrecision [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(o.getRawValue().CurrencyCode)" />
                       </td>
-                      <td class="text-center" style="width: 2%;">
+                      <!-- <td *ngIf="!isPosted" class="text-end"
+                        style="width: 8%; background-color: #e8f5e9; font-size: 11px; font-weight: 600;"
+                        [class.text-success]="getRowBalance(o, 'currency') >= 0"
+                        [class.text-danger]="getRowBalance(o, 'currency') < 0">
+                        {{ getRowBalance(o, 'currency') | number:'1.2-2' }}
+                      </td> -->
+                      <td 
+                        *ngIf="!isPosted" 
+                        class="text-end"
+                        style="width: 8%; background-color: #e8f5e9; font-size: 11px; font-weight: 600;"
+                        >
+                        <input 
+                          type="text" 
+                          [value]="getRowBalance(o, 'local') | number:'1.2-2'" 
+                          class="custom-input-field sm text-end"
+                          [style.background-color]="'#f5f5f5'" 
+                          [style.text-success] = "getRowBalance(o, 'local') >= 0"
+                          [style.text-danger] = "getRowBalance(o, 'local') < 0"
+                          [style.cursor]="'not-allowed'"
+                          readonly 
+                        />
+                      </td>
+                      <td *ngIf="!isPosted" class="text-center" style="width: 3%;">
                         <input type="checkbox" class="form-check-input" [checked]="o.getRawValue().isTicked"
                           [disabled]="o.get('isTicked')?.disabled"
                           (change)="onTickMatch(objectItems, i, $event)" />
                       </td>
                     </tr>
                     <tr *ngIf="objectItems.length === 0 && !isLoadingObject">
-                      <td colspan="13" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
+                      <td [attr.colspan]="isPosted ? 10 : 14" class="text-center text-muted py-3" style="font-size: 12px; min-width: 600px;">
                         <i class="fas fa-inbox me-1"></i>No object vouchers found for this subledger.
-                      </td>
-                    </tr>
-                    <tr *ngIf="isLoadingObject">
-                      <td colspan="13" class="text-center text-muted py-1" style="font-size: 12px;">
-                        <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                       </td>
                     </tr>
                   </tbody>
                 </table>
+                <div *ngIf="isLoadingObject" class="text-center text-muted py-1" style="font-size: 12px;">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Loading...
+                </div>
               </div>
               <div #objectSentinel style="height: 1px;"></div>
-              <div *ngIf="hasMoreObjectData && !isLoadingObject" class="text-center py-1"
+              <div *ngIf="hasMoreObjectData && !isLoadingObject && !isPosted" class="text-center py-1"
                 style="font-size: 11px; color: #aaa;">
                 <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more
               </div>
@@ -678,107 +777,23 @@
         </div>
         <!-- Object Footer Totals -->
         <div *ngIf="objectItems.length > 0" class="py-0 border-top">
-          <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; font-size: 12px;">
+          <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px; font-size: 12px;">
             <tr class="fw-bold text-end" style="background-color: #e3f2fd; color: #0d47a1;">
-              <td style="width: 39%;" class="text-end">Totals</td>
-              <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalCurrAmt | number:'1.2-2') }}</td>
-              <td style="width: 9%;" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 9%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalOsCurrAmt | number:'1.2-2') }}</td>
-              <td style="width: 9%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
-              <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
-              <td class="text-end" style="background-color: #bbdefb; width: 10%;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
-              <td style="width: 3%;"></td>
+              <td [style.width]="isPosted ? '42%' : '32%'" class="text-end">Totals</td>
+              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalCurrAmt | number:'1.2-2') }}</td>
+              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalOsCurrAmt | number:'1.2-2') }}</td>
+              <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" style="background-color: #bbdefb;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #bbdefb;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
+              <!-- <td *ngIf="!isPosted" class="text-end" style="background-color: #c8e6c9; color: #1b5e20; width: 8%;">{{ objectTotalBalCurrAmt | number:'1.2-2' }}</td> -->
+              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #bbdefb;">{{ objectTotalBalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" style="width: 3%;"></td>
             </tr>
           </table>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Posted Pair-by-Pair View -->
-  <div class="col-12 px-0" *ngIf="isPosted && panelsVisible">
-    <div class="card mb-0">
-      <div class="card-body p-0" style="max-height: calc(100vh - 260px); overflow-y: auto;">
-        <table class="table table-bordered table-hover align-middle mb-0">
-          <thead class="bg-info" style="position: sticky; top: 0; z-index: 10;">
-            <tr>
-              <th class="bg-transparent text-light fw-bold" style="width: 7%;">Match Type</th>
-              <th class="bg-transparent text-light fw-bold" style="width: 17%;">Voucher No.</th>
-              <th class="bg-transparent text-light fw-bold" style="width: 7%;">Type</th>
-              <th class="bg-transparent text-light fw-bold" style="width: 9%;">Date</th>
-              <th class="bg-transparent text-light fw-bold" style="width: 4%;">Dr/Cr</th>
-              <th class="bg-transparent text-light fw-bold" style="width: 5%;">Curr.</th>
-              <th class="bg-transparent text-light text-end fw-bold" style="width: 7%;">Ex.Rate</th>
-              <th class="bg-transparent text-light text-end fw-bold" style="width: 10%;">Orig. Curr.</th>
-              <th class="bg-transparent text-light text-end fw-bold" style="width: 10%;">Orig. Local</th>
-              <th class="bg-warning text-dark text-end fw-bold" style="width: 10%;">Match Curr.</th>
-              <th class="bg-warning text-dark text-end fw-bold" style="width: 10%;">Match Local</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngFor="let pair of matchedPairs; let pi = index">
-              <!-- Source row -->
-              <tr *ngIf="pair.source" [style.border-top]="pi > 0 ? '3px solid #adb5bd' : ''"
-                style="background-color: #fff3f5;">
-                <td class="fw-semibold" [style.border-left]="'4px solid ' + pair.color">Source</td>
-                <td class="fw-semibold">{{ pair.source.VoucherNumber }}</td>
-                <td>{{ pair.source.VoucherType }}</td>
-                <td>{{ pair.source.VoucherDate | formatDate }}</td>
-                <td>{{ pair.source.DrCr }}</td>
-                <td>{{ pair.source.CurrencyCode }}</td>
-                <td class="text-end">{{ pair.source.ExchangeRate }}</td>
-                <td class="text-end">{{ pair.source.OriginalCurrencyAmount }}</td>
-                <td class="text-end">{{ pair.source.OriginalLocalAmount }}</td>
-                <td class="text-end fw-semibold table-warning">{{ pair.source.MatchedCurrencyAmount }}</td>
-                <td class="text-end fw-semibold table-warning">{{ pair.source.MatchedLocalAmount }}</td>
-              </tr>
-              <!-- Object row -->
-              <tr *ngIf="pair.object" style="background-color: #e3f2fd;">
-                <td class="fw-semibold" [style.border-left]="'4px solid ' + pair.color">Object</td>
-                <td class="fw-semibold">{{ pair.object.VoucherNumber }}</td>
-                <td>{{ pair.object.VoucherType }}</td>
-                <td>{{ pair.object.VoucherDate | formatDate }}</td>
-                <td>{{ pair.object.DrCr }}</td>
-                <td>{{ pair.object.CurrencyCode }}</td>
-                <td class="text-end">{{ pair.object.ExchangeRate }}</td>
-                <td class="text-end">{{ pair.object.OriginalCurrencyAmount }}</td>
-                <td class="text-end">{{ pair.object.OriginalLocalAmount }}</td>
-                <td class="text-end fw-semibold table-warning">{{ pair.object.MatchedCurrencyAmount }}</td>
-                <td class="text-end fw-semibold table-warning">{{ pair.object.MatchedLocalAmount }}</td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
-      </div>
-      <div class="card-footer py-2 px-3 border-top" style="background: #f3e5f5;">
-        <div class="d-flex justify-content-end align-items-center gap-4 flex-wrap">
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Src Currency:</span>
-            <span class="fw-bold">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</span>
-          </div>
-          <span class="vr" style="height: 20px;"></span>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Obj Currency:</span>
-            <span class="fw-bold">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</span>
-          </div>
-          <span class="vr" style="height: 20px;"></span>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Src Local:</span>
-            <span class="fw-bold">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</span>
-          </div>
-          <span class="vr" style="height: 20px;"></span>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Obj Local:</span>
-            <span class="fw-bold">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</span>
-          </div>
-          <span class="vr" style="height: 20px;"></span>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Local Total:</span>
-            <span class="fw-bold">{{ (sourceTotalMatchLocalAmt + objectTotalMatchLocalAmt) | number:'1.2-2' }}</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 

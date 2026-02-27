@@ -131,6 +131,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   vendorBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
+  filteredChargeList : any[] = [];
   hssacList: any[][] = []; // for job related
   hssacListForNonJob : any[][] = []; // for non job related
   temporaryHssacList : any[][] = []; // for pulling os
@@ -356,7 +357,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       const id = params.get('id');
       if (id) {
         this.headerId = Number(id);
-        this.loadVendorInvoiceById(this.headerId);
+        // loadVendorInvoiceById is called from loadLookups callback
+        // to guarantee chargeList is populated before patching detail rows
       } else {
         this.initialFormValue = this.vendorInvoiceForm.getRawValue();
         this.subscribeToFormChanges();
@@ -584,7 +586,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     if (this.isNonJob) {
       source.coa = this.operationService.getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
-        CompanyMasterSid: CompanyMasterSid
+        CompanyMasterSid: CompanyMasterSid,
+        filterNonJob : true
       }).pipe(catchError(() => of({ data: [] })));
       source.hssac = this.operationService.getAllHssac().pipe(catchError(() => of([])));
       source.charges = of({ data: [] });
@@ -600,6 +603,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         this.vendorList = vendors.data || [];
         this.subledgerList = vendors.data || [];
         this.chargeList = charges.data || [];
+        this.filteredChargeList = [...this.chargeList];
         this.uomList = uom.data || [];
         this.departmentList = departments.data || [];
         this.masterJobList = masterJobs.data || [];
@@ -609,7 +613,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
         this.currencyList = currencies.data || [];
         this.currencyConfigService.initializeConfigurations(this.currencyList);
 
-        if (!this.isEditMode) {
+        if (this.headerId) {
+          this.loadVendorInvoiceById(this.headerId);
+        } else {
           this.spinner.hide();
         }
       },
@@ -895,6 +901,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
   patchValues(data: any) {
     this.gatherHyperLinkInfo(data);
 
+    if(data.departmentMaster){
+      this.filterChargeBasedOnDept(data.departmentMaster);
+    }
+
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: data.VoucherDate ? new Date(data.VoucherDate) : null,
@@ -1016,6 +1026,15 @@ export class VendorInvoiceEntryComponent implements OnInit {
       });
     }
     this.spinner.hide();
+  }
+
+  filterChargeBasedOnDept(dept : any) {
+    if(!dept || !dept.departmentName) return;
+
+    this.filteredChargeList = this.chargeList.filter(charge =>{
+      const allowedDepts : any[] = (charge.Departments || []);
+      return allowedDepts.includes(dept.departmentName);
+    })
   }
 
   checkVoucherPostingMechanism() {
