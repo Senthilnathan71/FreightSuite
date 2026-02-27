@@ -183,6 +183,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   cfsList: any[] = [];
   yardList: any[] = [];
   TandCList: any[] = [];
+  isSaving : boolean = false;
   decimalAfterPrecision = 3;
   chargeList: any[] = [];
   filteredDestinationAgents: any[] = [];
@@ -210,6 +211,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   minStartDate: any;
   currentEdocFormValue: any = null;
   emailData: any[] = [];
+  isLogLoading: boolean = false;
   emailResetTrigger = false;
   currentEmailFormValue: any = null;
   auditLogs: any[] = [];
@@ -1239,6 +1241,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
 
   loadMasterJobData(masterJobSid: number): void {
+    this.isLoading = true;
     this.spinner.show();
     const payload = {
       screenName: 'Master Job',
@@ -1309,6 +1312,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         this.toastr.error('Failed to load master job data');
         console.error('Error loading master job:', error);
         this.isLoading = false;
+        this.spinner.hide();
       }
     });
   }
@@ -2089,6 +2093,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   onSubmit(): void {
+    if (this.isSaving || this.isLoading) {
+      return;
+    }
     const fy = this.appSettingService.getCurrentFinancialYear();
     if(fy){
       const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
@@ -2138,20 +2145,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return;
     }
 
+    const deptName = this.selectedDepartment?.departmentName?.toLowerCase() || '';
+    const isImportDepartment = deptName.includes('import');
+    const mblNo = this.masterJobForm.get('MBLNo')?.value?.toString().trim();
+    if (isImportDepartment && !mblNo) {
+      this.appSettingService.showWarning('MAWBL Number is required for Import operations. Please enter a valid MAWBL Number.');
+      this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
+      this.masterJobForm.get('MBLNo')?.markAsTouched();
+      return;
+    }
+
     this.isLoading = true;
-    //   const exportImportType = this.selectedDepartment?.ExportImport;
-    // const hblNo = houseJobFormValue.HBLNo;
-    // if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
-    //   this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
-
-    //   // Focus on HBLNo field
-    //   const hblNoElement = document.querySelector('[formControlName="HBLNo"]');
-    //   if (hblNoElement) {
-    //     (hblNoElement as HTMLElement).focus();
-    //   }
-
-    //   return;
-    // }
 
     const getPortCode = (portSid: any): string => {
       if (!portSid && portSid !== 0) return '';
@@ -2276,8 +2280,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         }
       });
     formData['shipmentList'] = [...allShipments];
-
+   
     // Debug to check the payload
+    this.isSaving = true;
+    this.spinner.show();
 
 
     if (this.isEditMode && this.masterJobSid) {
@@ -2285,6 +2291,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.operationService.updateMasterJob(formData).subscribe({
         next: (response: any) => {
           this.isLoading = false;
+          this.isSaving = false;
+          this.spinner.hide();
           if (response.status) {
             this.toastr.success('Master Job updated successfully');
             this.resetDirtyState();
@@ -2295,6 +2303,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         },
         error: (error) => {
           this.isLoading = false;
+          this.isSaving = false;
+          this.spinner.hide();
           this.toastr.error('Failed to update Master Job');
           console.error('Error updating master job:', error);
         }
@@ -2303,6 +2313,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       this.operationService.createMasterJob(formData).subscribe({
         next: (response: any) => {
           this.isLoading = false;
+          this.isSaving = false;
+          this.spinner.hide();
           if (response.status) {
             this.toastr.success('Master Job created successfully');
             this.resetDirtyState();
@@ -2326,6 +2338,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         },
         error: (error) => {
           this.isLoading = false;
+          this.isSaving = false;
+          this.spinner.hide();
           this.toastr.error('Failed to create Master Job');
         }
       });
@@ -2884,14 +2898,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.masterJobSid) return;
+      if (this.isLogLoading) return; 
+     this.isLogLoading = true;
 
     this.operationService.getAuditLogsmasterjob(
       'MasterJob',
       this.masterJobSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
+        this.isLogLoading = false;
         const ignoredFields = ['updatedOn', 'updatedBy'];
-
+         
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
@@ -2915,7 +2932,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
           windowClass: 'audit-log-modal'
         });
       },
-      error: err => console.error('Error fetching audit logs:', err)
+      error: err => {
+         this.isLogLoading = false;
+        console.error('Error fetching audit logs:', err)
+      }
     });
   }
 

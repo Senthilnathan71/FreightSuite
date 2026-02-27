@@ -949,6 +949,9 @@ private extractCargoData(enquiryCargo: any[]): any {
        this.updateCarrierValidationBasedOnStatus(carrierForm);
       })
     )
+    if (this.isEditMode) {
+      carrierForm.get('CarrierMasterSid')?.disable({ emitEvent: false });
+    }
     carrierForm.updateValueAndValidity();
   }
 
@@ -1541,7 +1544,7 @@ isRateLockDisabled(): boolean {
       });
   }
 
- patchValues(response: any) {
+  patchValues(response: any) {
     
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerlist.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1678,6 +1681,7 @@ isRateLockDisabled(): boolean {
     })
     
     this.disableNonEditFields();
+    this.applyEditModeFieldLocks();
     
     // IMPORTANT: Only disable the entire form if ALL carriers are approved
     // OR if you want to keep the header editable but only disable approved carriers
@@ -1744,6 +1748,22 @@ isRateLockDisabled(): boolean {
 
 
     this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
+  }
+
+  private applyEditModeFieldLocks(): void {
+    if (!this.isEditMode) {
+      return;
+    }
+
+    this.quotationForm.get('CustomerMasterSid')?.disable({ emitEvent: false });
+    this.quotationForm.get('PreCustomerMasterSid')?.disable({ emitEvent: false });
+
+    this.quoteRoutes.controls.forEach((_, routeIndex: number) => {
+      const carrierArr = this.quoteCarriers(routeIndex);
+      carrierArr.controls.forEach((carrier: AbstractControl) => {
+        carrier.get('CarrierMasterSid')?.disable({ emitEvent: false });
+      });
+    });
   }
 
   onSubmit() {

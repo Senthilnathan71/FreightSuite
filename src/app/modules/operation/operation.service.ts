@@ -1799,4 +1799,56 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     ) 
   }
 
+  createAgentMasterAirWaybill(payload: any) {
+    return this.http.post<{ data: any }>('agent-master-air-waybill/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateAgentMasterAirWaybillById(HouseJobSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`agent-master-air-waybill/update/${HouseJobSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+  getAgentMasterAirWaybillById(HouseJobSid: number) {
+    return this.http.get<{ data: any }>(`agent-master-air-waybill/fetch/${HouseJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+  getAllAgentMasterAirWaybill() {
+    return this.http.get<{ data: any[] }>('agent-master-air-waybill').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteAgentMasterAirWaybillById(HouseJobSid: number) {
+    return this.http.delete<{ data: any }>(`agent-master-air-waybill/delete/${HouseJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  searchAgentMasterAirWaybill(payload: any) {
+    return this.http.post<{ data: any }>('agent-master-air-waybill/search', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+
+
+
+
 }

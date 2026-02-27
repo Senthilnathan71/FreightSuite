@@ -123,7 +123,7 @@
 
 
 
-            <!-- <div class="action-group">
+            <div class="action-group">
                 <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
                         [ngClass]="{'btn-info': !isDirty, 'btn-warning': isDirty}"
                         (click)="onSubmit()" appPreventMultiClick 
@@ -137,7 +137,7 @@
                         <span class="visually-hidden">unsaved changes</span>
                     </span>
                 </button>
-            </div> -->
+            </div>
             <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>

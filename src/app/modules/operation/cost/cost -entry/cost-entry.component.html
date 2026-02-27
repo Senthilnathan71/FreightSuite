@@ -188,7 +188,7 @@
               <td>
                 <div class="custom-form-group dofi-max-w-200 dofi-min-w-200">
                   <input type="text" id="text-input" class="custom-input-field sm" formControlName="ChargeDescription"
-                    [textWithNumbers]="100" [disabled]="!canEditRate(i) || isFromQuotation(i)">
+                    [maxlength]="100" [disabled]="!canEditRate(i) || isFromQuotation(i)">
                 </div>
               </td>
 
