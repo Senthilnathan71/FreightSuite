@@ -4,6 +4,7 @@ import { StorageMap } from '@ngx-pwa/local-storage';
 import { Observable, of } from 'rxjs';
 import { mergeMap, map } from 'rxjs/operators';
 import { AppSettingsService } from '../services/app-settings.service';
+import { SessionService } from '../services/session.service';
 
 @Injectable({
  providedIn: 'root'
@@ -14,6 +15,7 @@ export class AuthGuard implements CanActivate {
         private router: Router,
         private localStorage: StorageMap,
         private appSettingsService: AppSettingsService,
+        private sessionService: SessionService,
     ) { }
 
     canActivate(
@@ -32,11 +34,11 @@ export class AuthGuard implements CanActivate {
                 map((userData: any) => {
                     console.log('userData', userData, next.data);
                     if (userData) {
+                        // Start heartbeat if not already running (handles page refresh)
+                        this.sessionService.startHeartbeat();
+
                         if (next.data['type'] === 'BlankComponent') {
                             let landingPage = 'crm/dashboard';
-                            // if(userData && Array.isArray(userData.userRoles) && userData.userRoles[0]) {
-                            // landing Page userData.userRoles[0].landingPage
-                            // }
                             this.router.navigate([landingPage], { queryParams: {} });
                             return resolve(false);
                         }
@@ -54,7 +56,7 @@ export class AuthGuard implements CanActivate {
 
         });
     }
-    
+
 }
 
 

@@ -1,7 +1,8 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError,map, mergeMap, of } from "rxjs";
+import { catchError, map, mergeMap, of } from "rxjs";
 import { AppSettingsService } from "src/app/core/services/app-settings.service";
+import { SessionService } from "src/app/core/services/session.service";
 
 @Injectable({
     providedIn: 'root'
@@ -11,7 +12,8 @@ export class authService {
     public loginEmail: string = ""
     constructor(
         private http: HttpClient,
-        private appSettingsService: AppSettingsService
+        private appSettingsService: AppSettingsService,
+        private sessionService: SessionService
     ) { }
 
     public login(params: any) {
@@ -19,16 +21,25 @@ export class authService {
 
         return this.http.post("auth/login", params, { headers: httpHeaders }).pipe(
             mergeMap((res: any) => {
-                if (res) {
-                    this.appSettingsService.setUserSettings(res.data.user);
+                // Handle session-active-elsewhere response (pass through to login component)
+                if (!res.status && res.message === 'SESSION_ACTIVE_ELSEWHERE') {
+                    return of(res);
                 }
-                this.loginEmail = res.data.user.UserEmail || '';
 
-                return this.appSettingsService.setUserToken(res.data.token).pipe(
-                    map(() => {
-                        return res
-                    })
-                )
+                if (res && res.status) {
+                    this.appSettingsService.setUserSettings(res.data.user);
+                    this.loginEmail = res.data.user?.UserEmail || '';
+
+                    return this.appSettingsService.setUserToken(res.data.token).pipe(
+                        map(() => {
+                            // Start session heartbeat after successful login
+                            this.sessionService.startHeartbeat();
+                            return res;
+                        })
+                    );
+                }
+
+                return of(res);
             }),
             catchError((err) => {
                 console.error("Login failed:", err);
