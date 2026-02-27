@@ -187,12 +187,13 @@ export class BankPaymentPrintComponent {
     v => v.COAMasterSid === COAMasterSid
   );
 
-  return ledger.LedgerName || '';
+  return ledger?.LedgerName || '';
 }
 
 getSubledgerName(item: any): string {
+  console.log(item,"item");
   const index = (this.paymentDataPrint?.VoucherDetail || []).findIndex(vd => vd.VoucherDetailSid === item.VoucherDetailSid);
-  console.log(index,"Vd index");
+
   if (index === -1 || !item.LedgerMasterSid || !this.ledgerList[index]?.length) return '';
   console.log(this.ledgerList[index],"this.ledgerList");
   const ledger = this.ledgerList[index].find(

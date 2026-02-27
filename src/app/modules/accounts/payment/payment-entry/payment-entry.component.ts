@@ -3529,6 +3529,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
     modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
     modalRef.componentInstance.coaList = this.coaList || [];
+    modalRef.componentInstance.ledgerList = this.ledgerList || [];
   }
 
   ngOnDestroy(): void {

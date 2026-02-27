@@ -37,20 +37,20 @@
         <h4 style="text-align:center;border-top: 1px solid black; padding:10px auto;padding-top: 10px;font-weight: bolder;"><strong>Cash Payment</strong></h4>
 
         <!-- Row -->
-        <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:150px;">
+        <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:120px;font-size: 15px;">
 
             <!-- Left Column -->
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex;padding-top: 10px;">
-                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment No.</strong></div>
+                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Payment No.</strong></div>
                     <div>: {{paymentDataPrint?.VoucherNumber}}</div>
                 </div>
                   <div style="display:flex;">
-                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Paid From</strong></div>
+                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Paid From</strong></div>
                     <div>: {{getLedgerName(paymentDataPrint?.BankCOA)}}</div>
                 </div>
                 <div style="display:flex;">
-                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Paid To</strong></div>
+                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Paid To</strong></div>
                     <div>: {{paymentDataPrint?.BankPartyName}}</div>
                 </div>
             </div>
@@ -58,11 +58,11 @@
             <!-- Right Column -->
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex;padding-top: 10px;">
-                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Payment Date</strong></div>
+                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Payment Date</strong></div>
                     <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
                 </div>
                 <div style="display:flex;">
-                    <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>Currency</strong></div>
+                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Currency</strong></div>
                     <div>: {{paymentDataPrint?.CurrencyCode}}</div>
                 </div>
             </div>
