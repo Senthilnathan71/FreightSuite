@@ -46,6 +46,7 @@ export class MawbPreprintComponent implements OnChanges {
   otherCharges: any[] = [];
   companyCode: any;
   bankDetails: any;
+  @Input() portList: any[] = []; // Add this input
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -264,7 +265,14 @@ export class MawbPreprintComponent implements OnChanges {
     return { totalExchangeRate, totalRevenueAmount };
   }
 
-
+ getPortName(portCode: string): string {
+    if (!portCode || !this.portList || this.portList.length === 0) {
+      return portCode || '';
+    }
+    
+    const port = this.portList.find(p => p.PortCode === portCode);
+    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
   printDiv(divId: string): void {
     this.showPrintLogo = true;
     this.showPdfLogo = false;
