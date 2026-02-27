@@ -78,8 +78,10 @@
 
 
             <div class="action-group">
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                    [disabled]="(!mps.can('update') && isEditMode)">
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                appPreventMultiClick
+                 (click)="onSubmit()"
+                    [disabled]="isSaving || (!mps.can('update') && isEditMode)">
                     <i class="fas fa-save me-1"></i>
                     <span>Save</span>
                 </button>
@@ -572,11 +574,16 @@
                                                 [class.filled]="!!masterJobForm.get('VesselName')?.value">
                                                 <div class="d-flex align-items-center"
                                                     *ngIf="!this.f['isVesselFreeText']?.value">
-                                                    <ng-select [items]="airlineList" bindLabel="CustomerName"
+                                                    <!-- <ng-select [items]="airlineList" bindLabel="CustomerName"
                                                         bindValue="CustomerName" class="ng-select"
                                                         formControlName="VesselName" placeholder="" appendTo="body"
                                                         style="width: 85%">
-                                                    </ng-select>
+                                                    </ng-select> -->
+                                                    <dofi-searchable-dropdown [items]="airlineList" formControlName="VesselName" placeholder=""
+                                                        [displayFields]="customerAirlineLookupConfig.displayFields"
+                                                        [displayLabels]="customerAirlineLookupConfig.displayLabels" [labelFields]="customerAirlineLookupConfig.labelFields"
+                                                        bindLabel="CustomerName" bindValue="CustomerName" style="width : 100%;" (change)="onCarrierChangeForAir($event)">
+                                                    </dofi-searchable-dropdown>
                                                     <button class="btn bi bi-calendar3 pe-0" type="button"
                                                         (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
                                                         <i class="fas fa-exchange-alt"
@@ -666,6 +673,7 @@
                                                 <div class="input-group">
                                                     <input class="form-control" placeholder="dd-mm-yyyy"
                                                         formControlName="ETD" ngbDatepicker #etdPicker="ngbDatepicker"
+                                                        (dateSelect)="onETDDateSelect()"
                                                         (click)="etdPicker.toggle()" container="body" readonly />
                                                     <button class="btn bi bi-calendar3 px-0"
                                                         (click)="etdPicker.toggle()" type="button">
@@ -682,6 +690,7 @@
                                                 <div class="input-group">
                                                     <input class="form-control" placeholder="dd-mm-yyyy"
                                                         formControlName="ETA" ngbDatepicker #etaPicker="ngbDatepicker"
+                                                        [minDate]="selectedDepartmentType === 'AIR' ? toNgbDateStruct(f['ETD']?.value) : null"
                                                         (click)="etaPicker.toggle()" container="body" readonly />
                                                     <button class="btn bi bi-calendar3 px-0"
                                                         (click)="etaPicker.toggle()" type="button">

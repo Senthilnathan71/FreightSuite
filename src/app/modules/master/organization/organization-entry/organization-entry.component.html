@@ -200,7 +200,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group" style="position: relative;">
                 <input type="text" id="CustomerName" formControlName="CustomerName" placeholder=""
-                  class="custom-input-field sm" [onlyText]="100" (input)="onCustomerNameInput($event)"
+                  class="custom-input-field sm"  (input)="onCustomerNameInput($event)"
                   (blur)="hideCustomerDropdown()" (focus)="onCustomerNameInput($event)" />
                 <label for="CustomerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
 
